@@ -10,17 +10,21 @@ So although the software is not complete as other available programs is is purel
 automate my track.
 
 I have decided to share it on Github, because I think there might be more railway enthusiasts who have
-some (old) stuff in the attic an want to restart again.
+fun in automating things them self.
 
-I started to get the Serial interface 6050 working
-Then to control locomotives, solenoids.
-When that was working I connected the S88 to get some feedback of the track to enable real track automation.
+So it was time to leave the 6050 and replace it for a Marklin CS2.
+I has started to implement the CAN command over the network.
+Currently the followin command work, but ist is still a work in progress.
 
-After that was working I created my first shadow station process, which is still experimental.
+Stop, GO, switch an accessory, drive a Locomotive
+Get feedback information from the S88 events.
 
-At this moment of writing the program consist out a a Java server process which talk using a usb serial adapter to the 6050.
+Wishlist:
+Get a list of locomotives from the CS2. Should be possible , but don't yet know how tips are welcome.
+State of all feedback contacts when not changed.
+
 A GUI which is build using NetBeans forms.
 
-I run the server on a Raspberry pi which is connected to the 6050.
-
 So I hope you get inspired
+
+Frans
