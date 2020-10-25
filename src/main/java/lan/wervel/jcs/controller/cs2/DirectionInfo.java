@@ -18,58 +18,38 @@
  */
 package lan.wervel.jcs.controller.cs2;
 
-import java.util.Objects;
+import java.io.Serializable;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.entities.enums.Direction;
+import org.pmw.tinylog.Logger;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class DirectionInfo {
+public class DirectionInfo implements Serializable {
 
-  private Direction direction;
+    private Direction direction;
 
-  public DirectionInfo(CanMessage statusRequest) {
-    parseMessage(statusRequest);
-  }
-
-  private void parseMessage(CanMessage statusRequest) {
-    int[] data = statusRequest.getResponse(0).getData();
-    int dir = data[4];
-
-    this.direction = Direction.cs2Get(dir);
-  }
-
-  @Override
-  public String toString() {
-    return "DirectionInfo{" + "direction=" + direction + '}';
-  }
-
-  public Direction getDirection() {
-    return direction;
-  }
-
-  @Override
-  public int hashCode() {
-    int hash = 7;
-    hash = 47 * hash + Objects.hashCode(this.direction);
-    return hash;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    public DirectionInfo(CanMessage locDirection) {
+        parseMessage(locDirection);
     }
-    if (obj == null) {
-      return false;
+
+    private void parseMessage(CanMessage locDirection) {
+        Logger.debug(locDirection);
+        int[] data = locDirection.getResponse(0).getData();
+        int dir = data[4];
+
+        this.direction = Direction.cs2Get(dir);
     }
-    if (getClass() != obj.getClass()) {
-      return false;
+
+    @Override
+    public String toString() {
+        return "DirectionInfo{" + "direction=" + direction + '}';
     }
-    final DirectionInfo other = (DirectionInfo) obj;
-    return this.direction == other.direction;
-  }
+
+    public Direction getDirection() {
+        return direction;
+    }
 
 }

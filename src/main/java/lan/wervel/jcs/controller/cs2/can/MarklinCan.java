@@ -60,6 +60,7 @@ public interface MarklinCan {
     public final static int LOC_SPEED_SET_DLC = 0x06;
 
     public final static int LOC_DIRECTION = 0x0a;
+    public final static int LOC_DIRECTION_RESPONSE = 0x0b;
 
     public static final int LOC_DIRECTION_QUERY_DLC = 0x04;
     public static final int LOC_DIRECTION_SET_DLC = 0x05;
@@ -85,7 +86,7 @@ public interface MarklinCan {
 
     public final static int ACCESSORY_CONFIG = 0x18;
 
-    public final static int S88_POLLING = 0x20;
+    //public final static int S88_POLLING = 0x20;
 
     public final static int S88_EVENT = 0x22;
     public final static int S88_EVENT_QUERY_DLC = 0x04;

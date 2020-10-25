@@ -238,6 +238,13 @@ public class CS2Controller implements ControllerService, FeedbackService {
         this.connection.sendCanMessage(CanMessageFactory.setDirection(la, direction.getCS2Value()));
     }
 
+    public DirectionInfo getDirection(int address, DecoderType decoderType) {
+        int la = getLocoAddres(address, decoderType);
+        DirectionInfo di = new DirectionInfo(connection.sendCanMessage(CanMessageFactory.queryDirection(la)));
+        Logger.trace(di);
+        return di;
+    }
+
     /**
      * Compatibility 6050
      *
@@ -516,11 +523,16 @@ public class CS2Controller implements ControllerService, FeedbackService {
     }
 
     public static void main(String[] a) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-        CS2Controller cs2 = new CS2Controller();
+        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
+        CS2Controller cs2 = new CS2Controller(false);
 
         if (cs2.isConnected()) {
-            cs2.powerOn();
+            //cs2.powerOn();
+
+            Logger.info("Query direction of loc 12");
+            DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
+            Logger.debug(info);
+            
             pause(5);
         }
         //for (int i = 0; i < 16; i++) {

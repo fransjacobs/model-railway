@@ -18,17 +18,16 @@
  */
 package lan.wervel.jcs.controller.cs2;
 
-import lan.wervel.jcs.controller.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class LocomotiveInfo {
+public class LocomotiveInfo implements Serializable {
 
  
 

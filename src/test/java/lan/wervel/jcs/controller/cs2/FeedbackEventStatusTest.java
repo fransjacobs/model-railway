@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  */
 public class FeedbackEventStatusTest {
     
-    CanMessage message;
+    private CanMessage message;
 
     public FeedbackEventStatusTest() {
     }

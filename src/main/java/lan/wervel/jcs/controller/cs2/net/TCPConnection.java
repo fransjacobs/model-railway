@@ -45,7 +45,7 @@ class TCPConnection implements Connection {
 
     private Socket socket;
     private DataOutputStream dos;
-    DataInputStream din;
+    private DataInputStream din;
 
     TCPConnection(InetAddress cs2Address) {
         this.cs2Address = cs2Address;
@@ -100,7 +100,7 @@ class TCPConnection implements Connection {
     @Override
     public CanMessage sendCanMessage(CanMessage message) {
         try {
-            //Logger.trace("Send " + message);
+            dos.flush();
             dos.write(message.getBytes());
 
             //Receive first packet
@@ -127,9 +127,11 @@ class TCPConnection implements Connection {
 
                 data = new byte[tempCopy.length];
                 System.arraycopy(tempCopy, 0, data, 0, data.length);
-                //need to pause for 10 ms...(?) else not all messages are captured ...
+                //need to pause for 10 ms...(?) else not all response is captured ???...
                 pause(10);
             }
+
+            //Logger.trace("Send " + message);
 
             //Logger.trace("data len:" + data.length);
             int cmd = message.getCommand();
@@ -137,7 +139,7 @@ class TCPConnection implements Connection {
                 //Logger.trace("Index = " + i);
                 byte[] m = new byte[CanMessage.MESSAGE_SIZE];
 
-                if (data.length > i + m.length) {
+                if (data.length >= i + m.length) {
                     System.arraycopy(data, i, m, 0, m.length);
                     CanMessage cm = new CanMessage(m);
                     if (cm.getCommand() == cmd + 1) {
@@ -198,7 +200,7 @@ class TCPConnection implements Connection {
     public InetAddress getCs2Address() {
         return cs2Address;
     }
-    
+
     private static void pause(long millis) {
         try {
             Thread.sleep(millis);

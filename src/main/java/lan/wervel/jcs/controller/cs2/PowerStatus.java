@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.controller.cs2;
 
+import java.io.Serializable;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
 
@@ -25,7 +26,7 @@ import lan.wervel.jcs.controller.cs2.can.MarklinCan;
  *
  * @author Frans Jacobs
  */
-public class PowerStatus {
+public class PowerStatus implements Serializable {
 
     private boolean powerOn;
     private int[] deviceUid;
