@@ -235,7 +235,7 @@ public class CanMessageTest {
     System.out.println("getUid");
     CanMessage instance = new CanMessage(new int[]{0x00, 0x01, 0xcb, 0x05, 0x05, 0x43, 0x53, 0x9a, 0x40, 0x01, 0x00, 0x00, 0x00});
     int[] expResult = new int[]{0x43, 0x53, 0x9a, 0x40};
-    int[] result = instance.getUid();
+    int[] result = instance.getDeviceUidFromMessage();
     Assert.assertArrayEquals(expResult, result);
   }
 

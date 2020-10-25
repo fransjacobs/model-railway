@@ -329,59 +329,59 @@
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.VerticalStrut"/>
               </AuxValues>
             </Component>
-            <Component class="javax.swing.JLabel" name="trackServiceHostLbl">
-              <Properties>
-                <Property name="horizontalAlignment" type="int" value="11"/>
-                <Property name="text" type="java.lang.String" value="Track Service Host:"/>
-                <Property name="name" type="java.lang.String" value="trackServiceHostLbl" noResource="true"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="trackServiceHostNameLbl">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="..."/>
-                <Property name="name" type="java.lang.String" value="trackServiceHostNameLbl" noResource="true"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="trackServiceLbl">
-              <Properties>
-                <Property name="horizontalAlignment" type="int" value="11"/>
-                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                  <ComponentRef name="trackServiceNameLbl"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Track Service:"/>
-                <Property name="name" type="java.lang.String" value="trackServiceLbl" noResource="true"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JLabel" name="trackServiceNameLbl">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="..."/>
-                <Property name="name" type="java.lang.String" value="trackServiceNameLbl" noResource="true"/>
-              </Properties>
-            </Component>
             <Component class="javax.swing.JLabel" name="controllerLbl">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="11"/>
-                <Property name="text" type="java.lang.String" value="Controller Service:"/>
+                <Property name="text" type="java.lang.String" value="Controller:"/>
                 <Property name="name" type="java.lang.String" value="controllerLbl" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="controllerNameLbl">
+            <Component class="javax.swing.JLabel" name="controllerDescriptionLbl">
               <Properties>
                 <Property name="text" type="java.lang.String" value="..."/>
-                <Property name="name" type="java.lang.String" value="controllerNameLbl" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="controllerDescriptionLbl" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="feedbackServiceLbl">
+            <Component class="javax.swing.JLabel" name="controllerCatalogLbl">
               <Properties>
                 <Property name="horizontalAlignment" type="int" value="11"/>
-                <Property name="text" type="java.lang.String" value="Feedback Service:"/>
-                <Property name="name" type="java.lang.String" value="feedbackServiceLbl" noResource="true"/>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="controllerCatalogNumberLbl"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Controller Model:"/>
+                <Property name="name" type="java.lang.String" value="controllerCatalogLbl" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="feedbackServiceNameLbl">
+            <Component class="javax.swing.JLabel" name="controllerCatalogNumberLbl">
               <Properties>
                 <Property name="text" type="java.lang.String" value="..."/>
-                <Property name="name" type="java.lang.String" value="feedbackServiceNameLbl" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="controllerCatalogNumberLbl" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="controllerSerialLbl">
+              <Properties>
+                <Property name="horizontalAlignment" type="int" value="11"/>
+                <Property name="text" type="java.lang.String" value="Controller Serial:"/>
+                <Property name="name" type="java.lang.String" value="controllerSerialLbl" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="controllerSerialNumberLbl">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="..."/>
+                <Property name="name" type="java.lang.String" value="controllerSerialNumberLbl" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="controllerHostLbl">
+              <Properties>
+                <Property name="horizontalAlignment" type="int" value="11"/>
+                <Property name="text" type="java.lang.String" value="Controller Host:"/>
+                <Property name="name" type="java.lang.String" value="controllerHostLbl" noResource="true"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="controllerHostNameLbl">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="..."/>
+                <Property name="name" type="java.lang.String" value="controllerHostNameLbl" noResource="true"/>
               </Properties>
             </Component>
           </SubComponents>

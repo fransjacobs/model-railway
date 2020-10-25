@@ -20,6 +20,7 @@ package lan.wervel.jcs.feedback;
 
 import java.io.Serializable;
 import java.util.Date;
+import lan.wervel.jcs.controller.cs2.FeedbackEventStatus;
 import lan.wervel.jcs.entities.FeedbackModule;
 
 /**
@@ -39,6 +40,10 @@ public class FeedbackEvent implements Serializable {
 
     public FeedbackEvent() {
         this(0, 0, 0, null);
+    }
+
+    public FeedbackEvent(FeedbackEventStatus feedbackEventStatus) {
+        this(feedbackEventStatus.getContactId(), feedbackEventStatus.isNewValue(), feedbackEventStatus.isOldValue());
     }
 
     public FeedbackEvent(int contactId, boolean newValue, boolean oldValue) {

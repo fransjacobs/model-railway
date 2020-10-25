@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
-import lan.wervel.jcs.controller.ControllerInfo;
+import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.ControllerService;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.entities.FeedbackModule;
@@ -49,7 +49,6 @@ import static lan.wervel.jcs.entities.enums.SignalValue.Hp2;
 import lan.wervel.jcs.feedback.FeedbackEvent;
 import lan.wervel.jcs.feedback.FeedbackEventListener;
 import lan.wervel.jcs.feedback.FeedbackPortListener;
-import lan.wervel.jcs.feedback.FeedbackSampleListener;
 import lan.wervel.jcs.feedback.FeedbackService;
 import lan.wervel.jcs.trackservice.dao.FeedbackModuleDAO;
 import lan.wervel.jcs.trackservice.dao.JCSPropertiesDAO;
@@ -62,6 +61,7 @@ import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.trackservice.events.LocomotiveListener;
 import lan.wervel.jcs.trackservice.events.PersistedEventListener;
 import org.pmw.tinylog.Logger;
+import lan.wervel.jcs.feedback.HeartbeatListener;
 
 public class H2TrackService implements TrackService {
 
@@ -95,13 +95,13 @@ public class H2TrackService implements TrackService {
 
     private final Properties jcsProperties;
 
-    private ControllerInfo controllerInfo;
+    private DeviceInfo controllerInfo;
 
     public H2TrackService() {
         this(true, true);
     }
 
-    H2TrackService(boolean aquireFeedbackService, boolean aquireControllerService) {
+    private H2TrackService(boolean aquireFeedbackService, boolean aquireControllerService) {
         propDao = new JCSPropertiesDAO();
         jcsProperties = new Properties();
 
@@ -129,9 +129,13 @@ public class H2TrackService implements TrackService {
         if (aquireControllerService) {
             aquireControllerService();
         }
+
+        Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
+
         if (aquireFeedbackService) {
             aquireFeedbackService();
         }
+        Logger.debug(feedbackService != null ? "Aquired " + feedbackService.getClass().getSimpleName() : "Could not aquire a Feedback Service!");
     }
 
     private void retrieveJCSProperties() {
@@ -148,23 +152,29 @@ public class H2TrackService implements TrackService {
         String S88CS2 = jcsProperties.getProperty("S88-CS2");
         String activeFeedbackService = jcsProperties.getProperty("activeFeedbackService");
 
-        String feedbackServiceImpl;
-
-        switch (activeFeedbackService) {
-            case "S88-remote":
-                feedbackServiceImpl = S88Remote;
-                break;
-            case "S88-CS2":
-                feedbackServiceImpl = S88CS2;
-                break;
-            default:
-                feedbackServiceImpl = S88Demo;
-                break;
+        //Check if the Controller is also a feedback service
+        if (this.controllerService instanceof FeedbackService) {
+            Logger.trace("Using Controller as Feedback Service...");
+            this.feedbackService = (FeedbackService) this.controllerService;
         }
 
-        Logger.debug("ActiveFeedbackService: " + activeFeedbackService);
+        String feedbackServiceImpl;
 
         if (feedbackService == null) {
+            switch (activeFeedbackService) {
+                case "S88-remote":
+                    feedbackServiceImpl = S88Remote;
+                    break;
+                case "S88-CS2":
+                    feedbackServiceImpl = S88CS2;
+                    break;
+                default:
+                    feedbackServiceImpl = S88Demo;
+                    break;
+            }
+
+            Logger.trace("ActiveFeedbackService: " + activeFeedbackService);
+
             Logger.trace("Obtaining an " + feedbackServiceImpl + " instance...");
             try {
                 FeedbackService fs = (FeedbackService) Class.forName(feedbackServiceImpl).getDeclaredConstructor().newInstance();
@@ -174,10 +184,8 @@ public class H2TrackService implements TrackService {
             }
         }
 
-        Logger.debug("Using " + feedbackService.getClass().getSimpleName() + " as Feedback Service...");
-
         feedbackService.addFeedbackEventListener(new FeedbackServiceEventListener());
-        feedbackService.addFeedbackSampleListener(new FeedbackServiceSampleListener());
+        feedbackService.addHeartbeatListener(new FeedbackServiceSampleListener());
     }
 
     private void aquireControllerService() {
@@ -210,10 +218,8 @@ public class H2TrackService implements TrackService {
                 Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
             }
         }
-        Logger.debug("Using " + controllerService.getClass().getSimpleName() + " as Controller Service...");
 
         controllerService.addControllerEventListener(new ControllerServiceEventListener());
-
         controllerInfo = controllerService.getControllerInfo();
     }
 
@@ -431,11 +437,25 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public ControllerInfo getControllerInfo() {
+    public DeviceInfo getControllerInfo() {
         if (this.controllerInfo == null) {
             controllerInfo = controllerService.getControllerInfo();
         }
         return controllerInfo;
+    }
+
+    @Override
+    public void addControllerListener(ControllerEventListener listener) {
+        if (controllerService != null) {
+            controllerService.addControllerEventListener(listener);
+        }
+    }
+
+    @Override
+    public void removeControllerListener(ControllerEventListener listener) {
+        if (controllerService != null) {
+            controllerService.removeControllerEventListener(listener);
+        }
     }
 
     private void broadcastHeartBeatToggle() {
@@ -477,7 +497,7 @@ public class H2TrackService implements TrackService {
             this.controllerService.powerOn();
         }
     }
-
+    
     @Override
     public boolean isPowerOn() {
         if (trpo == null) {
@@ -768,7 +788,7 @@ public class H2TrackService implements TrackService {
         }
     }
 
-    private class FeedbackServiceSampleListener implements FeedbackSampleListener {
+    private class FeedbackServiceSampleListener implements HeartbeatListener {
 
         @Override
         public void sample() {

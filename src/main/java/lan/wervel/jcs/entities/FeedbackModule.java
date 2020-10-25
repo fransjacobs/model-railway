@@ -88,6 +88,7 @@ public class FeedbackModule extends ControllableDevice {
     }
 
     public int getContactId(int port) {
+        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
         int module;
         if (this.address != null && this.address > 0) {
             module = this.address;

@@ -51,10 +51,11 @@ public class TrackServiceFactory {
 
     private boolean aquireTrackServiceImpl() {
         try {
-            TrackService ts = (TrackService) Class.forName("lan.wervel.jcs.trackservice.H2TrackService").getDeclaredConstructor().newInstance();
-            this.trackService = ts;
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex2) {
-            Logger.error("Can't instantiate a 'lan.wervel.jcs.trackservice.H2TrackService' " + ex2.getMessage());
+            this.trackService = (TrackService) Class.forName("lan.wervel.jcs.trackservice.H2TrackService").getDeclaredConstructor().newInstance();
+            
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+            Logger.error("Can't instantiate a 'lan.wervel.jcs.trackservice.H2TrackService' " + ex.getMessage());
+            Logger.trace(ex);
         }
         Logger.debug("Using " + trackService.getClass().getSimpleName() + " as Track Service...");
         return trackService != null;

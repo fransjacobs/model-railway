@@ -22,298 +22,511 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
-import lan.wervel.jcs.controller.ControllerInfo;
 import lan.wervel.jcs.controller.ControllerService;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.CanMessageFactory;
+import lan.wervel.jcs.controller.cs2.can.MarklinCan;
 import static lan.wervel.jcs.controller.cs2.can.MarklinCan.FUNCTION_OFF;
 import static lan.wervel.jcs.controller.cs2.can.MarklinCan.FUNCTION_ON;
+import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
+import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.controller.cs2.net.Connection;
 import lan.wervel.jcs.controller.cs2.net.CS2ConnectionFactory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
+import lan.wervel.jcs.feedback.FeedbackEvent;
+import lan.wervel.jcs.feedback.FeedbackEventListener;
+import lan.wervel.jcs.feedback.FeedbackService;
 import org.pmw.tinylog.Logger;
+import lan.wervel.jcs.feedback.HeartbeatListener;
+import org.pmw.tinylog.Configurator;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class CS2Controller implements ControllerService {
+public class CS2Controller implements ControllerService, FeedbackService {
 
-  private Connection connection;
-  private boolean connected = false;
-  private boolean powerOn;
+    private Connection connection;
+    private boolean connected = false;
+    private boolean running = false;
 
-  private final List<ControllerEventListener> controllerEventListeners;
-  private final ExecutorService executor;
+    private final List<ControllerEventListener> controllerEventListeners;
+    private final List<FeedbackEventListener> feedbackEventListeners;
 
-  private int[] cs2Uid;
-  private int cs2id;
+    private final List<HeartbeatListener> heartbeatListeners;
 
-  public CS2Controller() {
-    controllerEventListeners = new ArrayList<>();
-    executor = Executors.newCachedThreadPool();
-    this.connection = CS2ConnectionFactory.getConnection();
+    private final Timer timer;
+    private boolean startTimer;
 
-    //cs2Uid = null;
-  }
+    private final ExecutorService executor;
 
-  @Override
-  public void powerOff() {
-    this.connection.sendCanMessage(CanMessageFactory.stop(cs2Uid));
+    private int[] deviceUid;
+    private int deviceUidNumber;
 
-    powerOn = false;
-  }
+    private DeviceInfo deviceInfo;
 
-  @Override
-  public void powerOn() {
-    CanMessage reply = this.connection.sendCanMessage(CanMessageFactory.go(cs2Uid));
-    if (reply != null && reply.getResponse().isResponseMessage()) {
-      this.cs2Uid = reply.getResponse().getUid();
-      Logger.trace("CS2 UID int: " + reply.getResponse().getUidInt());
-      
-      if (reply.getResponse().getUidInt() == 0) {
-        reply = this.connection.sendCanMessage(CanMessageFactory.go(null));
-        Logger.trace("Response valid: " + reply.isResponseMessage()+" UID: "+reply.getResponse().getUidInt());
-      }
-      else {
-        this.cs2id = reply.getResponse().getUidInt();
-        CanMessageFactory.setCs2Uid(cs2id);
-      }
+    private static final long DELAY = 0L;
 
-      Logger.trace("CS2 UID: " + this.cs2id);
-      
-      powerOn = true;
+    public CS2Controller() {
+        this(true);
     }
-  }
 
-  @Override
-  public boolean isPowerOn() {
-    return this.powerOn;
-  }
-
-  @Override
-  public boolean connect() {
-    //try to connect to the CS2
-    if (!connected) {
-      Logger.debug("Connecting to CS2...");
-      this.connection = CS2ConnectionFactory.getConnection();
-      this.connected = this.connection != null;
+    CS2Controller(boolean useTimer) {
+        controllerEventListeners = new ArrayList<>();
+        feedbackEventListeners = new ArrayList<>();
+        heartbeatListeners = new ArrayList<>();
+        startTimer = useTimer;
+        timer = new Timer("Heartbeat", true);
+        executor = Executors.newCachedThreadPool();
+        connect();
     }
-    executor.execute(() -> broadcastControllerEvent(new ControllerEvent(isPowerOn(), connected)));
-    return connected;
-  }
 
-  @Override
-  public boolean isConnected() {
-    return connected;
-  }
+    @Override
+    public PowerStatus powerOff() {
+        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.stop()));
+        return ps;
+    }
 
-  @Override
-  public void disconnect() {
-    try {
-      final Connection conn = this.connection;
-      connected = false;
-      this.connection = null;
-      synchronized (conn) {
-        conn.sendCanMessage(CanMessageFactory.stop(cs2Uid));
+    @Override
+    public PowerStatus powerOn() {
+        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.go()));
+        return ps;
+    }
+
+    public PowerStatus getPowerStatus() {
+        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.powerStatus()));
+        return ps;
+    }
+
+    @Override
+    public boolean isPowerOn() {
+        if (connected) {
+            return getPowerStatus().isPowerOn();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public final boolean connect() {
+        if (!connected) {
+            Logger.debug("Connecting to CS2...");
+            this.connection = CS2ConnectionFactory.getConnection();
+            this.connected = this.connection != null;
+        }
+
+        if (connected) {
+            //query the power status which will tell us whether the trackpower is on or off and alse the UID of the CS2/3
+            PowerStatus ps = getPowerStatus();
+            this.deviceUid = ps.getDeviceUid();
+            this.deviceUidNumber = ps.getDeviceUidNumber();
+            CanMessageFactory.setDeviceUidNumber(deviceUidNumber);
+
+            Logger.trace("Track Power is " + (ps.isPowerOn() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
+            deviceInfo = getControllerInfo();
+            Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
+
+            connection.addCanMessageListener(new ExtraMessageListener(this));
+
+            //Send powerstatus
+            executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(ps.isPowerOn(), connected)));
+        }
+
+        // Finally start the harbeat timer which will takes care of the feedback 
+        if (startTimer && connected) {
+            //Start the timer
+            timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, FeedbackService.DEFAULT_POLL_MILLIS);
+            this.running = true;
+        } else {
+            Logger.info("Hearbeat time is NOT started! " + (!connected ? "NOT Connected" : (!startTimer ? "Timer is off" : "")));
+        }
+        return connected;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return connected;
+    }
+
+    @Override
+    public void disconnect() {
+        try {
+            final Connection conn = this.connection;
+            connected = false;
+            this.connection = null;
+
+            stopHeartbeatTask();
+
+            synchronized (conn) {
+                conn.sendCanMessage(CanMessageFactory.stop());
+                wait200ms();
+                conn.close();
+                this.deviceUid = null;
+                this.deviceUidNumber = 0;
+            }
+            executor.shutdown();
+        } catch (Exception ex) {
+            Logger.error(ex);
+        }
+    }
+
+    @Override
+    public String getName() {
+        return this.getClass().getSimpleName();
+    }
+
+    private int getLocoAddres(int address, DecoderType decoderType) {
+        int locoAddress;
+        switch (decoderType) {
+            case MFX:
+                locoAddress = 0x4000 + address;
+                break;
+            case DCC:
+                locoAddress = 0xC000 + address;
+                break;
+            case SX1:
+                locoAddress = 0x0800 + address;
+                break;
+            case MM2:
+                locoAddress = address;
+                break;
+            default:
+                locoAddress = address;
+                break;
+        }
+
+        return locoAddress;
+    }
+
+    /**
+     * Compatibility with 6050
+     *
+     * @param address the locomotive address
+     * @param protocol
+     * @param function the value of the function (F0)
+     */
+    @Override
+    public void toggleDirection(int address, DecoderType protocol, boolean function) {
+        toggleDirection(address, protocol);
+        setFunction(address, protocol, 0, function);
+    }
+
+    @Override
+    public void toggleDirection(int address, DecoderType decoderType) {
+        int la = getLocoAddres(address, decoderType);
+        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.queryDirection(la));
+        DirectionInfo di = new DirectionInfo(msg);
+        Logger.trace(di);
+        Direction direction = di.getDirection();
+        direction = direction.toggle();
+
+        setDirection(address, decoderType, direction);
+    }
+
+    @Override
+    public void setDirection(int address, DecoderType decoderType, Direction direction) {
+        int la = getLocoAddres(address, decoderType);
+        Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType);
+        this.connection.sendCanMessage(CanMessageFactory.setDirection(la, direction.getCS2Value()));
+    }
+
+    /**
+     * Compatibility 6050
+     *
+     * @param address the locomotive address
+     * @param decoderType
+     * @param function the function 0 value
+     * @param speed the speed
+     */
+    @Override
+    public void setSpeedAndFunction(int address, DecoderType decoderType, boolean function, int speed) {
+        setSpeed(address, decoderType, speed);
+        setFunction(address, decoderType, 0, function);
+    }
+
+    @Override
+    public void setSpeed(int address, DecoderType decoderType, int speed) {
+        int la = getLocoAddres(address, decoderType);
+        Logger.trace("Setting speed to: " + speed + " for loc address: " + la + " Decoder: " + decoderType);
+
+        //Calculate the speed??
+        this.connection.sendCanMessage(CanMessageFactory.setLocSpeed(la, speed));
+    }
+
+    @Override
+    public void setFunction(int address, DecoderType decoderType, int functionNumber, boolean flag) {
+        int value = flag ? FUNCTION_ON : FUNCTION_OFF;
+        int la = getLocoAddres(address, decoderType);
+        this.connection.sendCanMessage(CanMessageFactory.setFunction(la, functionNumber, value));
+    }
+
+    /**
+     * Compatibility with 6050
+     *
+     * @param address address of the locomotive
+     * @param decoderType the locomotive decoder protocol
+     * @param f1 value function 1
+     * @param f2 value function 2
+     * @param f3 value function 3
+     * @param f4 value function 4
+     */
+    @Override
+    public void setFunctions(int address, DecoderType decoderType, boolean f1, boolean f2, boolean f3, boolean f4) {
+        setFunction(address, decoderType, 1, f1);
+        setFunction(address, decoderType, 2, f2);
+        setFunction(address, decoderType, 3, f3);
+        setFunction(address, decoderType, 4, f4);
+    }
+
+    @Override
+    public void switchAccessoiry(int address, AccessoryValue value) {
+        executor.execute(() -> switchAccessoiryOnOff(address, value));
+    }
+
+    private void switchAccessoiryOnOff(int address, AccessoryValue value) {
+        this.connection.sendCanMessage(CanMessageFactory.switchAccessory(address, value, true));
+        //TODO dynamic setting of time or queue it
         wait200ms();
-        conn.close();
-        this.cs2Uid = null;
-      }
-      executor.shutdown();
-    } catch (Exception ex) {
-      Logger.error(ex);
-    }
-  }
-
-  @Override
-  public String getName() {
-    return this.getClass().getSimpleName();
-  }
-
-  private int getLocoAddres(int address, DecoderType decoderType) {
-    int locoAddress;
-    switch (decoderType) {
-      case MFX:
-        locoAddress = 0x4000 + address;
-        break;
-      case DCC:
-        locoAddress = 0xC000 + address;
-        break;
-      case SX1:
-        locoAddress = 0x0800 + address;
-        break;
-      case MM2:
-        locoAddress = address;
-        break;
-      default:
-        locoAddress = address;
-        break;
+        this.connection.sendCanMessage(CanMessageFactory.switchAccessory(address, value, false));
     }
 
-    return locoAddress;
-  }
-
-  /**
-   * Compatibility with 6050
-   *
-   * @param address the locomotive address
-   * @param protocol
-   * @param function the value of the function (F0)
-   */
-  @Override
-  public void toggleDirection(int address, DecoderType protocol, boolean function) {
-    toggleDirection(address, protocol);
-    setFunction(address, protocol, 0, function);
-  }
-
-  @Override
-  public void toggleDirection(int address, DecoderType decoderType) {
-    int la = getLocoAddres(address, decoderType);
-    CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.queryDirection(la));
-    DirectionInfo di = new DirectionInfo(msg);
-    Logger.trace(di);
-    Direction direction = di.getDirection();
-    direction = direction.toggle();
-
-    setDirection(address, decoderType, direction);
-  }
-
-  @Override
-  public void setDirection(int address, DecoderType decoderType, Direction direction) {
-    int la = getLocoAddres(address, decoderType);
-    Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType);
-    this.connection.sendCanMessage(CanMessageFactory.setDirection(la, direction.getCS2Value()));
-  }
-
-  /**
-   * Compatibility 6050
-   *
-   * @param address the locomotive address
-   * @param decoderType
-   * @param function the function 0 value
-   * @param speed the speed
-   */
-  @Override
-  public void setSpeedAndFunction(int address, DecoderType decoderType, boolean function, int speed) {
-    setSpeed(address, decoderType, speed);
-    setFunction(address, decoderType, 0, function);
-  }
-
-  @Override
-  public void setSpeed(int address, DecoderType decoderType, int speed) {
-    int la = getLocoAddres(address, decoderType);
-    Logger.trace("Setting speed to: " + speed + " for loc address: " + la + " Decoder: " + decoderType);
-
-    //Calculate the speed??
-    this.connection.sendCanMessage(CanMessageFactory.setLocSpeed(la, speed));
-  }
-
-  @Override
-  public void setFunction(int address, DecoderType decoderType, int functionNumber, boolean flag) {
-    int value = flag ? FUNCTION_ON : FUNCTION_OFF;
-    int la = getLocoAddres(address, decoderType);
-    this.connection.sendCanMessage(CanMessageFactory.setFunction(la, functionNumber, value));
-  }
-
-  /**
-   * Compatibility with 6050
-   *
-   * @param address address of the locomotive
-   * @param decoderType the locomotive decoder protocol
-   * @param f1 value function 1
-   * @param f2 value function 2
-   * @param f3 value function 3
-   * @param f4 value function 4
-   */
-  @Override
-  public void setFunctions(int address, DecoderType decoderType, boolean f1, boolean f2, boolean f3, boolean f4) {
-    setFunction(address, decoderType, 1, f1);
-    setFunction(address, decoderType, 2, f2);
-    setFunction(address, decoderType, 3, f3);
-    setFunction(address, decoderType, 4, f4);
-  }
-
-  @Override
-  public void switchAccessoiry(int address, AccessoryValue value) {
-    executor.execute(() -> switchAccessoiryOnOff(address, value));
-  }
-
-  private void switchAccessoiryOnOff(int address, AccessoryValue value) {
-    this.connection.sendCanMessage(CanMessageFactory.switchAccessory(address, value, true));
-    wait200ms();
-    this.connection.sendCanMessage(CanMessageFactory.switchAccessory(address, value, false));
-  }
-
-  @Override
-  public int[] getFeedback(int moduleNumber) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public ControllerInfo getControllerInfo() {
-    CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.statusConfig(cs2Uid));
-    return new ControllerInfo(msg);
-  }
-
-  @Override
-  public void addControllerEventListener(ControllerEventListener listener) {
-    this.controllerEventListeners.add(listener);
-  }
-
-  @Override
-  public void removeControllerEventListener(ControllerEventListener listener) {
-    this.controllerEventListeners.remove(listener);
-  }
-
-  @Override
-  public void notifyAllControllerEventListeners() {
-    Logger.info("Current Controller Power Status: " + (isPowerOn() ? "On" : "Off") + "...");
-    executor.execute(() -> broadcastControllerEvent(new ControllerEvent(isPowerOn(), isConnected())));
-  }
-
-  public void getLocomotiveConfigData() {
-    CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.requestConfig("loks"));
-
-  }
-
-  //accesory address
-//uint32_t localID = address - 1; // GUI-address is 1-based, protocol-address is 0-based
-//		if (protocol == ProtocolDCC)
-//		{
-//			localID |= 0x3800;
-//		}
-//		else
-//		{
-//			localID |= 0x3000;
-//		}
-  private void broadcastControllerEvent(ControllerEvent event) {
-    Set<ControllerEventListener> snapshot;
-    synchronized (controllerEventListeners) {
-      if (controllerEventListeners.isEmpty()) {
-        snapshot = new HashSet<>();
-      } else {
-        snapshot = new HashSet<>(controllerEventListeners);
-      }
+    @Override
+    public int[] getFeedback(int moduleNumber) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    for (ControllerEventListener listener : snapshot) {
-      listener.notify(event);
+    @Override
+    public DeviceInfo getControllerInfo() {
+        if (deviceInfo == null) {
+            deviceInfo = new DeviceInfo(connection.sendCanMessage(CanMessageFactory.statusConfig(deviceUid)));
+            String deviceHostName = connection.getCs2Address().getHostName();
+            deviceInfo.setDeviceHostName(deviceHostName);
+        }
+        return deviceInfo;
     }
-  }
 
-  private void wait200ms() {
-    try {
-      Thread.sleep(200L);
-    } catch (InterruptedException ex) {
-      Logger.error(ex);
+    @Override
+    public void addControllerEventListener(ControllerEventListener listener) {
+        this.controllerEventListeners.add(listener);
     }
-  }
+
+    @Override
+    public void removeControllerEventListener(ControllerEventListener listener) {
+        this.controllerEventListeners.remove(listener);
+    }
+
+    @Override
+    public void notifyAllControllerEventListeners() {
+        Logger.info("Current Controller Power Status: " + (isPowerOn() ? "On" : "Off") + "...");
+        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPowerOn(), isConnected())));
+    }
+
+    @Override
+    public long getPollIntervalMillis() {
+        return FeedbackService.DEFAULT_POLL_MILLIS;
+    }
+
+    @Override
+    public boolean isRunning() {
+        return this.running;
+    }
+
+    @Override
+    public void addFeedbackEventListener(FeedbackEventListener listener) {
+        synchronized (feedbackEventListeners) {
+            this.feedbackEventListeners.add(listener);
+        }
+    }
+
+    @Override
+    public void removeFeedbackEventListener(FeedbackEventListener listener) {
+        synchronized (feedbackEventListeners) {
+            this.feedbackEventListeners.remove(listener);
+        }
+    }
+
+    @Override
+    public void removeAllFeedbackEventListeners() {
+        synchronized (feedbackEventListeners) {
+            this.feedbackEventListeners.clear();
+        }
+    }
+
+    @Override
+    public void addHeartbeatListener(HeartbeatListener listener) {
+        synchronized (heartbeatListeners) {
+            this.heartbeatListeners.add(listener);
+        }
+    }
+
+    @Override
+    public void removeHeartbeatListener(HeartbeatListener listener) {
+        synchronized (heartbeatListeners) {
+            this.heartbeatListeners.remove(listener);
+        }
+    }
+
+    @Override
+    public void removeAllHeartbeatListeners() {
+        synchronized (heartbeatListeners) {
+            this.heartbeatListeners.clear();
+        }
+    }
+
+    public String getDeviceIp() {
+        return CS2ConnectionFactory.getInstance().getDeviceIp();
+    }
+
+    public void getLocomotiveConfigData() {
+        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.requestConfig("loks"));
+    }
+
+    public void requestFeedbackEvents(int contactId) {
+        CanMessage msg = connection.sendCanMessage(CanMessageFactory.feedbackEvent(contactId));
+        Logger.trace(msg.getResponse());
+    }
+
+    private void notifyControllerEventListeners(ControllerEvent event) {
+        Set<ControllerEventListener> snapshot;
+        synchronized (controllerEventListeners) {
+            if (controllerEventListeners.isEmpty()) {
+                snapshot = new HashSet<>();
+            } else {
+                snapshot = new HashSet<>(controllerEventListeners);
+            }
+        }
+
+        for (ControllerEventListener listener : snapshot) {
+            listener.notify(event);
+        }
+    }
+
+    private void notifyFeedbackEventListeners(FeedbackEvent event) {
+        Set<FeedbackEventListener> snapshot;
+        synchronized (feedbackEventListeners) {
+            if (feedbackEventListeners.isEmpty()) {
+                snapshot = new HashSet<>();
+            } else {
+                snapshot = new HashSet<>(feedbackEventListeners);
+            }
+        }
+
+        for (FeedbackEventListener listener : snapshot) {
+            listener.notify(event);
+        }
+    }
+
+    private void wait200ms() {
+        try {
+            Thread.sleep(200L);
+        } catch (InterruptedException ex) {
+            Logger.error(ex);
+        }
+    }
+
+    public void stopHeartbeatTask() {
+        if (timer != null) {
+            timer.purge();
+            timer.cancel();
+            running = false;
+            this.heartbeatListeners.clear();
+            Logger.trace("CS2/3 Heartbeat Task cancelled...");
+        }
+    }
+
+    private class HeartbeatTask extends TimerTask {
+
+        private final CS2Controller controller;
+        private boolean powerOn;
+
+        HeartbeatTask(CS2Controller cs2Controller) {
+            controller = cs2Controller;
+        }
+
+        @Override
+        public void run() {
+            try {
+                boolean power = this.controller.getPowerStatus().isPowerOn();
+                if (power != powerOn) {
+                    powerOn = power;
+                    //Logger.debug("Power Status changed to " + (powerOn ? "On" : "Off"));
+                    ControllerEvent ce = new ControllerEvent(powerOn, this.controller.isConnected());
+                    controller.notifyControllerEventListeners(ce);
+                }
+
+                Set<HeartbeatListener> snapshot;
+                synchronized (controller.heartbeatListeners) {
+                    snapshot = new HashSet<>(controller.heartbeatListeners);
+                }
+
+                for (HeartbeatListener listener : snapshot) {
+                    listener.sample();
+                }
+            } catch (Exception e) {
+                Logger.error(e.getMessage());
+                Logger.trace(e);
+            }
+        }
+    }
+
+    private class ExtraMessageListener implements CanMessageListener {
+
+        private final CS2Controller controller;
+        private final ExecutorService executor;
+
+        ExtraMessageListener(CS2Controller cs2Controller) {
+            controller = cs2Controller;
+            executor = Executors.newCachedThreadPool();
+        }
+
+        @Override
+        public void onCanMessage(CanMessageEvent canEvent) {
+            CanMessage msg = canEvent.getCanMessage();
+            int cmd = msg.getCommand();
+
+            switch (cmd) {
+                case MarklinCan.S88_EVENT_RESPONSE:
+                    FeedbackEventStatus fs = new FeedbackEventStatus(msg);
+                    FeedbackEvent fe = new FeedbackEvent(fs);
+
+                    //Logger.trace(fs);
+                    executor.execute(() -> controller.notifyFeedbackEventListeners(fe));
+                    break;
+                default:
+                    //Logger.trace("Message: " + msg);
+                    break;
+            }
+        }
+    }
+
+    private static void pause(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Logger.error(ex);
+        }
+    }
+
+    public static void main(String[] a) {
+        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
+        CS2Controller cs2 = new CS2Controller();
+
+        if (cs2.isConnected()) {
+            cs2.powerOn();
+            pause(5);
+        }
+        //for (int i = 0; i < 16; i++) {
+        //    cs2.requestFeedbackEvents(i + 1);
+        //}
+
+    }
 
 }

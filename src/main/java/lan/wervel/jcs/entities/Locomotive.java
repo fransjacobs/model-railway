@@ -42,6 +42,8 @@ public class Locomotive extends ControllableDevice {
   protected Integer vMin;
 
   private static Integer MM_SPEED_STEPS = 14;
+  //(mfx=127 FS)
+  //(MM1/2=27 FS)
 
   public Locomotive() {
     this(null, "Locomotive ?", null, null, DecoderType.MM, Direction.FORWARDS, 0, MM_SPEED_STEPS, null, 0, null, 1, "0", null, Direction.FORWARDS, null, null);

@@ -23,7 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
-import lan.wervel.jcs.controller.ControllerInfo;
+import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.trackservice.TrackService;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import org.pmw.tinylog.Logger;
@@ -48,7 +48,7 @@ public class JCSServer extends Thread {
 
     instance = this;
 
-    ControllerInfo ci = trackService.getControllerInfo();
+    DeviceInfo ci = trackService.getControllerInfo();
     if (ci != null) {
       Logger.info("Controller: " + ci.getDescription() + " " + ci.getCatalogNumber() + " Serial: " + ci.getSerialNumber());
     }

@@ -23,7 +23,7 @@ package lan.wervel.jcs.feedback;
  *
  * @author Frans Jacobs
  */
-public interface FeedbackSampleListener {
+public interface HeartbeatListener {
 
   void sample();
 

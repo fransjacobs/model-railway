@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.controller.cs2.net;
 
+import java.net.InetAddress;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 
@@ -27,16 +28,18 @@ import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
  */
 public interface Connection extends AutoCloseable {
 
-  static final int MAX_ERRORS = 15;
+    static final int MAX_ERRORS = 15;
 
-  static final int CS2_TX_PORT = 15730;
+    static final int CS2_TX_PORT = 15730;
 
-  static final int CS2_RX_PORT = 15731;
+    static final int CS2_RX_PORT = 15731;
 
-  CanMessage sendCanMessage(CanMessage message);
+    CanMessage sendCanMessage(CanMessage message);
 
-  void addCanMessageListener(CanMessageListener listener);
+    void addCanMessageListener(CanMessageListener listener);
 
-  void removeCanMessageListener(CanMessageListener listener);
+    void removeCanMessageListener(CanMessageListener listener);
+
+    InetAddress getCs2Address();
 
 }

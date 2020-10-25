@@ -20,7 +20,9 @@ package lan.wervel.jcs.trackservice;
 
 import java.math.BigDecimal;
 import java.util.List;
-import lan.wervel.jcs.controller.ControllerInfo;
+import lan.wervel.jcs.controller.ControllerEventListener;
+import lan.wervel.jcs.controller.cs2.DeviceInfo;
+import lan.wervel.jcs.controller.cs2.PowerStatus;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.JCSProperty;
@@ -138,7 +140,11 @@ public interface TrackService {
     //Generic remove for Loco/accessory/feedback
     void remove(ControllableDevice entity);
 
-    ControllerInfo getControllerInfo();
+    DeviceInfo getControllerInfo();
+    
+    void addControllerListener(ControllerEventListener listener);
+
+    void removeControllerListener(ControllerEventListener listener);
 
     List<JCSProperty> getProperties();
 

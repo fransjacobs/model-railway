@@ -47,7 +47,7 @@ public class JCSPropertiesDAOTest {
 
         JCSProperty p0 = new JCSProperty("S88-demo", "lan.wervel.jcs.feedback.DemoFeedbackService");
         JCSProperty p1 = new JCSProperty("S88-remote", "FeedbackService");
-        JCSProperty p2 = new JCSProperty("S88-CS2", "lan.wervel.jcs.feedback.cs2.CS2FeedbackService");
+        JCSProperty p2 = new JCSProperty("S88-CS2", "lan.wervel.jcs.controller.cs2.CS2Controller");
         JCSProperty p3 = new JCSProperty("activeFeedbackService", "CS2FeedbackService");
 
         JCSProperty p4 = new JCSProperty("M6050-remote", "ControllerService");

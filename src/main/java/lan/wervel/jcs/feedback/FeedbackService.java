@@ -41,10 +41,10 @@ public interface FeedbackService {
 
     void removeAllFeedbackEventListeners();
 
-    void addFeedbackSampleListener(FeedbackSampleListener listener);
+    void addHeartbeatListener(HeartbeatListener listener);
 
-    void removeFeedbackSampleListener(FeedbackSampleListener listener);
+    void removeHeartbeatListener(HeartbeatListener listener);
 
-    void removeAllFeedbackSampleListeners();
+    void removeAllHeartbeatListeners();
 
 }

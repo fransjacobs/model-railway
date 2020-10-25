@@ -55,7 +55,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import lan.wervel.jcs.JCSGUI;
-import lan.wervel.jcs.controller.ControllerInfo;
+import lan.wervel.jcs.controller.ControllerEvent;
+import lan.wervel.jcs.controller.ControllerEventListener;
+import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.ui.options.OptionDialog;
@@ -66,7 +68,7 @@ import org.pmw.tinylog.Logger;
  *
  * @author frans
  */
-public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
+public class JCSFrame extends JFrame implements UICallback {
 
     private final Map<KeyStroke, Action> actionMap;
     //private boolean powerOn = true;
@@ -110,7 +112,6 @@ public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
 
     @SuppressWarnings("Convert2Lambda")
     private void init() {
-        //Netbeans UI Builder...
         if (TrackServiceFactory.getTrackService() != null) {
             this.setTitle(this.getTitleString());
             this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
@@ -120,8 +121,12 @@ public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
                 JCSGUI.showTouchbar(this);
             }
 
-            //Listener for also used to check whether the UI is connected
-            TrackServiceFactory.getTrackService().addHeartBeatListener(this);
+            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
+            TrackServiceFactory.getTrackService().addControllerListener(new ControllerListener(this));
+
+            boolean powerOn = TrackServiceFactory.getTrackService().isPowerOn();
+            this.setPowerStatus(powerOn, true);
+
             checkTimer = new Timer(1000, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
@@ -193,12 +198,10 @@ public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
     public void showDesignLayoutPanel() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "designPanel");
-//        this.designPanel.loadLayout();
     }
 
     public void stop() {
         TrackServiceFactory.getTrackService().powerOff();
-        powerBtn.setIcon(new ImageIcon(getClass().getResource("/media/power-red-24.png")));
     }
 
     /**
@@ -615,7 +618,6 @@ public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
   private void powerBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerBtnActionPerformed
       Logger.trace(evt.getActionCommand());
       TrackServiceFactory.getTrackService().powerOn();
-      powerBtn.setIcon(new ImageIcon(getClass().getResource("/media/power-green-24.png")));
   }//GEN-LAST:event_powerBtnActionPerformed
 
   private void synchronizeAccessoriesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeAccessoriesBtnActionPerformed
@@ -634,26 +636,26 @@ public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
         String jcsVersion = JCSGUI.getVersionInfo().getVersion();
         if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerInfo() != null) {
 
-            ControllerInfo si = TrackServiceFactory.getTrackService().getControllerInfo();
-            String host = si.getIp();
+            DeviceInfo si = TrackServiceFactory.getTrackService().getControllerInfo();
+            //String host = si.getIp();
             String description = si.getDescription();
             String catalogNumber = si.getCatalogNumber();
             String serialNumber = si.getSerialNumber();
-            String cs2IpAddress = si.getIp();
-            return "JCS " + jcsVersion + " - Connected to CS 2/3 @ " + cs2IpAddress + " - " + description + " - " + catalogNumber + " sn: " + serialNumber;
+            //String cs2IpAddress = si.getIp();
+            //return "JCS " + jcsVersion + " - Connected to CS 2/3 @ " + cs2IpAddress + " - " + description + " - " + catalogNumber + " sn: " + serialNumber;
+            return "JCS " + jcsVersion + " - Connected to CS 2/3 @ " + description + " - " + catalogNumber + " sn: " + serialNumber;
         } else {
             return "JCS " + jcsVersion + " - NOT Connected!";
         }
     }
 
-    public void refresh() {
-        List<Refreshable> refreshables = JCSGUI.getRefreshables();
-
-        for (Refreshable refreshable : refreshables) {
-            refreshable.refresh();
-        }
-    }
-
+//    public void refresh() {
+//        List<Refreshable> refreshables = JCSGUI.getRefreshables();
+//
+//        for (Refreshable refreshable : refreshables) {
+//            refreshable.refresh();
+//        }
+//    }
     @Override
     public void openFiles(List<File> files) {
         Logger.debug("Open Files...");
@@ -679,8 +681,19 @@ public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
         preferencesDialog.setVisible(true);
     }
 
-    @Override
-    public void toggle() {
+    private void setPowerStatus(boolean powerOn, boolean controllerConnected) {
+
+        if (powerOn) {
+            powerBtn.setIcon(new ImageIcon(getClass().getResource("/media/power-green-24.png")));
+        } else {
+            powerBtn.setIcon(new ImageIcon(getClass().getResource("/media/power-red-24.png")));
+        }
+
+        powerBtn.setEnabled(controllerConnected);
+        stopBtn.setEnabled(controllerConnected);
+    }
+
+    private void toggle() {
         lastUpdatedMillis = System.currentTimeMillis();
         blinkToggle = !blinkToggle;
 
@@ -688,6 +701,35 @@ public class JCSFrame extends JFrame implements UICallback, HeartBeatListener {
             this.blinkLbl.setIcon(blinkOnIcon);
         } else {
             this.blinkLbl.setIcon(blinkOnIcon2);
+        }
+    }
+
+    private class ControllerListener implements ControllerEventListener {
+
+        private final JCSFrame jcsFrame;
+
+        ControllerListener(JCSFrame frame) {
+            jcsFrame = frame;
+        }
+
+        @Override
+        public void notify(ControllerEvent event) {
+            jcsFrame.setPowerStatus(event.isPowerOn(), event.isConnected());
+            Logger.trace(event);
+        }
+    }
+
+    private class HeartBeat implements HeartBeatListener {
+
+        private final JCSFrame jcsFrame;
+
+        HeartBeat(JCSFrame frame) {
+            jcsFrame = frame;
+        }
+
+        @Override
+        public void toggle() {
+            this.jcsFrame.toggle();
         }
     }
 

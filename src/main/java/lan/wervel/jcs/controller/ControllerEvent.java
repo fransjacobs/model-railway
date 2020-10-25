@@ -26,63 +26,63 @@ import java.io.Serializable;
  */
 public class ControllerEvent implements Serializable {
 
-  private boolean powerOn;
-  private boolean connected;
+    private boolean powerOn;
+    private boolean connected;
 
-  public ControllerEvent() {
-    this(false, false);
-  }
-
-  public ControllerEvent(boolean powerOn, boolean connected) {
-    this.powerOn = powerOn;
-    this.connected = connected;
-  }
-
-  public boolean isPowerOn() {
-    return powerOn;
-  }
-
-  public void setPowerOn(boolean powerOn) {
-    this.powerOn = powerOn;
-  }
-
-  public boolean isConnected() {
-    return connected;
-  }
-
-  public void setConnected(boolean connected) {
-    this.connected = connected;
-  }
-
-  @Override
-  public int hashCode() {
-    int hash = 7;
-    hash = 73 * hash + (this.powerOn ? 1 : 0);
-    hash = 73 * hash + (this.connected ? 1 : 0);
-    return hash;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    public ControllerEvent() {
+        this(false, false);
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final ControllerEvent other = (ControllerEvent) obj;
-    if (this.powerOn != other.powerOn) {
-      return false;
-    }
-    return this.connected == other.connected;
-  }
 
-  @Override
-  public String toString() {
-    return "{ Power: " + (powerOn ? "On" : "Off") + "; Connected: " + (connected ? "Yes" : "No") + "}";
-  }
+    public ControllerEvent(boolean powerOn, boolean connected) {
+        this.powerOn = powerOn;
+        this.connected = connected;
+    }
+
+    public boolean isPowerOn() {
+        return powerOn;
+    }
+
+    public void setPowerOn(boolean powerOn) {
+        this.powerOn = powerOn;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + (this.powerOn ? 1 : 0);
+        hash = 73 * hash + (this.connected ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ControllerEvent other = (ControllerEvent) obj;
+        if (this.powerOn != other.powerOn) {
+            return false;
+        }
+        return this.connected == other.connected;
+    }
+
+    @Override
+    public String toString() {
+        return "{ Power: " + (powerOn ? "On" : "Off") + "; Connected: " + (connected ? "Yes" : "No") + "}";
+    }
 
 }

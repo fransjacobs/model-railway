@@ -28,10 +28,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
-import lan.wervel.jcs.controller.cs2.can.CanMessageFactory;
 import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
-import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
 
 /**
@@ -111,21 +109,9 @@ class UDPConnection implements Connection {
         this.executor.shutdown();
     }
 
-    public static void main(String[] a) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        try {
-            InetAddress cs2Address = InetAddress.getByName("255.255.255.255");
-            //InetAddress cs2Address = InetAddress.getByName("192.168.1.127");
-
-            UDPConnection udpc = new UDPConnection(cs2Address);
-            udpc.sendCanMessage(CanMessageFactory.getPingRequest());
-
-            udpc.close();
-
-        } catch (Exception ex) {
-            Logger.error(ex);
-        }
-
+    @Override
+    public InetAddress getCs2Address() {
+        return cs2Address;
     }
 
 }

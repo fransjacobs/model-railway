@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.controller;
+package lan.wervel.jcs.controller.cs2;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,22 +28,20 @@ import lan.wervel.jcs.controller.cs2.can.CanMessage;
  *
  * @author Frans Jacobs
  */
-public class ControllerInfo implements Serializable {
+public class DeviceInfo implements Serializable {
 
-    public String serialNumber;
-    public String catalogNumber;
-    public String description;
-    public String ip;
+    private String serialNumber;
+    private String catalogNumber;
+    private String description;
+    private String deviceHostName;
 
-    public final int maxFunctions;
+    private final int maxFunctions;
     private final boolean supportMM;
     private final boolean supportMFX;
     private final boolean supportDCC;
     private final boolean supportSX1;
 
-    public int uid;
-
-    public ControllerInfo(CanMessage statusRequest) {
+    public DeviceInfo(CanMessage statusRequest) {
         parseMessage(statusRequest);
         this.maxFunctions = 32;
         this.supportDCC = true;
@@ -52,7 +50,7 @@ public class ControllerInfo implements Serializable {
         this.supportSX1 = true;
     }
 
-    public ControllerInfo(String serialNumber, String catalogNumber, String description, int maxFunctions, boolean supportMM, boolean supportMFX, boolean supportDCC, boolean supportSX1) {
+    public DeviceInfo(String serialNumber, String catalogNumber, String description, int maxFunctions, boolean supportMM, boolean supportMFX, boolean supportDCC, boolean supportSX1) {
         this.serialNumber = serialNumber;
         this.catalogNumber = catalogNumber;
         this.description = description;
@@ -65,40 +63,39 @@ public class ControllerInfo implements Serializable {
     }
 
     private void parseMessage(CanMessage statusRequest) {
-        //First byte holde the serial
-        int[] data1 = statusRequest.getResponse(0).getData();
-        int[] sn = new int[2];
-        System.arraycopy(data1, 6, sn, 0, sn.length);
+        //First byte holds the serial
+        List<CanMessage> rl = statusRequest.getResponses();
+        if (!rl.isEmpty()) {
+            CanMessage r0 = rl.get(0);
 
-        int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
-        this.serialNumber = serial + "";
+            int[] data1 = r0.getData();
+            int[] sn = new int[2];
+            System.arraycopy(data1, 6, sn, 0, sn.length);
 
-        if (statusRequest.getResponses().size() > 1) {
-            //Second holds the catalog numer is asci
-            byte[] data2 = statusRequest.getResponse(1).getDataBytes();
-            //catalogNumber = Base64.getEncoder().encodeToString(data2);
-            catalogNumber = dataToString(data2);
+            int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
+            this.serialNumber = serial + "";
+
+            if (rl.size() > 1) {
+                //Second holds the catalog numer is asci
+                byte[] data2 = rl.get(1).getDataBytes();
+                catalogNumber = dataToString(data2);
+            }
+
+            if (rl.size() > 2) {
+                //Third is description
+                byte[] data3 = rl.get(2).getDataBytes();
+                description = dataToString(data3);
+            }
+
+            if (rl.size() > 3) {
+                //Fourth is description
+                byte[] data4 = rl.get(3).getDataBytes();
+                description = description + dataToString(data4);
+            }
         }
-
-        if (statusRequest.getResponses().size() > 2) {
-            //Third is description
-            byte[] data3 = statusRequest.getResponse(2).getDataBytes();
-            //description = Base64.getEncoder().encodeToString(data3);
-            description = dataToString(data3);
-        }
-
-        if (statusRequest.getResponses().size() > 3) {
-            //Fourth is description
-            byte[] data4 = statusRequest.getResponse(3).getDataBytes();
-            //description = description + Base64.getEncoder().encodeToString(data4);
-            description = description + dataToString(data4);
-        }
-        //uid is in the request
-        uid = statusRequest.getUidInt();
     }
 
     private static String dataToString(byte[] data) {
-        //filter out 0 bytes
         List<Byte> bl = new ArrayList<>();
         for (int i = 0; i < data.length; i++) {
             if (data[i] > 0) {
@@ -136,22 +133,6 @@ public class ControllerInfo implements Serializable {
         this.description = description;
     }
 
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public int getUid() {
-        return uid;
-    }
-
-    public void setUid(int uid) {
-        this.uid = uid;
-    }
-
     public int getMaxFunctions() {
         return maxFunctions;
     }
@@ -172,9 +153,17 @@ public class ControllerInfo implements Serializable {
         return supportSX1;
     }
 
+    public String getDeviceHostName() {
+        return deviceHostName;
+    }
+
+    public void setDeviceHostName(String deviceHostName) {
+        this.deviceHostName = deviceHostName;
+    }
+
     @Override
     public String toString() {
-        return "ControllerInfo{" + "serialNumber=" + serialNumber + ", catalogNumber=" + catalogNumber + ", description=" + description + ", uid=" + uid + ", ip: " + ip + '}';
+        return "DeviceInfo{" + "serialNumber=" + serialNumber + ", catalogNumber=" + catalogNumber + ", description=" + description + '}';
     }
 
     @Override
@@ -183,13 +172,11 @@ public class ControllerInfo implements Serializable {
         hash = 29 * hash + Objects.hashCode(this.serialNumber);
         hash = 29 * hash + Objects.hashCode(this.catalogNumber);
         hash = 29 * hash + Objects.hashCode(this.description);
-        hash = 29 * hash + Objects.hashCode(this.ip);
         hash = 29 * hash + this.maxFunctions;
         hash = 29 * hash + (this.supportMM ? 1 : 0);
         hash = 29 * hash + (this.supportMFX ? 1 : 0);
         hash = 29 * hash + (this.supportDCC ? 1 : 0);
         hash = 29 * hash + (this.supportSX1 ? 1 : 0);
-        hash = 29 * hash + this.uid;
         return hash;
     }
 
@@ -204,7 +191,7 @@ public class ControllerInfo implements Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final ControllerInfo other = (ControllerInfo) obj;
+        final DeviceInfo other = (DeviceInfo) obj;
         if (this.maxFunctions != other.maxFunctions) {
             return false;
         }
@@ -220,19 +207,13 @@ public class ControllerInfo implements Serializable {
         if (this.supportSX1 != other.supportSX1) {
             return false;
         }
-        if (this.uid != other.uid) {
-            return false;
-        }
         if (!Objects.equals(this.serialNumber, other.serialNumber)) {
             return false;
         }
         if (!Objects.equals(this.catalogNumber, other.catalogNumber)) {
             return false;
         }
-        if (!Objects.equals(this.description, other.description)) {
-            return false;
-        }
-        return Objects.equals(this.ip, other.ip);
+        return Objects.equals(this.description, other.description);
     }
 
 }

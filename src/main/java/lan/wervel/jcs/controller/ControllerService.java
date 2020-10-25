@@ -18,6 +18,8 @@
  */
 package lan.wervel.jcs.controller;
 
+import lan.wervel.jcs.controller.cs2.DeviceInfo;
+import lan.wervel.jcs.controller.cs2.PowerStatus;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
@@ -26,9 +28,9 @@ public interface ControllerService {
 
     static final String SERVICE_TYPE = "ControllerService";
 
-    void powerOff();
+    PowerStatus powerOff();
 
-    void powerOn();
+    PowerStatus powerOn();
 
     boolean isPowerOn();
 
@@ -64,6 +66,6 @@ public interface ControllerService {
 
     void notifyAllControllerEventListeners();
 
-    ControllerInfo getControllerInfo();
+    DeviceInfo getControllerInfo();
 
 }

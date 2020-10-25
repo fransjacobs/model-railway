@@ -23,10 +23,6 @@ package lan.wervel.jcs.controller.cs2.can;
  *
  * @see http://medienpdb.maerklin.de/digital22008/files/cs2CAN-Protokoll-2_0.pdf
  *
- * Credits to: - https://www.jmri.org -
- * https://github.com/palaziv/Maerklin-Controlling-Framework
- *
- * @author Frans Jacobs
  */
 public interface MarklinCan {
 
@@ -36,16 +32,17 @@ public interface MarklinCan {
     public final static int PRIO_3 = 0x02;  // Priority 3: Engine Stop
     public final static int PRIO_4 = 0x03;  // Priority 4: Engine/acessory command
 
-    public final static int HASHBYTE1 = 0x47;
-    public final static int HASHBYTE2 = 0x11;
+//    public final static int HASHBYTE1 = 0x47;
+//    public final static int HASHBYTE2 = 0x11;
 
-    public static final int[] HASH = new int[]{0x47, 0x11};
-    public static final int[] HASH1 = new int[]{0x03, 0x00};
-    public static final int[] HASH2 = new int[]{0x73, 0x37};
-    public static final int[] HASH3 = new int[]{0xcb, 0x13};
+//    
+//    public static final int[] HASH1 = new int[]{0x03, 0x00};
+//    public static final int[] HASH2 = new int[]{0x73, 0x37};
+//    public static final int[] HASH3 = new int[]{0xcb, 0x13};
 
-    //public final int[] EMPTY_DATA = new int[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     public final static int SYSTEM_COMMAND = 0x00;
+    public final static int SYSTEM_COMMAND_RESPONSE = 0x01;
+    public static final int STOP_AND_GO_QUERY_DLC = 0x04;
     public static final int STOP_AND_GO_DLC = 0x05;
 
     public static final int STOP_SUBCMD = 0x00;
@@ -91,13 +88,23 @@ public interface MarklinCan {
     public final static int S88_POLLING = 0x20;
 
     public final static int S88_EVENT = 0x22;
+    public final static int S88_EVENT_QUERY_DLC = 0x04;
+    public final static int S88_EVENT_QUERY_PIN_DLC = 0x05;
+    public final static int S88_EVENT_QUERY_BLOCK_DLC = 0x07;
     public final static int S88_EVENT_RESPONSE = 0x23;
+    
+    public final static int PARAM_PIN_RESET = 0x00;
+    public final static int PARAM_PIN_READ = 0x01;
+    public final static int PARAM_PIN_COUNT_RESET = 0xFE;
+    public final static int S88_EVENT_PARAM_IDX = 6;
 
     public final static int SX1_EVENT = 0x24;
 
     public final static int SW_STATUS_REQ = 0x30;
-    // after debugging using the Marklin phone app it appears the the command is 0x31...
+    
+    // after debugging using the Marklin phone app it appears that the command is 0x31...
     public final static int REQ_PING = 0x31;
+    
     public static final int REQ_PING_DLC = 0x08;
 
     public final static int UPDATE_OFFER = 0x32;
@@ -150,11 +157,13 @@ public interface MarklinCan {
     public static final int SYSTEM_RAIL_UNLOCK_DLC = 0x06;
 
     //The UID of the phone app for disovery
-    public static final int[] DEVICE_UID = new int[]{0x4f, 0x59, 0x10, 0xdf};
+    public static final int[] MOBILE_APP_UID = new int[]{0x4f, 0x59, 0x10, 0xdf};
     //Wireless device
-    public static final int[] DEVICE_IDENTIFIER = new int[]{0xee, 0xee};
+    public static final int[] WIRELESS_DEVICE_ID = new int[]{0xee, 0xee};
     //Mobile app version 1.4.2
-    public static final int[] VERSION = new int[]{0x01, 0x04};
+    public static final int[] APP_VERSION = new int[]{0x01, 0x04};
+    //HASH send by mobile APP
+    public static final int[] MOBILE_APP_HASH = new int[]{0x47, 0x11};
 
 //  public static final int DIRECTION_SAME = 0x00;
 //  public static final int DIRECTION_FORWARDS = 0x01;

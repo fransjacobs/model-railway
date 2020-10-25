@@ -328,7 +328,7 @@ public class DatabaseCreator {
 
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-demo','lan.wervel.jcs.feedback.DemoFeedbackService')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-remote','FeedbackService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','lan.wervel.jcs.feedback.cs2.CS2FeedbackService')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','lan.wervel.jcs.controller.cs2.CS2Controller')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeFeedbackService','CS2FeedbackService')");
 
         //Supported Controllers

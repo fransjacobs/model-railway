@@ -44,7 +44,9 @@ public class CanMessageEvent implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("CanMessageEvent{message: ").append(message);
-        sb.append(", from: ").append(sourceAddress);
+        if(sourceAddress != null) {
+          sb.append(", from: ").append(sourceAddress.getHostAddress());
+        }
         sb.append('}');
         return sb.toString();
     }
