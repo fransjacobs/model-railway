@@ -268,7 +268,7 @@ public class CanMessageTest {
 
     int[] h = instance.generateHash();
     
-    String hb = instance.toString(h);
+    String hb = instance.toHexString(h);
     
     System.out.println("generateHash-> hash: " + hash + " generatedHash: " + generatedHash+" Hash Bytes: "+hb);
 

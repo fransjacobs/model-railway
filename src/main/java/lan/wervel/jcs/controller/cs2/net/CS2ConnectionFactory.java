@@ -77,7 +77,7 @@ public class CS2ConnectionFactory {
             InetAddress localAddress = InetAddress.getByName("0.0.0.0");
             InetAddress broadcastAddress = InetAddress.getByName(BROADCAST_ADDRESS);
 
-            CanMessage ping = CanMessageFactory.getPingRequest();
+            CanMessage ping = CanMessageFactory.getMobileAppPingRequest();
 
             try (DatagramSocket requestSocket = new DatagramSocket()) {
                 DatagramPacket requestPacket = new DatagramPacket(ping.getBytes(), ping.getLength(), broadcastAddress, Connection.CS2_RX_PORT);

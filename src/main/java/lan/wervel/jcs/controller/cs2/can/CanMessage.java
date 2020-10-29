@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.controller.cs2.can;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * CS 2 CAN message.
  */
-public class CanMessage {
+public class CanMessage implements Serializable {
 
     public static final int MESSAGE_SIZE = 13;
 
@@ -34,6 +35,7 @@ public class CanMessage {
 
     private static final int PRIO_IDX = 0;
     private static final int CMD_IDX = 1;
+    private static final int SUB_CMD_IDX = 10;
     private static final int HASH_IDX = 2;
     private static final int DLC_IDX = 4;
     private static final int DATA_IDX = 5;
@@ -150,6 +152,10 @@ public class CanMessage {
         return this.message[CMD_IDX];
     }
 
+    public int getSubCommand() {
+        return this.message[SUB_CMD_IDX];
+    }
+
     public int[] getHash() {
         int[] hash = new int[HASH_SIZE];
         System.arraycopy(message, HASH_IDX, hash, 0, HASH_SIZE);
@@ -240,19 +246,114 @@ public class CanMessage {
         return this.responses.get(0).toString();
     }
 
-    @Override
-    public String toString() {
-        return toString(this.message);
+    public String getMessageName() {
+        int cmd = getCommand();
+        switch (cmd) {
+            case MarklinCan.SYSTEM_COMMAND:
+                int subcmd = this.getSubCommand();
+                switch (subcmd) {
+                    case MarklinCan.STOP_SUBCMD:
+                        int dlc = this.getDlc();
+                        if (dlc == MarklinCan.STOP_AND_GO_QUERY_DLC) {
+                            return "Power Status";
+                        } else {
+                            return "Stop";
+                        }
+                    case MarklinCan.GO_SUBCMD:
+                        return "Go";
+                    case MarklinCan.SYSTEM_SUB_HALT:
+                        return "Halt";
+                    case MarklinCan.SYSTEM_SUB_LOC_EMERGENCY_STOP:
+                        return "loc emergency stop";
+                    case MarklinCan.SYSTEM_SUB_LOC_CYCLE_STOP:
+                        return "loc cycle stop";
+                    case MarklinCan.SYSTEM_SUB_LOC_PROTOCOL:
+                        return "loc data protocol";
+                    case MarklinCan.SYSTEM_SUB_SWITCH_TIME_ACCESSORY:
+                        return "Accessory switch time";
+                    case MarklinCan.SYSTEM_SUB_MFX_FAST_READ:
+                        return "MFX Fast read";
+                    case MarklinCan.SYSTEM_SUB_UNLOCK_TRACK_PROTOCOL:
+                        return "Unlock Track Protocol";
+                    case MarklinCan.SYSTEM_SUB_MFX_REG_CNT:
+                        return "MFX Reg count";
+                    case MarklinCan.SYSTEM_SUB_SYS_OVERLOAD:
+                        return "System overload";
+                    case MarklinCan.SYSTEM_SUB_SYSTEM_ID:
+                        return "System ID";
+                    case MarklinCan.SYSTEM_SUB_MFX_SEEK:
+                        return "MFX Seek";
+                    case MarklinCan.SYSTEM_SUB_SYSTEM_RESET:
+                        return "System Reset";
+                    default:
+                        return "Unknown " + cmd + ", " + subcmd;
+                }
+            case MarklinCan.LOC_DISCOVERY_COMMAND:
+                return "Loc Discovery";
+            case MarklinCan.MFX_BIND_COMMAND:
+                return "Loc Discovery";
+            case MarklinCan.MFX_VERIFY_COMMAND:
+                return "MFX Verify";
+            case MarklinCan.LOC_SPEED:
+                return "Loc Velocity";
+            case MarklinCan.LOC_DIRECTION:
+                return "Loc Direction";
+            case MarklinCan.LOC_FUNCTION:
+                return "Loc Function";
+            case MarklinCan.READ_CONFIG:
+                return "Read Config";
+            case MarklinCan.WRITE_CONFIG:
+                return "Write Config";
+            case MarklinCan.ACCESSORY_SWITCHING:
+                return "Switch Accessory";
+            case MarklinCan.ACCESSORY_CONFIG:
+                return "Accessory Config";
+            case MarklinCan.S88_EVENT:
+                return "S88 Event";
+            case MarklinCan.S88_EVENT_RESPONSE:
+                return "S88 Event Response";
+            case MarklinCan.SX1_EVENT:
+                return "SX1 Event";
+            case MarklinCan.SW_STATUS_REQ:
+                return "Member Ping";
+            case MarklinCan.REQ_PING:
+                return "Member Ping response";
+            case MarklinCan.UPDATE_OFFER:
+                return "Update offer";
+            case MarklinCan.READ_CONFIG_DATA:
+                return "Read Config data";
+            case MarklinCan.BOOTLOADER_CAN_SERVICE:
+                return "CAN Bootloader";
+            case MarklinCan.BOOTLOADER_TRACK_SERVICE:
+                return "Track Bootloader";
+            case MarklinCan.STATUS_CONFIG:
+                return "Status Config";
+            case MarklinCan.REQUEST_CONFIG_DATA:
+                return "Config data request";
+            case MarklinCan.CONFIG_DATA_STREAM:
+                return "Config data stream";
+            case MarklinCan.CON_60128_DATA_STREAM:
+                return "60128 data stream";
+
+            default:
+                return "Unknown: " + cmd;
+        }
     }
 
-    String toString(int[] bytes) {
+    @Override
+    public String toString() {
+        return toHexString(this.message);
+    }
+
+    public static String toHexString(int[] bytes) {
         if (bytes == null) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < bytes.length; i++) {
-            sb.append(toHexString(bytes[i]));
+            sb.append("0x");
+            sb.append(CanMessage.toHexString(bytes[i]));
             if (i + 1 < bytes.length) {
                 sb.append(" ");
             }
@@ -297,28 +398,6 @@ public class CanMessage {
 
         return ((h[0] & 0xFF) << 8)
                 | ((h[1] & 0xFF));
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 71 * hash + Arrays.hashCode(this.message);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final CanMessage other = (CanMessage) obj;
-        return Arrays.equals(this.message, other.message);
     }
 
     public static int[] to2ByteArray(int value) {

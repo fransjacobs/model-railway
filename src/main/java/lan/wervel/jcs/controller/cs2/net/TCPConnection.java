@@ -102,7 +102,8 @@ class TCPConnection implements Connection {
         try {
             dos.flush();
             dos.write(message.getBytes());
-
+            Logger.trace(message.getMessageName()+" send");
+            
             //Receive first packet
             byte[] data = new byte[1];
             {
@@ -131,11 +132,9 @@ class TCPConnection implements Connection {
                 pause(10);
             }
 
-            //Logger.trace("Send " + message);
-
             //Logger.trace("data len:" + data.length);
             int cmd = message.getCommand();
-            for (int i = 0; i < data.length; i += CanMessage.MESSAGE_SIZE) {
+            for (int i = 0; i <= data.length; i += CanMessage.MESSAGE_SIZE) {
                 //Logger.trace("Index = " + i);
                 byte[] m = new byte[CanMessage.MESSAGE_SIZE];
 

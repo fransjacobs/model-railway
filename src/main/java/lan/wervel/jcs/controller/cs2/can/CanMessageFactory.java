@@ -51,7 +51,31 @@ public class CanMessageFactory implements MarklinCan {
         return data;
     }
 
-    public static CanMessage getPingRequest() {
+    public static CanMessage getMemberPing() {
+        int[] data = getEmptyData();
+
+        CanMessage m = new CanMessage();
+        m.setPriority(PRIO_1);
+        m.setCommand(SW_STATUS_REQ);
+        m.setDlc(SW_STATUS_DLC);
+        m.setData(data);
+
+        return m;
+    }
+
+    public static CanMessage getCanBootloader() {
+        int[] data = getEmptyData();
+
+        CanMessage m = new CanMessage();
+        m.setPriority(PRIO_1);
+        m.setCommand(BOOTLOADER_CAN_SERVICE);
+        m.setDlc(SW_STATUS_DLC);
+        m.setData(data);
+
+        return m;
+    }
+
+    public static CanMessage getMobileAppPingRequest() {
         int[] data = getEmptyData();
 
         System.arraycopy(MarklinCan.MOBILE_APP_UID, 0, data, 0, MOBILE_APP_UID.length);
@@ -200,6 +224,30 @@ public class CanMessageFactory implements MarklinCan {
         return cm;
     }
 
+//    start of day
+//             if( wDigInt.getprotver( data->ini ) >= 2 && (data->sensorend - data->sensorbegin) > 0 ) {
+//    if(data->sensorbegin < data->sod_sensorbegin || data->sensorend > data->sod_sensorend) {
+//      byte*  msg   = allocMem(32);
+//      msg[0] = (CMD_ACC_SENSOR >> 7);
+//      msg[1]  = ((CMD_ACC_SENSOR & 0x7F) << 1 );
+//      msg[2]  = (rrHash / 256) & 0xFF;
+//      msg[3]  = (rrHash % 256) & 0xFF;
+//      msg[4]  = 7;
+//      msg[5]  = wMCS2.getfbdevid(data->mcs2ini) / 256; /* Geraetekenner */
+//      msg[6]  = wMCS2.getfbdevid(data->mcs2ini) % 256;
+//      msg[7]  = (data->sensorbegin & 0xFF00) >> 8; /* Kontaktkennung Start */
+//      msg[8]  = (data->sensorbegin & 0x00FF);
+//      msg[9]  = (data->sensorend & 0xFF00) >> 8; /* Kontaktkennung Ende */
+//      msg[10] = (data->sensorend & 0x00FF);
+//      msg[11] = 0xFF; /* Broadcast ein */
+//      msg[12] = 0;
+//      TraceOp.trc( name, TRCLEVEL_MONITOR, __LINE__, 9999, "Query sensors from %d to %d for version >= 2...", data->sensorbegin, data->sensorend );
+//      ThreadOp.post( data->writer, (obj)msg );
+//
+//      data->sod_sensorbegin = data->sensorbegin;
+//      data->sod_sensorend   = data->sensorend;
+//    }
+//  }
     //loc discovery
     //00 01 03 00 00 00 00 00 00 00 00 00 00
     //00 23 CB 12 08 00 00 00 11 00 01 00 16
@@ -218,7 +266,7 @@ public class CanMessageFactory implements MarklinCan {
     //﻿\00;\03\01\08\04\02\00\00\00\004 \00;\03\02\0860214\00\00\00\00;\03\03\08Central \00;\03\04\08Station 
     //sn 13344 sw 1.4.2
     public static void main(String[] a) {
-        System.out.println("ping : " + getPingRequest());
+        System.out.println("ping : " + getMobileAppPingRequest());
         System.out.println("stop : " + stop());
         System.out.println("go   : " + go());
         System.out.println("statusconfig   : " + statusConfig(null));

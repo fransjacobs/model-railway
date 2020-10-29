@@ -101,6 +101,7 @@ public interface MarklinCan {
 
     public final static int SX1_EVENT = 0x24;
 
+    public final static int SW_STATUS_DLC = 0x00;
     public final static int SW_STATUS_REQ = 0x30;
     
     // after debugging using the Marklin phone app it appears that the command is 0x31...

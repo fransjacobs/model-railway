@@ -124,6 +124,14 @@ public class CS2Controller implements ControllerService, FeedbackService {
         }
 
         if (connected) {
+            //Send a ping to see what is there...
+            List<PingResponse> prl = membersPing();
+
+            Logger.trace("got " + prl.size() + " responses");
+            for (PingResponse pr : prl) {
+                Logger.debug(pr);
+            }
+
             //query the power status which will tell us whether the trackpower is on or off and alse the UID of the CS2/3
             PowerStatus ps = getPowerStatus();
             this.deviceUid = ps.getDeviceUid();
@@ -310,6 +318,18 @@ public class CS2Controller implements ControllerService, FeedbackService {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public List<PingResponse> membersPing() {
+        CanMessage msg = connection.sendCanMessage(CanMessageFactory.getMemberPing());
+        List<CanMessage> rl = msg.getResponses();
+        List<PingResponse> prl = new ArrayList<>();
+        for (CanMessage resp : rl) {
+            PingResponse pr = new PingResponse(resp);
+            prl.add(pr);
+        }
+
+        return prl;
+    }
+
     @Override
     public DeviceInfo getControllerInfo() {
         if (deviceInfo == null) {
@@ -453,6 +473,7 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
         private final CS2Controller controller;
         private boolean powerOn;
+        private boolean toggle = false;
 
         HeartbeatTask(CS2Controller cs2Controller) {
             controller = cs2Controller;
@@ -461,12 +482,16 @@ public class CS2Controller implements ControllerService, FeedbackService {
         @Override
         public void run() {
             try {
-                boolean power = this.controller.getPowerStatus().isPowerOn();
-                if (power != powerOn) {
-                    powerOn = power;
-                    //Logger.debug("Power Status changed to " + (powerOn ? "On" : "Off"));
-                    ControllerEvent ce = new ControllerEvent(powerOn, this.controller.isConnected());
-                    controller.notifyControllerEventListeners(ce);
+                if (toggle) {
+                    boolean power = this.controller.getPowerStatus().isPowerOn();
+                    if (power != powerOn) {
+                        powerOn = power;
+                        //Logger.debug("Power Status changed to " + (powerOn ? "On" : "Off"));
+                        ControllerEvent ce = new ControllerEvent(powerOn, this.controller.isConnected());
+                        controller.notifyControllerEventListeners(ce);
+                    }
+                } else {
+                    List<PingResponse> prl = membersPing();
                 }
 
                 Set<HeartbeatListener> snapshot;
@@ -477,6 +502,7 @@ public class CS2Controller implements ControllerService, FeedbackService {
                 for (HeartbeatListener listener : snapshot) {
                     listener.sample();
                 }
+                toggle = !toggle;
             } catch (Exception e) {
                 Logger.error(e.getMessage());
                 Logger.trace(e);
@@ -524,21 +550,29 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
     public static void main(String[] a) {
         Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        CS2Controller cs2 = new CS2Controller(false);
+        CS2Controller cs2 = new CS2Controller(true);
 
         if (cs2.isConnected()) {
             //cs2.powerOn();
 
-            Logger.info("Query direction of loc 12");
-            DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
-            Logger.debug(info);
-            
-            pause(5);
+//            Logger.debug("Sending  member ping\n");
+//            List<PingResponse> prl = cs2.membersPing();
+//            //Logger.info("Query direction of loc 12");
+//            //DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
+//            Logger.debug("got " + prl.size() + " responses");
+//            for (PingResponse pr : prl) {
+//                Logger.debug(pr);
+//            }
         }
-        //for (int i = 0; i < 16; i++) {
-        //    cs2.requestFeedbackEvents(i + 1);
-        //}
 
+        //PingResponse pr2 = cs2.memberPing();
+        //Logger.info("Query direction of loc 12");
+        //DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
+        // Logger.debug(pr2);
+        pause(5);
     }
+    //for (int i = 0; i < 16; i++) {
+    //    cs2.requestFeedbackEvents(i + 1);
+    //}
 
 }
