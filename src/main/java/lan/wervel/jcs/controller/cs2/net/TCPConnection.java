@@ -102,8 +102,11 @@ class TCPConnection implements Connection {
         try {
             dos.flush();
             dos.write(message.getBytes());
-            Logger.trace(message.getMessageName()+" send");
-            
+            Logger.trace(message.getMessageName() + " send");
+
+            //CanMessageEvent sendEvent = new CanMessageEvent(message, this.cs2Address);
+            //executor.execute(() -> fireMessageListeners(sendEvent));
+
             //Receive first packet
             byte[] data = new byte[1];
             {
@@ -114,7 +117,7 @@ class TCPConnection implements Connection {
                 data[0] = (byte) currByte;
             }
 
-            List<CanMessage> responseMessages = new ArrayList<>();
+            //List<CanMessage> responseMessages = new ArrayList<>();
             while (din.available() > 0) {
                 byte[] tempHolder = new byte[1024];
                 int bytesRead = din.read(tempHolder);
@@ -132,6 +135,8 @@ class TCPConnection implements Connection {
                 pause(10);
             }
 
+            InetAddress replyAddress = socket.getInetAddress();
+
             //Logger.trace("data len:" + data.length);
             int cmd = message.getCommand();
             for (int i = 0; i <= data.length; i += CanMessage.MESSAGE_SIZE) {
@@ -141,29 +146,32 @@ class TCPConnection implements Connection {
                 if (data.length >= i + m.length) {
                     System.arraycopy(data, i, m, 0, m.length);
                     CanMessage cm = new CanMessage(m);
+
+                    CanMessageEvent replyEvent = new CanMessageEvent(cm, replyAddress);
+                    executor.execute(() -> fireMessageListeners(replyEvent));
+
                     if (cm.getCommand() == cmd + 1) {
                         message.addResponse(cm);
+
                         //Logger.trace("Got reply for: " + message + " -> " + cm);
-                    } else {
-                        responseMessages.add(cm);
-                        //Logger.trace(cm);
                     }
+//                    else {
+//                        responseMessages.add(cm);
+//                        //Logger.trace(cm);
+//                    }
                 }
             }
 
             //Logger.trace("Received " + message.getResponses().size() + " responses");
-            if (!responseMessages.isEmpty()) {
-                //Logger.trace("received " + responseMessages.size());
-                InetAddress replyAddress = socket.getInetAddress();
-
-                for (CanMessage cm : responseMessages) {
-                    CanMessageEvent event = new CanMessageEvent(cm, replyAddress);
-                    executor.execute(() -> fireMessageListeners(event));
-                }
-            } else {
-                //Logger.trace("No extra messages received.");
-            }
-
+//            if (!responseMessages.isEmpty()) {
+//                //Logger.trace("received " + responseMessages.size());
+//                for (CanMessage cm : responseMessages) {
+//                    CanMessageEvent event = new CanMessageEvent(cm, replyAddress);
+//                    executor.execute(() -> fireMessageListeners(event));
+//                }
+//            } else {
+//                //Logger.trace("No extra messages received.");
+//            }
         } catch (SocketTimeoutException ste) {
             Logger.debug("No reply on message " + message + " Error: " + ste.getMessage());
         } catch (IOException e) {

@@ -151,7 +151,8 @@ public class CS2Controller implements ControllerService, FeedbackService {
         // Finally start the harbeat timer which will takes care of the feedback 
         if (startTimer && connected) {
             //Start the timer
-            timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, FeedbackService.DEFAULT_POLL_MILLIS);
+            //timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, FeedbackService.DEFAULT_POLL_MILLIS);
+            timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, 1000);
             this.running = true;
         } else {
             Logger.info("Hearbeat time is NOT started! " + (!connected ? "NOT Connected" : (!startTimer ? "Timer is off" : "")));

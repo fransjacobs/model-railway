@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -33,12 +34,17 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.text.BadLocationException;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
+import lan.wervel.jcs.controller.cs2.can.CanMessage;
+import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
+import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.ui.widgets.FeedbackPanel;
 import lan.wervel.jcs.ui.widgets.LocoPanel;
 import lan.wervel.jcs.ui.widgets.SwitchPanel;
+import org.pmw.tinylog.Logger;
 
 /**
  *
@@ -74,6 +80,12 @@ public class DiagnosticPanel extends JPanel {
             }
 
             TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
+
+            //TrackServiceFactory.getTrackService().addMessageListener(new MessageListener(this));
+//             DefaultCaret caret = (DefaultCaret) this.logArea.getCaret();
+//             caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+            TrackServiceFactory.getTrackService().addMessageListener(new LogTextAreaHandler(this.logArea));
+
         }
     }
 
@@ -83,6 +95,80 @@ public class DiagnosticPanel extends JPanel {
             this.blinkLbl.setIcon(blinkOnIcon);
         } else {
             this.blinkLbl.setIcon(blinkOffIcon);
+        }
+    }
+
+    private class MessageListener implements CanMessageListener {
+
+        private final DiagnosticPanel diagnosticPanel;
+
+        MessageListener(DiagnosticPanel panel) {
+            diagnosticPanel = panel;
+        }
+
+        @Override
+        public void onCanMessage(CanMessageEvent canEvent) {
+            CanMessage msg = canEvent.getCanMessage();
+
+            StringBuilder sb = new StringBuilder();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH24:mm:ss.S");
+            sb.append(sdf.format(canEvent.getEventDate()));
+            sb.append(" ");
+            sb.append(canEvent.getSourceAddress().getHostName());
+            sb.append(" ");
+            sb.append(canEvent.getCanMessage().getMessageName());
+            sb.append(" ");
+            sb.append(canEvent.getCanMessage());
+            sb.append("\n");
+
+            diagnosticPanel.logArea.append(sb.toString());
+
+        }
+
+    }
+
+    private class LogTextAreaHandler implements CanMessageListener {
+
+        private final JTextArea textArea;
+        private int lines = 0;
+        int lineHeight;
+
+        LogTextAreaHandler(JTextArea textArea) {
+            this.textArea = textArea;
+            lineHeight = textArea.getFontMetrics(textArea.getFont()).getHeight();
+        }
+
+        @Override
+        public void onCanMessage(CanMessageEvent canEvent) {
+            CanMessage msg = canEvent.getCanMessage();
+
+            StringBuilder sb = new StringBuilder();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH24:mm:ss.S");
+            sb.append(sdf.format(canEvent.getEventDate()));
+            //sb.append(" [");
+            //sb.append(canEvent.getSourceAddress().getHostName());
+            //sb.append("] ");
+            sb.append(": ");
+            sb.append(canEvent.getCanMessage());
+            sb.append(", ");
+            sb.append(canEvent.getCanMessage().getMessageName());
+            sb.append("\n");
+
+            //if (EventQueue.isDispatchThread()) {
+            //textArea.insert(sb.toString(), 1);
+            //textArea.append(sb.toString());
+            //textArea.setCaretPosition(textArea.getText().length());
+            try {
+                textArea.getDocument().insertString(0, sb.toString(), null);
+                lines += 1;
+
+                //int height = this.lineHeight * lines;
+                int height = 30 * lines;
+                //textArea.setSize(this.textArea.getWidth(), height);
+                textArea.setPreferredSize(new Dimension(this.textArea.getWidth(),height));
+            } catch (BadLocationException e1) {
+                Logger.trace(e1);
+            }
         }
     }
 
@@ -105,7 +191,6 @@ public class DiagnosticPanel extends JPanel {
 //            f.setVisible(true);
 //        });
 //    }
-
     private class HeartBeat implements HeartBeatListener {
 
         private final DiagnosticPanel diagnosticPanel;
@@ -178,7 +263,7 @@ public class DiagnosticPanel extends JPanel {
         switchPanel15 = new SwitchPanel(15);
         switchPanel16 = new SwitchPanel(16);
         logPanel = new JPanel();
-        logSPjScrollPane1 = new JScrollPane();
+        logSP = new JScrollPane();
         logArea = new JTextArea();
         centerRightPanel = new JPanel();
         locoTP = new JTabbedPane();
@@ -415,20 +500,23 @@ public class DiagnosticPanel extends JPanel {
         flowLayout2.setAlignOnBaseline(true);
         logPanel.setLayout(flowLayout2);
 
-        logSPjScrollPane1.setMinimumSize(new Dimension(840, 290));
-        logSPjScrollPane1.setName("logSPjScrollPane1"); // NOI18N
-        logSPjScrollPane1.setPreferredSize(new Dimension(820, 300));
+        logSP.setMinimumSize(new Dimension(850, 300));
+        logSP.setName("logSP"); // NOI18N
+        logSP.setPreferredSize(new Dimension(860, 300));
+        logSP.setRequestFocusEnabled(false);
+        logSP.setViewportView(logArea);
 
-        logArea.setColumns(20);
-        logArea.setRows(15);
+        logArea.setColumns(10);
+        logArea.setRows(10);
         logArea.setDoubleBuffered(true);
         logArea.setEnabled(false);
-        logArea.setMinimumSize(new Dimension(820, 300));
+        logArea.setMaximumSize(new Dimension(2147483647, 290));
+        logArea.setMinimumSize(new Dimension(900, 290));
         logArea.setName("logArea"); // NOI18N
-        logArea.setPreferredSize(new Dimension(800, 290));
-        logSPjScrollPane1.setViewportView(logArea);
+        logArea.setPreferredSize(new Dimension(800, 20));
+        logSP.setViewportView(logArea);
 
-        logPanel.add(logSPjScrollPane1);
+        logPanel.add(logSP);
 
         centerCenterPanel.add(logPanel);
 
@@ -508,7 +596,7 @@ public class DiagnosticPanel extends JPanel {
     private JTabbedPane locoTP;
     private JTextArea logArea;
     private JPanel logPanel;
-    private JScrollPane logSPjScrollPane1;
+    private JScrollPane logSP;
     private SwitchPanel switchPanel1;
     private SwitchPanel switchPanel10;
     private SwitchPanel switchPanel11;

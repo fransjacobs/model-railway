@@ -20,32 +20,43 @@ package lan.wervel.jcs.controller.cs2.events;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.Date;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 
 public class CanMessageEvent implements Serializable {
 
-    private final CanMessage message;
+    private final CanMessage canMessage;
     private final InetAddress sourceAddress;
+    private final Date eventDate;
 
-    public CanMessageEvent(CanMessage message, InetAddress sourceAddress) {
-        this.message = message;
+    public CanMessageEvent(CanMessage canMessage, InetAddress sourceAddress) {
+        this(canMessage, sourceAddress, new Date());
+    }
+
+    public CanMessageEvent(CanMessage canMessage, InetAddress sourceAddress, Date eventDate) {
+        this.canMessage = canMessage;
         this.sourceAddress = sourceAddress;
+        this.eventDate = eventDate;
     }
 
     public CanMessage getCanMessage() {
-        return message;
+        return canMessage;
     }
 
     public InetAddress getSourceAddress() {
         return sourceAddress;
     }
 
+    public Date getEventDate() {
+        return eventDate;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("CanMessageEvent{message: ").append(message);
-        if(sourceAddress != null) {
-          sb.append(", from: ").append(sourceAddress.getHostAddress());
+        sb.append("CanMessageEvent{message: ").append(canMessage);
+        if (sourceAddress != null) {
+            sb.append(", from: ").append(sourceAddress.getHostAddress());
         }
         sb.append('}');
         return sb.toString();

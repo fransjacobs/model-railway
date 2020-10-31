@@ -701,14 +701,21 @@
                 </Property>
               </Properties>
               <SubComponents>
-                <Container class="javax.swing.JScrollPane" name="logSPjScrollPane1">
+                <Container class="javax.swing.JScrollPane" name="logSP">
                   <Properties>
                     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[840, 290]"/>
+                      <Dimension value="[850, 300]"/>
                     </Property>
-                    <Property name="name" type="java.lang.String" value="logSPjScrollPane1" noResource="true"/>
+                    <Property name="name" type="java.lang.String" value="logSP" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[820, 300]"/>
+                      <Dimension value="[860, 300]"/>
+                    </Property>
+                    <Property name="requestFocusEnabled" type="boolean" value="false"/>
+                    <Property name="rowHeaderView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="default"/>
+                    </Property>
+                    <Property name="viewportView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="logArea"/>
                     </Property>
                   </Properties>
                   <AuxValues>
@@ -719,16 +726,19 @@
                   <SubComponents>
                     <Component class="javax.swing.JTextArea" name="logArea">
                       <Properties>
-                        <Property name="columns" type="int" value="20"/>
-                        <Property name="rows" type="int" value="15"/>
+                        <Property name="columns" type="int" value="10"/>
+                        <Property name="rows" type="int" value="10"/>
                         <Property name="doubleBuffered" type="boolean" value="true"/>
                         <Property name="enabled" type="boolean" value="false"/>
+                        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[2147483647, 290]"/>
+                        </Property>
                         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[820, 300]"/>
+                          <Dimension value="[900, 290]"/>
                         </Property>
                         <Property name="name" type="java.lang.String" value="logArea" noResource="true"/>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[800, 290]"/>
+                          <Dimension value="[800, 20]"/>
                         </Property>
                       </Properties>
                     </Component>
@@ -794,11 +804,11 @@
                     <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="12_logSPjScrollPane1">
-                      <CodeVariable name="logSPjScrollPane1" type="8194" declaredType="javax.swing.JScrollPane"/>
+                    <CodeExpression id="12_logSP">
+                      <CodeVariable name="logSP" type="8194" declaredType="javax.swing.JScrollPane"/>
                       <ExpressionOrigin>
                         <ExpressionProvider type="ComponentRef">
-                          <ComponentRef name="logSPjScrollPane1"/>
+                          <ComponentRef name="logSP"/>
                         </ExpressionProvider>
                       </ExpressionOrigin>
                     </CodeExpression>

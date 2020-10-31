@@ -498,7 +498,7 @@ public class H2TrackService implements TrackService {
             this.controllerService.powerOn();
         }
     }
-    
+
     @Override
     public boolean isPowerOn() {
         if (trpo == null) {
@@ -691,17 +691,17 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void addMessageListener(CanMessageListener listener) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (this.controllerService != null) {
+            this.controllerService.addCanMessageListener(listener);
+        }
     }
 
     @Override
     public void removeMessageListener(CanMessageListener listener) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (this.controllerService != null) {
+            this.controllerService.removeCanMessageListener(listener);
+        }
     }
-    
-    
-    
-    
 
     @Override
     public void addFeedbackPortListener(FeedbackPortListener listener) {
