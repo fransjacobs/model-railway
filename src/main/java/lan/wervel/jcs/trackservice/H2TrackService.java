@@ -32,6 +32,7 @@ import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.ControllerService;
+import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.JCSProperty;
@@ -687,6 +688,20 @@ public class H2TrackService implements TrackService {
             controllerService.switchAccessoiry(address, value);
         }
     }
+
+    @Override
+    public void addMessageListener(CanMessageListener listener) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void removeMessageListener(CanMessageListener listener) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
+    
+    
 
     @Override
     public void addFeedbackPortListener(FeedbackPortListener listener) {

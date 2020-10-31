@@ -142,7 +142,7 @@ public class CS2Controller implements ControllerService, FeedbackService {
             deviceInfo = getControllerInfo();
             Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
 
-            connection.addCanMessageListener(new ExtraMessageListener(this));
+            addCanMessageListener(new ExtraMessageListener(this));
 
             //Send powerstatus
             executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(ps.isPowerOn(), connected)));
@@ -405,6 +405,20 @@ public class CS2Controller implements ControllerService, FeedbackService {
     public void removeAllHeartbeatListeners() {
         synchronized (heartbeatListeners) {
             this.heartbeatListeners.clear();
+        }
+    }
+
+    @Override
+    public void addCanMessageListener(CanMessageListener listener) {
+        if (this.connection != null) {
+            this.connection.addCanMessageListener(listener);
+        }
+    }
+
+    @Override
+    public void removeCanMessageListener(CanMessageListener listener) {
+        if (this.connection != null) {
+            this.connection.addCanMessageListener(listener);
         }
     }
 

@@ -23,6 +23,7 @@ import java.util.List;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.cs2.PowerStatus;
+import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.JCSProperty;
@@ -141,7 +142,7 @@ public interface TrackService {
     void remove(ControllableDevice entity);
 
     DeviceInfo getControllerInfo();
-    
+
     void addControllerListener(ControllerEventListener listener);
 
     void removeControllerListener(ControllerEventListener listener);
@@ -153,5 +154,9 @@ public interface TrackService {
     JCSProperty persist(JCSProperty property);
 
     void synchronizeAccessories();
+
+    void addMessageListener(CanMessageListener listener);
+
+    void removeMessageListener(CanMessageListener listener);
 
 }

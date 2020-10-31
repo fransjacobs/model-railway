@@ -19,15 +19,19 @@
 package lan.wervel.jcs.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
@@ -151,25 +155,31 @@ public class DiagnosticPanel extends JPanel {
         controllerHostNameLbl = new JLabel();
         leftPanel = new JPanel();
         centerPanel = new JPanel();
+        centerCenterPanel = new JPanel();
         keyboardTP = new JTabbedPane();
         keyboardsPanel = new JPanel();
         switchPanel1 = new SwitchPanel(1);
         switchPanel2 = new SwitchPanel(2);
         switchPanel3 = new SwitchPanel(3);
         switchPanel4 = new SwitchPanel(4);
+        keyboardsPanel1 = new JPanel();
         switchPanel5 = new SwitchPanel(5);
         switchPanel6 = new SwitchPanel(6);
         switchPanel7 = new SwitchPanel(7);
         switchPanel8 = new SwitchPanel(8);
-        keyboardsPanel1 = new JPanel();
+        keyboardsPanel2 = new JPanel();
         switchPanel9 = new SwitchPanel(9);
         switchPanel10 = new SwitchPanel(10);
         switchPanel11 = new SwitchPanel(11);
         switchPanel12 = new SwitchPanel(12);
+        keyboardsPanel3 = new JPanel();
         switchPanel13 = new SwitchPanel(13);
         switchPanel14 = new SwitchPanel(14);
         switchPanel15 = new SwitchPanel(15);
         switchPanel16 = new SwitchPanel(16);
+        logPanel = new JPanel();
+        logSPjScrollPane1 = new JScrollPane();
+        logArea = new JTextArea();
         centerRightPanel = new JPanel();
         locoTP = new JTabbedPane();
         locoPanels1to3 = new JPanel();
@@ -181,17 +191,18 @@ public class DiagnosticPanel extends JPanel {
         locPanel5 = new LocoPanel(5);
         locPanel6 = new LocoPanel(6);
 
-        setMinimumSize(new Dimension(910, 840));
+        setMinimumSize(new Dimension(1200, 840));
         setName("Form"); // NOI18N
-        setPreferredSize(new Dimension(1024, 840));
+        setPreferredSize(new Dimension(1200, 840));
         setLayout(new BorderLayout());
 
-        topPanel.setMinimumSize(new Dimension(900, 130));
+        topPanel.setMinimumSize(new Dimension(1200, 140));
         topPanel.setName("topPanel"); // NOI18N
-        topPanel.setPreferredSize(new Dimension(900, 130));
+        topPanel.setPreferredSize(new Dimension(1200, 140));
         topPanel.setLayout(new BorderLayout());
 
         topLeftPanel.setName("topLeftPanel"); // NOI18N
+        topLeftPanel.setPreferredSize(new Dimension(50, 140));
         FlowLayout flowLayout1 = new FlowLayout(FlowLayout.CENTER, 10, 10);
         flowLayout1.setAlignOnBaseline(true);
         topLeftPanel.setLayout(flowLayout1);
@@ -301,22 +312,29 @@ public class DiagnosticPanel extends JPanel {
 
         add(topPanel, BorderLayout.NORTH);
 
-        leftPanel.setMinimumSize(new Dimension(275, 845));
+        leftPanel.setMinimumSize(new Dimension(275, 700));
         leftPanel.setName("leftPanel"); // NOI18N
-        leftPanel.setPreferredSize(new Dimension(44, 845));
+        leftPanel.setPreferredSize(new Dimension(50, 700));
         add(leftPanel, BorderLayout.WEST);
 
-        centerPanel.setMinimumSize(new Dimension(900, 675));
+        centerPanel.setMinimumSize(new Dimension(1200, 700));
         centerPanel.setName("centerPanel"); // NOI18N
-        centerPanel.setPreferredSize(new Dimension(924, 620));
+        centerPanel.setPreferredSize(new Dimension(1150, 700));
         centerPanel.setLayout(new BorderLayout());
 
-        keyboardTP.setMinimumSize(new Dimension(875, 665));
+        centerCenterPanel.setMinimumSize(new Dimension(850, 700));
+        centerCenterPanel.setName("centerCenterPanel"); // NOI18N
+        centerCenterPanel.setPreferredSize(new Dimension(850, 700));
+        centerCenterPanel.setLayout(new GridLayout(2, 1, 1, 2));
+
+        keyboardTP.setMinimumSize(new Dimension(840, 290));
         keyboardTP.setName("keyboardTP"); // NOI18N
+        keyboardTP.setPreferredSize(new Dimension(840, 290));
+        keyboardTP.setRequestFocusEnabled(false);
 
         keyboardsPanel.setMinimumSize(new Dimension(845, 610));
         keyboardsPanel.setName("keyboardsPanel"); // NOI18N
-        keyboardsPanel.setPreferredSize(new Dimension(845, 610));
+        keyboardsPanel.setPreferredSize(new Dimension(600, 75));
         keyboardsPanel.setLayout(new BoxLayout(keyboardsPanel, BoxLayout.PAGE_AXIS));
 
         switchPanel1.setName("switchPanel1"); // NOI18N
@@ -331,54 +349,94 @@ public class DiagnosticPanel extends JPanel {
         switchPanel4.setName("switchPanel4"); // NOI18N
         keyboardsPanel.add(switchPanel4);
 
-        switchPanel5.setName("switchPanel5"); // NOI18N
-        keyboardsPanel.add(switchPanel5);
-
-        switchPanel6.setName("switchPanel6"); // NOI18N
-        keyboardsPanel.add(switchPanel6);
-
-        switchPanel7.setName("switchPanel7"); // NOI18N
-        keyboardsPanel.add(switchPanel7);
-
-        switchPanel8.setName("switchPanel8"); // NOI18N
-        keyboardsPanel.add(switchPanel8);
-
-        keyboardTP.addTab("1 - 128", keyboardsPanel);
+        keyboardTP.addTab("1 - 64", keyboardsPanel);
 
         keyboardsPanel1.setName("keyboardsPanel1"); // NOI18N
+        keyboardsPanel1.setPreferredSize(new Dimension(600, 300));
         keyboardsPanel1.setLayout(new BoxLayout(keyboardsPanel1, BoxLayout.PAGE_AXIS));
 
+        switchPanel5.setName("switchPanel5"); // NOI18N
+        keyboardsPanel1.add(switchPanel5);
+
+        switchPanel6.setName("switchPanel6"); // NOI18N
+        keyboardsPanel1.add(switchPanel6);
+
+        switchPanel7.setName("switchPanel7"); // NOI18N
+        keyboardsPanel1.add(switchPanel7);
+
+        switchPanel8.setName("switchPanel8"); // NOI18N
+        keyboardsPanel1.add(switchPanel8);
+
+        keyboardTP.addTab("65 - 128", keyboardsPanel1);
+
+        keyboardsPanel2.setName("keyboardsPanel2"); // NOI18N
+        keyboardsPanel2.setPreferredSize(new Dimension(600, 300));
+        keyboardsPanel2.setLayout(new BoxLayout(keyboardsPanel2, BoxLayout.PAGE_AXIS));
+
         switchPanel9.setName("switchPanel9"); // NOI18N
-        keyboardsPanel1.add(switchPanel9);
+        keyboardsPanel2.add(switchPanel9);
 
         switchPanel10.setName("switchPanel10"); // NOI18N
-        keyboardsPanel1.add(switchPanel10);
+        keyboardsPanel2.add(switchPanel10);
 
         switchPanel11.setName("switchPanel11"); // NOI18N
-        keyboardsPanel1.add(switchPanel11);
+        keyboardsPanel2.add(switchPanel11);
 
         switchPanel12.setName("switchPanel12"); // NOI18N
-        keyboardsPanel1.add(switchPanel12);
+        keyboardsPanel2.add(switchPanel12);
+
+        keyboardTP.addTab("129 - 192", keyboardsPanel2);
+
+        keyboardsPanel3.setName("keyboardsPanel3"); // NOI18N
+        keyboardsPanel3.setPreferredSize(new Dimension(600, 300));
+        keyboardsPanel3.setLayout(new BoxLayout(keyboardsPanel3, BoxLayout.PAGE_AXIS));
 
         switchPanel13.setName("switchPanel13"); // NOI18N
-        keyboardsPanel1.add(switchPanel13);
+        keyboardsPanel3.add(switchPanel13);
 
         switchPanel14.setName("switchPanel14"); // NOI18N
-        keyboardsPanel1.add(switchPanel14);
+        keyboardsPanel3.add(switchPanel14);
 
         switchPanel15.setName("switchPanel15"); // NOI18N
-        keyboardsPanel1.add(switchPanel15);
+        keyboardsPanel3.add(switchPanel15);
 
         switchPanel16.setName("switchPanel16"); // NOI18N
-        keyboardsPanel1.add(switchPanel16);
+        keyboardsPanel3.add(switchPanel16);
 
-        keyboardTP.addTab("129 - 256", keyboardsPanel1);
+        keyboardTP.addTab("193 - 256", keyboardsPanel3);
 
-        centerPanel.add(keyboardTP, BorderLayout.CENTER);
+        centerCenterPanel.add(keyboardTP);
 
-        centerRightPanel.setMinimumSize(new Dimension(275, 840));
+        logPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)), "Controller Messages"));
+        logPanel.setMinimumSize(new Dimension(850, 300));
+        logPanel.setName("logPanel"); // NOI18N
+        logPanel.setPreferredSize(new Dimension(850, 300));
+        FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout2.setAlignOnBaseline(true);
+        logPanel.setLayout(flowLayout2);
+
+        logSPjScrollPane1.setMinimumSize(new Dimension(840, 290));
+        logSPjScrollPane1.setName("logSPjScrollPane1"); // NOI18N
+        logSPjScrollPane1.setPreferredSize(new Dimension(820, 300));
+
+        logArea.setColumns(20);
+        logArea.setRows(15);
+        logArea.setDoubleBuffered(true);
+        logArea.setEnabled(false);
+        logArea.setMinimumSize(new Dimension(820, 300));
+        logArea.setName("logArea"); // NOI18N
+        logArea.setPreferredSize(new Dimension(800, 290));
+        logSPjScrollPane1.setViewportView(logArea);
+
+        logPanel.add(logSPjScrollPane1);
+
+        centerCenterPanel.add(logPanel);
+
+        centerPanel.add(centerCenterPanel, BorderLayout.CENTER);
+
+        centerRightPanel.setMinimumSize(new Dimension(300, 700));
         centerRightPanel.setName("centerRightPanel"); // NOI18N
-        centerRightPanel.setPreferredSize(new Dimension(290, 840));
+        centerRightPanel.setPreferredSize(new Dimension(310, 700));
         centerRightPanel.setLayout(new BorderLayout());
 
         locoTP.setMinimumSize(new Dimension(240, 706));
@@ -411,6 +469,7 @@ public class DiagnosticPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel blinkLbl;
+    private JPanel centerCenterPanel;
     private JPanel centerPanel;
     private JPanel centerRightPanel;
     private JLabel controllerCatalogLbl;
@@ -435,6 +494,8 @@ public class DiagnosticPanel extends JPanel {
     private JTabbedPane keyboardTP;
     private JPanel keyboardsPanel;
     private JPanel keyboardsPanel1;
+    private JPanel keyboardsPanel2;
+    private JPanel keyboardsPanel3;
     private JPanel leftPanel;
     private LocoPanel locPanel1;
     private LocoPanel locPanel2;
@@ -445,6 +506,9 @@ public class DiagnosticPanel extends JPanel {
     private JPanel locoPanels1to3;
     private JPanel locoPanels4to6;
     private JTabbedPane locoTP;
+    private JTextArea logArea;
+    private JPanel logPanel;
+    private JScrollPane logSPjScrollPane1;
     private SwitchPanel switchPanel1;
     private SwitchPanel switchPanel10;
     private SwitchPanel switchPanel11;
