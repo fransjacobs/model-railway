@@ -36,6 +36,8 @@ import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.JCSProperty;
+import lan.wervel.jcs.entities.LayoutTile;
+import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
@@ -63,6 +65,8 @@ import lan.wervel.jcs.trackservice.events.LocomotiveListener;
 import lan.wervel.jcs.trackservice.events.PersistedEventListener;
 import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.feedback.HeartbeatListener;
+import lan.wervel.jcs.trackservice.dao.LayoutTileDAO;
+import lan.wervel.jcs.trackservice.dao.LayoutTileGroupDAO;
 
 public class H2TrackService implements TrackService {
 
@@ -72,10 +76,10 @@ public class H2TrackService implements TrackService {
     private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
 
-//private final DriveWayDAO drwaDAO;
+    //private final DriveWayDAO drwaDAO;
     // private final AccessorySettingDAO acseDao;
-//private final LayoutTileDAO latiDao;
-//private final LayoutTileGroupDAO ltgtDao;
+    private final LayoutTileDAO latiDao;
+    private final LayoutTileGroupDAO ltgtDao;
     private final JCSPropertiesDAO propDao;
 
     //private final Map<String, ClientInfo> clients;
@@ -113,8 +117,8 @@ public class H2TrackService implements TrackService {
         trpoDAO = new TrackPowerDAO();
         //drwaDAO = new DriveWayDAO();
         //acseDao = new AccessorySettingDAO();
-        //latiDao = new LayoutTileDAO();
-        //ltgtDao = new LayoutTileGroupDAO();
+        latiDao = new LayoutTileDAO();
+        ltgtDao = new LayoutTileGroupDAO();
         executor = Executors.newCachedThreadPool();
 
         feedbackPortListeners = new LinkedList<>();
@@ -215,8 +219,25 @@ public class H2TrackService implements TrackService {
         if (controllerService == null) {
             try {
                 this.controllerService = (ControllerService) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+
+                if (!this.controllerService.isConnected()) {
+                    Logger.info("Not connected to Real CS2/3. Switch to demo...");
+                    this.controllerService.disconnect();
+                    this.controllerService = null;
+                }
             } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
                 Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
+            }
+        }
+
+        if (controllerService == null) {
+            //Use a demo...
+            try {
+                controllerImpl = "lan.wervel.jcs.controller.demo.DemoController";
+                this.controllerService = (ControllerService) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+                Logger.info("Using a DEMO controller");
+            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException exd) {
+                Logger.error("Can't instantiate a '" + controllerImpl + "' " + exd.getMessage());
             }
         }
 
@@ -230,12 +251,14 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public FeedbackModule getFeedbackModule(Integer moduleNumber) {
+    public FeedbackModule getFeedbackModule(Integer moduleNumber
+    ) {
         return femoDAO.find(moduleNumber);
     }
 
     @Override
-    public FeedbackModule persist(FeedbackModule feedbackModule) {
+    public FeedbackModule persist(FeedbackModule feedbackModule
+    ) {
         FeedbackModule prev = femoDAO.find(feedbackModule.getModuleNumber());
         femoDAO.persist(feedbackModule);
 
@@ -367,17 +390,13 @@ public class H2TrackService implements TrackService {
 
     @Override
     public Locomotive persist(Locomotive locomotive) {
-        //Locomotive cl = locoDAO.find(locomotive.getAddress(),locomotive.getDecoderType());
         Locomotive cl = locoDAO.findById(locomotive.getId());
         locoDAO.persist(locomotive);
 
         if (cl != null && cl.isChanged(locomotive)) {
             LocomotiveEvent event = new LocomotiveEvent(locomotive);
             Logger.debug("Changed loco-> " + event);
-
-            //this.executor.execute(() -> {
             broadcastLocomotiveEvent(event);
-            //});
         }
 
         return locomotive;
@@ -420,6 +439,117 @@ public class H2TrackService implements TrackService {
     public JCSProperty persist(JCSProperty property) {
         this.propDao.persist(property);
         return property;
+    }
+
+    private LayoutTile addDependencies(LayoutTile lt) {
+        if (lt == null) {
+            return null;
+        }
+        if (lt.getSoacId() != null) {
+            if ("TurnoutTile".equals(lt.getTiletype())) {
+                Turnout t = turnoutDAO.findById(lt.getSoacId());
+                lt.setSolenoidAccessoiry(t);
+            }
+            if ("SignalTile".equals(lt.getTiletype())) {
+                lt.setSolenoidAccessoiry(signalDAO.findById(lt.getSoacId()));
+            }
+        }
+        if (lt.getFemoId() != null) {
+            lt.setFeedbackModule(this.femoDAO.findById(lt.getFemoId()));
+        }
+
+        if (lt.getLtgrId() != null) {
+            lt.setLayoutTileGroup(this.ltgtDao.findById(lt.getLtgrId()));
+        }
+
+        return lt;
+    }
+
+    @Override
+    public Set<LayoutTile> getLayoutTiles() {
+        List<LayoutTile> ltl = latiDao.findAll();
+        Set<LayoutTile> layoutTiles = new HashSet<>(ltl);
+
+        layoutTiles.forEach((lt) -> {
+            addDependencies(lt);
+        });
+        return layoutTiles;
+    }
+
+    @Override
+    public LayoutTile getLayoutTile(Integer x, Integer y) {
+        LayoutTile layoutTile = this.latiDao.findByXY(x, y);
+        return addDependencies(layoutTile);
+    }
+
+    @Override
+    public LayoutTile persist(LayoutTile layoutTile) {
+        if (layoutTile.getLayoutTileGroup() != null) {
+            LayoutTileGroup layoutTileGroup = layoutTile.getLayoutTileGroup();
+            if (layoutTileGroup.getAddress() != null && !layoutTileGroup.getAddress().equals(0)) {
+                ltgtDao.persist(layoutTileGroup);
+                layoutTile.setLayoutTileGroup(layoutTileGroup);
+            } else {
+                layoutTile.setLayoutTileGroup(null);
+            }
+        }
+
+        latiDao.persist(layoutTile);
+
+        return layoutTile;
+    }
+
+    @Override
+    public void remove(LayoutTile layoutTile) {
+        latiDao.remove(layoutTile);
+    }
+
+    @Override
+    public void persist(Set<LayoutTile> layoutTiles) {
+        //Remove the ones not in the current list...
+        List<LayoutTile> cltl = latiDao.findAll();
+
+        for (LayoutTile lt : cltl) {
+            if (!layoutTiles.contains(lt)) {
+                latiDao.remove(lt);
+            }
+        }
+
+        for (LayoutTile lt : layoutTiles) {
+            if (lt.getId() == null) {
+                //store the layouttile but incase check if it exist based on x and y
+                LayoutTile ltxy = this.latiDao.findByXY(lt.getX(), lt.getY());
+                if (ltxy != null) {
+                    lt.setId(ltxy.getId());
+                }
+            }
+            persist(lt);
+        }
+    }
+
+    @Override
+    public List<LayoutTileGroup> getLayoutTileGroups() {
+        return this.ltgtDao.findAll();
+    }
+
+    @Override
+    public LayoutTileGroup getLayoutTileGroup(Integer ltgrNr) {
+        return this.ltgtDao.find(ltgrNr);
+    }
+
+    @Override
+    public LayoutTileGroup getLayoutTileGroup(BigDecimal ltgrId) {
+        return this.ltgtDao.findById(ltgrId);
+    }
+
+    @Override
+    public void persist(LayoutTileGroup layoutTileGroup) {
+        this.ltgtDao.persist(layoutTileGroup);
+    }
+
+    @Override
+    public void remove(LayoutTileGroup layoutTileGroup) {
+        this.ltgtDao.remove(layoutTileGroup);
     }
 
     @Override

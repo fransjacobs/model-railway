@@ -20,13 +20,15 @@ package lan.wervel.jcs.trackservice;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
-import lan.wervel.jcs.controller.cs2.PowerStatus;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.JCSProperty;
+import lan.wervel.jcs.entities.LayoutTile;
+import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
@@ -158,5 +160,26 @@ public interface TrackService {
     void addMessageListener(CanMessageListener listener);
 
     void removeMessageListener(CanMessageListener listener);
+
+    //Trackplan
+    Set<LayoutTile> getLayoutTiles();
+
+    LayoutTile getLayoutTile(Integer x, Integer y);
+
+    LayoutTile persist(LayoutTile layoutTile);
+
+    void persist(Set<LayoutTile> layoutTiles);
+
+    void remove(LayoutTile layoutTile);
+
+    List<LayoutTileGroup> getLayoutTileGroups();
+
+    LayoutTileGroup getLayoutTileGroup(Integer ltgrNr);
+
+    LayoutTileGroup getLayoutTileGroup(BigDecimal ltgrId);
+
+    void persist(LayoutTileGroup layoutTileGroup);
+
+    void remove(LayoutTileGroup layoutTileGroup);
 
 }

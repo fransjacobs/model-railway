@@ -130,12 +130,18 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;");
         stmt.executeUpdate("DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;");
+        //trackplan
+        stmt.executeUpdate("DROP TABLE if exists layouttiles CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists layouttilegroups CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP SEQUENCE if exists femo_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists loco_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists soac_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists trpo_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists prop_seq");
+        //trackplan
+        stmt.executeUpdate("DROP SEQUENCE if exists lati_seq");
+        stmt.executeUpdate("DROP SEQUENCE if exists ltgr_seq");
 
         Logger.trace("Existing schema object dropped...");
     }
@@ -146,6 +152,9 @@ public class DatabaseCreator {
         stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
+        //trackplan
+        stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
+        stmt.executeUpdate("CREATE SEQUENCE ltgr_seq START WITH 1 INCREMENT BY 1");
 
         Logger.trace("Sequences created...");
     }
@@ -285,6 +294,45 @@ public class DatabaseCreator {
         Logger.trace("Table jcsproperties created...");
     }
 
+    private static void layoutTiles(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE layouttiles ("
+                + "id         NUMBER NOT NULL,"
+                + "tiletype   VARCHAR2(255 CHAR) NOT NULL,"
+                + "rotation   VARCHAR2(255 CHAR) NOT NULL,"
+                + "direction  VARCHAR2(255 CHAR) NOT NULL,"
+                + "x          INTEGER NOT NULL,"
+                + "y          INTEGER NOT NULL,"
+                + "offsetx    INTEGER NULL,"
+                + "offsety    INTEGER NULL,"
+                + "soac_id    NUMBER NULL,"
+                + "femo_id    NUMBER NULL,"
+                + "port       INTEGER NULL,"
+                + "ltgr_id    NUMBER NULL)");
+
+        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id )");
+
+        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_x_y_un UNIQUE ( x, y )");
+
+        Logger.trace("Table layouttiles created...");
+    }
+
+    private static void layoutTileGroups(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE layouttilegroups ("
+                + "id                  NUMBER NOT NULL,"
+                + "name                VARCHAR2(255 CHAR) NULL,"
+                + "start_lati_id       NUMBER NULL,"
+                + "end_lati_id         NUMBER NULL,"
+                + "color               VARCHAR2(255 CHAR) NULL,"
+                + "direction           VARCHAR2(255 CHAR),"
+                + "groupnumber         INTEGER NOT NULL)");
+
+        stmt.executeUpdate("ALTER TABLE layouttilegroups ADD CONSTRAINT ltgr_pk PRIMARY KEY ( id )");
+
+        stmt.executeUpdate("ALTER TABLE layouttilegroups ADD CONSTRAINT ltgr_groupnumber_un UNIQUE ( groupnumber )");
+
+        Logger.trace("Table layouttilegroup created...");
+    }
+
     private static void createForeignKeys(Statement stmt) throws SQLException {
         stmt.executeUpdate("ALTER TABLE solenoidaccessories"
                 + " ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )"
@@ -304,6 +352,31 @@ public class DatabaseCreator {
         stmt.executeUpdate("ALTER TABLE solenoidaccessories"
                 + " ADD CONSTRAINT soac_siva_fk FOREIGN KEY ( signal_value )"
                 + " REFERENCES signalvalues ( signal_value )"
+                + " NOT DEFERRABLE");
+
+        stmt.executeUpdate("ALTER TABLE layouttiles"
+                + " ADD CONSTRAINT lati_soac_fk FOREIGN KEY ( soac_id )"
+                + " REFERENCES solenoidaccessories ( id )"
+                + " NOT DEFERRABLE");
+
+        stmt.executeUpdate("ALTER TABLE layouttiles"
+                + " ADD CONSTRAINT lati_femo_fk FOREIGN KEY ( femo_id )"
+                + " REFERENCES feedbackmodules ( id )"
+                + " NOT DEFERRABLE");
+
+        stmt.executeUpdate("ALTER TABLE layouttiles"
+                + " ADD CONSTRAINT lati_ltgr_fk FOREIGN KEY ( ltgr_id )"
+                + " REFERENCES layouttilegroups ( id )"
+                + " NOT DEFERRABLE");
+
+        stmt.executeUpdate("ALTER TABLE layouttilegroups"
+                + " ADD CONSTRAINT ltgr_lati_start_fk FOREIGN KEY ( start_lati_id )"
+                + " REFERENCES layouttiles ( id )"
+                + " NOT DEFERRABLE");
+
+        stmt.executeUpdate("ALTER TABLE layouttilegroups"
+                + " ADD CONSTRAINT ltgr_lati_ends_fk FOREIGN KEY ( end_lati_id )"
+                + " REFERENCES layouttiles ( id )"
                 + " NOT DEFERRABLE");
 
         Logger.trace("Foreign Keys created...");
@@ -359,6 +432,9 @@ public class DatabaseCreator {
                 statustypes(stmt);
                 signalvalues(stmt);
                 jcsproperties(stmt);
+                //trackplan
+                layoutTiles(stmt);
+                layoutTileGroups(stmt);
 
                 createForeignKeys(stmt);
 

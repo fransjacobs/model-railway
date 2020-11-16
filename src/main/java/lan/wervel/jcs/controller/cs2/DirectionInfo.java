@@ -31,6 +31,10 @@ public class DirectionInfo implements Serializable {
 
     private Direction direction;
 
+    public DirectionInfo(Direction direction) {
+        this.direction = direction;
+    }
+
     public DirectionInfo(CanMessage locDirection) {
         parseMessage(locDirection);
     }

@@ -16,11 +16,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.controller.cs2;
+package lan.wervel.jcs.controller.demo;
 
+import lan.wervel.jcs.controller.cs2.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,14 +33,10 @@ import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.ControllerService;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
-import lan.wervel.jcs.controller.cs2.can.CanMessageFactory;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
-import static lan.wervel.jcs.controller.cs2.can.MarklinCan.FUNCTION_OFF;
-import static lan.wervel.jcs.controller.cs2.can.MarklinCan.FUNCTION_ON;
 import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.controller.cs2.net.Connection;
-import lan.wervel.jcs.controller.cs2.net.CS2ConnectionFactory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
@@ -46,13 +45,14 @@ import lan.wervel.jcs.feedback.FeedbackEventListener;
 import lan.wervel.jcs.feedback.FeedbackService;
 import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.feedback.HeartbeatListener;
+import lan.wervel.jcs.util.NetworkUtil;
 import org.pmw.tinylog.Configurator;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class CS2Controller implements ControllerService, FeedbackService {
+public class DemoController implements ControllerService, FeedbackService {
 
     private Connection connection;
     private boolean connected = false;
@@ -75,35 +75,44 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
     private static final long DELAY = 0L;
 
-    public CS2Controller() {
+    ///
+    private PowerStatus powerStatus;
+
+    private Map<Integer, DirectionInfo> locDirections;
+
+    public DemoController() {
         this(true);
     }
 
-    CS2Controller(boolean useTimer) {
+    DemoController(boolean useTimer) {
         controllerEventListeners = new ArrayList<>();
         feedbackEventListeners = new ArrayList<>();
         heartbeatListeners = new ArrayList<>();
         startTimer = useTimer;
         timer = new Timer("Heartbeat", true);
         executor = Executors.newCachedThreadPool();
+
+        locDirections = new HashMap<>();
+
         connect();
     }
 
     @Override
     public PowerStatus powerOff() {
-        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.stop()));
-        return ps;
+        Logger.debug("PowerOff");
+        powerStatus = new PowerStatus(false, deviceUid, deviceUidNumber);
+        return powerStatus;
     }
 
     @Override
     public PowerStatus powerOn() {
-        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.go()));
-        return ps;
+        Logger.debug("PowerOn");
+        powerStatus = new PowerStatus(true, deviceUid, deviceUidNumber);
+        return powerStatus;
     }
 
     public PowerStatus getPowerStatus() {
-        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.powerStatus()));
-        return ps;
+        return powerStatus;
     }
 
     @Override
@@ -118,34 +127,24 @@ public class CS2Controller implements ControllerService, FeedbackService {
     @Override
     public final boolean connect() {
         if (!connected) {
-            Logger.debug("Connecting to CS2...");
-            this.connection = CS2ConnectionFactory.getConnection();
-            this.connected = this.connection != null;
+            Logger.debug("Connecting to Demo Controller...");
+            this.connected = true;
         }
 
         if (connected) {
-            //Send a ping to see what is there...
-            List<PingResponse> prl = membersPing();
+            deviceUid = new int[]{0x01, 0x02, 0x03, 0x04};
+            deviceUidNumber = 16909060;
 
-            Logger.trace("got " + prl.size() + " responses");
-            for (PingResponse pr : prl) {
-                Logger.debug(pr);
-            }
+            powerStatus = new PowerStatus(false, deviceUid, deviceUidNumber);
 
-            //query the power status which will tell us whether the trackpower is on or off and alse the UID of the CS2/3
-            PowerStatus ps = getPowerStatus();
-            this.deviceUid = ps.getDeviceUid();
-            this.deviceUidNumber = ps.getDeviceUidNumber();
-            CanMessageFactory.setDeviceUidNumber(deviceUidNumber);
-
-            Logger.trace("Track Power is " + (ps.isPowerOn() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
+            Logger.trace("Track Power is " + (powerStatus.isPowerOn() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
             deviceInfo = getControllerInfo();
-            Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
+            Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (powerStatus.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
 
             addCanMessageListener(new ExtraMessageListener(this));
 
             //Send powerstatus
-            executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(ps.isPowerOn(), connected)));
+            executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(powerStatus.isPowerOn(), connected)));
         }
 
         // Finally start the harbeat timer which will takes care of the feedback 
@@ -168,21 +167,12 @@ public class CS2Controller implements ControllerService, FeedbackService {
     @Override
     public void disconnect() {
         try {
-            final Connection conn = this.connection;
             connected = false;
-            this.connection = null;
 
             stopHeartbeatTask();
 
-            if (conn != null) {
-              synchronized (conn) {
-                    conn.sendCanMessage(CanMessageFactory.stop());
-                    wait200ms();
-                    conn.close();
-                    this.deviceUid = null;
-                    this.deviceUidNumber = 0;
-                }
-            }
+            this.deviceUid = null;
+            this.deviceUidNumber = 0;
             executor.shutdown();
         } catch (Exception ex) {
             Logger.error(ex);
@@ -233,12 +223,15 @@ public class CS2Controller implements ControllerService, FeedbackService {
     @Override
     public void toggleDirection(int address, DecoderType decoderType) {
         int la = getLocoAddres(address, decoderType);
-        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.queryDirection(la));
-        DirectionInfo di = new DirectionInfo(msg);
-        Logger.trace(di);
+
+        if (!this.locDirections.containsKey(la)) {
+            DirectionInfo di = new DirectionInfo(Direction.FORWARDS);
+            this.locDirections.put(la, di);
+        }
+
+        DirectionInfo di = this.locDirections.get(la);
         Direction direction = di.getDirection();
         direction = direction.toggle();
-
         setDirection(address, decoderType, direction);
     }
 
@@ -246,12 +239,17 @@ public class CS2Controller implements ControllerService, FeedbackService {
     public void setDirection(int address, DecoderType decoderType, Direction direction) {
         int la = getLocoAddres(address, decoderType);
         Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType);
-        this.connection.sendCanMessage(CanMessageFactory.setDirection(la, direction.getCS2Value()));
+        this.locDirections.put(la, new DirectionInfo(direction));
     }
 
     public DirectionInfo getDirection(int address, DecoderType decoderType) {
         int la = getLocoAddres(address, decoderType);
-        DirectionInfo di = new DirectionInfo(connection.sendCanMessage(CanMessageFactory.queryDirection(la)));
+        if (!this.locDirections.containsKey(la)) {
+            DirectionInfo di = new DirectionInfo(Direction.FORWARDS);
+            this.locDirections.put(la, di);
+        }
+
+        DirectionInfo di = this.locDirections.get(la);
         Logger.trace(di);
         return di;
     }
@@ -274,16 +272,12 @@ public class CS2Controller implements ControllerService, FeedbackService {
     public void setSpeed(int address, DecoderType decoderType, int speed) {
         int la = getLocoAddres(address, decoderType);
         Logger.trace("Setting speed to: " + speed + " for loc address: " + la + " Decoder: " + decoderType);
-
-        //Calculate the speed??
-        this.connection.sendCanMessage(CanMessageFactory.setLocSpeed(la, speed));
     }
 
     @Override
     public void setFunction(int address, DecoderType decoderType, int functionNumber, boolean flag) {
-        int value = flag ? FUNCTION_ON : FUNCTION_OFF;
-        int la = getLocoAddres(address, decoderType);
-        this.connection.sendCanMessage(CanMessageFactory.setFunction(la, functionNumber, value));
+        //int value = flag ? FUNCTION_ON : FUNCTION_OFF;
+        //int la = getLocoAddres(address, decoderType);
     }
 
     /**
@@ -310,10 +304,6 @@ public class CS2Controller implements ControllerService, FeedbackService {
     }
 
     private void switchAccessoiryOnOff(int address, AccessoryValue value) {
-        this.connection.sendCanMessage(CanMessageFactory.switchAccessory(address, value, true));
-        //TODO dynamic setting of time or queue it
-        wait200ms();
-        this.connection.sendCanMessage(CanMessageFactory.switchAccessory(address, value, false));
     }
 
     @Override
@@ -321,23 +311,23 @@ public class CS2Controller implements ControllerService, FeedbackService {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public List<PingResponse> membersPing() {
-        CanMessage msg = connection.sendCanMessage(CanMessageFactory.getMemberPing());
-        List<CanMessage> rl = msg.getResponses();
-        List<PingResponse> prl = new ArrayList<>();
-        for (CanMessage resp : rl) {
-            PingResponse pr = new PingResponse(resp);
-            prl.add(pr);
-        }
-
-        return prl;
-    }
+//    public List<PingResponse> membersPing() {
+//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.getMemberPing());
+//        List<CanMessage> rl = msg.getResponses();
+//        List<PingResponse> prl = new ArrayList<>();
+//        for (CanMessage resp : rl) {
+//            PingResponse pr = new PingResponse(resp);
+//            prl.add(pr);
+//        }
+//
+//        return prl;
+//    }
 
     @Override
     public DeviceInfo getControllerInfo() {
         if (deviceInfo == null) {
-            deviceInfo = new DeviceInfo(connection.sendCanMessage(CanMessageFactory.statusConfig(deviceUid)));
-            String deviceHostName = connection.getCs2Address().getHostName();
+            deviceInfo = new DeviceInfo("123456", "JCS Demo", "Demo Controller", 32, true, true, true, true);
+            String deviceHostName = NetworkUtil.getMyAddress().getHostName();
             deviceInfo.setDeviceHostName(deviceHostName);
         }
         return deviceInfo;
@@ -426,17 +416,17 @@ public class CS2Controller implements ControllerService, FeedbackService {
     }
 
     public String getDeviceIp() {
-        return CS2ConnectionFactory.getInstance().getDeviceIp();
+        return "0.0.0.0";
     }
 
-    public void getLocomotiveConfigData() {
-        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.requestConfig("loks"));
-    }
+//    public void getLocomotiveConfigData() {
+//        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.requestConfig("loks"));
+//    }
 
-    public void requestFeedbackEvents(int contactId) {
-        CanMessage msg = connection.sendCanMessage(CanMessageFactory.feedbackEvent(contactId));
-        Logger.trace(msg.getResponse());
-    }
+//    public void requestFeedbackEvents(int contactId) {
+//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.feedbackEvent(contactId));
+//        Logger.trace(msg.getResponse());
+//    }
 
     private void notifyControllerEventListeners(ControllerEvent event) {
         Set<ControllerEventListener> snapshot;
@@ -468,13 +458,13 @@ public class CS2Controller implements ControllerService, FeedbackService {
         }
     }
 
-    private void wait200ms() {
-        try {
-            Thread.sleep(200L);
-        } catch (InterruptedException ex) {
-            Logger.error(ex);
-        }
-    }
+//    private void wait200ms() {
+//        try {
+//            Thread.sleep(200L);
+//        } catch (InterruptedException ex) {
+//            Logger.error(ex);
+//        }
+//    }
 
     public void stopHeartbeatTask() {
         if (timer != null) {
@@ -482,18 +472,18 @@ public class CS2Controller implements ControllerService, FeedbackService {
             timer.cancel();
             running = false;
             this.heartbeatListeners.clear();
-            Logger.trace("CS2/3 Heartbeat Task cancelled...");
+            Logger.trace("JCS Demo Heartbeat Task cancelled...");
         }
     }
 
     private class HeartbeatTask extends TimerTask {
 
-        private final CS2Controller controller;
+        private final DemoController controller;
         private boolean powerOn;
         private boolean toggle = false;
 
-        HeartbeatTask(CS2Controller cs2Controller) {
-            controller = cs2Controller;
+        HeartbeatTask(DemoController demoController) {
+            controller = demoController;
         }
 
         @Override
@@ -507,9 +497,10 @@ public class CS2Controller implements ControllerService, FeedbackService {
                         ControllerEvent ce = new ControllerEvent(powerOn, this.controller.isConnected());
                         controller.notifyControllerEventListeners(ce);
                     }
-                } else {
-                    List<PingResponse> prl = membersPing();
                 }
+//                else {
+//                    List<PingResponse> prl = membersPing();
+//                }
 
                 Set<HeartbeatListener> snapshot;
                 synchronized (controller.heartbeatListeners) {
@@ -529,10 +520,10 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
     private class ExtraMessageListener implements CanMessageListener {
 
-        private final CS2Controller controller;
+        private final DemoController controller;
         private final ExecutorService executor;
 
-        ExtraMessageListener(CS2Controller cs2Controller) {
+        ExtraMessageListener(DemoController cs2Controller) {
             controller = cs2Controller;
             executor = Executors.newCachedThreadPool();
         }
@@ -567,7 +558,7 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
     public static void main(String[] a) {
         Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        CS2Controller cs2 = new CS2Controller(true);
+        DemoController cs2 = new DemoController(true);
 
         if (cs2.isConnected()) {
             //cs2.powerOn();

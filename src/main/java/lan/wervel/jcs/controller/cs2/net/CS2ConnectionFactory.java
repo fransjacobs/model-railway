@@ -80,12 +80,13 @@ public class CS2ConnectionFactory {
             CanMessage ping = CanMessageFactory.getMobileAppPingRequest();
 
             try (DatagramSocket requestSocket = new DatagramSocket()) {
+                Logger.trace("Send: " + ping);
                 DatagramPacket requestPacket = new DatagramPacket(ping.getBytes(), ping.getLength(), broadcastAddress, Connection.CS2_RX_PORT);
                 requestSocket.send(requestPacket);
             }
 
             try (DatagramSocket responseSocket = new DatagramSocket(Connection.CS2_TX_PORT, localAddress)) {
-                responseSocket.setSoTimeout(15000);
+                responseSocket.setSoTimeout(3000);
                 DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, Connection.CS2_TX_PORT);
                 responseSocket.receive(responsePacket);
 

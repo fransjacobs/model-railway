@@ -121,6 +121,10 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
                 return "soac_seq";
             case "JCSProperty":
                 return "prop_seq";
+            case "LayoutTile":
+                return "lati_seq";
+            case "LayoutTileGroup":
+                return "ltgr_seq";
             default:
                 return null;
         }
