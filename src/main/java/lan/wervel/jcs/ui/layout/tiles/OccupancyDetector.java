@@ -112,22 +112,6 @@ public class OccupancyDetector extends AbstractTile implements FeedbackPortListe
         }
     }
 
-//  @Override
-//  public int getWidth() {
-//    if (Rotation.R0.equals(rotation) || Rotation.R180.equals(rotation)) {
-//      return DEFAULT_WIDTH * 2;
-//    } else {
-//      return DEFAULT_WIDTH;
-//    }
-//  }
-//  @Override
-//  public int getHeight() {
-//    if (Rotation.R0.equals(rotation) || Rotation.R180.equals(rotation)) {
-//      return DEFAULT_HEIGHT;
-//    } else {
-//      return DEFAULT_HEIGHT * 2;
-//    }
-//  }
     @Override
     public void renderTile(Graphics2D g2, Color trackColor) {
         Graphics2D g2d = (Graphics2D) g2.create();
@@ -186,6 +170,65 @@ public class OccupancyDetector extends AbstractTile implements FeedbackPortListe
 
         g2d.setColor(c);
         g2d.fill(new Ellipse2D.Double(x, y, size, size));
+    }
+
+    @Override
+    public void drawName(Graphics2D g2) {
+        if (this.drawName && layoutTile != null && layoutTile.getFeedbackModule() != null && layoutTile.getPort() != null) {
+
+            Graphics2D g2d = (Graphics2D) g2.create();
+
+            int textOffsetX, textOffsetY;
+
+            if (Direction.RIGHT.equals(direction)) {
+                switch (this.rotation) {
+                    case R90:
+                        textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
+                        textOffsetY = -1 * MIN_GRID / 2;
+                        break;
+                    case R180:
+                        textOffsetX = 0;
+                        textOffsetY = -1 * MIN_GRID / 2;
+                        break;
+                    case R270:
+                        textOffsetX = 0;
+                        textOffsetY = MIN_GRID;
+                        break;
+                    default:
+                        textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
+                        textOffsetY = MIN_GRID;
+                        break;
+                }
+            } else {
+                switch (rotation) {
+                    case R90:
+                        textOffsetX = 0;
+                        textOffsetY = -1 * MIN_GRID / 2;
+                        break;
+                    case R180:
+                        textOffsetX = 0;
+                        textOffsetY = MIN_GRID;
+                        break;
+                    case R270:
+                        textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
+                        textOffsetY = MIN_GRID;
+                        break;
+                    default:
+                        textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
+                        textOffsetY = -1 * MIN_GRID / 2;
+                        break;
+                }
+            }
+
+            g2d.setPaint(Color.darkGray);
+
+            String name = "# " + layoutTile.getFeedbackModule().getContactId(layoutTile.getPort());
+            int sx = this.center.x + textOffsetX;
+            int sy = this.center.y + textOffsetY;
+            g2d.drawString(name, sx, sy);
+
+            g2d.dispose();
+        }
     }
 
 }

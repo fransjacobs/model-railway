@@ -331,7 +331,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
 
     @Override
     public void drawName(Graphics2D g2) {
-        if (layoutTile != null && layoutTile.getSolenoidAccessoiry() != null) {
+        if (this.drawName && layoutTile != null && layoutTile.getSolenoidAccessoiry() != null) {
 
             Graphics2D g2d = (Graphics2D) g2.create();
 

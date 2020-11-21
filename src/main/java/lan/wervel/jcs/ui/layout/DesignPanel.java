@@ -7,7 +7,6 @@ package lan.wervel.jcs.ui.layout;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.ComboBoxModel;
@@ -16,13 +15,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import lan.wervel.jcs.entities.FeedbackModule;
-import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.LayoutTileGroup;
-import lan.wervel.jcs.entities.Signal;
-import lan.wervel.jcs.entities.Turnout;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
-import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
 import org.pmw.tinylog.Configurator;
@@ -32,21 +26,17 @@ import org.pmw.tinylog.Logger;
  *
  * @author frans
  */
-public class DesignPanel extends JPanel implements SelectionListener {
+public class DesignPanel extends JPanel {
 
-    private Set<AbstractTile> selectedTiles;
-    private AbstractTile selectedAbstractTile;
-    private LayoutTile selectedLayoutTile;
-
+    //private Set<AbstractTile> selectedTiles;
+    //private AbstractTile selectedAbstractTile;
+    //private LayoutTile selectedLayoutTile;
     private Mode mode;
     private Rotation rotation;
     private Direction direction;
     private TileType tileType;
-    private int splitLocation;
+    //private int splitLocation;
 
-    private final ComboBoxModel<Turnout> turnoutsCBM;
-    private final ComboBoxModel<Signal> signalsCBM;
-    private final ComboBoxModel<FeedbackModule> modulesCBM;
     private ComboBoxModel<LayoutTileGroup> blockCBM;
     private final ExecutorService executor;
 
@@ -54,11 +44,7 @@ public class DesignPanel extends JPanel implements SelectionListener {
      * Creates new form LayoutPanel
      */
     public DesignPanel() {
-        turnoutsCBM = getTurnoutComboBoxModel();
-        signalsCBM = getSignalComboBoxModel();
-        modulesCBM = getFeedbackModuleComboBoxModel();
         blockCBM = getBlockComboBoxModel();
-
         this.executor = Executors.newSingleThreadExecutor();
 
         initComponents();
@@ -68,8 +54,6 @@ public class DesignPanel extends JPanel implements SelectionListener {
 
     private void postInit() {
         this.designCanvas.setSelectionModeChangedListener(new ToolSelectionChangedListener(this));
-
-        hideAllProperties();
     }
 
     public void loadLayout() {
@@ -88,6 +72,7 @@ public class DesignPanel extends JPanel implements SelectionListener {
     private void initComponents() {
 
         layoutBG = new javax.swing.ButtonGroup();
+        toolbarPanel = new javax.swing.JPanel();
         layoutToolBar = new javax.swing.JToolBar();
         saveBtn = new javax.swing.JButton();
         loadBtn = new javax.swing.JButton();
@@ -114,37 +99,15 @@ public class DesignPanel extends JPanel implements SelectionListener {
         directionLabel = new javax.swing.JLabel();
         filler7 = new javax.swing.Box.Filler(new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 32767));
         objectLbl = new javax.swing.JLabel();
-        mainSP = new javax.swing.JSplitPane();
         canvasSP = new javax.swing.JScrollPane();
         designCanvas = new lan.wervel.jcs.ui.layout.DesignCanvas();
-        propertiesPanel = new javax.swing.JPanel();
-        tilePropertiesPanel = new javax.swing.JPanel();
-        turnoutCB = new javax.swing.JComboBox<>();
-        signalCB = new javax.swing.JComboBox<>();
-        feedbackModuleCB = new javax.swing.JComboBox<>();
-        feedbackPortSpinner = new javax.swing.JSpinner();
-        tileGroupPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        blockLbl = new javax.swing.JLabel();
-        blockCB = new javax.swing.JComboBox<>();
-        jPanel2 = new javax.swing.JPanel();
-        blockNrLbl = new javax.swing.JLabel();
-        blockNrSpinner = new javax.swing.JSpinner();
-        jPanel3 = new javax.swing.JPanel();
-        blockNameLbl = new javax.swing.JLabel();
-        blockNameTF = new javax.swing.JTextField();
-        jPanel4 = new javax.swing.JPanel();
-        startBlockLbl = new javax.swing.JLabel();
-        startBlockCB = new javax.swing.JCheckBox();
-        jPanel5 = new javax.swing.JPanel();
-        endBlockLbl = new javax.swing.JLabel();
-        endBlockCB = new javax.swing.JCheckBox();
-        jPanel6 = new javax.swing.JPanel();
-        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 200), new java.awt.Dimension(0, 200), new java.awt.Dimension(32767, 200));
 
         setPreferredSize(new java.awt.Dimension(1300, 815));
         setLayout(new java.awt.BorderLayout());
 
+        toolbarPanel.setLayout(new javax.swing.BoxLayout(toolbarPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        layoutToolBar.setFloatable(false);
         layoutToolBar.setDoubleBuffered(true);
         layoutToolBar.setMinimumSize(new java.awt.Dimension(567, 40));
         layoutToolBar.setPreferredSize(new java.awt.Dimension(1300, 40));
@@ -386,176 +349,27 @@ public class DesignPanel extends JPanel implements SelectionListener {
         objectLbl.setPreferredSize(new java.awt.Dimension(30, 30));
         layoutToolBar.add(objectLbl);
 
-        add(layoutToolBar, java.awt.BorderLayout.NORTH);
+        toolbarPanel.add(layoutToolBar);
 
-        mainSP.setDividerLocation(1050);
-        mainSP.setPreferredSize(new java.awt.Dimension(1300, 815));
-        mainSP.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                mainSPPropertyChange(evt);
-            }
-        });
+        add(toolbarPanel, java.awt.BorderLayout.NORTH);
 
-        canvasSP.setPreferredSize(new java.awt.Dimension(1100, 800));
+        canvasSP.setPreferredSize(new java.awt.Dimension(1300, 800));
 
         javax.swing.GroupLayout designCanvasLayout = new javax.swing.GroupLayout(designCanvas);
         designCanvas.setLayout(designCanvasLayout);
         designCanvasLayout.setHorizontalGroup(
             designCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1044, Short.MAX_VALUE)
+            .addGap(0, 1296, Short.MAX_VALUE)
         );
         designCanvasLayout.setVerticalGroup(
             designCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 989, Short.MAX_VALUE)
+            .addGap(0, 771, Short.MAX_VALUE)
         );
 
         canvasSP.setViewportView(designCanvas);
         designCanvas.getAccessibleContext().setAccessibleName("layoutCanvas");
 
-        mainSP.setLeftComponent(canvasSP);
-
-        propertiesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Properties"));
-        propertiesPanel.setOpaque(false);
-        propertiesPanel.setPreferredSize(new java.awt.Dimension(200, 800));
-        propertiesPanel.setLayout(new java.awt.GridLayout(2, 1));
-
-        tilePropertiesPanel.setPreferredSize(new java.awt.Dimension(200, 37));
-        tilePropertiesPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
-        turnoutCB.setModel(turnoutsCBM);
-        turnoutCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                turnoutCBActionPerformed(evt);
-            }
-        });
-        tilePropertiesPanel.add(turnoutCB);
-
-        signalCB.setModel(signalsCBM);
-        signalCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                signalCBActionPerformed(evt);
-            }
-        });
-        tilePropertiesPanel.add(signalCB);
-
-        feedbackModuleCB.setModel(modulesCBM);
-        feedbackModuleCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                feedbackModuleCBActionPerformed(evt);
-            }
-        });
-        tilePropertiesPanel.add(feedbackModuleCB);
-
-        feedbackPortSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 16, 1));
-        feedbackPortSpinner.setPreferredSize(new java.awt.Dimension(53, 26));
-        feedbackPortSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                feedbackPortSpinnerStateChanged(evt);
-            }
-        });
-        tilePropertiesPanel.add(feedbackPortSpinner);
-
-        propertiesPanel.add(tilePropertiesPanel);
-
-        tileGroupPanel.setPreferredSize(new java.awt.Dimension(400, 200));
-        tileGroupPanel.setLayout(new javax.swing.BoxLayout(tileGroupPanel, javax.swing.BoxLayout.Y_AXIS));
-
-        jPanel1.setPreferredSize(new java.awt.Dimension(200, 40));
-        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
-        blockLbl.setText("Block");
-        blockLbl.setPreferredSize(new java.awt.Dimension(75, 16));
-        jPanel1.add(blockLbl);
-
-        blockCB.setModel(blockCBM);
-        blockCB.setPreferredSize(new java.awt.Dimension(140, 27));
-        blockCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                blockCBActionPerformed(evt);
-            }
-        });
-        jPanel1.add(blockCB);
-
-        tileGroupPanel.add(jPanel1);
-
-        jPanel2.setPreferredSize(new java.awt.Dimension(200, 40));
-        jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
-        blockNrLbl.setText("Block Nr");
-        blockNrLbl.setPreferredSize(new java.awt.Dimension(75, 16));
-        jPanel2.add(blockNrLbl);
-
-        blockNrSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
-        blockNrSpinner.setPreferredSize(new java.awt.Dimension(50, 30));
-        blockNrSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                blockNrSpinnerStateChanged(evt);
-            }
-        });
-        jPanel2.add(blockNrSpinner);
-
-        tileGroupPanel.add(jPanel2);
-
-        jPanel3.setPreferredSize(new java.awt.Dimension(200, 40));
-        jPanel3.setRequestFocusEnabled(false);
-        jPanel3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
-        blockNameLbl.setLabelFor(blockNameTF);
-        blockNameLbl.setText("Name");
-        blockNameLbl.setPreferredSize(new java.awt.Dimension(75, 16));
-        jPanel3.add(blockNameLbl);
-
-        blockNameTF.setPreferredSize(new java.awt.Dimension(110, 30));
-        jPanel3.add(blockNameTF);
-
-        tileGroupPanel.add(jPanel3);
-
-        jPanel4.setPreferredSize(new java.awt.Dimension(200, 40));
-        jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
-        startBlockLbl.setText("Block Start");
-        startBlockLbl.setPreferredSize(new java.awt.Dimension(75, 20));
-        jPanel4.add(startBlockLbl);
-
-        startBlockCB.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        startBlockCB.setPreferredSize(new java.awt.Dimension(100, 25));
-        startBlockCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                startBlockCBActionPerformed(evt);
-            }
-        });
-        jPanel4.add(startBlockCB);
-
-        tileGroupPanel.add(jPanel4);
-
-        jPanel5.setPreferredSize(new java.awt.Dimension(200, 40));
-        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-
-        endBlockLbl.setText("Block End");
-        endBlockLbl.setPreferredSize(new java.awt.Dimension(75, 20));
-        jPanel5.add(endBlockLbl);
-
-        endBlockCB.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        endBlockCB.setPreferredSize(new java.awt.Dimension(100, 25));
-        endBlockCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                endBlockCBActionPerformed(evt);
-            }
-        });
-        jPanel5.add(endBlockCB);
-
-        tileGroupPanel.add(jPanel5);
-
-        jPanel6.add(filler1);
-
-        tileGroupPanel.add(jPanel6);
-
-        propertiesPanel.add(tileGroupPanel);
-
-        mainSP.setRightComponent(propertiesPanel);
-        propertiesPanel.getAccessibleContext().setAccessibleParent(designCanvas);
-
-        add(mainSP, java.awt.BorderLayout.CENTER);
+        add(canvasSP, java.awt.BorderLayout.CENTER);
 
         getAccessibleContext().setAccessibleName("layoutPanel");
         getAccessibleContext().setAccessibleDescription("");
@@ -648,109 +462,6 @@ public class DesignPanel extends JPanel implements SelectionListener {
       this.designCanvas.selectionModeChanged(Mode.ADD, Rotation.R0, Direction.CENTER, TileType.OCCUPANCY_SENSOR);
   }//GEN-LAST:event_addOccupancySensorBtnActionPerformed
 
-  private void turnoutCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_turnoutCBActionPerformed
-      Turnout t = (Turnout) this.turnoutsCBM.getSelectedItem();
-      if (this.selectedLayoutTile != null && t != null) {
-          selectedLayoutTile.setSolenoidAccessoiry(t);
-          selectedLayoutTile.setSoacId(t.getId());
-      }
-  }//GEN-LAST:event_turnoutCBActionPerformed
-
-  private void signalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signalCBActionPerformed
-      Signal s = (Signal) this.signalCB.getSelectedItem();
-      if (selectedLayoutTile != null && s != null) {
-          selectedLayoutTile.setSolenoidAccessoiry(s);
-          selectedLayoutTile.setSoacId(s.getId());
-          Logger.trace("Tile: " + selectedLayoutTile + " Signal: " + s);
-      }
-  }//GEN-LAST:event_signalCBActionPerformed
-
-  private void feedbackModuleCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_feedbackModuleCBActionPerformed
-      if (feedbackModuleCB.isVisible()) {
-          FeedbackModule fbm = (FeedbackModule) this.feedbackModuleCB.getSelectedItem();
-          if (this.selectedLayoutTile != null) {
-              this.selectedLayoutTile.setFeedbackModule(fbm);
-              this.selectedLayoutTile.setPort(getValidatedSpinnerValue());
-
-              Logger.trace("Femo " + selectedLayoutTile.getFemoId() + " SET Port to:" + selectedLayoutTile.getPort() + "...");
-          }
-      }
-  }//GEN-LAST:event_feedbackModuleCBActionPerformed
-
-  private void feedbackPortSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_feedbackPortSpinnerStateChanged
-      if (feedbackPortSpinner.isVisible()) {
-          Logger.trace("Selected FM: " + this.feedbackModuleCB.getSelectedItem() + " Selected Port: " + feedbackPortSpinner.getValue());
-
-          if (selectedLayoutTile != null) {
-              selectedLayoutTile.setFeedbackModule((FeedbackModule) this.feedbackModuleCB.getSelectedItem());
-              selectedLayoutTile.setPort(getValidatedSpinnerValue());
-              Logger.trace("FM: " + this.selectedLayoutTile.getFeedbackModule() + " Port:" + selectedLayoutTile.getPort() + "...");
-          }
-      }
-  }//GEN-LAST:event_feedbackPortSpinnerStateChanged
-
-    private Integer getValidatedSpinnerValue() {
-        Integer v = (Integer) this.feedbackPortSpinner.getValue();
-
-        if (v > 0 && v < 17) {
-            return v;
-        } else {
-            return null;
-        }
-    }
-
-  private void blockCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blockCBActionPerformed
-      if (this.blockCB.isVisible()) {
-          LayoutTileGroup ltg = (LayoutTileGroup) this.blockCB.getSelectedItem();
-          if (ltg != null) {
-              this.selectedLayoutTile.setLayoutTileGroup(ltg);
-              if (ltg.getAddress() != null) {
-                  this.blockNrSpinner.setValue(ltg.getAddress());
-              }
-              this.blockNameTF.setText(ltg.getName());
-
-              this.repaint();
-          }
-      }
-  }//GEN-LAST:event_blockCBActionPerformed
-
-  private void blockNrSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blockNrSpinnerStateChanged
-      if (this.blockNrSpinner.isVisible()) {
-          Logger.trace("Block Nr: " + this.blockNrSpinner.getValue());
-          this.selectedLayoutTile.getLayoutTileGroup().setAddress((Integer) this.blockNrSpinner.getValue());
-      }
-  }//GEN-LAST:event_blockNrSpinnerStateChanged
-
-  private void startBlockCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startBlockCBActionPerformed
-      if (this.startBlockCB.isVisible()) {
-          if (this.startBlockCB.isSelected()) {
-              this.selectedLayoutTile.getLayoutTileGroup().setStartLatiId(this.selectedLayoutTile.getId());
-              Logger.trace("StartLatiId: " + this.selectedLayoutTile.getId());
-          }
-      }
-  }//GEN-LAST:event_startBlockCBActionPerformed
-
-  private void endBlockCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endBlockCBActionPerformed
-      if (this.endBlockCB.isVisible()) {
-          if (this.endBlockCB.isSelected()) {
-              this.selectedLayoutTile.getLayoutTileGroup().setEndLatiId(this.selectedLayoutTile.getId());
-              Logger.trace("EndLatiId: " + this.selectedLayoutTile.getId());
-          }
-      }
-  }//GEN-LAST:event_endBlockCBActionPerformed
-
-  private void mainSPPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_mainSPPropertyChange
-      if ("lastDividerLocation".equals(evt.getPropertyName())) {
-          int currentLocation = this.mainSP.getDividerLocation();
-          if (splitLocation != currentLocation) {
-              Logger.debug("SplitLocation: " + splitLocation + " CurrentLocation: " + currentLocation);
-
-              splitLocation = currentLocation;
-              this.designCanvas.resetDotGrid();
-          }
-      }
-  }//GEN-LAST:event_mainSPPropertyChange
-
     private void selectionModeChanged(Mode newMode, Rotation newRotation, Direction newDirection, TileType newTileType) {
         this.mode = newMode;
         this.rotation = newRotation;
@@ -805,223 +516,83 @@ public class DesignPanel extends JPanel implements SelectionListener {
         }
     }
 
-    @Override
-    public void setSelectedLayoutTiles(Set<AbstractTile> tiles) {
-        this.selectedTiles = tiles;
-
-        if (!tiles.isEmpty()) {
-            this.selectedTiles = tiles;
-            //compatibility need adjustment for multiple select bu for now single select
-            if (this.selectedTiles.size() == 1) {
-                LayoutTile plt = this.selectedLayoutTile;
-                AbstractTile pat = this.selectedAbstractTile;
-
-                //Obtain the selected tile
-                selectedAbstractTile = tiles.iterator().next();
-                Logger.trace("Selected AbstractTile: " + selectedAbstractTile);
-                selectedLayoutTile = selectedAbstractTile.getLayoutTile();
-
-                this.executor.execute(() -> storeLayoutTileGroup(plt));
-            }
-        } else {
-            this.selectedAbstractTile = null;
-            this.selectedLayoutTile = null;
-        }
-        this.executor.execute(() -> showProperties());
-    }
-
-    private void storeLayoutTileGroup(LayoutTile LayoutTile) {
-        if (LayoutTile != null && LayoutTile.getLayoutTileGroup() != null && LayoutTile.getLayoutTileGroup().getAddress() != null && !LayoutTile.getLayoutTileGroup().getAddress().equals(0)) {
-            LayoutTileGroup ltg = LayoutTile.getLayoutTileGroup();
-            //ensure the text is saved
-            String t = this.blockNameTF.getText();
-            ltg.setName(t);
-            Integer groupNumber = (Integer) this.blockNrSpinner.getValue();
-            if (groupNumber > 0) {
-                ltg.setAddress(groupNumber);
-            }
-            TrackServiceFactory.getTrackService().persist(ltg);
-            Logger.trace("Persisted " + ltg.toLogString());
-        }
-    }
-
-    private void showProperties() {
-        //hide the properties first
-        hideAllProperties();
-
-        if (selectedLayoutTile != null) {
-            String tt = selectedLayoutTile.getTiletype();
-            Logger.trace("Type: " + tt + " Soac: " + selectedLayoutTile.getSoacId() + " SA: " + selectedLayoutTile.getSolenoidAccessoiry() + " Femo: " + selectedLayoutTile.getFemoId() + " Port " + selectedLayoutTile.getPort());
-
-            switch (tt) {
-                case "TurnoutTile":
-                    showTurnoutProperties();
-                    break;
-                case "SignalTile":
-                    showSignalProperties();
-                    break;
-                case "FeedbackPort":
-                    showFeedbackModuleProperties();
-                    break;
-                case "OccupancyDetector":
-                    showFeedbackModuleProperties();
-                    break;
-                default:
-                    hideAllProperties();
-                    break;
-            }
-            if (!"TurnoutTile".equals(tt)) {
-                showGroupProperties();
-            }
-        }
-    }
-
-    private void showGroupProperties() {
-        //Show Group settings
-        //refresh the cb
-        this.blockCBM = getBlockComboBoxModel();
-        this.blockCB.setModel(blockCBM);
-
-        LayoutTileGroup ltg;
-        ltg = selectedLayoutTile.getLayoutTileGroup();
-        if (ltg == null) {
-            ltg = new LayoutTileGroup();
-        } else {
-            //The group might be updated by a previous action
-            LayoutTileGroup ultg = TrackServiceFactory.getTrackService().getLayoutTileGroup(ltg.getAddress());
-            if (ultg != null) {
-                ltg = ultg;
-            }
-        }
-        selectedLayoutTile.setLayoutTileGroup(ltg);
-
-        blockCB.setSelectedItem(ltg);
-
-        if (ltg.getAddress() != null) {
-            blockNrSpinner.setValue(ltg.getAddress());
-        }
-        blockNameTF.setText(ltg.getName());
-        endBlockCB.setSelected(ltg.getEndLatiId() != null);
-        startBlockCB.setSelected(ltg.getStartLatiId() != null);
-
-        blockCB.setVisible(true);
-        blockLbl.setVisible(true);
-        blockNrSpinner.setVisible(true);
-        blockNrLbl.setVisible(true);
-        blockNameTF.setVisible(true);
-        blockNameLbl.setVisible(true);
-        endBlockCB.setVisible(true);
-        endBlockLbl.setVisible(true);
-        startBlockCB.setVisible(true);
-        startBlockLbl.setVisible(true);
-    }
-
-    private void showTurnoutProperties() {
-        turnoutsCBM.setSelectedItem((Turnout) this.selectedLayoutTile.getSolenoidAccessoiry());
-        turnoutCB.setVisible(true);
-        signalCB.setVisible(false);
-        feedbackModuleCB.setVisible(false);
-        feedbackPortSpinner.setVisible(false);
-    }
-
-    private void showSignalProperties() {
-        signalsCBM.setSelectedItem((Signal) this.selectedLayoutTile.getSolenoidAccessoiry());
-        turnoutCB.setVisible(false);
-        signalCB.setVisible(true);
-        feedbackModuleCB.setVisible(false);
-        feedbackPortSpinner.setVisible(false);
-    }
-
-    private void showFeedbackModuleProperties() {
-        Logger.trace("Femo " + selectedLayoutTile.getFemoId() + " Port " + selectedLayoutTile.getPort());
-
-        if (this.selectedLayoutTile.getPort() != null) {
-            this.feedbackPortSpinner.setValue(this.selectedLayoutTile.getPort());
-        }
-        modulesCBM.setSelectedItem(this.selectedLayoutTile.getFeedbackModule());
-
-        turnoutCB.setVisible(false);
-        signalCB.setVisible(false);
-        feedbackModuleCB.setVisible(true);
-        feedbackPortSpinner.setVisible(true);
-    }
-
-    private void hideAllProperties() {
-        turnoutCB.setVisible(false);
-        signalCB.setVisible(false);
-        feedbackModuleCB.setVisible(false);
-        feedbackPortSpinner.setVisible(false);
-        //Group settings
-        blockCB.setVisible(false);
-        blockLbl.setVisible(false);
-        blockNrSpinner.setVisible(false);
-        blockNrSpinner.setValue(0);
-        blockNrLbl.setVisible(false);
-        blockNameTF.setVisible(false);
-        blockNameTF.setText("");
-        blockNameLbl.setVisible(false);
-        endBlockCB.setVisible(false);
-        endBlockLbl.setVisible(false);
-        startBlockCB.setVisible(false);
-        startBlockLbl.setVisible(false);
-
-        //turnoutsCBM.setSelectedItem(null);
-        //signalsCBM.setSelectedItem(null);
-        feedbackPortSpinner.setValue(0);
-        //modulesCBM.setSelectedItem(null);
-    }
-
-    private ComboBoxModel<Turnout> getTurnoutComboBoxModel() {
-        ComboBoxModel turnoutCBM;
-        if (TrackServiceFactory.getTrackService() != null) {
-            Logger.trace("Setup the turnout model...");
-
-            List<Turnout> tl = TrackServiceFactory.getTrackService().getTurnouts();
-
-            Turnout[] turnouts = new Turnout[tl.size()];
-            tl.toArray(turnouts);
-
-            turnoutCBM = new DefaultComboBoxModel<>(turnouts);
-        } else {
-            turnoutCBM = new DefaultComboBoxModel<>();
-        }
-        return turnoutCBM;
-    }
-
-    private ComboBoxModel<Signal> getSignalComboBoxModel() {
-        ComboBoxModel signalCBM;
-        if (TrackServiceFactory.getTrackService() != null) {
-            Logger.trace("Setup the signal model...");
-
-            List<Signal> sl = TrackServiceFactory.getTrackService().getSignals();
-
-            Signal[] signals = new Signal[sl.size()];
-            sl.toArray(signals);
-
-            signalCBM = new DefaultComboBoxModel<>(signals);
-        } else {
-            signalCBM = new DefaultComboBoxModel<>();
-        }
-        return signalCBM;
-    }
-
-    private ComboBoxModel<FeedbackModule> getFeedbackModuleComboBoxModel() {
-        ComboBoxModel feedbackCBM;
-        if (TrackServiceFactory.getTrackService() != null) {
-            Logger.trace("Setup the feedback model...");
-
-            List<FeedbackModule> fbml = TrackServiceFactory.getTrackService().getFeedbackModules();
-
-            FeedbackModule[] modules = new FeedbackModule[fbml.size()];
-            fbml.toArray(modules);
-
-            feedbackCBM = new DefaultComboBoxModel<>(modules);
-        } else {
-            feedbackCBM = new DefaultComboBoxModel<>();
-        }
-        return feedbackCBM;
-    }
-
+//    @Override
+//    public void setSelectedLayoutTiles(Set<AbstractTile> tiles) {
+//        this.selectedTiles = tiles;
+//
+//        if (!tiles.isEmpty()) {
+//            this.selectedTiles = tiles;
+//            //compatibility need adjustment for multiple select bu for now single select
+//            if (this.selectedTiles.size() == 1) {
+//                LayoutTile plt = this.selectedLayoutTile;
+//                AbstractTile pat = this.selectedAbstractTile;
+//
+//                //Obtain the selected tile
+//                selectedAbstractTile = tiles.iterator().next();
+//                Logger.trace("Selected AbstractTile: " + selectedAbstractTile);
+//                selectedLayoutTile = selectedAbstractTile.getLayoutTile();
+//
+//                this.executor.execute(() -> storeLayoutTileGroup(plt));
+//            }
+//        } else {
+//            this.selectedAbstractTile = null;
+//            this.selectedLayoutTile = null;
+//        }
+//        this.executor.execute(() -> showProperties());
+//    }
+//    private void storeLayoutTileGroup(LayoutTile LayoutTile) {
+//        if (LayoutTile != null && LayoutTile.getLayoutTileGroup() != null && LayoutTile.getLayoutTileGroup().getAddress() != null && !LayoutTile.getLayoutTileGroup().getAddress().equals(0)) {
+//            LayoutTileGroup ltg = LayoutTile.getLayoutTileGroup();
+//            //ensure the text is saved
+//            String t = this.blockNameTF.getText();
+//            ltg.setName(t);
+//            Integer groupNumber = (Integer) this.blockNrSpinner.getValue();
+//            if (groupNumber > 0) {
+//                ltg.setAddress(groupNumber);
+//            }
+//            TrackServiceFactory.getTrackService().persist(ltg);
+//            Logger.trace("Persisted " + ltg.toLogString());
+//        }
+//    }
+//    private void showGroupProperties() {
+//        //Show Group settings
+//        //refresh the cb
+//        this.blockCBM = getBlockComboBoxModel();
+//        this.blockCB.setModel(blockCBM);
+//
+//        LayoutTileGroup ltg;
+//        ltg = selectedLayoutTile.getLayoutTileGroup();
+//        if (ltg == null) {
+//            ltg = new LayoutTileGroup();
+//        } else {
+//            //The group might be updated by a previous action
+//            LayoutTileGroup ultg = TrackServiceFactory.getTrackService().getLayoutTileGroup(ltg.getAddress());
+//            if (ultg != null) {
+//                ltg = ultg;
+//            }
+//        }
+//        selectedLayoutTile.setLayoutTileGroup(ltg);
+//
+//        blockCB.setSelectedItem(ltg);
+//
+//        if (ltg.getAddress() != null) {
+//            blockNrSpinner.setValue(ltg.getAddress());
+//        }
+//        blockNameTF.setText(ltg.getName());
+//        endBlockCB.setSelected(ltg.getEndLatiId() != null);
+//        startBlockCB.setSelected(ltg.getStartLatiId() != null);
+//
+//        blockCB.setVisible(true);
+//        blockLbl.setVisible(true);
+//        blockNrSpinner.setVisible(true);
+//        blockNrLbl.setVisible(true);
+//        blockNameTF.setVisible(true);
+//        blockNameLbl.setVisible(true);
+//        endBlockCB.setVisible(true);
+//        endBlockLbl.setVisible(true);
+//        startBlockCB.setVisible(true);
+//        startBlockLbl.setVisible(true);
+//    }
     private ComboBoxModel<LayoutTileGroup> getBlockComboBoxModel() {
         ComboBoxModel layoutTileGroupCBM;
         if (TrackServiceFactory.getTrackService() != null) {
@@ -1083,21 +654,10 @@ public class DesignPanel extends JPanel implements SelectionListener {
     private javax.swing.JToggleButton addTrackStraightBtn;
     private javax.swing.JToggleButton addTurnoutBtn;
     private javax.swing.JToggleButton addlTrackCurvedBtn;
-    private javax.swing.JComboBox<LayoutTileGroup> blockCB;
-    private javax.swing.JLabel blockLbl;
-    private javax.swing.JLabel blockNameLbl;
-    private javax.swing.JTextField blockNameTF;
-    private javax.swing.JLabel blockNrLbl;
-    private javax.swing.JSpinner blockNrSpinner;
     private javax.swing.JScrollPane canvasSP;
     private lan.wervel.jcs.ui.layout.DesignCanvas designCanvas;
     private javax.swing.JLabel directionLabel;
     private javax.swing.JToggleButton editBtn;
-    private javax.swing.JCheckBox endBlockCB;
-    private javax.swing.JLabel endBlockLbl;
-    private javax.swing.JComboBox<FeedbackModule> feedbackModuleCB;
-    private javax.swing.JSpinner feedbackPortSpinner;
-    private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.Box.Filler filler4;
@@ -1106,30 +666,17 @@ public class DesignPanel extends JPanel implements SelectionListener {
     private javax.swing.Box.Filler filler7;
     private javax.swing.JButton flipHorizontalBtn;
     private javax.swing.JButton flipVerticalBtn;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.ButtonGroup layoutBG;
     private javax.swing.JToolBar layoutToolBar;
     private javax.swing.JButton loadBtn;
-    private javax.swing.JSplitPane mainSP;
     private javax.swing.JLabel modeLbl;
     private javax.swing.JButton moveBtn;
     private javax.swing.JLabel objectLbl;
-    private javax.swing.JPanel propertiesPanel;
     private javax.swing.JButton removeBtn;
     private javax.swing.JButton rotateBtn;
     private javax.swing.JLabel rotationLbl;
     private javax.swing.JButton saveBtn;
     private javax.swing.JToggleButton selectBtn;
-    private javax.swing.JComboBox<Signal> signalCB;
-    private javax.swing.JCheckBox startBlockCB;
-    private javax.swing.JLabel startBlockLbl;
-    private javax.swing.JPanel tileGroupPanel;
-    private javax.swing.JPanel tilePropertiesPanel;
-    private javax.swing.JComboBox<Turnout> turnoutCB;
+    private javax.swing.JPanel toolbarPanel;
     // End of variables declaration//GEN-END:variables
 }

@@ -60,6 +60,7 @@ import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.HeartBeatListener;
+import lan.wervel.jcs.ui.layout.DesignPanel;
 import lan.wervel.jcs.ui.options.OptionDialog;
 import lan.wervel.jcs.ui.util.UICallback;
 import org.pmw.tinylog.Logger;
@@ -198,8 +199,9 @@ public class JCSFrame extends JFrame implements UICallback {
     public void showDesignLayoutPanel() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "designPanel");
+        this.designPanel.loadLayout();
     }
-
+   
     public void stop() {
         TrackServiceFactory.getTrackService().powerOff();
     }
@@ -224,12 +226,14 @@ public class JCSFrame extends JFrame implements UICallback {
         showSignalBtn = new JButton();
         showDiagnosticsBtn = new JButton();
         filler5 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
+        showDesignTrackBtn = new JButton();
         centerPanel = new JPanel();
         settingsPanel = new JPanel();
         jLabel1 = new JLabel();
         signalsPanel = new SignalsPanel();
         turnoutsPanel = new TurnoutsPanel();
         diagnosticPanel = new DiagnosticPanel();
+        designPanel = new DesignPanel();
         statusPanel = new JPanel();
         statusPanelLeft = new JPanel();
         filler4 = new Box.Filler(new Dimension(440, 0), new Dimension(140, 0), new Dimension(440, 32767));
@@ -379,6 +383,22 @@ public class JCSFrame extends JFrame implements UICallback {
         filler5.setName("filler5"); // NOI18N
         jcsToolBar.add(filler5);
 
+        showDesignTrackBtn.setIcon(new ImageIcon(getClass().getResource("/media/earth-24.png"))); // NOI18N
+        showDesignTrackBtn.setToolTipText("Design Layout");
+        showDesignTrackBtn.setFocusable(false);
+        showDesignTrackBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showDesignTrackBtn.setMaximumSize(new Dimension(40, 40));
+        showDesignTrackBtn.setMinimumSize(new Dimension(40, 40));
+        showDesignTrackBtn.setName("showDesignTrackBtn"); // NOI18N
+        showDesignTrackBtn.setPreferredSize(new Dimension(40, 40));
+        showDesignTrackBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        showDesignTrackBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                showDesignTrackBtnActionPerformed(evt);
+            }
+        });
+        jcsToolBar.add(showDesignTrackBtn);
+
         getContentPane().add(jcsToolBar, BorderLayout.WEST);
 
         centerPanel.setMinimumSize(new Dimension(1024, 845));
@@ -411,6 +431,9 @@ public class JCSFrame extends JFrame implements UICallback {
 
         diagnosticPanel.setName("diagnosticPanel"); // NOI18N
         centerPanel.add(diagnosticPanel, "diagnosticPanel");
+
+        designPanel.setName("designPanel"); // NOI18N
+        centerPanel.add(designPanel, "designPanel");
 
         getContentPane().add(centerPanel, BorderLayout.CENTER);
 
@@ -628,6 +651,10 @@ public class JCSFrame extends JFrame implements UICallback {
       this.synchronizeAccessories();
   }//GEN-LAST:event_synchronizeAccessoriesMIActionPerformed
 
+    private void showDesignTrackBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDesignTrackBtnActionPerformed
+        showDesignLayoutPanel();
+    }//GEN-LAST:event_showDesignTrackBtnActionPerformed
+
     private void synchronizeAccessories() {
         TrackServiceFactory.getTrackService().synchronizeAccessories();
     }
@@ -737,6 +764,7 @@ public class JCSFrame extends JFrame implements UICallback {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel blinkLbl;
     private JPanel centerPanel;
+    private DesignPanel designPanel;
     private DiagnosticPanel diagnosticPanel;
     private JMenu editMenu;
     private JMenu fileMenu;
@@ -753,6 +781,7 @@ public class JCSFrame extends JFrame implements UICallback {
     private JButton powerBtn;
     private JMenuItem quitMI;
     private JPanel settingsPanel;
+    private JButton showDesignTrackBtn;
     private JButton showDiagnosticsBtn;
     private JMenuItem showDiagnosticsMI;
     private JMenuItem showLocosMI;

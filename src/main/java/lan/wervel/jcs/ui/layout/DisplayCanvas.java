@@ -48,6 +48,8 @@ import lan.wervel.jcs.feedback.FeedbackPortListener;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
+import lan.wervel.jcs.ui.layout.tiles.FeedbackPort;
+import lan.wervel.jcs.ui.layout.tiles.OccupancyDetector;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
 import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
@@ -92,11 +94,22 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
 
         for (AbstractTile tile : snapshot) {
             tile.drawTile(g2d);
+
+            if(tile instanceof FeedbackPort || tile instanceof OccupancyDetector) {
+                tile.setDrawName(false);
+            } 
+            
             if (!tile.equals(this.selectedTile)) {
+                tile.setDrawName(true);
                 if (tile instanceof SignalTile | tile instanceof TurnoutTile) {
                     tile.drawCenterPoint(g2d);
                 }
             }
+            
+            if(tile instanceof FeedbackPort || tile instanceof OccupancyDetector) {
+                tile.setDrawName(false);
+            } 
+            
         }
 
         for (AbstractTile tile : snapshot) {

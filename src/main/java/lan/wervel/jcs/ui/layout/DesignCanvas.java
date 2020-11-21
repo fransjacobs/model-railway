@@ -380,6 +380,7 @@ public class DesignCanvas extends JPanel {
         rightMI = new JMenuItem();
         leftMI = new JMenuItem();
         operationsPM = new JPopupMenu();
+        propertiesMI = new JMenuItem();
         rotateMI = new JMenuItem();
         flipHorizontalMI = new JMenuItem();
         flipVerticalMI = new JMenuItem();
@@ -417,6 +418,14 @@ public class DesignCanvas extends JPanel {
             }
         });
         curvedPopupMenu.add(leftMI);
+
+        propertiesMI.setText("Properties");
+        propertiesMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                propertiesMIActionPerformed(evt);
+            }
+        });
+        operationsPM.add(propertiesMI);
 
         rotateMI.setText("Rotate");
         rotateMI.addActionListener(new ActionListener() {
@@ -497,11 +506,15 @@ public class DesignCanvas extends JPanel {
 
       switch (this.mode) {
           case ADD:
-              this.selectedTiles.clear();
               if (MouseEvent.BUTTON1 == evt.getButton()) {
+                  this.selectedTiles.clear();
                   Logger.trace("Adding tile: " + this.tileType + " at X: " + evt.getX() + ", Y:" + evt.getY() + "...");
                   addTile(p);
               }
+              if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
+                  showOperationsPopupMenu(tile, p.x, p.y);
+              }
+
               break;
           default:
               if (tile != null) {
@@ -512,10 +525,8 @@ public class DesignCanvas extends JPanel {
                   this.selectedTiles.clear();
               }
 
-              if (tile != null && Mode.SELECT.equals(this.mode)) {
-                  if (MouseEvent.BUTTON3 == evt.getButton()) {
-                      showOperationsPopupMenu(tile, p.x, p.y);
-                  }
+              if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
+                  showOperationsPopupMenu(tile, p.x, p.y);
               }
 
               break;
@@ -557,6 +568,7 @@ public class DesignCanvas extends JPanel {
 
     private void showOperationsPopupMenu(AbstractTile tile, int x, int y) {
         //which items should be shown
+        boolean showProperties = false;
         boolean showFlip = false;
         boolean showRotate = false;
         boolean showMove = false;
@@ -564,7 +576,31 @@ public class DesignCanvas extends JPanel {
 
         String tt = tile.getClass().getSimpleName();
         switch (tt) {
+//            case "StraightTrack":
+//                showRotate = true;
+//                showDelete = true;
+//                break;
+//            case "DiagonalTrack":
+//                showRotate = true;
+//                showDelete = true;
+//                break;
+            case "FeedbackPort":
+                showProperties = true;
+                showRotate = true;
+                showDelete = true;
+                break;
+            case "OccupancyDetector":
+                showProperties = true;
+                showRotate = true;
+                showDelete = true;
+                break;
+            case "SignalTile":
+                showProperties = true;
+                showRotate = true;
+                showDelete = true;
+                break;
             case "TurnoutTile":
+                showProperties = true;
                 showFlip = true;
                 showRotate = true;
                 showDelete = true;
@@ -574,6 +610,7 @@ public class DesignCanvas extends JPanel {
                 showDelete = true;
                 break;
         }
+        this.propertiesMI.setVisible(showProperties);
         this.flipHorizontalMI.setVisible(showFlip);
         this.flipVerticalMI.setVisible(showFlip);
         this.rotateMI.setVisible(showRotate);
@@ -589,13 +626,11 @@ public class DesignCanvas extends JPanel {
       Point p = AbstractTile.snapToGrid(evt.getPoint());
       AbstractTile tile = this.findTile(p);
 
-      if (tile != null && Mode.SELECT.equals(this.mode) || Mode.MOVE.equals(this.mode)) {
-          if (MouseEvent.BUTTON3 == evt.getButton()) {
-              this.selectedTiles.clear();
-              this.selectedTiles.add(tile);
+      if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
+          this.selectedTiles.clear();
+          this.selectedTiles.add(tile);
 
-              showOperationsPopupMenu(tile, p.x, p.y);
-          }
+          showOperationsPopupMenu(tile, p.x, p.y);
       }
   }//GEN-LAST:event_formMousePressed
 
@@ -695,16 +730,6 @@ public class DesignCanvas extends JPanel {
 
       int x = evt.getX();
       int y = evt.getY();
-
-//      if (!sp.equals(this.mouseLocation)) {
-//          if (this.mouseLocation != null) {
-//              repaint(this.mouseLocation.x, this.mouseLocation.y, GRID_SIZE, GRID_SIZE);
-//          }
-//          repaint(sp.x, sp.y, GRID_SIZE, GRID_SIZE);
-//          //this.mouseLocation = evt.getPoint();
-//          mouseLocation = sp;
-//          //repaint(this.mouseLocation.x, this.mouseLocation.y, GRID_SIZE, GRID_SIZE);
-//      }
   }//GEN-LAST:event_formMouseMoved
 
     private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed
@@ -727,44 +752,10 @@ public class DesignCanvas extends JPanel {
         removeSelectedTile();
     }//GEN-LAST:event_deleteMIActionPerformed
 
-//    private AbstractTile selectTile(Point p) {
-//        Logger.trace("Selecting tile @ (" + p.x + "," + p.y + ")...");
-//        AbstractTile toSelect = null;
-//
-//        Set<AbstractTile> snapshot;
-//        synchronized (tiles) {
-//            snapshot = new HashSet<>(tiles);
-//        }
-//
-//        for (AbstractTile e : snapshot) {
-//            if (e != null && e.getCenter() != null && e.getCenter().equals(p)) {
-//                toSelect = e;
-//                Logger.trace("Direct search found Tile " + toSelect + "...");
-//                break;
-//            }
-//        }
-//
-//        // A bit too fuzzy for now...
-////    if (toSelect == null) {
-////      for (AbstractTile e : this.tiles) {
-////        // not a direct coordinate match are the coordinates within the bound of the tile?
-////        if (e.contains(p)) {
-////          toSelect = e;
-////          Logger.trace("Fuzzy search found AbstractTile " + toSelect + "...");
-////          break;
-////        }
-////      }
-////    }
-//        if (toSelect != null) {
-//            Logger.debug("Found tile " + toSelect.getClass().getSimpleName() + " @ " + toSelect.getCenter() + "...");
-//        } else {
-//            Logger.trace("No tile Found @ " + p + "...");
-//        }
-//        return toSelect;
-//    }
-//    private Point snapToGrid(Point p) {
-//        return snapToGrid(p.x, p.y);
-//    }
+    private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
+        editSelectedTileProperties();
+    }//GEN-LAST:event_propertiesMIActionPerformed
+
     private void addTile(Point p) {
         AbstractTile tile = null;
 
@@ -802,24 +793,21 @@ public class DesignCanvas extends JPanel {
 
         if (tile != null) {
             AbstractTile t = tile;
-            this.executor.execute(() -> addTile(t));
+            //this.executor.execute(() -> addTile(t));
+            if (this.tiles.contains(tile)) {
+                Logger.trace("A Tile " + tile.getClass().getSimpleName() + " exists; replacing it...");
+            }
+
+            synchronized (tiles) {
+                this.tiles.add(tile);
+            }
+            Logger.trace("Added Element " + tile.getClass().getSimpleName() + " " + tile.getRotation() + " At " + tile.getCenter());
+
+            this.selectedTiles.clear();
+            selectedTiles.add(tile);
+
+            Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
         }
-    }
-
-    private void addTile(AbstractTile tile) {
-        if (this.tiles.contains(tile)) {
-            Logger.debug("A Tile " + tile.getClass().getSimpleName() + " exists; replacing it...");
-        }
-
-        synchronized (tiles) {
-            this.tiles.add(tile);
-        }
-        Logger.debug("Added Element " + tile.getClass().getSimpleName() + " " + tile.getRotation() + " At " + tile.getCenter());
-
-        this.selectedTiles.clear();
-        selectedTiles.add(tile);
-
-        Logger.debug("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
     }
 
     private void deleteTiles(Set<AbstractTile> toRemove) {
@@ -849,6 +837,62 @@ public class DesignCanvas extends JPanel {
         }
 
         this.executor.execute(() -> deleteTiles(toRemove));
+    }
+
+    private java.awt.Frame getParentFrame() {
+        java.awt.Frame frame = null;
+        java.awt.Container container;
+        int compCount = 10;
+        while (compCount > 0) {
+            container = this.getParent();
+            if (container != null && container instanceof java.awt.Frame) {
+                frame = (java.awt.Frame) container;
+                compCount = 0;
+            } else {
+                compCount--;
+            }
+        }
+        return frame;
+    }
+
+    private void editSelectedTileProperties() {
+        //the first tile should be the selected one
+        if (this.selectedTiles.size() > 0) {
+            AbstractTile tile = this.selectedTiles.iterator().next();
+            Logger.trace("Selected Tile: " + tile);
+            String tt = tile.getClass().getSimpleName();
+            switch (tt) {
+//            case "StraightTrack":
+//                showRotate = true;
+//                showDelete = true;
+//                break;
+//            case "DiagonalTrack":
+//                showRotate = true;
+//                showDelete = true;
+//                break;
+                case "FeedbackPort":
+                    SensorDialog fbd = new SensorDialog(getParentFrame(), true, (FeedbackPort) tile);
+                    fbd.setVisible(true);
+                    break;
+                case "OccupancyDetector":
+                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (OccupancyDetector) tile);
+                    osd.setVisible(true);
+                    break;
+                case "SignalTile":
+                    SignalDialog sd = new SignalDialog(getParentFrame(), true, (SignalTile) tile);
+                    sd.setVisible(true);
+                    break;
+                case "TurnoutTile":
+                    TurnoutDialog td = new TurnoutDialog(getParentFrame(), true, (TurnoutTile) tile);
+                    td.setVisible(true);
+                    break;
+                default:
+                    break;
+            }
+        }
+        this.executor.execute(() -> repaint());
+        Logger.trace("Edit done");
+
     }
 
     public void rotateSelectedTile() {
@@ -914,15 +958,6 @@ public class DesignCanvas extends JPanel {
         }
     }
 
-//    AbstractTile getSelectedTile() {
-//        if (!this.selectedTiles.isEmpty()) {
-//            AbstractTile selectedTile = selectedTiles.iterator().next();
-//            return selectedTile;
-//        } else {
-//            return null;
-//        }
-//        //return this.selectedTile;
-//    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPopupMenu curvedPopupMenu;
     private JMenuItem deleteMI;
@@ -932,6 +967,7 @@ public class DesignCanvas extends JPanel {
     private JMenuItem leftMI;
     private JMenuItem moveMI;
     private JPopupMenu operationsPM;
+    private JMenuItem propertiesMI;
     private JMenuItem rightMI;
     private JMenuItem rotateMI;
     private JPopupMenu straightPopupMenu;

@@ -102,7 +102,7 @@ class TCPConnection implements Connection {
         try {
             dos.flush();
             dos.write(message.getBytes());
-            Logger.trace(message.getMessageName() + " send");
+            //Logger.trace(message.getMessageName() + " send");
 
             //CanMessageEvent sendEvent = new CanMessageEvent(message, this.cs2Address);
             //executor.execute(() -> fireMessageListeners(sendEvent));

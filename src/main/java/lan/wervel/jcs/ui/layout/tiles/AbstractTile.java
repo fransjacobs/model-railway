@@ -69,6 +69,7 @@ public abstract class AbstractTile implements Shape {
     protected LayoutTile layoutTile;
 
     protected Color trackColor;
+    protected boolean drawName = true;
 
     protected ReDrawListener reDrawListener;
 
@@ -411,6 +412,14 @@ public abstract class AbstractTile implements Shape {
             default:
                 return null;
         }
+    }
+
+    public boolean isDrawName() {
+        return drawName;
+    }
+
+    public void setDrawName(boolean drawName) {
+        this.drawName = drawName;
     }
 
     public void setReDrawListener(ReDrawListener listener) {
