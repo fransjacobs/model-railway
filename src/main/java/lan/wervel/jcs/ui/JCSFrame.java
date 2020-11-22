@@ -143,7 +143,8 @@ public class JCSFrame extends JFrame implements UICallback {
             checkTimer.start();
 
             //Show the default panel
-            showDiagnostics();
+            //showDiagnostics();
+            showOverviewPanel();
         }
     }
 
@@ -172,11 +173,12 @@ public class JCSFrame extends JFrame implements UICallback {
         });
     }
 
-//    public void showDisplayLayoutPanel() {
-//        CardLayout card = (CardLayout) this.centerPanel.getLayout();
-//        card.show(this.centerPanel, "diagnosticPanel");
-////        this.displayLayoutPanel.loadLayout();
-//    }
+    public void showOverviewPanel() {
+        CardLayout card = (CardLayout) this.centerPanel.getLayout();
+        card.show(this.centerPanel, "overviewPanel");
+        this.overviewPanel.loadLayout();
+    }
+
     public void showLocomotives() {
         Logger.debug("Show Locomotives");
     }
@@ -201,7 +203,7 @@ public class JCSFrame extends JFrame implements UICallback {
         card.show(this.centerPanel, "designPanel");
         this.designPanel.loadLayout();
     }
-   
+
     public void stop() {
         TrackServiceFactory.getTrackService().powerOff();
     }
@@ -218,15 +220,16 @@ public class JCSFrame extends JFrame implements UICallback {
         jcsToolBar = new JToolBar();
         powerBtn = new JButton();
         filler1 = new Box.Filler(new Dimension(0, 10), new Dimension(0, 10), new Dimension(32767, 10));
+        showOverviewBtn = new JButton();
         filler2 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
-        locoBtn = new JButton();
-        filler3 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
-        synchronizeAccessoriesBtn = new JButton();
+        showLocoControlBtn = new JButton();
         showTurnoutsBtn = new JButton();
         showSignalBtn = new JButton();
         showDiagnosticsBtn = new JButton();
         filler5 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
-        showDesignTrackBtn = new JButton();
+        showEditDesignBtn = new JButton();
+        filler3 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
+        startOfDayBtn = new JButton();
         centerPanel = new JPanel();
         settingsPanel = new JPanel();
         jLabel1 = new JLabel();
@@ -234,6 +237,7 @@ public class JCSFrame extends JFrame implements UICallback {
         turnoutsPanel = new TurnoutsPanel();
         diagnosticPanel = new DiagnosticPanel();
         designPanel = new DesignPanel();
+        overviewPanel = new DisplayLayoutPanel();
         statusPanel = new JPanel();
         statusPanelLeft = new JPanel();
         filler4 = new Box.Filler(new Dimension(440, 0), new Dimension(140, 0), new Dimension(440, 32767));
@@ -293,44 +297,41 @@ public class JCSFrame extends JFrame implements UICallback {
         filler1.setName("filler1"); // NOI18N
         jcsToolBar.add(filler1);
 
+        showOverviewBtn.setIcon(new ImageIcon(getClass().getResource("/media/earth-24.png"))); // NOI18N
+        showOverviewBtn.setToolTipText("Overview");
+        showOverviewBtn.setFocusable(false);
+        showOverviewBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showOverviewBtn.setMaximumSize(new Dimension(40, 40));
+        showOverviewBtn.setMinimumSize(new Dimension(40, 40));
+        showOverviewBtn.setName("showOverviewBtn"); // NOI18N
+        showOverviewBtn.setPreferredSize(new Dimension(40, 40));
+        showOverviewBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        showOverviewBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                showOverviewBtnActionPerformed(evt);
+            }
+        });
+        jcsToolBar.add(showOverviewBtn);
+
         filler2.setName("filler2"); // NOI18N
         jcsToolBar.add(filler2);
 
-        locoBtn.setIcon(new ImageIcon(getClass().getResource("/media/electric-loc-24.png"))); // NOI18N
-        locoBtn.setToolTipText("Locomotives");
-        locoBtn.setEnabled(false);
-        locoBtn.setFocusable(false);
-        locoBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-        locoBtn.setMaximumSize(new Dimension(40, 40));
-        locoBtn.setMinimumSize(new Dimension(40, 40));
-        locoBtn.setName("locoBtn"); // NOI18N
-        locoBtn.setPreferredSize(new Dimension(40, 40));
-        locoBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-        locoBtn.addActionListener(new ActionListener() {
+        showLocoControlBtn.setIcon(new ImageIcon(getClass().getResource("/media/electric-loc-24.png"))); // NOI18N
+        showLocoControlBtn.setToolTipText("Locomotives");
+        showLocoControlBtn.setEnabled(false);
+        showLocoControlBtn.setFocusable(false);
+        showLocoControlBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showLocoControlBtn.setMaximumSize(new Dimension(40, 40));
+        showLocoControlBtn.setMinimumSize(new Dimension(40, 40));
+        showLocoControlBtn.setName("showLocoControlBtn"); // NOI18N
+        showLocoControlBtn.setPreferredSize(new Dimension(40, 40));
+        showLocoControlBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        showLocoControlBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                locoBtnActionPerformed(evt);
+                showLocoControlBtnActionPerformed(evt);
             }
         });
-        jcsToolBar.add(locoBtn);
-
-        filler3.setName("filler3"); // NOI18N
-        jcsToolBar.add(filler3);
-
-        synchronizeAccessoriesBtn.setIcon(new ImageIcon(getClass().getResource("/media/sync-black-24.png"))); // NOI18N
-        synchronizeAccessoriesBtn.setToolTipText("Synchronize Accessories with the stored settings");
-        synchronizeAccessoriesBtn.setFocusable(false);
-        synchronizeAccessoriesBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-        synchronizeAccessoriesBtn.setMaximumSize(new Dimension(40, 40));
-        synchronizeAccessoriesBtn.setMinimumSize(new Dimension(40, 40));
-        synchronizeAccessoriesBtn.setName("synchronizeAccessoriesBtn"); // NOI18N
-        synchronizeAccessoriesBtn.setPreferredSize(new Dimension(40, 40));
-        synchronizeAccessoriesBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-        synchronizeAccessoriesBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                synchronizeAccessoriesBtnActionPerformed(evt);
-            }
-        });
-        jcsToolBar.add(synchronizeAccessoriesBtn);
+        jcsToolBar.add(showLocoControlBtn);
 
         showTurnoutsBtn.setIcon(new ImageIcon(getClass().getResource("/media/turnout-24.png"))); // NOI18N
         showTurnoutsBtn.setToolTipText("Turnouts");
@@ -383,21 +384,40 @@ public class JCSFrame extends JFrame implements UICallback {
         filler5.setName("filler5"); // NOI18N
         jcsToolBar.add(filler5);
 
-        showDesignTrackBtn.setIcon(new ImageIcon(getClass().getResource("/media/earth-24.png"))); // NOI18N
-        showDesignTrackBtn.setToolTipText("Design Layout");
-        showDesignTrackBtn.setFocusable(false);
-        showDesignTrackBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-        showDesignTrackBtn.setMaximumSize(new Dimension(40, 40));
-        showDesignTrackBtn.setMinimumSize(new Dimension(40, 40));
-        showDesignTrackBtn.setName("showDesignTrackBtn"); // NOI18N
-        showDesignTrackBtn.setPreferredSize(new Dimension(40, 40));
-        showDesignTrackBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-        showDesignTrackBtn.addActionListener(new ActionListener() {
+        showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/layout-24.png"))); // NOI18N
+        showEditDesignBtn.setToolTipText("Design Layout");
+        showEditDesignBtn.setFocusable(false);
+        showEditDesignBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showEditDesignBtn.setMaximumSize(new Dimension(40, 40));
+        showEditDesignBtn.setMinimumSize(new Dimension(40, 40));
+        showEditDesignBtn.setName("showEditDesignBtn"); // NOI18N
+        showEditDesignBtn.setPreferredSize(new Dimension(40, 40));
+        showEditDesignBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        showEditDesignBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                showDesignTrackBtnActionPerformed(evt);
+                showEditDesignBtnActionPerformed(evt);
             }
         });
-        jcsToolBar.add(showDesignTrackBtn);
+        jcsToolBar.add(showEditDesignBtn);
+
+        filler3.setName("filler3"); // NOI18N
+        jcsToolBar.add(filler3);
+
+        startOfDayBtn.setIcon(new ImageIcon(getClass().getResource("/media/sync-black-24.png"))); // NOI18N
+        startOfDayBtn.setToolTipText("Synchronize Accessories with the stored settings");
+        startOfDayBtn.setFocusable(false);
+        startOfDayBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        startOfDayBtn.setMaximumSize(new Dimension(40, 40));
+        startOfDayBtn.setMinimumSize(new Dimension(40, 40));
+        startOfDayBtn.setName("startOfDayBtn"); // NOI18N
+        startOfDayBtn.setPreferredSize(new Dimension(40, 40));
+        startOfDayBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        startOfDayBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                startOfDayBtnActionPerformed(evt);
+            }
+        });
+        jcsToolBar.add(startOfDayBtn);
 
         getContentPane().add(jcsToolBar, BorderLayout.WEST);
 
@@ -434,6 +454,9 @@ public class JCSFrame extends JFrame implements UICallback {
 
         designPanel.setName("designPanel"); // NOI18N
         centerPanel.add(designPanel, "designPanel");
+
+        overviewPanel.setName("overviewPanel"); // NOI18N
+        centerPanel.add(overviewPanel, "overviewPanel");
 
         getContentPane().add(centerPanel, BorderLayout.CENTER);
 
@@ -597,9 +620,9 @@ public class JCSFrame extends JFrame implements UICallback {
       showSignals();
   }//GEN-LAST:event_showSignalsMIActionPerformed
 
-  private void locoBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_locoBtnActionPerformed
+  private void showLocoControlBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showLocoControlBtnActionPerformed
       showLocomotives();
-  }//GEN-LAST:event_locoBtnActionPerformed
+  }//GEN-LAST:event_showLocoControlBtnActionPerformed
 
   private void showTurnoutsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showTurnoutsBtnActionPerformed
       showTurnouts();
@@ -643,17 +666,21 @@ public class JCSFrame extends JFrame implements UICallback {
       TrackServiceFactory.getTrackService().powerOn();
   }//GEN-LAST:event_powerBtnActionPerformed
 
-  private void synchronizeAccessoriesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeAccessoriesBtnActionPerformed
+  private void startOfDayBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startOfDayBtnActionPerformed
       this.synchronizeAccessories();
-  }//GEN-LAST:event_synchronizeAccessoriesBtnActionPerformed
+  }//GEN-LAST:event_startOfDayBtnActionPerformed
 
   private void synchronizeAccessoriesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeAccessoriesMIActionPerformed
       this.synchronizeAccessories();
   }//GEN-LAST:event_synchronizeAccessoriesMIActionPerformed
 
-    private void showDesignTrackBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDesignTrackBtnActionPerformed
+    private void showEditDesignBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showEditDesignBtnActionPerformed
         showDesignLayoutPanel();
-    }//GEN-LAST:event_showDesignTrackBtnActionPerformed
+    }//GEN-LAST:event_showEditDesignBtnActionPerformed
+
+    private void showOverviewBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showOverviewBtnActionPerformed
+        showOverviewPanel();
+    }//GEN-LAST:event_showOverviewBtnActionPerformed
 
     private void synchronizeAccessories() {
         TrackServiceFactory.getTrackService().synchronizeAccessories();
@@ -676,13 +703,6 @@ public class JCSFrame extends JFrame implements UICallback {
         }
     }
 
-//    public void refresh() {
-//        List<Refreshable> refreshables = JCSGUI.getRefreshables();
-//
-//        for (Refreshable refreshable : refreshables) {
-//            refreshable.refresh();
-//        }
-//    }
     @Override
     public void openFiles(List<File> files) {
         Logger.debug("Open Files...");
@@ -776,26 +796,28 @@ public class JCSFrame extends JFrame implements UICallback {
     private JLabel jLabel1;
     private JMenuBar jcsMenuBar;
     private JToolBar jcsToolBar;
-    private JButton locoBtn;
     private JMenuItem optionsMI;
+    private DisplayLayoutPanel overviewPanel;
     private JButton powerBtn;
     private JMenuItem quitMI;
     private JPanel settingsPanel;
-    private JButton showDesignTrackBtn;
     private JButton showDiagnosticsBtn;
     private JMenuItem showDiagnosticsMI;
+    private JButton showEditDesignBtn;
+    private JButton showLocoControlBtn;
     private JMenuItem showLocosMI;
+    private JButton showOverviewBtn;
     private JButton showSignalBtn;
     private JMenuItem showSignalsMI;
     private JButton showTurnoutsBtn;
     private JMenuItem showTurnoutsMI;
     private SignalsPanel signalsPanel;
+    private JButton startOfDayBtn;
     private JPanel statusPanel;
     private JPanel statusPanelLeft;
     private JPanel statusPanelMiddle;
     private JPanel statusPanelRight;
     private JButton stopBtn;
-    private JButton synchronizeAccessoriesBtn;
     private JMenuItem synchronizeAccessoriesMI;
     private JMenu toolsMenu;
     private TurnoutsPanel turnoutsPanel;
