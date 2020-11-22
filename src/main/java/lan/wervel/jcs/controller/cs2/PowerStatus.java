@@ -32,6 +32,12 @@ public class PowerStatus implements Serializable {
     private int[] deviceUid;
     private int deviceUidNumber;
 
+    public PowerStatus(boolean powerOn, int[] deviceUid, int deviceUidNumber) {
+        this.powerOn = powerOn;
+        this.deviceUid = deviceUid;
+        this.deviceUidNumber = deviceUidNumber;
+    }
+
     public PowerStatus(CanMessage message) {
         parseMessage(message);
     }

@@ -24,73 +24,76 @@ import lan.wervel.jcs.entities.enums.AccessoryValue;
 
 public class Turnout extends SolenoidAccessory {
 
-  public Turnout() {
-    this(null, "?", null, null, null);
-  }
-
-  public Turnout(Integer address, String description, String catalogNumber) {
-    this(address, description, catalogNumber, null, null);
-  }
-
-  public Turnout(Integer address, String description, String catalogNumber, BigDecimal id) {
-    this(address, description, catalogNumber, id, null);
-  }
-
-  public Turnout(Integer address, String description, String catalogNumber, BigDecimal id, AccessoryValue value) {
-    super(address, description, catalogNumber, id, AccessoryType.TURNOUT, value, null, 2);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    if (this.name == null) {
-      sb.append("[T]: ");
-    } else {
-      sb.append(this.name);
-    }
-    if (this.address != null && this.address > 0) {
-      sb.append(" (");
-      sb.append(this.address);
-      sb.append(")");
+    public Turnout() {
+        this(null, "?", null, null, null);
     }
 
-    return sb.toString();
-  }
-
-  @Override
-  public String toLogString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("[");
-    if (this.address != null && this.address > 0) {
-      sb.append(this.address);
+    public Turnout(Integer address, String description) {
+        this(address, description, null, null, null);
     }
-    sb.append("] T: ");
-    sb.append(this.description);
-    sb.append(" {");
-    sb.append(this.value);
-    sb.append("}");
-    return sb.toString();
-  }
 
-  public void setCurved() {
-    setValue(AccessoryValue.RED);
-  }
+    public Turnout(Integer address, String description, String catalogNumber) {
+        this(address, description, catalogNumber, null, null);
+    }
 
-  public boolean isCurved() {
-    return AccessoryValue.RED.equals(this.value);
-  }
+    public Turnout(Integer address, String description, String catalogNumber, BigDecimal id) {
+        this(address, description, catalogNumber, id, null);
+    }
 
-  public void setStraight() {
-    setValue(AccessoryValue.GREEN);
-  }
+    public Turnout(Integer address, String description, String catalogNumber, BigDecimal id, AccessoryValue value) {
+        super(address, description, catalogNumber, id, AccessoryType.TURNOUT, value, null, 2);
+    }
 
-  public boolean isStraight() {
-    return AccessoryValue.GREEN.equals(this.value);
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (this.name == null) {
+            sb.append("[T]: ");
+        } else {
+            sb.append(this.name);
+        }
+        if (this.address != null && this.address > 0) {
+            sb.append(" (");
+            sb.append(this.address);
+            sb.append(")");
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toLogString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        if (this.address != null && this.address > 0) {
+            sb.append(this.address);
+        }
+        sb.append("] T: ");
+        sb.append(this.description);
+        sb.append(" {");
+        sb.append(this.value);
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public void setCurved() {
+        setValue(AccessoryValue.RED);
+    }
+
+    public boolean isCurved() {
+        return AccessoryValue.RED.equals(this.value);
+    }
+
+    public void setStraight() {
+        setValue(AccessoryValue.GREEN);
+    }
+
+    public boolean isStraight() {
+        return AccessoryValue.GREEN.equals(this.value);
+    }
 
 //  @Override
 //  public Turnout copy() {
 //    return new Turnout(address, description, catalogNumber, id, value);
 //  }
-
 }

@@ -52,7 +52,6 @@ public class TrackServiceFactory {
     private boolean aquireTrackServiceImpl() {
         try {
             this.trackService = (TrackService) Class.forName("lan.wervel.jcs.trackservice.H2TrackService").getDeclaredConstructor().newInstance();
-            
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
             Logger.error("Can't instantiate a 'lan.wervel.jcs.trackservice.H2TrackService' " + ex.getMessage());
             Logger.trace(ex);

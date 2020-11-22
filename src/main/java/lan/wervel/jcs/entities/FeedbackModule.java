@@ -141,8 +141,11 @@ public class FeedbackModule extends ControllableDevice {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Module: ");
-        sb.append(getModuleNumber());
-
+        if (this.address == null) {
+            sb.append("-");
+        } else {
+            sb.append(getModuleNumber());
+        }
         return sb.toString();
     }
 
@@ -515,11 +518,6 @@ public class FeedbackModule extends ControllableDevice {
         this.setResponse(resp);
     }
 
-//    public FeedbackModule copy() {
-//        FeedbackModule fm = new FeedbackModule(this.address, this.catalogNumber, this.ports, this.response, this.lastUpdated, -1);
-//        fm.setName(this.name);
-//        return fm;
-//    }
     public static void main(String[] a) {
         FeedbackModule fm = new FeedbackModule(1);
 

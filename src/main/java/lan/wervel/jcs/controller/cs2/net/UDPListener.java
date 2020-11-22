@@ -108,6 +108,8 @@ public class UDPListener extends Thread {
             }
 
             CanMessage received = new CanMessage(rxPacket.getData());
+            
+            Logger.trace("Received: "+received);
             CanMessageEvent cme = new CanMessageEvent(received, sourceAddress);
             executor.execute(() -> notifyCanMessageListeners(cme));
             errorCount = 0;

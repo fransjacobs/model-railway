@@ -174,12 +174,14 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
             stopHeartbeatTask();
 
-            synchronized (conn) {
-                conn.sendCanMessage(CanMessageFactory.stop());
-                wait200ms();
-                conn.close();
-                this.deviceUid = null;
-                this.deviceUidNumber = 0;
+            if (conn != null) {
+              synchronized (conn) {
+                    conn.sendCanMessage(CanMessageFactory.stop());
+                    wait200ms();
+                    conn.close();
+                    this.deviceUid = null;
+                    this.deviceUidNumber = 0;
+                }
             }
             executor.shutdown();
         } catch (Exception ex) {
