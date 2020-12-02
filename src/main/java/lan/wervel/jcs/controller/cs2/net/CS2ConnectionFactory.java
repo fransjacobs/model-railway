@@ -39,6 +39,7 @@ public class CS2ConnectionFactory {
     private static CS2ConnectionFactory instance;
 
     private Connection cs2Connection;
+    private HTTPConnection httpConnection;
     private InetAddress cs2Host;
 
     private static final String BROADCAST_ADDRESS = "255.255.255.255";
@@ -70,6 +71,20 @@ public class CS2ConnectionFactory {
 
     public static Connection getConnection() {
         return getInstance().getConnectionImpl();
+    }
+
+    HTTPConnection getHTTPConnectionImpl() {
+        if (cs2Connection == null) {
+            getConnectionImpl();
+        }
+        if (httpConnection == null) {
+            httpConnection = new HTTPConnection(cs2Host);
+        }
+        return this.httpConnection;
+    }
+
+    public static HTTPConnection getHTTPConnection() {
+        return getInstance().getHTTPConnectionImpl();
     }
 
     private void sendMobileAppUDPReply() {

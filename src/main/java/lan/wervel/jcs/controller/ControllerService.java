@@ -18,9 +18,11 @@
  */
 package lan.wervel.jcs.controller;
 
+import java.util.List;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.cs2.PowerStatus;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
+import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
@@ -72,5 +74,7 @@ public interface ControllerService {
     void addCanMessageListener(CanMessageListener listener);
 
     void removeCanMessageListener(CanMessageListener listener);
+
+    List<Locomotive> getLocomotives();
 
 }

@@ -20,6 +20,7 @@ package lan.wervel.jcs.controller.demo;
 
 import lan.wervel.jcs.controller.cs2.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import lan.wervel.jcs.controller.cs2.can.MarklinCan;
 import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.controller.cs2.net.Connection;
+import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
@@ -322,7 +324,6 @@ public class DemoController implements ControllerService, FeedbackService {
 //
 //        return prl;
 //    }
-
     @Override
     public DeviceInfo getControllerInfo() {
         if (deviceInfo == null) {
@@ -419,15 +420,18 @@ public class DemoController implements ControllerService, FeedbackService {
         return "0.0.0.0";
     }
 
+    @Override
+    public List<Locomotive> getLocomotives() {
+        return Collections.EMPTY_LIST;
+    }
+
 //    public void getLocomotiveConfigData() {
 //        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.requestConfig("loks"));
 //    }
-
 //    public void requestFeedbackEvents(int contactId) {
 //        CanMessage msg = connection.sendCanMessage(CanMessageFactory.feedbackEvent(contactId));
 //        Logger.trace(msg.getResponse());
 //    }
-
     private void notifyControllerEventListeners(ControllerEvent event) {
         Set<ControllerEventListener> snapshot;
         synchronized (controllerEventListeners) {
@@ -465,7 +469,6 @@ public class DemoController implements ControllerService, FeedbackService {
 //            Logger.error(ex);
 //        }
 //    }
-
     public void stopHeartbeatTask() {
         if (timer != null) {
             timer.purge();

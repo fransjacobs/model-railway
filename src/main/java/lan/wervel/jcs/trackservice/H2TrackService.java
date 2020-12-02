@@ -44,6 +44,7 @@ import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.TrackPower;
 import lan.wervel.jcs.entities.Turnout;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
+import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
 import static lan.wervel.jcs.entities.enums.SignalValue.Hp0;
 import static lan.wervel.jcs.entities.enums.SignalValue.Hp0Sh1;
@@ -677,6 +678,26 @@ public class H2TrackService implements TrackService {
     @Override
     public void disconnect() {
         this.controllerService.disconnect();
+    }
+
+    @Override
+    public void synchronizeLocomotives() {
+        List<Locomotive> fromCs2 = this.controllerService.getLocomotives();
+
+        for (Locomotive loc : fromCs2) {
+            Integer addr = loc.getAddress();
+            DecoderType dt = loc.getDecoderType();
+            Locomotive dbLoc = this.locoDAO.find(addr, dt);
+            if (dbLoc != null) {
+                loc.setId(dbLoc.getId());
+                Logger.trace("Update " + loc);
+            } else {
+                Logger.trace("Add " + loc);
+
+            }
+            this.locoDAO.persist(loc);
+        }
+
     }
 
     @Override

@@ -182,4 +182,6 @@ public interface TrackService {
 
     void remove(LayoutTileGroup layoutTileGroup);
 
+    void synchronizeLocomotives();
+
 }
