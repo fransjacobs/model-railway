@@ -66,19 +66,14 @@ public class HTTPConnection {
 
     public static void main(String[] args) throws Exception {
         Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-
         InetAddress inetAddr = InetAddress.getByName("192.168.1.126");
-
         HTTPConnection hc = new HTTPConnection(inetAddr);
-
         String loks = hc.getLocomotivesFile();
-        //System.out.println(loks);
-
         LocomotiveParser lp = new LocomotiveParser();
 
         List<Locomotive> locList = lp.parseLocomotivesFile(loks);
-        
-        for(Locomotive loc : locList ) {
+
+        for (Locomotive loc : locList) {
             System.out.println(loc.toLogString());
         }
     }

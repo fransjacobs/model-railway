@@ -60,13 +60,14 @@ public class LocomotiveParser {
     private static final String SPM = ".spm";
     private static final String MFXTYPE = ".mfxtyp";
     private static final String BLOCKS = ".blocks";
+    private static final String PRG = ".prg";
     private static final String FUNCTIONEN = ".funktionen";
+    private static final String FUNCTIONEN_2 = ".funktionen_2";
     private static final String NR = "..nr";
     private static final String TYP = "..typ";
     private static final String WERT = "..wert";
 
     public List<Locomotive> parseLocomotivesFile(String locofile) {
-
         List<Locomotive> locs = new ArrayList<>();
         List<String> items = Arrays.asList(locofile.split("\n"));
         Map<String, String> lm = new HashMap<>();
@@ -76,16 +77,12 @@ public class LocomotiveParser {
         for (String s : items) {
             switch (s) {
                 case LOCOMOTIVE_START:
-                    //Logger.trace("File Start tag: " + s);
                     break;
                 case VERSION:
-                    //Logger.trace("Version tag: " + s);
                     break;
                 case SESSION:
-                    //Logger.trace("Session tag: " + s);
                     break;
                 case LOCOMOTIVE:
-//                    Logger.trace("Loco tag: " + s);
                     if (lm.containsKey(".uid")) {
                         Locomotive loc = createLoco(lm, fm);
                         locs.add(loc);
@@ -95,8 +92,12 @@ public class LocomotiveParser {
                     fm.clear();
                     break;
                 case FUNCTIONEN:
-//                    Logger.trace("Functions tag: " + s);
                     functions = true;
+                    break;
+                case FUNCTIONEN_2:
+                    functions = true;
+                    break;
+                case PRG:
                     break;
                 default:
                     if (s.contains("=")) {
@@ -121,6 +122,11 @@ public class LocomotiveParser {
                     }
                     break;
             }
+        }
+        // parse the last loc
+        if (lm.containsKey(".uid")) {
+            Locomotive loc = createLoco(lm, fm);
+            locs.add(loc);
         }
         return locs;
     }
@@ -147,7 +153,7 @@ public class LocomotiveParser {
         if (locoProps.get(VELOCITY) != null) {
             speed = Integer.parseInt(locoProps.get(VELOCITY));
         }
-        Integer speedSteps = null;
+        Integer speedSteps;
         switch (decoderType) {
             case MM2:
                 speedSteps = 27;

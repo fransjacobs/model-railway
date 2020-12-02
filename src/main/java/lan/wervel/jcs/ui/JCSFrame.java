@@ -222,7 +222,7 @@ public class JCSFrame extends JFrame implements UICallback {
         filler1 = new Box.Filler(new Dimension(0, 10), new Dimension(0, 10), new Dimension(32767, 10));
         showOverviewBtn = new JButton();
         filler2 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
-        showLocoControlBtn = new JButton();
+        synchronizeLocosBtn = new JButton();
         showTurnoutsBtn = new JButton();
         showSignalBtn = new JButton();
         showDiagnosticsBtn = new JButton();
@@ -316,22 +316,21 @@ public class JCSFrame extends JFrame implements UICallback {
         filler2.setName("filler2"); // NOI18N
         jcsToolBar.add(filler2);
 
-        showLocoControlBtn.setIcon(new ImageIcon(getClass().getResource("/media/electric-loc-24.png"))); // NOI18N
-        showLocoControlBtn.setToolTipText("Locomotives");
-        showLocoControlBtn.setEnabled(false);
-        showLocoControlBtn.setFocusable(false);
-        showLocoControlBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-        showLocoControlBtn.setMaximumSize(new Dimension(40, 40));
-        showLocoControlBtn.setMinimumSize(new Dimension(40, 40));
-        showLocoControlBtn.setName("showLocoControlBtn"); // NOI18N
-        showLocoControlBtn.setPreferredSize(new Dimension(40, 40));
-        showLocoControlBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-        showLocoControlBtn.addActionListener(new ActionListener() {
+        synchronizeLocosBtn.setIcon(new ImageIcon(getClass().getResource("/media/electric-loc-24.png"))); // NOI18N
+        synchronizeLocosBtn.setToolTipText("Synchronize Locomotives with CS2/3");
+        synchronizeLocosBtn.setFocusable(false);
+        synchronizeLocosBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        synchronizeLocosBtn.setMaximumSize(new Dimension(40, 40));
+        synchronizeLocosBtn.setMinimumSize(new Dimension(40, 40));
+        synchronizeLocosBtn.setName("synchronizeLocosBtn"); // NOI18N
+        synchronizeLocosBtn.setPreferredSize(new Dimension(40, 40));
+        synchronizeLocosBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        synchronizeLocosBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                showLocoControlBtnActionPerformed(evt);
+                synchronizeLocosBtnActionPerformed(evt);
             }
         });
-        jcsToolBar.add(showLocoControlBtn);
+        jcsToolBar.add(synchronizeLocosBtn);
 
         showTurnoutsBtn.setIcon(new ImageIcon(getClass().getResource("/media/turnout-24.png"))); // NOI18N
         showTurnoutsBtn.setToolTipText("Turnouts");
@@ -620,9 +619,9 @@ public class JCSFrame extends JFrame implements UICallback {
       showSignals();
   }//GEN-LAST:event_showSignalsMIActionPerformed
 
-  private void showLocoControlBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showLocoControlBtnActionPerformed
-      showLocomotives();
-  }//GEN-LAST:event_showLocoControlBtnActionPerformed
+  private void synchronizeLocosBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeLocosBtnActionPerformed
+      synchronizeLocos();
+  }//GEN-LAST:event_synchronizeLocosBtnActionPerformed
 
   private void showTurnoutsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showTurnoutsBtnActionPerformed
       showTurnouts();
@@ -684,6 +683,10 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void synchronizeAccessories() {
         TrackServiceFactory.getTrackService().synchronizeAccessories();
+    }
+
+    private void synchronizeLocos() {
+        TrackServiceFactory.getTrackService().synchronizeLocomotives();
     }
 
     private String getTitleString() {
@@ -804,7 +807,6 @@ public class JCSFrame extends JFrame implements UICallback {
     private JButton showDiagnosticsBtn;
     private JMenuItem showDiagnosticsMI;
     private JButton showEditDesignBtn;
-    private JButton showLocoControlBtn;
     private JMenuItem showLocosMI;
     private JButton showOverviewBtn;
     private JButton showSignalBtn;
@@ -819,6 +821,7 @@ public class JCSFrame extends JFrame implements UICallback {
     private JPanel statusPanelRight;
     private JButton stopBtn;
     private JMenuItem synchronizeAccessoriesMI;
+    private JButton synchronizeLocosBtn;
     private JMenu toolsMenu;
     private TurnoutsPanel turnoutsPanel;
     private JMenu viewMenu;
