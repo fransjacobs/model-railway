@@ -252,7 +252,8 @@ public class DatabaseCreator {
                 + "current_status_type   VARCHAR2(255 CHAR) NOT NULL,"
                 + "soac_id               NUMBER NULL,"
                 + "light_images          INTEGER NOT NULL DEFAULT 2,"
-                + "signal_value          VARCHAR2(255 CHAR))"
+                + "signal_value          VARCHAR2(255 CHAR),"
+                + "switch_time           INTEGER)"
         );
 
         stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id )");

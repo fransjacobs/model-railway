@@ -33,99 +33,108 @@ import lan.wervel.jcs.entities.enums.AccessoryValue;
  */
 public class TurnoutDAO extends AbstractDAO<Turnout> {
 
-  private static final String INS_SA_STMT = "insert into solenoidaccessories (ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,ID) values(?,?,?,?,?,?,?,?,?)";
-  private static final String UPD_SA_STMT = "update solenoidaccessories set ADDRESS = ?,NAME = ?,DESCRIPTION = ?,CATALOG_NUMBER = ?,ACCESSORY_TYPE = ?,CURRENT_STATUS_TYPE = ?, SOAC_ID = ?, LIGHT_IMAGES = ? where ID = ?";
+    private static final String INS_SA_STMT = "insert into solenoidaccessories (ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME,ID) values(?,?,?,?,?,?,?,?,?,?)";
+    private static final String UPD_SA_STMT = "update solenoidaccessories set ADDRESS = ?,NAME = ?,DESCRIPTION = ?,CATALOG_NUMBER = ?,ACCESSORY_TYPE = ?,CURRENT_STATUS_TYPE = ?, SOAC_ID = ?, LIGHT_IMAGES = ?, SWITCH_TIME = ? where ID = ?";
 
-  public TurnoutDAO() {
-    super();
-  }
-
-  @Override
-  protected Turnout map(ResultSet rs) throws SQLException {
-    BigDecimal id = rs.getBigDecimal("ID");
-    Integer address = rs.getInt("ADDRESS");
-    String name = rs.getString("NAME");
-    String description = rs.getString("DESCRIPTION");
-    String catalogNumber = rs.getString("CATALOG_NUMBER");
-    String currentValue = rs.getString("CURRENT_STATUS_TYPE");
-
-    AccessoryValue value;
-    if (currentValue != null) {
-      value = AccessoryValue.dbGet(currentValue);
-    } else {
-      value = AccessoryValue.OFF;
+    public TurnoutDAO() {
+        super();
     }
 
-    Turnout sa = new Turnout(address, description, catalogNumber, id, value);
-    sa.setName(name);
+    @Override
+    protected Turnout map(ResultSet rs) throws SQLException {
+        BigDecimal id = rs.getBigDecimal("ID");
+        Integer address = rs.getInt("ADDRESS");
+        String name = rs.getString("NAME");
+        String description = rs.getString("DESCRIPTION");
+        String catalogNumber = rs.getString("CATALOG_NUMBER");
+        String currentValue = rs.getString("CURRENT_STATUS_TYPE");
+        Integer switchTime = rs.getInt("SWITCH_TIME");
 
-    return sa;
-  }
+        AccessoryValue value;
+        if (currentValue != null) {
+            value = AccessoryValue.dbGet(currentValue);
+        } else {
+            value = AccessoryValue.OFF;
+        }
 
-  @Override
-  protected void bind(PreparedStatement ps, Turnout turnout) throws SQLException {
-    ps.setInt(1, turnout.getAddress());
-    ps.setString(2, turnout.getName());
-    ps.setString(3, turnout.getDescription());
-    ps.setString(4, turnout.getCatalogNumber());
-    ps.setString(5, "T");
+        Turnout sa = new Turnout(address, description, catalogNumber, id, value);
+        sa.setName(name);
+        sa.setSwitchTime(switchTime);
 
-    if (turnout.getValue() == null) {
-      ps.setString(6, AccessoryValue.OFF.getDBValue());
-    } else {
-      ps.setString(6, turnout.getValue().getDBValue());
+        return sa;
     }
 
-    if (turnout.getSoacId() != null) {
-      ps.setBigDecimal(7, turnout.getSoacId());
-    } else {
-      ps.setNull(7, Types.DECIMAL);
-    }
-    ps.setInt(8, 2);
-    ps.setBigDecimal(9, turnout.getId());
-  }
+    @Override
+    protected void bind(PreparedStatement ps, Turnout turnout) throws SQLException {
+        ps.setInt(1, turnout.getAddress());
+        ps.setString(2, turnout.getName());
+        ps.setString(3, turnout.getDescription());
+        ps.setString(4, turnout.getCatalogNumber());
+        ps.setString(5, "T");
 
-  @Override
-  public List<Turnout> findAll() {
-    String stmt = "select * from solenoidaccessories where accessory_type = 'T' order by address asc";
+        if (turnout.getValue() == null) {
+            ps.setString(6, AccessoryValue.OFF.getDBValue());
+        } else {
+            ps.setString(6, turnout.getValue().getDBValue());
+        }
 
-    return this.findAll(stmt);
-  }
+        if (turnout.getSoacId() != null) {
+            ps.setBigDecimal(7, turnout.getSoacId());
+        } else {
+            ps.setNull(7, Types.DECIMAL);
+        }
+        ps.setInt(8, 2);
 
-  @Override
-  public Turnout find(Integer address
-  ) {
-    String stmt = "select * from solenoidaccessories where accessory_type = 'T' and address = ?";
+        if(turnout.getSwitchTime() != null) {
+          ps.setInt(9, turnout.getSwitchTime());
+        } else {
+            ps.setNull(9, Types.INTEGER);
+        }  
 
-    return this.find(address, stmt);
-  }
-
-  public Turnout findById(BigDecimal id) {
-    String stmt = "select * from solenoidaccessories where id = ?";
-
-    return this.findById(id, stmt);
-  }
-
-  @Override
-  public BigDecimal persist(Turnout accessoiry) {
-    //Check whether the accessoiry exists..
-    Turnout sa = this.find(accessoiry.getAddress());
-
-    String statement;
-    if (sa == null) {
-      statement = INS_SA_STMT;
-    } else {
-      statement = UPD_SA_STMT;
+        ps.setBigDecimal(10, turnout.getId());
     }
 
-    upsert(accessoiry, statement);
+    @Override
+    public List<Turnout> findAll() {
+        String stmt = "select * from solenoidaccessories where accessory_type = 'T' order by address asc";
 
-    return accessoiry.getId();
-  }
+        return this.findAll(stmt);
+    }
 
-  @Override
-  public void remove(Turnout accessoiry) {
-    String stmt = "delete from solenoidaccessories where id = ?";
-    this.remove(accessoiry, stmt);
-  }
+    @Override
+    public Turnout find(Integer address
+    ) {
+        String stmt = "select * from solenoidaccessories where accessory_type = 'T' and address = ?";
+
+        return this.find(address, stmt);
+    }
+
+    public Turnout findById(BigDecimal id) {
+        String stmt = "select * from solenoidaccessories where id = ?";
+
+        return this.findById(id, stmt);
+    }
+
+    @Override
+    public BigDecimal persist(Turnout accessoiry) {
+        //Check whether the accessoiry exists..
+        Turnout sa = this.find(accessoiry.getAddress());
+
+        String statement;
+        if (sa == null) {
+            statement = INS_SA_STMT;
+        } else {
+            statement = UPD_SA_STMT;
+        }
+
+        upsert(accessoiry, statement);
+
+        return accessoiry.getId();
+    }
+
+    @Override
+    public void remove(Turnout accessoiry) {
+        String stmt = "delete from solenoidaccessories where id = ?";
+        this.remove(accessoiry, stmt);
+    }
 }

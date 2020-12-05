@@ -50,18 +50,22 @@ public class SignalDAOTest {
   public void setUp() {
     Signal s3 = new Signal(3, "S 3", "home made", new BigDecimal(3), AccessoryValue.GREEN, null, 2, null, null, null, null);
     s3.setName("S 3");
+    s3.setSwitchTime(200);
     signals.add(s3);
 
     Signal s4 = new Signal(4, "S 4", "3942", new BigDecimal(4), AccessoryValue.RED, null, 2, null, null, null, null);
     s4.setName("S 4");
+    s4.setSwitchTime(200);
     signals.add(s4);
 
     Signal s5 = new Signal(5, "S 5", "3943", new BigDecimal(5), AccessoryValue.GREEN, null, 4, new BigDecimal(6), 6, AccessoryValue.RED, null);
     s5.setName("S 5");
+    s5.setSwitchTime(200);
     signals.add(s5);
 
     Signal s6 = new Signal(7, "S 7", "dual", new BigDecimal(7), AccessoryValue.GREEN, null, 4, new BigDecimal(8), 8, AccessoryValue.GREEN, SignalValue.Hp2);
     s6.setName("S 7");
+    s6.setSwitchTime(200);
     signals.add(s6);
   }
 
@@ -77,6 +81,7 @@ public class SignalDAOTest {
 
     Signal signal = new Signal(3, "S 3", "home made", new BigDecimal(3), AccessoryValue.GREEN, null, 2, null, null, null, SignalValue.Hp1);
     signal.setName("S 3");
+    signal.setSwitchTime(200);
 
     System.out.println("exp.getValue(): " + exp.getValue() + " result.getValue(): " + signal.getValue());
     assertEquals(exp.getValue(), signal.getValue());
@@ -88,6 +93,7 @@ public class SignalDAOTest {
     assertEquals(exp.getValue2(), signal.getValue2());
     assertEquals(exp.getSignalValue(), signal.getSignalValue());
     assertEquals(exp.getLightImages(), signal.getLightImages());
+    assertEquals(exp.getSwitchTime(), signal.getSwitchTime());
 
     assertEquals(exp, signal);
   }
@@ -100,6 +106,7 @@ public class SignalDAOTest {
 
     Signal signal = new Signal(7, "S 7", "dual", new BigDecimal(7), AccessoryValue.GREEN, null, 4, new BigDecimal(8), 8, AccessoryValue.GREEN, SignalValue.Hp2);
     signal.setName("S 7");
+    signal.setSwitchTime(200);
 
     System.out.println("exp.getValue(): " + exp.getValue() + " result.getValue(): " + signal.getValue());
     assertEquals(exp.getValue(), signal.getValue());
@@ -225,6 +232,7 @@ public class SignalDAOTest {
 
     Signal s17 = new Signal(17, "S 17", "9999", AccessoryValue.GREEN, 4, 18, AccessoryValue.RED);
     s17.setName("S 17");
+    s17.setSwitchTime(100);
 
     assertEquals(SignalValue.Hp1, s17.getSignalValue());
 
@@ -250,6 +258,7 @@ public class SignalDAOTest {
 
     Signal s19 = new Signal(19, "S 19", "11111111", AccessoryValue.RED, 4, 20, AccessoryValue.RED);
     s19.setName("S 19");
+    s19.setSwitchTime(150);
     SignalDAO instance = new SignalDAO();
     BigDecimal result = instance.persist(s19);
     BigDecimal expResult = new BigDecimal(9);
@@ -287,6 +296,7 @@ public class SignalDAOTest {
     System.out.println("remove");
     Signal s11 = new Signal(11, "S 11", "11", null, AccessoryValue.GREEN, null, 2, null, null, null, null);
     s11.setName("S 11");
+    s11.setSwitchTime(0);
 
     SignalDAO instance = new SignalDAO();
 
@@ -301,6 +311,7 @@ public class SignalDAOTest {
 
     Signal s13 = new Signal(13, "S 13", "13", AccessoryValue.GREEN, 4, 14, AccessoryValue.RED);
     s13.setName("S 13");
+    s13.setSwitchTime(0);
 
     instance.persist(s13);
     sr = instance.find(13);

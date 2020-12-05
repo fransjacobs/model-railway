@@ -92,8 +92,4 @@ public class Turnout extends SolenoidAccessory {
         return AccessoryValue.GREEN.equals(this.value);
     }
 
-//  @Override
-//  public Turnout copy() {
-//    return new Turnout(address, description, catalogNumber, id, value);
-//  }
 }

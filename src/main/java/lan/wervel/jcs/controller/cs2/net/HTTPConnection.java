@@ -39,6 +39,11 @@ public class HTTPConnection {
 
     private final InetAddress cs2Address;
 
+    private final static String HTTP = "http://";
+    private final static String CONFIG = "/config/";
+    private final static String LOCOMOTIVE = "lokomotive.cs2";
+    private final static String MAGNETARTIKEL = "magnetartikel.cs2";
+
     HTTPConnection(InetAddress cs2Address) {
         this.cs2Address = cs2Address;
     }
@@ -46,7 +51,28 @@ public class HTTPConnection {
     public String getLocomotivesFile() {
         StringBuilder locs = new StringBuilder();
         try {
-            URL cs2 = new URL("http://" + cs2Address.getHostAddress() + "/config/lokomotive.cs2");
+            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + LOCOMOTIVE);
+            URLConnection lc = cs2.openConnection();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    locs.append(inputLine.strip());
+                    locs.append("\n");
+                }
+            }
+
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return locs.toString();
+    }
+
+    public String getAccessoriesFile() {
+        StringBuilder locs = new StringBuilder();
+        try {
+            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + MAGNETARTIKEL);
             URLConnection lc = cs2.openConnection();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;

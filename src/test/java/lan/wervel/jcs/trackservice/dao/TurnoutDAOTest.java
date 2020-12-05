@@ -34,158 +34,161 @@ import org.junit.Test;
  */
 public class TurnoutDAOTest {
 
-  private final List<Turnout> turnouts;
+    private final List<Turnout> turnouts;
 
-  public TurnoutDAOTest() {
-    DAOTestHelper.setConnectProperties();
-    DAOTestHelper.createNewDatabase();
-    DAOTestHelper.insertTurnoutData();
+    public TurnoutDAOTest() {
+        DAOTestHelper.setConnectProperties();
+        DAOTestHelper.createNewDatabase();
+        DAOTestHelper.insertTurnoutData();
 
-    turnouts = new ArrayList<>();
-  }
+        turnouts = new ArrayList<>();
+    }
 
-  @Before
-  public void setUp() {
-    Turnout t1 = new Turnout(1, "T 1", "5117 R");
+    @Before
+    public void setUp() {
+        Turnout t1 = new Turnout(1, "T 1", "5117 R");
 
-    t1.setValue(AccessoryValue.GREEN);
-    t1.setName("T 1");
-    t1.setId(new BigDecimal(1));
-    turnouts.add(t1);
+        t1.setValue(AccessoryValue.GREEN);
+        t1.setName("T 1");
+        t1.setId(new BigDecimal(1));
+        t1.setSwitchTime(200);
+        turnouts.add(t1);
 
-    Turnout t2 = new Turnout(2, "T 2", "5117 L");
-    t2.setValue(AccessoryValue.RED);
-    t2.setName("T 2");
-    t2.setId(new BigDecimal(2));
-    turnouts.add(t2);
-  }
+        Turnout t2 = new Turnout(2, "T 2", "5117 L");
+        t2.setValue(AccessoryValue.RED);
+        t2.setName("T 2");
+        t2.setId(new BigDecimal(2));
+        t2.setSwitchTime(250);
+        turnouts.add(t2);
+    }
 
-  @After
-  public void tearDown() {
-  }
+    @After
+    public void tearDown() {
+    }
 
-  @Test
-  public void testFindAll() {
-    System.out.println("findAll");
-    TurnoutDAO instance = new TurnoutDAO();
-    List<Turnout> expResult = turnouts;
-    List<Turnout> result = instance.findAll();
+    @Test
+    public void testFindAll() {
+        System.out.println("findAll");
+        TurnoutDAO instance = new TurnoutDAO();
+        List<Turnout> expResult = turnouts;
+        List<Turnout> result = instance.findAll();
 
-    assertEquals(expResult, result);
-    result = instance.findAll();
-    assertEquals(turnouts, result);
-  }
+        assertEquals(expResult, result);
+        result = instance.findAll();
+        assertEquals(turnouts, result);
+    }
 
-  @Test
-  public void testFind() {
-    System.out.println("find");
+    @Test
+    public void testFind() {
+        System.out.println("find");
 
-    Integer address = 2;
-    TurnoutDAO instance = new TurnoutDAO();
-    Turnout expResult = turnouts.get(1);
-    Turnout result = instance.find(address);
-    assertEquals(expResult, result);
+        Integer address = 2;
+        TurnoutDAO instance = new TurnoutDAO();
+        Turnout expResult = turnouts.get(1);
+        Turnout result = instance.find(address);
+        assertEquals(expResult, result);
 
-    address = 1;
-    expResult = turnouts.get(0);
-    result = instance.find(address);
-    assertEquals(expResult, result);
-  }
+        address = 1;
+        expResult = turnouts.get(0);
+        result = instance.find(address);
+        assertEquals(expResult, result);
+    }
 
-  @Test
-  public void testPersist() {
-    System.out.println("persist");
+    @Test
+    public void testPersist() {
+        System.out.println("persist");
 
-    Turnout t = new Turnout(3, "T 3", "5117 R");
-    t.setValue(AccessoryValue.GREEN);
-    t.setName("T 3");
+        Turnout t = new Turnout(3, "T 3", "5117 R");
+        t.setValue(AccessoryValue.GREEN);
+        t.setName("T 3");
 
-    TurnoutDAO instance = new TurnoutDAO();
-    BigDecimal result = instance.persist(t);
-    Turnout tr = instance.find(3);
+        TurnoutDAO instance = new TurnoutDAO();
+        BigDecimal result = instance.persist(t);
+        Turnout tr = instance.find(3);
 
-    BigDecimal expResult = new BigDecimal(3);
-    assertEquals(expResult, result);
-    assertNotNull(tr);
-  }
-  
-  @Test
-  public void testPersistUpdate() {
-    System.out.println("persist");
-    TurnoutDAO instance = new TurnoutDAO();
+        BigDecimal expResult = new BigDecimal(3);
+        assertEquals(expResult, result);
+        assertNotNull(tr);
+    }
 
-    Turnout t = instance.find(2);
-    assertNotNull(t);
-    assertEquals(AccessoryValue.RED,t.getValue());
-    BigDecimal expResult = t.getId();
-    t.setValue(AccessoryValue.GREEN);
-    
-    BigDecimal result = instance.persist(t);
-    assertEquals(expResult, result);
+    @Test
+    public void testPersistUpdate() {
+        System.out.println("persist");
+        TurnoutDAO instance = new TurnoutDAO();
 
-    Turnout tr = instance.find(2);
-    assertNotNull(tr);
-    assertEquals(AccessoryValue.GREEN,tr.getValue());
-  }
+        Turnout t = instance.find(2);
+        assertNotNull(t);
+        assertEquals(AccessoryValue.RED, t.getValue());
+        BigDecimal expResult = t.getId();
+        t.setValue(AccessoryValue.GREEN);
 
-  @Test
-  public void testPersistNullValue() {
-    System.out.println("persistNullValue");
+        BigDecimal result = instance.persist(t);
+        assertEquals(expResult, result);
 
-    Turnout t = new Turnout(4, "T 4", "5117 R");
-    t.setName("T 4");
+        Turnout tr = instance.find(2);
+        assertNotNull(tr);
+        assertEquals(AccessoryValue.GREEN, tr.getValue());
+    }
 
-    TurnoutDAO instance = new TurnoutDAO();
-    BigDecimal result = instance.persist(t);
-    Turnout tr = instance.find(4);
+    @Test
+    public void testPersistNullValue() {
+        System.out.println("persistNullValue");
 
-    BigDecimal expResult = new BigDecimal(3);
-    assertEquals(expResult, result);
-    assertNotNull(tr);
+        Turnout t = new Turnout(4, "T 4", "5117 R");
+        t.setName("T 4");
 
-    assertEquals(AccessoryValue.OFF, tr.getValue());
-  }
+        TurnoutDAO instance = new TurnoutDAO();
+        BigDecimal result = instance.persist(t);
+        Turnout tr = instance.find(4);
 
-  @Test
-  public void testPersist2() {
-    System.out.println("persist");
-    Turnout t = new Turnout(79, "T 79", "5117 L");
+        BigDecimal expResult = new BigDecimal(3);
+        assertEquals(expResult, result);
+        assertNotNull(tr);
 
-    t.setValue(AccessoryValue.OFF);
-    t.setName("W 79");
+        assertEquals(AccessoryValue.OFF, tr.getValue());
+    }
 
-    TurnoutDAO instance = new TurnoutDAO();
-    BigDecimal result = instance.persist(t);
+    @Test
+    public void testPersist2() {
+        System.out.println("persist");
+        Turnout t = new Turnout(79, "T 79", "5117 L");
 
-    Turnout tr = instance.find(79);
+        t.setValue(AccessoryValue.OFF);
+        t.setName("W 79");
 
-    BigDecimal expResult = new BigDecimal(3);
-    assertEquals(expResult, result);
+        TurnoutDAO instance = new TurnoutDAO();
+        BigDecimal result = instance.persist(t);
 
-    assertNotNull(tr);
+        Turnout tr = instance.find(79);
 
-    int sas = instance.findAll().size();
-    assertEquals(3, sas);
-  }
+        BigDecimal expResult = new BigDecimal(3);
+        assertEquals(expResult, result);
 
-  @Test
-  public void testRemove() {
-    System.out.println("remove");
-    Turnout t = new Turnout(12, "T 12", "5117 L");
-    t.setValue(AccessoryValue.GREEN);
-    t.setName("T 12");
-    t.setValue(AccessoryValue.OFF);
-    t.setName("W 12");
+        assertNotNull(tr);
 
-    TurnoutDAO instance = new TurnoutDAO();
+        int sas = instance.findAll().size();
+        assertEquals(3, sas);
+    }
 
-    instance.persist(t);
-    Turnout tr = instance.find(12);
+    @Test
+    public void testRemove() {
+        System.out.println("remove");
+        Turnout t = new Turnout(12, "T 12", "5117 L");
+        t.setValue(AccessoryValue.GREEN);
+        t.setName("T 12");
+        t.setValue(AccessoryValue.OFF);
+        t.setName("W 12");
+        t.setSwitchTime(0);
 
-    assertEquals(t, tr);
-    instance.remove(t);
+        TurnoutDAO instance = new TurnoutDAO();
 
-    tr = instance.find(12);
-    assertNull(tr);
-  }
+        instance.persist(t);
+        Turnout tr = instance.find(12);
+
+        assertEquals(t, tr);
+        instance.remove(t);
+
+        tr = instance.find(12);
+        assertNull(tr);
+    }
 }
