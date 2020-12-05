@@ -175,8 +175,8 @@ public class SignalDAO extends AbstractDAO<Signal> {
             Signal s2 = new Signal(signal.getAddress2(), signal.getDescription(), signal.getCatalogNumber(), signal.getId2(), signal.getValue2(), signal.getId(), signal.getLightImages(), signal.getSignalValue());
             s2.setName(signal.getName());
             s2.setSwitchTime(signal.getSwitchTime());
-
             upsert(s2, statement);
+
             signal.setId2(s2.getId());
         }
 

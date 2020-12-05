@@ -554,21 +554,6 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void synchronizeAccessories() {
-        List<Turnout> tl = this.getTurnouts();
-
-        for (Turnout t : tl) {
-            this.switchAccessory(t.getValue(), t);
-        }
-
-        List<Signal> sl = this.getSignals();
-        for (Signal s : sl) {
-            this.switchAccessory(s.getValue(), s, true);
-        }
-
-    }
-
-    @Override
     public DeviceInfo getControllerInfo() {
         if (this.controllerInfo == null) {
             controllerInfo = controllerService.getControllerInfo();
@@ -693,11 +678,57 @@ public class H2TrackService implements TrackService {
                 Logger.trace("Update " + loc);
             } else {
                 Logger.trace("Add " + loc);
-
             }
             this.locoDAO.persist(loc);
         }
+    }
 
+    @Override
+    public void synchronizeAccessories() {
+        List<SolenoidAccessory> sal = this.controllerService.getAccessories();
+
+        for (SolenoidAccessory sa : sal) {
+            if (sa.isTurnout()) {
+                Turnout t = (Turnout) sa;
+                Integer addr = t.getAddress();
+                Turnout dbt = this.turnoutDAO.find(addr);
+                if (dbt != null) {
+                    t.setId(dbt.getId());
+                    Logger.trace("Update " + t);
+                } else {
+                    Logger.trace("Add " + t);
+                }
+                this.turnoutDAO.persist(t);
+            } else if (sa.isSignal()) {
+                Signal s = (Signal) sa;
+                Integer addr = s.getAddress();
+                Signal dbs = this.signalDAO.find(addr);
+                if (dbs != null) {
+                    s.setId(dbs.getId());
+                    if (dbs.getLightImages() > 2) {
+                        s.setId2(dbs.getId2());
+                        s.setAddress2(dbs.getAddress2());
+                    }
+                    Logger.trace("Update " + s);
+                } else {
+                    Logger.trace("Add " + s);
+                }
+                this.signalDAO.persist(s);
+            }
+        }
+
+        if (sal.isEmpty()) {
+            List<Turnout> tl = this.getTurnouts();
+
+            for (Turnout t : tl) {
+                this.switchAccessory(t.getValue(), t);
+            }
+
+            List<Signal> sl = this.getSignals();
+            for (Signal s : sl) {
+                this.switchAccessory(s.getValue(), s, true);
+            }
+        }
     }
 
     @Override

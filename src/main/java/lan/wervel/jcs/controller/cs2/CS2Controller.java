@@ -36,11 +36,13 @@ import static lan.wervel.jcs.controller.cs2.can.MarklinCan.FUNCTION_OFF;
 import static lan.wervel.jcs.controller.cs2.can.MarklinCan.FUNCTION_ON;
 import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
+import lan.wervel.jcs.controller.cs2.http.AccessoryParser;
 import lan.wervel.jcs.controller.cs2.http.LocomotiveParser;
 import lan.wervel.jcs.controller.cs2.net.Connection;
 import lan.wervel.jcs.controller.cs2.net.CS2ConnectionFactory;
 import lan.wervel.jcs.controller.cs2.net.HTTPConnection;
 import lan.wervel.jcs.entities.Locomotive;
+import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
@@ -342,6 +344,14 @@ public class CS2Controller implements ControllerService, FeedbackService {
         String lokomotiveCs2 = httpCon.getLocomotivesFile();
         LocomotiveParser lp = new LocomotiveParser();
         return lp.parseLocomotivesFile(lokomotiveCs2);
+    }
+
+    @Override
+    public List<SolenoidAccessory> getAccessories() {
+        HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
+        String magnetartikelCs2 = httpCon.getAccessoriesFile();
+        AccessoryParser ap = new AccessoryParser();
+        return ap.parseAccessoryFile(magnetartikelCs2);
     }
 
     @Override

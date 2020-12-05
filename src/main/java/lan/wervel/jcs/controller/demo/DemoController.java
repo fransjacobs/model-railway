@@ -39,6 +39,7 @@ import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.controller.cs2.net.Connection;
 import lan.wervel.jcs.entities.Locomotive;
+import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
@@ -422,6 +423,11 @@ public class DemoController implements ControllerService, FeedbackService {
 
     @Override
     public List<Locomotive> getLocomotives() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<SolenoidAccessory> getAccessories() {
         return Collections.EMPTY_LIST;
     }
 

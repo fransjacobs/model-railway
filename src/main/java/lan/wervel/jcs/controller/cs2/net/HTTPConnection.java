@@ -26,8 +26,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import lan.wervel.jcs.controller.cs2.http.AccessoryParser;
 import lan.wervel.jcs.controller.cs2.http.LocomotiveParser;
 import lan.wervel.jcs.entities.Locomotive;
+import lan.wervel.jcs.entities.SolenoidAccessory;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
 
@@ -94,14 +96,24 @@ public class HTTPConnection {
         Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
         InetAddress inetAddr = InetAddress.getByName("192.168.1.126");
         HTTPConnection hc = new HTTPConnection(inetAddr);
-        String loks = hc.getLocomotivesFile();
-        LocomotiveParser lp = new LocomotiveParser();
 
-        List<Locomotive> locList = lp.parseLocomotivesFile(loks);
+//        String loks = hc.getLocomotivesFile();
+//        LocomotiveParser lp = new LocomotiveParser();
+//        List<Locomotive> locList = lp.parseLocomotivesFile(loks);
+//
+//        for (Locomotive loc : locList) {
+//            System.out.println(loc.toLogString());
+//        }
+            
+        String accessories = hc.getAccessoriesFile();
+        AccessoryParser ap = new AccessoryParser();
+        List<SolenoidAccessory> acList = ap.parseAccessoryFile(accessories);
 
-        for (Locomotive loc : locList) {
-            System.out.println(loc.toLogString());
+        for (SolenoidAccessory sa : acList) {
+            System.out.println(sa.toLogString());
         }
+        
+        
     }
 
 }
