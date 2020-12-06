@@ -19,6 +19,7 @@
 package lan.wervel.jcs.trackservice.dao;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -29,6 +30,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.trackservice.dao.util.DatabaseCreator;
 import org.pmw.tinylog.Logger;
@@ -40,6 +42,8 @@ import org.pmw.tinylog.Logger;
  */
 public abstract class AbstractDAO<T extends ControllableDevice> {
 
+    protected static final String JCS = "jcs";
+
     protected static Connection connection;
 
     protected AbstractDAO() {
@@ -48,24 +52,36 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         }
     }
 
+    protected static String getJCSPath() {
+        String path = System.getProperty("user.home") + File.separator + JCS;
+        return path;
+    }
+
     public static Connection connect() {
-        if (!databaseFileExists()) {
-            Logger.info("Database does not exist. Creating a new one...");
-            DatabaseCreator.create();
-        }
-
-        String dbPath = System.getProperty("db.path", "~/.jcs/");
-        String dbName = System.getProperty("db.name", "jcs-db");
-        String dbMode = System.getProperty("db.mode", "AUTO_SERVER=TRUE");
-        String dbUser = System.getProperty("db.user", "jcs");
-        String dbPass = System.getProperty("db.pass", "repo");
-        String dbSchema = System.getProperty("db.schema", "JCS");
-
-        String jdbcURL = "jdbc:h2:" + dbPath + dbName + (dbMode.equals("") ? "" : ";") + dbMode;
-
+        String jdbcURL = null;
         Connection conn = null;
-
         try {
+
+            if (!databaseFileExists()) {
+                Logger.info("Database does not exist. Creating a new one...");
+
+                String path = getJCSPath();
+                File jcsPath = new File(path);
+                if (jcsPath.mkdir()) {
+                    Logger.info("Created new directory " + jcsPath);
+                }
+                DatabaseCreator.create();
+            }
+
+            String dbPath = System.getProperty("db.path", "~/jcs/");
+            String dbName = System.getProperty("db.name", "jcs-db");
+            String dbMode = System.getProperty("db.mode", "AUTO_SERVER=TRUE");
+            String dbUser = System.getProperty("db.user", "jcs");
+            String dbPass = System.getProperty("db.pass", "repo");
+            String dbSchema = System.getProperty("db.schema", "JCS");
+
+            jdbcURL = "jdbc:h2:" + dbPath + dbName + (dbMode.equals("") ? "" : ";") + dbMode;
+
             conn = DriverManager.getConnection(jdbcURL, dbUser, dbPass);
 
             Statement stmt = conn.createStatement();
@@ -82,7 +98,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
     }
 
     public static boolean databaseFileExists() {
-        String path = System.getProperty("user.home") + File.separator + ".jcs";
+        String path = getJCSPath();
         File jcsPath = new File(path);
         String filename = System.getProperty("db.name", "jcs-db") + ".mv.db";
         File jcsDb = new File(path + File.separator + filename);

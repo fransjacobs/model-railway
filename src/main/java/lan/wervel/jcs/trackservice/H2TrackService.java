@@ -666,7 +666,7 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void synchronizeLocomotives() {
+    public void synchronizeWithController() {
         List<Locomotive> fromCs2 = this.controllerService.getLocomotives();
 
         for (Locomotive loc : fromCs2) {
@@ -681,10 +681,6 @@ public class H2TrackService implements TrackService {
             }
             this.locoDAO.persist(loc);
         }
-    }
-
-    @Override
-    public void synchronizeAccessories() {
         List<SolenoidAccessory> sal = this.controllerService.getAccessories();
 
         for (SolenoidAccessory sa : sal) {
@@ -716,18 +712,19 @@ public class H2TrackService implements TrackService {
                 this.signalDAO.persist(s);
             }
         }
+    }
 
-        if (sal.isEmpty()) {
-            List<Turnout> tl = this.getTurnouts();
+    @Override
+    public void synchronizeAccessories() {
+        List<Turnout> tl = this.getTurnouts();
 
-            for (Turnout t : tl) {
-                this.switchAccessory(t.getValue(), t);
-            }
+        for (Turnout t : tl) {
+            this.switchAccessory(t.getValue(), t);
+        }
 
-            List<Signal> sl = this.getSignals();
-            for (Signal s : sl) {
-                this.switchAccessory(s.getValue(), s, true);
-            }
+        List<Signal> sl = this.getSignals();
+        for (Signal s : sl) {
+            this.switchAccessory(s.getValue(), s, true);
         }
     }
 
@@ -906,6 +903,11 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
+    public void removeAllAccessoiryListeners() {
+        this.accessoiryListeners.clear();
+    }
+
+    @Override
     public void addPersistedEventListener(PersistedEventListener listener) {
         this.persistListeners.add(listener);
     }
@@ -918,15 +920,16 @@ public class H2TrackService implements TrackService {
     @Override
     public void addLocomotiveListener(LocomotiveListener listener) {
         this.locomotiveListeners.add(listener);
-
-        Logger.debug("#Listeners: " + locomotiveListeners.size());
     }
 
     @Override
     public void removeLocomotiveListener(LocomotiveListener listener) {
         this.locomotiveListeners.remove(listener);
+    }
 
-        Logger.debug("#Listeners: " + locomotiveListeners.size());
+    @Override
+    public void removeAllLocomotiveListeners() {
+        this.locomotiveListeners.clear();
     }
 
     @Override

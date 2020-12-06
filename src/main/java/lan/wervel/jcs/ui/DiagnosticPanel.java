@@ -80,13 +80,17 @@ public class DiagnosticPanel extends JPanel {
             }
 
             TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
-
-            //TrackServiceFactory.getTrackService().addMessageListener(new MessageListener(this));
-//             DefaultCaret caret = (DefaultCaret) this.logArea.getCaret();
-//             caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
             TrackServiceFactory.getTrackService().addMessageListener(new LogTextAreaHandler(this.logArea));
-
         }
+    }
+
+    public void refreshPanel() {
+        this.locPanel1.refreshPanel();
+        this.locPanel2.refreshPanel();
+        this.locPanel3.refreshPanel();
+        this.locPanel4.refreshPanel();
+        this.locPanel5.refreshPanel();
+        this.locPanel6.refreshPanel();
     }
 
     private void toggle() {
@@ -165,7 +169,7 @@ public class DiagnosticPanel extends JPanel {
                 //int height = this.lineHeight * lines;
                 int height = 30 * lines;
                 //textArea.setSize(this.textArea.getWidth(), height);
-                textArea.setPreferredSize(new Dimension(this.textArea.getWidth(),height));
+                textArea.setPreferredSize(new Dimension(this.textArea.getWidth(), height));
             } catch (BadLocationException e1) {
                 Logger.trace(e1);
             }

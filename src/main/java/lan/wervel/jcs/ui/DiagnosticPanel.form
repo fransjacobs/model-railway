@@ -711,9 +711,6 @@
                       <Dimension value="[860, 300]"/>
                     </Property>
                     <Property name="requestFocusEnabled" type="boolean" value="false"/>
-                    <Property name="rowHeaderView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                      <ComponentRef name="default"/>
-                    </Property>
                     <Property name="viewportView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="logArea"/>
                     </Property>

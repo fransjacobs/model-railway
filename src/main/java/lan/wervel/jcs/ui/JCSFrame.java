@@ -222,7 +222,6 @@ public class JCSFrame extends JFrame implements UICallback {
         filler1 = new Box.Filler(new Dimension(0, 10), new Dimension(0, 10), new Dimension(32767, 10));
         showOverviewBtn = new JButton();
         filler2 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
-        synchronizeLocosBtn = new JButton();
         showTurnoutsBtn = new JButton();
         showSignalBtn = new JButton();
         showDiagnosticsBtn = new JButton();
@@ -230,6 +229,7 @@ public class JCSFrame extends JFrame implements UICallback {
         showEditDesignBtn = new JButton();
         filler3 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
         startOfDayBtn = new JButton();
+        synchronizeLocosBtn = new JButton();
         centerPanel = new JPanel();
         settingsPanel = new JPanel();
         jLabel1 = new JLabel();
@@ -316,22 +316,6 @@ public class JCSFrame extends JFrame implements UICallback {
         filler2.setName("filler2"); // NOI18N
         jcsToolBar.add(filler2);
 
-        synchronizeLocosBtn.setIcon(new ImageIcon(getClass().getResource("/media/electric-loc-24.png"))); // NOI18N
-        synchronizeLocosBtn.setToolTipText("Synchronize Locomotives with CS2/3");
-        synchronizeLocosBtn.setFocusable(false);
-        synchronizeLocosBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-        synchronizeLocosBtn.setMaximumSize(new Dimension(40, 40));
-        synchronizeLocosBtn.setMinimumSize(new Dimension(40, 40));
-        synchronizeLocosBtn.setName("synchronizeLocosBtn"); // NOI18N
-        synchronizeLocosBtn.setPreferredSize(new Dimension(40, 40));
-        synchronizeLocosBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-        synchronizeLocosBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                synchronizeLocosBtnActionPerformed(evt);
-            }
-        });
-        jcsToolBar.add(synchronizeLocosBtn);
-
         showTurnoutsBtn.setIcon(new ImageIcon(getClass().getResource("/media/turnout-24.png"))); // NOI18N
         showTurnoutsBtn.setToolTipText("Turnouts");
         showTurnoutsBtn.setFocusable(false);
@@ -402,7 +386,7 @@ public class JCSFrame extends JFrame implements UICallback {
         filler3.setName("filler3"); // NOI18N
         jcsToolBar.add(filler3);
 
-        startOfDayBtn.setIcon(new ImageIcon(getClass().getResource("/media/sync-black-24.png"))); // NOI18N
+        startOfDayBtn.setIcon(new ImageIcon(getClass().getResource("/media/accessory-data-sync.png"))); // NOI18N
         startOfDayBtn.setToolTipText("Synchronize Accessories with the stored settings");
         startOfDayBtn.setFocusable(false);
         startOfDayBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -417,6 +401,22 @@ public class JCSFrame extends JFrame implements UICallback {
             }
         });
         jcsToolBar.add(startOfDayBtn);
+
+        synchronizeLocosBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
+        synchronizeLocosBtn.setToolTipText("Synchronize with CS2/3");
+        synchronizeLocosBtn.setFocusable(false);
+        synchronizeLocosBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        synchronizeLocosBtn.setMaximumSize(new Dimension(40, 40));
+        synchronizeLocosBtn.setMinimumSize(new Dimension(40, 40));
+        synchronizeLocosBtn.setName("synchronizeLocosBtn"); // NOI18N
+        synchronizeLocosBtn.setPreferredSize(new Dimension(40, 40));
+        synchronizeLocosBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        synchronizeLocosBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                synchronizeLocosBtnActionPerformed(evt);
+            }
+        });
+        jcsToolBar.add(synchronizeLocosBtn);
 
         getContentPane().add(jcsToolBar, BorderLayout.WEST);
 
@@ -620,7 +620,7 @@ public class JCSFrame extends JFrame implements UICallback {
   }//GEN-LAST:event_showSignalsMIActionPerformed
 
   private void synchronizeLocosBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeLocosBtnActionPerformed
-      synchronizeLocos();
+      synchronizeWithController();
   }//GEN-LAST:event_synchronizeLocosBtnActionPerformed
 
   private void showTurnoutsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showTurnoutsBtnActionPerformed
@@ -679,14 +679,23 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void showOverviewBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showOverviewBtnActionPerformed
         showOverviewPanel();
+        this.overviewPanel.loadLayout();
     }//GEN-LAST:event_showOverviewBtnActionPerformed
 
     private void synchronizeAccessories() {
         TrackServiceFactory.getTrackService().synchronizeAccessories();
     }
 
-    private void synchronizeLocos() {
-        TrackServiceFactory.getTrackService().synchronizeLocomotives();
+    private void synchronizeWithController() {
+        TrackServiceFactory.getTrackService().synchronizeWithController();
+
+        TrackServiceFactory.getTrackService().removeAllLocomotiveListeners();
+        TrackServiceFactory.getTrackService().removeAllAccessoiryListeners();
+
+        this.signalsPanel.refreshPanel();
+        this.turnoutsPanel.refreshPanel();
+        this.diagnosticPanel.refreshPanel();
+        this.overviewPanel.refreshPanel();
     }
 
     private String getTitleString() {

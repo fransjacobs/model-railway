@@ -33,7 +33,7 @@ import org.pmw.tinylog.Logger;
  */
 public class DatabaseCreator {
 
-    protected static final String DB_PATH = "~/.jcs/";
+    protected static final String DB_PATH = "~/jcs/";
     protected static final String TEST_DB_NAME = "jcs-test-db";
     protected static final String DB_NAME = "jcs-db";
     protected static final String TEST_SCHEMA = "SCHEMA=JCS";
@@ -72,7 +72,7 @@ public class DatabaseCreator {
 
             Logger.trace("User: " + user + " Connected to " + cat);
         } catch (SQLException sqle) {
-            Logger.error("Can't connect to: " + jdbcURL + " as " + user + "...");
+            Logger.error("Can't connect to: " + jdbcURL + " as " + user + "...",sqle);
         }
         return conn;
     }

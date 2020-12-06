@@ -112,6 +112,8 @@ public interface TrackService {
     void addAccessoiryListener(AccessoryListener listener);
 
     void removeAccessoiryListener(AccessoryListener listener);
+    
+    void removeAllAccessoiryListeners();
 
     void notifyAllAccessoiryListeners();
 
@@ -139,7 +141,9 @@ public interface TrackService {
     void addLocomotiveListener(LocomotiveListener listener);
 
     void removeLocomotiveListener(LocomotiveListener listener);
-
+    
+    void removeAllLocomotiveListeners();
+        
     //Generic remove for Loco/accessory/feedback
     void remove(ControllableDevice entity);
 
@@ -155,7 +159,6 @@ public interface TrackService {
 
     JCSProperty persist(JCSProperty property);
 
-    void synchronizeAccessories();
 
     void addMessageListener(CanMessageListener listener);
 
@@ -182,6 +185,8 @@ public interface TrackService {
 
     void remove(LayoutTileGroup layoutTileGroup);
 
-    void synchronizeLocomotives();
+    void synchronizeWithController();
+
+    void synchronizeAccessories();
 
 }

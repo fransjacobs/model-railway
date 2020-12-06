@@ -43,6 +43,21 @@ public class DisplayLayoutPanel extends JPanel {
         displayCanvas.loadLayout();
     }
 
+    public void refreshPanel() {
+        this.locoPanel1.refreshPanel();
+        this.locoPanel2.refreshPanel();
+        this.locoPanel3.refreshPanel();
+        this.locoPanel4.refreshPanel();
+        this.locoPanel5.refreshPanel();
+        this.locoPanel6.refreshPanel();
+        this.locoPanel7.refreshPanel();
+        this.locoPanel8.refreshPanel();
+        this.locoPanel8.refreshPanel();
+        this.locoPanel10.refreshPanel();
+        this.locoPanel11.refreshPanel();
+        this.locoPanel12.refreshPanel();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
