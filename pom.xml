@@ -8,7 +8,7 @@
     <packaging>jar</packaging>
     <name>JCS</name>
     <description>Java Central Station Interface for Marklin CS2/3</description>
-    <inceptionYear>2020</inceptionYear>
+    <inceptionYear>2018</inceptionYear>
     <developers>
         <developer>
             <name>Frans Jacobs</name>
@@ -18,15 +18,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <!--
-    <modules>
-        <module>jcs-server</module>
-        <module>jcs-gui</module>
-    </modules>
-    -->    
-    <!--
-    <dependencyManagement>
-    -->    
     <dependencies>
         <dependency>
             <groupId>org.tinylog</groupId>
@@ -59,9 +50,6 @@
             <version>0.44</version>
         </dependency>
     </dependencies>
-    <!--
-    </dependencyManagement>
-    -->        
     <build>
         <plugins>
             <plugin>
@@ -103,11 +91,11 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>server</finalName>
+                            <finalName>jcs</finalName>
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        lan.wervel.jcs.JCSServer
+                                        lan.wervel.jcs.JCSGUI
                                     </mainClass>
                                 </manifest>
                             </archive>
@@ -115,6 +103,45 @@
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
                             <appendAssemblyId>true</appendAssemblyId>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.github.fvarrui</groupId>
+                <artifactId>javapackager</artifactId>
+                <version>1.4.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <runnableJar>target/jcs-jar-with-dependencies.jar</runnableJar>
+                            <copyDependencies>false</copyDependencies>
+                            <mainClass>lan.wervel.jcs.JCSGUI</mainClass>
+                            <displayName>JCS</displayName>
+                            <organizationName>Frans's Home Projects</organizationName>
+                            <jreMinVersion>11</jreMinVersion>
+                            <bundleJre>true</bundleJre>
+                            <jrePath>/opt/jre/jdk-11.0.9.1+1-jre</jrePath>
+                            <customizedJre>false</customizedJre>
+                            <generateInstaller>false</generateInstaller>
+                            <administratorRequired>false</administratorRequired>
+                            <platform>mac</platform>
+                            <name>JCS</name>
+                            <envPath></envPath>
+                            <vmArgs>-Xms256m -Xmx512m</vmArgs> 
+                            <additionalResources>
+                                <additionalResource>assets/JCS.l4j.ini</additionalResource>
+                            </additionalResources>   
+                            <macConfig>
+                                <generateDmg>false</generateDmg>
+                                <generatePkg>false</generatePkg>
+                                <relocateJar>true</relocateJar>
+                                <developerId></developerId>
+                            </macConfig>
                         </configuration>
                     </execution>
                 </executions>
