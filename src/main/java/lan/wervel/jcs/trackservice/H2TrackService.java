@@ -375,8 +375,8 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public Locomotive getLocomotive(Integer address) {
-        return locoDAO.find(address);
+    public Locomotive getLocomotive(Integer address, DecoderType decoderType) {
+        return locoDAO.find(address, decoderType);
     }
 
     @Override
@@ -666,7 +666,7 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void synchronizeWithController() {
+    public void synchronizeLocomotivesWithController() {
         List<Locomotive> fromCs2 = this.controllerService.getLocomotives();
 
         for (Locomotive loc : fromCs2) {
@@ -681,6 +681,10 @@ public class H2TrackService implements TrackService {
             }
             this.locoDAO.persist(loc);
         }
+    }
+
+    @Override
+    public void synchronizeAccessoriesWithController() {
         List<SolenoidAccessory> sal = this.controllerService.getAccessories();
 
         for (SolenoidAccessory sa : sal) {

@@ -34,6 +34,7 @@ import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.Turnout;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
+import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.feedback.FeedbackPortListener;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
@@ -70,7 +71,7 @@ public interface TrackService {
     //Locomotive 
     List<Locomotive> getLocomotives();
 
-    Locomotive getLocomotive(Integer address);
+    Locomotive getLocomotive(Integer address, DecoderType decoderType);
 
     Locomotive getLocomotive(BigDecimal id);
 
@@ -184,8 +185,10 @@ public interface TrackService {
     void persist(LayoutTileGroup layoutTileGroup);
 
     void remove(LayoutTileGroup layoutTileGroup);
+    
+    void synchronizeLocomotivesWithController();
 
-    void synchronizeWithController();
+    void synchronizeAccessoriesWithController();
 
     void synchronizeAccessories();
 

@@ -143,13 +143,14 @@ public class LocomotiveParser {
         String name = locoProps.get(NAME);
         String description = name;
 
-        String catalogNumber = null;
         DecoderType decoderType = DecoderType.get(locoProps.get(TYPE));
         Direction direction = null;
         if (locoProps.get(RICHTUNG) != null) {
             direction = Direction.cs2Get(Integer.parseInt(locoProps.get(RICHTUNG)));
         }
-        Integer speed = null;
+        Direction defaultDirection = Direction.FORWARDS;
+
+        Integer speed = 0;
         if (locoProps.get(VELOCITY) != null) {
             speed = Integer.parseInt(locoProps.get(VELOCITY));
         }
@@ -180,7 +181,6 @@ public class LocomotiveParser {
         if (locoProps.get(VMAX) != null) {
             vMax = Integer.parseInt(locoProps.get(VMAX));
         }
-        Direction defaultDirection = null;
         String iconName = locoProps.get(ICON);
 
         Locomotive loc = new Locomotive();
@@ -195,7 +195,10 @@ public class LocomotiveParser {
         loc.setTachoMax(tachoMax);
         loc.setvMin(vMin);
         loc.setvMax(vMax);
+        loc.setDirection(direction);
+        loc.setDefaultDirection(defaultDirection);
         loc.setSpeedSteps(speedSteps);
+        loc.setSpeed(speed);
         loc.setIconName(iconName);
 
         int functionCount;

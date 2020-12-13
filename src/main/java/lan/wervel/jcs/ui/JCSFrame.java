@@ -687,10 +687,11 @@ public class JCSFrame extends JFrame implements UICallback {
     }
 
     private void synchronizeWithController() {
-        TrackServiceFactory.getTrackService().synchronizeWithController();
-
         TrackServiceFactory.getTrackService().removeAllLocomotiveListeners();
         TrackServiceFactory.getTrackService().removeAllAccessoiryListeners();
+
+        TrackServiceFactory.getTrackService().synchronizeLocomotivesWithController();
+        TrackServiceFactory.getTrackService().synchronizeAccessoriesWithController();
 
         this.signalsPanel.refreshPanel();
         this.turnoutsPanel.refreshPanel();
@@ -738,6 +739,12 @@ public class JCSFrame extends JFrame implements UICallback {
 
         OptionDialog preferencesDialog = new OptionDialog(this, false);
         preferencesDialog.setVisible(true);
+
+        Logger.debug("refresh data...");
+        this.signalsPanel.refreshPanel();
+        this.turnoutsPanel.refreshPanel();
+        this.diagnosticPanel.refreshPanel();
+        this.overviewPanel.refreshPanel();
     }
 
     private void setPowerStatus(boolean powerOn, boolean controllerConnected) {

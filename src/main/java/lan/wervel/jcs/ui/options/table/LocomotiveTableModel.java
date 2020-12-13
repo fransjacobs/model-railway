@@ -18,9 +18,12 @@
  */
 package lan.wervel.jcs.ui.options.table;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lan.wervel.jcs.entities.Locomotive;
+import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 
 /**
@@ -29,88 +32,92 @@ import lan.wervel.jcs.trackservice.TrackServiceFactory;
  */
 public class LocomotiveTableModel extends DeviceTableModel<Locomotive> {
 
-  public LocomotiveTableModel() {
-    super();
-  }
-  
-  @Override
-  protected List<Locomotive> getDevices() {
-    return TrackServiceFactory.getTrackService().getLocomotives();
-  }
-
-  @Override
-  public List<String> getColumns() {
-    if (this.columns == null) {
-      List<String> cols = new ArrayList<>(6);
-      cols.add("Address");
-      cols.add("Name");
-      cols.add("Description");
-      cols.add("Type");
-      cols.add("Catalog Nr");
-      return cols;
-    }
-    return this.columns;
-  }
-
-  @Override
-  Object getColumnValue(Locomotive device, int column) {
-    switch (column) {
-      case 0:
-        return device.getAddress();
-      case 1:
-        return device.getName();
-      case 2:
-        return device.getDescription();
-//      case 3:
-//        return device.getType();
-      case 4:
-        return device.getCatalogNumber();
-      default:
-        return null;
-    }
-  }
-
-  @Override
-  public Class<?> getColumnClass(int columnIndex) {
-    switch (columnIndex) {
-      case 0:
-        return Integer.class;
-      case 1:
-        return String.class;
-      case 2:
-        return String.class;
-      case 3:
-        return String.class;
-      case 4:
-        return String.class;
-      default:
-        return String.class;
-    }
-  }
-
-  @Override
-  void setColumnValue(Locomotive device, int column, Object value) {
-    switch (column) {
-      case 0:
-        device.setAddress((Integer) value);
-        break;
-      case 1:
-        device.setName((String) value);
-        break;
-      case 2:
-        device.setDescription((String) value);
-        break;
-//      case 3:
-//        device.setType((String) value);
-//        break;
-      case 4:
-        device.setCatalogNumber((String) value);
-        break;
-      default:
-        break;
+    public LocomotiveTableModel() {
+        super();
     }
 
-    TrackServiceFactory.getTrackService().persist(device);
-  }
+    @Override
+    protected List<Locomotive> getDevices() {
+        if (TrackServiceFactory.getTrackService() != null) {
+            return TrackServiceFactory.getTrackService().getLocomotives();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+
+    @Override
+    public List<String> getColumns() {
+        if (this.columns == null) {
+            List<String> cols = new ArrayList<>(5);
+            cols.add("Id");
+            cols.add("Address");
+            cols.add("Decoder");
+            cols.add("Name");
+            cols.add("Description");
+            return cols;
+        }
+        return this.columns;
+    }
+
+    @Override
+    Object getColumnValue(Locomotive device, int column) {
+        switch (column) {
+            case 0:
+                return device.getId();
+            case 1:
+                return device.getAddress();
+            case 2:
+                return device.getDecoderType().getDecoderType();
+            case 3:
+                return device.getName();
+            case 4:
+                return device.getDescription();
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+            case 0:
+                return BigDecimal.class;
+            case 1:
+                return Integer.class;
+            case 2:
+                return String.class;
+            case 3:
+                return String.class;
+            case 4:
+                return String.class;
+            default:
+                return String.class;
+        }
+    }
+
+    @Override
+    void setColumnValue(Locomotive device, int column, Object value) {
+        switch (column) {
+            case 0:
+                device.setId((BigDecimal) value);
+                break;
+            case 1:
+                device.setAddress((Integer) value);
+                break;
+            case 2:
+                device.setDecoderType(DecoderType.get((String) value));
+                break;
+            case 3:
+                device.setName((String) value);
+                break;
+            case 4:
+                device.setDescription((String) value);
+                break;
+            default:
+                break;
+        }
+
+        TrackServiceFactory.getTrackService().persist(device);
+    }
 
 }

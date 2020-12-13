@@ -8,6 +8,7 @@ import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.trackservice.TrackService;
 import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.Locomotive;
+import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
@@ -18,35 +19,34 @@ import org.pmw.tinylog.Logger;
  */
 public class ControllerRepoTest {
 
-  private final TrackService repository;
-  //private final ControllerProvider controller;
-  //private final boolean connected;
+    private final TrackService repository;
+    //private final ControllerProvider controller;
+    //private final boolean connected;
 
-  public ControllerRepoTest() {
-    Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
+    public ControllerRepoTest() {
+        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
 
-    repository = TrackServiceFactory.getTrackService();
-    //controller = TrackControllerFactory.getTrackController();
+        repository = TrackServiceFactory.getTrackService();
+        //controller = TrackControllerFactory.getTrackController();
 
-    //repository.addController(controller);
-    //connected = controller.connect();
-  }
+        //repository.addController(controller);
+        //connected = controller.connect();
+    }
 
-  public static void main(String[] a) throws InterruptedException {
-    ControllerRepoTest crt = new ControllerRepoTest();
-    //if (crt.connected) {
-      //crt.testSolenoids();
-      //crt.testDriveWays();
-      
-      //crt.testReconnect();
+    public static void main(String[] a) throws InterruptedException {
+        ControllerRepoTest crt = new ControllerRepoTest();
+        //if (crt.connected) {
+        //crt.testSolenoids();
+        //crt.testDriveWays();
 
-      //crt.testLoco();
-      //crt.testFeedbackCycle();
-      Thread.sleep(5000);
-      //crt.controller.disconnect();
-   // }
+        //crt.testReconnect();
+        //crt.testLoco();
+        //crt.testFeedbackCycle();
+        Thread.sleep(5000);
+        //crt.controller.disconnect();
+        // }
 
-  }
+    }
 
 //  private void testReconnect() throws InterruptedException {
 //    Logger.info("*** testReconnect");
@@ -70,7 +70,7 @@ public class ControllerRepoTest {
 //
 //  }
 
-/*
+    /*
   private void testSolenoids() throws InterruptedException {
     Logger.info("*** testSolenoids");
 
@@ -193,163 +193,162 @@ public class ControllerRepoTest {
 //    t14.setCurved();
 
   }
-*/
-  private void testLoco() throws InterruptedException {
-    Thread.sleep(2000);
-    Logger.info("*** testLoco");
-    Locomotive loco = this.repository.getLocomotive(12);
-    Logger.info("*** Setting Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
+     */
+    private void testLoco() throws InterruptedException {
+        Thread.sleep(2000);
+        Logger.info("*** testLoco");
+        Locomotive loco = this.repository.getLocomotive(12, DecoderType.MM2);
+        Logger.info("*** Setting Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
 
-    long start = System.currentTimeMillis();
-    long now = start;
-    long timeout = now + 10000;
-    Logger.info("*** Setting Speed on Loco 12 to 11");
-    loco.setSpeed(11);
+        long start = System.currentTimeMillis();
+        long now = start;
+        long timeout = now + 10000;
+        Logger.info("*** Setting Speed on Loco 12 to 11");
+        loco.setSpeed(11);
 
-    Locomotive l12 = this.repository.getLocomotive(12);
-    while (l12.getSpeed() != 11 && now < timeout) {
-      l12 = this.repository.getLocomotive(12);
-      now = System.currentTimeMillis();
+        Locomotive l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        while (l12.getSpeed() != 11 && now < timeout) {
+            l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+            now = System.currentTimeMillis();
+        }
+        long finished = System.currentTimeMillis();
+
+        Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
+        l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        Thread.sleep(1000);
+
+        loco = l12;
+        start = System.currentTimeMillis();
+        now = start;
+        timeout = now + 10000;
+        loco.setF0(true);
+        Logger.info("*** Setting Function Loco 12 to True");
+
+        l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        while (l12.isF0() && now < timeout) {
+            l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+            now = System.currentTimeMillis();
+        }
+        finished = System.currentTimeMillis();
+
+        Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
+
+        Thread.sleep(2000);
+
+        Logger.info("*** CHANGE Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
+
+        loco = l12;
+        start = System.currentTimeMillis();
+        now = start;
+        timeout = now + 10000;
+        loco.changeDirection();
+        Logger.info("*** Setting Changing direction Loco 12 to " + loco.getDirection());
+
+        l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        while (!l12.getDirection().equals(Direction.BACKWARDS) && now < timeout) {
+            l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+            now = System.currentTimeMillis();
+        }
+        finished = System.currentTimeMillis();
+
+        Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
+
+        Thread.sleep(2000);
+
+        loco = l12;
+        start = System.currentTimeMillis();
+        now = start;
+        timeout = now + 10000;
+        Logger.info("*** Setting Speed on Loco 12 to 11");
+        loco.setSpeed(11);
+
+        l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        while (l12.getSpeed() != 11 && now < timeout) {
+            l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+            now = System.currentTimeMillis();
+        }
+        finished = System.currentTimeMillis();
+
+        Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
+        Thread.sleep(1000);
+
+        loco = l12;
+        start = System.currentTimeMillis();
+        now = start;
+        timeout = now + 10000;
+        loco.setF0(false);
+        Logger.info("*** Setting Function Loco 12 to False");
+
+        l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        while (!l12.isF0() && now < timeout) {
+            l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+            now = System.currentTimeMillis();
+        }
+        finished = System.currentTimeMillis();
+
+        Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
+
+        Thread.sleep(2000);
+
+        Logger.info("*** CHANGE Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
+
+        loco = l12;
+        start = System.currentTimeMillis();
+        now = start;
+        timeout = now + 10000;
+        loco.changeDirection();
+        Logger.info("*** Setting Changing direction Loco 12 to " + loco.getDirection());
+
+        l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        while (l12.getDirection().equals(Direction.BACKWARDS) && now < timeout) {
+            l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+            now = System.currentTimeMillis();
+        }
+        finished = System.currentTimeMillis();
+
+        Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
+
+        Thread.sleep(2000);
+
+        loco = l12;
+        Logger.info("*** ^^ Stopping Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
+
+        start = System.currentTimeMillis();
+        now = start;
+        timeout = now + 10000;
+        //loco.stop();
+        Logger.info("*** Stopping Loco 12 to 0");
+
+        l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+        while (l12.getSpeed() != 0 && now < timeout) {
+            l12 = this.repository.getLocomotive(12, DecoderType.MM2);
+            now = System.currentTimeMillis();
+        }
+        finished = System.currentTimeMillis();
+
+        Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
+        Logger.info("*** ######## END LOCO #######");
     }
-    long finished = System.currentTimeMillis();
 
-    Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
-    l12 = this.repository.getLocomotive(12);
-    Thread.sleep(1000);
+    @SuppressWarnings("SleepWhileInLoop")
+    private void testFeedbackCycle() throws InterruptedException {
+        Logger.info("*** testFeedbackCycle");
+        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
 
-    loco = l12;
-    start = System.currentTimeMillis();
-    now = start;
-    timeout = now + 10000;
-    loco.setF0(true);
-    Logger.info("*** Setting Function Loco 12 to True");
+        //this.repository.startFeedbackCycle();
+        Thread.sleep(2000);
+        Logger.info("*** ##### START FEEDBACK #######\n");
 
-    l12 = this.repository.getLocomotive(12);
-    while (l12.isF0() && now < timeout) {
-      l12 = this.repository.getLocomotive(12);
-      now = System.currentTimeMillis();
+        for (int i = 0; i < 10; i++) {
+            FeedbackModule fm = this.repository.getFeedbackModules().get(1);
+            Logger.info("##: " + i + " -> " + fm);
+            Thread.sleep(2000);
+        }
+        Logger.info("*** ### END FEEDBACK #######\n");
+
+        //this.repository.stopFeedbackCycle();
     }
-    finished = System.currentTimeMillis();
 
-    Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
-
-    Thread.sleep(2000);
-
-    Logger.info("*** CHANGE Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
-
-    loco = l12;
-    start = System.currentTimeMillis();
-    now = start;
-    timeout = now + 10000;
-    loco.changeDirection();
-    Logger.info("*** Setting Changing direction Loco 12 to " + loco.getDirection());
-
-    l12 = this.repository.getLocomotive(12);
-    while (!l12.getDirection().equals(Direction.BACKWARDS) && now < timeout) {
-      l12 = this.repository.getLocomotive(12);
-      now = System.currentTimeMillis();
-    }
-    finished = System.currentTimeMillis();
-
-    Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
-
-    Thread.sleep(2000);
-
-    loco = l12;
-    start = System.currentTimeMillis();
-    now = start;
-    timeout = now + 10000;
-    Logger.info("*** Setting Speed on Loco 12 to 11");
-    loco.setSpeed(11);
-
-    l12 = this.repository.getLocomotive(12);
-    while (l12.getSpeed() != 11 && now < timeout) {
-      l12 = this.repository.getLocomotive(12);
-      now = System.currentTimeMillis();
-    }
-    finished = System.currentTimeMillis();
-
-    Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
-    Thread.sleep(1000);
-
-    loco = l12;
-    start = System.currentTimeMillis();
-    now = start;
-    timeout = now + 10000;
-    loco.setF0(false);
-    Logger.info("*** Setting Function Loco 12 to False");
-
-    l12 = this.repository.getLocomotive(12);
-    while (!l12.isF0() && now < timeout) {
-      l12 = this.repository.getLocomotive(12);
-      now = System.currentTimeMillis();
-    }
-    finished = System.currentTimeMillis();
-
-    Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
-
-    Thread.sleep(2000);
-
-    Logger.info("*** CHANGE Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
-
-    loco = l12;
-    start = System.currentTimeMillis();
-    now = start;
-    timeout = now + 10000;
-    loco.changeDirection();
-    Logger.info("*** Setting Changing direction Loco 12 to " + loco.getDirection());
-
-    l12 = this.repository.getLocomotive(12);
-    while (l12.getDirection().equals(Direction.BACKWARDS) && now < timeout) {
-      l12 = this.repository.getLocomotive(12);
-      now = System.currentTimeMillis();
-    }
-    finished = System.currentTimeMillis();
-
-    Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
-
-    Thread.sleep(2000);
-
-    loco = l12;
-    Logger.info("*** ^^ Stopping Loco 12. Direction: " + loco.getDirection() + " Speed: " + loco.getSpeed() + " F0: " + loco.isF0() + "...");
-
-    start = System.currentTimeMillis();
-    now = start;
-    timeout = now + 10000;
-    //loco.stop();
-    Logger.info("*** Stopping Loco 12 to 0");
-
-    l12 = this.repository.getLocomotive(12);
-    while (l12.getSpeed() != 0 && now < timeout) {
-      l12 = this.repository.getLocomotive(12);
-      now = System.currentTimeMillis();
-    }
-    finished = System.currentTimeMillis();
-
-    Logger.info("*** Execution time: " + (finished - start) + " ms. Loco 12. Direction: " + l12.getDirection() + " Speed: " + l12.getSpeed() + " F0: " + l12.isF0() + "...");
-    Logger.info("*** ######## END LOCO #######");
-  }
-
-  @SuppressWarnings("SleepWhileInLoop")
-  private void testFeedbackCycle() throws InterruptedException {
-    Logger.info("*** testFeedbackCycle");
-    Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-
-    //this.repository.startFeedbackCycle();
-    Thread.sleep(2000);
-    Logger.info("*** ##### START FEEDBACK #######\n");
-
-    for (int i = 0; i < 10; i++) {
-      FeedbackModule fm = this.repository.getFeedbackModules().get(1);
-      Logger.info("##: " + i + " -> " + fm);
-      Thread.sleep(2000);
-    }
-    Logger.info("*** ### END FEEDBACK #######\n");
-
-    //this.repository.stopFeedbackCycle();
-  }
-  
-  
 //  @SuppressWarnings("SleepWhileInLoop")
 //  private void testDriveWays() throws InterruptedException {
 //    //Init
@@ -412,5 +411,4 @@ public class ControllerRepoTest {
 //    trk3.deActivate();
 //   
 //  }
-
 }
