@@ -20,12 +20,13 @@ package lan.wervel.jcs.controller.cs2;
 
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
+import org.pmw.tinylog.Logger;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class FeedbackEventStatus {
+public class SensorEvent {
 
     private boolean newValue;
     private boolean oldValue;
@@ -33,13 +34,21 @@ public class FeedbackEventStatus {
     private int deviceId;
     private int millis;
 
-    public FeedbackEventStatus(CanMessage message) {
+    public SensorEvent(CanMessage message) {
         parseMessage(message);
     }
 
     private void parseMessage(CanMessage message) {
-        if (message.isResponseMessage() && MarklinCan.S88_EVENT_RESPONSE == message.getCommand()) {
-            int[] data = message.getData();
+        CanMessage resp;
+
+        if (!message.isResponseMessage()) {
+            resp = message.getResponse();
+        } else {
+            resp = message;
+        }
+
+        if (resp.isResponseMessage() && MarklinCan.S88_EVENT_RESPONSE == resp.getCommand()) {
+            int[] data = resp.getData();
 
             int[] did = new int[2];
             int[] cid = new int[2];
@@ -56,6 +65,8 @@ public class FeedbackEventStatus {
             oldValue = ov == 1;
             newValue = nv == 1;
             millis = CanMessage.toInt(time) * 10;
+        } else {
+            Logger.warn("Can't parse message, not a Sensor Response! "+resp);
         }
     }
 

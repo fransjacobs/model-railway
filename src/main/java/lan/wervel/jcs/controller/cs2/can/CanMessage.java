@@ -20,8 +20,8 @@ package lan.wervel.jcs.controller.cs2.can;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * CS 2 CAN message.
@@ -198,6 +198,50 @@ public class CanMessage implements Serializable {
         int command = getCommand();
         command = command & 0x01;
         return command == 1;
+    }
+
+    public boolean isResponseFor(CanMessage other) {
+        int otherCmd = other.getCommand();
+        int cmd = this.getCommand();
+        return (cmd - 1) == otherCmd;
+    }
+
+    public boolean isAcknowledgeFor(CanMessage other) {
+        if (isResponseFor(other)) {
+            int[] base = new int[CanMessage.MESSAGE_SIZE];
+            System.arraycopy(other.getMessage(), 0, base, 0, base.length);
+
+            int[] ackm = new int[CanMessage.MESSAGE_SIZE];
+            System.arraycopy(this.message, 0, ackm, 0, ackm.length);
+
+            ackm[CMD_IDX] = base[CMD_IDX];
+            return Objects.deepEquals(ackm, base);
+        }
+        return false;
+    }
+
+    public boolean expectsAcknowledge() {
+        int cmd = this.getCommand();
+
+        switch (cmd) {
+            case MarklinCan.STATUS_CONFIG:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public boolean isMemberPing() {
+        int cmd = this.getCommand();
+
+        switch (cmd) {
+            case MarklinCan.SW_STATUS_REQ:
+                return true;
+            case MarklinCan.REQ_PING:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean hasValidResponse() {

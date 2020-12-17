@@ -18,12 +18,12 @@
  */
 package lan.wervel.jcs.controller.cs2.net;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -47,27 +47,42 @@ class TCPConnection implements Connection {
     private DataOutputStream dos;
     private DataInputStream din;
 
+    private ByteArrayInputStream bais;
+
     TCPConnection(InetAddress cs2Address) {
         this.cs2Address = cs2Address;
         listeners = new ArrayList<>();
         executor = Executors.newCachedThreadPool();
 
-        connect();
+        checkConnection();
     }
 
-    private void connect() {
+    private void checkConnection() {
         try {
-            socket = new Socket(cs2Address, Connection.CS2_RX_PORT);
-
-            socket.setSoTimeout(5000);
-
-            dos = new DataOutputStream(socket.getOutputStream());
-            din = new DataInputStream(socket.getInputStream());
-
+            if (socket == null || !socket.isConnected()) {
+                socket = new Socket(cs2Address, Connection.CS2_RX_PORT);
+                socket.setSoTimeout(5000);
+                dos = new DataOutputStream(socket.getOutputStream());
+                din = new DataInputStream(socket.getInputStream());
+            }
         } catch (IOException ex) {
-            Logger.error("Can't connect whith CS2/3 " + cs2Address.getHostAddress() + ". Cause: " + ex.getMessage());
+            this.socket = null;
+            Logger.error("Can't (re)connect with CS2/3 " + cs2Address.getHostAddress() + ". Cause: " + ex.getMessage());
             Logger.trace(ex);
         }
+    }
+
+    private boolean isDataAvailable() {
+        boolean dataAvailable = false;
+        try {
+            if (din.available() > 0) {
+                dataAvailable = true;
+            }
+        } catch (IOException e) {
+            Logger.error("Error while checking for bytes available!");
+            Logger.trace(e);
+        }
+        return dataAvailable;
     }
 
     private void disconnect() {
@@ -97,87 +112,84 @@ class TCPConnection implements Connection {
         }
     }
 
+    private CanMessage receiveCanMessage() throws IOException {
+        byte[] buffer = new byte[CanMessage.MESSAGE_SIZE];
+
+        int bytesRead = din.read(buffer);
+        if (bytesRead < 0) {
+            throw new IOException("Connection closed");
+        }
+        CanMessage cm = new CanMessage(buffer);
+
+        return cm;
+    }
+
+    private List<CanMessage> receiveCanMessages() {
+        List<CanMessage> messages = new ArrayList<>();
+        while (isDataAvailable()) {
+            try {
+                CanMessage cm = receiveCanMessage();
+                messages.add(cm);
+            } catch (IOException e) {
+                Logger.error(e);
+            }
+        }
+        return messages;
+    }
+
+    private void sendMessage(byte[] data) {
+        checkConnection();
+        try {
+            dos.write(data);
+        } catch (IOException e) {
+            Logger.error("Data send failed!");
+        }
+    }
+
     @Override
     public CanMessage sendCanMessage(CanMessage message) {
-        try {
-            dos.flush();
-            dos.write(message.getBytes());
-            //Logger.trace(message.getMessageName() + " send");
+//        Logger.trace("TX: " + message);
+        sendMessage(message.getBytes());
 
-            //CanMessageEvent sendEvent = new CanMessageEvent(message, this.cs2Address);
-            //executor.execute(() -> fireMessageListeners(sendEvent));
-
-            //Receive first packet
-            byte[] data = new byte[1];
-            {
-                int currByte = din.read();
-                if (currByte < 0) {
-                    throw new IOException("Connection closed");
-                }
-                data[0] = (byte) currByte;
-            }
-
-            //List<CanMessage> responseMessages = new ArrayList<>();
-            while (din.available() > 0) {
-                byte[] tempHolder = new byte[1024];
-                int bytesRead = din.read(tempHolder);
-                if (bytesRead < 0) {
-                    throw new IOException("Connection closed");
-                }
-
-                byte[] tempCopy = new byte[data.length + bytesRead];
-                System.arraycopy(data, 0, tempCopy, 0, data.length);
-                System.arraycopy(tempHolder, 0, tempCopy, data.length, bytesRead);
-
-                data = new byte[tempCopy.length];
-                System.arraycopy(tempCopy, 0, data, 0, data.length);
-                //need to pause for 10 ms...(?) else not all response is captured ???...
-                pause(10);
-            }
-
-            InetAddress replyAddress = socket.getInetAddress();
-
-            //Logger.trace("data len:" + data.length);
-            int cmd = message.getCommand();
-            for (int i = 0; i <= data.length; i += CanMessage.MESSAGE_SIZE) {
-                //Logger.trace("Index = " + i);
-                byte[] m = new byte[CanMessage.MESSAGE_SIZE];
-
-                if (data.length >= i + m.length) {
-                    System.arraycopy(data, i, m, 0, m.length);
-                    CanMessage cm = new CanMessage(m);
-
-                    CanMessageEvent replyEvent = new CanMessageEvent(cm, replyAddress);
-                    executor.execute(() -> fireMessageListeners(replyEvent));
-
-                    if (cm.getCommand() == cmd + 1) {
-                        message.addResponse(cm);
-
-                        //Logger.trace("Got reply for: " + message + " -> " + cm);
-                    }
-//                    else {
-//                        responseMessages.add(cm);
-//                        //Logger.trace(cm);
-//                    }
-                }
-            }
-
-            //Logger.trace("Received " + message.getResponses().size() + " responses");
-//            if (!responseMessages.isEmpty()) {
-//                //Logger.trace("received " + responseMessages.size());
-//                for (CanMessage cm : responseMessages) {
-//                    CanMessageEvent event = new CanMessageEvent(cm, replyAddress);
-//                    executor.execute(() -> fireMessageListeners(event));
-//                }
-//            } else {
-//                //Logger.trace("No extra messages received.");
-//            }
-        } catch (SocketTimeoutException ste) {
-            Logger.debug("No reply on message " + message + " Error: " + ste.getMessage());
-        } catch (IOException e) {
-            Logger.error("Message " + message + " not send cause: " + e.getMessage());
-            Logger.trace(e);
+        //For what ever reason after sending the message a CS2/3 need some time to
+        //process an prepare an response.
+        //so wait at least 10 ms otherwise there is no valid response...
+        if (message.expectsAcknowledge()) {
+            //For some messages the wait is even longer...
+            pause(85);
+        } else if (message.isMemberPing()) {
+            pause(20);
+        } else {
+            pause(10);
         }
+
+        List<CanMessageEvent> events = new ArrayList<>();
+
+        if (isDataAvailable()) {
+            InetAddress replyAddress = socket.getInetAddress();
+            List<CanMessage> responses = receiveCanMessages();
+            for (CanMessage resp : responses) {
+                if (resp.isResponseFor(message)) {
+                    message.addResponse(resp);
+//                    if (message.expectsAcknowledge()) {
+//                        Logger.trace("RX: " + resp + " Ack? " + resp.isAcknowledgeFor(message));
+//                    } else {
+//                        Logger.trace("RX: " + resp);
+//                    }
+                } else {
+                    CanMessageEvent cme = new CanMessageEvent(resp, replyAddress);
+                    events.add(cme);
+//                    Logger.trace("Event RX: " + resp);
+                }
+            }
+        }
+        if (!events.isEmpty()) {
+//            Logger.trace("Received " + events.size() + " Event messages...");
+            for (CanMessageEvent me : events) {
+                executor.execute(() -> fireMessageListeners(me));
+            }
+        }
+
         return message;
     }
 

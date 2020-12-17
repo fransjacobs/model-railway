@@ -280,24 +280,24 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
 
     private void setButtonStatus() {
         if (this.signal != null) {
-            Logger.trace("Signal: " + signal + " Signal Value: " + signal.getSignalValue());
+            //Logger.trace("Signal: " + signal + " Signal Value: " + signal.getSignalValue());
 
             switch (signal.getSignalValue()) {
                 case Hp0:
                     this.btnHp0.setSelected(true);
-                    Logger.trace("Button Hp0: selected -> true.");
+                    //Logger.trace("Button Hp0: selected -> true.");
                     break;
                 case Hp1:
                     this.btnHp1.setSelected(true);
-                    Logger.trace("Button Hp1: selected -> true.");
+                    //Logger.trace("Button Hp1: selected -> true.");
                     break;
                 case Hp2:
                     this.btnHp2.setSelected(true);
-                    Logger.trace("Button Hp2: selected -> true.");
+                    //Logger.trace("Button Hp2: selected -> true.");
                     break;
                 case Hp0Sh1:
                     this.btnHp0Sh1.setSelected(true);
-                    Logger.trace("Button Hp0Sh1: selected -> true.");
+                    //Logger.trace("Button Hp0Sh1: selected -> true.");
                     break;
                 default:
                     Logger.trace("Default called; Value: " + signal.getSignalValue());

@@ -38,6 +38,7 @@ import lan.wervel.jcs.controller.cs2.can.MarklinCan;
 import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.controller.cs2.net.Connection;
+import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
@@ -468,6 +469,11 @@ public class DemoController implements ControllerService, FeedbackService {
         }
     }
 
+    @Override
+    public FeedbackModule queryAllPorts(FeedbackModule feedbackModule) {
+        return feedbackModule;
+    }
+
 //    private void wait200ms() {
 //        try {
 //            Thread.sleep(200L);
@@ -544,7 +550,7 @@ public class DemoController implements ControllerService, FeedbackService {
 
             switch (cmd) {
                 case MarklinCan.S88_EVENT_RESPONSE:
-                    FeedbackEventStatus fs = new FeedbackEventStatus(msg);
+                    SensorEvent fs = new SensorEvent(msg);
                     FeedbackEvent fe = new FeedbackEvent(fs);
 
                     //Logger.trace(fs);

@@ -22,6 +22,7 @@ import java.util.List;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.cs2.PowerStatus;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
+import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
@@ -79,5 +80,7 @@ public interface ControllerService {
     List<Locomotive> getLocomotives();
 
     List<SolenoidAccessory> getAccessories();
+
+    FeedbackModule queryAllPorts(FeedbackModule feedbackModule);
 
 }

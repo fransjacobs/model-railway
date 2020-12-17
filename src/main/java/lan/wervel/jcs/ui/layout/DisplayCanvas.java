@@ -133,7 +133,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
             snapshot = new HashSet<>(tiles);
         }
 
-        Logger.debug("Removing listeners from " + snapshot.size() + " Tiles...");
+        //Logger.debug("Removing listeners from " + snapshot.size() + " Tiles...");
         //Unregister listeners...
         for (AbstractTile t : snapshot) {
             if (t instanceof FeedbackPortListener) {
@@ -173,19 +173,19 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
 
                 if (minX > tx) {
                     minX = tx;
-                    Logger.trace("New minX: " + minX);
+                    //Logger.trace("New minX: " + minX);
                 }
                 if (maxX < bx) {
                     maxX = bx;
-                    Logger.trace("New maxX: " + maxX);
+                    //Logger.trace("New maxX: " + maxX);
                 }
                 if (minY > ly) {
                     minY = ly;
-                    Logger.trace("New minY: " + minY);
+                    //Logger.trace("New minY: " + minY);
                 }
                 if (maxY < ry) {
                     maxY = ry;
-                    Logger.trace("New maxY: " + maxY);
+                    //Logger.trace("New maxY: " + maxY);
                 }
             }
         }

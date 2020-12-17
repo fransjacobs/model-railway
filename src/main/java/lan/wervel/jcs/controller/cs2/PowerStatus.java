@@ -19,8 +19,10 @@
 package lan.wervel.jcs.controller.cs2;
 
 import java.io.Serializable;
+import java.util.List;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
+import org.pmw.tinylog.Logger;
 
 /**
  *
@@ -43,14 +45,24 @@ public class PowerStatus implements Serializable {
     }
 
     private void parseMessage(CanMessage message) {
-        CanMessage response = message.getResponse();
-        if (response.isResponseMessage() && MarklinCan.SYSTEM_COMMAND_RESPONSE == response.getCommand() && response.isDeviceUidValid()) {
-            int[] data = response.getData();
-            deviceUid = response.getDeviceUidFromMessage();
-            deviceUidNumber = response.getDeviceUidNumberFromMessage();
+        CanMessage resp = null;
+        List<CanMessage> respList = message.getResponses();
+        for (CanMessage cm : respList) {
+            if (cm.isResponseMessage() && cm.isDeviceUidValid()) {
+                resp = cm;
+            }
+        }
+        if (resp == null) {
+            resp = message;
+        }
+
+        if (MarklinCan.SYSTEM_COMMAND_RESPONSE == resp.getCommand() && resp.isDeviceUidValid()) {
+            int[] data = resp.getData();
+            deviceUid = resp.getDeviceUidFromMessage();
+            deviceUidNumber = resp.getDeviceUidNumberFromMessage();
             int status = data[4];
             powerOn = status == 1;
-        }
+      }
     }
 
     @Override

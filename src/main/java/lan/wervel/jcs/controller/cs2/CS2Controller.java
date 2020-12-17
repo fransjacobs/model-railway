@@ -41,6 +41,7 @@ import lan.wervel.jcs.controller.cs2.http.LocomotiveParser;
 import lan.wervel.jcs.controller.cs2.net.Connection;
 import lan.wervel.jcs.controller.cs2.net.CS2ConnectionFactory;
 import lan.wervel.jcs.controller.cs2.net.HTTPConnection;
+import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
@@ -68,6 +69,8 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
     private final List<HeartbeatListener> heartbeatListeners;
 
+    private final Set<Integer> canDeviceUids;
+
     private final Timer timer;
     private boolean startTimer;
 
@@ -88,6 +91,7 @@ public class CS2Controller implements ControllerService, FeedbackService {
         controllerEventListeners = new ArrayList<>();
         feedbackEventListeners = new ArrayList<>();
         heartbeatListeners = new ArrayList<>();
+        canDeviceUids = new HashSet<>();
         startTimer = useTimer;
         timer = new Timer("Heartbeat", true);
         executor = Executors.newCachedThreadPool();
@@ -107,7 +111,8 @@ public class CS2Controller implements ControllerService, FeedbackService {
     }
 
     public PowerStatus getPowerStatus() {
-        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.powerStatus()));
+        CanMessage m = connection.sendCanMessage(CanMessageFactory.powerStatus());
+        PowerStatus ps = new PowerStatus(m);
         return ps;
     }
 
@@ -123,22 +128,15 @@ public class CS2Controller implements ControllerService, FeedbackService {
     @Override
     public final boolean connect() {
         if (!connected) {
-            Logger.debug("Connecting to CS2...");
+            Logger.debug("Connecting to CS2/3...");
             this.connection = CS2ConnectionFactory.getConnection();
             this.connected = this.connection != null;
         }
 
         if (connected) {
-            //Send a ping to see what is there...
-            List<PingResponse> prl = membersPing();
-
-            Logger.trace("got " + prl.size() + " responses");
-            for (PingResponse pr : prl) {
-                Logger.debug(pr);
-            }
-
-            //query the power status which will tell us whether the trackpower is on or off and alse the UID of the CS2/3
+            Logger.debug("Quering the Power Status and obtaining a device UID of the CS2/3...");
             PowerStatus ps = getPowerStatus();
+
             this.deviceUid = ps.getDeviceUid();
             this.deviceUidNumber = ps.getDeviceUidNumber();
             CanMessageFactory.setDeviceUidNumber(deviceUidNumber);
@@ -146,6 +144,16 @@ public class CS2Controller implements ControllerService, FeedbackService {
             Logger.trace("Track Power is " + (ps.isPowerOn() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
             deviceInfo = getControllerInfo();
             Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
+
+            Logger.debug("Sending members ping...");
+            List<PingResponse> prl = membersPing();
+
+            Logger.trace("got " + prl.size() + " responses");
+            for (PingResponse pr : prl) {
+                this.canDeviceUids.add(pr.getDeviceIdint());
+
+                Logger.debug(pr + " UID: " + pr.getDeviceIdint());
+            }
 
             addCanMessageListener(new ExtraMessageListener(this));
 
@@ -156,8 +164,8 @@ public class CS2Controller implements ControllerService, FeedbackService {
         // Finally start the harbeat timer which will takes care of the feedback 
         if (startTimer && connected) {
             //Start the timer
-            //timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, FeedbackService.DEFAULT_POLL_MILLIS);
-            timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, 1000);
+            timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, FeedbackService.DEFAULT_POLL_MILLIS);
+            //timer.scheduleAtFixedRate(new HeartbeatTask(this), DELAY, 1000);
             this.running = true;
         } else {
             Logger.info("Hearbeat time is NOT started! " + (!connected ? "NOT Connected" : (!startTimer ? "Timer is off" : "")));
@@ -450,13 +458,30 @@ public class CS2Controller implements ControllerService, FeedbackService {
         return CS2ConnectionFactory.getInstance().getDeviceIp();
     }
 
-    public void getLocomotiveConfigData() {
-        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.requestConfig("loks"));
+    public SensorEvent querySensor(int contactId) {
+        CanMessage msg = connection.sendCanMessage(CanMessageFactory.querySensor(contactId));
+        CanMessage resp = msg.getResponse();
+        if (resp.isResponseFor(msg)) {
+            return new SensorEvent(msg);
+        } else {
+            return null;
+        }
     }
 
-    public void requestFeedbackEvents(int contactId) {
-        CanMessage msg = connection.sendCanMessage(CanMessageFactory.feedbackEvent(contactId));
-        Logger.trace(msg.getResponse());
+    @Override
+    public FeedbackModule queryAllPorts(FeedbackModule feedbackModule) {
+        int cid = feedbackModule.getContactId(1);
+        int max = cid + feedbackModule.getPorts() - 1;
+        Logger.trace("Query Contact " + cid + " until: " + max);
+
+        for (; cid <= max; cid++) {
+            SensorEvent se = querySensor(cid);
+            if (se != null) {
+                //Logger.trace("Module " + feedbackModule.getModuleNumber() + " Port: " + FeedbackModule.contactIdToPort(cid) + " Value: " + se.isNewValue());
+                feedbackModule.setPortValue(se.isNewValue(), FeedbackModule.contactIdToPort(cid));
+            }
+        }
+        return feedbackModule;
     }
 
     private void notifyControllerEventListeners(ControllerEvent event) {
@@ -513,6 +538,8 @@ public class CS2Controller implements ControllerService, FeedbackService {
         private boolean powerOn;
         private boolean toggle = false;
 
+        private int cnt = 0;
+
         HeartbeatTask(CS2Controller cs2Controller) {
             controller = cs2Controller;
         }
@@ -520,17 +547,20 @@ public class CS2Controller implements ControllerService, FeedbackService {
         @Override
         public void run() {
             try {
-                if (toggle) {
-                    boolean power = this.controller.getPowerStatus().isPowerOn();
+                if (cnt % 4 == 0) {
+                    boolean power = controller.getPowerStatus().isPowerOn();
                     if (power != powerOn) {
                         powerOn = power;
-                        //Logger.debug("Power Status changed to " + (powerOn ? "On" : "Off"));
+                        //Logger.trace("Power Status changed to " + (powerOn ? "On" : "Off"));
                         ControllerEvent ce = new ControllerEvent(powerOn, this.controller.isConnected());
                         controller.notifyControllerEventListeners(ce);
                     }
-                } else {
+                    cnt = 0;
+                } 
+                else {
                     List<PingResponse> prl = membersPing();
                 }
+                cnt++;
 
                 Set<HeartbeatListener> snapshot;
                 synchronized (controller.heartbeatListeners) {
@@ -565,12 +595,14 @@ public class CS2Controller implements ControllerService, FeedbackService {
 
             switch (cmd) {
                 case MarklinCan.S88_EVENT_RESPONSE:
-                    FeedbackEventStatus fs = new FeedbackEventStatus(msg);
+                    SensorEvent fs = new SensorEvent(msg);
                     FeedbackEvent fe = new FeedbackEvent(fs);
 
                     //Logger.trace(fs);
-                    executor.execute(() -> controller.notifyFeedbackEventListeners(fe));
+                    //executor.execute(() -> controller.notifyFeedbackEventListeners(fe));
+                    controller.notifyFeedbackEventListeners(fe);
                     break;
+                //case MarklinCan.   
                 default:
                     //Logger.trace("Message: " + msg);
                     break;
@@ -587,8 +619,11 @@ public class CS2Controller implements ControllerService, FeedbackService {
     }
 
     public static void main(String[] a) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        CS2Controller cs2 = new CS2Controller(true);
+        Configurator.
+                currentConfig().formatPattern("{date:yyyy-MM-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
+                activate();
+
+        CS2Controller cs2 = new CS2Controller(false);
 
         if (cs2.isConnected()) {
             //cs2.powerOn();
@@ -601,6 +636,14 @@ public class CS2Controller implements ControllerService, FeedbackService {
 //            for (PingResponse pr : prl) {
 //                Logger.debug(pr);
 //            }
+            FeedbackModule fm1 = new FeedbackModule();
+            cs2.queryAllPorts(fm1);
+            Logger.debug(fm1.toLogString());
+
+//            FeedbackModule fm2 = new FeedbackModule(2);
+//            cs2.queryAllPorts(fm2);
+//            Logger.debug(fm2.toLogString());
+            //cs2.querySensor(1);
         }
 
         //PingResponse pr2 = cs2.memberPing();

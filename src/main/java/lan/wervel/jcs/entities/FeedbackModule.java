@@ -45,15 +45,15 @@ public class FeedbackModule extends ControllableDevice {
     private Integer[] response;
 
     public FeedbackModule() {
-        this(null, null, 16, null, null, -1);
+        this(Integer.decode("1"));
     }
 
     public FeedbackModule(Integer moduleNumber) {
         this(moduleNumber, null, 16, null, null, -1);
     }
 
-    public FeedbackModule(int contactId) {
-        this(null, null, null, null, null, contactId);
+    public FeedbackModule(int contactId,  Integer ports) {
+        this(null, null, ports, null, null, contactId);
     }
 
     public FeedbackModule(Integer moduleNumber, String catalogNumber, Integer ports) {
@@ -491,8 +491,8 @@ public class FeedbackModule extends ControllableDevice {
     public void setPortValue(boolean value, int port) {
         Integer[] resp = getResponse();
 
-        int lsb = response[0];
-        int msb = response[1];
+        int lsb = resp[0];
+        int msb = resp[1];
 
         if (port > 8) {
             int b = port - 8 - 1;

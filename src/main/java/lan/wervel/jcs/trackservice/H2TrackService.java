@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lan.wervel.jcs.controller.ControllerEvent;
@@ -102,6 +104,7 @@ public class H2TrackService implements TrackService {
     private final Properties jcsProperties;
 
     private DeviceInfo controllerInfo;
+    private final Timer timer;
 
     public H2TrackService() {
         this(true, true);
@@ -127,6 +130,7 @@ public class H2TrackService implements TrackService {
         locomotiveListeners = new ArrayList<>();
         heartBeatListeners = new ArrayList<>();
         persistListeners = new ArrayList<>();
+        timer = new Timer("TrackStatus", true);
 
         //clients = new HashMap<>();
         retrieveJCSProperties();
@@ -142,6 +146,7 @@ public class H2TrackService implements TrackService {
             aquireFeedbackService();
         }
         Logger.debug(feedbackService != null ? "Aquired " + feedbackService.getClass().getSimpleName() : "Could not aquire a Feedback Service!");
+
     }
 
     private void retrieveJCSProperties() {
@@ -162,6 +167,8 @@ public class H2TrackService implements TrackService {
         if (this.controllerService instanceof FeedbackService) {
             Logger.trace("Using Controller as Feedback Service...");
             this.feedbackService = (FeedbackService) this.controllerService;
+
+            //this.notifyAllFeedbackListeners();
         }
 
         String feedbackServiceImpl;
@@ -192,6 +199,9 @@ public class H2TrackService implements TrackService {
 
         feedbackService.addFeedbackEventListener(new FeedbackServiceEventListener());
         feedbackService.addHeartbeatListener(new FeedbackServiceSampleListener());
+
+        timer.scheduleAtFixedRate(new UpdateTrackStatusTask(this),0, 10000);
+
     }
 
     private void aquireControllerService() {
@@ -300,34 +310,26 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void notifyAllFeedbackListeners() {
-//        if (feedbackService != null) {
-//            List<FeedbackModule> currFbml = feedbackService.getFeedbackModules();
-//            if (currFbml != null) {
-//                for (FeedbackModule fbm : currFbml) {
-//                    FeedbackModule cFbm = this.getFeedbackModule(fbm.getModuleNumber());
-//                    if (cFbm != null) {
-//                        cFbm.setResponse(fbm.getResponse());
-//                        this.persist(cFbm);
-//                    }
-//                }
-//
-//                List<FeedbackModule> fbml = getFeedbackModules();
-//
-//                Set<FeedbackPortListener> snapshot;
-//                synchronized (feedbackPortListeners) {
-//                    snapshot = new HashSet<>(feedbackPortListeners);
-//                }
-//
-//                for (FeedbackModule fm : fbml) {
-//                    for (FeedbackPortListener fbpl : snapshot) {
-//                        if (fm.getModuleNumber() == fbpl.getModuleNumber()) {
-//                            fbpl.setValue(fm.getPortValue(fbpl.getPort()));
-//                        }
-//                    }
-//                }
-//                Logger.trace("Refreshed " + feedbackPortListeners.size() + " FeedbackPortListeners...");
-//            }
-//        }
+        //Lets get the status of the feedbackmodules
+        List<FeedbackModule> fml = this.getFeedbackModules();
+        for (FeedbackModule fm : fml) {
+            fm = this.controllerService.queryAllPorts(fm);
+            this.persist(fm);
+        }
+
+        Set<FeedbackPortListener> snapshot;
+        synchronized (feedbackPortListeners) {
+            snapshot = new HashSet<>(feedbackPortListeners);
+        }
+
+        for (FeedbackModule fm : fml) {
+            for (FeedbackPortListener fbpl : snapshot) {
+                if (fm.getModuleNumber() == fbpl.getModuleNumber()) {
+                    fbpl.setValue(fm.getPortValue(fbpl.getPort()));
+                }
+            }
+        }
+        Logger.trace("Refreshed " + feedbackPortListeners.size() + " FeedbackPortListeners...");
     }
 
     private void notifyAccessoiryListeners(SolenoidAccessory accessoiry) {
@@ -662,6 +664,7 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void disconnect() {
+        this.timer.cancel();
         this.controllerService.disconnect();
     }
 
@@ -1026,4 +1029,22 @@ public class H2TrackService implements TrackService {
         }
     }
 
+    private class UpdateTrackStatusTask extends TimerTask {
+
+        private final TrackService trackService;
+
+        UpdateTrackStatusTask(TrackService trackService) {
+            this.trackService = trackService;
+        }
+
+        @Override
+        public void run() {
+            try {
+                trackService.notifyAllFeedbackListeners();
+            } catch (Exception e) {
+                Logger.error(e.getMessage());
+                Logger.trace(e);
+            }
+        }
+    }
 }

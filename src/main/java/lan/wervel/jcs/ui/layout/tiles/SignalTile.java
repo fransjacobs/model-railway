@@ -57,7 +57,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
             signalType = s.getLightImages();
             signalValue = s.getSignalValue();
             midget = "Midget".equals(s.getDescription());
-            Logger.trace("A: " + s.getAddress() + " A2: " + s.getAddress2() + " V: " + s.getValue() + " V2 " + s.getValue2() + " SV: " + s.getSignalValue());
+            //Logger.trace("A: " + s.getAddress() + " A2: " + s.getAddress2() + " V: " + s.getValue() + " V2 " + s.getValue2() + " SV: " + s.getSignalValue());
         } else {
             signalType = Signal.HP01;
         }

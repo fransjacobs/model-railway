@@ -51,7 +51,7 @@ public class FeedbackEventStatusTest {
     @Test
     public void testIsNewValue() {
         System.out.println("isNewValue");
-        FeedbackEventStatus instance = new FeedbackEventStatus(message);
+        SensorEvent instance = new SensorEvent(message);
         boolean expResult = true;
         boolean result = instance.isNewValue();
         assertEquals(expResult, result);
@@ -63,7 +63,7 @@ public class FeedbackEventStatusTest {
     @Test
     public void testIsOldValue() {
         System.out.println("isOldValue");
-        FeedbackEventStatus instance = new FeedbackEventStatus(message);
+        SensorEvent instance = new SensorEvent(message);
         boolean expResult = false;
         boolean result = instance.isOldValue();
         assertEquals(expResult, result);
@@ -75,7 +75,7 @@ public class FeedbackEventStatusTest {
     @Test
     public void testGetContactId() {
         System.out.println("getContactId");
-        FeedbackEventStatus instance = new FeedbackEventStatus(message);
+        SensorEvent instance = new SensorEvent(message);
         int expResult = 48;
         int result = instance.getContactId();
         assertEquals(expResult, result);
@@ -87,7 +87,7 @@ public class FeedbackEventStatusTest {
     @Test
     public void testGetDeviceId() {
         System.out.println("getDeviceId");
-        FeedbackEventStatus instance = new FeedbackEventStatus(message);
+        SensorEvent instance = new SensorEvent(message);
         int expResult = 0;
         int result = instance.getDeviceId();
         assertEquals(expResult, result);
@@ -99,7 +99,7 @@ public class FeedbackEventStatusTest {
     @Test
     public void testGetMillis() {
         System.out.println("getMillis");
-        FeedbackEventStatus instance = new FeedbackEventStatus(message);
+        SensorEvent instance = new SensorEvent(message);
         int expResult = 39290;
         int result = instance.getMillis();
         assertEquals(expResult, result);
@@ -111,7 +111,7 @@ public class FeedbackEventStatusTest {
     @Test
     public void testToString() {
         System.out.println("toString");
-        FeedbackEventStatus instance = new FeedbackEventStatus(message);
+        SensorEvent instance = new SensorEvent(message);
         String expResult = "FeedbackEventStatus{newValue=true, oldValue=false, contactId=48, deviceId=0, millis=39290}";
         String result = instance.toString();
         assertEquals(expResult, result);

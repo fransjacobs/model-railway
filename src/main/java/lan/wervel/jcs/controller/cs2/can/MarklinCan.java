@@ -96,8 +96,14 @@ public interface MarklinCan {
     
     public final static int PARAM_PIN_RESET = 0x00;
     public final static int PARAM_PIN_READ = 0x01;
+    public final static int PARAM_PIN_WATCH_CHANGE = 0x02;
+    public final static int PARAM_PIN_WATCH_ACTIVE = 0x03;
+    public final static int PARAM_PIN_WATCH_DEACTIVE = 0x04;
+    public final static int PARAM_PIN_COUNT_ON = 0x05;
+    public final static int PARAM_PIN_TIME = 0x06;
     public final static int PARAM_PIN_COUNT_RESET = 0xFE;
-    public final static int S88_EVENT_PARAM_IDX = 6;
+    public final static int PARAM_BROADCAST_ON = 0xFF;
+    //public final static int S88_EVENT_PARAM_IDX = 6;
 
     public final static int SX1_EVENT = 0x24;
 

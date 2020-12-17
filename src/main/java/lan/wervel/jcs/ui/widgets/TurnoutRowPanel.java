@@ -224,16 +224,16 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
 
     private void setButtonStatus() {
         if (this.turnout != null) {
-            Logger.trace("Turnout: " + turnout);
+            //Logger.trace("Turnout: " + turnout);
 
             switch (turnout.getValue()) {
                 case RED:
                     this.btnCurved.setSelected(true);
-                    Logger.trace("Button Curved: selected -> true.");
+                    //Logger.trace("Button Curved: selected -> true.");
                     break;
                 case GREEN:
                     this.btnStraight.setSelected(true);
-                    Logger.trace("Button Straight: selected -> true.");
+                    //Logger.trace("Button Straight: selected -> true.");
                     break;
                 default:
                     Logger.trace("Default called; Value: " + turnout.getValue());

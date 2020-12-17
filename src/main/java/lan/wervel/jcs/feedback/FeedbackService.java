@@ -18,9 +18,6 @@
  */
 package lan.wervel.jcs.feedback;
 
-import java.util.List;
-import lan.wervel.jcs.entities.FeedbackModule;
-
 /**
  *
  * @author frans
