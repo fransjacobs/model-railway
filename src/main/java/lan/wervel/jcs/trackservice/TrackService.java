@@ -30,17 +30,18 @@ import lan.wervel.jcs.entities.JCSProperty;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.entities.Locomotive;
+import lan.wervel.jcs.entities.Sensor;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.Turnout;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
-import lan.wervel.jcs.feedback.FeedbackPortListener;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.trackservice.events.LocomotiveListener;
 import lan.wervel.jcs.trackservice.events.PersistedEventListener;
+import lan.wervel.jcs.trackservice.events.SensorListener;
 
 /**
  * The Track repository contain all track item which are used on the Track This
@@ -118,23 +119,24 @@ public interface TrackService {
 
     void notifyAllAccessoiryListeners();
 
-    //Feedback Modules
-    List<FeedbackModule> getFeedbackModules();
-
-    FeedbackModule getFeedbackModule(Integer moduleNumber);
-
     void addHeartBeatListener(HeartBeatListener listener);
 
     void removeHeartBeatListenerListener(HeartBeatListener listener);
 
-    FeedbackModule persist(FeedbackModule feedbackModule);
+    
+    void addSensorListener(SensorListener listener);
 
-    void addFeedbackPortListener(FeedbackPortListener listener);
+    void removeFeedbackPortListener(SensorListener listener);
 
-    void removeFeedbackPortListener(FeedbackPortListener listener);
+    void notifyAllSensorListeners();
 
-    void notifyAllFeedbackListeners();
-
+    //Sensors
+    List<Sensor> getSensors();
+    
+    Sensor getSensor(Integer contactId);
+    
+    Sensor persist(Sensor sensor);
+    
     void addPersistedEventListener(PersistedEventListener listener);
 
     void removePersistedEventListener(PersistedEventListener listener);

@@ -128,16 +128,16 @@ public class DAOTestHelper extends DatabaseCreator {
         }
     }
 
-    public static void insertFeedbackData() {
-        Logger.debug("Inserting FeedbackModules...");
+    public static void insertSensorData() {
+        Logger.debug("Inserting Sensors...");
         try {
             try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
-                stmt.executeUpdate("INSERT INTO feedbackmodules (id,address,name,description,catalognumber,ports,msb,lsb,lastupdated,port1,port2,port3,port4,port5,port6,port7,port8,port9,port10,port11,port12,port13,port14,port15,port16) "
-                        + "VALUES(femo_seq.nextval,1,'S88_1','S88 1-16','S88',16,0,0,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)");
+                stmt.executeUpdate("INSERT INTO sensors (id,address,device_id,name,description,value,previous_value,millis,lastupdated) "
+                        + "VALUES(sens_seq.nextval,1,0,'M1P1','M1P1',0,1,0,null)");
 
-                stmt.executeUpdate("INSERT INTO feedbackmodules (id,address,name,description,catalognumber,ports,msb,lsb,lastupdated,port1,port2,port3,port4,port5,port6,port7,port8,port9,port10,port11,port12,port13,port14,port15,port16) "
-                        + "VALUES(femo_seq.nextval,2,'S88_2','S88 17-32','S88',16,0,0,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)");
+                stmt.executeUpdate("INSERT INTO sensors (id,address,device_id,name,description,value,previous_value,millis,lastupdated) "
+                        + "VALUES(sens_seq.nextval,2,0,'M1P2','M1P2',1,0,10,null)");
 
                 c.commit();
             }

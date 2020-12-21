@@ -26,9 +26,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
+import lan.wervel.jcs.controller.cs2.can.MarklinCan;
 import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import org.pmw.tinylog.Logger;
@@ -41,7 +40,7 @@ class TCPConnection implements Connection {
 
     private final InetAddress cs2Address;
     private final List<CanMessageListener> listeners;
-    private final ExecutorService executor;
+    //private final ExecutorService executor;
 
     private Socket socket;
     private DataOutputStream dos;
@@ -52,7 +51,7 @@ class TCPConnection implements Connection {
     TCPConnection(InetAddress cs2Address) {
         this.cs2Address = cs2Address;
         listeners = new ArrayList<>();
-        executor = Executors.newCachedThreadPool();
+        //executor = Executors.newCachedThreadPool();
 
         checkConnection();
     }
@@ -148,45 +147,51 @@ class TCPConnection implements Connection {
 
     @Override
     public CanMessage sendCanMessage(CanMessage message) {
-//        Logger.trace("TX: " + message);
-        sendMessage(message.getBytes());
-
-        //For what ever reason after sending the message a CS2/3 need some time to
-        //process an prepare an response.
-        //so wait at least 10 ms otherwise there is no valid response...
-        if (message.expectsAcknowledge()) {
-            //For some messages the wait is even longer...
-            pause(85);
-        } else if (message.isMemberPing()) {
-            pause(20);
-        } else {
-            pause(10);
-        }
-
         List<CanMessageEvent> events = new ArrayList<>();
+        synchronized (socket) {
+            if (message != null) {
+//            Logger.trace("TX: " + message);
+                sendMessage(message.getBytes());
 
-        if (isDataAvailable()) {
-            InetAddress replyAddress = socket.getInetAddress();
-            List<CanMessage> responses = receiveCanMessages();
-            for (CanMessage resp : responses) {
-                if (resp.isResponseFor(message)) {
-                    message.addResponse(resp);
+                //It appears to me that after sending the message to the CS2/3
+                //some time is needed to process and prepare a response.
+                //So wait at least 10 ms otherwise there is no valid response...
+                //but for some message types you must wait even longer....
+                if (message.expectsAcknowledge()) {
+                    pause(85);
+                } else if (message.isMemberPing()) {
+                    pause(20);
+                } else if (message.getCommand() == MarklinCan.S88_EVENT) {
+                    pause(200);
+                } else {
+                    pause(10);
+                }
+            }
+
+            if (isDataAvailable()) {
+                InetAddress replyAddress = socket.getInetAddress();
+                List<CanMessage> responses = receiveCanMessages();
+                for (CanMessage resp : responses) {
+                    if (message != null && resp.isResponseFor(message)) {
+                        message.addResponse(resp);
 //                    if (message.expectsAcknowledge()) {
 //                        Logger.trace("RX: " + resp + " Ack? " + resp.isAcknowledgeFor(message));
 //                    } else {
 //                        Logger.trace("RX: " + resp);
 //                    }
-                } else {
-                    CanMessageEvent cme = new CanMessageEvent(resp, replyAddress);
-                    events.add(cme);
+                    } else {
+                        CanMessageEvent cme = new CanMessageEvent(resp, replyAddress);
+                        events.add(cme);
 //                    Logger.trace("Event RX: " + resp);
+                    }
                 }
             }
         }
+
         if (!events.isEmpty()) {
 //            Logger.trace("Received " + events.size() + " Event messages...");
             for (CanMessageEvent me : events) {
-                executor.execute(() -> fireMessageListeners(me));
+                fireMessageListeners(me);
             }
         }
 
@@ -211,7 +216,7 @@ class TCPConnection implements Connection {
 
     @Override
     public void close() throws Exception {
-        this.executor.shutdown();
+        //this.executor.shutdown();
         disconnect();
     }
 

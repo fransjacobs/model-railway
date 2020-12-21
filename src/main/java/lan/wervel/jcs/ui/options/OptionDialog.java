@@ -143,8 +143,6 @@ public class OptionDialog extends javax.swing.JDialog {
           //this.turnoutPanel.refresh();
       } else if (c instanceof SignalPanel) {
           //this.signalPanel.refresh();
-      } else if (c instanceof FeedbackModulePanel) {
-          //this.feedbackModulePanel.refresh();
       } else if (c instanceof PropertiesPanel) {
           //this.propertiesPanel.refresh();
       }

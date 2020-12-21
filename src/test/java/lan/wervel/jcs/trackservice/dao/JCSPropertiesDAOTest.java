@@ -44,20 +44,22 @@ public class JCSPropertiesDAOTest {
 
     @Before
     public void setUp() {
+        
+        JCSProperty p0 = new JCSProperty("S88-module-count", "3");
 
-        JCSProperty p0 = new JCSProperty("S88-demo", "lan.wervel.jcs.feedback.DemoFeedbackService");
-        JCSProperty p1 = new JCSProperty("S88-remote", "FeedbackService");
-        JCSProperty p2 = new JCSProperty("S88-CS2", "lan.wervel.jcs.controller.cs2.CS2Controller");
-        JCSProperty p3 = new JCSProperty("activeFeedbackService", "CS2FeedbackService");
+        JCSProperty p1 = new JCSProperty("S88-demo", "lan.wervel.jcs.feedback.DemoFeedbackService");
+        JCSProperty p2 = new JCSProperty("S88-remote", "FeedbackService");
+        JCSProperty p3 = new JCSProperty("S88-CS2", "lan.wervel.jcs.controller.cs2.CS2Controller");
+        JCSProperty p4 = new JCSProperty("activeFeedbackService", "CS2FeedbackService");
 
-        JCSProperty p4 = new JCSProperty("M6050-remote", "ControllerService");
-        JCSProperty p5 = new JCSProperty("CS2", "lan.wervel.jcs.controller.cs2.CS2Controller");
-        JCSProperty p6 = new JCSProperty("M6050-demo", "lan.wervel.jcs.controller.m6050.M6050DemoController");
-        JCSProperty p7 = new JCSProperty("M6050-local", "lan.wervel.jcs.controller.m6050.M6050Controller");
-        JCSProperty p8 = new JCSProperty("activeControllerService", "CS2");
+        JCSProperty p5 = new JCSProperty("M6050-remote", "ControllerService");
+        JCSProperty p6 = new JCSProperty("CS2", "lan.wervel.jcs.controller.cs2.CS2Controller");
+        JCSProperty p7 = new JCSProperty("M6050-demo", "lan.wervel.jcs.controller.m6050.M6050DemoController");
+        JCSProperty p8 = new JCSProperty("M6050-local", "lan.wervel.jcs.controller.m6050.M6050Controller");
+        JCSProperty p9 = new JCSProperty("activeControllerService", "CS2");
 
-        JCSProperty p9 = new JCSProperty("k1", "v1");
-        JCSProperty p10 = new JCSProperty("k2", "v2");
+        JCSProperty p10 = new JCSProperty("k1", "v1");
+        JCSProperty p11 = new JCSProperty("k2", "v2");
 
         jcsPropertyList.add(p0);
         jcsPropertyList.add(p1);
@@ -70,6 +72,7 @@ public class JCSPropertiesDAOTest {
         jcsPropertyList.add(p8);
         jcsPropertyList.add(p9);
         jcsPropertyList.add(p10);
+        jcsPropertyList.add(p11);
     }
 
     @Test
@@ -86,7 +89,7 @@ public class JCSPropertiesDAOTest {
         System.out.println("find");
         String key = "k2";
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
-        JCSProperty expResult = jcsPropertyList.get(10);
+        JCSProperty expResult = jcsPropertyList.get(11);
         JCSProperty result = instance.find(key);
         assertEquals(expResult, result);
     }
@@ -96,7 +99,7 @@ public class JCSPropertiesDAOTest {
         System.out.println("persist");
         JCSProperty property = new JCSProperty("k3", "v3");
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
-        BigDecimal expResult = new BigDecimal(12);
+        BigDecimal expResult = new BigDecimal(13);
         BigDecimal result = instance.persist(property);
         assertEquals(expResult, result);
 

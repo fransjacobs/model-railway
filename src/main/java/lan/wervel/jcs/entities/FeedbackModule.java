@@ -20,6 +20,7 @@ package lan.wervel.jcs.entities;
 
 import java.util.Date;
 
+@Deprecated
 public class FeedbackModule extends ControllableDevice {
 
     private int ports;

@@ -23,12 +23,15 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-import lan.wervel.jcs.feedback.FeedbackPortListener;
+import lan.wervel.jcs.entities.Sensor;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
+import lan.wervel.jcs.trackservice.events.SensorListener;
+import org.pmw.tinylog.Configurator;
 
 /**
  * Diagnostic panel for a feedback module
@@ -68,40 +71,40 @@ public class FeedbackPanel extends JPanel {
 
     private void registerForRefresh() {
         if (TrackServiceFactory.getTrackService() != null) {
-            FeedbackPort p1 = new FeedbackPort(this.lbl1, this.moduleNumber, 1);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p1);
-            FeedbackPort p2 = new FeedbackPort(this.lbl2, this.moduleNumber, 2);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p2);
-            FeedbackPort p3 = new FeedbackPort(this.lbl3, this.moduleNumber, 3);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p3);
-            FeedbackPort p4 = new FeedbackPort(this.lbl4, this.moduleNumber, 4);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p4);
-            FeedbackPort p5 = new FeedbackPort(this.lbl5, this.moduleNumber, 5);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p5);
-            FeedbackPort p6 = new FeedbackPort(this.lbl6, this.moduleNumber, 6);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p6);
-            FeedbackPort p7 = new FeedbackPort(this.lbl7, this.moduleNumber, 7);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p7);
-            FeedbackPort p8 = new FeedbackPort(this.lbl8, this.moduleNumber, 8);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p8);
-            FeedbackPort p9 = new FeedbackPort(this.lbl9, this.moduleNumber, 9);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p9);
-            FeedbackPort p10 = new FeedbackPort(this.lbl10, this.moduleNumber, 10);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p10);
-            FeedbackPort p11 = new FeedbackPort(this.lbl11, this.moduleNumber, 11);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p11);
-            FeedbackPort p12 = new FeedbackPort(this.lbl12, this.moduleNumber, 12);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p12);
-            FeedbackPort p13 = new FeedbackPort(this.lbl13, this.moduleNumber, 13);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p13);
-            FeedbackPort p14 = new FeedbackPort(this.lbl14, this.moduleNumber, 14);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p14);
-            FeedbackPort p15 = new FeedbackPort(this.lbl15, this.moduleNumber, 15);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p15);
-            FeedbackPort p16 = new FeedbackPort(this.lbl16, this.moduleNumber, 16);
-            TrackServiceFactory.getTrackService().addFeedbackPortListener(p16);
+            FeedbackPort p1 = new FeedbackPort(this.lbl1, Sensor.calculateContactId(moduleNumber, 1));
+            TrackServiceFactory.getTrackService().addSensorListener(p1);
+            FeedbackPort p2 = new FeedbackPort(this.lbl2, Sensor.calculateContactId(moduleNumber, 2));
+            TrackServiceFactory.getTrackService().addSensorListener(p2);
+            FeedbackPort p3 = new FeedbackPort(this.lbl3, Sensor.calculateContactId(moduleNumber, 3));
+            TrackServiceFactory.getTrackService().addSensorListener(p3);
+            FeedbackPort p4 = new FeedbackPort(this.lbl4, Sensor.calculateContactId(moduleNumber, 4));
+            TrackServiceFactory.getTrackService().addSensorListener(p4);
+            FeedbackPort p5 = new FeedbackPort(this.lbl5, Sensor.calculateContactId(moduleNumber, 5));
+            TrackServiceFactory.getTrackService().addSensorListener(p5);
+            FeedbackPort p6 = new FeedbackPort(this.lbl6, Sensor.calculateContactId(moduleNumber, 6));
+            TrackServiceFactory.getTrackService().addSensorListener(p6);
+            FeedbackPort p7 = new FeedbackPort(this.lbl7, Sensor.calculateContactId(moduleNumber, 7));
+            TrackServiceFactory.getTrackService().addSensorListener(p7);
+            FeedbackPort p8 = new FeedbackPort(this.lbl8, Sensor.calculateContactId(moduleNumber, 8));
+            TrackServiceFactory.getTrackService().addSensorListener(p8);
+            FeedbackPort p9 = new FeedbackPort(this.lbl9, Sensor.calculateContactId(moduleNumber, 9));
+            TrackServiceFactory.getTrackService().addSensorListener(p9);
+            FeedbackPort p10 = new FeedbackPort(this.lbl10, Sensor.calculateContactId(moduleNumber, 10));
+            TrackServiceFactory.getTrackService().addSensorListener(p10);
+            FeedbackPort p11 = new FeedbackPort(this.lbl11, Sensor.calculateContactId(moduleNumber, 11));
+            TrackServiceFactory.getTrackService().addSensorListener(p11);
+            FeedbackPort p12 = new FeedbackPort(this.lbl12, Sensor.calculateContactId(moduleNumber, 12));
+            TrackServiceFactory.getTrackService().addSensorListener(p12);
+            FeedbackPort p13 = new FeedbackPort(this.lbl13, Sensor.calculateContactId(moduleNumber, 13));
+            TrackServiceFactory.getTrackService().addSensorListener(p13);
+            FeedbackPort p14 = new FeedbackPort(this.lbl14, Sensor.calculateContactId(moduleNumber, 14));
+            TrackServiceFactory.getTrackService().addSensorListener(p14);
+            FeedbackPort p15 = new FeedbackPort(this.lbl15, Sensor.calculateContactId(moduleNumber, 15));
+            TrackServiceFactory.getTrackService().addSensorListener(p15);
+            FeedbackPort p16 = new FeedbackPort(this.lbl16, Sensor.calculateContactId(moduleNumber, 16));
+            TrackServiceFactory.getTrackService().addSensorListener(p16);
 
-            TrackServiceFactory.getTrackService().notifyAllFeedbackListeners();
+            TrackServiceFactory.getTrackService().notifyAllSensorListeners();
         }
     }
 
@@ -126,35 +129,46 @@ public class FeedbackPanel extends JPanel {
         super.setEnabled(enabled);
     }
 
-    private class FeedbackPort implements FeedbackPortListener {
+    private class FeedbackPort implements SensorListener {
 
         private final JLabel label;
-        private final Integer module;
-        private final Integer port;
+        private final Integer contactId;
         private boolean value;
 
-        FeedbackPort(JLabel label, Integer module, Integer port) {
+        FeedbackPort(JLabel label, Integer contactId) {
             this.label = label;
-            this.module = module;
-            this.port = port;
+            this.contactId = contactId;
         }
 
         @Override
-        public Integer getModuleNumber() {
-            return module;
+        public Integer getContactId() {
+            return contactId;
         }
 
         @Override
-        public Integer getPort() {
-            return port;
-        }
-
-        @Override
-        public void setValue(boolean newValue) {
+        public void setActive(boolean newValue) {
             value = newValue;
             label.setIcon(value ? ICON_ON : ICON_OFF);
             repaint();
         }
+    }
+
+    public static void main(String args[]) {
+        Configurator.
+                currentConfig().formatPattern("{date:yyyy-MM-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
+                level(org.pmw.tinylog.Level.TRACE).
+                activate();
+
+        //Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
+        JFrame f = new JFrame("FeedbackPanel Tester");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        FeedbackPanel feedbackPanel = new FeedbackPanel(2);
+
+        f.add(feedbackPanel);
+
+        f.pack();
+        f.setVisible(true);
     }
 
     /**

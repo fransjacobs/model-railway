@@ -16,18 +16,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.feedback;
+package lan.wervel.jcs.trackservice.events;
 
-/**
- *
- * @author Frans Jacobs <frans.jacobs@gmail.com>
- */
-public interface FeedbackPortListener {
-  
-  Integer getModuleNumber();
-  
-  Integer getPort();
-  
-  void setValue(boolean value);
-  
+public interface SensorListener {
+
+    void setActive(boolean active);
+    
+    Integer getContactId();
+
 }

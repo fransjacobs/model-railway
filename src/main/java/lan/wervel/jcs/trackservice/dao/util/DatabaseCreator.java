@@ -72,7 +72,7 @@ public class DatabaseCreator {
 
             Logger.trace("User: " + user + " Connected to " + cat);
         } catch (SQLException sqle) {
-            Logger.error("Can't connect to: " + jdbcURL + " as " + user + "...",sqle);
+            Logger.error("Can't connect to: " + jdbcURL + " as " + user + "...", sqle);
         }
         return conn;
     }
@@ -130,6 +130,8 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;");
         stmt.executeUpdate("DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;");
+        stmt.executeUpdate("DROP TABLE if exists sensors CASCADE CONSTRAINTS");
+
         //trackplan
         stmt.executeUpdate("DROP TABLE if exists layouttiles CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists layouttilegroups CASCADE CONSTRAINTS");
@@ -139,6 +141,7 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP SEQUENCE if exists soac_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists trpo_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists prop_seq");
+        stmt.executeUpdate("DROP SEQUENCE if exists sens_seq");
         //trackplan
         stmt.executeUpdate("DROP SEQUENCE if exists lati_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists ltgr_seq");
@@ -147,11 +150,13 @@ public class DatabaseCreator {
     }
 
     private static void createSequences(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE SEQUENCE femo_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE femo_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
+        stmt.executeUpdate("CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1");
+
         //trackplan
         stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE ltgr_seq START WITH 1 INCREMENT BY 1");
@@ -179,40 +184,59 @@ public class DatabaseCreator {
         Logger.trace("Table accessorytypes created...");
     }
 
-    private static void feedbackmodules(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE TABLE feedbackmodules ("
+    private static void sensors(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE sensors ("
                 + "id              NUMBER NOT NULL,"
                 + "address         INTEGER NOT NULL,"
-                + "name            VARCHAR2(255 CHAR) NOT NULL,"
-                + "description     VARCHAR2(255 CHAR),"
-                + "catalognumber   VARCHAR2(255 CHAR),"
-                + "ports           INTEGER NOT NULL,"
-                + "msb             INTEGER,"
-                + "lsb             INTEGER,"
-                + "lastupdated     DATE,"
-                + "port1           NUMBER,"
-                + "port2           NUMBER,"
-                + "port3           NUMBER,"
-                + "port4           NUMBER,"
-                + "port5           NUMBER,"
-                + "port6           NUMBER,"
-                + "port7           NUMBER,"
-                + "port8           NUMBER,"
-                + "port9           NUMBER,"
-                + "port10          NUMBER,"
-                + "port11          NUMBER,"
-                + "port12          NUMBER,"
-                + "port13          NUMBER,"
-                + "port14          NUMBER,"
-                + "port15          NUMBER,"
-                + "port16          NUMBER)");
+                + "  device_id       INTEGER,"
+                + "  NAME            VARCHAR2(255 CHAR) NOT NULL,"
+                + "  DESCRIPTION     VARCHAR2(255 CHAR),"
+                + "  value           INTEGER,"
+                + "  previous_value  INTEGER,"
+                + "  millis          INTEGER,"
+                + "  lastupdated     DATE)");
 
-        stmt.executeUpdate("ALTER TABLE feedbackmodules ADD CONSTRAINT femo_pk PRIMARY KEY ( id )");
+        stmt.executeUpdate("ALTER TABLE sensors ADD CONSTRAINT sens_pk PRIMARY KEY ( id )");
 
-        stmt.executeUpdate("ALTER TABLE feedbackmodules ADD CONSTRAINT femo_address_un UNIQUE ( address )");
+        stmt.executeUpdate("ALTER TABLE sensors ADD CONSTRAINT sens_address_un UNIQUE ( address )");
 
-        Logger.trace("Table feedbackmodules created...");
+        Logger.trace("Table sensors created...");
     }
+
+//    private static void feedbackmodules(Statement stmt) throws SQLException {
+//        stmt.executeUpdate("CREATE TABLE feedbackmodules ("
+//                + "id              NUMBER NOT NULL,"
+//                + "address         INTEGER NOT NULL,"
+//                + "name            VARCHAR2(255 CHAR) NOT NULL,"
+//                + "description     VARCHAR2(255 CHAR),"
+//                + "catalognumber   VARCHAR2(255 CHAR),"
+//                + "ports           INTEGER NOT NULL,"
+//                + "msb             INTEGER,"
+//                + "lsb             INTEGER,"
+//                + "lastupdated     DATE,"
+//                + "port1           NUMBER,"
+//                + "port2           NUMBER,"
+//                + "port3           NUMBER,"
+//                + "port4           NUMBER,"
+//                + "port5           NUMBER,"
+//                + "port6           NUMBER,"
+//                + "port7           NUMBER,"
+//                + "port8           NUMBER,"
+//                + "port9           NUMBER,"
+//                + "port10          NUMBER,"
+//                + "port11          NUMBER,"
+//                + "port12          NUMBER,"
+//                + "port13          NUMBER,"
+//                + "port14          NUMBER,"
+//                + "port15          NUMBER,"
+//                + "port16          NUMBER)");
+//
+//        stmt.executeUpdate("ALTER TABLE feedbackmodules ADD CONSTRAINT femo_pk PRIMARY KEY ( id )");
+//
+//        stmt.executeUpdate("ALTER TABLE feedbackmodules ADD CONSTRAINT femo_address_un UNIQUE ( address )");
+//
+//        Logger.trace("Table feedbackmodules created...");
+//    }
 
     private static void locomotives(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE locomotives ("
@@ -306,8 +330,8 @@ public class DatabaseCreator {
                 + "offsetx    INTEGER NULL,"
                 + "offsety    INTEGER NULL,"
                 + "soac_id    NUMBER NULL,"
-                + "femo_id    NUMBER NULL,"
-                + "port       INTEGER NULL,"
+                + "sens_id    NUMBER NULL,"
+                //+ "port       INTEGER NULL,"
                 + "ltgr_id    NUMBER NULL)");
 
         stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id )");
@@ -361,8 +385,8 @@ public class DatabaseCreator {
                 + " NOT DEFERRABLE");
 
         stmt.executeUpdate("ALTER TABLE layouttiles"
-                + " ADD CONSTRAINT lati_femo_fk FOREIGN KEY ( femo_id )"
-                + " REFERENCES feedbackmodules ( id )"
+                + " ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )"
+                + " REFERENCES sensors ( id )"
                 + " NOT DEFERRABLE");
 
         stmt.executeUpdate("ALTER TABLE layouttiles"
@@ -400,6 +424,8 @@ public class DatabaseCreator {
         stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0Sh1','Hp0Sh1')");
         stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('OFF','OFF')");
 
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-module-count','3')");
+
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-demo','lan.wervel.jcs.feedback.DemoFeedbackService')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-remote','FeedbackService')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','lan.wervel.jcs.controller.cs2.CS2Controller')");
@@ -427,7 +453,8 @@ public class DatabaseCreator {
                 createSequences(stmt);
                 createTrackpower(stmt);
                 accessoryTypes(stmt);
-                feedbackmodules(stmt);
+                //feedbackmodules(stmt);
+                sensors(stmt);
                 locomotives(stmt);
                 solenoidaccessories(stmt);
                 statustypes(stmt);

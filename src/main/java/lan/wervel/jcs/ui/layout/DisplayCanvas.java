@@ -44,7 +44,6 @@ import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.Turnout;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.SignalValue;
-import lan.wervel.jcs.feedback.FeedbackPortListener;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
@@ -55,6 +54,7 @@ import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
+import lan.wervel.jcs.trackservice.events.SensorListener;
 
 /**
  * This panel is used to show the layout and be able use the layout as switch
@@ -136,9 +136,9 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
         //Logger.debug("Removing listeners from " + snapshot.size() + " Tiles...");
         //Unregister listeners...
         for (AbstractTile t : snapshot) {
-            if (t instanceof FeedbackPortListener) {
-                FeedbackPortListener fbpl = (FeedbackPortListener) t;
-                if (fbpl.getModuleNumber() != null && fbpl.getModuleNumber() != null) {
+            if (t instanceof SensorListener) {
+                SensorListener fbpl = (SensorListener) t;
+                if (fbpl.getContactId() != null && fbpl.getContactId() != null) {
                     TrackServiceFactory.getTrackService().removeFeedbackPortListener(fbpl);
                 }
             }
@@ -201,10 +201,10 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
 
         //Register listeners
         for (AbstractTile t : snapshot) {
-            if (t instanceof FeedbackPortListener) {
-                FeedbackPortListener fbpl = (FeedbackPortListener) t;
-                if (fbpl.getModuleNumber() != null && fbpl.getModuleNumber() != null) {
-                    TrackServiceFactory.getTrackService().addFeedbackPortListener(fbpl);
+            if (t instanceof SensorListener) {
+                SensorListener fbpl = (SensorListener) t;
+                if (fbpl.getContactId() != null && fbpl.getContactId() != null) {
+                    TrackServiceFactory.getTrackService().addSensorListener(fbpl);
                     t.setReDrawListener(this);
                 }
             }
@@ -223,7 +223,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
 
         //first initialization, the listeners need to be triggered once..
         TrackServiceFactory.getTrackService().notifyAllAccessoiryListeners();
-        TrackServiceFactory.getTrackService().notifyAllFeedbackListeners();
+        TrackServiceFactory.getTrackService().notifyAllSensorListeners();
 
         this.selectedTile = null;
         this.repaint();

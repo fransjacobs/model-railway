@@ -21,8 +21,9 @@ package lan.wervel.jcs.controller;
 import java.util.List;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.cs2.PowerStatus;
+import lan.wervel.jcs.controller.cs2.events.SensorMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
-import lan.wervel.jcs.entities.FeedbackModule;
+import lan.wervel.jcs.controller.cs2.events.SensorMessageListener;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
@@ -63,8 +64,6 @@ public interface ControllerService {
 
     void switchAccessoiry(int address, AccessoryValue value);
 
-    int[] getFeedback(int moduleNumber);
-
     void addControllerEventListener(ControllerEventListener listener);
 
     void removeControllerEventListener(ControllerEventListener listener);
@@ -77,10 +76,20 @@ public interface ControllerService {
 
     void removeCanMessageListener(CanMessageListener listener);
 
+    void addSensorMessageListener(SensorMessageListener listener);
+
+    void removeSensorMessageListener(SensorMessageListener listener);
+
+    void addHeartbeatListener(HeartbeatListener listener);
+ 
+    void removeHeartbeatListener(HeartbeatListener listener);
+
+    void removeAllHeartbeatListeners();
+
     List<Locomotive> getLocomotives();
 
     List<SolenoidAccessory> getAccessories();
 
-    FeedbackModule queryAllPorts(FeedbackModule feedbackModule);
+    List<SensorMessageEvent> querySensors(int sensorCount);
 
 }

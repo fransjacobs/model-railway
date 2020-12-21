@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2020 Frans Jacobs.
  *
@@ -17,14 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.feedback;
+package lan.wervel.jcs.controller.cs2.events;
 
-/**
- *
- * @author Frans Jacobs
- */
-public interface FeedbackEventListener {
+public interface SensorMessageListener {
 
-  void notify(FeedbackEvent event);
+    void onSensorMessage(SensorMessageEvent sensorMessageEvent);
 
 }

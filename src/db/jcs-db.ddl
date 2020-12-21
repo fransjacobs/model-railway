@@ -2,7 +2,7 @@ DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS;
 DROP TABLE if exists drivewaytypes CASCADE CONSTRAINTS;
 DROP TABLE if exists driveways CASCADE CONSTRAINTS;
 DROP TABLE if exists drivewayactivationlogs CASCADE CONSTRAINTS;
-DROP TABLE if exists feedbackmodules CASCADE CONSTRAINTS;
+--DROP TABLE if exists feedbackmodules CASCADE CONSTRAINTS;
 DROP TABLE if exists locomotives CASCADE CONSTRAINTS;
 DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS;
 DROP TABLE if exists accessorysettings CASCADE CONSTRAINTS;
@@ -13,10 +13,11 @@ DROP TABLE if exists layouttiles CASCADE CONSTRAINTS;
 DROP TABLE if exists layouttilegroups CASCADE CONSTRAINTS;
 DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;
 DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;
+DROP TABLE if exists sensors CASCADE CONSTRAINTS;
 
 DROP SEQUENCE if exists drwa_seq;
 DROP SEQUENCE if exists dwal_seq;
-DROP SEQUENCE if exists femo_seq;
+--DROP SEQUENCE if exists femo_seq;
 DROP SEQUENCE if exists loco_seq;
 DROP SEQUENCE if exists soac_seq;
 DROP SEQUENCE if exists acse_seq;
@@ -25,10 +26,11 @@ DROP SEQUENCE if exists feso_seq;
 DROP SEQUENCE if exists lati_seq;
 DROP SEQUENCE if exists ltgr_seq;
 DROP SEQUENCE if exists prop_seq;
+DROP SEQUENCE if exists sens_seq;
 
 CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE dwal_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE femo_seq START WITH 1 INCREMENT BY 1;
+--CREATE SEQUENCE femo_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE acse_seq START WITH 1 INCREMENT BY 1;
@@ -37,6 +39,7 @@ CREATE SEQUENCE feso_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE ltgr_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1;
 
 
 CREATE TABLE trackpower (
@@ -90,6 +93,23 @@ CREATE TABLE drivewayactivationlogs (
 
 ALTER TABLE drivewayactivationlogs ADD CONSTRAINT dral_pk PRIMARY KEY ( id );
 
+CREATE TABLE sensors (
+  id              NUMBER NOT NULL,
+  address         INTEGER NOT NULL,
+  device_id       INTEGER,
+  NAME            VARCHAR2(255 CHAR) NOT NULL,
+  DESCRIPTION     VARCHAR2(255 CHAR),
+  value           INTEGER,
+  previous_value  INTEGER,
+  millis          INTEGER,
+  lastupdated     DATE
+);
+
+ALTER TABLE sensors ADD CONSTRAINT sens_pk PRIMARY KEY ( id );
+
+ALTER TABLE sensors ADD CONSTRAINT sens_address_un UNIQUE ( address );
+
+/*   
 CREATE TABLE feedbackmodules (
   id              NUMBER NOT NULL,
   address         INTEGER NOT NULL,
@@ -131,6 +151,7 @@ CREATE TABLE feedbacksource (
 ); 
 
 ALTER TABLE feedbacksource ADD CONSTRAINT feso_pk PRIMARY KEY ( id );
+*/
 
 CREATE TABLE locomotives (
   id                 NUMBER NOT NULL,
@@ -295,8 +316,9 @@ CREATE TABLE layouttiles (
   offsetx               INTEGER NULL,
   offsety               INTEGER NULL,
   soac_id               NUMBER NULL,
-  femo_id               NUMBER NULL,
-  port                  INTEGER NULL, 
+  --femo_id               NUMBER NULL,
+  sens_id               NUMBER NULL,
+  --port                  INTEGER NULL, 
   ltgr_id               NUMBER NULL,
 );
 
@@ -309,10 +331,17 @@ ALTER TABLE layouttiles
     REFERENCES solenoidaccessories ( id )
   NOT DEFERRABLE;
 
+--ALTER TABLE layouttiles
+--  ADD CONSTRAINT lati_femo_fk FOREIGN KEY ( femo_id )
+--    REFERENCES feedbackmodules ( id )
+--  NOT DEFERRABLE;  
+
 ALTER TABLE layouttiles
-  ADD CONSTRAINT lati_femo_fk FOREIGN KEY ( femo_id )
-    REFERENCES feedbackmodules ( id )
+  ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )
+    REFERENCES sensors ( id )
   NOT DEFERRABLE;  
+
+
 
 CREATE TABLE layouttilegroups (
   id                  NUMBER NOT NULL,
@@ -519,6 +548,8 @@ INSERT INTO feedbackmodules (id,address,name,description,catalognumber,ports,msb
 VALUES (femo_seq.nextval,3,'S88_3','S88 33-48','S88',16,0,0,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 
 -- Properties
+INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-module-count','3');
+
 INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-demo','lan.wervel.jcs.feedback.DemoFeedbackService');
 INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-remote','FeedbackService');
 INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','lan.wervel.jcs.feedback.cs2.CS2FeedbackService');

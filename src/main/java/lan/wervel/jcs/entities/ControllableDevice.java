@@ -24,136 +24,139 @@ import java.util.Objects;
 
 public abstract class ControllableDevice implements Serializable, Comparable {
 
-  protected Integer address;
-  protected String name;
-  protected String description;
-  protected String catalogNumber;
-  protected BigDecimal id;
+    protected Integer address;
+    protected String name;
+    protected String description;
+    protected String catalogNumber;
+    protected BigDecimal id;
 
-  protected ControllableDevice(BigDecimal id) {
-    this(null, null, null, null, id);
-  }
-
-  protected ControllableDevice(BigDecimal id, String name) {
-    this(null, name, null, null, id);
-  }
-
-  protected ControllableDevice(BigDecimal id, Integer address, String name) {
-    this(address, name, null, null, id);
-  }
-
-  protected ControllableDevice(BigDecimal id, Integer address, String name, String description) {
-    this(address, name, description, null, id);
-  }
-
-  protected ControllableDevice(Integer address, String catalogNumber) {
-    this(address, null, null, catalogNumber);
-  }
-
-  protected ControllableDevice(Integer address, String name, String description, String catalogNumber) {
-    this(address, name, description, catalogNumber, null);
-  }
-
-  protected ControllableDevice(Integer address, String name, String description, String catalogNumber, BigDecimal id) {
-    this.name = name;
-    this.description = description;
-    this.address = address;
-    this.catalogNumber = catalogNumber;
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getCatalogNumber() {
-    return catalogNumber;
-  }
-
-  public void setCatalogNumber(String catalogNumber) {
-    this.catalogNumber = catalogNumber;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public void setAddress(Integer address) {
-    this.address = address;
-  }
-
-  public Integer getAddress() {
-    return this.address;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public BigDecimal getId() {
-    return id;
-  }
-
-  public String getKey() {
-    if (this.id == null) {
-      return null;
+    protected ControllableDevice(BigDecimal id) {
+        this(null, null, null, null, id);
     }
-    return this.id.toString();
-  }
 
-  public void setId(BigDecimal id) {
-    this.id = id;
-  }
+    protected ControllableDevice(BigDecimal id, String name) {
+        this(null, name, null, null, id);
+    }
 
-  @Override
-  public int compareTo(Object other) {
-    return Integer.compare(this.address, ((ControllableDevice) other).address);
-  }
+    protected ControllableDevice(BigDecimal id, Integer address, String name) {
+        this(address, name, null, null, id);
+    }
 
-  @Override
-  public int hashCode() {
-    int hash = 5;
-    hash = 79 * hash + Objects.hashCode(this.id);
-    hash = 79 * hash + Objects.hashCode(this.address);
-    hash = 79 * hash + Objects.hashCode(this.name);
-    hash = 79 * hash + Objects.hashCode(this.description);
-    hash = 79 * hash + Objects.hashCode(this.catalogNumber);
-    return hash;
-  }
+    protected ControllableDevice(BigDecimal id, Integer address, String name, String description) {
+        this(address, name, description, null, id);
+    }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+    protected ControllableDevice(Integer address, String name, String description) {
+        this(address, name, description, null);
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final ControllableDevice other = (ControllableDevice) obj;
-    if (!Objects.equals(this.name, other.name)) {
-      return false;
-    }
-    if (!Objects.equals(this.description, other.description)) {
-      return false;
-    }
-    if (!Objects.equals(this.catalogNumber, other.catalogNumber)) {
-      return false;
-    }
-    if (!Objects.equals(this.id, other.id)) {
-      return false;
-    }
-    return Objects.equals(this.address, other.address);
-  }
 
-  //public abstract ControllableDevice copy();
+    protected ControllableDevice(Integer address, String catalogNumber) {
+        this(address, null, null, catalogNumber);
+    }
 
-  public abstract String toLogString();
+    protected ControllableDevice(Integer address, String name, String description, String catalogNumber) {
+        this(address, name, description, catalogNumber, null);
+    }
+
+    protected ControllableDevice(Integer address, String name, String description, String catalogNumber, BigDecimal id) {
+        this.name = name;
+        this.description = description;
+        this.address = address;
+        this.catalogNumber = catalogNumber;
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCatalogNumber() {
+        return catalogNumber;
+    }
+
+    public void setCatalogNumber(String catalogNumber) {
+        this.catalogNumber = catalogNumber;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setAddress(Integer address) {
+        this.address = address;
+    }
+
+    public Integer getAddress() {
+        return this.address;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public BigDecimal getId() {
+        return id;
+    }
+
+    public String getKey() {
+        if (this.id == null) {
+            return null;
+        }
+        return this.id.toString();
+    }
+
+    public void setId(BigDecimal id) {
+        this.id = id;
+    }
+
+    @Override
+    public int compareTo(Object other) {
+        return Integer.compare(this.address, ((ControllableDevice) other).address);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 79 * hash + Objects.hashCode(this.id);
+        hash = 79 * hash + Objects.hashCode(this.address);
+        hash = 79 * hash + Objects.hashCode(this.name);
+        hash = 79 * hash + Objects.hashCode(this.description);
+        hash = 79 * hash + Objects.hashCode(this.catalogNumber);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ControllableDevice other = (ControllableDevice) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.description, other.description)) {
+            return false;
+        }
+        if (!Objects.equals(this.catalogNumber, other.catalogNumber)) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        return Objects.equals(this.address, other.address);
+    }
+
+    //public abstract ControllableDevice copy();
+    public abstract String toLogString();
 
 }

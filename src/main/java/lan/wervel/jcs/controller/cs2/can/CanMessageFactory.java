@@ -234,6 +234,18 @@ public class CanMessageFactory implements MarklinCan {
         return cm;
     }
 
+    public static CanMessage querySensors(int fromContactId, int toContactId) {
+        int[] data = getEmptyData();
+        int[] from = CanMessage.to2ByteArray(fromContactId);
+        int[] to = CanMessage.to2ByteArray(toContactId);
+        System.arraycopy(from, 0, data, 2, from.length);
+        System.arraycopy(to, 0, data, 4, to.length);
+        data[6] = PARAM_BROADCAST_ON;
+        //parameter
+        CanMessage cm = new CanMessage(PRIO_1, S88_EVENT, S88_EVENT_QUERY_BLOCK_DLC, data);
+        return cm;
+    }
+
 //    start of day
 //             if( wDigInt.getprotver( data->ini ) >= 2 && (data->sensorend - data->sensorbegin) > 0 ) {
 //    if(data->sensorbegin < data->sod_sensorbegin || data->sensorend > data->sod_sensorend) {
@@ -275,6 +287,9 @@ public class CanMessageFactory implements MarklinCan {
     //00 3B 03 04 08 53 74 61 74 69 6F 6E 20 paket# 4  Station  
     //﻿\00;\03\01\08\04\02\00\00\00\004 \00;\03\02\0860214\00\00\00\00;\03\03\08Central \00;\03\04\08Station 
     //sn 13344 sw 1.4.2
+    //
+    //00 22 02 01 07 00 00 00 01 00 0f ff 00 
+   
     public static void main(String[] a) {
         System.out.println("ping : " + getMobileAppPingRequest());
         System.out.println("stop : " + stop());
@@ -295,6 +310,7 @@ public class CanMessageFactory implements MarklinCan {
         //System.out.println("Request config data 'loks' " + requestConfig("loks"));
         System.out.println("Request feedback event: " + feedbackEvent(1));
         System.out.println("Query Sensor 1: " + querySensor(1));
+        System.out.println("Query Sensor 1 to 16: " + querySensors(1,16));
 
     }
 

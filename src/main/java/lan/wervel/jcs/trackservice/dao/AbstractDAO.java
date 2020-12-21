@@ -19,7 +19,6 @@
 package lan.wervel.jcs.trackservice.dao;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,7 +29,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import lan.wervel.jcs.entities.ControllableDevice;
 import lan.wervel.jcs.trackservice.dao.util.DatabaseCreator;
 import org.pmw.tinylog.Logger;
@@ -129,8 +127,8 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         switch (cd.getClass().getSimpleName()) {
             case "Locomotive":
                 return "loco_seq";
-            case "FeedbackModule":
-                return "femo_seq";
+            case "Sensor":
+                return "sens_seq";
             case "Turnout":
                 return "soac_seq";
             case "Signal":
@@ -163,7 +161,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
             bind(ps, controllableDevice);
 
             int rows = ps.executeUpdate();
-            Logger.trace("Executed " + oper + " on: " + controllableDevice.getClass().getSimpleName() + " with Address: " + controllableDevice.getAddress() + " and ID: " + controllableDevice.getId() + " Rows: " + rows);
+            //Logger.trace("Executed " + oper + " on: " + controllableDevice.getClass().getSimpleName() + " with Address: " + controllableDevice.getAddress() + " and ID: " + controllableDevice.getId() + " Rows: " + rows);
 
             if (rows > 0) {
                 connection.commit();

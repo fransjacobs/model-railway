@@ -28,17 +28,17 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.feedback.FeedbackPortListener;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
+import lan.wervel.jcs.trackservice.events.SensorListener;
 
 /**
  * Draw a OccupancyDetector
  *
  * @author frans
  */
-public class OccupancyDetector extends AbstractTile implements FeedbackPortListener {
+public class OccupancyDetector extends AbstractTile implements SensorListener {
 
     private boolean portActive;
 
@@ -86,23 +86,15 @@ public class OccupancyDetector extends AbstractTile implements FeedbackPortListe
     }
 
     @Override
-    public Integer getModuleNumber() {
-        if (layoutTile != null && layoutTile.getFeedbackModule() != null) {
-            return layoutTile.getFeedbackModule().getModuleNumber();
+    public Integer getContactId() {
+        if (layoutTile != null && layoutTile.getSensor() != null) {
+            return layoutTile.getSensor().getContactId();
         }
         return null;
     }
 
     @Override
-    public Integer getPort() {
-        if (layoutTile != null) {
-            return layoutTile.getPort();
-        }
-        return null;
-    }
-
-    @Override
-    public void setValue(boolean value) {
+    public void setActive(boolean value) {
         if (value != this.portActive) {
             this.portActive = value;
             this.image = null;
@@ -174,7 +166,7 @@ public class OccupancyDetector extends AbstractTile implements FeedbackPortListe
 
     @Override
     public void drawName(Graphics2D g2) {
-        if (this.drawName && layoutTile != null && layoutTile.getFeedbackModule() != null && layoutTile.getPort() != null) {
+        if (this.drawName && layoutTile != null && layoutTile.getSensor() != null) {
 
             Graphics2D g2d = (Graphics2D) g2.create();
 
@@ -222,7 +214,7 @@ public class OccupancyDetector extends AbstractTile implements FeedbackPortListe
 
             g2d.setPaint(Color.darkGray);
 
-            String name = "# " + layoutTile.getFeedbackModule().getContactId(layoutTile.getPort());
+            String name = "# " + layoutTile.getSensor().getContactId();
             int sx = this.center.x + textOffsetX;
             int sy = this.center.y + textOffsetY;
             g2d.drawString(name, sx, sy);

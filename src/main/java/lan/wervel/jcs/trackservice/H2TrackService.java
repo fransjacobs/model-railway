@@ -21,9 +21,11 @@ package lan.wervel.jcs.trackservice;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
@@ -34,13 +36,14 @@ import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.ControllerService;
+import lan.wervel.jcs.controller.cs2.events.SensorMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
 import lan.wervel.jcs.entities.ControllableDevice;
-import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.JCSProperty;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.entities.Locomotive;
+import lan.wervel.jcs.entities.Sensor;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.TrackPower;
@@ -52,11 +55,6 @@ import static lan.wervel.jcs.entities.enums.SignalValue.Hp0;
 import static lan.wervel.jcs.entities.enums.SignalValue.Hp0Sh1;
 import static lan.wervel.jcs.entities.enums.SignalValue.Hp1;
 import static lan.wervel.jcs.entities.enums.SignalValue.Hp2;
-import lan.wervel.jcs.feedback.FeedbackEvent;
-import lan.wervel.jcs.feedback.FeedbackEventListener;
-import lan.wervel.jcs.feedback.FeedbackPortListener;
-import lan.wervel.jcs.feedback.FeedbackService;
-import lan.wervel.jcs.trackservice.dao.FeedbackModuleDAO;
 import lan.wervel.jcs.trackservice.dao.JCSPropertiesDAO;
 import lan.wervel.jcs.trackservice.dao.LocomotiveDAO;
 import lan.wervel.jcs.trackservice.dao.SignalDAO;
@@ -67,35 +65,36 @@ import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.trackservice.events.LocomotiveListener;
 import lan.wervel.jcs.trackservice.events.PersistedEventListener;
 import org.pmw.tinylog.Logger;
-import lan.wervel.jcs.feedback.HeartbeatListener;
+import lan.wervel.jcs.controller.HeartbeatListener;
+import lan.wervel.jcs.controller.cs2.events.SensorMessageListener;
 import lan.wervel.jcs.trackservice.dao.LayoutTileDAO;
 import lan.wervel.jcs.trackservice.dao.LayoutTileGroupDAO;
+import lan.wervel.jcs.trackservice.dao.SensorDAO;
+import lan.wervel.jcs.trackservice.events.SensorListener;
 
 public class H2TrackService implements TrackService {
 
-    private final FeedbackModuleDAO femoDAO;
+    private final SensorDAO sensDAO;
     private final LocomotiveDAO locoDAO;
     private final TurnoutDAO turnoutDAO;
     private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
 
-    //private final DriveWayDAO drwaDAO;
-    // private final AccessorySettingDAO acseDao;
     private final LayoutTileDAO latiDao;
     private final LayoutTileGroupDAO ltgtDao;
     private final JCSPropertiesDAO propDao;
 
-    //private final Map<String, ClientInfo> clients;
-    private FeedbackService feedbackService;
     private ControllerService controllerService;
+    int feedbackModules;
 
     private final ExecutorService executor;
 
-    private final List<FeedbackPortListener> feedbackPortListeners;
     private final List<AccessoryListener> accessoiryListeners;
     private final List<LocomotiveListener> locomotiveListeners;
     private final List<HeartBeatListener> heartBeatListeners;
     private final List<PersistedEventListener> persistListeners;
+
+    private Map<Integer, List<SensorListener>> sensorListeners;
 
     private boolean fbToggle = false;
 
@@ -107,32 +106,31 @@ public class H2TrackService implements TrackService {
     private final Timer timer;
 
     public H2TrackService() {
-        this(true, true);
+        this(true);
     }
 
-    private H2TrackService(boolean aquireFeedbackService, boolean aquireControllerService) {
+    private H2TrackService(boolean aquireControllerService) {
         propDao = new JCSPropertiesDAO();
         jcsProperties = new Properties();
 
-        femoDAO = new FeedbackModuleDAO();
+        sensDAO = new SensorDAO();
         locoDAO = new LocomotiveDAO();
         turnoutDAO = new TurnoutDAO();
         signalDAO = new SignalDAO();
         trpoDAO = new TrackPowerDAO();
-        //drwaDAO = new DriveWayDAO();
-        //acseDao = new AccessorySettingDAO();
         latiDao = new LayoutTileDAO();
         ltgtDao = new LayoutTileGroupDAO();
         executor = Executors.newCachedThreadPool();
 
-        feedbackPortListeners = new LinkedList<>();
         accessoiryListeners = new ArrayList<>();
         locomotiveListeners = new ArrayList<>();
         heartBeatListeners = new ArrayList<>();
+
+        sensorListeners = new HashMap<>();
+
         persistListeners = new ArrayList<>();
         timer = new Timer("TrackStatus", true);
 
-        //clients = new HashMap<>();
         retrieveJCSProperties();
         trpo = trpoDAO.find(1);
 
@@ -142,83 +140,37 @@ public class H2TrackService implements TrackService {
 
         Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
 
-        if (aquireFeedbackService) {
-            aquireFeedbackService();
-        }
-        Logger.debug(feedbackService != null ? "Aquired " + feedbackService.getClass().getSimpleName() : "Could not aquire a Feedback Service!");
-
+        //Logger.debug(feedbackService != null ? "Aquired " + feedbackService.getClass().getSimpleName() : "Could not aquire a Feedback Service!");
     }
 
     private void retrieveJCSProperties() {
         List<JCSProperty> props = this.propDao.findAll();
 
         props.forEach(p -> {
-            this.jcsProperties.setProperty(p.getKey(), p.getValue());
+            jcsProperties.setProperty(p.getKey(), p.getValue());
+            System.setProperty(p.getKey(), p.getValue());
         });
     }
 
-    private void aquireFeedbackService() {
-        String S88Demo = jcsProperties.getProperty("S88-demo");
-        String S88Remote = jcsProperties.getProperty("S88-remote");
-        String S88CS2 = jcsProperties.getProperty("S88-CS2");
-        String activeFeedbackService = jcsProperties.getProperty("activeFeedbackService");
-
-        //Check if the Controller is also a feedback service
-        if (this.controllerService instanceof FeedbackService) {
-            Logger.trace("Using Controller as Feedback Service...");
-            this.feedbackService = (FeedbackService) this.controllerService;
-
-            //this.notifyAllFeedbackListeners();
-        }
-
-        String feedbackServiceImpl;
-
-        if (feedbackService == null) {
-            switch (activeFeedbackService) {
-                case "S88-remote":
-                    feedbackServiceImpl = S88Remote;
-                    break;
-                case "S88-CS2":
-                    feedbackServiceImpl = S88CS2;
-                    break;
-                default:
-                    feedbackServiceImpl = S88Demo;
-                    break;
-            }
-
-            Logger.trace("ActiveFeedbackService: " + activeFeedbackService);
-
-            Logger.trace("Obtaining an " + feedbackServiceImpl + " instance...");
-            try {
-                FeedbackService fs = (FeedbackService) Class.forName(feedbackServiceImpl).getDeclaredConstructor().newInstance();
-                this.feedbackService = fs;
-            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex2) {
-                Logger.error("Can't instantiate a '" + feedbackServiceImpl + "' " + ex2.getMessage());
-            }
-        }
-
-        feedbackService.addFeedbackEventListener(new FeedbackServiceEventListener());
-        feedbackService.addHeartbeatListener(new FeedbackServiceSampleListener());
-
-        timer.scheduleAtFixedRate(new UpdateTrackStatusTask(this),0, 10000);
-
-    }
-
     private void aquireControllerService() {
-        String m6050Local = jcsProperties.getProperty("M6050-local");
-        String m6050Remote = jcsProperties.getProperty("M6050-remote");
-        String m6050Demo = jcsProperties.getProperty("M6050-demo");
-        String cs2 = jcsProperties.getProperty("CS2");
-        String activeControllerService = jcsProperties.getProperty("activeControllerService");
+        //String m6050Local = jcsProperties.getProperty("M6050-local");
+        //String m6050Remote = jcsProperties.getProperty("M6050-remote");
+        String m6050Demo = System.getProperty("M6050-demo");
+        String cs2 = System.getProperty("CS2");
+        String activeControllerService = System.getProperty("activeControllerService");
 
+        String moduleCount = System.getProperty("S88-module-count", "1");
+        this.feedbackModules = Integer.decode(moduleCount);
+
+        Logger.debug("There are " + feedbackModules + " FeedbackModules");
         Logger.debug("ActiveControllerService: " + activeControllerService);
 
         String controllerImpl;
 
         switch (activeControllerService) {
-            case "M6050-remote":
-                controllerImpl = m6050Remote;
-                break;
+//            case "M6050-remote":
+//                controllerImpl = m6050Remote;
+//                break;
             case "CS2":
                 controllerImpl = cs2;
                 break;
@@ -252,31 +204,79 @@ public class H2TrackService implements TrackService {
             }
         }
 
-        controllerService.addControllerEventListener(new ControllerServiceEventListener());
+        //Configure the sensors
+        int sensorCount = feedbackModules * 16;
+        List<Sensor> allSensors = sensDAO.findAll();
+
+        System.setProperty("sensorCount", "" + sensorCount);
+
+        if (sensorCount != allSensors.size()) {
+            Logger.debug("The Sensor count has changed since last run...");
+            //remove sensors whic are not in the system
+            if (allSensors.size() > sensorCount) {
+                for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
+                    Sensor s = this.sensDAO.find(contactId);
+                    if (s == null) {
+                        //remove the sensor
+                        sensDAO.remove(s);
+                    }
+                }
+            }
+            for (int contactId = 1; contactId <= sensorCount; contactId++) {
+                //is there a sensor in the database?
+                Sensor s = this.sensDAO.find(contactId);
+                if (s == null) {
+                    String name = "m" + Sensor.calculateModuleNumber(contactId) + "p" + Sensor.calculatePortNumber(contactId);
+                    String description = name;
+                    //create the sensor
+                    s = new Sensor(contactId, name, description, 0, 0, 0, 0);
+                    sensDAO.persist(s);
+                }
+            }
+        } else {
+            Logger.trace("The Sensor count has not changed since last run...");
+        }
+        //Update the sensors with the status od the Controller
+        synchronizeSensors();
+  
         controllerInfo = controllerService.getControllerInfo();
+
+        controllerService.addSensorMessageListener(new SensorMessageEventHandler(this));
+        controllerService.addHeartbeatListener(new ControllerWatchDogListener());
+        controllerService.addControllerEventListener(new ControllerServiceEventListener());
+
+        timer.scheduleAtFixedRate(new UpdateTrackStatusTask(this), 0, 10000);
     }
 
     @Override
-    public List<FeedbackModule> getFeedbackModules() {
-        return femoDAO.findAll();
+    public List<Sensor> getSensors() {
+        return sensDAO.findAll();
     }
 
     @Override
-    public FeedbackModule getFeedbackModule(Integer moduleNumber
-    ) {
-        return femoDAO.find(moduleNumber);
+    public Sensor getSensor(Integer contactId) {
+        return sensDAO.find(contactId);
     }
 
     @Override
-    public FeedbackModule persist(FeedbackModule feedbackModule
-    ) {
-        FeedbackModule prev = femoDAO.find(feedbackModule.getModuleNumber());
-        femoDAO.persist(feedbackModule);
+    public Sensor persist(Sensor sensor) {
+        Sensor prev = sensDAO.find(sensor.getContactId());
+        //make shure the name etc is kept
+        if (prev != null) {
+            sensor.setId(prev.getId());
+            sensor.setName(prev.getName());
+            sensor.setDescription(prev.getDescription());
+            sensDAO.persist(sensor);
+            firePersistEvent(sensor, prev);
 
-        fireFeedbackModuleChanged(feedbackModule, prev);
+            //Logger.trace("Updated Sensor: " + sensor.toLogString());
+            executor.execute(() -> broadcastSensorChanged(sensor));
+        } else {
+            //Sensor does not exit is database
+            Logger.warn("Skip persisting ghost sensor " + sensor.toLogString());
+        }
 
-        firePersistEvent(feedbackModule, prev);
-        return feedbackModule;
+        return sensor;
     }
 
     private void firePersistEvent(ControllableDevice current, ControllableDevice previous) {
@@ -287,49 +287,49 @@ public class H2TrackService implements TrackService {
         }
     }
 
-    private void fireFeedbackModuleChanged(FeedbackModule curr, FeedbackModule prev) {
-        executor.execute(() -> broadcastFeedbackModuleChanged(curr, prev));
-    }
+    private void broadcastSensorChanged(Sensor sensor) {
+        List<SensorListener> sll = sensorListeners.get(sensor.getContactId());
 
-    private void broadcastFeedbackModuleChanged(FeedbackModule curr, FeedbackModule prev) {
-        if (!curr.equals(prev)) {
-            Set<FeedbackPortListener> snapshot;
-            synchronized (this.feedbackPortListeners) {
-                snapshot = new HashSet<>(feedbackPortListeners);
-            }
-
-            for (FeedbackPortListener listener : snapshot) {
-                boolean prevValue = prev.getPortValue(listener.getPort());
-                boolean currValue = curr.getPortValue((listener.getPort()));
-                if (curr.getModuleNumber() == listener.getModuleNumber() && prevValue != currValue) {
-                    listener.setValue(currValue);
-                }
+        if (sll != null) {
+            for (SensorListener listener : sll) {
+                listener.setActive(sensor.isActive());
+                //Logger.trace("Listener CID: " + listener.getContactId() + " Active: " + sensor.isActive());
             }
         }
+    }
+
+    public void synchronizeSensors() {
+        int sensorCount = Integer.decode(System.getProperty("sensorCount","16"));
+        //obtain the current sensorstatus
+        List<SensorMessageEvent> sml = controllerService.querySensors(sensorCount);
+        for (SensorMessageEvent sme : sml) {
+            Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
+            persist(s);
+        }
+        Logger.debug("Updated " + sml.size() + " Sensor statuses...");
     }
 
     @Override
-    public void notifyAllFeedbackListeners() {
-        //Lets get the status of the feedbackmodules
-        List<FeedbackModule> fml = this.getFeedbackModules();
-        for (FeedbackModule fm : fml) {
-            fm = this.controllerService.queryAllPorts(fm);
-            this.persist(fm);
-        }
+    public void notifyAllSensorListeners() {
+        List<Sensor> sl = this.sensDAO.findAll();
+        //Query all sensors
+//        List<SensorMessageEvent> sel = this.controllerService.querySensors(sl.size());
+//        for (SensorMessageEvent se : sel) {
+//            
+//            Sensor s = sensDAO.find(se.getContactId());
+//            s.setDeviceId(se.getDeviceId());
+//            s.setActive(se.isNewValue());
+//            s.setPreviousActive(se.isOldValue());
+//            s.setMillis(se.getMillis());
+//            s.setLastUpdated(new Date());
+//            sensDAO.persist(s);
+//        }
 
-        Set<FeedbackPortListener> snapshot;
-        synchronized (feedbackPortListeners) {
-            snapshot = new HashSet<>(feedbackPortListeners);
+//        sl = this.sensDAO.findAll();
+        for (Sensor s : sl) {
+            broadcastSensorChanged(s);
         }
-
-        for (FeedbackModule fm : fml) {
-            for (FeedbackPortListener fbpl : snapshot) {
-                if (fm.getModuleNumber() == fbpl.getModuleNumber()) {
-                    fbpl.setValue(fm.getPortValue(fbpl.getPort()));
-                }
-            }
-        }
-        Logger.trace("Refreshed " + feedbackPortListeners.size() + " FeedbackPortListeners...");
+//        Logger.trace("Refreshed " + sl.size() + " Sensors...");
     }
 
     private void notifyAccessoiryListeners(SolenoidAccessory accessoiry) {
@@ -341,8 +341,8 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void remove(ControllableDevice entity) {
-        if (entity instanceof FeedbackModule) {
-            femoDAO.remove((FeedbackModule) entity);
+        if (entity instanceof Sensor) {
+            sensDAO.remove((Sensor) entity);
         } else if (entity instanceof Locomotive) {
             locoDAO.remove((Locomotive) entity);
         } else if (entity instanceof Turnout) {
@@ -457,8 +457,8 @@ public class H2TrackService implements TrackService {
                 lt.setSolenoidAccessoiry(signalDAO.findById(lt.getSoacId()));
             }
         }
-        if (lt.getFemoId() != null) {
-            lt.setFeedbackModule(this.femoDAO.findById(lt.getFemoId()));
+        if (lt.getSensId() != null) {
+            lt.setSensor(this.sensDAO.findById(lt.getSensId()));
         }
 
         if (lt.getLtgrId() != null) {
@@ -890,13 +890,26 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void addFeedbackPortListener(FeedbackPortListener listener) {
-        this.feedbackPortListeners.add(listener);
+    public void addSensorListener(SensorListener listener) {
+        List<SensorListener> sll = this.sensorListeners.get(listener.getContactId());
+        if (sll == null) {
+            sll = new ArrayList<>();
+        }
+        sll.add(listener);
+        this.sensorListeners.put(listener.getContactId(), sll);
     }
 
     @Override
-    public void removeFeedbackPortListener(FeedbackPortListener listener) {
-        this.feedbackPortListeners.remove(listener);
+    public void removeFeedbackPortListener(SensorListener listener) {
+        List<SensorListener> sll = this.sensorListeners.get(listener.getContactId());
+        if (sll != null) {
+            sll.remove(listener);
+            if (sll.isEmpty()) {
+                sensorListeners.remove(listener.getContactId());
+            } else {
+                sensorListeners.put(listener.getContactId(), sll);
+            }
+        }
     }
 
     @Override
@@ -955,47 +968,22 @@ public class H2TrackService implements TrackService {
 
     }
 
-    private class FeedbackServiceEventListener implements FeedbackEventListener {
+    private class SensorMessageEventHandler implements SensorMessageListener {
+
+        private final TrackService trackService;
+
+        SensorMessageEventHandler(TrackService trackService) {
+            this.trackService = trackService;
+        }
 
         @Override
-        public void notify(FeedbackEvent event) {
-            try {
-                TrackService trackService = TrackServiceFactory.getTrackService();
-                if (trackService != null) {
-                    FeedbackModule fmc;
-                    if (event.getContactId() > 0) {
-                        Integer mn = FeedbackModule.contactIdToModuleNr(event.getContactId());
-                        int port = FeedbackModule.contactIdToPort(event.getContactId());
-                        fmc = trackService.getFeedbackModule(mn);
-                        if (fmc != null) {
-                            fmc.setPortValue(event.isNewValue(), port);
-                            trackService.persist(fmc);
-                            Logger.trace(fmc.toLogString());
-                        }
-                    } else {
-                        Integer[] response = event.getResponse();
-                        fmc = trackService.getFeedbackModule(event.getModuleNumber());
-                        if (fmc != null) {
-                            Integer[] rresponse = fmc.getResponse();
-                            if (response.length == rresponse.length) {
-                                if (response[0].equals(rresponse[0]) && response[1].equals(rresponse[1])) {
-                                } else {
-                                    fmc.setResponse(response);
-                                    trackService.persist(fmc);
-                                    Logger.trace(fmc.toLogString());
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                Logger.error(e.getMessage());
-                Logger.trace(e);
-            }
+        public void onSensorMessage(SensorMessageEvent event) {
+            Sensor s = new Sensor(event.getContactId(), event.isNewValue() ? 1 : 0, event.isOldValue() ? 1 : 0, event.getDeviceId(), event.getMillis(), new Date());
+            trackService.persist(s);
         }
     }
 
-    private class FeedbackServiceSampleListener implements HeartbeatListener {
+    private class ControllerWatchDogListener implements HeartbeatListener {
 
         @Override
         public void sample() {
@@ -1039,12 +1027,12 @@ public class H2TrackService implements TrackService {
 
         @Override
         public void run() {
-            try {
-                trackService.notifyAllFeedbackListeners();
-            } catch (Exception e) {
-                Logger.error(e.getMessage());
-                Logger.trace(e);
-            }
+//            try {
+//                trackService.notifyAllSensorListeners();
+//            } catch (Exception e) {
+//                Logger.error(e.getMessage());
+//                Logger.trace(e);
+//            }
         }
     }
 }

@@ -32,14 +32,6 @@ public interface MarklinCan {
     public final static int PRIO_3 = 0x02;  // Priority 3: Engine Stop
     public final static int PRIO_4 = 0x03;  // Priority 4: Engine/acessory command
 
-//    public final static int HASHBYTE1 = 0x47;
-//    public final static int HASHBYTE2 = 0x11;
-
-//    
-//    public static final int[] HASH1 = new int[]{0x03, 0x00};
-//    public static final int[] HASH2 = new int[]{0x73, 0x37};
-//    public static final int[] HASH3 = new int[]{0xcb, 0x13};
-
     public final static int SYSTEM_COMMAND = 0x00;
     public final static int SYSTEM_COMMAND_RESPONSE = 0x01;
     public static final int STOP_AND_GO_QUERY_DLC = 0x04;
@@ -103,7 +95,6 @@ public interface MarklinCan {
     public final static int PARAM_PIN_TIME = 0x06;
     public final static int PARAM_PIN_COUNT_RESET = 0xFE;
     public final static int PARAM_BROADCAST_ON = 0xFF;
-    //public final static int S88_EVENT_PARAM_IDX = 6;
 
     public final static int SX1_EVENT = 0x24;
 

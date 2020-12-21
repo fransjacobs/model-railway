@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.controller.cs2;
+package lan.wervel.jcs.controller.cs2.events;
 
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
@@ -26,7 +26,7 @@ import org.pmw.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class SensorEvent {
+public class SensorMessageEvent {
 
     private boolean newValue;
     private boolean oldValue;
@@ -34,7 +34,7 @@ public class SensorEvent {
     private int deviceId;
     private int millis;
 
-    public SensorEvent(CanMessage message) {
+    public SensorMessageEvent(CanMessage message) {
         parseMessage(message);
     }
 
@@ -66,7 +66,7 @@ public class SensorEvent {
             newValue = nv == 1;
             millis = CanMessage.toInt(time) * 10;
         } else {
-            Logger.warn("Can't parse message, not a Sensor Response! "+resp);
+            Logger.warn("Can't parse message, not a Sensor Response! " + resp);
         }
     }
 
@@ -92,6 +92,6 @@ public class SensorEvent {
 
     @Override
     public String toString() {
-        return "FeedbackEventStatus{" + "newValue=" + newValue + ", oldValue=" + oldValue + ", contactId=" + contactId + ", deviceId=" + deviceId + ", millis=" + millis + '}';
+        return "SensorEvent{contactId: " + contactId + " deviceId: " + deviceId + " value: " + newValue + " prevValue: " + oldValue + "  millis: " + millis + '}';
     }
 }

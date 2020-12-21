@@ -1,5 +1,6 @@
+
 /*
- * Copyright (C) 2019 frans.
+ * Copyright (C) 2020 Frans Jacobs.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,32 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.feedback;
+package lan.wervel.jcs.controller;
 
 /**
  *
- * @author frans
+ * @author Frans Jacobs
  */
-public interface FeedbackService {
+public interface HeartbeatListener {
 
-    static final String SERVICE_TYPE = "FeedbackService";
-
-    public static final long DEFAULT_POLL_MILLIS = 250;
-
-    long getPollIntervalMillis();
-
-    boolean isRunning();
-
-    void addFeedbackEventListener(FeedbackEventListener listener);
-
-    void removeFeedbackEventListener(FeedbackEventListener listener);
-
-    void removeAllFeedbackEventListeners();
-
-    void addHeartbeatListener(HeartbeatListener listener);
-
-    void removeHeartbeatListener(HeartbeatListener listener);
-
-    void removeAllHeartbeatListeners();
+  void sample();
 
 }

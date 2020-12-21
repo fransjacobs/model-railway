@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.controller.demo;
 
+import lan.wervel.jcs.controller.cs2.events.SensorMessageEvent;
 import lan.wervel.jcs.controller.cs2.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,37 +34,29 @@ import java.util.concurrent.Executors;
 import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.ControllerService;
-import lan.wervel.jcs.controller.cs2.can.CanMessage;
-import lan.wervel.jcs.controller.cs2.can.MarklinCan;
-import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
+import lan.wervel.jcs.controller.cs2.events.SensorMessageListener;
 import lan.wervel.jcs.controller.cs2.net.Connection;
-import lan.wervel.jcs.entities.FeedbackModule;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
-import lan.wervel.jcs.feedback.FeedbackEvent;
-import lan.wervel.jcs.feedback.FeedbackEventListener;
-import lan.wervel.jcs.feedback.FeedbackService;
 import org.pmw.tinylog.Logger;
-import lan.wervel.jcs.feedback.HeartbeatListener;
+import lan.wervel.jcs.controller.HeartbeatListener;
 import lan.wervel.jcs.util.NetworkUtil;
-import org.pmw.tinylog.Configurator;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class DemoController implements ControllerService, FeedbackService {
+public class DemoController implements ControllerService {
 
     private Connection connection;
     private boolean connected = false;
     private boolean running = false;
 
     private final List<ControllerEventListener> controllerEventListeners;
-    private final List<FeedbackEventListener> feedbackEventListeners;
 
     private final List<HeartbeatListener> heartbeatListeners;
 
@@ -90,7 +83,6 @@ public class DemoController implements ControllerService, FeedbackService {
 
     DemoController(boolean useTimer) {
         controllerEventListeners = new ArrayList<>();
-        feedbackEventListeners = new ArrayList<>();
         heartbeatListeners = new ArrayList<>();
         startTimer = useTimer;
         timer = new Timer("Heartbeat", true);
@@ -144,9 +136,6 @@ public class DemoController implements ControllerService, FeedbackService {
             Logger.trace("Track Power is " + (powerStatus.isPowerOn() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
             deviceInfo = getControllerInfo();
             Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (powerStatus.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
-
-            addCanMessageListener(new ExtraMessageListener(this));
-
             //Send powerstatus
             executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(powerStatus.isPowerOn(), connected)));
         }
@@ -311,22 +300,6 @@ public class DemoController implements ControllerService, FeedbackService {
     }
 
     @Override
-    public int[] getFeedback(int moduleNumber) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-//    public List<PingResponse> membersPing() {
-//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.getMemberPing());
-//        List<CanMessage> rl = msg.getResponses();
-//        List<PingResponse> prl = new ArrayList<>();
-//        for (CanMessage resp : rl) {
-//            PingResponse pr = new PingResponse(resp);
-//            prl.add(pr);
-//        }
-//
-//        return prl;
-//    }
-    @Override
     public DeviceInfo getControllerInfo() {
         if (deviceInfo == null) {
             deviceInfo = new DeviceInfo("123456", "JCS Demo", "Demo Controller", 32, true, true, true, true);
@@ -350,37 +323,6 @@ public class DemoController implements ControllerService, FeedbackService {
     public void notifyAllControllerEventListeners() {
         Logger.info("Current Controller Power Status: " + (isPowerOn() ? "On" : "Off") + "...");
         executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPowerOn(), isConnected())));
-    }
-
-    @Override
-    public long getPollIntervalMillis() {
-        return FeedbackService.DEFAULT_POLL_MILLIS;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return this.running;
-    }
-
-    @Override
-    public void addFeedbackEventListener(FeedbackEventListener listener) {
-        synchronized (feedbackEventListeners) {
-            this.feedbackEventListeners.add(listener);
-        }
-    }
-
-    @Override
-    public void removeFeedbackEventListener(FeedbackEventListener listener) {
-        synchronized (feedbackEventListeners) {
-            this.feedbackEventListeners.remove(listener);
-        }
-    }
-
-    @Override
-    public void removeAllFeedbackEventListeners() {
-        synchronized (feedbackEventListeners) {
-            this.feedbackEventListeners.clear();
-        }
     }
 
     @Override
@@ -418,6 +360,14 @@ public class DemoController implements ControllerService, FeedbackService {
         }
     }
 
+    @Override
+    public void addSensorMessageListener(SensorMessageListener listener) {
+    }
+
+    @Override
+    public void removeSensorMessageListener(SensorMessageListener listener) {
+    }
+
     public String getDeviceIp() {
         return "0.0.0.0";
     }
@@ -432,13 +382,6 @@ public class DemoController implements ControllerService, FeedbackService {
         return Collections.EMPTY_LIST;
     }
 
-//    public void getLocomotiveConfigData() {
-//        CanMessage msg = this.connection.sendCanMessage(CanMessageFactory.requestConfig("loks"));
-//    }
-//    public void requestFeedbackEvents(int contactId) {
-//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.feedbackEvent(contactId));
-//        Logger.trace(msg.getResponse());
-//    }
     private void notifyControllerEventListeners(ControllerEvent event) {
         Set<ControllerEventListener> snapshot;
         synchronized (controllerEventListeners) {
@@ -454,33 +397,11 @@ public class DemoController implements ControllerService, FeedbackService {
         }
     }
 
-    private void notifyFeedbackEventListeners(FeedbackEvent event) {
-        Set<FeedbackEventListener> snapshot;
-        synchronized (feedbackEventListeners) {
-            if (feedbackEventListeners.isEmpty()) {
-                snapshot = new HashSet<>();
-            } else {
-                snapshot = new HashSet<>(feedbackEventListeners);
-            }
-        }
-
-        for (FeedbackEventListener listener : snapshot) {
-            listener.notify(event);
-        }
-    }
-
     @Override
-    public FeedbackModule queryAllPorts(FeedbackModule feedbackModule) {
-        return feedbackModule;
+    public List<SensorMessageEvent> querySensors(int sensorCount) {
+        return Collections.EMPTY_LIST;
     }
 
-//    private void wait200ms() {
-//        try {
-//            Thread.sleep(200L);
-//        } catch (InterruptedException ex) {
-//            Logger.error(ex);
-//        }
-//    }
     public void stopHeartbeatTask() {
         if (timer != null) {
             timer.purge();
@@ -532,70 +453,4 @@ public class DemoController implements ControllerService, FeedbackService {
             }
         }
     }
-
-    private class ExtraMessageListener implements CanMessageListener {
-
-        private final DemoController controller;
-        private final ExecutorService executor;
-
-        ExtraMessageListener(DemoController cs2Controller) {
-            controller = cs2Controller;
-            executor = Executors.newCachedThreadPool();
-        }
-
-        @Override
-        public void onCanMessage(CanMessageEvent canEvent) {
-            CanMessage msg = canEvent.getCanMessage();
-            int cmd = msg.getCommand();
-
-            switch (cmd) {
-                case MarklinCan.S88_EVENT_RESPONSE:
-                    SensorEvent fs = new SensorEvent(msg);
-                    FeedbackEvent fe = new FeedbackEvent(fs);
-
-                    //Logger.trace(fs);
-                    executor.execute(() -> controller.notifyFeedbackEventListeners(fe));
-                    break;
-                default:
-                    //Logger.trace("Message: " + msg);
-                    break;
-            }
-        }
-    }
-
-    private static void pause(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ex) {
-            Logger.error(ex);
-        }
-    }
-
-    public static void main(String[] a) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        DemoController cs2 = new DemoController(true);
-
-        if (cs2.isConnected()) {
-            //cs2.powerOn();
-
-//            Logger.debug("Sending  member ping\n");
-//            List<PingResponse> prl = cs2.membersPing();
-//            //Logger.info("Query direction of loc 12");
-//            //DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
-//            Logger.debug("got " + prl.size() + " responses");
-//            for (PingResponse pr : prl) {
-//                Logger.debug(pr);
-//            }
-        }
-
-        //PingResponse pr2 = cs2.memberPing();
-        //Logger.info("Query direction of loc 12");
-        //DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
-        // Logger.debug(pr2);
-        pause(5);
-    }
-    //for (int i = 0; i < 16; i++) {
-    //    cs2.requestFeedbackEvents(i + 1);
-    //}
-
 }

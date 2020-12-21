@@ -36,16 +36,15 @@ public class LayoutTile extends ControllableDevice {
     private Integer offsetY;
 
     private BigDecimal soacId;
-    private BigDecimal femoId;
-    private Integer port;
+    private BigDecimal sensId;
     private BigDecimal ltgrId;
 
     private SolenoidAccessory solenoidAccessoiry;
-    private FeedbackModule feedbackModule;
+    private Sensor sensor;
     private LayoutTileGroup layoutTileGroup;
 
     public LayoutTile() {
-        this(null, null, null, null, null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public LayoutTile(String tiletype, String rotation, String direction, Integer x, Integer y) {
@@ -53,10 +52,10 @@ public class LayoutTile extends ControllableDevice {
     }
 
     public LayoutTile(BigDecimal id, String tiletype, String rotation, String direction, Integer x, Integer y) {
-        this(id, tiletype, rotation, direction, x, y, null, null, null, null, null, null);
+        this(id, tiletype, rotation, direction, x, y, null, null, null, null, null);
     }
 
-    public LayoutTile(BigDecimal id, String tiletype, String rotation, String direction, Integer x, Integer y, Integer offsetX, Integer offsetY, BigDecimal soacId, BigDecimal femoId, Integer port, BigDecimal ltgrId) {
+    public LayoutTile(BigDecimal id, String tiletype, String rotation, String direction, Integer x, Integer y, Integer offsetX, Integer offsetY, BigDecimal soacId, BigDecimal sensId, BigDecimal ltgrId) {
         super(id);
         this.tiletype = tiletype;
         this.rotation = rotation;
@@ -66,8 +65,8 @@ public class LayoutTile extends ControllableDevice {
         this.offsetX = offsetX;
         this.offsetY = offsetY;
         this.soacId = soacId;
-        this.femoId = femoId;
-        this.port = port;
+        this.sensId = sensId;
+        //this.port = port;
         this.ltgrId = ltgrId;
     }
 
@@ -135,12 +134,12 @@ public class LayoutTile extends ControllableDevice {
         this.soacId = soacId;
     }
 
-    public BigDecimal getFemoId() {
-        return femoId;
+    public BigDecimal getSensId() {
+        return sensId;
     }
 
-    public void setFemoId(BigDecimal femoId) {
-        this.femoId = femoId;
+    public void setSensId(BigDecimal femoId) {
+        this.sensId = femoId;
     }
 
     public BigDecimal getLtgrId() {
@@ -181,30 +180,17 @@ public class LayoutTile extends ControllableDevice {
         }
     }
 
-    public FeedbackModule getFeedbackModule() {
-        return feedbackModule;
+    public Sensor getSensor() {
+        return sensor;
     }
 
-    public void setFeedbackModule(FeedbackModule feedbackModule) {
-        this.feedbackModule = feedbackModule;
-        if (feedbackModule != null) {
-            this.femoId = feedbackModule.getId();
+    public void setSensor(Sensor sensor) {
+        this.sensor = sensor;
+        if (sensor != null) {
+            this.sensId = sensor.getId();
         } else {
-            this.femoId = null;
+            this.sensId = null;
         }
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
-    }
-
-    public void setFeedbackModuleAndPort(FeedbackModule feedbackModule, Integer port) {
-        this.setFeedbackModule(feedbackModule);
-        this.setPort(port);
     }
 
     public LayoutTileGroup getLayoutTileGroup() {
@@ -227,7 +213,7 @@ public class LayoutTile extends ControllableDevice {
 
     @Override
     public String toString() {
-        return this.tiletype + ";" + this.rotation + ";" + this.direction + ";(" + this.x + "," + this.y + ");" + this.id + "," + this.ltgrId + " port: " + this.port;
+        return this.tiletype + ";" + this.rotation + ";" + this.direction + ";(" + this.x + "," + this.y + ");" + this.id + "," + this.ltgrId + ", sensId: " + this.sensId;
     }
 
     @Override
