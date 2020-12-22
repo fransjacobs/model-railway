@@ -866,6 +866,7 @@ public class H2TrackService implements TrackService {
     }
 
     private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
+        if(value == null || address == null) return;
         if (repeat) {
             for (int i = 0; i < 3; i++) {
                 controllerService.switchAccessoiry(address, value);

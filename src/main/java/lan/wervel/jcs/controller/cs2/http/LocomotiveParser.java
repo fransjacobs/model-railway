@@ -155,6 +155,12 @@ public class LocomotiveParser {
             speed = Integer.parseInt(locoProps.get(VELOCITY));
         }
         Integer speedSteps;
+        
+        if(decoderType == null) {
+            //set a default!
+            decoderType = DecoderType.MM;
+        }
+        
         switch (decoderType) {
             case MM2:
                 speedSteps = 27;
