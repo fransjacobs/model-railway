@@ -474,9 +474,6 @@ public class CS2Controller implements ControllerService {
             sel.add(se);
         }
 
-//            for(SensorMessageListener sml : sensorMessageEventListeners) {
-//                sml.onSensorMessage(se);
-//            }
         return sel;
     }
 
