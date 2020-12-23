@@ -136,6 +136,11 @@ public class CanMessageFactory implements MarklinCan {
         return cm;
     }
 
+    public static CanMessage statusConfig(int gpfUid) {
+        int[] cs2Uid = CanMessage.to4ByteArray(gpfUid);
+        return statusConfig(cs2Uid);
+    }
+
     public static CanMessage statusConfig(int[] cs2Uid) {
         int[] data = getEmptyData();
         if (cs2Uid != null) {
@@ -289,7 +294,6 @@ public class CanMessageFactory implements MarklinCan {
     //sn 13344 sw 1.4.2
     //
     //00 22 02 01 07 00 00 00 01 00 0f ff 00 
-   
     public static void main(String[] a) {
         System.out.println("ping : " + getMobileAppPingRequest());
         System.out.println("stop : " + stop());
@@ -310,7 +314,7 @@ public class CanMessageFactory implements MarklinCan {
         //System.out.println("Request config data 'loks' " + requestConfig("loks"));
         System.out.println("Request feedback event: " + feedbackEvent(1));
         System.out.println("Query Sensor 1: " + querySensor(1));
-        System.out.println("Query Sensor 1 to 16: " + querySensors(1,16));
+        System.out.println("Query Sensor 1 to 16: " + querySensors(1, 16));
 
     }
 

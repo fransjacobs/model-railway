@@ -33,13 +33,19 @@ public class DeviceInfo implements Serializable {
     private String serialNumber;
     private String catalogNumber;
     private String description;
+
+    private Integer gfpUid;
+    private Integer guiUid;
+    private String hardwareVersion;
+    private String softwareVersion;
+
     private String deviceHostName;
 
-    private final int maxFunctions;
-    private final boolean supportMM;
-    private final boolean supportMFX;
-    private final boolean supportDCC;
-    private final boolean supportSX1;
+    private int maxFunctions;
+    private boolean supportMM;
+    private boolean supportMFX;
+    private boolean supportDCC;
+    private boolean supportSX1;
 
     public DeviceInfo(CanMessage statusRequest) {
         parseMessage(statusRequest);
@@ -48,6 +54,13 @@ public class DeviceInfo implements Serializable {
         this.supportMFX = true;
         this.supportMM = true;
         this.supportSX1 = true;
+    }
+
+    public DeviceInfo(String gfpUid, String guiUid, String hardwareVersion, String serialNumber) {
+        this.gfpUid = Integer.decode(gfpUid);
+        this.guiUid = Integer.decode(guiUid);
+        this.hardwareVersion = hardwareVersion;
+        this.serialNumber = serialNumber;
     }
 
     public DeviceInfo(String serialNumber, String catalogNumber, String description, int maxFunctions, boolean supportMM, boolean supportMFX, boolean supportDCC, boolean supportSX1) {
@@ -62,6 +75,10 @@ public class DeviceInfo implements Serializable {
         this.supportSX1 = supportSX1;
     }
 
+    public void updateFromStatusMessageResponse(CanMessage statusRequest) {
+        parseMessage(statusRequest);
+    }
+
     private void parseMessage(CanMessage statusRequest) {
         //First byte holds the serial
         List<CanMessage> rl = statusRequest.getResponses();
@@ -73,7 +90,9 @@ public class DeviceInfo implements Serializable {
             System.arraycopy(data1, 6, sn, 0, sn.length);
 
             int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
-            this.serialNumber = serial + "";
+            if (this.serialNumber == null) {
+                this.serialNumber = serial + "";
+            }
 
             if (rl.size() > 1) {
                 //Second holds the catalog numer is asci
@@ -91,6 +110,7 @@ public class DeviceInfo implements Serializable {
                 //Fourth is description
                 byte[] data4 = rl.get(3).getDataBytes();
                 description = description + dataToString(data4);
+                description = description.trim();
             }
         }
     }
@@ -137,20 +157,40 @@ public class DeviceInfo implements Serializable {
         return maxFunctions;
     }
 
+    public void setMaxFunctions(int maxFunctions) {
+        this.maxFunctions = maxFunctions;
+    }
+
     public boolean isSupportMM() {
         return supportMM;
+    }
+
+    public void setSupportMM(boolean supportMM) {
+        this.supportMM = supportMM;
     }
 
     public boolean isSupportMFX() {
         return supportMFX;
     }
 
+    public void setSupportMFX(boolean supportMFX) {
+        this.supportMFX = supportMFX;
+    }
+
     public boolean isSupportDCC() {
         return supportDCC;
     }
 
+    public void setSupportDCC(boolean supportDCC) {
+        this.supportDCC = supportDCC;
+    }
+
     public boolean isSupportSX1() {
         return supportSX1;
+    }
+
+    public void setSupportSX1(boolean supportSX1) {
+        this.supportSX1 = supportSX1;
     }
 
     public String getDeviceHostName() {
@@ -161,9 +201,41 @@ public class DeviceInfo implements Serializable {
         this.deviceHostName = deviceHostName;
     }
 
+    public Integer getGfpUid() {
+        return gfpUid;
+    }
+
+    public void setGfpUid(Integer gfpUid) {
+        this.gfpUid = gfpUid;
+    }
+
+    public Integer getGuiUid() {
+        return guiUid;
+    }
+
+    public void setGuiUid(Integer guiUid) {
+        this.guiUid = guiUid;
+    }
+
+    public String getHardwareVersion() {
+        return hardwareVersion;
+    }
+
+    public void setHardwareVersion(String hardwareVersion) {
+        this.hardwareVersion = hardwareVersion;
+    }
+
+    public String getSoftwareVersion() {
+        return softwareVersion;
+    }
+
+    public void setSoftwareVersion(String softwareVersion) {
+        this.softwareVersion = softwareVersion;
+    }
+
     @Override
     public String toString() {
-        return "DeviceInfo{" + "serialNumber=" + serialNumber + ", catalogNumber=" + catalogNumber + ", description=" + description + '}';
+        return "DeviceInfo{" + "serialNumber=" + serialNumber + ", catalogNumber=" + catalogNumber + ", description=" + description + ", gfpUid=" + gfpUid + ", guiUid=" + guiUid + ", hardwareVersion=" + hardwareVersion + ", deviceHostName=" + deviceHostName + '}';
     }
 
     @Override
@@ -172,6 +244,10 @@ public class DeviceInfo implements Serializable {
         hash = 29 * hash + Objects.hashCode(this.serialNumber);
         hash = 29 * hash + Objects.hashCode(this.catalogNumber);
         hash = 29 * hash + Objects.hashCode(this.description);
+        hash = 29 * hash + Objects.hashCode(this.gfpUid);
+        hash = 29 * hash + Objects.hashCode(this.guiUid);
+        hash = 29 * hash + Objects.hashCode(this.hardwareVersion);
+        hash = 29 * hash + Objects.hashCode(this.softwareVersion);
         hash = 29 * hash + this.maxFunctions;
         hash = 29 * hash + (this.supportMM ? 1 : 0);
         hash = 29 * hash + (this.supportMFX ? 1 : 0);
@@ -211,6 +287,18 @@ public class DeviceInfo implements Serializable {
             return false;
         }
         if (!Objects.equals(this.catalogNumber, other.catalogNumber)) {
+            return false;
+        }
+        if (!Objects.equals(this.gfpUid, other.gfpUid)) {
+            return false;
+        }
+        if (!Objects.equals(this.guiUid, other.guiUid)) {
+            return false;
+        }
+        if (!Objects.equals(this.hardwareVersion, other.hardwareVersion)) {
+            return false;
+        }
+        if (!Objects.equals(this.softwareVersion, other.softwareVersion)) {
             return false;
         }
         return Objects.equals(this.description, other.description);
