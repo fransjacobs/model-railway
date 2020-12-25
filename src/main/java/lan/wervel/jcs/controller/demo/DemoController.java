@@ -382,6 +382,11 @@ public class DemoController implements ControllerService {
         return Collections.EMPTY_LIST;
     }
 
+    @Override
+    public List<AccessoryStatus> getAccessoryStatuses() {
+        return Collections.EMPTY_LIST;
+    }
+
     private void notifyControllerEventListeners(ControllerEvent event) {
         Set<ControllerEventListener> snapshot;
         synchronized (controllerEventListeners) {

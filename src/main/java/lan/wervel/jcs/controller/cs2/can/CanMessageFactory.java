@@ -32,15 +32,20 @@ public class CanMessageFactory implements MarklinCan {
     public static final int FUNCTION_4 = 4;
 
     private static int[] deviceUid = new int[]{00, 00, 00, 00};
-    private static int deviceUidNumber = -1;
+    private static int gfpUidNumber = -1;
+    private static int guiUidNumber = -1;
 
-    public static void setDeviceUidNumber(int deviceUid) {
-        deviceUidNumber = deviceUid;
+    public static void setGFPUid(int gfpUid) {
+        gfpUidNumber = gfpUid;
+    }
+    
+    public static void setGUIUid(int guiUid) {
+        guiUidNumber = guiUid;
     }
 
-    public static void setDeviceUidNumber(int[] deviceUid) {
-        deviceUid = deviceUid;
-    }
+//    public static void setDeviceUidNumber(int[] deviceUid) {
+//        deviceUid = deviceUid;
+//    }
 
     private static int[] getEmptyData() {
         int[] data = new int[CanMessage.DATA_SIZE];
@@ -101,23 +106,23 @@ public class CanMessageFactory implements MarklinCan {
 
     public static CanMessage stop() {
         int[] data = getEmptyData();
-        if (deviceUidNumber > 0 && deviceUid != null) {
+        if (gfpUidNumber > 0 && deviceUid != null) {
             System.arraycopy(deviceUid, 0, data, 0, deviceUid.length);
         }
         data[SUBCMD_IDX] = STOP_SUBCMD;
 
-        CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, STOP_AND_GO_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, STOP_AND_GO_DLC, data, gfpUidNumber);
         return cm;
     }
 
     public static CanMessage go() {
         int[] data = getEmptyData();
-        if (deviceUidNumber > 0 && deviceUid != null) {
+        if (gfpUidNumber > 0 && deviceUid != null) {
             System.arraycopy(deviceUid, 0, data, 0, deviceUid.length);
         }
         data[SUBCMD_IDX] = GO_SUBCMD;
 
-        CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, STOP_AND_GO_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, STOP_AND_GO_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -132,7 +137,7 @@ public class CanMessageFactory implements MarklinCan {
         data[ACCESSORY_VALUE_IDX] = AccessoryValue.GREEN.equals(value) ? 1 : 0;
         data[ACCESSORY_ACTIVE_IDX] = on ? 1 : 0;
 
-        CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, ACCESSORY_SWITCHING_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, ACCESSORY_SWITCHING_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -147,7 +152,7 @@ public class CanMessageFactory implements MarklinCan {
             System.arraycopy(cs2Uid, 0, data, 0, cs2Uid.length);
         }
 
-        CanMessage cm = new CanMessage(PRIO_1, STATUS_CONFIG, STATUS_CONFIG_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, STATUS_CONFIG, STATUS_CONFIG_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -156,7 +161,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] locid = CanMessage.to4ByteArray(address);
         System.arraycopy(locid, 0, data, 0, locid.length);
         data[4] = functionNumber & 0xff;
-        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, LOC_FUNCTION_QUERY_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, LOC_FUNCTION_QUERY_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -166,7 +171,7 @@ public class CanMessageFactory implements MarklinCan {
         System.arraycopy(locid, 0, data, 0, locid.length);
         data[4] = functionNumber & 0xff;
         data[5] = value & 0xff;
-        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, LOC_FUNCTION_SET_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, LOC_FUNCTION_SET_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -175,7 +180,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] locid = CanMessage.to4ByteArray(address);
         System.arraycopy(locid, 0, data, 0, locid.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, LOC_DIRECTION_QUERY_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, LOC_DIRECTION_QUERY_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -185,7 +190,7 @@ public class CanMessageFactory implements MarklinCan {
         System.arraycopy(locid, 0, data, 0, locid.length);
         data[LOC_DIRECTION_VALUE_IDX] = cs2direction & 0xff;
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, LOC_DIRECTION_SET_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, LOC_DIRECTION_SET_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -194,7 +199,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] locid = CanMessage.to4ByteArray(address);
         System.arraycopy(locid, 0, data, 0, locid.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, LOC_SPEED_QUERY_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, LOC_SPEED_QUERY_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -205,7 +210,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] sb = CanMessage.to2ByteArray(speed);
         System.arraycopy(sb, 0, data, 4, sb.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, LOC_SPEED_SET_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, LOC_SPEED_SET_DLC, data, gfpUidNumber);
         return cm;
     }
 
@@ -217,7 +222,7 @@ public class CanMessageFactory implements MarklinCan {
             data[i] = fba[i] & 0xff;
         }
 
-        CanMessage cm = new CanMessage(PRIO_1, REQUEST_CONFIG_DATA, REQUEST_CONFIG_DATA_DLC, data, deviceUidNumber);
+        CanMessage cm = new CanMessage(PRIO_1, REQUEST_CONFIG_DATA, REQUEST_CONFIG_DATA_DLC, data, guiUidNumber);
         return cm;
     }
 
@@ -251,50 +256,11 @@ public class CanMessageFactory implements MarklinCan {
         return cm;
     }
 
-//    start of day
-//             if( wDigInt.getprotver( data->ini ) >= 2 && (data->sensorend - data->sensorbegin) > 0 ) {
-//    if(data->sensorbegin < data->sod_sensorbegin || data->sensorend > data->sod_sensorend) {
-//      byte*  msg   = allocMem(32);
-//      msg[0] = (CMD_ACC_SENSOR >> 7);
-//      msg[1]  = ((CMD_ACC_SENSOR & 0x7F) << 1 );
-//      msg[2]  = (rrHash / 256) & 0xFF;
-//      msg[3]  = (rrHash % 256) & 0xFF;
-//      msg[4]  = 7;
-//      msg[5]  = wMCS2.getfbdevid(data->mcs2ini) / 256; /* Geraetekenner */
-//      msg[6]  = wMCS2.getfbdevid(data->mcs2ini) % 256;
-//      msg[7]  = (data->sensorbegin & 0xFF00) >> 8; /* Kontaktkennung Start */
-//      msg[8]  = (data->sensorbegin & 0x00FF);
-//      msg[9]  = (data->sensorend & 0xFF00) >> 8; /* Kontaktkennung Ende */
-//      msg[10] = (data->sensorend & 0x00FF);
-//      msg[11] = 0xFF; /* Broadcast ein */
-//      msg[12] = 0;
-//      TraceOp.trc( name, TRCLEVEL_MONITOR, __LINE__, 9999, "Query sensors from %d to %d for version >= 2...", data->sensorbegin, data->sensorend );
-//      ThreadOp.post( data->writer, (obj)msg );
-//
-//      data->sod_sensorbegin = data->sensorbegin;
-//      data->sod_sensorend   = data->sensorend;
-//    }
-//  }
-    //loc discovery
-    //00 01 03 00 00 00 00 00 00 00 00 00 00
-    //00 23 CB 12 08 00 00 00 11 00 01 00 16
-    //00 23 CB 12 08 00 00 00 12 00 01 00 16
-    //00 23 CB 12 08 00 00 00 15 00 01 00 16
-    //00 23 CB 12 08 00 00 00 16 00 01 00 16
-    //00 23 CB 12 08 00 00 00 19 00 01 00 16
-    //00 23 CB 12 08 00 00 00 1F 00 01 00 16
-    //0x 7d fb 67 ad
-    //Status config
-    //﻿00 3a cb 13 05 43 53 9a 40 00 00 00 00 req
-    //﻿00 3B 03 01 08 04 02 00 00 00 00 34 20 resp 1 hash = paket# 1  last 2 = sn de 4 na de dlc is anatal pakets inc deze dus 4
-    //00 3B 03 02 08 36 30 32 31 34 00 00 00 paket# 2  60214    cat nr  
-    //00 3B 03 03 08 43 65 6E 74 72 61 6C 20 paket# 3  Central  aanduiding
-    //00 3B 03 04 08 53 74 61 74 69 6F 6E 20 paket# 4  Station  
-    //﻿\00;\03\01\08\04\02\00\00\00\004 \00;\03\02\0860214\00\00\00\00;\03\03\08Central \00;\03\04\08Station 
-    //sn 13344 sw 1.4.2
-    //
-    //00 22 02 01 07 00 00 00 01 00 0f ff 00 
+    //Mainly for testing....
     public static void main(String[] a) {
+        setGFPUid(1129552448);
+        setGUIUid(1129552449);
+        
         System.out.println("ping : " + getMobileAppPingRequest());
         System.out.println("stop : " + stop());
         System.out.println("go   : " + go());
@@ -303,19 +269,16 @@ public class CanMessageFactory implements MarklinCan {
         System.out.println("W1 S : " + switchAccessory(1, AccessoryValue.GREEN, true));
         System.out.println("W1 C : " + switchAccessory(1, AccessoryValue.RED, true));
 
-        //00 0C 47 11 06 00 00 C0 0A 00 01 00 00
         System.out.println("toggleFunction A 10 light on : " + setFunction(10, FUNCTION_0, 1));
 
-        //00 08 47 11 06 00 00 40 01 03 20 00 00  Lok Geschwindigkeit mfx Adr 1, V=0x0320=800 von 1024
-        //00 08 47 11 06 00 00 08 03 03 20 00 Lok Geschwindigkeit SX1 Adr 3, V=0x0320=800 von 1024
         System.out.println("speed A:3 S:800: " + setLocSpeed(16389, 800));
         System.out.println("powerStatus: " + powerStatus());
 
-        //System.out.println("Request config data 'loks' " + requestConfig("loks"));
         System.out.println("Request feedback event: " + feedbackEvent(1));
         System.out.println("Query Sensor 1: " + querySensor(1));
         System.out.println("Query Sensor 1 to 16: " + querySensors(1, 16));
 
+        System.out.println("Request config data 'magstat' " + requestConfig("magstat"));
     }
 
 }

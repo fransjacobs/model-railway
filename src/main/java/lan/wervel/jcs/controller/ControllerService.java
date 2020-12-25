@@ -19,6 +19,7 @@
 package lan.wervel.jcs.controller;
 
 import java.util.List;
+import lan.wervel.jcs.controller.cs2.AccessoryStatus;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.controller.cs2.PowerStatus;
 import lan.wervel.jcs.controller.cs2.events.SensorMessageEvent;
@@ -81,7 +82,7 @@ public interface ControllerService {
     void removeSensorMessageListener(SensorMessageListener listener);
 
     void addHeartbeatListener(HeartbeatListener listener);
- 
+
     void removeHeartbeatListener(HeartbeatListener listener);
 
     void removeAllHeartbeatListeners();
@@ -91,5 +92,7 @@ public interface ControllerService {
     List<SolenoidAccessory> getAccessories();
 
     List<SensorMessageEvent> querySensors(int sensorCount);
+
+    List<AccessoryStatus> getAccessoryStatuses();
 
 }

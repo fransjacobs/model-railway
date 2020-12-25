@@ -20,7 +20,7 @@ package lan.wervel.jcs.controller.cs2;
 
 import lan.wervel.jcs.controller.cs2.events.SensorMessageEvent;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +53,6 @@ import lan.wervel.jcs.controller.HeartbeatListener;
 import org.pmw.tinylog.Configurator;
 import lan.wervel.jcs.controller.cs2.events.SensorMessageListener;
 import lan.wervel.jcs.controller.cs2.http.DeviceParser;
-import lan.wervel.jcs.entities.Sensor;
 
 /**
  *
@@ -73,10 +72,6 @@ public class CS2Controller implements ControllerService {
     private boolean startTimer;
 
     private final ExecutorService executor;
-
-    //private int[] deviceUid;
-    private int deviceUidNumber;
-
     private DeviceInfo deviceInfo;
 
     private static final long DELAY = 0L;
@@ -131,19 +126,14 @@ public class CS2Controller implements ControllerService {
         }
 
         if (connected) {
-            //Obtain the Device info for the uid's
-            //gfpUid=1129552448, guiUid=1129552449
-            //1129552448
             Logger.debug("Obtaining controller device information...");
             getControllerInfo();
-
-            deviceUidNumber = deviceInfo.getGfpUid();
-            //deviceUid = CanMessage.to4ByteArray(deviceUidNumber);
-            CanMessageFactory.setDeviceUidNumber(deviceUidNumber);
+            CanMessageFactory.setGFPUid(deviceInfo.getGfpUid());
+            CanMessageFactory.setGUIUid(deviceInfo.getGuiUid());
             PowerStatus ps = getPowerStatus();
 
-            Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
-            Logger.trace("Track Power is " + (ps.isPowerOn() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
+            Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". GFPUID : " + deviceInfo.getGfpUid() + ". GUIUID : " + deviceInfo.getGuiUid());
+            Logger.trace("Track Power is " + (ps.isPowerOn() ? "On" : "Off"));
 
             addCanMessageListener(new ExtraMessageListener(this));
 
@@ -155,7 +145,6 @@ public class CS2Controller implements ControllerService {
             //Start the idle task to listen
             int interval = Integer.decode(System.getProperty("idle-interval", "100"));
             timer.scheduleAtFixedRate(new IdleTask(this), DELAY, interval);
-            //this.running = true;
             Logger.trace("Started hearbeat task with an interval of " + interval + " ms...");
         } else {
             Logger.info("Hearbeat time is NOT started! " + (!connected ? "NOT Connected" : (!startTimer ? "Timer is off" : "")));
@@ -182,9 +171,8 @@ public class CS2Controller implements ControllerService {
                     conn.sendCanMessage(CanMessageFactory.stop());
                     wait200ms();
                     conn.close();
-                    //this.deviceUid = null;
-                    CanMessageFactory.setDeviceUidNumber(0);
-                    this.deviceUidNumber = 0;
+                    CanMessageFactory.setGFPUid(0);
+                    CanMessageFactory.setGUIUid(0);
                 }
             }
             executor.shutdown();
@@ -314,8 +302,12 @@ public class CS2Controller implements ControllerService {
     }
 
     private void wait200ms() {
+        pause(200L);
+    }
+
+    private void pause(long millis) {
         try {
-            Thread.sleep(200L);
+            Thread.sleep(millis);
         } catch (InterruptedException ex) {
             Logger.error(ex);
         }
@@ -354,6 +346,18 @@ public class CS2Controller implements ControllerService {
         String magnetartikelCs2 = httpCon.getAccessoriesFile();
         AccessoryParser ap = new AccessoryParser();
         return ap.parseAccessoryFile(magnetartikelCs2);
+    }
+
+    @Override
+    public List<AccessoryStatus> getAccessoryStatuses() {
+        //Update the file by sending a configRequest first
+        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
+        //give it some time to process
+        pause(100L);
+        HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
+        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
+        AccessoryParser ap = new AccessoryParser();
+        return ap.parseAccessoryStatusFile(accessoryStatuses);
     }
 
     @Override
@@ -549,6 +553,7 @@ public class CS2Controller implements ControllerService {
                     }
                     toggle = !toggle;
                 }
+
                 cnt++;
             } catch (Exception e) {
                 Logger.error(e.getMessage());
@@ -560,7 +565,7 @@ public class CS2Controller implements ControllerService {
     private class ExtraMessageListener implements CanMessageListener {
 
         private final CS2Controller controller;
- 
+
         ExtraMessageListener(CS2Controller cs2Controller) {
             controller = cs2Controller;
         }
@@ -583,14 +588,6 @@ public class CS2Controller implements ControllerService {
         }
     }
 
-    private static void pause(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ex) {
-            Logger.error(ex);
-        }
-    }
-
     public static void main(String[] a) {
         Configurator.
                 currentConfig().formatPattern("{date:yyyy-MM-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
@@ -601,10 +598,14 @@ public class CS2Controller implements ControllerService {
         if (cs2.isConnected()) {
             //cs2.powerOn();
 
-            List<SensorMessageEvent> sml = cs2.querySensors(48);
-            for (SensorMessageEvent sme : sml) {
-                Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
-                Logger.debug(s.toLogString());
+//            List<SensorMessageEvent> sml = cs2.querySensors(48);
+//            for (SensorMessageEvent sme : sml) {
+//                Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
+//                Logger.debug(s.toLogString());
+//            }
+            List<AccessoryStatus> asl = cs2.getAccessoryStatuses();
+            for (AccessoryStatus as : asl) {
+                Logger.debug(as.toString());
             }
 
 //            for (int i = 0; i < 30; i++) {
@@ -634,7 +635,7 @@ public class CS2Controller implements ControllerService {
         //Logger.info("Query direction of loc 12");
         //DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
         Logger.debug("DONE");
-        pause(5);
+        cs2.pause(5L);
     }
     //for (int i = 0; i < 16; i++) {
     //    cs2.requestFeedbackEvents(i + 1);

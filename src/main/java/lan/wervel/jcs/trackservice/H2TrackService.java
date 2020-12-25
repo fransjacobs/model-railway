@@ -66,7 +66,9 @@ import lan.wervel.jcs.trackservice.events.LocomotiveListener;
 import lan.wervel.jcs.trackservice.events.PersistedEventListener;
 import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.controller.HeartbeatListener;
+import lan.wervel.jcs.controller.cs2.AccessoryStatus;
 import lan.wervel.jcs.controller.cs2.events.SensorMessageListener;
+import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.dao.LayoutTileDAO;
 import lan.wervel.jcs.trackservice.dao.LayoutTileGroupDAO;
 import lan.wervel.jcs.trackservice.dao.SensorDAO;
@@ -129,7 +131,7 @@ public class H2TrackService implements TrackService {
         sensorListeners = new HashMap<>();
 
         persistListeners = new ArrayList<>();
-        timer = new Timer("TrackStatus", true);
+        timer = new Timer("UpdateGui", true);
 
         retrieveJCSProperties();
         trpo = trpoDAO.find(1);
@@ -139,8 +141,6 @@ public class H2TrackService implements TrackService {
         }
 
         Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
-
-        //Logger.debug(feedbackService != null ? "Aquired " + feedbackService.getClass().getSimpleName() : "Could not aquire a Feedback Service!");
     }
 
     private void retrieveJCSProperties() {
@@ -238,14 +238,14 @@ public class H2TrackService implements TrackService {
         }
         //Update the sensors with the status od the Controller
         synchronizeSensors();
-  
+
         controllerInfo = controllerService.getControllerInfo();
 
         controllerService.addSensorMessageListener(new SensorMessageEventHandler(this));
         controllerService.addHeartbeatListener(new ControllerWatchDogListener());
         controllerService.addControllerEventListener(new ControllerServiceEventListener());
 
-        timer.scheduleAtFixedRate(new UpdateTrackStatusTask(this), 0, 10000);
+        timer.scheduleAtFixedRate(new UpdateGuiStatusTask(this), 0, 1000);
     }
 
     @Override
@@ -299,7 +299,7 @@ public class H2TrackService implements TrackService {
     }
 
     public void synchronizeSensors() {
-        int sensorCount = Integer.decode(System.getProperty("sensorCount","16"));
+        int sensorCount = Integer.decode(System.getProperty("sensorCount", "16"));
         //obtain the current sensorstatus
         List<SensorMessageEvent> sml = controllerService.querySensors(sensorCount);
         for (SensorMessageEvent sme : sml) {
@@ -736,6 +736,44 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
+    public void updateGuiStatuses() {
+        updateAccessoryStatuses();
+
+    }
+
+    private void updateAccessoryStatuses() {
+        List<AccessoryStatus> asl = controllerService.getAccessoryStatuses();
+        List<SolenoidAccessory> accessoiries = new ArrayList<>();
+
+        for (AccessoryStatus as : asl) {
+            Integer a = as.getAddress();
+            Turnout t = turnoutDAO.find(a);
+            if (t != null) {
+                AccessoryValue av = as.getAccessoryValue();
+                if (!av.equals(t.getValue())) {
+                    t.setValue(av);
+                    turnoutDAO.persist(t);
+                    accessoiries.add(t);
+                }
+            } else {
+                Signal s = signalDAO.find(a);
+                if (s != null) {
+                    SignalValue sv = as.getSignalValue();
+                    if (!sv.equals(s.getSignalValue())) {
+                        s.setSignalValue(sv);
+                        signalDAO.persist(s);
+                        accessoiries.add(s);
+                    }
+                }
+            }
+        }
+        //notify the changed listeners
+        accessoiries.forEach((accessoiry) -> {
+            notifyAccessoiryListeners(accessoiry);
+        });
+    }
+
+    @Override
     public void toggleDirection(Direction direction, Locomotive locomotive) {
         String cs = jcsProperties.getProperty("activeControllerService");
         Logger.debug("New: " + direction + " for: " + locomotive.toLogString() + " Current: " + locomotive.getDirection() + " Decoder: " + locomotive.getDecoderType());
@@ -866,7 +904,9 @@ public class H2TrackService implements TrackService {
     }
 
     private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
-        if(value == null || address == null) return;
+        if (value == null || address == null) {
+            return;
+        }
         if (repeat) {
             for (int i = 0; i < 3; i++) {
                 controllerService.switchAccessoiry(address, value);
@@ -1018,22 +1058,23 @@ public class H2TrackService implements TrackService {
         }
     }
 
-    private class UpdateTrackStatusTask extends TimerTask {
+    private class UpdateGuiStatusTask extends TimerTask {
 
         private final TrackService trackService;
 
-        UpdateTrackStatusTask(TrackService trackService) {
+        UpdateGuiStatusTask(TrackService trackService) {
             this.trackService = trackService;
         }
 
         @Override
         public void run() {
-//            try {
+            try {
+                trackService.updateGuiStatuses();
 //                trackService.notifyAllSensorListeners();
-//            } catch (Exception e) {
-//                Logger.error(e.getMessage());
-//                Logger.trace(e);
-//            }
+            } catch (Exception e) {
+                Logger.error(e.getMessage());
+                Logger.trace(e);
+            }
         }
     }
 }

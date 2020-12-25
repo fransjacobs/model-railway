@@ -40,7 +40,6 @@ class TCPConnection implements Connection {
 
     private final InetAddress cs2Address;
     private final List<CanMessageListener> listeners;
-    //private final ExecutorService executor;
 
     private Socket socket;
     private DataOutputStream dos;
@@ -51,8 +50,6 @@ class TCPConnection implements Connection {
     TCPConnection(InetAddress cs2Address) {
         this.cs2Address = cs2Address;
         listeners = new ArrayList<>();
-        //executor = Executors.newCachedThreadPool();
-
         checkConnection();
     }
 
@@ -146,6 +143,7 @@ class TCPConnection implements Connection {
     }
 
     @Override
+    @SuppressWarnings("SynchronizeOnNonFinalField")
     public CanMessage sendCanMessage(CanMessage message) {
         List<CanMessageEvent> events = new ArrayList<>();
         synchronized (socket) {

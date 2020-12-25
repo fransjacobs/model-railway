@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lan.wervel.jcs.controller.cs2.AccessoryStatus;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.Turnout;
@@ -119,6 +120,60 @@ public class AccessoryParser {
         return accessories;
     }
 
+    public List<AccessoryStatus> parseAccessoryStatusFile(String gaSrfile) {
+        List<AccessoryStatus> accessories = new ArrayList<>();
+        List<String> items = Arrays.asList(gaSrfile.split("\n"));
+        Map<String, String> am = new HashMap<>();
+        for (String s : items) {
+            //Logger.trace("Line: " + s);
+            switch (s) {
+                case ACCESSORY_START:
+                    break;
+                case VERSION:
+                    break;
+                case ARTIKEL:
+                    if (am.containsKey(ID)) {
+                        Integer address = Integer.decode(am.get(ID));
+                        String status;
+                        if (am.containsKey(STELLUNG)) {
+                            status = am.get(STELLUNG);
+                        } else {
+                            status = "0";
+                        }
+                        AccessoryStatus as = new AccessoryStatus(address, status);
+                        accessories.add(as);
+                    }
+                    am.clear();
+                    break;
+                default:
+                    if (s.contains("=")) {
+                        String[] kp = s.split("=");
+                        String key = kp[0];
+                        String val = kp[1];
+                        am.put(key, val);
+                    } else {
+                        Logger.debug("Tag?: " + s);
+                    }
+                    break;
+            }
+        }
+        // parse the last Accessory
+        if (am.containsKey(ID)) {
+            if (am.containsKey(ID)) {
+                Integer address = Integer.decode(am.get(ID));
+                String status;
+                if (am.containsKey(STELLUNG)) {
+                    status = am.get(STELLUNG);
+                } else {
+                    status = "0";
+                }
+                AccessoryStatus as = new AccessoryStatus(address, status);
+                accessories.add(as);
+            }
+        }
+        return accessories;
+    }
+
     private SolenoidAccessory createAccessory(Map<String, String> accessoryProps) {
         String type = accessoryProps.get(TYPE);
 
@@ -195,7 +250,6 @@ public class AccessoryParser {
                 sa.setSwitchTime(switchTime);
             }
         }
-
         return sa;
     }
 
