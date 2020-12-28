@@ -68,7 +68,26 @@ public class HTTPConnection {
                     locs.append("\n");
                 }
             }
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return locs.toString();
+    }
 
+    public String getLocomotiveStatusesFile() {
+        StringBuilder locs = new StringBuilder();
+        try {
+            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + LOCOMOTIVESTATUS);
+            URLConnection lc = cs2.openConnection();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    locs.append(inputLine.strip());
+                    locs.append("\n");
+                }
+            }
         } catch (MalformedURLException ex) {
             Logger.error(ex);
         } catch (IOException ex) {
@@ -89,7 +108,6 @@ public class HTTPConnection {
                     locs.append("\n");
                 }
             }
-
         } catch (MalformedURLException ex) {
             Logger.error(ex);
         } catch (IOException ex) {
@@ -170,6 +188,5 @@ public class HTTPConnection {
         for (AccessoryStatus as : acsList) {
             System.out.println(as.toString());
         }
-
     }
 }

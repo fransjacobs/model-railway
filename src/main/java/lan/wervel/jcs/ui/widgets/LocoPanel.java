@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.widgets;
 
+import java.awt.BorderLayout;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,8 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.enums.Direction;
@@ -40,12 +43,12 @@ import org.pmw.tinylog.Logger;
  * @author fransjacobs
  */
 public class LocoPanel extends JPanel implements LocomotiveListener {
-    
+
     private Direction direction;
-    
+
     private Preferences prefs;
     private BigDecimal id;
-    
+
     public LocoPanel() {
         this(0);
     }
@@ -58,12 +61,12 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
     public LocoPanel(int panelNumber) {
         direction = Direction.FORWARDS;
         id = new BigDecimal(0);
-        
+
         initComponents();
-        
+
         postInit(panelNumber);
     }
-    
+
     public void refreshPanel() {
         TrackServiceFactory.getTrackService().removeLocomotiveListener(this);
         this.locoCB.setModel(createLocoCBM());
@@ -253,25 +256,25 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
         if (this.getName() == null) {
             this.setName(this.getClass().getSimpleName());
         }
-        
+
         Logger.trace("Store prefs: " + this.getName() + "_ID: " + id);
         this.prefs.put(this.getName() + "_ID", id.toString());
     }
-    
+
     private void postInit(int panelNumber) {
         String name = this.getClass().getSimpleName();
-        
+
         if (panelNumber > 0) {
             this.setName(name + panelNumber);
         } else {
             this.setName(name);
         }
-        
+
         this.prefs = Preferences.userRoot().node(name);
-        
+
         BigDecimal lid = new BigDecimal(prefs.getLong(this.getName() + "_ID", 0));
         Logger.trace("Retrieve prefs: " + this.getName() + "_ID: " + lid);
-        
+
         if (TrackServiceFactory.getTrackService() != null) {
             Locomotive psl = TrackServiceFactory.getTrackService().getLocomotive(lid);
             if (psl != null) {
@@ -294,7 +297,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
           //unregister
           Logger.debug("Unreg: " + this.id);
           TrackServiceFactory.getTrackService().removeLocomotiveListener(this);
-          
+
           Locomotive cl = TrackServiceFactory.getTrackService().getLocomotive(i);
           this.direction = cl.getDirection();
           setDirectionIcon();
@@ -311,20 +314,20 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
           //max = this.speedPBar.getMaximum();
           int sp = cl.getSpeed();
           this.speedPBar.setValue(sp);
-          
+
           this.f1Btn.setEnabled(cl.getFunctionCount() > 1);
           this.f2Btn.setEnabled(cl.getFunctionCount() > 1);
           this.f3Btn.setEnabled(cl.getFunctionCount() > 1);
           this.f4Btn.setEnabled(cl.getFunctionCount() > 1);
-          
+
           Logger.trace("Loc: " + cl.getName() + " Dir: " + cl.getDirection() + " Speed: " + cl.getSpeed());
-          
+
           this.setTitle(sl.getName());
 
           //register 
           TrackServiceFactory.getTrackService().addLocomotiveListener(this);
           Logger.debug("Reg: " + this.id);
-          
+
       } else {
           this.direction = Direction.FORWARDS;
           setDirectionIcon();
@@ -346,7 +349,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
       toggleDirection();
       setDirectionIcon();
       Logger.debug(this.direction);
-      
+
       Locomotive locomotive = getSelectedLoco();
       TrackServiceFactory.getTrackService().toggleDirection(direction, locomotive);
   }//GEN-LAST:event_directionBtnActionPerformed
@@ -354,24 +357,24 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
   private void speedSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_speedSliderStateChanged
       int speed = this.getSpeed();
       this.directionBtn.setEnabled(speed == 0);
-      
+
       if (!speedSlider.getValueIsAdjusting()) {
           //int max = this.speedPBar.getMaximum();
           int sp = speed;
           this.speedPBar.setValue(sp);
           Logger.trace("Speed: " + speed);
-          
+
           Locomotive locomotive = getSelectedLoco();
-          
+
           if (TrackServiceFactory.getTrackService() != null) {
               TrackServiceFactory.getTrackService().changeSpeed(speed, locomotive);
           }
       }
   }//GEN-LAST:event_speedSliderStateChanged
-    
+
     private Locomotive getSelectedLoco() {
         Locomotive l = (Locomotive) this.locoCB.getSelectedItem();
-        
+
         Locomotive loco;
         if (l.getId().equals(this.id)) {
             loco = l;
@@ -380,7 +383,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
             loco.setId(id);
             Logger.trace("Use tmp Loco: " + loco);
         }
-        
+
         loco.setF0(this.f0Btn.isSelected());
         loco.setF1(this.f1Btn.isSelected());
         loco.setF2(this.f2Btn.isSelected());
@@ -437,7 +440,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
       Locomotive locomotive = getSelectedLoco();
       TrackServiceFactory.getTrackService().changeSpeed(0, locomotive);
   }//GEN-LAST:event_stopBtnActionPerformed
-    
+
     private void toggleDirection() {
         if (Direction.FORWARDS.equals(this.direction)) {
             this.direction = Direction.BACKWARDS;
@@ -445,7 +448,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
             this.direction = Direction.FORWARDS;
         }
     }
-    
+
     private void setDirectionIcon() {
         if (Direction.FORWARDS.equals(this.direction)) {
             directionBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/arrowhead-up.png")));
@@ -453,7 +456,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
             directionBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/arrowhead-down.png")));
         }
     }
-    
+
     private ComboBoxModel<Locomotive> createLocoCBM() {
         List<Locomotive> locoList = new ArrayList<>();
         //Need one "null or empty" loc on top in the list...
@@ -464,41 +467,41 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
         if (TrackServiceFactory.getTrackService() == null) {
             return new DefaultComboBoxModel<>();
         }
-        
+
         locoList.addAll(TrackServiceFactory.getTrackService().getLocomotives());
-        
+
         Locomotive[] locs = new Locomotive[locoList.size()];
         locoList.toArray(locs);
-        
+
         ComboBoxModel<Locomotive> locoCBM = new DefaultComboBoxModel<>(locs);
         Logger.trace("Created Loco CBM with " + locs.length + " loco's...");
         return locoCBM;
     }
-    
+
     private Integer getSpeed() {
         //int max = this.speedSlider.getMaximum();
         Integer speed = speedSlider.getValue();
         return speed;
     }
-    
+
     private void setTitle(String title) {
         ((TitledBorder) this.getBorder()).setTitle(title);
         this.repaint();
     }
-    
+
     @Override
     public void changed(LocomotiveEvent event) {
         Logger.debug(event);
-        
+
         if (event.isEventFor(id)) {
             Logger.trace(event);
-            
+
             this.f0Btn.setSelected(event.isF0());
             this.f1Btn.setSelected(event.isF1());
             this.f2Btn.setSelected(event.isF2());
             this.f3Btn.setSelected(event.isF3());
             this.f4Btn.setSelected(event.isF4());
-            
+
             this.direction = event.getDirection();
             setDirectionIcon();
 
@@ -510,21 +513,28 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
             int sp = event.getSpeed();
             this.speedPBar.setValue(sp);
         }
-        
+
     }
-    
-    public static void main(String args[]) {
+
+    public static void main(String[] a) {
         Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        
-        JFrame f = new JFrame("LocoPanel Tester");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        LocoPanel locoPanel = new LocoPanel();
-        
-        f.add(locoPanel);
-        
-        f.pack();
-        f.setVisible(true);
+
+        try {
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            Logger.warn("Can't set the LookAndFeel: " + ex);
+        }
+
+        java.awt.EventQueue.invokeLater(() -> {
+            JFrame f = new JFrame("LocoPanel Tester");
+            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            LocoPanel locoPanel = new LocoPanel();
+            f.getContentPane().add(locoPanel, BorderLayout.CENTER);
+            f.pack();
+            f.setVisible(true);
+        });
     }
 
 

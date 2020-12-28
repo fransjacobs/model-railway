@@ -94,7 +94,6 @@ public class SwitchPanel extends JPanel {
         if (t != null) {
             button.setForeground(new java.awt.Color(0, 153, 0));
             button.setSelected(AccessoryValue.RED.equals(t.getValue()));
-            //return;
         }
 
         if (t == null) {
@@ -102,7 +101,6 @@ public class SwitchPanel extends JPanel {
             if (s != null) {
                 button.setForeground(new java.awt.Color(0, 153, 0));
                 button.setSelected(AccessoryValue.RED.equals(s.getValue()));
-                //return;
             }
 
             if (address % 2 == 0) {
@@ -148,13 +146,14 @@ public class SwitchPanel extends JPanel {
         setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "1 - 16"));
         setMinimumSize(new java.awt.Dimension(845, 75));
         setPreferredSize(new java.awt.Dimension(845, 75));
-        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 1, 1);
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 3, 1);
         flowLayout1.setAlignOnBaseline(true);
         setLayout(flowLayout1);
 
         tb1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb1.setText("1");
         tb1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb1.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb1.setMaximumSize(new java.awt.Dimension(50, 50));
         tb1.setMinimumSize(new java.awt.Dimension(50, 50));
         tb1.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -170,6 +169,7 @@ public class SwitchPanel extends JPanel {
         tb2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb2.setText("2");
         tb2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb2.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb2.setMaximumSize(new java.awt.Dimension(50, 50));
         tb2.setMinimumSize(new java.awt.Dimension(50, 50));
         tb2.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -185,6 +185,7 @@ public class SwitchPanel extends JPanel {
         tb3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb3.setText("3");
         tb3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb3.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb3.setMaximumSize(new java.awt.Dimension(50, 50));
         tb3.setMinimumSize(new java.awt.Dimension(50, 50));
         tb3.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -200,6 +201,7 @@ public class SwitchPanel extends JPanel {
         tb4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb4.setText("4");
         tb4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb4.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb4.setMaximumSize(new java.awt.Dimension(50, 50));
         tb4.setMinimumSize(new java.awt.Dimension(50, 50));
         tb4.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -215,6 +217,7 @@ public class SwitchPanel extends JPanel {
         tb5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb5.setText("5");
         tb5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb5.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb5.setMaximumSize(new java.awt.Dimension(50, 50));
         tb5.setMinimumSize(new java.awt.Dimension(50, 50));
         tb5.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -230,6 +233,7 @@ public class SwitchPanel extends JPanel {
         tb6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb6.setText("6");
         tb6.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb6.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb6.setMaximumSize(new java.awt.Dimension(50, 50));
         tb6.setMinimumSize(new java.awt.Dimension(50, 50));
         tb6.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -245,6 +249,7 @@ public class SwitchPanel extends JPanel {
         tb7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb7.setText("7");
         tb7.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb7.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb7.setMaximumSize(new java.awt.Dimension(50, 50));
         tb7.setMinimumSize(new java.awt.Dimension(50, 50));
         tb7.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -260,6 +265,7 @@ public class SwitchPanel extends JPanel {
         tb8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb8.setText("8");
         tb8.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb8.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb8.setMaximumSize(new java.awt.Dimension(50, 50));
         tb8.setMinimumSize(new java.awt.Dimension(50, 50));
         tb8.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -275,6 +281,7 @@ public class SwitchPanel extends JPanel {
         tb9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb9.setText("9");
         tb9.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb9.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb9.setMaximumSize(new java.awt.Dimension(50, 50));
         tb9.setMinimumSize(new java.awt.Dimension(50, 50));
         tb9.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -290,6 +297,7 @@ public class SwitchPanel extends JPanel {
         tb10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb10.setText("10");
         tb10.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb10.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb10.setMaximumSize(new java.awt.Dimension(50, 50));
         tb10.setMinimumSize(new java.awt.Dimension(50, 50));
         tb10.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -305,6 +313,7 @@ public class SwitchPanel extends JPanel {
         tb11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb11.setText("11");
         tb11.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb11.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb11.setMaximumSize(new java.awt.Dimension(50, 50));
         tb11.setMinimumSize(new java.awt.Dimension(50, 50));
         tb11.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -320,6 +329,7 @@ public class SwitchPanel extends JPanel {
         tb12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb12.setText("12");
         tb12.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb12.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb12.setMaximumSize(new java.awt.Dimension(50, 50));
         tb12.setMinimumSize(new java.awt.Dimension(50, 50));
         tb12.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -335,6 +345,7 @@ public class SwitchPanel extends JPanel {
         tb13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb13.setText("13");
         tb13.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb13.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb13.setMaximumSize(new java.awt.Dimension(50, 50));
         tb13.setMinimumSize(new java.awt.Dimension(50, 50));
         tb13.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -350,6 +361,7 @@ public class SwitchPanel extends JPanel {
         tb14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb14.setText("14");
         tb14.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb14.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb14.setMaximumSize(new java.awt.Dimension(50, 50));
         tb14.setMinimumSize(new java.awt.Dimension(50, 50));
         tb14.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -365,6 +377,7 @@ public class SwitchPanel extends JPanel {
         tb15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb15.setText("15");
         tb15.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb15.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb15.setMaximumSize(new java.awt.Dimension(50, 50));
         tb15.setMinimumSize(new java.awt.Dimension(50, 50));
         tb15.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -380,6 +393,7 @@ public class SwitchPanel extends JPanel {
         tb16.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/Button-Green-14px.png"))); // NOI18N
         tb16.setText("16");
         tb16.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tb16.setMargin(new java.awt.Insets(1, 1, 1, 1));
         tb16.setMaximumSize(new java.awt.Dimension(50, 50));
         tb16.setMinimumSize(new java.awt.Dimension(50, 50));
         tb16.setPreferredSize(new java.awt.Dimension(50, 50));
@@ -504,7 +518,9 @@ public class SwitchPanel extends JPanel {
         Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
 
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.warn("Can't set the LookAndFeel: " + ex);
         }
@@ -513,7 +529,7 @@ public class SwitchPanel extends JPanel {
             JFrame f = new JFrame("SwitchPanel Tester");
             f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            SwitchPanel sp = new SwitchPanel(1);
+            SwitchPanel sp = new SwitchPanel(10);
             f.getContentPane().add(sp, BorderLayout.CENTER);
             f.pack();
             f.setVisible(true);
@@ -525,11 +541,6 @@ public class SwitchPanel extends JPanel {
         public Accessoiry(Integer address, AccessoryValue value) {
             super(address, "Switch only Accessoiry", null, null, AccessoryType.GENERAL, value, null, 2);
         }
-
-//    @Override
-//    public Accessoiry copy() {
-//      return new Accessoiry(this.address, this.value);
-//    }
     }
 
     public int getPanelNumber() {
