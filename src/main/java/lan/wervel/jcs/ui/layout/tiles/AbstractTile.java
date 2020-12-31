@@ -32,23 +32,25 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 import lan.wervel.jcs.entities.LayoutTile;
-import static lan.wervel.jcs.ui.layout.DesignCanvas.GRID_SIZE;
 import lan.wervel.jcs.ui.layout.ReDrawListener;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 import org.pmw.tinylog.Logger;
 
 /**
- * Basic graphic element to display a track, turnout, etc on the screen. The
- * layout is drawn by using "tiles". a tile is a small image of a symbolic
- * track, turnout, etc. When a Tile is placed it is always snapped to the
- * nearest grid point. The grid is 20x 20 pix the grid points are 40 x 40 pix.
- * An image could be 40x40 pix or 20x20 pix
+ * Basic graphic element to display a track, turnout, etc on the screen. By
+ * default the drawing of a Tile is Horizontal from L to R or West to East.
+ * Default orientation is East
  *
- * An Image has a rotation (0, 90, 180 or 270 deg) and a direction center, right
- * or left
+ * The default size of a Tile is 40 x 40 pixels.
+ * The center point of a Tile is stored and always snapped to the nearest grid point.
+ * The basic grid is 20x 20 pixels.
  *
- * @author frans
+ * A Tile can be rotated (always clockwise). Rotation will change the orientation from
+ * East -> South -> West -> North -> East.
+ *
+ * A Tile is rendered to a Buffered Image to speed up the display
+ *
  */
 public abstract class AbstractTile implements Shape {
 
@@ -56,7 +58,7 @@ public abstract class AbstractTile implements Shape {
     public static final int DEFAULT_WIDTH = MIN_GRID * 2;
     public static final int DEFAULT_HEIGHT = MIN_GRID * 2;
 
-    protected Rotation rotation;
+    protected Orientation orientation;
     protected Direction direction;
 
     protected BufferedImage image;
@@ -75,19 +77,24 @@ public abstract class AbstractTile implements Shape {
 
     public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
-    protected AbstractTile(Rotation rotation, Direction direction, Point center) {
-        this.center = center;
-        this.rotation = rotation;
+    protected AbstractTile(Point center) {
+        this(Orientation.EAST, Direction.CENTER, center);
+    }
+
+    protected AbstractTile(Orientation orientation, Point center) {
+        this(orientation, Direction.CENTER, center);
+    }
+
+    protected AbstractTile(Orientation orientation, Direction direction, Point center) {
+        this.orientation = orientation;
         this.direction = direction;
-        setTrackColor(DEFAULT_TRACK_COLOR);
+        this.center = center;
+        this.trackColor = DEFAULT_TRACK_COLOR;
     }
 
     protected AbstractTile(LayoutTile layoutTile) {
-        this.layoutTile = layoutTile;
-        this.center = new Point(layoutTile.getX(), layoutTile.getY());
-        this.rotation = toRotation(layoutTile.getRotation());
-        this.direction = toDirection(layoutTile.getDirection());
-        setTrackColor(DEFAULT_TRACK_COLOR);
+        setLayoutTile(layoutTile);
+        this.trackColor = DEFAULT_TRACK_COLOR;
     }
 
     public Color getTrackColor() {
@@ -105,15 +112,15 @@ public abstract class AbstractTile implements Shape {
      */
     public void drawTile(Graphics2D g2d) {
         if (image == null) {
-            image = createImage();
+            BufferedImage bi = createImage();
 
-            Graphics2D g2di = image.createGraphics();
-            if (this.trackColor == null) {
-                this.trackColor = DEFAULT_TRACK_COLOR;
+            Graphics2D g2di = bi.createGraphics();
+            if (trackColor == null) {
+                trackColor = DEFAULT_TRACK_COLOR;
             }
 
             renderTile(g2di, trackColor);
-            image = rotateClockwise(image, rotation);
+            image = rotateClockwise(bi, orientation);
             g2di.dispose();
         }
         g2d.drawImage(image, this.center.x - image.getWidth() / 2, this.center.y - image.getHeight() / 2, null);
@@ -156,26 +163,34 @@ public abstract class AbstractTile implements Shape {
      * Rotate the tile clockwise 90 deg
      */
     public void rotate() {
-        switch (this.rotation) {
-            case R0:
-                setRotation(Rotation.R90);
+        switch (this.orientation) {
+            case EAST:
+                setOrientation(Orientation.SOUTH);
                 break;
-            case R90:
-                setRotation(Rotation.R180);
+            case SOUTH:
+                setOrientation(Orientation.WEST);
                 break;
-            case R180:
-                setRotation(Rotation.R270);
+            case WEST:
+                setOrientation(Orientation.NORTH);
                 break;
             default:
-                setRotation(Rotation.R0);
+                setOrientation(Orientation.EAST);
                 break;
         }
     }
 
     public void flipHorizontal() {
+        if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
+            rotate();
+            rotate();
+        }
     }
 
     public void flipVertical() {
+        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
+            rotate();
+            rotate();
+        }
     }
 
     public void move(int newX, int newY) {
@@ -183,36 +198,12 @@ public abstract class AbstractTile implements Shape {
         this.setCenter(cs);
     }
 
-    private static Rotation toRotation(String s) {
-        switch (s) {
-            case "R90":
-                return Rotation.R90;
-            case "R180":
-                return Rotation.R180;
-            case "R270":
-                return Rotation.R270;
-            default:
-                return Rotation.R0;
-        }
-    }
-
-    private static Direction toDirection(String s) {
-        switch (s) {
-            case "LEFT":
-                return Direction.LEFT;
-            case "RIGHT":
-                return Direction.RIGHT;
-            default:
-                return Direction.CENTER;
-        }
-    }
-
     public static final Point snapToGrid(Point p) {
         return snapToGrid(p.x, p.y);
     }
 
     /**
-     * Snap coordinates to the neared grid point
+     * Snap coordinates to the nearest grid point
      *
      * @param x the X
      * @param y the Y
@@ -234,37 +225,42 @@ public abstract class AbstractTile implements Shape {
         return new Point(sx, sy);
     }
 
-    public static BufferedImage rotateClockwise(BufferedImage source, Rotation rotation) {
-        if (Rotation.R0.equals(rotation)) {
-            //nothing todo...
-            return source;
+    //maybe use this: https://www.javaxt.com
+    protected BufferedImage rotateClockwise(BufferedImage source, Orientation orientation) {
+        double angle;
+        Orientation o = orientation;
+        if (o == null) {
+            o = Orientation.EAST;
         }
 
-        BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
-        AffineTransform rat = new AffineTransform();
-
-        double offset = (source.getWidth() - source.getHeight()) / 2;
-
-        switch (rotation) {
-            case R180:
-                rat.rotate(Math.PI, source.getWidth() / 2, source.getHeight() / 2);
-                rat.translate(offset, offset);
+        switch (o) {
+            case SOUTH:
+                angle = 90;
                 break;
-            case R270:
-                rat.rotate(-Math.PI / 2, source.getWidth() / 2, source.getHeight() / 2);
-                rat.translate(-offset, -offset);
+            case WEST:
+                angle = 180;
+                break;
+            case NORTH:
+                angle = 270;
                 break;
             default:
-                //R90...
-                //Logger.debug("##### Rotate " + rotation + " Offset: "+offset+" W: "+source.getWidth()+" H: "+source.getHeight()+"...");
-                //rat.rotate(-Math.PI / 2, source.getWidth() / 2, source.getHeight() / 2);
-                rat.rotate(Math.PI / 2, source.getWidth() / 2, source.getHeight() / 2);
-                rat.translate(offset, offset);
+                angle = 0;
                 break;
         }
 
-        AffineTransformOp op = new AffineTransformOp(rat, AffineTransformOp.TYPE_BICUBIC);
-        op.filter(source, output);
+        double sin = Math.abs(Math.sin(Math.toRadians(angle)));
+        double cos = Math.abs(Math.cos(Math.toRadians(angle)));
+        int w = source.getWidth(null);
+        int h = source.getHeight(null);
+        int newW = (int) Math.floor(w * cos + h * sin);
+        int newH = (int) Math.floor(h * cos + w * sin);
+
+        BufferedImage output = new BufferedImage(newW, newH, source.getType());
+        Graphics2D g2d = output.createGraphics();
+        g2d.translate((newW - w) / 2, (newH - h) / 2);
+        g2d.rotate(Math.toRadians(angle), w / 2, h / 2);
+        g2d.drawRenderedImage(source, null);
+        g2d.dispose();
         return output;
     }
 
@@ -292,19 +288,18 @@ public abstract class AbstractTile implements Shape {
         return output;
     }
 
-    public Rotation getRotation() {
-        return rotation;
+    public Orientation getOrientation() {
+        return orientation;
     }
 
-    public void setRotation(Rotation rotation) {
-        Rotation oldR = this.rotation;
-        this.rotation = rotation;
-        if (this.layoutTile != null) {
-            this.layoutTile.setRotation(rotation.toString());
-        }
-        if (!rotation.equals(oldR) && this.image != null) {
-            //images is cached, so remove will be created again
+    public void setOrientation(Orientation orientation) {
+        if (!this.orientation.equals(orientation))  {
+            //image is cached, so remove will be created again
             image = null;
+        }
+        this.orientation = orientation;
+        if (this.layoutTile != null) {
+            this.layoutTile.setOrientation(orientation.getOrientation());
         }
     }
 
@@ -313,9 +308,13 @@ public abstract class AbstractTile implements Shape {
     }
 
     public void setDirection(Direction direction) {
+        if (!this.direction.equals(direction))  {
+            //image is cached, so remove will be created again
+            image = null;
+        }
         this.direction = direction;
         if (this.layoutTile != null) {
-            this.layoutTile.setDirection(direction.toString());
+            this.layoutTile.setDirection(direction.getDirection());
         }
     }
 
@@ -326,13 +325,12 @@ public abstract class AbstractTile implements Shape {
     public void setCenter(Point center) {
         this.center = center;
         if (this.layoutTile != null) {
-            this.layoutTile.setX(center.x);
-            this.layoutTile.setY(center.y);
+            this.layoutTile.setCenter(center);
         }
     }
 
     protected BufferedImage createImage() {
-        return new BufferedImage(DEFAULT_WIDTH, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_RGB);
+        return new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
     }
 
     public int getHeight() {
@@ -376,42 +374,22 @@ public abstract class AbstractTile implements Shape {
     }
 
     public LayoutTile getLayoutTile() {
-        if (this.layoutTile == null) {
-            Logger.trace("Create new LayoutTile for: " + this.getClass().getName());
-            layoutTile = new LayoutTile(this.getClass().getSimpleName(), this.rotation.toString(), this.direction.toString(), this.center.x, this.center.y);
+        if (layoutTile == null) {
+            Logger.trace("Create new LayoutTile for: " + getClass().getName());
+            String tt = getClass().getSimpleName();
+            String o = orientation.getOrientation();
+            String d = direction.getDirection();
+
+            layoutTile = new LayoutTile(tt, o, d, center);
         }
         return layoutTile;
     }
 
-    public void setLayoutTile(LayoutTile layoutTile) {
+    public final void setLayoutTile(LayoutTile layoutTile) {
         this.layoutTile = layoutTile;
-        this.rotation = toRotation(layoutTile.getRotation());
-        this.direction = toDirection(layoutTile.getDirection());
-        this.center = new Point(layoutTile.getX(), layoutTile.getY());
-    }
-
-    public static AbstractTile createTile(LayoutTile layoutTile) {
-        if (layoutTile == null) {
-            return null;
-        }
-
-        String tt = layoutTile.getTiletype();
-        switch (tt) {
-            case "StraightTrack":
-                return new StraightTrack(layoutTile);
-            case "DiagonalTrack":
-                return new DiagonalTrack(layoutTile);
-            case "TurnoutTile":
-                return new TurnoutTile(layoutTile);
-            case "SignalTile":
-                return new SignalTile(layoutTile);
-            case "FeedbackPort":
-                return new FeedbackPort(layoutTile);
-            case "OccupancyDetector":
-                return new OccupancyDetector(layoutTile);
-            default:
-                return null;
-        }
+        this.orientation = Orientation.get(layoutTile.getOrientation());
+        this.direction = Direction.get(layoutTile.getDirection());
+        this.center = layoutTile.getCenter();
     }
 
     public boolean isDrawName() {
@@ -446,7 +424,7 @@ public abstract class AbstractTile implements Shape {
             return false;
         }
         final AbstractTile other = (AbstractTile) obj;
-        if (this.rotation != other.rotation) {
+        if (this.orientation != other.orientation) {
             return false;
         }
         if (this.direction != other.direction) {
@@ -457,12 +435,12 @@ public abstract class AbstractTile implements Shape {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + " {rotation: " + rotation + ", direction: " + direction + ", center: " + center + "}";
+        return this.getClass().getSimpleName() + " {orientation: " + orientation + ", direction: " + direction + ", center: " + center + "}";
     }
 
     @Override
     public Rectangle getBounds() {
-        int w, h, cx, cy, tlx, tly;
+        int w, h, cx, cy;
         if (this.width > 0 & this.height > 0) {
             w = this.width;
             h = this.height;

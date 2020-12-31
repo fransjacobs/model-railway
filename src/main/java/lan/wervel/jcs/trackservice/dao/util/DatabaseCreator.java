@@ -203,41 +203,6 @@ public class DatabaseCreator {
         Logger.trace("Table sensors created...");
     }
 
-//    private static void feedbackmodules(Statement stmt) throws SQLException {
-//        stmt.executeUpdate("CREATE TABLE feedbackmodules ("
-//                + "id              NUMBER NOT NULL,"
-//                + "address         INTEGER NOT NULL,"
-//                + "name            VARCHAR2(255 CHAR) NOT NULL,"
-//                + "description     VARCHAR2(255 CHAR),"
-//                + "catalognumber   VARCHAR2(255 CHAR),"
-//                + "ports           INTEGER NOT NULL,"
-//                + "msb             INTEGER,"
-//                + "lsb             INTEGER,"
-//                + "lastupdated     DATE,"
-//                + "port1           NUMBER,"
-//                + "port2           NUMBER,"
-//                + "port3           NUMBER,"
-//                + "port4           NUMBER,"
-//                + "port5           NUMBER,"
-//                + "port6           NUMBER,"
-//                + "port7           NUMBER,"
-//                + "port8           NUMBER,"
-//                + "port9           NUMBER,"
-//                + "port10          NUMBER,"
-//                + "port11          NUMBER,"
-//                + "port12          NUMBER,"
-//                + "port13          NUMBER,"
-//                + "port14          NUMBER,"
-//                + "port15          NUMBER,"
-//                + "port16          NUMBER)");
-//
-//        stmt.executeUpdate("ALTER TABLE feedbackmodules ADD CONSTRAINT femo_pk PRIMARY KEY ( id )");
-//
-//        stmt.executeUpdate("ALTER TABLE feedbackmodules ADD CONSTRAINT femo_address_un UNIQUE ( address )");
-//
-//        Logger.trace("Table feedbackmodules created...");
-//    }
-
     private static void locomotives(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE locomotives ("
                 + "id                 NUMBER NOT NULL, "
@@ -321,18 +286,17 @@ public class DatabaseCreator {
 
     private static void layoutTiles(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE layouttiles ("
-                + "id         NUMBER NOT NULL,"
-                + "tiletype   VARCHAR2(255 CHAR) NOT NULL,"
-                + "rotation   VARCHAR2(255 CHAR) NOT NULL,"
-                + "direction  VARCHAR2(255 CHAR) NOT NULL,"
-                + "x          INTEGER NOT NULL,"
-                + "y          INTEGER NOT NULL,"
-                + "offsetx    INTEGER NULL,"
-                + "offsety    INTEGER NULL,"
-                + "soac_id    NUMBER NULL,"
-                + "sens_id    NUMBER NULL,"
-                //+ "port       INTEGER NULL,"
-                + "ltgr_id    NUMBER NULL)");
+                + "id            NUMBER NOT NULL,"
+                + "tiletype      VARCHAR2(255 CHAR) NOT NULL,"
+                + "orientation   VARCHAR2(255 CHAR) NOT NULL,"
+                + "direction     VARCHAR2(255 CHAR) NOT NULL,"
+                + "x             INTEGER NOT NULL,"
+                + "y             INTEGER NOT NULL,"
+                + "soac_id       NUMBER NULL,"
+                + "sens_id       NUMBER NULL,"
+                + "ltgr_id       NUMBER NULL,"
+                + "from_lati_id  NUMBER NULL,"
+                + "to_lati_id    NUMBER NULL)");
 
         stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id )");
 
@@ -392,6 +356,16 @@ public class DatabaseCreator {
         stmt.executeUpdate("ALTER TABLE layouttiles"
                 + " ADD CONSTRAINT lati_ltgr_fk FOREIGN KEY ( ltgr_id )"
                 + " REFERENCES layouttilegroups ( id )"
+                + " NOT DEFERRABLE");
+
+        stmt.executeUpdate("ALTER TABLE layouttiles"
+                + " ADD CONSTRAINT from_lati_fk FOREIGN KEY ( from_lati_id )"
+                + " REFERENCES layouttiles ( id )"
+                + " NOT DEFERRABLE");
+
+        stmt.executeUpdate("ALTER TABLE layouttiles"
+                + " ADD CONSTRAINT to_lati_fk FOREIGN KEY ( to_lati_id )"
+                + " REFERENCES layouttiles ( id )"
                 + " NOT DEFERRABLE");
 
         stmt.executeUpdate("ALTER TABLE layouttilegroups"

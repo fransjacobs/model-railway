@@ -18,7 +18,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
 
@@ -32,10 +32,9 @@ public class DesignPanel extends JPanel {
     //private AbstractTile selectedAbstractTile;
     //private LayoutTile selectedLayoutTile;
     private Mode mode;
-    private Rotation rotation;
+    private Orientation orientation;
     private Direction direction;
     private TileType tileType;
-    //private int splitLocation;
 
     private ComboBoxModel<LayoutTileGroup> blockCBM;
     private final ExecutorService executor;
@@ -94,7 +93,7 @@ public class DesignPanel extends JPanel {
         filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 32767));
         modeLbl = new javax.swing.JLabel();
         filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 32767));
-        rotationLbl = new javax.swing.JLabel();
+        orientationLbl = new javax.swing.JLabel();
         filler6 = new javax.swing.Box.Filler(new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 32767));
         directionLabel = new javax.swing.JLabel();
         filler7 = new javax.swing.Box.Filler(new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 0), new java.awt.Dimension(24, 32767));
@@ -335,8 +334,8 @@ public class DesignPanel extends JPanel {
         layoutToolBar.add(modeLbl);
         layoutToolBar.add(filler5);
 
-        rotationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-north.png"))); // NOI18N
-        layoutToolBar.add(rotationLbl);
+        orientationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-east.png"))); // NOI18N
+        layoutToolBar.add(orientationLbl);
         layoutToolBar.add(filler6);
 
         directionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-center-24.png"))); // NOI18N
@@ -378,13 +377,13 @@ public class DesignPanel extends JPanel {
   private void selectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectBtnActionPerformed
       //Logger.trace("Set mode to select");
       this.objectLbl.setIcon(this.selectBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.SELECT, this.rotation, Direction.CENTER, null);
+      this.designCanvas.selectionModeChanged(Mode.SELECT, this.orientation, Direction.CENTER, null);
   }//GEN-LAST:event_selectBtnActionPerformed
 
   private void addTrackStraightBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTrackStraightBtnActionPerformed
       //Logger.trace("Set mode to add straight");
       this.objectLbl.setIcon(this.addTrackStraightBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.ADD, this.rotation, Direction.CENTER, TileType.STRAIGHT);
+      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation, Direction.CENTER, TileType.STRAIGHT);
   }//GEN-LAST:event_addTrackStraightBtnActionPerformed
 
   private void flipHorizontalBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_flipHorizontalBtnActionPerformed
@@ -398,31 +397,30 @@ public class DesignPanel extends JPanel {
   }//GEN-LAST:event_flipVerticalBtnActionPerformed
 
   private void rotateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateBtnActionPerformed
-      //Logger.trace("Rotate selected tile");
       this.designCanvas.rotateSelectedTile();
   }//GEN-LAST:event_rotateBtnActionPerformed
 
   private void editBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBtnActionPerformed
       this.objectLbl.setIcon(this.editBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.EDIT, this.rotation, Direction.RIGHT, TileType.TURNOUT);
+      this.designCanvas.selectionModeChanged(Mode.EDIT, this.orientation, Direction.RIGHT, TileType.BLOCK);
   }//GEN-LAST:event_editBtnActionPerformed
 
   private void addlTrackCurvedBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addlTrackCurvedBtnActionPerformed
       //Logger.trace("Set mode to add diagonal");
       this.objectLbl.setIcon(this.addlTrackCurvedBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.ADD, this.rotation, Direction.CENTER, TileType.DIAGONAL);
+      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation,  Direction.CENTER, TileType.DIAGONAL);
   }//GEN-LAST:event_addlTrackCurvedBtnActionPerformed
 
   private void addTurnoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTurnoutBtnActionPerformed
       //Logger.trace("Set mode to add turnout");
       this.objectLbl.setIcon(this.addTurnoutBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.ADD, this.rotation, Direction.RIGHT, TileType.TURNOUT);
+      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation,  Direction.RIGHT, TileType.TURNOUT);
   }//GEN-LAST:event_addTurnoutBtnActionPerformed
 
   private void addSensorBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSensorBtnActionPerformed
       //Logger.trace("Set mode to add feedback port");
       this.objectLbl.setIcon(this.addSensorBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.ADD, this.rotation, Direction.CENTER, TileType.FEEDBACK_SENSOR);
+      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation,  Direction.CENTER, TileType.SENSOR);
   }//GEN-LAST:event_addSensorBtnActionPerformed
 
   private void saveBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
@@ -454,17 +452,17 @@ public class DesignPanel extends JPanel {
 
   private void addSignalBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSignalBtnActionPerformed
       this.objectLbl.setIcon(this.addSignalBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.ADD, Rotation.R0, Direction.CENTER, TileType.SIGNAL);
+      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation, Direction.CENTER, TileType.SIGNAL);
   }//GEN-LAST:event_addSignalBtnActionPerformed
 
   private void addOccupancySensorBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addOccupancySensorBtnActionPerformed
       this.objectLbl.setIcon(this.addOccupancySensorBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.ADD, Rotation.R0, Direction.CENTER, TileType.OCCUPANCY_SENSOR);
+      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation, Direction.CENTER, TileType.BLOCK);
   }//GEN-LAST:event_addOccupancySensorBtnActionPerformed
 
-    private void selectionModeChanged(Mode newMode, Rotation newRotation, Direction newDirection, TileType newTileType) {
+    private void selectionModeChanged(Mode newMode, Orientation orientation, Direction newDirection, TileType newTileType) {
         this.mode = newMode;
-        this.rotation = newRotation;
+        this.orientation = orientation;
         this.direction = newDirection;
         this.tileType = newTileType;
 
@@ -484,19 +482,19 @@ public class DesignPanel extends JPanel {
             }
         }
 
-        if (rotation != null) {
-            switch (rotation) {
-                case R90:
-                    rotationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-east.png")));
+        if (orientation != null) {
+            switch (orientation) {
+                case SOUTH:
+                    orientationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-south.png")));
                     break;
-                case R180:
-                    rotationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-south.png")));
+                case WEST:
+                    orientationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-west.png")));
                     break;
-                case R270:
-                    rotationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-west.png")));
+                case NORTH:
+                    orientationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-north.png")));
                     break;
                 default:
-                    rotationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-north.png")));
+                    orientationLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-east.png")));
                     break;
             }
         }
@@ -621,8 +619,8 @@ public class DesignPanel extends JPanel {
         }
 
         @Override
-        public void selectionModeChanged(Mode newMode, Rotation newOrientation, Direction newDirection, TileType newTileType) {
-            this.designPanel.selectionModeChanged(newMode, rotation, newDirection, newTileType);
+        public void selectionModeChanged(Mode newMode, Orientation orientation, Direction newDirection, TileType newTileType) {
+            this.designPanel.selectionModeChanged(newMode, orientation, newDirection, newTileType);
         }
     }
 
@@ -672,9 +670,9 @@ public class DesignPanel extends JPanel {
     private javax.swing.JLabel modeLbl;
     private javax.swing.JButton moveBtn;
     private javax.swing.JLabel objectLbl;
+    private javax.swing.JLabel orientationLbl;
     private javax.swing.JButton removeBtn;
     private javax.swing.JButton rotateBtn;
-    private javax.swing.JLabel rotationLbl;
     private javax.swing.JButton saveBtn;
     private javax.swing.JToggleButton selectBtn;
     private javax.swing.JPanel toolbarPanel;

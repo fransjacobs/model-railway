@@ -26,7 +26,7 @@ import javax.swing.DefaultComboBoxModel;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.Sensor;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
-import lan.wervel.jcs.ui.layout.tiles.FeedbackPort;
+import lan.wervel.jcs.ui.layout.tiles.SensorTile;
 import org.pmw.tinylog.Logger;
 
 /**
@@ -35,9 +35,9 @@ import org.pmw.tinylog.Logger;
  */
 public class SensorDialog extends javax.swing.JDialog {
 
-    private final FeedbackPort tile;
+    private final SensorTile tile;
 
-    public SensorDialog(java.awt.Frame parent, boolean modal, FeedbackPort tile) {
+    public SensorDialog(java.awt.Frame parent, boolean modal, SensorTile tile) {
         super(parent, modal);
         this.tile = tile;
 

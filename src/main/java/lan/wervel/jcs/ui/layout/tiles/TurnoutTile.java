@@ -18,7 +18,6 @@
  */
 package lan.wervel.jcs.ui.layout.tiles;
 
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -31,6 +30,7 @@ import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 
 /**
  * Draw a Turnout
@@ -54,12 +54,12 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
         this.height = DEFAULT_HEIGHT * 2;
     }
 
-    public TurnoutTile(Rotation rotation, Direction direction, int x, int y) {
-        this(rotation, direction, new Point(x, y));
+    public TurnoutTile(Orientation orientation, Direction direction, int x, int y) {
+        this(orientation, direction, new Point(x, y));
     }
 
-    public TurnoutTile(Rotation rotation, Direction direction, Point center) {
-        super(rotation, direction, center);
+    public TurnoutTile(Orientation orientation, Direction direction, Point center) {
+        super(orientation, direction, center);
         this.width = DEFAULT_WIDTH * 2;
         this.height = DEFAULT_HEIGHT * 2;
     }
@@ -68,7 +68,7 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
     public void flipHorizontal() {
         //By default a turnout is a R horizontal (R0)
         //so when in this position a H flip is performed the direction of the turnout is changed from R to L
-        if (Rotation.R0.equals(this.rotation) || Rotation.R180.equals(this.rotation)) {
+        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
             if (Direction.LEFT.equals(this.direction)) {
                 this.setDirection(Direction.RIGHT);
             } else {
@@ -83,7 +83,7 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
 
     @Override
     public void flipVertical() {
-        if (Rotation.R90.equals(this.rotation) || Rotation.R270.equals(this.rotation)) {
+        if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
             if (Direction.LEFT.equals(this.direction)) {
                 this.setDirection(Direction.RIGHT);
             } else {
@@ -209,16 +209,16 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
             int textOffsetX, textOffsetY;
 
             if (Direction.RIGHT.equals(direction)) {
-                switch (this.rotation) {
-                    case R90:
+                switch (this.orientation) {
+                    case EAST:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
@@ -228,16 +228,16 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
                         break;
                 }
             } else {
-                switch (rotation) {
-                    case R90:
+                switch (orientation) {
+                    case EAST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = MIN_GRID;
                         break;

@@ -26,8 +26,7 @@ import java.awt.image.BufferedImage;
 import lan.wervel.jcs.entities.LayoutTile;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 
 /**
  * Draw a DiagonalTrack (Curved) Track
@@ -42,35 +41,32 @@ public class DiagonalTrack extends AbstractTile {
         this.height = DEFAULT_HEIGHT;
     }
 
-    public DiagonalTrack(Rotation rotation, int x, int y) {
-        this(rotation, Direction.CENTER, x, y);
+    public DiagonalTrack(Orientation orientation, int x, int y) {
+        this(orientation, new Point(x, y));
     }
 
-    public DiagonalTrack(Rotation rotation, Direction direction, int x, int y) {
-        this(rotation, direction, new Point(x, y));
-    }
-
-    public DiagonalTrack(Rotation rotation, Direction direction, Point center) {
-        super(rotation, direction, center);
+    public DiagonalTrack(Orientation orientation, Point center) {
+        super(orientation, center);
         this.width = DEFAULT_WIDTH;
         this.height = DEFAULT_HEIGHT;
     }
 
-    @Override
-    public void flipHorizontal() {
-        rotate();
-        rotate();
-    }
-
-    @Override
-    public void flipVertical() {
-        rotate();
-        rotate();
-    }
+//    @Override
+//    public void flipHorizontal() {
+//        rotate();
+//        rotate();
+//    }
+//
+//    @Override
+//    public void flipVertical() {
+//        rotate();
+//        rotate();
+//    }
 
     @Override
     protected BufferedImage createImage() {
-        return new BufferedImage(DEFAULT_WIDTH + 6, DEFAULT_HEIGHT + 6, BufferedImage.TYPE_INT_RGB);
+        //A little bit ovelap to get a nicer total image
+        return new BufferedImage(this.width + 6, this.height + 6, BufferedImage.TYPE_INT_RGB);
     }
 
     @Override
@@ -80,8 +76,8 @@ public class DiagonalTrack extends AbstractTile {
         int x1, y1, x2, y2;
         x1 = 0;
         y1 = 0;
-        x2 = DEFAULT_WIDTH + 6;
-        y2 = DEFAULT_WIDTH + 6;
+        x2 = this.width + 6;
+        y2 = this.height + 6;
 
         //Track
         g2d.setBackground(Color.white);
@@ -90,6 +86,11 @@ public class DiagonalTrack extends AbstractTile {
         g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2d.setPaint(trackColor);
         g2d.drawLine(x1, y1, x2, y2);
+
+        //In and out side only mark the out        
+        g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.setPaint(Color.darkGray);
+        g2d.drawLine(x2 - 4, y2 - 4, x2, y2);
 
         g2d.dispose();
     }

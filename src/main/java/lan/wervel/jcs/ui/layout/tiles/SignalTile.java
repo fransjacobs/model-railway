@@ -18,7 +18,6 @@
  */
 package lan.wervel.jcs.ui.layout.tiles;
 
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -29,8 +28,13 @@ import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
+import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
+import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import org.pmw.tinylog.Logger;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R180;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R270;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R90;
 
 /**
  * Draw a Straight Track
@@ -63,35 +67,15 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
         }
     }
 
-    public SignalTile(Rotation rotation, int x, int y) {
-        this(rotation, Direction.CENTER, x, y);
+    public SignalTile(Orientation orientation, int x, int y) {
+        this(orientation, new Point(x, y));
     }
 
-    public SignalTile(Rotation rotation, Direction direction, int x, int y) {
-        this(rotation, direction, new Point(x, y));
-    }
-
-    public SignalTile(Rotation rotation, Direction direction, Point center) {
-        super(rotation, direction, center);
+    public SignalTile(Orientation orientation, Point center) {
+        super(orientation, center);
         signalType = Signal.HP01;
         this.width = DEFAULT_WIDTH;
         this.height = DEFAULT_HEIGHT;
-    }
-
-    @Override
-    public void flipHorizontal() {
-        if (Rotation.R0.equals(this.rotation) || Rotation.R180.equals(this.rotation)) {
-            rotate();
-            rotate();
-        }
-    }
-
-    @Override
-    public void flipVertical() {
-        if (Rotation.R90.equals(this.rotation) || Rotation.R270.equals(this.rotation)) {
-            rotate();
-            rotate();
-        }
     }
 
     @Override
@@ -148,6 +132,11 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
         g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2d.setPaint(trackColor);
         g2d.drawLine(x1, y1, x2, y2);
+
+        //In and out side only mark the out        
+        g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.setPaint(Color.darkGray);
+        g2d.drawLine(x2 - 1, y1, x2, y2);
 
         g2d.dispose();
     }
@@ -338,16 +327,16 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
             int textOffsetX, textOffsetY;
 
             if (Direction.RIGHT.equals(direction)) {
-                switch (this.rotation) {
-                    case R90:
+                switch (this.orientation) {
+                    case EAST:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
@@ -357,16 +346,16 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
                         break;
                 }
             } else {
-                switch (rotation) {
-                    case R90:
+                switch (orientation) {
+                    case EAST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = MIN_GRID;
                         break;

@@ -34,8 +34,8 @@ import org.pmw.tinylog.Logger;
  */
 public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
 
-    private static final String INS_LT_STMT = "insert into layouttiles (TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,SENS_ID,LTGR_ID,ID) values(?,?,?,?,?,?,?,?,?,?,?)";
-    private static final String UPD_LT_STMT = "update layouttiles set TILETYPE = ?,ROTATION = ?,DIRECTION = ?,X = ?,Y = ?, OFFSETX = ?,OFFSETY = ?,SOAC_ID = ?,SENS_ID = ?,LTGR_ID = ? where ID = ?";
+    private static final String INS_LT_STMT = "insert into layouttiles (TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID,LTGR_ID,FROM_LATI_ID,TO_LATI_ID,ID) values(?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String UPD_LT_STMT = "update layouttiles set TILETYPE = ?,ORIENTATION = ?,DIRECTION = ?,X = ?,Y = ?,SOAC_ID = ?,SENS_ID = ?,LTGR_ID = ?,FROM_LATI_ID = ?,TO_LATI_ID = ? where ID = ?";
 
     public LayoutTileDAO() {
         super();
@@ -45,49 +45,52 @@ public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
     protected LayoutTile map(ResultSet rs) throws SQLException {
         BigDecimal id = rs.getBigDecimal("ID");
         String tiletype = rs.getString("TILETYPE");
-        String rotation = rs.getString("ROTATION");
+        String orientation = rs.getString("ORIENTATION");
         String direction = rs.getString("DIRECTION");
         Integer x = rs.getInt("X");
         Integer y = rs.getInt("Y");
-        Integer offsetX = rs.getInt("OFFSETX");
-        Integer offsetY = rs.getInt("OFFSETY");
         BigDecimal soacId = rs.getBigDecimal("SOAC_ID");
         BigDecimal sensId = rs.getBigDecimal("SENS_ID");
         BigDecimal ltgrId = rs.getBigDecimal("LTGR_ID");
+        BigDecimal fromLatiId = rs.getBigDecimal("FROM_LATI_ID");
+        BigDecimal toLatiId = rs.getBigDecimal("TO_LATI_ID");
 
-        LayoutTile lt = new LayoutTile(id, tiletype, rotation, direction, x, y, offsetX, offsetY, soacId, sensId, ltgrId);
+        LayoutTile lt = new LayoutTile(id, tiletype, orientation, direction, x, y, soacId, sensId, ltgrId, fromLatiId, toLatiId);
         return lt;
     }
 
     @Override
     protected void bind(PreparedStatement ps, LayoutTile layoutTile) throws SQLException {
         ps.setString(1, layoutTile.getTiletype());
-        ps.setString(2, layoutTile.getRotation());
+        ps.setString(2, layoutTile.getOrientation());
         ps.setString(3, layoutTile.getDirection());
         ps.setInt(4, layoutTile.getX());
         ps.setInt(5, layoutTile.getY());
-        if (layoutTile.getOffsetX() != null) {
-            ps.setInt(6, layoutTile.getOffsetX());
-        } else {
-            ps.setNull(6, Types.INTEGER);
-        }
-        if (layoutTile.getOffsetY() != null) {
-            ps.setInt(7, layoutTile.getOffsetY());
-        } else {
-            ps.setNull(7, Types.INTEGER);
-        }
         if (layoutTile.getSoacId() != null) {
-            ps.setBigDecimal(8, layoutTile.getSoacId());
+            ps.setBigDecimal(6, layoutTile.getSoacId());
+        } else {
+            //ps.setBigDecimal(6, null);
+            ps.setNull(6, Types.DECIMAL);
+        }
+        if (layoutTile.getSensId() != null) {
+            ps.setBigDecimal(7, layoutTile.getSensId());
+        } else {
+            ps.setBigDecimal(7, null);
+        }
+        if (layoutTile.getLtgrId() != null) {
+            ps.setBigDecimal(8, layoutTile.getLtgrId());
         } else {
             ps.setBigDecimal(8, null);
         }
-        if (layoutTile.getSensId() != null) {
-            ps.setBigDecimal(9, layoutTile.getSensId());
+
+        if (layoutTile.getFromLatiId() != null) {
+            ps.setBigDecimal(9, layoutTile.getFromLatiId());
         } else {
             ps.setBigDecimal(9, null);
         }
-        if (layoutTile.getLtgrId() != null) {
-            ps.setBigDecimal(10, layoutTile.getLtgrId());
+
+        if (layoutTile.getToLatiId() != null) {
+            ps.setBigDecimal(10, layoutTile.getToLatiId());
         } else {
             ps.setBigDecimal(10, null);
         }
@@ -125,6 +128,18 @@ public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
         String stmt = "select * from layouttiles where ltgr_id = ? order by x,y";
 
         return this.findBy(ltgrId, stmt);
+    }
+
+    public LayoutTile findByFromLatiId(BigDecimal fromLatiId) {
+        String stmt = "select * from layouttiles where from_lati_id = ?";
+
+        return this.findById(fromLatiId, stmt);
+    }
+
+    public LayoutTile findByToLatiId(BigDecimal toLatiId) {
+        String stmt = "select * from layouttiles where to_lati_id = ?";
+
+        return this.findById(toLatiId, stmt);
     }
 
     public LayoutTile findByXY(Integer x, Integer y) {

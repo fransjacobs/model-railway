@@ -18,69 +18,69 @@
  */
 package lan.wervel.jcs.ui.layout.tiles;
 
+import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 import lan.wervel.jcs.entities.LayoutTile;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
 import lan.wervel.jcs.trackservice.events.SensorListener;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 
 /**
- * Draw a FeedbackPort Track
+ * Draw a OccupancyDetector
  *
  * @author frans
  */
-public class FeedbackPort extends AbstractTile implements SensorListener {
+public class BlockTile extends AbstractTile implements SensorListener {
 
     private boolean portActive;
 
-    public FeedbackPort(LayoutTile layoutTile) {
+    public BlockTile(LayoutTile layoutTile) {
         super(layoutTile);
-        this.width = DEFAULT_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-
+        if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+            this.width = DEFAULT_WIDTH * 2;
+            this.height = DEFAULT_HEIGHT;
+        } else {
+            this.width = DEFAULT_WIDTH;
+            this.height = DEFAULT_HEIGHT * 2;
+        }
     }
 
-    public FeedbackPort(Rotation rotation, int x, int y) {
-        this(rotation, Direction.CENTER, x, y);
+    public BlockTile(int x, int y) {
+        this(Orientation.EAST, x, y);
     }
 
-    public FeedbackPort(Rotation rotation, Direction direction, int x, int y) {
-        this(rotation, direction, new Point(x, y));
+    public BlockTile(Orientation orientation, int x, int y) {
+        this(orientation, new Point(x, y));
     }
 
-    public FeedbackPort(Rotation rotation, Direction direction, Point center) {
-        super(rotation, direction, center);
-        this.width = DEFAULT_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-
-    }
-
-    @Override
-    public Rectangle2D getBounds2D() {
-        return getBounds().getBounds2D();
-    }
-
-    @Override
-    public void flipHorizontal() {
-        if (Rotation.R0.equals(this.rotation) || Rotation.R180.equals(this.rotation)) {
-            rotate();
-            rotate();
+    public BlockTile(Orientation orientation, Point center) {
+        super(orientation, Direction.CENTER, center);
+        if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+            this.width = DEFAULT_WIDTH * 2;
+            this.height = DEFAULT_HEIGHT;
+        } else {
+            this.width = DEFAULT_WIDTH;
+            this.height = DEFAULT_HEIGHT * 2;
         }
     }
 
     @Override
-    public void flipVertical() {
-        if (Rotation.R90.equals(this.rotation) || Rotation.R270.equals(this.rotation)) {
-            rotate();
-            rotate();
+    public void rotate() {
+        super.rotate();
+        if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+            this.width = DEFAULT_WIDTH * 2;
+            this.height = DEFAULT_HEIGHT;
+        } else {
+            this.width = DEFAULT_WIDTH;
+            this.height = DEFAULT_HEIGHT * 2;
         }
     }
 
@@ -110,40 +110,49 @@ public class FeedbackPort extends AbstractTile implements SensorListener {
         double x, y, w, h;
         int x1, y1, x2, y2;
 
-        x = MIN_GRID - 4;
-        y = MIN_GRID - 8;
-        w = 8;
-        h = 16;
+        x = MIN_GRID * 2 - 30;
+        y = MIN_GRID - 6;
+        w = 60;
+        h = 12;
 
         x1 = 0;
         y1 = MIN_GRID;
-        x2 = DEFAULT_WIDTH;
+        x2 = DEFAULT_WIDTH * 2;
         y2 = y1;
 
         g2d.setBackground(Color.white);
-        g2d.clearRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        g2d.clearRect(0, 0, DEFAULT_WIDTH * 2, DEFAULT_HEIGHT);
 
-        g2d.setStroke(new BasicStroke(1));
         if (!this.portActive) {
-            g2d.setPaint(Color.gray);
-            g2d.fill(new Ellipse2D.Double(x, y, w, h));
+            g2.setStroke(new BasicStroke(1));
+            g2.setPaint(Color.cyan);
+            g2.draw(new RoundRectangle2D.Double(x, y, w, h, 10, 10));
         }
+
         //Track
         g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2d.setPaint(trackColor);
         g2d.drawLine(x1, y1, x2, y2);
 
+        //out
+        g2d.setPaint(Color.darkGray);
+        g2d.drawLine(x2 - 1, y1, x2, y2);
+
         if (this.portActive) {
-            g2d.setPaint(Color.MAGENTA);
-            g2d.fill(new Ellipse2D.Double(x, y, w, h));
+            g2.setPaint(Color.cyan);
+            g2.fill(new RoundRectangle2D.Double(x, y, w, h, 10, 10));
         }
 
         g2d.dispose();
     }
 
     @Override
-    public void drawCenterPoint(Graphics2D g2d, Color color, double size) {
+    protected BufferedImage createImage() {
+        return new BufferedImage(DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_RGB);
+    }
 
+    @Override
+    public void drawCenterPoint(Graphics2D g2d, Color color, double size) {
         Color c;
         if (this.portActive) {
             c = Color.darkGray;
@@ -167,16 +176,16 @@ public class FeedbackPort extends AbstractTile implements SensorListener {
             int textOffsetX, textOffsetY;
 
             if (Direction.RIGHT.equals(direction)) {
-                switch (this.rotation) {
-                    case R90:
+                switch (orientation) {
+                    case EAST:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
@@ -186,16 +195,16 @@ public class FeedbackPort extends AbstractTile implements SensorListener {
                         break;
                 }
             } else {
-                switch (rotation) {
-                    case R90:
+                switch (orientation) {
+                    case EAST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = MIN_GRID;
                         break;

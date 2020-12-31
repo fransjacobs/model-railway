@@ -2,7 +2,6 @@ DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS;
 DROP TABLE if exists drivewaytypes CASCADE CONSTRAINTS;
 DROP TABLE if exists driveways CASCADE CONSTRAINTS;
 DROP TABLE if exists drivewayactivationlogs CASCADE CONSTRAINTS;
---DROP TABLE if exists feedbackmodules CASCADE CONSTRAINTS;
 DROP TABLE if exists locomotives CASCADE CONSTRAINTS;
 DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS;
 DROP TABLE if exists accessorysettings CASCADE CONSTRAINTS;
@@ -17,7 +16,6 @@ DROP TABLE if exists sensors CASCADE CONSTRAINTS;
 
 DROP SEQUENCE if exists drwa_seq;
 DROP SEQUENCE if exists dwal_seq;
---DROP SEQUENCE if exists femo_seq;
 DROP SEQUENCE if exists loco_seq;
 DROP SEQUENCE if exists soac_seq;
 DROP SEQUENCE if exists acse_seq;
@@ -30,7 +28,6 @@ DROP SEQUENCE if exists sens_seq;
 
 CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE dwal_seq START WITH 1 INCREMENT BY 1;
---CREATE SEQUENCE femo_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE acse_seq START WITH 1 INCREMENT BY 1;
@@ -109,49 +106,6 @@ ALTER TABLE sensors ADD CONSTRAINT sens_pk PRIMARY KEY ( id );
 
 ALTER TABLE sensors ADD CONSTRAINT sens_address_un UNIQUE ( address );
 
-/*   
-CREATE TABLE feedbackmodules (
-  id              NUMBER NOT NULL,
-  address         INTEGER NOT NULL,
-  name            VARCHAR2(255 CHAR) NOT NULL,
-  description     VARCHAR2(255 CHAR),
-  catalognumber   VARCHAR2(255 CHAR),
-  ports           INTEGER NOT NULL,
-  msb             INTEGER,
-  lsb             INTEGER,
-  lastupdated     DATE,
-  port1           NUMBER,
-  port2           NUMBER,
-  port3           NUMBER,
-  port4           NUMBER,
-  port5           NUMBER,
-  port6           NUMBER,
-  port7           NUMBER,
-  port8           NUMBER,
-  port9           NUMBER,
-  port10          NUMBER,
-  port11          NUMBER,
-  port12          NUMBER,
-  port13          NUMBER,
-  port14          NUMBER,
-  port15          NUMBER,
-  port16          NUMBER
-);
-
-ALTER TABLE feedbackmodules ADD CONSTRAINT femo_pk PRIMARY KEY ( id );
-
-ALTER TABLE feedbackmodules ADD CONSTRAINT femo_address_un UNIQUE ( address );
-
-CREATE TABLE feedbacksource (
-  id              NUMBER NOT NULL,
-  name            VARCHAR2(255 CHAR) NOT NULL,
-  description     VARCHAR2(255 CHAR),
-  running         NUMBER,
-  lastupdated     DATE
-); 
-
-ALTER TABLE feedbacksource ADD CONSTRAINT feso_pk PRIMARY KEY ( id );
-*/
 
 CREATE TABLE locomotives (
   id                 NUMBER NOT NULL,
@@ -219,8 +173,9 @@ ALTER TABLE accessorysettings ADD CONSTRAINT soas_un UNIQUE ( drwa_id, soac_id )
 
 ALTER TABLE accessorysettings ADD CONSTRAINT stty_or_siva_nn check ( (default_status_type is not null and default_signal_value is null) or (default_status_type is null and default_signal_value is not null) );
 
+
 CREATE TABLE statustypes (
-  status_type    VARCHAR2(255 CHAR) NOT NULL,
+  status_type   VARCHAR2(255 CHAR) NOT NULL,
   description   VARCHAR2(255 CHAR)
 );
 
@@ -309,17 +264,16 @@ ALTER TABLE accessorysettings
 CREATE TABLE layouttiles (
   id                    NUMBER NOT NULL,
   tiletype              VARCHAR2(255 CHAR) NOT NULL,
+  orientation           VARCHAR2(255 CHAR) NOT NULL,
   rotation              VARCHAR2(255 CHAR) NOT NULL,
   direction             VARCHAR2(255 CHAR) NOT NULL,
   x                     INTEGER NOT NULL,
   y                     INTEGER NOT NULL,
-  offsetx               INTEGER NULL,
-  offsety               INTEGER NULL,
   soac_id               NUMBER NULL,
-  --femo_id               NUMBER NULL,
   sens_id               NUMBER NULL,
-  --port                  INTEGER NULL, 
   ltgr_id               NUMBER NULL,
+  from_lati_id          NUMBER NULL,
+  to_lati_id            NUMBER NULL
 );
 
 ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id );
@@ -331,15 +285,20 @@ ALTER TABLE layouttiles
     REFERENCES solenoidaccessories ( id )
   NOT DEFERRABLE;
 
---ALTER TABLE layouttiles
---  ADD CONSTRAINT lati_femo_fk FOREIGN KEY ( femo_id )
---    REFERENCES feedbackmodules ( id )
---  NOT DEFERRABLE;  
-
 ALTER TABLE layouttiles
   ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )
     REFERENCES sensors ( id )
   NOT DEFERRABLE;  
+
+ALTER TABLE layouttiles
+  ADD CONSTRAINT from_lati_fk FOREIGN KEY ( from_lati_id )
+    REFERENCES layouttiles ( id )
+  NOT DEFERRABLE;
+
+ALTER TABLE layouttiles
+  ADD CONSTRAINT to_lati_fk FOREIGN KEY ( to_lati_id )
+    REFERENCES layouttiles ( id )
+  NOT DEFERRABLE;
 
 
 

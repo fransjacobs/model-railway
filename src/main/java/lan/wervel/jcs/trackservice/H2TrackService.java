@@ -73,6 +73,7 @@ import lan.wervel.jcs.trackservice.dao.LayoutTileDAO;
 import lan.wervel.jcs.trackservice.dao.LayoutTileGroupDAO;
 import lan.wervel.jcs.trackservice.dao.SensorDAO;
 import lan.wervel.jcs.trackservice.events.SensorListener;
+import lan.wervel.jcs.ui.layout.TileType;
 
 public class H2TrackService implements TrackService {
 
@@ -449,11 +450,11 @@ public class H2TrackService implements TrackService {
             return null;
         }
         if (lt.getSoacId() != null) {
-            if ("TurnoutTile".equals(lt.getTiletype())) {
+            if (TileType.TURNOUT.getTileType().equals(lt.getTiletype())) {
                 Turnout t = turnoutDAO.findById(lt.getSoacId());
                 lt.setSolenoidAccessoiry(t);
             }
-            if ("SignalTile".equals(lt.getTiletype())) {
+            if (TileType.SIGNAL.getTileType().equals(lt.getTiletype())) {
                 lt.setSolenoidAccessoiry(signalDAO.findById(lt.getSoacId()));
             }
         }
@@ -487,9 +488,19 @@ public class H2TrackService implements TrackService {
 
     @Override
     public LayoutTile persist(LayoutTile layoutTile) {
+        if (TileType.BLOCK.getTileType().equals(layoutTile.getTiletype()) && layoutTile.getLayoutTileGroup() == null) {
+            //Create the default group
+            List<LayoutTileGroup> ltgl = this.ltgtDao.findAll();
+            Integer groupNumber = ltgl.size() + 1;
+            String direction = layoutTile.getOrientation();
+
+            LayoutTileGroup block = new LayoutTileGroup(groupNumber, direction);
+            layoutTile.setLayoutTileGroup(block);
+        }
+
         if (layoutTile.getLayoutTileGroup() != null) {
             LayoutTileGroup layoutTileGroup = layoutTile.getLayoutTileGroup();
-            if (layoutTileGroup.getAddress() != null && !layoutTileGroup.getAddress().equals(0)) {
+            if (layoutTileGroup.getGroupNumber() != null && !layoutTileGroup.getGroupNumber().equals(0)) {
                 ltgtDao.persist(layoutTileGroup);
                 layoutTile.setLayoutTileGroup(layoutTileGroup);
             } else {

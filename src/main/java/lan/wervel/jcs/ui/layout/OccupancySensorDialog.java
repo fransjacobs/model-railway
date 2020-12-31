@@ -26,7 +26,7 @@ import javax.swing.DefaultComboBoxModel;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.Sensor;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
-import lan.wervel.jcs.ui.layout.tiles.OccupancyDetector;
+import lan.wervel.jcs.ui.layout.tiles.BlockTile;
 import org.pmw.tinylog.Logger;
 
 /**
@@ -35,9 +35,9 @@ import org.pmw.tinylog.Logger;
  */
 public class OccupancySensorDialog extends javax.swing.JDialog {
 
-    private final OccupancyDetector tile;
+    private final BlockTile tile;
 
-    public OccupancySensorDialog(java.awt.Frame parent, boolean modal, OccupancyDetector tile) {
+    public OccupancySensorDialog(java.awt.Frame parent, boolean modal, BlockTile tile) {
         super(parent, modal);
         this.tile = tile;
 

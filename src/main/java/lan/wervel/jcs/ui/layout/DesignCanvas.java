@@ -45,13 +45,13 @@ import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
-import lan.wervel.jcs.ui.layout.tiles.DiagonalTrack;
-import lan.wervel.jcs.ui.layout.tiles.FeedbackPort;
-import lan.wervel.jcs.ui.layout.tiles.OccupancyDetector;
+import lan.wervel.jcs.ui.layout.tiles.SensorTile;
+import lan.wervel.jcs.ui.layout.tiles.BlockTile;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
-import lan.wervel.jcs.ui.layout.tiles.StraightTrack;
+import lan.wervel.jcs.ui.layout.tiles.TileFactory;
 import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
 import org.pmw.tinylog.Logger;
 
@@ -65,7 +65,7 @@ public class DesignCanvas extends JPanel {
     public static final int GRID_SIZE = AbstractTile.MIN_GRID;
 
     private Mode mode;
-    private Rotation rotation;
+    private Orientation orientation;
     private Direction direction;
     private TileType tileType;
 
@@ -83,7 +83,6 @@ public class DesignCanvas extends JPanel {
     private Point mouseLocation = new Point(0, 0);
 
     private BufferedImage grid;
-    //private Dimension currentSize;
 
     private final ExecutorService executor;
 
@@ -97,7 +96,7 @@ public class DesignCanvas extends JPanel {
         this.selectionListeners = new ArrayList<>();
         //Default 
         this.mode = Mode.SELECT;
-        this.rotation = Rotation.R0;
+        this.orientation = Orientation.EAST;
         this.direction = Direction.CENTER;
 
         initComponents();
@@ -228,31 +227,21 @@ public class DesignCanvas extends JPanel {
         this.grid = null;
     }
 
-//    private void paintCurrentMouseDot(Graphics g) {
-//        if (this.mouseLocation != null && this.mouseInCanvas) {
-//            Graphics gc = g.create();
-//            gc.setColor(Color.PINK);
-//            gc.fillOval(this.mouseLocation.x - 2, this.mouseLocation.y - 2, 4, 4);
-//            //g.drawOval(this.mouseLocation.x - 2, this.mouseLocation.y - 2, 4, 4);
-//            gc.dispose();
-//        }
-//    }
     void addSelectionListener(SelectionListener listener) {
         this.selectionListeners.add(listener);
-
     }
 
     void setSelectionModeChangedListener(SelectionModeChangedListener listener) {
         selectionModeChangedListener = listener;
         if (selectionModeChangedListener != null) {
-            this.selectionModeChangedListener.selectionModeChanged(mode, rotation, direction, tileType);
+            this.selectionModeChangedListener.selectionModeChanged(mode, orientation, direction, tileType);
         }
     }
 
-    void selectionModeChanged(Mode mode, Rotation rotation, Direction direction, TileType tileType) {
-        Logger.debug("Mode: " + mode + " Rotation: " + rotation + " Direction: " + direction + " Tile: " + tileType);
+    void selectionModeChanged(Mode mode, Orientation orientation, Direction direction, TileType tileType) {
+        Logger.debug("Mode: " + mode + " Orientation: " + orientation + " Direction: " + direction + " Tile: " + tileType);
         this.mode = mode;
-        this.rotation = rotation;
+        this.orientation = orientation;
         this.direction = direction;
         this.tileType = tileType;
         notifySelectionModeChange();
@@ -260,7 +249,7 @@ public class DesignCanvas extends JPanel {
 
     private void notifySelectionModeChange() {
         if (selectionModeChangedListener != null) {
-            this.selectionModeChangedListener.selectionModeChanged(mode, rotation, direction, tileType);
+            this.selectionModeChangedListener.selectionModeChanged(mode, orientation, direction, tileType);
         }
     }
 
@@ -283,17 +272,13 @@ public class DesignCanvas extends JPanel {
         notifySelectionModeChange();
     }
 
-    Rotation getOrientation() {
-        return rotation;
+    Orientation getOrientation() {
+        return orientation;
     }
 
-    void setOrientation(Rotation orientation) {
-        this.rotation = orientation;
+    void setOrientation(Orientation orientation) {
+        this.orientation = orientation;
         notifySelectionModeChange();
-    }
-
-    Rotation getRotation() {
-        return rotation;
     }
 
     void setDirection(Direction direction) {
@@ -316,7 +301,7 @@ public class DesignCanvas extends JPanel {
         Set<AbstractTile> snapshot = new HashSet<>();
 
         for (LayoutTile lt : layoutTiles) {
-            AbstractTile t = AbstractTile.createTile(lt);
+            AbstractTile t = TileFactory.createTile(lt);
             snapshot.add(t);
         }
 
@@ -584,12 +569,12 @@ public class DesignCanvas extends JPanel {
 //                showRotate = true;
 //                showDelete = true;
 //                break;
-            case "FeedbackPort":
+            case "SensorTile":
                 showProperties = true;
                 showRotate = true;
                 showDelete = true;
                 break;
-            case "OccupancyDetector":
+            case "BlockTile":
                 showProperties = true;
                 showRotate = true;
                 showDelete = true;
@@ -645,8 +630,7 @@ public class DesignCanvas extends JPanel {
   }//GEN-LAST:event_formMouseExited
 
   private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
-      this.rotation = Rotation.R0;
-      Logger.trace(this.rotation + ", " + evt.getModifiers() + ", " + evt.paramString());
+      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
       if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
           addTile(this.mouseLocation);
@@ -655,8 +639,7 @@ public class DesignCanvas extends JPanel {
   }//GEN-LAST:event_horizontalMIActionPerformed
 
   private void verticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_verticalMIActionPerformed
-      this.rotation = Rotation.R90;
-      Logger.trace(this.rotation + ", " + evt.getModifiers() + ", " + evt.paramString());
+      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
       if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
           addTile(this.mouseLocation);
@@ -670,8 +653,7 @@ public class DesignCanvas extends JPanel {
   }//GEN-LAST:event_formMouseEntered
 
   private void rightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightMIActionPerformed
-      this.rotation = Rotation.R0;
-      Logger.trace(this.rotation + ", " + evt.getModifiers() + ", " + evt.paramString());
+      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
       if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
           addTile(this.mouseLocation);
@@ -680,8 +662,7 @@ public class DesignCanvas extends JPanel {
   }//GEN-LAST:event_rightMIActionPerformed
 
   private void leftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftMIActionPerformed
-      this.rotation = Rotation.R90;
-      Logger.trace(this.rotation + ", " + evt.getModifiers() + ", " + evt.paramString());
+      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
       if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
           addTile(this.mouseLocation);
@@ -757,10 +738,8 @@ public class DesignCanvas extends JPanel {
     }//GEN-LAST:event_propertiesMIActionPerformed
 
     private void addTile(Point p) {
-        AbstractTile tile = null;
-
-        if (this.rotation == null) {
-            this.rotation = Rotation.R0;
+        if (this.orientation == null) {
+            this.orientation = Orientation.EAST;
         }
 
         if (this.direction == null) {
@@ -768,28 +747,8 @@ public class DesignCanvas extends JPanel {
         }
 
         Logger.trace("Adding: " + tileType);
-        switch (this.tileType) {
-            case STRAIGHT:
-                tile = new StraightTrack(this.rotation, Direction.CENTER, p);
-                break;
-            case DIAGONAL:
-                tile = new DiagonalTrack(this.rotation, Direction.CENTER, p);
-                break;
-            case TURNOUT:
-                tile = new TurnoutTile(this.rotation, this.direction, p);
-                break;
-            case SIGNAL:
-                tile = new SignalTile(this.rotation, Direction.CENTER, p);
-                break;
-            case FEEDBACK_SENSOR:
-                tile = new FeedbackPort(this.rotation, Direction.CENTER, p);
-                break;
-            case OCCUPANCY_SENSOR:
-                tile = new OccupancyDetector(this.rotation, Direction.CENTER, p);
-                break;
-            default:
-                Logger.warn("Unknown Tile Type " + tileType);
-        }
+
+        AbstractTile tile = TileFactory.createTile(tileType, orientation, direction, p);
 
         if (tile != null) {
             AbstractTile t = tile;
@@ -798,12 +757,10 @@ public class DesignCanvas extends JPanel {
                 Logger.trace("A Tile " + tile.getClass().getSimpleName() + " exists; replacing it...");
             }
 
-            synchronized (tiles) {
-                this.tiles.add(tile);
-            }
-            Logger.trace("Added Element " + tile.getClass().getSimpleName() + " " + tile.getRotation() + " At " + tile.getCenter());
+            tiles.add(tile);
+            Logger.trace("Added Element " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " At " + tile.getCenter());
 
-            this.selectedTiles.clear();
+            selectedTiles.clear();
             selectedTiles.add(tile);
 
             Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
@@ -871,11 +828,11 @@ public class DesignCanvas extends JPanel {
 //                showDelete = true;
 //                break;
                 case "FeedbackPort":
-                    SensorDialog fbd = new SensorDialog(getParentFrame(), true, (FeedbackPort) tile);
+                    SensorDialog fbd = new SensorDialog(getParentFrame(), true, (SensorTile) tile);
                     fbd.setVisible(true);
                     break;
                 case "OccupancyDetector":
-                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (OccupancyDetector) tile);
+                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
                     osd.setVisible(true);
                     break;
                 case "SignalTile":
@@ -897,55 +854,51 @@ public class DesignCanvas extends JPanel {
 
     public void rotateSelectedTile() {
         for (AbstractTile tile : selectedTiles) {
-            Logger.trace("Rotatating " + tile);
-
             tile.rotate();
             Logger.trace("Rotated " + tile);
-
-            this.rotation = tile.getRotation();
+            this.orientation = tile.getOrientation();
             this.direction = tile.getDirection();
 
             synchronized (tiles) {
                 this.tiles.add(tile);
             }
         }
+        //this.executor.execute(() -> notifySelectionModeChange());
+        notifySelectionModeChange();
         this.executor.execute(() -> repaint());
-        //this.repaint();
-
-        this.executor.execute(() -> notifySelectionModeChange());
     }
 
     public void flipSelectedTileHorizontal() {
         for (AbstractTile tile : selectedTiles) {
-            Logger.trace("Flip H " + tile + " Orientation: " + tile.getRotation() + " Direction: " + tile.getDirection());
+            Logger.trace("Flip H " + tile + " Orientation: " + tile.getOrientation() + " Direction: " + tile.getDirection());
             tile.flipHorizontal();
-            Logger.trace("Flipped H " + tile + " Orientation: " + tile.getRotation() + " Direction: " + tile.getDirection());
+            Logger.trace("Flipped H " + tile + " Orientation: " + tile.getOrientation() + " Direction: " + tile.getDirection());
 
-            this.rotation = tile.getRotation();
+            this.orientation = tile.getOrientation();
             this.direction = tile.getDirection();
             synchronized (tiles) {
                 this.tiles.add(tile);
             }
         }
 
-        this.executor.execute(() -> notifySelectionModeChange());
+        notifySelectionModeChange();
         this.executor.execute(() -> repaint());
     }
 
     public void flipSelectedTileVertical() {
         for (AbstractTile tile : selectedTiles) {
-            Logger.trace("Flip H " + tile + " Orientation: " + tile.getRotation() + " Direction: " + tile.getDirection());
+            Logger.trace("Flip H " + tile + " Orientation: " + tile.getOrientation() + " Direction: " + tile.getDirection());
             tile.flipVertical();
-            Logger.trace("Flipped H " + tile + " Orientation: " + tile.getRotation() + " Direction: " + tile.getDirection());
+            Logger.trace("Flipped H " + tile + " Orientation: " + tile.getOrientation() + " Direction: " + tile.getDirection());
 
-            this.rotation = tile.getRotation();
+            this.orientation = tile.getOrientation();
             this.direction = tile.getDirection();
             synchronized (tiles) {
                 this.tiles.add(tile);
             }
         }
 
-        this.executor.execute(() -> notifySelectionModeChange());
+        notifySelectionModeChange();
         this.executor.execute(() -> repaint());
     }
 

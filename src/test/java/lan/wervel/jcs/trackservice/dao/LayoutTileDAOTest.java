@@ -33,171 +33,171 @@ import org.junit.Test;
  */
 public class LayoutTileDAOTest {
 
-  private final List<LayoutTile> layoutTiles;
+    private final List<LayoutTile> layoutTiles;
 
-  public LayoutTileDAOTest() {
-    DAOTestHelper.setConnectProperties();
-    DAOTestHelper.createNewDatabase();
-    DAOTestHelper.insertLayoutTileData();
-    DAOTestHelper.insertLayoutTileGroupData();
+    public LayoutTileDAOTest() {
+        DAOTestHelper.setConnectProperties();
+        DAOTestHelper.createNewDatabase();
+        DAOTestHelper.insertLayoutTileData();
+        DAOTestHelper.insertLayoutTileGroupData();
 
-    layoutTiles = new ArrayList<>();
-  }
+        layoutTiles = new ArrayList<>();
+    }
 
-  @Before
-  public void setUp() {
-    LayoutTile lt1 = new LayoutTile(new BigDecimal(1), "TurnoutTile", "R180", "LEFT", 30, 30);
-    layoutTiles.add(lt1);
+    @Before
+    public void setUp() {
+        LayoutTile lt1 = new LayoutTile(new BigDecimal(1), "TurnoutTile", "East", "Left", 30, 30);
+        layoutTiles.add(lt1);
 
-    LayoutTile lt2 = new LayoutTile(new BigDecimal(2), "DiagonalTrack", "R90", "CENTER", 40, 50);
-    layoutTiles.add(lt2);
+        LayoutTile lt2 = new LayoutTile(new BigDecimal(2), "DiagonalTrack", "South", "Center", 40, 50);
+        layoutTiles.add(lt2);
 
-    LayoutTile lt3 = new LayoutTile(new BigDecimal(3), "StraightTrack", "R0", "CENTER", 50, 60);
-    layoutTiles.add(lt3);
-  }
+        LayoutTile lt3 = new LayoutTile(new BigDecimal(3), "StraightTrack", "West", "Center", 50, 60);
+        layoutTiles.add(lt3);
+    }
 
-  @After
-  public void tearDown() {
-  }
+    @After
+    public void tearDown() {
+    }
 
-  @Test
-  public void testFindAll() {
-    System.out.println("findAll");
-    LayoutTileDAO instance = new LayoutTileDAO();
-    List<LayoutTile> expResult = layoutTiles;
-    List<LayoutTile> result = instance.findAll();
+    @Test
+    public void testFindAll() {
+        System.out.println("findAll");
+        LayoutTileDAO instance = new LayoutTileDAO();
+        List<LayoutTile> expResult = layoutTiles;
+        List<LayoutTile> result = instance.findAll();
 
-    assertEquals(expResult, result);
-    result = instance.findAll();
-    assertEquals(layoutTiles, result);
-  }
+        assertEquals(expResult, result);
+        result = instance.findAll();
+        assertEquals(layoutTiles, result);
+    }
 
-  @Test
-  public void testFind() {
-    System.out.println("find");
+    @Test
+    public void testFind() {
+        System.out.println("find");
 
-    Integer address = 2;
-    LayoutTileDAO instance = new LayoutTileDAO();
-    LayoutTile expResult = layoutTiles.get(1);
-    LayoutTile result = instance.find(address);
-    assertEquals(expResult, result);
+        Integer address = 2;
+        LayoutTileDAO instance = new LayoutTileDAO();
+        LayoutTile expResult = layoutTiles.get(1);
+        LayoutTile result = instance.find(address);
+        assertEquals(expResult, result);
 
-    address = 1;
-    expResult = layoutTiles.get(0);
-    result = instance.find(address);
-    assertEquals(expResult, result);
-  }
+        address = 1;
+        expResult = layoutTiles.get(0);
+        result = instance.find(address);
+        assertEquals(expResult, result);
+    }
 
-  @Test
-  public void testFindById() {
-    System.out.println("findById");
-    BigDecimal id = new BigDecimal(3);
-    LayoutTileDAO instance = new LayoutTileDAO();
-    LayoutTile expResult = layoutTiles.get(2);
-    LayoutTile result = instance.findById(id);
-    assertEquals(expResult, result);
+    @Test
+    public void testFindById() {
+        System.out.println("findById");
+        BigDecimal id = new BigDecimal(3);
+        LayoutTileDAO instance = new LayoutTileDAO();
+        LayoutTile expResult = layoutTiles.get(2);
+        LayoutTile result = instance.findById(id);
+        assertEquals(expResult, result);
 
-    id = new BigDecimal(1);
-    expResult = layoutTiles.get(0);
-    result = instance.findById(id);
-    assertEquals(expResult, result);
-  }
+        id = new BigDecimal(1);
+        expResult = layoutTiles.get(0);
+        result = instance.findById(id);
+        assertEquals(expResult, result);
+    }
 
-  @Test
-  public void testFindByXY() {
-    System.out.println("findByXY");
-    Integer x = 50;
-    Integer y = 60;
-    LayoutTileDAO instance = new LayoutTileDAO();
-    LayoutTile expResult = layoutTiles.get(2);
-    LayoutTile result = instance.findByXY(x, y);
-    assertEquals(expResult, result);
+    @Test
+    public void testFindByXY() {
+        System.out.println("findByXY");
+        Integer x = 50;
+        Integer y = 60;
+        LayoutTileDAO instance = new LayoutTileDAO();
+        LayoutTile expResult = layoutTiles.get(2);
+        LayoutTile result = instance.findByXY(x, y);
+        assertEquals(expResult, result);
 
-    x = 40;
-    y = 50;
-    expResult = layoutTiles.get(1);
-    result = instance.findByXY(x, y);
-    assertEquals(expResult, result);
-  }
+        x = 40;
+        y = 50;
+        expResult = layoutTiles.get(1);
+        result = instance.findByXY(x, y);
+        assertEquals(expResult, result);
+    }
 
-  @Test
-  public void testfindByLtgrId() {
-    System.out.println("findByLtgrId");
-    LayoutTileDAO instance = new LayoutTileDAO();
-    BigDecimal ltgrId = new BigDecimal(1);
+    @Test
+    public void testfindByLtgrId() {
+        System.out.println("findByLtgrId");
+        LayoutTileDAO instance = new LayoutTileDAO();
+        BigDecimal ltgrId = new BigDecimal(1);
 
-    List<LayoutTile> expResult = instance.findAll();
-    //Check
-    List<LayoutTile> result = instance.findByLtgrId(ltgrId);
-    assertEquals(layoutTiles, expResult);
-    assertEquals(0, result.size());
+        List<LayoutTile> expResult = instance.findAll();
+        //Check
+        List<LayoutTile> result = instance.findByLtgrId(ltgrId);
+        assertEquals(layoutTiles, expResult);
+        assertEquals(0, result.size());
 
-    assertEquals(layoutTiles, expResult);
-    expResult.get(0).setLtgrId(ltgrId);
-    BigDecimal id = instance.persist(expResult.get(0));
+        assertEquals(layoutTiles, expResult);
+        expResult.get(0).setLtgrId(ltgrId);
+        BigDecimal id = instance.persist(expResult.get(0));
 
-    LayoutTile lt = instance.findById(id);
-    assertEquals(expResult.get(0), lt);
-    assertEquals(ltgrId, lt.getLtgrId());
+        LayoutTile lt = instance.findById(id);
+        assertEquals(expResult.get(0), lt);
+        assertEquals(ltgrId, lt.getLtgrId());
 
-    result = instance.findByLtgrId(ltgrId);
-    assertEquals(1, result.size());
+        result = instance.findByLtgrId(ltgrId);
+        assertEquals(1, result.size());
 
-    List<LayoutTile> expRes = new ArrayList<>();
-    expRes.add(expResult.get(0));
-    assertEquals(expRes, result);
+        List<LayoutTile> expRes = new ArrayList<>();
+        expRes.add(expResult.get(0));
+        assertEquals(expRes, result);
 
-    expResult.get(1).setLtgrId(ltgrId);
-    id = instance.persist(expResult.get(1));
-    lt = instance.findById(id);
-    assertEquals(expResult.get(1), lt);
+        expResult.get(1).setLtgrId(ltgrId);
+        id = instance.persist(expResult.get(1));
+        lt = instance.findById(id);
+        assertEquals(expResult.get(1), lt);
 
-    result = instance.findByLtgrId(ltgrId);
-    assertEquals(2, result.size());
-    expRes.add(lt);
-    assertEquals(expRes, result);
-  }
+        result = instance.findByLtgrId(ltgrId);
+        assertEquals(2, result.size());
+        expRes.add(lt);
+        assertEquals(expRes, result);
+    }
 
-  @Test
-  public void testPersist() {
-    System.out.println("persist");
-    LayoutTile layoutTile = new LayoutTile("TURNOUT", "R270", "RIGHT", 80, 90);
-    LayoutTileDAO instance = new LayoutTileDAO();
-    BigDecimal expResult = new BigDecimal(4);
-    BigDecimal result = instance.persist(layoutTile);
-    assertEquals(expResult, result);
+    @Test
+    public void testPersist() {
+        System.out.println("persist");
+        LayoutTile layoutTile = new LayoutTile("TurnoutTile", "North", "Right", 80, 90);
+        LayoutTileDAO instance = new LayoutTileDAO();
+        BigDecimal expResult = new BigDecimal(4);
+        BigDecimal result = instance.persist(layoutTile);
+        assertEquals(expResult, result);
 
-    LayoutTile lt = instance.findById(expResult);
-    assertNotNull(lt);
-  }
+        LayoutTile lt = instance.findById(expResult);
+        assertNotNull(lt);
+    }
 
-  @Test
-  public void testPersist2() {
-    System.out.println("persist2");
-    LayoutTile layoutTile = new LayoutTile("TURNOUT", "R270", "RIGHT", 80, 90);
-    BigDecimal ltgrId = new BigDecimal(2);
-    layoutTile.setLtgrId(ltgrId);
-    LayoutTileDAO instance = new LayoutTileDAO();
-    BigDecimal expResult = new BigDecimal(4);
-    BigDecimal result = instance.persist(layoutTile);
-    assertEquals(expResult, result);
+    @Test
+    public void testPersist2() {
+        System.out.println("persist2");
+        LayoutTile layoutTile = new LayoutTile("TurnoutTile", "North", "Right", 80, 90);
+        BigDecimal ltgrId = new BigDecimal(2);
+        layoutTile.setLtgrId(ltgrId);
+        LayoutTileDAO instance = new LayoutTileDAO();
+        BigDecimal expResult = new BigDecimal(4);
+        BigDecimal result = instance.persist(layoutTile);
+        assertEquals(expResult, result);
 
-    LayoutTile lt = instance.findById(expResult);
-    assertNotNull(lt);
-    assertEquals(ltgrId, lt.getLtgrId());
-  }
+        LayoutTile lt = instance.findById(expResult);
+        assertNotNull(lt);
+        assertEquals(ltgrId, lt.getLtgrId());
+    }
 
-  @Test
-  public void testRemove() {
-    System.out.println("remove");
-    LayoutTile layoutTile = new LayoutTile("DIAGONAL", "R0", "CENTER", 110, 240);
-    LayoutTileDAO instance = new LayoutTileDAO();
-    instance.persist(layoutTile);
-    LayoutTile lt = instance.findByXY(110, 240);
-    assertNotNull(lt);
+    @Test
+    public void testRemove() {
+        System.out.println("remove");
+        LayoutTile layoutTile = new LayoutTile("DIAGONAL", "West", "Center", 110, 240);
+        LayoutTileDAO instance = new LayoutTileDAO();
+        instance.persist(layoutTile);
+        LayoutTile lt = instance.findByXY(110, 240);
+        assertNotNull(lt);
 
-    instance.remove(lt);
-    lt = instance.findByXY(110, 240);
-    assertNull(lt);
-  }
+        instance.remove(lt);
+        lt = instance.findByXY(110, 240);
+        assertNull(lt);
+    }
 }

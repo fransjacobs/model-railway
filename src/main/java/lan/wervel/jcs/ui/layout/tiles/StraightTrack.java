@@ -24,13 +24,11 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import lan.wervel.jcs.entities.LayoutTile;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 
 /**
  * Draw a Straight Track
  *
- * @author frans
  */
 public class StraightTrack extends AbstractTile {
 
@@ -40,29 +38,14 @@ public class StraightTrack extends AbstractTile {
         this.height = DEFAULT_HEIGHT;
     }
 
-    public StraightTrack(Rotation rotation, int x, int y) {
-        this(rotation, Direction.CENTER, x, y);
+    public StraightTrack(Orientation orientation, int x, int y) {
+        this(orientation, new Point(x, y));
     }
 
-    public StraightTrack(Rotation rotation, Direction direction, int x, int y) {
-        this(rotation, direction, new Point(x, y));
-    }
-
-    public StraightTrack(Rotation rotation, Direction direction, Point center) {
-        super(rotation, direction, center);
+    public StraightTrack(Orientation orientation, Point center) {
+        super(orientation, center);
         this.width = DEFAULT_WIDTH;
         this.height = DEFAULT_HEIGHT;
-    }
-
-    @Override
-    public void rotate() {
-        Rotation r = getRotation();
-        if (Rotation.R90.equals(r)) {
-            r = Rotation.R0;
-        } else {
-            r = Rotation.R90;
-        }
-        setRotation(r);
     }
 
     @Override
@@ -82,6 +65,11 @@ public class StraightTrack extends AbstractTile {
         g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2d.setPaint(trackColor);
         g2d.drawLine(x1, y1, x2, y2);
+
+        //In and out side only mark the out        
+        g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.setPaint(Color.darkGray);
+        g2d.drawLine(x2-1, y1, x2, y2);
 
         g2d.dispose();
     }

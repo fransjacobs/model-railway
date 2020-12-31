@@ -21,7 +21,7 @@ package lan.wervel.jcs.ui.layout.tiles;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 import org.junit.After;
 import org.junit.Before;
 import static org.junit.Assert.*;
@@ -47,33 +47,10 @@ public class StraightTrackTest {
     /**
      * Test of rotate method, of class StraightTrack.
      */
-    //@Test
-    public void testRotate() {
-        System.out.println("rotate");
-        StraightTrack instance = null;
-        instance.rotate();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of renderTile method, of class StraightTrack.
-     */
-    //@Test
-    public void testRenderTile() {
-        System.out.println("renderTile");
-        Graphics2D g2 = null;
-        Color trackColor = null;
-        StraightTrack instance = null;
-        instance.renderTile(g2, trackColor);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
     @Test
     public void testContains() {
         System.out.println("contains");
-        StraightTrack tile = new StraightTrack(Rotation.R0, 100, 100);
+        StraightTrack tile = new StraightTrack(Orientation.EAST, 100, 100);
 
         assertEquals(40, tile.getWidth());
         assertEquals(40, tile.getHeight());

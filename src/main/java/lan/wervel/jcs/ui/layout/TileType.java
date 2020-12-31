@@ -18,11 +18,38 @@
  */
 package lan.wervel.jcs.ui.layout;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public enum TileType {
-  STRAIGHT,
-  DIAGONAL,
-  TURNOUT,
-  SIGNAL,
-  FEEDBACK_SENSOR,
-  OCCUPANCY_SENSOR
-}	
+    STRAIGHT("StraightTrack"), DIAGONAL("DiagonalTrack"), TURNOUT("TurnoutTile"), SIGNAL("SignalTile"), SENSOR("SensorTile"), BLOCK("BlockTile");
+
+    private final String tileType;
+
+    private static final Map<String, TileType> ENUM_MAP;
+
+    TileType(String tileType) {
+        this.tileType = tileType;
+    }
+
+    public String getTileType() {
+        return this.tileType;
+    }
+
+    static {
+        Map<String, TileType> map = new ConcurrentHashMap<>();
+        for (TileType instance : TileType.values()) {
+            map.put(instance.getTileType(), instance);
+        }
+        ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static TileType get(String tileType) {
+        if (tileType == null) {
+            return null;
+        }
+        return ENUM_MAP.get(tileType);
+    }
+
+}

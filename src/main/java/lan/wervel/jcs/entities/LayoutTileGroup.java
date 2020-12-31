@@ -27,136 +27,148 @@ import java.util.Objects;
  */
 public class LayoutTileGroup extends ControllableDevice {
 
-  private String color;
-  private String direction;
-  private BigDecimal startLatiId;
-  private BigDecimal endLatiId;
+    private String color;
+    private String direction;
+    private BigDecimal startLatiId;
+    private BigDecimal endLatiId;
 
-  public LayoutTileGroup() {
-    this(null, null, null, null, null, null, null);
-  }
+    public LayoutTileGroup() {
+        this(null, null, null, null, null, null, null);
+    }
 
-  public LayoutTileGroup(Integer groupNumber) {
-    this(null, null, null, null, null, null, groupNumber);
-  }
+    public LayoutTileGroup(Integer groupNumber) {
+        this(null, null, null, null, null, null, groupNumber);
+    }
 
-  public LayoutTileGroup(BigDecimal id, String name, Integer groupNumber) {
-    this(id, name, null, null, null, null, groupNumber);
-  }
+    public LayoutTileGroup(Integer groupNumber, String direction) {
+        this(null, null, null, direction, null, null, groupNumber);
+    }
 
-  public LayoutTileGroup(BigDecimal id, String name, String color, String direction, Integer groupNumber) {
-    this(id, name, color, direction, null, null, groupNumber);
-  }
+    public LayoutTileGroup(BigDecimal id, String name, Integer groupNumber) {
+        this(id, name, null, null, null, null, groupNumber);
+    }
 
-  public LayoutTileGroup(BigDecimal id, String name, String color, String direction, BigDecimal startLatiId, BigDecimal endLatiId, Integer groupNumber) {
-    super(id, groupNumber, name);
-    this.color = color;
-    this.direction = direction;
-    this.startLatiId = startLatiId;
-    this.endLatiId = endLatiId;
-  }
+    public LayoutTileGroup(BigDecimal id, String name, String color, String direction, Integer groupNumber) {
+        this(id, name, color, direction, null, null, groupNumber);
+    }
 
-  public String getColor() {
-    return color;
-  }
+    public LayoutTileGroup(BigDecimal id, String name, String color, String direction, BigDecimal startLatiId, BigDecimal endLatiId, Integer groupNumber) {
+        super(id, groupNumber, name);
+        this.color = color;
+        this.direction = direction;
+        this.startLatiId = startLatiId;
+        this.endLatiId = endLatiId;
+    }
 
-  public void setColor(String color) {
-    this.color = color;
-  }
+    public String getColor() {
+        return color;
+    }
 
-  public String getDirection() {
-    return direction;
-  }
+    public void setColor(String color) {
+        this.color = color;
+    }
 
-  public void setDirection(String direction) {
-    this.direction = direction;
-  }
+    public String getDirection() {
+        return direction;
+    }
 
-  public BigDecimal getStartLatiId() {
-    return startLatiId;
-  }
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
 
-  public void setStartLatiId(BigDecimal startLatiId) {
-    this.startLatiId = startLatiId;
-  }
+    public BigDecimal getStartLatiId() {
+        return startLatiId;
+    }
 
-  public BigDecimal getEndLatiId() {
-    return endLatiId;
-  }
+    public void setStartLatiId(BigDecimal startLatiId) {
+        this.startLatiId = startLatiId;
+    }
 
-  public void setEndLatiId(BigDecimal endLatiId) {
-    this.endLatiId = endLatiId;
-  }
+    public BigDecimal getEndLatiId() {
+        return endLatiId;
+    }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
+    public void setEndLatiId(BigDecimal endLatiId) {
+        this.endLatiId = endLatiId;
+    }
 
-    if (this.id == null && this.address == null && this.name == null) {
-      sb.append("");
-    } else {
-      if (this.name != null) {
-        sb.append(this.name);
-        if (this.address != null) {
-          sb.append(" ");
-          sb.append(this.address);
-        }
-      } else {
-        if (this.address != null && this.address > 0) {
-          sb.append("Block: ");
-          sb.append(this.address);
+    public Integer getGroupNumber() {
+        return this.address;
+    }
+
+    public void setGroupNumber(Integer groupNumber) {
+        this.address = groupNumber;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        if (this.id == null && this.address == null && this.name == null) {
+            sb.append("");
         } else {
-          sb.append("Block Id: ");
-          sb.append(this.id);
+            if (this.name != null) {
+                sb.append(this.name);
+                if (this.address != null) {
+                    sb.append(" ");
+                    sb.append(this.address);
+                }
+            } else {
+                if (this.address != null && this.address > 0) {
+                    sb.append("Block: ");
+                    sb.append(this.address);
+                } else {
+                    sb.append("Block Id: ");
+                    sb.append(this.id);
+                }
+            }
         }
-      }
-    }
-    return sb.toString();
-  }
-
-  @Override
-  public String toLogString() {
-    return this.id + ";" + this.name + ";" + this.direction + ";" + this.color + ";" + this.address;
-  }
-
-  @Override
-  public int hashCode() {
-    int hash = 7;
-    hash = 29 * hash + Objects.hashCode(this.id);
-    hash = 89 * hash + Objects.hashCode(this.color);
-    hash = 89 * hash + Objects.hashCode(this.direction);
-    hash = 89 * hash + Objects.hashCode(this.startLatiId);
-    hash = 89 * hash + Objects.hashCode(this.endLatiId);
-    hash = 89 * hash + Objects.hashCode(this.address);
-    return hash;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final LayoutTileGroup other = (LayoutTileGroup) obj;
-    if (!Objects.equals(this.color, other.color)) {
-      return false;
-    }
-    if (!Objects.equals(this.direction, other.direction)) {
-      return false;
-    }
-    if (!Objects.equals(this.startLatiId, other.startLatiId)) {
-      return false;
-    }
-    if (!Objects.equals(this.endLatiId, other.endLatiId)) {
-      return false;
+        return sb.toString();
     }
 
-    return super.equals(other);
-  }
+    @Override
+    public String toLogString() {
+        return this.id + ";" + this.name + ";" + this.direction + ";" + this.color + ";" + this.address;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.id);
+        hash = 89 * hash + Objects.hashCode(this.color);
+        hash = 89 * hash + Objects.hashCode(this.direction);
+        hash = 89 * hash + Objects.hashCode(this.startLatiId);
+        hash = 89 * hash + Objects.hashCode(this.endLatiId);
+        hash = 89 * hash + Objects.hashCode(this.address);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LayoutTileGroup other = (LayoutTileGroup) obj;
+        if (!Objects.equals(this.color, other.color)) {
+            return false;
+        }
+        if (!Objects.equals(this.direction, other.direction)) {
+            return false;
+        }
+        if (!Objects.equals(this.startLatiId, other.startLatiId)) {
+            return false;
+        }
+        if (!Objects.equals(this.endLatiId, other.endLatiId)) {
+            return false;
+        }
+
+        return super.equals(other);
+    }
 
 }

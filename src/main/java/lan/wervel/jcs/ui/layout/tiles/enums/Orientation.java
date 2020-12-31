@@ -22,29 +22,29 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public enum Direction {
-    RIGHT("Right"), LEFT("Left"), CENTER("Center");
+public enum Orientation {
+    NORTH("North"), SOUTH("South"), EAST("East"), WEST("West");
 
-    private final String direction;
-    private static final Map<String, Direction> ENUM_MAP;
+    private final String orientation;
+    private static final Map<String, Orientation> ENUM_MAP;
 
-    Direction(String direction) {
-        this.direction = direction;
+    Orientation(String orientation) {
+        this.orientation = orientation;
     }
 
     static {
-        Map<String, Direction> map = new ConcurrentHashMap<>();
-        for (Direction instance : Direction.values()) {
-            map.put(instance.getDirection(), instance);
+        Map<String, Orientation> map = new ConcurrentHashMap<>();
+        for (Orientation instance : Orientation.values()) {
+            map.put(instance.getOrientation(), instance);
         }
         ENUM_MAP = Collections.unmodifiableMap(map);
     }
 
-    public String getDirection() {
-        return this.direction;
+    public String getOrientation() {
+        return this.orientation;
     }
 
-    public static Direction get(String direction) {
+    public static Orientation get(String direction) {
         return ENUM_MAP.get(direction);
     }
 }

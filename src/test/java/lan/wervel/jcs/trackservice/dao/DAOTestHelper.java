@@ -151,14 +151,14 @@ public class DAOTestHelper extends DatabaseCreator {
         try {
             try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
-                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ROTATION,DIRECTION,X,Y) "
-                        + "VALUES(lati_seq.nextval,'TurnoutTile','R180','LEFT', 30, 30)");
+                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
+                        + "VALUES(lati_seq.nextval,'TurnoutTile','East','Left', 30, 30)");
 
-                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ROTATION,DIRECTION,X,Y) "
-                        + "VALUES(lati_seq.nextval,'DiagonalTrack','R90','CENTER', 40, 50)");
+                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
+                        + "VALUES(lati_seq.nextval,'DiagonalTrack','South','Center', 40, 50)");
 
-                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ROTATION,DIRECTION,X,Y) "
-                        + "VALUES(lati_seq.nextval,'StraightTrack','R0','CENTER', 50, 60)");
+                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
+                        + "VALUES(lati_seq.nextval,'StraightTrack','West','Center', 50, 60)");
 
                 c.commit();
             }

@@ -18,71 +18,51 @@
  */
 package lan.wervel.jcs.ui.layout.tiles;
 
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
+import java.awt.geom.Rectangle2D;
 import lan.wervel.jcs.entities.LayoutTile;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
+import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.trackservice.events.SensorListener;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R180;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R270;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R90;
 
 /**
- * Draw a OccupancyDetector
+ * Draw a FeedbackPort Track
  *
  * @author frans
  */
-public class OccupancyDetector extends AbstractTile implements SensorListener {
+public class SensorTile extends AbstractTile implements SensorListener {
 
     private boolean portActive;
 
-    public OccupancyDetector(LayoutTile layoutTile) {
+    public SensorTile(LayoutTile layoutTile) {
         super(layoutTile);
-        if (Rotation.R0.equals(rotation) || Rotation.R180.equals(rotation)) {
-            this.width = DEFAULT_WIDTH * 2;
-            this.height = DEFAULT_HEIGHT;
-        } else {
-            this.width = DEFAULT_WIDTH;
-            this.height = DEFAULT_HEIGHT * 2;
-        }
+        this.width = DEFAULT_WIDTH;
+        this.height = DEFAULT_HEIGHT;
     }
 
-    public OccupancyDetector(Rotation rotation, int x, int y) {
-        this(rotation, Direction.CENTER, x, y);
+    public SensorTile(Orientation orientation, int x, int y) {
+        this(orientation, new Point(x, y));
     }
 
-    public OccupancyDetector(Rotation rotation, Direction direction, int x, int y) {
-        this(rotation, direction, new Point(x, y));
-    }
-
-    public OccupancyDetector(Rotation rotation, Direction direction, Point center) {
-        super(rotation, direction, center);
-        if (Rotation.R0.equals(rotation) || Rotation.R180.equals(rotation)) {
-            this.width = DEFAULT_WIDTH * 2;
-            this.height = DEFAULT_HEIGHT;
-        } else {
-            this.width = DEFAULT_WIDTH;
-            this.height = DEFAULT_HEIGHT * 2;
-        }
+    public SensorTile(Orientation orientation, Point center) {
+        super(orientation, center);
+        this.width = DEFAULT_WIDTH;
+        this.height = DEFAULT_HEIGHT;
     }
 
     @Override
-    public void rotate() {
-        if (Rotation.R90.equals(rotation)) {
-            this.setRotation(Rotation.R0);
-            this.width = DEFAULT_WIDTH * 2;
-            this.height = DEFAULT_HEIGHT;
-        } else {
-            this.setRotation(Rotation.R90);
-            this.width = DEFAULT_WIDTH;
-            this.height = DEFAULT_HEIGHT * 2;
-        }
+    public Rectangle2D getBounds2D() {
+        return getBounds().getBounds2D();
     }
 
     @Override
@@ -111,23 +91,23 @@ public class OccupancyDetector extends AbstractTile implements SensorListener {
         double x, y, w, h;
         int x1, y1, x2, y2;
 
-        x = MIN_GRID * 2 - 30;
-        y = MIN_GRID - 6;
-        w = 60;
-        h = 12;
+        x = MIN_GRID - 4;
+        y = MIN_GRID - 8;
+        w = 8;
+        h = 16;
 
         x1 = 0;
         y1 = MIN_GRID;
-        x2 = DEFAULT_WIDTH * 2;
+        x2 = DEFAULT_WIDTH;
         y2 = y1;
 
         g2d.setBackground(Color.white);
-        g2d.clearRect(0, 0, DEFAULT_WIDTH * 2, DEFAULT_HEIGHT);
+        g2d.clearRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
+        g2d.setStroke(new BasicStroke(1));
         if (!this.portActive) {
-            g2.setStroke(new BasicStroke(1));
-            g2.setPaint(Color.gray);
-            g2.draw(new RoundRectangle2D.Double(x, y, w, h, 10, 10));
+            g2d.setPaint(Color.lightGray);
+            g2d.fill(new Ellipse2D.Double(x, y, w, h));
         }
 
         //Track
@@ -135,21 +115,22 @@ public class OccupancyDetector extends AbstractTile implements SensorListener {
         g2d.setPaint(trackColor);
         g2d.drawLine(x1, y1, x2, y2);
 
+        //In and out side only mark the out        
+        g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.setPaint(Color.darkGray);
+        g2d.drawLine(x2 - 1, y1, x2, y2);
+
         if (this.portActive) {
-            g2.setPaint(Color.magenta);
-            g2.fill(new RoundRectangle2D.Double(x, y, w, h, 10, 10));
+            g2d.setPaint(Color.cyan);
+            g2d.fill(new Ellipse2D.Double(x, y, w, h));
         }
 
         g2d.dispose();
     }
 
     @Override
-    protected BufferedImage createImage() {
-        return new BufferedImage(DEFAULT_WIDTH * 2, DEFAULT_HEIGHT, BufferedImage.TYPE_INT_RGB);
-    }
-
-    @Override
     public void drawCenterPoint(Graphics2D g2d, Color color, double size) {
+
         Color c;
         if (this.portActive) {
             c = Color.darkGray;
@@ -173,16 +154,16 @@ public class OccupancyDetector extends AbstractTile implements SensorListener {
             int textOffsetX, textOffsetY;
 
             if (Direction.RIGHT.equals(direction)) {
-                switch (this.rotation) {
-                    case R90:
+                switch (this.orientation) {
+                    case EAST:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
@@ -192,16 +173,16 @@ public class OccupancyDetector extends AbstractTile implements SensorListener {
                         break;
                 }
             } else {
-                switch (rotation) {
-                    case R90:
+                switch (orientation) {
+                    case EAST:
                         textOffsetX = 0;
                         textOffsetY = -1 * MIN_GRID / 2;
                         break;
-                    case R180:
+                    case WEST:
                         textOffsetX = 0;
                         textOffsetY = MIN_GRID;
                         break;
-                    case R270:
+                    case SOUTH:
                         textOffsetX = -1 * (MIN_GRID + MIN_GRID - MIN_GRID / 4);
                         textOffsetY = MIN_GRID;
                         break;

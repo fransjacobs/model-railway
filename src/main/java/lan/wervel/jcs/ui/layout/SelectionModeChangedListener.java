@@ -6,7 +6,7 @@
 package lan.wervel.jcs.ui.layout;
 
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
+import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 
 /**
  *
@@ -14,6 +14,6 @@ import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
  */
 public interface SelectionModeChangedListener {
 
-    void selectionModeChanged(Mode newMode, Rotation newOrientation, Direction newDirection, TileType newTileType);
+    void selectionModeChanged(Mode newMode, Orientation newOrientation, Direction newDirection, TileType newTileType);
 
 }

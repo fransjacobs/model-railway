@@ -47,14 +47,15 @@ import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
-import lan.wervel.jcs.ui.layout.tiles.FeedbackPort;
-import lan.wervel.jcs.ui.layout.tiles.OccupancyDetector;
+import lan.wervel.jcs.ui.layout.tiles.SensorTile;
+import lan.wervel.jcs.ui.layout.tiles.BlockTile;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
 import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.trackservice.events.SensorListener;
+import lan.wervel.jcs.ui.layout.tiles.TileFactory;
 
 /**
  * This panel is used to show the layout and be able use the layout as switch
@@ -95,7 +96,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
         for (AbstractTile tile : snapshot) {
             tile.drawTile(g2d);
 
-            if(tile instanceof FeedbackPort || tile instanceof OccupancyDetector) {
+            if(tile instanceof SensorTile || tile instanceof BlockTile) {
                 tile.setDrawName(false);
             } 
             
@@ -106,7 +107,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
                 }
             }
             
-            if(tile instanceof FeedbackPort || tile instanceof OccupancyDetector) {
+            if(tile instanceof SensorTile || tile instanceof BlockTile) {
                 tile.setDrawName(false);
             } 
             
@@ -159,7 +160,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
         int minX = Integer.MAX_VALUE, maxX = 0, minY = Integer.MAX_VALUE, maxY = 0;
 
         for (LayoutTile lt : lts) {
-            AbstractTile t = AbstractTile.createTile(lt);
+            AbstractTile t = TileFactory.createTile(lt);
             if (t != null) {
                 snapshot.add(t);
 
