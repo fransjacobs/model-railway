@@ -25,12 +25,17 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
-import java.awt.image.BufferedImage;
 import lan.wervel.jcs.entities.LayoutTile;
+import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
+import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
+import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
 import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Orientation.EAST;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Orientation.SOUTH;
+import static lan.wervel.jcs.ui.layout.tiles.enums.Orientation.WEST;
 
 /**
  * Draw a Turnout
@@ -39,14 +44,7 @@ import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
  */
 public class TurnoutTile extends AbstractTile implements AccessoryListener {
 
-    private final static Point[] R_R0 = new Point[]{new Point(0, 20), new Point(20, 20), new Point(20, 20), new Point(60, 60), new Point(60, 60), new Point(80, 60), new Point(20, 20), new Point(80, 20)};
-    private final static Point[] L_R0 = new Point[]{new Point(0, 60), new Point(20, 60), new Point(20, 60), new Point(60, 20), new Point(60, 20), new Point(80, 20), new Point(20, 60), new Point(80, 60)};
-
-    private int status = 0;
-
-    protected final static int STRAIGHT = 1;
-    protected final static int OFF = 0;
-    protected final static int CURVED = -1;
+    private AccessoryValue accessoryValue;
 
     public TurnoutTile(LayoutTile layoutTile) {
         super(layoutTile);
@@ -96,35 +94,23 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
         }
     }
 
-    protected void setStatus(int status) {
-        if (this.status != status) {
-            this.status = status;
+    protected void setAccessoryValue(AccessoryValue accessoryValue) {
+        if (!accessoryValue.equals(this.accessoryValue)) {
             this.image = null;
         }
+
+        this.accessoryValue = accessoryValue;
+
     }
 
     @Override
     public void switched(AccessoryEvent event) {
         if (layoutTile != null && layoutTile.getSolenoidAccessoiry() != null && event.isEventFor(layoutTile.getSolenoidAccessoiry())) {
-            switch (event.getValue()) {
-                case RED:
-                    setStatus(CURVED);
-                    break;
-                case GREEN:
-                    setStatus(STRAIGHT);
-                    break;
-                default:
-                    setStatus(OFF);
-            }
+            setAccessoryValue(event.getValue());
         }
         if (this.reDrawListener != null) {
             this.reDrawListener.reDraw();
         }
-    }
-
-    @Override
-    protected BufferedImage createImage() {
-        return new BufferedImage(DEFAULT_WIDTH * 2, DEFAULT_HEIGHT * 2, BufferedImage.TYPE_INT_RGB);
     }
 
     /**
@@ -138,55 +124,72 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
     public void renderTile(Graphics2D g2, Color trackColor) {
         Graphics2D g2d = (Graphics2D) g2.create();
 
-        double sx = 0;
-        double sy = 0;
-
         GeneralPath line1 = new GeneralPath();
         GeneralPath line2 = new GeneralPath();
         GeneralPath line3 = new GeneralPath();
         GeneralPath line4 = new GeneralPath();
+        GeneralPath line5 = new GeneralPath();
 
-        Point[] points;
         if (Direction.RIGHT.equals(direction)) {
-            points = R_R0;
+            line1.moveTo(75, 60);
+            line1.lineTo(80, 60);
+
+            line2.moveTo(75, 60);
+            line2.curveTo(75, 60, 55, 60, 35, 40);
+
+            line3.moveTo(5, 20);
+            line3.curveTo(5, 20, 15, 20, 35, 40);
+
+            line4.moveTo(5, 20);
+            line4.lineTo(0, 20);
+
+            line5.moveTo(75, 60);
+            line5.lineTo(0, 60);
+
         } else {
-            points = L_R0;
+            line1.moveTo(0, 60);
+            line1.lineTo(5, 60);
+
+            line2.moveTo(5, 60);
+            line2.curveTo(5, 60, 25, 60, 45, 40);
+
+            line3.moveTo(75, 20);
+            line3.curveTo(75, 20, 65, 20, 45, 40);
+
+            line4.moveTo(75, 20);
+            line4.lineTo(80, 20);
+
+            line5.moveTo(5, 60);
+            line5.lineTo(80, 60);
         }
 
         g2d.setBackground(Color.white);
         g2d.clearRect(0, 0, DEFAULT_WIDTH * 2, DEFAULT_HEIGHT * 2);
 
-        //draw the turnout    
-        line1.moveTo(sx + points[0].x, sy + points[0].y);
-        line1.lineTo(sx + points[1].x, sy + points[1].y);
-
-        line2.moveTo(sx + points[2].x, sy + points[2].y);
-        line2.lineTo(sx + points[3].x, sy + points[3].y);
-
-        line3.moveTo(sx + points[4].x, sy + points[4].y);
-        line3.lineTo(sx + points[5].x, sy + points[5].y);
-
-        line4.moveTo(sx + points[6].x, sy + points[6].y);
-        line4.lineTo(sx + points[7].x, sy + points[7].y);
-
         g2d.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-        switch (status) {
-            case STRAIGHT:
+        if (accessoryValue == null) {
+            accessoryValue = AccessoryValue.OFF;
+        }
+
+        switch (accessoryValue) {
+            case GREEN:
                 g2d.setPaint(Color.lightGray);
                 g2d.draw(line2);
                 g2d.draw(line3);
+                g2d.draw(line4);
                 g2d.setPaint(Color.green);
                 g2d.draw(line1);
-                g2d.draw(line4);
+                g2d.draw(line5);
                 break;
-            case CURVED:
+            case RED:
                 g2d.setPaint(Color.lightGray);
-                g2d.draw(line4);
+                g2d.draw(line5);
                 g2d.setPaint(Color.red);
                 g2d.draw(line1);
                 g2d.draw(line2);
                 g2d.draw(line3);
+                g2d.draw(line4);
                 break;
             default:
                 g2d.setPaint(Color.lightGray);
@@ -194,9 +197,9 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
                 g2d.draw(line2);
                 g2d.draw(line3);
                 g2d.draw(line4);
+                g2d.draw(line5);
                 break;
         }
-
         g2d.dispose();
     }
 
@@ -262,7 +265,7 @@ public class TurnoutTile extends AbstractTile implements AccessoryListener {
     @Override
     public void drawCenterPoint(Graphics2D g2d, Color color, double size) {
         Color c;
-        if (this.status != OFF) {
+        if (!AccessoryValue.OFF.equals(this.accessoryValue)) {
             c = Color.darkGray;
         } else {
             c = color;

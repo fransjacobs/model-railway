@@ -26,6 +26,7 @@ import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
+import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
 
@@ -64,20 +65,19 @@ public class TileTester extends JFrame {
 //        tileWest = new Block(Orientation.WEST, 190, 80);
 //        tileNorth = new Block(Orientation.NORTH, 260, 80);
 //        ((Block)tileNorth).setActive(true);
-//        tileEast = new TurnoutTile(Orientation.EAST, Direction.LEFT, 50, 80);
-//        tileSouth = new TurnoutTile(Orientation.SOUTH, Direction.LEFT, 140, 80);
-//        ((TurnoutTile) tileSouth).setStatus(TurnoutTile.CURVED);
-//        tileWest = new TurnoutTile(Orientation.WEST, Direction.RIGHT, 230, 80);
-//        ((TurnoutTile) tileWest).setStatus(TurnoutTile.STRAIGHT);
-//        tileNorth = new TurnoutTile(Orientation.NORTH, Direction.RIGHT, 320, 80);
+
+        tileEast = new TurnoutTile(Orientation.EAST, Direction.LEFT, 50, 80);
+        tileSouth = new TurnoutTile(Orientation.SOUTH, Direction.LEFT, 140, 80);
+        ((TurnoutTile) tileSouth).setAccessoryValue(AccessoryValue.RED);
+        tileWest = new TurnoutTile(Orientation.WEST, Direction.RIGHT, 230, 80);
+        ((TurnoutTile) tileWest).setAccessoryValue(AccessoryValue.GREEN);
+        tileNorth = new TurnoutTile(Orientation.NORTH, Direction.RIGHT, 320, 80);
 
         
-        tileEast = new SignalTile(Orientation.EAST, 50, 80);
-        tileSouth = new SignalTile(Orientation.SOUTH, 120, 80);
-//        ((Block)tileSouth).setActive(true);
-        tileWest = new SignalTile(Orientation.WEST, 190, 80);
-        tileNorth = new SignalTile(Orientation.NORTH, 260, 80);
-//        ((Block)tileNorth).setActive(true);
+//        tileEast = new SignalTile(Orientation.EAST, 50, 80);
+//        tileSouth = new SignalTile(Orientation.SOUTH, 120, 80);
+//        tileWest = new SignalTile(Orientation.WEST, 190, 80);
+//        tileNorth = new SignalTile(Orientation.NORTH, 260, 80);
         
         
         //this.tile = new SignalTile(Rotation.R0, 100, 100);
