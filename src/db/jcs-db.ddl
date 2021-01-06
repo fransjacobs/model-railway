@@ -1,7 +1,7 @@
 DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS;
-DROP TABLE if exists drivewaytypes CASCADE CONSTRAINTS;
+DROP TABLE if exists drivewaytypes CASCADE CONSTRAINTS;  --
 DROP TABLE if exists driveways CASCADE CONSTRAINTS;
-DROP TABLE if exists drivewayactivationlogs CASCADE CONSTRAINTS;
+DROP TABLE if exists drivewayactivationlogs CASCADE CONSTRAINTS; ---
 DROP TABLE if exists locomotives CASCADE CONSTRAINTS;
 DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS;
 DROP TABLE if exists accessorysettings CASCADE CONSTRAINTS;
@@ -9,34 +9,35 @@ DROP TABLE if exists statustypes CASCADE CONSTRAINTS;
 DROP TABLE if exists trackpower CASCADE CONSTRAINTS;
 DROP TABLE if exists feedbacksource CASCADE CONSTRAINTS;
 DROP TABLE if exists layouttiles CASCADE CONSTRAINTS;
-DROP TABLE if exists layouttilegroups CASCADE CONSTRAINTS;
+DROP TABLE if exists layouttilegroups CASCADE CONSTRAINTS; ---
 DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;
 DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;
 DROP TABLE if exists sensors CASCADE CONSTRAINTS;
+DROP TABLE if exists routes CASCADE CONSTRAINTS;
 
 DROP SEQUENCE if exists drwa_seq;
-DROP SEQUENCE if exists dwal_seq;
+DROP SEQUENCE if exists dwal_seq; ---
 DROP SEQUENCE if exists loco_seq;
 DROP SEQUENCE if exists soac_seq;
 DROP SEQUENCE if exists acse_seq;
 DROP SEQUENCE if exists trpo_seq;
 DROP SEQUENCE if exists feso_seq;
 DROP SEQUENCE if exists lati_seq;
-DROP SEQUENCE if exists ltgr_seq;
+DROP SEQUENCE if exists ltgr_seq; ---
 DROP SEQUENCE if exists prop_seq;
 DROP SEQUENCE if exists sens_seq;
+DROP SEQUENCE if exists rout_seq;
 
 CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE dwal_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE acse_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE feso_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE ltgr_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1;
 
 
 CREATE TABLE trackpower (
@@ -55,40 +56,6 @@ CREATE TABLE accessorytypes (
 
 ALTER TABLE accessorytypes ADD CONSTRAINT acty_pk PRIMARY KEY ( accessory_type );
 
-create table drivewaytypes (
-  driveway_type  VARCHAR2(255 CHAR) NOT NULL,
-  description    VARCHAR2(255)
-);
-
-ALTER TABLE drivewaytypes ADD CONSTRAINT drty_pk PRIMARY KEY ( driveway_type );
-
-
-CREATE TABLE driveways (
-  id             NUMBER NOT NULL,
-  address        INTEGER NOT NULL,
-  femo_id        NUMBER,
-  port           INTEGER,
-  driveway_type  VARCHAR2(255 CHAR) NOT NULL, 
-  name           VARCHAR2(255 CHAR) NOT NULL,
-  description    VARCHAR2(255 CHAR)
-);
-
-ALTER TABLE driveways ADD CONSTRAINT drwa_pk PRIMARY KEY ( id );
-
-ALTER TABLE driveways ADD CONSTRAINT drwa_femo_port_un UNIQUE ( femo_id, port );
-
-ALTER TABLE driveways ADD CONSTRAINT drwa_address_un UNIQUE ( address );
-
-
-CREATE TABLE drivewayactivationlogs (
-  id                      NUMBER NOT NULL,
-  drwa_id                 NUMBER NOT NULL,
-  triggerdatetime         DATE NOT NULL,
-  triggerport             INTEGER,
-  triggerfeedbackmodule   NUMBER
-);
-
-ALTER TABLE drivewayactivationlogs ADD CONSTRAINT dral_pk PRIMARY KEY ( id );
 
 CREATE TABLE sensors (
   id              NUMBER NOT NULL,
@@ -155,6 +122,7 @@ ALTER TABLE solenoidaccessories
     REFERENCES solenoidaccessories ( id )
   NOT DEFERRABLE;
 
+/*
 CREATE TABLE accessorysettings (
   id                    NUMBER NOT NULL,
   drwa_id               NUMBER NOT NULL,
@@ -172,7 +140,7 @@ ALTER TABLE accessorysettings ADD CONSTRAINT soas_pk PRIMARY KEY ( id );
 ALTER TABLE accessorysettings ADD CONSTRAINT soas_un UNIQUE ( drwa_id, soac_id );
 
 ALTER TABLE accessorysettings ADD CONSTRAINT stty_or_siva_nn check ( (default_status_type is not null and default_signal_value is null) or (default_status_type is null and default_signal_value is not null) );
-
+*/
 
 CREATE TABLE statustypes (
   status_type   VARCHAR2(255 CHAR) NOT NULL,
@@ -199,21 +167,6 @@ ALTER TABLE jcsproperties ADD CONSTRAINT prop_pk PRIMARY KEY ( id );
 ALTER TABLE jcsproperties ADD CONSTRAINT prop_key_un UNIQUE ( key );
 
 -- FK's
-ALTER TABLE driveways
-  ADD CONSTRAINT drwa_femo_fk FOREIGN KEY ( femo_id )
-    REFERENCES feedbackmodules ( id )
-  NOT DEFERRABLE;
-
-ALTER TABLE driveways
-  ADD CONSTRAINT drwa_drty_fk FOREIGN KEY ( driveway_type )
-    REFERENCES drivewaytypes ( driveway_type )
-  NOT DEFERRABLE;
-
-ALTER TABLE drivewayactivationlogs
-  ADD CONSTRAINT dral_drwa_fk FOREIGN KEY ( drwa_id )
-    REFERENCES driveways ( id )
-  NOT DEFERRABLE;
-
 ALTER TABLE solenoidaccessories
   ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )
     REFERENCES accessorytypes ( accessory_type )
@@ -234,6 +187,7 @@ ALTER TABLE accessorysettings
     REFERENCES driveways ( id )
   NOT DEFERRABLE;
 
+/*
 ALTER TABLE accessorysettings
   ADD CONSTRAINT acse_soac_fk FOREIGN KEY ( soac_id )
     REFERENCES solenoidaccessories ( id )
@@ -258,7 +212,7 @@ ALTER TABLE accessorysettings
   ADD CONSTRAINT acse_acty_fk FOREIGN KEY ( accessory_type )
     REFERENCES accessorytypes ( accessory_type )
   NOT DEFERRABLE;
-
+*/
 
 -- Layout
 CREATE TABLE layouttiles (
@@ -271,9 +225,6 @@ CREATE TABLE layouttiles (
   y                     INTEGER NOT NULL,
   soac_id               NUMBER NULL,
   sens_id               NUMBER NULL,
-  ltgr_id               NUMBER NULL,
-  from_lati_id          NUMBER NULL,
-  to_lati_id            NUMBER NULL
 );
 
 ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id );
@@ -290,18 +241,68 @@ ALTER TABLE layouttiles
     REFERENCES sensors ( id )
   NOT DEFERRABLE;  
 
-ALTER TABLE layouttiles
+CREATE TABLE driveways (
+  id             NUMBER NOT NULL,
+  address        INTEGER NOT NULL,
+  name           VARCHAR2(255 CHAR),
+  description    VARCHAR2(255 CHAR),
+  from_lati_id   NUMBER,
+  to_lati_id     NUMBER,
+  loco_id        NUMBER,
+  active         INTEGER NOT NULL,
+  reserved       INTEGER NOT NULL,
+  occupied       INTEGER NOT NULL
+);
+
+ALTER TABLE driveways ADD CONSTRAINT drwa_pk PRIMARY KEY ( id );
+
+ALTER TABLE driveways ADD CONSTRAINT drwa_address_un UNIQUE ( address );
+
+ALTER TABLE driveways
   ADD CONSTRAINT from_lati_fk FOREIGN KEY ( from_lati_id )
     REFERENCES layouttiles ( id )
-  NOT DEFERRABLE;
+  NOT DEFERRABLE;  
 
-ALTER TABLE layouttiles
+ALTER TABLE driveways
   ADD CONSTRAINT to_lati_fk FOREIGN KEY ( to_lati_id )
     REFERENCES layouttiles ( id )
-  NOT DEFERRABLE;
+  NOT DEFERRABLE;  
+
+ALTER TABLE driveways
+  ADD CONSTRAINT loco_drwa_fk FOREIGN KEY ( loco_id )
+    REFERENCES locomotives ( id )
+  NOT DEFERRABLE;  
 
 
 
+CREATE TABLE routes (
+  id             NUMBER NOT NULL,
+  address        INTEGER NOT NULL,
+  name           VARCHAR2(255 CHAR),
+  description    VARCHAR2(255 CHAR),
+  drwa_id        NUMBER NOT NULL,
+  lati_id        NUMBER NOT NULL
+);
+
+ALTER TABLE routes ADD CONSTRAINT rout_pk PRIMARY KEY ( id );
+
+ALTER TABLE routes ADD CONSTRAINT rout_address_un UNIQUE ( address );
+
+ALTER TABLE routes
+  ADD CONSTRAINT drwa_rout_fk FOREIGN KEY ( drwa_id )
+    REFERENCES driveways ( id )
+  NOT DEFERRABLE;  
+
+ALTER TABLE routes
+  ADD CONSTRAINT lati_rout_fk FOREIGN KEY ( lati_id )
+    REFERENCES layouttiles ( id )
+  NOT DEFERRABLE;  
+
+
+
+
+
+/*
 CREATE TABLE layouttilegroups (
   id                  NUMBER NOT NULL,
   name                VARCHAR2(255 CHAR),
@@ -330,6 +331,7 @@ ALTER TABLE layouttilegroups
   ADD CONSTRAINT ltgr_lati_ends_fk FOREIGN KEY ( end_lati_id )
     REFERENCES layouttiles ( id )
   NOT DEFERRABLE;
+*/
 
 -- Trackpower
 INSERT INTO TRACKPOWER(ID,STATUS,FEEDBACKSOURCE,LASTUPDATED)

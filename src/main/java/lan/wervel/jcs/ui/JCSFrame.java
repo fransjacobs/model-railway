@@ -798,6 +798,25 @@ public class JCSFrame extends JFrame implements UICallback {
             this.jcsFrame.toggle();
         }
     }
+    
+//    TBT
+//    public void doOSX() {
+//		try {
+//			/* Issue #744: The file handler must be the first handler to be established! Otherwise the
+//			 * event of the double-clicked file that led to launching Structorizer might slip through!
+//			 */
+//			OSXAdapter.setFileHandler(this, getClass().getDeclaredMethod("loadFile", new Class[]{String.class}));
+//			OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("quit", (Class[]) null));
+//			OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("about", (Class[]) null));
+//			OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("preferences", (Class[]) null));
+//			OSXAdapter.setDockIconImage(getIconImage());
+//
+//			logger.info("OS X handlers established.");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			logger.log(Level.WARNING, "Failed to establish OS X handlers", e);
+//		}
+//	}
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

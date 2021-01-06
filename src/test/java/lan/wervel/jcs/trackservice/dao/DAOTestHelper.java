@@ -167,16 +167,13 @@ public class DAOTestHelper extends DatabaseCreator {
         }
     }
 
-    public static void insertLayoutTileGroupData() {
-        Logger.debug("Inserting LayoutTileGroups...");
+    public static void insertDriveWayData() {
+        Logger.debug("Inserting DriveWays...");
         try {
             try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
-                stmt.executeUpdate("INSERT INTO LAYOUTTILEGROUPS(ID,NAME,START_LATI_ID,END_LATI_ID,COLOR,DIRECTION,GROUPNUMBER) "
-                        + "VALUES(ltgr_seq.nextval,'Block 1', 1 , 2, 'YELLOW','RIGHT',1)");
-
-                stmt.executeUpdate("INSERT INTO LAYOUTTILEGROUPS(ID,NAME,START_LATI_ID,END_LATI_ID,COLOR,DIRECTION,GROUPNUMBER) "
-                        + "VALUES(ltgr_seq.nextval,'Block 2',2,3,'GREY','RIGHT',2)");
+                stmt.executeUpdate("INSERT INTO DRIVEWAYS (ID,ADDRESS,NAME,DESCRIPTION,FROM_LATI_ID,TO_LATI_ID,LOCO_ID,ACTIVE,RESERVED,OCCUPIED) "
+                        + "VALUES (drwa_seq.nextval,1,'Blk 1','Block 1',null,null,null,1,0,0)");
 
                 c.commit();
             }
@@ -185,37 +182,21 @@ public class DAOTestHelper extends DatabaseCreator {
         }
     }
 
-//  public static void insertDriveWayData() {
-//    Logger.debug("Inserting DriveWays...");
-//    try {
-//      try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
-//        Statement stmt = c.createStatement();
-//        stmt.executeUpdate("INSERT INTO DRIVEWAYS (ID,ADDRESS,FEMO_ID,PORT,DRIVEWAY_TYPE,NAME,DESCRIPTION) "
-//                + "VALUES (drwa_seq.nextval,1,1,1,'FeedbackPort','FB 1 P 1','Feedback 1 port 1')");
-//
-//        c.commit();
-//      }
-//    } catch (SQLException ex) {
-//      Logger.error(ex);
-//    }
-//  }
-//  public static void insertAccessorySettingsData() {
-//    Logger.debug("Inserting AccessorySettings...");
-//    try {
-//      try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
-//        Statement stmt = c.createStatement();
-//        stmt.executeUpdate("INSERT INTO ACCESSORYSETTINGS (ID,DRWA_ID, ACCESSORY_TYPE, SOAC_ID,DEFAULT_STATUS_TYPE,DEFAULT_SIGNAL_VALUE,FEMO_ID,PORT,PORT_VALUE) "
-//                + "VALUES (acse_seq.nextval,1,'T',1,'G',null,null,null,0)");
-//
-//        stmt.executeUpdate("INSERT INTO ACCESSORYSETTINGS (ID,DRWA_ID, ACCESSORY_TYPE, SOAC_ID,DEFAULT_STATUS_TYPE,DEFAULT_SIGNAL_VALUE,FEMO_ID,PORT,PORT_VALUE) "
-//                + "VALUES (acse_seq.nextval,1,'S',3,null,'Hp0',null,null,0)");
-//
-//        c.commit();
-//      }
-//    } catch (SQLException ex) {
-//      Logger.error(ex);
-//    }
-//  }
+    public static void insertRouteData() {
+        Logger.debug("Inserting Routes...");
+        try {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+                Statement stmt = c.createStatement();
+                stmt.executeUpdate("INSERT INTO ROUTES (ID,ADDRESS,NAME,DESCRIPTION,DRWA_ID,LATI_ID) "
+                        + "VALUES (rout_seq.nextval,1,'Rt 1','Route 1',1,1)");
+
+                c.commit();
+            }
+        } catch (SQLException ex) {
+            Logger.error(ex);
+        }
+    }
+
     public static void insertJCSPropertiesData() {
         Logger.debug("Inserting JCSProperties...");
         try {

@@ -34,8 +34,8 @@ import org.pmw.tinylog.Logger;
  */
 public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
 
-    private static final String INS_LT_STMT = "insert into layouttiles (TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID,LTGR_ID,FROM_LATI_ID,TO_LATI_ID,ID) values(?,?,?,?,?,?,?,?,?,?,?)";
-    private static final String UPD_LT_STMT = "update layouttiles set TILETYPE = ?,ORIENTATION = ?,DIRECTION = ?,X = ?,Y = ?,SOAC_ID = ?,SENS_ID = ?,LTGR_ID = ?,FROM_LATI_ID = ?,TO_LATI_ID = ? where ID = ?";
+    private static final String INS_LT_STMT = "insert into layouttiles (TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID,ID) values(?,?,?,?,?,?,?,?)";
+    private static final String UPD_LT_STMT = "update layouttiles set TILETYPE = ?,ORIENTATION = ?,DIRECTION = ?,X = ?,Y = ?,SOAC_ID = ?,SENS_ID = ? where ID = ?";
 
     public LayoutTileDAO() {
         super();
@@ -51,11 +51,8 @@ public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
         Integer y = rs.getInt("Y");
         BigDecimal soacId = rs.getBigDecimal("SOAC_ID");
         BigDecimal sensId = rs.getBigDecimal("SENS_ID");
-        BigDecimal ltgrId = rs.getBigDecimal("LTGR_ID");
-        BigDecimal fromLatiId = rs.getBigDecimal("FROM_LATI_ID");
-        BigDecimal toLatiId = rs.getBigDecimal("TO_LATI_ID");
 
-        LayoutTile lt = new LayoutTile(id, tiletype, orientation, direction, x, y, soacId, sensId, ltgrId, fromLatiId, toLatiId);
+        LayoutTile lt = new LayoutTile(id, tiletype, orientation, direction, x, y, soacId, sensId);
         return lt;
     }
 
@@ -77,25 +74,8 @@ public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
         } else {
             ps.setBigDecimal(7, null);
         }
-        if (layoutTile.getLtgrId() != null) {
-            ps.setBigDecimal(8, layoutTile.getLtgrId());
-        } else {
-            ps.setBigDecimal(8, null);
-        }
 
-        if (layoutTile.getFromLatiId() != null) {
-            ps.setBigDecimal(9, layoutTile.getFromLatiId());
-        } else {
-            ps.setBigDecimal(9, null);
-        }
-
-        if (layoutTile.getToLatiId() != null) {
-            ps.setBigDecimal(10, layoutTile.getToLatiId());
-        } else {
-            ps.setBigDecimal(10, null);
-        }
-
-        ps.setBigDecimal(11, layoutTile.getId());
+        ps.setBigDecimal(8, layoutTile.getId());
     }
 
     @Override
@@ -124,22 +104,10 @@ public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
         return this.findById(soacId, stmt);
     }
 
-    public List<LayoutTile> findByLtgrId(BigDecimal ltgrId) {
-        String stmt = "select * from layouttiles where ltgr_id = ? order by x,y";
+    public List<LayoutTile> findByTileType(String tileType) {
+        String stmt = "select * from layouttiles where tiletype = ? order by x,y";
 
-        return this.findBy(ltgrId, stmt);
-    }
-
-    public LayoutTile findByFromLatiId(BigDecimal fromLatiId) {
-        String stmt = "select * from layouttiles where from_lati_id = ?";
-
-        return this.findById(fromLatiId, stmt);
-    }
-
-    public LayoutTile findByToLatiId(BigDecimal toLatiId) {
-        String stmt = "select * from layouttiles where to_lati_id = ?";
-
-        return this.findById(toLatiId, stmt);
+        return this.findBy(tileType, stmt);
     }
 
     public LayoutTile findByXY(Integer x, Integer y) {

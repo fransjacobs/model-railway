@@ -462,10 +462,6 @@ public class H2TrackService implements TrackService {
             lt.setSensor(this.sensDAO.findById(lt.getSensId()));
         }
 
-        if (lt.getLtgrId() != null) {
-            lt.setLayoutTileGroup(this.ltgtDao.findById(lt.getLtgrId()));
-        }
-
         return lt;
     }
 
@@ -488,28 +484,7 @@ public class H2TrackService implements TrackService {
 
     @Override
     public LayoutTile persist(LayoutTile layoutTile) {
-        if (TileType.BLOCK.getTileType().equals(layoutTile.getTiletype()) && layoutTile.getLayoutTileGroup() == null) {
-            //Create the default group
-            List<LayoutTileGroup> ltgl = this.ltgtDao.findAll();
-            Integer groupNumber = ltgl.size() + 1;
-            String direction = layoutTile.getOrientation();
-
-            LayoutTileGroup block = new LayoutTileGroup(groupNumber, direction);
-            layoutTile.setLayoutTileGroup(block);
-        }
-
-        if (layoutTile.getLayoutTileGroup() != null) {
-            LayoutTileGroup layoutTileGroup = layoutTile.getLayoutTileGroup();
-            if (layoutTileGroup.getGroupNumber() != null && !layoutTileGroup.getGroupNumber().equals(0)) {
-                ltgtDao.persist(layoutTileGroup);
-                layoutTile.setLayoutTileGroup(layoutTileGroup);
-            } else {
-                layoutTile.setLayoutTileGroup(null);
-            }
-        }
-
         latiDao.persist(layoutTile);
-
         return layoutTile;
     }
 

@@ -120,10 +120,10 @@ public class DesignCanvas extends JPanel {
 
         Set<LayoutTileGroup> selectedGroups = new HashSet<>();
         for (AbstractTile selectedTile : selectedSnapshot) {
-            if (selectedTile != null && selectedTile.getLayoutTile() != null && selectedTile.getLayoutTile().getLayoutTileGroup() != null) {
-                LayoutTileGroup ltg = selectedTile.getLayoutTile().getLayoutTileGroup();
-                selectedGroups.add(ltg);
-            }
+//            if (selectedTile != null && selectedTile.getLayoutTile() != null && selectedTile.getLayoutTile().getLayoutTileGroup() != null) {
+//                LayoutTileGroup ltg = selectedTile.getLayoutTile().getLayoutTileGroup();
+//                selectedGroups.add(ltg);
+//            }
         }
 
         Graphics2D g2 = (Graphics2D) g.create();
@@ -131,30 +131,30 @@ public class DesignCanvas extends JPanel {
         //Logger.trace("Selected Tiles: " + selectedSnapshot.size() + " Selected Groups: " + selectedGroups.size());
         for (AbstractTile tile : snapshot) {
             if (tile != null) {
-                if (tile.getLayoutTile() != null && tile.getLayoutTile().getLayoutTileGroup() != null) {
-                    LayoutTileGroup ltg = tile.getLayoutTile().getLayoutTileGroup();
-                    if (ltg.getAddress() != null && !ltg.getAddress().equals(0) && selectedGroups.contains(ltg)) {
-                        //also need reset if the imgae todo...
-                        tile.setTrackColor(Color.pink);
-                    } else {
-                        tile.setTrackColor(AbstractTile.DEFAULT_TRACK_COLOR);
-                    }
-                } else {
-                    tile.setTrackColor(AbstractTile.DEFAULT_TRACK_COLOR);
-                }
+//                if (tile.getLayoutTile() != null && tile.getLayoutTile().getLayoutTileGroup() != null) {
+//                    LayoutTileGroup ltg = tile.getLayoutTile().getLayoutTileGroup();
+//                    if (ltg.getAddress() != null && !ltg.getAddress().equals(0) && selectedGroups.contains(ltg)) {
+//                        //also need reset if the imgae todo...
+//                        tile.setTrackColor(Color.pink);
+//                    } else {
+//                        tile.setTrackColor(AbstractTile.DEFAULT_TRACK_COLOR);
+//                    }
+//                } else {
+                tile.setTrackColor(AbstractTile.DEFAULT_TRACK_COLOR);
+//                }
 
                 tile.drawTile(g2);
 
-                if (tile.getLayoutTile() != null && tile.getLayoutTile().getLayoutTileGroup() != null) {
-                    LayoutTileGroup ltg = tile.getLayoutTile().getLayoutTileGroup();
-                    if (selectedGroups.contains(ltg)) {
-                        tile.drawCenterPoint(g2, Color.magenta, 6);
-                    } else {
-                        tile.drawCenterPoint(g2, Color.yellow, 3);
-                    }
-                } else {
-                    tile.drawCenterPoint(g2, Color.yellow, 3);
-                }
+//                if (tile.getLayoutTile() != null && tile.getLayoutTile().getLayoutTileGroup() != null) {
+//                    LayoutTileGroup ltg = tile.getLayoutTile().getLayoutTileGroup();
+//                    if (selectedGroups.contains(ltg)) {
+//                        tile.drawCenterPoint(g2, Color.magenta, 6);
+//                    } else {
+//                        tile.drawCenterPoint(g2, Color.yellow, 3);
+//                    }
+//                } else {
+                tile.drawCenterPoint(g2, Color.yellow, 3);
+//                }
             }
         }
 

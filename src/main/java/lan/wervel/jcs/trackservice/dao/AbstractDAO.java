@@ -137,31 +137,28 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
                 return "prop_seq";
             case "LayoutTile":
                 return "lati_seq";
-            case "LayoutTileGroup":
-                return "ltgr_seq";
+            case "DriveWay":
+                return "drwa_seq";
+            case "Route":
+                return "rout_seq";
             default:
                 return null;
         }
     }
 
-    protected void upsert(T controllableDevice, String statement) {
-        String oper;
-
+    protected int upsert(T controllableDevice, String statement) {
+        int rows = 0;
         if (controllableDevice.getId() == null) {
             String sequenceName = getSequenceName(controllableDevice);
             if (sequenceName != null) {
                 controllableDevice.setId(getNextId(sequenceName));
             }
-            oper = "Insert";
-        } else {
-            oper = "Update";
         }
 
         try (PreparedStatement ps = connection.prepareStatement(statement)) {
             bind(ps, controllableDevice);
 
-            int rows = ps.executeUpdate();
-            //Logger.trace("Executed " + oper + " on: " + controllableDevice.getClass().getSimpleName() + " with Address: " + controllableDevice.getAddress() + " and ID: " + controllableDevice.getId() + " Rows: " + rows);
+            rows = ps.executeUpdate();
 
             if (rows > 0) {
                 connection.commit();
@@ -171,6 +168,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         } catch (SQLException ex) {
             Logger.error(ex);
         }
+        return rows;
     }
 
     protected List<T> findAll(String statement) {
@@ -197,6 +195,24 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, id);
+            ResultSet rs = preparedStatement.executeQuery();
+
+            while (rs.next()) {
+                T device = map(rs);
+                devices.add(device);
+            }
+        } catch (SQLException ex) {
+            Logger.error(ex);
+        }
+
+        return devices;
+    }
+
+    protected List<T> findBy(String key, String statement) {
+        List<T> devices = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            preparedStatement.setString(1, key);
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {

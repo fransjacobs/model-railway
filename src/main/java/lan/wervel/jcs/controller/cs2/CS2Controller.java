@@ -20,7 +20,6 @@ package lan.wervel.jcs.controller.cs2;
 
 import lan.wervel.jcs.controller.cs2.events.SensorMessageEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -160,11 +159,10 @@ public class CS2Controller implements ControllerService {
     @Override
     public void disconnect() {
         try {
+            stopIdleTask();
             final Connection conn = this.connection;
             connected = false;
             this.connection = null;
-
-            stopIdleTask();
 
             if (conn != null) {
                 synchronized (conn) {
