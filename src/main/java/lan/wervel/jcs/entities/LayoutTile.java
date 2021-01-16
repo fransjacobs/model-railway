@@ -230,8 +230,6 @@ public class LayoutTile extends ControllableDevice {
     public Set<Point> getAdjacentPoints() {
         Set<Point> points = new HashSet<>();
 
-        int tx = this.x;
-        int ty = this.y;
         int w = getWidth();
         int h = getHeight();
 
@@ -298,10 +296,8 @@ public class LayoutTile extends ControllableDevice {
         switch (adjacentType) {
             case "DiagonalTrack":
                 if ("East".equals(orientation) || "West".equals(orientation)) {
-                    return ((("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y + h)
-                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x && adjY == this.y + h)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y + h)
-                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x && adjY == this.y + h));
+                    return ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && ((adjX == this.x - w && adjY == this.y - h) || adjX == this.x + w && adjY == this.y + h)
+                            || ("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && ((adjX == this.x && adjY == this.y - h) || adjX == this.x && adjY == this.y + h);
                 } else {
                     return (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y - h)
                             || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x && adjY == this.y - h)
@@ -310,10 +306,11 @@ public class LayoutTile extends ControllableDevice {
                 }
             case "StraightTrack":
                 if ("East".equals(orientation) || "West".equals(orientation)) {
-                    return ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && ((adjX == this.x - w && adjY == this.y - BASE_GRID) || (adjX == this.x + w && adjY == this.y + BASE_GRID));
+                    return ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && ((adjX == this.x - w && adjY == this.y - BASE_GRID) || (adjX == this.x + w && adjY == this.y + BASE_GRID))
+                            || ("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && ((adjX == this.x - BASE_GRID && adjY == this.y - h) || (adjX == this.x + BASE_GRID && adjY == this.y + h));
                 } else {
-                    return ((("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y + BASE_GRID)
-                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x - BASE_GRID && adjY == this.y + h));
+                    return ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && ((adjX == this.x + w && adjY == this.y - BASE_GRID) || (adjX == this.x - w && adjY == this.y + BASE_GRID))
+                            || ("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && ((adjX == this.x + BASE_GRID && adjY == this.y - h) || (adjX == this.x - BASE_GRID && adjY == this.y + h));
                 }
             case "TurnoutTile":
                 break;

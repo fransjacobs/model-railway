@@ -221,21 +221,126 @@ public class LayoutTileTest {
         assertTrue(resultNW);
     }
     
-    
-    
-    //@Test
+      
+    @Test
     public void testIsNeighbourDiagonalEastWest() {
         System.out.println("isNeighbourDiagonalEastWest");
         LayoutTile instanceE = new LayoutTile("DiagonalTrack", "East", "Center", 100, 100);
-        LayoutTile instanceW = new LayoutTile("StraightTrack", "West", "Center", 100, 100);
+        LayoutTile instanceW = new LayoutTile("DiagonalTrack", "West", "Center", 100, 100);
 
-        LayoutTile adjacentN = new LayoutTile("StraightTrack", "North", "Center", 100, 60);
-        LayoutTile adjacentS = new LayoutTile("StraightTrack", "South", "Center", 100, 140);
-        boolean expResult = false;
-        boolean result = instanceE.isNeighbour(adjacentN);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        LayoutTile adjacentN = new LayoutTile("StraightTrack", "North", "Center", 80, 60);
+        LayoutTile adjacentE = new LayoutTile("StraightTrack", "East", "Center", 140, 120);
+        LayoutTile adjacentS = new LayoutTile("StraightTrack", "South", "Center", 120, 140);
+        LayoutTile adjacentW = new LayoutTile("StraightTrack", "West", "Center", 60, 80);
+        
+        LayoutTile instanceNE = new LayoutTile("DiagonalTrack", "East", "Center", 60, 60);
+        LayoutTile instanceNW = new LayoutTile("DiagonalTrack", "West", "Center", 140, 140);
+        LayoutTile instanceSE = new LayoutTile("DiagonalTrack", "North", "Center", 100, 140);
+        LayoutTile instanceSW = new LayoutTile("DiagonalTrack", "South", "Center", 100, 60);
+
+        // _\|/
+        //   \_
+        //  /|\
+        //
+        //Check the straights
+        boolean resultN = instanceE.isNeighbour(adjacentN);
+        boolean resultE = instanceE.isNeighbour(adjacentE);
+        boolean resultS = instanceE.isNeighbour(adjacentS);
+        boolean resultW = instanceE.isNeighbour(adjacentW);
+        assertTrue(resultN);
+        assertTrue(resultE);
+        assertTrue(resultS);
+        assertTrue(resultW);
+        
+        //Check opposite direction
+        resultN = instanceW.isNeighbour(adjacentN);
+        resultE = instanceW.isNeighbour(adjacentE);
+        resultS = instanceW.isNeighbour(adjacentS);
+        resultW = instanceW.isNeighbour(adjacentW);
+        assertTrue(resultN);
+        assertTrue(resultE);
+        assertTrue(resultS);
+        assertTrue(resultW);
+        
+        //Check the Diagonals     
+        boolean resultNE = instanceE.isNeighbour(instanceNE);
+        boolean resultNW = instanceE.isNeighbour(instanceNW);
+        boolean resultSE = instanceE.isNeighbour(instanceSE);
+        boolean resultSW = instanceE.isNeighbour(instanceSW);
+        assertTrue(resultNE);
+        assertTrue(resultNW);
+        assertTrue(resultSE);
+        assertTrue(resultSW);
+        //Check opposite direction
+        resultNE = instanceW.isNeighbour(instanceNE);
+        resultNW = instanceW.isNeighbour(instanceNW);
+        resultSE = instanceW.isNeighbour(instanceSE);
+        resultSW = instanceW.isNeighbour(instanceSW);
+        assertTrue(resultNE);
+        assertTrue(resultNW);
+        assertTrue(resultSE);
+        assertTrue(resultSW);
     }
 
+    @Test
+    public void testIsNeighbourDiagonalNorthSouth() {
+        System.out.println("isNeighbourDiagonalNorthSouth");
+        LayoutTile instanceN = new LayoutTile("DiagonalTrack", "North", "Center", 100, 100);
+        LayoutTile instanceS = new LayoutTile("DiagonalTrack", "South", "Center", 100, 100);
+
+        LayoutTile adjacentN = new LayoutTile("StraightTrack", "North", "Center", 120, 60);
+        LayoutTile adjacentE = new LayoutTile("StraightTrack", "East", "Center", 140, 80);
+        LayoutTile adjacentS = new LayoutTile("StraightTrack", "South", "Center", 80, 140);
+        LayoutTile adjacentW = new LayoutTile("StraightTrack", "West", "Center", 60, 120);
+        
+        LayoutTile instanceNE = new LayoutTile("DiagonalTrack", "East", "Center", 100, 140);
+        LayoutTile instanceNW = new LayoutTile("DiagonalTrack", "West", "Center", 100, 60);
+        LayoutTile instanceSE = new LayoutTile("DiagonalTrack", "North", "Center", 140, 60);
+        LayoutTile instanceSW = new LayoutTile("DiagonalTrack", "South", "Center", 60, 140);
+
+        //   \|/_
+        //   _/
+        //   /|\
+        //
+        //Check the straights
+        boolean resultN = instanceN.isNeighbour(adjacentN);
+        boolean resultE = instanceN.isNeighbour(adjacentE);
+        boolean resultS = instanceN.isNeighbour(adjacentS);
+        boolean resultW = instanceN.isNeighbour(adjacentW);
+        assertTrue(resultN);
+        assertTrue(resultE);
+        assertTrue(resultS);
+        assertTrue(resultW);
+        
+        //Check opposite direction
+        resultN = instanceS.isNeighbour(adjacentN);
+        resultE = instanceS.isNeighbour(adjacentE);
+        resultS = instanceS.isNeighbour(adjacentS);
+        resultW = instanceS.isNeighbour(adjacentW);
+        assertTrue(resultN);
+        assertTrue(resultE);
+        assertTrue(resultS);
+        assertTrue(resultW);
+        
+        //Check the Diagonals     
+        boolean resultNE = instanceN.isNeighbour(instanceNE);
+        boolean resultNW = instanceN.isNeighbour(instanceNW);
+        boolean resultSE = instanceN.isNeighbour(instanceSE);
+        boolean resultSW = instanceN.isNeighbour(instanceSW);
+        assertTrue(resultNE);
+        assertTrue(resultNW);
+        assertTrue(resultSE);
+        assertTrue(resultSW);
+        //Check opposite direction
+        resultNE = instanceS.isNeighbour(instanceNE);
+        resultNW = instanceS.isNeighbour(instanceNW);
+        resultSE = instanceS.isNeighbour(instanceSE);
+        resultSW = instanceS.isNeighbour(instanceSW);
+        assertTrue(resultNE);
+        assertTrue(resultNW);
+        assertTrue(resultSE);
+        assertTrue(resultSW);
+    }
+    
+    
 }
