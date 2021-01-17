@@ -341,8 +341,8 @@ public class LayoutTile extends ControllableDevice {
                 if ("East".equals(orientation) || "West".equals(orientation)) {
                     return (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y + BASE_GRID)
                             || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y - BASE_GRID)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y - BASE_GRID)
-                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y + BASE_GRID);
+                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y + BASE_GRID)
+                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y - BASE_GRID);
                 } else {
                     return (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x + BASE_GRID && adjY == this.y - h)
                             || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x - BASE_GRID && adjY == this.y - h)

@@ -19,6 +19,7 @@
 package lan.wervel.jcs.entities;
 
 import java.awt.Point;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.After;
@@ -145,6 +146,9 @@ public class LayoutTileTest {
         LayoutTile instanceE = new LayoutTile("StraightTrack", "East", "Center", 100, 100);
         LayoutTile instanceW = new LayoutTile("StraightTrack", "West", "Center", 100, 100);
 
+        //  _\_/_
+        //   / \
+        
         LayoutTile adjacentE = new LayoutTile("StraightTrack", "West", "Center", 140, 100);
         LayoutTile adjacentW = new LayoutTile("StraightTrack", "East", "Center", 60, 100);
         boolean resultE = instanceE.isNeighbour(adjacentE);
@@ -161,8 +165,8 @@ public class LayoutTileTest {
         resultE = instanceE.isNeighbour(adjacentE);
         assertFalse(resultE);
         //Check adjacent diagonal
-        LayoutTile adjacentNE = new LayoutTile("DiagonalTrack", "South", "Center", 140, 120);
-        LayoutTile adjacentSE = new LayoutTile("DiagonalTrack", "East", "Center", 140, 80);
+        LayoutTile adjacentNE = new LayoutTile("DiagonalTrack", "South", "Center", 140, 80);
+        LayoutTile adjacentSE = new LayoutTile("DiagonalTrack", "East", "Center", 140, 120);
         LayoutTile adjacentSW = new LayoutTile("DiagonalTrack", "West", "Center", 60, 80);
         LayoutTile adjacentNW = new LayoutTile("DiagonalTrack", "North", "Center", 60, 120);
 
@@ -181,6 +185,10 @@ public class LayoutTileTest {
         System.out.println("isNeighbourStraightNorthSouth");
         LayoutTile instanceN = new LayoutTile("StraightTrack", "North", "Center", 100, 100);
         LayoutTile instanceS = new LayoutTile("StraightTrack", "South", "Center", 100, 100);
+                
+        // \|/
+        //  |
+        // /|\
 
         LayoutTile adjacentN = new LayoutTile("StraightTrack", "North", "Center", 100, 60);
         LayoutTile adjacentS = new LayoutTile("StraightTrack", "South", "Center", 100, 140);
@@ -342,5 +350,85 @@ public class LayoutTileTest {
         assertTrue(resultSW);
     }
     
+
+    
+    
+
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (1,'StraightTrack','East','Center',200,140,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (2,'DiagonalTrack','North','Center',160,160,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (3,'DiagonalTrack','East','Center',240,160,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (4,'StraightTrack','North','Center',140,200,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (5,'StraightTrack','South','Center',260,200,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (6,'DiagonalTrack','West','Center',160,240,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (7,'DiagonalTrack','South','Center',240,240,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (8,'StraightTrack','West','Center',200,260,null,null);
+
+
+    @Test
+    public void testIsNeighbours() {
+        System.out.println("isNeighbours");
+        //Use a "circle" to check...
+        
+        //  _       1
+        // / \     2  3
+        //|   |   4    5
+        // \_/     6  7
+        //          8
+        
+        LayoutTile tile1 = new LayoutTile(new BigDecimal(1),"StraightTrack", "East", "Center", 200, 140);
+        
+        LayoutTile tile2 = new LayoutTile(new BigDecimal(2),"DiagonalTrack", "North", "Center", 160, 160);
+        LayoutTile tile3 = new LayoutTile(new BigDecimal(3),"DiagonalTrack", "East", "Center", 240, 160);
+
+        LayoutTile tile4 = new LayoutTile(new BigDecimal(4),"StraightTrack", "North", "Center", 140, 200);
+        LayoutTile tile5 = new LayoutTile(new BigDecimal(5),"StraightTrack", "South", "Center", 260, 200);
+
+        LayoutTile tile6 = new LayoutTile(new BigDecimal(6),"DiagonalTrack", "West", "Center", 160, 240);
+        LayoutTile tile7 = new LayoutTile(new BigDecimal(7),"DiagonalTrack", "South", "Center", 240, 240);
+
+        LayoutTile tile8 = new LayoutTile(new BigDecimal(1),"StraightTrack", "West", "Center", 200, 260);
+        
+        boolean result12 = tile1.isNeighbour(tile2);
+        boolean result13 = tile1.isNeighbour(tile3);
+        assertTrue(result12);
+        assertTrue(result13);
+
+        boolean result21 = tile2.isNeighbour(tile1);
+        boolean result24 = tile2.isNeighbour(tile4);
+        assertTrue(result21);
+        assertTrue(result24);
+
+        boolean result42 = tile4.isNeighbour(tile2);
+        boolean result46 = tile4.isNeighbour(tile6);
+        assertTrue(result42);
+        assertTrue(result46);
+        
+        boolean result64 = tile6.isNeighbour(tile4);
+        boolean result68 = tile6.isNeighbour(tile8);
+        assertTrue(result64);
+        assertTrue(result68);
+        
+        boolean result86 = tile8.isNeighbour(tile6);
+        boolean result87 = tile8.isNeighbour(tile7);
+        assertTrue(result86);
+        assertTrue(result87);
+        
+        boolean result78 = tile7.isNeighbour(tile8);
+        boolean result75 = tile7.isNeighbour(tile5);
+        assertTrue(result78);
+        assertTrue(result75);
+
+        boolean result57 = tile5.isNeighbour(tile7);
+        boolean result53 = tile5.isNeighbour(tile3);
+        assertTrue(result57);
+        assertTrue(result53);
+
+        boolean result35 = tile3.isNeighbour(tile5);
+        boolean result31 = tile3.isNeighbour(tile1);
+        assertTrue(result35);
+        assertTrue(result31);
+        
+    }
+
     
 }
