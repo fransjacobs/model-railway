@@ -56,6 +56,11 @@
         <Property name="useNullLayout" type="boolean" value="true"/>
       </Layout>
       <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="xyMI">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="x: y:"/>
+          </Properties>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="propertiesMI">
           <Properties>
             <Property name="text" type="java.lang.String" value="Properties"/>

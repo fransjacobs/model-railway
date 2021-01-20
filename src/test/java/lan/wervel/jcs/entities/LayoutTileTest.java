@@ -22,6 +22,8 @@ import java.awt.Point;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
+import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.entities.enums.TileType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -60,8 +62,8 @@ public class LayoutTileTest {
     @Test
     public void testGetAdjacentPointsStraightEW() {
         System.out.println("getAdjacentPoints StraightTrack East/West");
-        LayoutTile instanceE = new LayoutTile("StraightTrack", "East", "Center", 100, 100);
-        LayoutTile instanceW = new LayoutTile("StraightTrack", "West", "Center", 100, 100);
+        LayoutTile instanceE = new LayoutTile(TileType.STRAIGHT, Orientation.EAST, "Center", 100, 100);
+        LayoutTile instanceW = new LayoutTile(TileType.STRAIGHT, Orientation.WEST, "Center", 100, 100);
         Set<Point> expResult = new HashSet<>();
         expResult.add(new Point(60, 100));
         expResult.add(new Point(140, 100));
@@ -79,8 +81,8 @@ public class LayoutTileTest {
     @Test
     public void testGetAdjacentPointsStraightNS() {
         System.out.println("getAdjacentPoints StraightTrack North/South");
-        LayoutTile instanceN = new LayoutTile("StraightTrack", "North", "Center", 100, 100);
-        LayoutTile instanceS = new LayoutTile("StraightTrack", "South", "Center", 100, 100);
+        LayoutTile instanceN = new LayoutTile(TileType.STRAIGHT, Orientation.NORTH, "Center", 100, 100);
+        LayoutTile instanceS = new LayoutTile(TileType.STRAIGHT, Orientation.SOUTH, "Center", 100, 100);
         Set<Point> expResult = new HashSet<>();
         expResult.add(new Point(100, 60));
         expResult.add(new Point(100, 140));
@@ -98,8 +100,8 @@ public class LayoutTileTest {
     @Test
     public void testGetAdjacentPointsDiagonalEW() {
         System.out.println("getAdjacentPoints DiagonalTrack East/West");
-        LayoutTile instanceE = new LayoutTile("DiagonalTrack", "East", "Center", 100, 100);
-        LayoutTile instanceW = new LayoutTile("DiagonalTrack", "West", "Center", 100, 100);
+        LayoutTile instanceE = new LayoutTile(TileType.DIAGONAL, Orientation.EAST, "Center", 100, 100);
+        LayoutTile instanceW = new LayoutTile(TileType.DIAGONAL, Orientation.WEST, "Center", 100, 100);
         Set<Point> expResult = new HashSet<>();
         expResult.add(new Point(60, 60));
         expResult.add(new Point(60, 80));
@@ -119,8 +121,8 @@ public class LayoutTileTest {
     @Test
     public void testGetAdjacentPointsDiagonalNS() {
         System.out.println("getAdjacentPoints DiagonalTrack North/South");
-        LayoutTile instanceE = new LayoutTile("DiagonalTrack", "North", "Center", 100, 100);
-        LayoutTile instanceW = new LayoutTile("DiagonalTrack", "South", "Center", 100, 100);
+        LayoutTile instanceE = new LayoutTile(TileType.DIAGONAL, Orientation.NORTH, "Center", 100, 100);
+        LayoutTile instanceW = new LayoutTile(TileType.DIAGONAL, Orientation.SOUTH, "Center", 100, 100);
         Set<Point> expResult = new HashSet<>();
         expResult.add(new Point(140, 60));
         expResult.add(new Point(140, 80));
@@ -143,14 +145,13 @@ public class LayoutTileTest {
     @Test
     public void testIsNeighbourStraightEastWest() {
         System.out.println("isNeighbourStraightEastWest");
-        LayoutTile instanceE = new LayoutTile("StraightTrack", "East", "Center", 100, 100);
-        LayoutTile instanceW = new LayoutTile("StraightTrack", "West", "Center", 100, 100);
+        LayoutTile instanceE = new LayoutTile(TileType.STRAIGHT, Orientation.EAST, "Center", 100, 100);
+        LayoutTile instanceW = new LayoutTile(TileType.STRAIGHT, Orientation.WEST, "Center", 100, 100);
 
         //  _\_/_
         //   / \
-        
-        LayoutTile adjacentE = new LayoutTile("StraightTrack", "West", "Center", 140, 100);
-        LayoutTile adjacentW = new LayoutTile("StraightTrack", "East", "Center", 60, 100);
+        LayoutTile adjacentE = new LayoutTile(TileType.STRAIGHT, Orientation.WEST, "Center", 140, 100);
+        LayoutTile adjacentW = new LayoutTile(TileType.STRAIGHT, Orientation.EAST, "Center", 60, 100);
         boolean resultE = instanceE.isNeighbour(adjacentE);
         assertTrue(resultE);
         resultE = instanceW.isNeighbour(adjacentW);
@@ -165,10 +166,10 @@ public class LayoutTileTest {
         resultE = instanceE.isNeighbour(adjacentE);
         assertFalse(resultE);
         //Check adjacent diagonal
-        LayoutTile adjacentNE = new LayoutTile("DiagonalTrack", "South", "Center", 140, 80);
-        LayoutTile adjacentSE = new LayoutTile("DiagonalTrack", "East", "Center", 140, 120);
-        LayoutTile adjacentSW = new LayoutTile("DiagonalTrack", "West", "Center", 60, 80);
-        LayoutTile adjacentNW = new LayoutTile("DiagonalTrack", "North", "Center", 60, 120);
+        LayoutTile adjacentNE = new LayoutTile(TileType.DIAGONAL, Orientation.SOUTH, "Center", 140, 80);
+        LayoutTile adjacentSE = new LayoutTile(TileType.DIAGONAL, Orientation.EAST, "Center", 140, 120);
+        LayoutTile adjacentSW = new LayoutTile(TileType.DIAGONAL, Orientation.WEST, "Center", 60, 80);
+        LayoutTile adjacentNW = new LayoutTile(TileType.DIAGONAL, Orientation.NORTH, "Center", 60, 120);
 
         boolean resultNE = instanceE.isNeighbour(adjacentNE);
         boolean resultSE = instanceE.isNeighbour(adjacentSE);
@@ -183,15 +184,14 @@ public class LayoutTileTest {
     @Test
     public void testIsNeighbourStraightNorthSouth() {
         System.out.println("isNeighbourStraightNorthSouth");
-        LayoutTile instanceN = new LayoutTile("StraightTrack", "North", "Center", 100, 100);
-        LayoutTile instanceS = new LayoutTile("StraightTrack", "South", "Center", 100, 100);
-                
+        LayoutTile instanceN = new LayoutTile(TileType.STRAIGHT, Orientation.NORTH, "Center", 100, 100);
+        LayoutTile instanceS = new LayoutTile(TileType.STRAIGHT, Orientation.SOUTH, "Center", 100, 100);
+
         // \|/
         //  |
         // /|\
-
-        LayoutTile adjacentN = new LayoutTile("StraightTrack", "North", "Center", 100, 60);
-        LayoutTile adjacentS = new LayoutTile("StraightTrack", "South", "Center", 100, 140);
+        LayoutTile adjacentN = new LayoutTile(TileType.STRAIGHT, Orientation.NORTH, "Center", 100, 60);
+        LayoutTile adjacentS = new LayoutTile(TileType.STRAIGHT, Orientation.SOUTH, "Center", 100, 140);
         boolean resultN = instanceN.isNeighbour(adjacentN);
         assertTrue(resultN);
         resultN = instanceN.isNeighbour(adjacentS);
@@ -206,10 +206,10 @@ public class LayoutTileTest {
         resultN = instanceN.isNeighbour(adjacentN);
         assertFalse(resultN);
         //Check adjacent diagonal
-        LayoutTile adjacentNE = new LayoutTile("DiagonalTrack", "South", "Center", 120, 60);
-        LayoutTile adjacentSE = new LayoutTile("DiagonalTrack", "East", "Center", 80, 60);
-        LayoutTile adjacentSW = new LayoutTile("DiagonalTrack", "West", "Center", 120, 140);
-        LayoutTile adjacentNW = new LayoutTile("DiagonalTrack", "North", "Center", 80, 140);
+        LayoutTile adjacentNE = new LayoutTile(TileType.DIAGONAL, Orientation.SOUTH, "Center", 120, 60);
+        LayoutTile adjacentSE = new LayoutTile(TileType.DIAGONAL, Orientation.EAST, "Center", 80, 60);
+        LayoutTile adjacentSW = new LayoutTile(TileType.DIAGONAL, Orientation.WEST, "Center", 120, 140);
+        LayoutTile adjacentNW = new LayoutTile(TileType.DIAGONAL, Orientation.NORTH, "Center", 80, 140);
 
         boolean resultNE = instanceS.isNeighbour(adjacentNE);
         boolean resultSE = instanceS.isNeighbour(adjacentSE);
@@ -228,23 +228,22 @@ public class LayoutTileTest {
         assertTrue(resultSW);
         assertTrue(resultNW);
     }
-    
-      
+
     @Test
     public void testIsNeighbourDiagonalEastWest() {
         System.out.println("isNeighbourDiagonalEastWest");
-        LayoutTile instanceE = new LayoutTile("DiagonalTrack", "East", "Center", 100, 100);
-        LayoutTile instanceW = new LayoutTile("DiagonalTrack", "West", "Center", 100, 100);
+        LayoutTile instanceE = new LayoutTile(TileType.DIAGONAL, Orientation.EAST, "Center", 100, 100);
+        LayoutTile instanceW = new LayoutTile(TileType.DIAGONAL, Orientation.WEST, "Center", 100, 100);
 
-        LayoutTile adjacentN = new LayoutTile("StraightTrack", "North", "Center", 80, 60);
-        LayoutTile adjacentE = new LayoutTile("StraightTrack", "East", "Center", 140, 120);
-        LayoutTile adjacentS = new LayoutTile("StraightTrack", "South", "Center", 120, 140);
-        LayoutTile adjacentW = new LayoutTile("StraightTrack", "West", "Center", 60, 80);
-        
-        LayoutTile instanceNE = new LayoutTile("DiagonalTrack", "East", "Center", 60, 60);
-        LayoutTile instanceNW = new LayoutTile("DiagonalTrack", "West", "Center", 140, 140);
-        LayoutTile instanceSE = new LayoutTile("DiagonalTrack", "North", "Center", 100, 140);
-        LayoutTile instanceSW = new LayoutTile("DiagonalTrack", "South", "Center", 100, 60);
+        LayoutTile adjacentN = new LayoutTile(TileType.STRAIGHT, Orientation.NORTH, "Center", 80, 60);
+        LayoutTile adjacentE = new LayoutTile(TileType.STRAIGHT, Orientation.EAST, "Center", 140, 120);
+        LayoutTile adjacentS = new LayoutTile(TileType.STRAIGHT, Orientation.SOUTH, "Center", 120, 140);
+        LayoutTile adjacentW = new LayoutTile(TileType.STRAIGHT, Orientation.WEST, "Center", 60, 80);
+
+        LayoutTile instanceNE = new LayoutTile(TileType.DIAGONAL, Orientation.EAST, "Center", 60, 60);
+        LayoutTile instanceNW = new LayoutTile(TileType.DIAGONAL, Orientation.WEST, "Center", 140, 140);
+        LayoutTile instanceSE = new LayoutTile(TileType.DIAGONAL, Orientation.NORTH, "Center", 100, 140);
+        LayoutTile instanceSW = new LayoutTile(TileType.DIAGONAL, Orientation.SOUTH, "Center", 100, 60);
 
         // _\|/
         //   \_
@@ -259,7 +258,7 @@ public class LayoutTileTest {
         assertTrue(resultE);
         assertTrue(resultS);
         assertTrue(resultW);
-        
+
         //Check opposite direction
         resultN = instanceW.isNeighbour(adjacentN);
         resultE = instanceW.isNeighbour(adjacentE);
@@ -269,7 +268,7 @@ public class LayoutTileTest {
         assertTrue(resultE);
         assertTrue(resultS);
         assertTrue(resultW);
-        
+
         //Check the Diagonals     
         boolean resultNE = instanceE.isNeighbour(instanceNE);
         boolean resultNW = instanceE.isNeighbour(instanceNW);
@@ -293,18 +292,18 @@ public class LayoutTileTest {
     @Test
     public void testIsNeighbourDiagonalNorthSouth() {
         System.out.println("isNeighbourDiagonalNorthSouth");
-        LayoutTile instanceN = new LayoutTile("DiagonalTrack", "North", "Center", 100, 100);
-        LayoutTile instanceS = new LayoutTile("DiagonalTrack", "South", "Center", 100, 100);
+        LayoutTile instanceN = new LayoutTile(TileType.DIAGONAL, Orientation.NORTH, "Center", 100, 100);
+        LayoutTile instanceS = new LayoutTile(TileType.DIAGONAL, Orientation.SOUTH, "Center", 100, 100);
 
-        LayoutTile adjacentN = new LayoutTile("StraightTrack", "North", "Center", 120, 60);
-        LayoutTile adjacentE = new LayoutTile("StraightTrack", "East", "Center", 140, 80);
-        LayoutTile adjacentS = new LayoutTile("StraightTrack", "South", "Center", 80, 140);
-        LayoutTile adjacentW = new LayoutTile("StraightTrack", "West", "Center", 60, 120);
-        
-        LayoutTile instanceNE = new LayoutTile("DiagonalTrack", "East", "Center", 100, 140);
-        LayoutTile instanceNW = new LayoutTile("DiagonalTrack", "West", "Center", 100, 60);
-        LayoutTile instanceSE = new LayoutTile("DiagonalTrack", "North", "Center", 140, 60);
-        LayoutTile instanceSW = new LayoutTile("DiagonalTrack", "South", "Center", 60, 140);
+        LayoutTile adjacentN = new LayoutTile(TileType.STRAIGHT, Orientation.NORTH, "Center", 120, 60);
+        LayoutTile adjacentE = new LayoutTile(TileType.STRAIGHT, Orientation.EAST, "Center", 140, 80);
+        LayoutTile adjacentS = new LayoutTile(TileType.STRAIGHT, Orientation.SOUTH, "Center", 80, 140);
+        LayoutTile adjacentW = new LayoutTile(TileType.STRAIGHT, Orientation.WEST, "Center", 60, 120);
+
+        LayoutTile instanceNE = new LayoutTile(TileType.DIAGONAL, Orientation.EAST, "Center", 100, 140);
+        LayoutTile instanceNW = new LayoutTile(TileType.DIAGONAL, Orientation.WEST, "Center", 100, 60);
+        LayoutTile instanceSE = new LayoutTile(TileType.DIAGONAL, Orientation.NORTH, "Center", 140, 60);
+        LayoutTile instanceSW = new LayoutTile(TileType.DIAGONAL, Orientation.SOUTH, "Center", 60, 140);
 
         //   \|/_
         //   _/
@@ -319,7 +318,7 @@ public class LayoutTileTest {
         assertTrue(resultE);
         assertTrue(resultS);
         assertTrue(resultW);
-        
+
         //Check opposite direction
         resultN = instanceS.isNeighbour(adjacentN);
         resultE = instanceS.isNeighbour(adjacentE);
@@ -329,7 +328,7 @@ public class LayoutTileTest {
         assertTrue(resultE);
         assertTrue(resultS);
         assertTrue(resultW);
-        
+
         //Check the Diagonals     
         boolean resultNE = instanceN.isNeighbour(instanceNE);
         boolean resultNW = instanceN.isNeighbour(instanceNW);
@@ -349,10 +348,6 @@ public class LayoutTileTest {
         assertTrue(resultSE);
         assertTrue(resultSW);
     }
-    
-
-    
-    
 
 //INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (1,'StraightTrack','East','Center',200,140,null,null);
 //INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (2,'DiagonalTrack','North','Center',160,160,null,null);
@@ -362,32 +357,29 @@ public class LayoutTileTest {
 //INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (6,'DiagonalTrack','West','Center',160,240,null,null);
 //INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (7,'DiagonalTrack','South','Center',240,240,null,null);
 //INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (8,'StraightTrack','West','Center',200,260,null,null);
-
-
     @Test
     public void testIsNeighbours() {
         System.out.println("isNeighbours");
         //Use a "circle" to check...
-        
+
         //  _       1
         // / \     2  3
         //|   |   4    5
         // \_/     6  7
         //          8
-        
-        LayoutTile tile1 = new LayoutTile(new BigDecimal(1),"StraightTrack", "East", "Center", 200, 140);
-        
-        LayoutTile tile2 = new LayoutTile(new BigDecimal(2),"DiagonalTrack", "North", "Center", 160, 160);
-        LayoutTile tile3 = new LayoutTile(new BigDecimal(3),"DiagonalTrack", "East", "Center", 240, 160);
+        LayoutTile tile1 = new LayoutTile(new BigDecimal(1), TileType.STRAIGHT, Orientation.EAST, "Center", 200, 140);
 
-        LayoutTile tile4 = new LayoutTile(new BigDecimal(4),"StraightTrack", "North", "Center", 140, 200);
-        LayoutTile tile5 = new LayoutTile(new BigDecimal(5),"StraightTrack", "South", "Center", 260, 200);
+        LayoutTile tile2 = new LayoutTile(new BigDecimal(2), TileType.DIAGONAL, Orientation.NORTH, "Center", 160, 160);
+        LayoutTile tile3 = new LayoutTile(new BigDecimal(3), TileType.DIAGONAL, Orientation.EAST, "Center", 240, 160);
 
-        LayoutTile tile6 = new LayoutTile(new BigDecimal(6),"DiagonalTrack", "West", "Center", 160, 240);
-        LayoutTile tile7 = new LayoutTile(new BigDecimal(7),"DiagonalTrack", "South", "Center", 240, 240);
+        LayoutTile tile4 = new LayoutTile(new BigDecimal(4), TileType.STRAIGHT, Orientation.NORTH, "Center", 140, 200);
+        LayoutTile tile5 = new LayoutTile(new BigDecimal(5), TileType.STRAIGHT, Orientation.SOUTH, "Center", 260, 200);
 
-        LayoutTile tile8 = new LayoutTile(new BigDecimal(1),"StraightTrack", "West", "Center", 200, 260);
-        
+        LayoutTile tile6 = new LayoutTile(new BigDecimal(6), TileType.DIAGONAL, Orientation.WEST, "Center", 160, 240);
+        LayoutTile tile7 = new LayoutTile(new BigDecimal(7), TileType.DIAGONAL, Orientation.SOUTH, "Center", 240, 240);
+
+        LayoutTile tile8 = new LayoutTile(new BigDecimal(1), TileType.STRAIGHT, Orientation.WEST, "Center", 200, 260);
+
         boolean result12 = tile1.isNeighbour(tile2);
         boolean result13 = tile1.isNeighbour(tile3);
         assertTrue(result12);
@@ -402,17 +394,17 @@ public class LayoutTileTest {
         boolean result46 = tile4.isNeighbour(tile6);
         assertTrue(result42);
         assertTrue(result46);
-        
+
         boolean result64 = tile6.isNeighbour(tile4);
         boolean result68 = tile6.isNeighbour(tile8);
         assertTrue(result64);
         assertTrue(result68);
-        
+
         boolean result86 = tile8.isNeighbour(tile6);
         boolean result87 = tile8.isNeighbour(tile7);
         assertTrue(result86);
         assertTrue(result87);
-        
+
         boolean result78 = tile7.isNeighbour(tile8);
         boolean result75 = tile7.isNeighbour(tile5);
         assertTrue(result78);
@@ -427,8 +419,7 @@ public class LayoutTileTest {
         boolean result31 = tile3.isNeighbour(tile1);
         assertTrue(result35);
         assertTrue(result31);
-        
+
     }
 
-    
 }

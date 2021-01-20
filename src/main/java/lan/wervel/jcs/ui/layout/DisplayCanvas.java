@@ -41,7 +41,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.Signal;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
@@ -50,7 +50,7 @@ import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import lan.wervel.jcs.ui.layout.tiles.SensorTile;
 import lan.wervel.jcs.ui.layout.tiles.BlockTile;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
-import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
+import lan.wervel.jcs.ui.layout.tiles.SwitchTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
@@ -102,7 +102,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
             
             if (!tile.equals(this.selectedTile)) {
                 tile.setDrawName(true);
-                if (tile instanceof SignalTile | tile instanceof TurnoutTile) {
+                if (tile instanceof SignalTile | tile instanceof SwitchTile) {
                     tile.drawCenterPoint(g2d);
                 }
             }
@@ -368,7 +368,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
     }
 
     private void setTurnoutValue(AccessoryValue value) {
-        Turnout turnout = (Turnout) this.selectedTile.getLayoutTile().getSolenoidAccessoiry();
+        Switch turnout = (Switch) this.selectedTile.getLayoutTile().getSolenoidAccessoiry();
         turnout.setValue(value);
 
         this.executor.execute(() -> TrackServiceFactory.getTrackService().switchAccessory(turnout.getValue(), turnout));
@@ -393,7 +393,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
           showSignalPopup((SignalTile) selectedTile, evt);
       }
 
-      if (this.selectedTile instanceof TurnoutTile) {
+      if (this.selectedTile instanceof SwitchTile) {
           if (Direction.LEFT.equals(selectedTile.getDirection())) {
               this.turnoutLeftPopupMenu.show(this, evt.getX(), evt.getY());
           } else {
@@ -452,7 +452,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
         }
 
         for (AbstractTile e : snapshot) {
-            if (e.getCenter().equals(p) && ((e instanceof SignalTile) || (e instanceof TurnoutTile))) {
+            if (e.getCenter().equals(p) && ((e instanceof SignalTile) || (e instanceof SwitchTile))) {
                 toSelect = e;
                 Logger.trace("Direct search found Tile " + toSelect + "...");
                 break;

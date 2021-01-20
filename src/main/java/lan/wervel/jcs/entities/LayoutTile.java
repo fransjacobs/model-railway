@@ -23,14 +23,15 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.entities.enums.TileType;
 import org.pmw.tinylog.Logger;
 
 public class LayoutTile extends ControllableDevice {
 
-    private String tiletype;
-    //private TileType tileType;
+    private TileType tiletype;
 
-    private String orientation;
+    private Orientation orientation;
     private String direction;
     private Integer x;
     private Integer y;
@@ -46,22 +47,22 @@ public class LayoutTile extends ControllableDevice {
     private Set<LayoutTile> neighbours;
 
     public LayoutTile() {
-        this(null, "East", "R0", "Center", null, null, null, null);
+        this(null, TileType.STRAIGHT, Orientation.EAST, "Center", null, null, null, null);
     }
 
-    public LayoutTile(String tiletype, String orientation, String direction, Point center) {
+    public LayoutTile(TileType tiletype, Orientation orientation, String direction, Point center) {
         this(null, tiletype, orientation, direction, center.x, center.y);
     }
 
-    public LayoutTile(String tiletype, String orientation, String direction, Integer x, Integer y) {
+    public LayoutTile(TileType tiletype, Orientation orientation, String direction, Integer x, Integer y) {
         this(null, tiletype, orientation, direction, x, y);
     }
 
-    public LayoutTile(BigDecimal id, String tiletype, String orientation, String direction, Integer x, Integer y) {
+    public LayoutTile(BigDecimal id, TileType tiletype, Orientation orientation, String direction, Integer x, Integer y) {
         this(id, tiletype, orientation, direction, x, y, null, null);
     }
 
-    public LayoutTile(BigDecimal id, String tiletype, String orientation, String direction, Integer x, Integer y, BigDecimal soacId, BigDecimal sensId) {
+    public LayoutTile(BigDecimal id, TileType tiletype, Orientation orientation, String direction, Integer x, Integer y, BigDecimal soacId, BigDecimal sensId) {
         super(id);
         this.tiletype = tiletype;
         this.orientation = orientation;
@@ -73,19 +74,19 @@ public class LayoutTile extends ControllableDevice {
         neighbours = new HashSet<>();
     }
 
-    public String getTiletype() {
+    public TileType getTiletype() {
         return tiletype;
     }
 
-    public void setTiletype(String tiletype) {
+    public void setTiletype(TileType tiletype) {
         this.tiletype = tiletype;
     }
 
-    public String getOrientation() {
+    public Orientation getOrientation() {
         return orientation;
     }
 
-    public void setOrientation(String orientation) {
+    public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }
 
@@ -142,9 +143,9 @@ public class LayoutTile extends ControllableDevice {
         return solenoidAccessoiry;
     }
 
-    public Turnout getTurnout() {
-        if (solenoidAccessoiry instanceof Turnout) {
-            return (Turnout) solenoidAccessoiry;
+    public Switch getTurnout() {
+        if (solenoidAccessoiry instanceof Switch) {
+            return (Switch) solenoidAccessoiry;
         } else {
             return null;
         }
@@ -199,10 +200,10 @@ public class LayoutTile extends ControllableDevice {
 
     private int getWidth() {
         switch (this.tiletype) {
-            case "TurnoutTile":
+            case SWITCH:
                 return BASE_GRID * 4;
-            case "BlockTile":
-                if ("East".equals(this.orientation) || "West".equals(this.orientation)) {
+            case BLOCK:
+                if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
                     return BASE_GRID * 4;
                 } else {
                     return BASE_GRID * 2;
@@ -214,10 +215,10 @@ public class LayoutTile extends ControllableDevice {
 
     private int getHeight() {
         switch (this.tiletype) {
-            case "TurnoutTile":
+            case SWITCH:
                 return BASE_GRID * 4;
-            case "BlockTile":
-                if ("East".equals(this.orientation) || "West".equals(this.orientation)) {
+            case BLOCK:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
                     return BASE_GRID * 2;
                 } else {
                     return BASE_GRID * 4;
@@ -238,8 +239,8 @@ public class LayoutTile extends ControllableDevice {
         }
 
         switch (tiletype) {
-            case "DiagonalTrack":
-                if ("East".equals(orientation) || "West".equals(orientation)) {
+            case DIAGONAL:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
                     points.add(new Point(x - w, y - BASE_GRID));
                     points.add(new Point(x - w, y - h));
                     points.add(new Point(x - BASE_GRID, y - h));
@@ -259,8 +260,8 @@ public class LayoutTile extends ControllableDevice {
                     points.add(new Point(x, y + h));
                 }
                 break;
-            case "StraightTrack":
-                if ("East".equals(orientation) || "West".equals(orientation)) {
+            case STRAIGHT:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
                     points.add(new Point(x + w, y));
                     points.add(new Point(x + w, y + BASE_GRID));
                     points.add(new Point(x + w, y - BASE_GRID));
@@ -286,39 +287,39 @@ public class LayoutTile extends ControllableDevice {
 
     private boolean isNeigbourForDiagonal(LayoutTile adjacent) {
         //this is the center and is a diagonal track
-        String adjacentOrientation = adjacent.getOrientation();
-        String adjacentType = adjacent.tiletype;
+        Orientation adjacentOrientation = adjacent.getOrientation();
+        TileType adjacentType = adjacent.tiletype;
         int adjX = adjacent.getX();
         int adjY = adjacent.getY();
         int w = getWidth();
         int h = getHeight();
 
         switch (adjacentType) {
-            case "DiagonalTrack":
-                if ("East".equals(orientation) || "West".equals(orientation)) {
-                    return ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && ((adjX == this.x - w && adjY == this.y - h) || adjX == this.x + w && adjY == this.y + h)
-                            || ("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && ((adjX == this.x && adjY == this.y - h) || adjX == this.x && adjY == this.y + h);
+            case DIAGONAL:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+                    return (Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && ((adjX == this.x - w && adjY == this.y - h) || adjX == this.x + w && adjY == this.y + h)
+                            || (Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && ((adjX == this.x && adjY == this.y - h) || adjX == this.x && adjY == this.y + h);
                 } else {
-                    return (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y - h)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x && adjY == this.y - h)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x && adjY == this.y + h)
-                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y + h);
+                    return ((Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y - h)
+                            || ((Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x && adjY == this.y - h)
+                            || ((Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x && adjY == this.y + h)
+                            || ((Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y + h);
                 }
-            case "StraightTrack":
-                if ("East".equals(orientation) || "West".equals(orientation)) {
-                    return ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && ((adjX == this.x - w && adjY == this.y - BASE_GRID) || (adjX == this.x + w && adjY == this.y + BASE_GRID))
-                            || ("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && ((adjX == this.x - BASE_GRID && adjY == this.y - h) || (adjX == this.x + BASE_GRID && adjY == this.y + h));
+            case STRAIGHT:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+                    return (Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && ((adjX == this.x - w && adjY == this.y - BASE_GRID) || (adjX == this.x + w && adjY == this.y + BASE_GRID))
+                            || (Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && ((adjX == this.x - BASE_GRID && adjY == this.y - h) || (adjX == this.x + BASE_GRID && adjY == this.y + h));
                 } else {
-                    return ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && ((adjX == this.x + w && adjY == this.y - BASE_GRID) || (adjX == this.x - w && adjY == this.y + BASE_GRID))
-                            || ("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && ((adjX == this.x + BASE_GRID && adjY == this.y - h) || (adjX == this.x - BASE_GRID && adjY == this.y + h));
+                    return (Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && ((adjX == this.x + w && adjY == this.y - BASE_GRID) || (adjX == this.x - w && adjY == this.y + BASE_GRID))
+                            || (Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && ((adjX == this.x + BASE_GRID && adjY == this.y - h) || (adjX == this.x - BASE_GRID && adjY == this.y + h));
                 }
-            case "TurnoutTile":
+            case SWITCH:
                 break;
-            case "SignalTile":
+            case SIGNAL:
                 break;
-            case "SensorTile":
+            case SENSOR:
                 break;
-            case "BlockTile":
+            case BLOCK:
                 break;
             default:
                 Logger.error("Unknown tile: " + tiletype);
@@ -329,41 +330,41 @@ public class LayoutTile extends ControllableDevice {
 
     private boolean isNeigbourForStraight(LayoutTile adjacent) {
         //Regard this as the center TileType is StraightTrack
-        String adjacentOrientation = adjacent.getOrientation();
-        String adjacentType = adjacent.tiletype;
+        Orientation adjacentOrientation = adjacent.getOrientation();
+        TileType adjacentType = adjacent.tiletype;
         int adjX = adjacent.getX();
         int adjY = adjacent.getY();
         int w = this.getWidth();
         int h = this.getHeight();
 
         switch (adjacentType) {
-            case "DiagonalTrack":
-                if ("East".equals(orientation) || "West".equals(orientation)) {
-                    return (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y + BASE_GRID)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y - BASE_GRID)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y + BASE_GRID)
-                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y - BASE_GRID);
+            case DIAGONAL:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+                    return ((Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y + BASE_GRID)
+                            || ((Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y - BASE_GRID)
+                            || ((Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y + BASE_GRID)
+                            || ((Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y - BASE_GRID);
                 } else {
-                    return (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x + BASE_GRID && adjY == this.y - h)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x - BASE_GRID && adjY == this.y - h)
-                            || (("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x + BASE_GRID && adjY == this.y + h)
-                            || (("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x - BASE_GRID && adjY == this.y + h);
+                    return ((Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x + BASE_GRID && adjY == this.y - h)
+                            || ((Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x - BASE_GRID && adjY == this.y - h)
+                            || ((Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x + BASE_GRID && adjY == this.y + h)
+                            || ((Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x - BASE_GRID && adjY == this.y + h);
                 }
-            case "StraightTrack":
-                if ("East".equals(orientation) || "West".equals(orientation)) {
-                    return ((("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y)
-                            || ("East".equals(adjacentOrientation) || "West".equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y);
+            case STRAIGHT:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+                    return (((Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x + w && adjY == this.y)
+                            || (Orientation.EAST.equals(adjacentOrientation) || Orientation.WEST.equals(adjacentOrientation)) && adjX == this.x - w && adjY == this.y);
                 } else {
-                    return ((("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x && adjY == this.y + h)
-                            || ("North".equals(adjacentOrientation) || "South".equals(adjacentOrientation)) && adjX == this.x && adjY == this.y - h);
+                    return (((Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x && adjY == this.y + h)
+                            || (Orientation.NORTH.equals(adjacentOrientation) || Orientation.SOUTH.equals(adjacentOrientation)) && adjX == this.x && adjY == this.y - h);
                 }
-            case "TurnoutTile":
+            case SWITCH:
                 break;
-            case "SignalTile":
+            case SIGNAL:
                 break;
-            case "SensorTile":
+            case SENSOR:
                 break;
-            case "BlockTile":
+            case BLOCK:
                 break;
             default:
                 Logger.error("Unknown tile: " + tiletype);
@@ -375,17 +376,17 @@ public class LayoutTile extends ControllableDevice {
     public boolean isNeighbour(LayoutTile adjacent) {
         //this is the center
         switch (tiletype) {
-            case "DiagonalTrack":
+            case DIAGONAL:
                 return isNeigbourForDiagonal(adjacent);
-            case "StraightTrack":
+            case STRAIGHT:
                 return isNeigbourForStraight(adjacent);
-            case "TurnoutTile":
+            case SWITCH:
                 break;
-            case "SignalTile":
+            case SIGNAL:
                 break;
-            case "SensorTile":
+            case SENSOR:
                 break;
-            case "BlockTile":
+            case BLOCK:
                 break;
             default:
                 Logger.error("Unknown tile: " + tiletype);
@@ -401,7 +402,7 @@ public class LayoutTile extends ControllableDevice {
 
     @Override
     public String toString() {
-        return this.tiletype + ";" + this.orientation + ";" + this.direction + ";(" + this.x + "," + this.y + ");" + this.id + ", sensId: " + this.sensId;
+        return this.tiletype.getTileType() + ";" + this.orientation + ";" + this.direction + ";(" + this.x + "," + this.y + ");" + this.id + ", sensId: " + this.sensId;
     }
 
     @Override

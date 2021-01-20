@@ -21,7 +21,7 @@ package lan.wervel.jcs.trackservice.dao;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import org.junit.After;
 import static org.junit.Assert.*;
@@ -32,11 +32,11 @@ import org.junit.Test;
  *
  * @author frans
  */
-public class TurnoutDAOTest {
+public class SwitchDAOTest {
 
-    private final List<Turnout> turnouts;
+    private final List<Switch> turnouts;
 
-    public TurnoutDAOTest() {
+    public SwitchDAOTest() {
         DAOTestHelper.setConnectProperties();
         DAOTestHelper.createNewDatabase();
         DAOTestHelper.insertTurnoutData();
@@ -46,7 +46,7 @@ public class TurnoutDAOTest {
 
     @Before
     public void setUp() {
-        Turnout t1 = new Turnout(1, "T 1", "5117 R");
+        Switch t1 = new Switch(1, "T 1", "5117 R");
 
         t1.setValue(AccessoryValue.GREEN);
         t1.setName("T 1");
@@ -54,7 +54,7 @@ public class TurnoutDAOTest {
         t1.setSwitchTime(200);
         turnouts.add(t1);
 
-        Turnout t2 = new Turnout(2, "T 2", "5117 L");
+        Switch t2 = new Switch(2, "T 2", "5117 L");
         t2.setValue(AccessoryValue.RED);
         t2.setName("T 2");
         t2.setId(new BigDecimal(2));
@@ -69,9 +69,9 @@ public class TurnoutDAOTest {
     @Test
     public void testFindAll() {
         System.out.println("findAll");
-        TurnoutDAO instance = new TurnoutDAO();
-        List<Turnout> expResult = turnouts;
-        List<Turnout> result = instance.findAll();
+        SwitchDAO instance = new SwitchDAO();
+        List<Switch> expResult = turnouts;
+        List<Switch> result = instance.findAll();
 
         assertEquals(expResult, result);
         result = instance.findAll();
@@ -83,9 +83,9 @@ public class TurnoutDAOTest {
         System.out.println("find");
 
         Integer address = 2;
-        TurnoutDAO instance = new TurnoutDAO();
-        Turnout expResult = turnouts.get(1);
-        Turnout result = instance.find(address);
+        SwitchDAO instance = new SwitchDAO();
+        Switch expResult = turnouts.get(1);
+        Switch result = instance.find(address);
         assertEquals(expResult, result);
 
         address = 1;
@@ -98,13 +98,13 @@ public class TurnoutDAOTest {
     public void testPersist() {
         System.out.println("persist");
 
-        Turnout t = new Turnout(3, "T 3", "5117 R");
+        Switch t = new Switch(3, "T 3", "5117 R");
         t.setValue(AccessoryValue.GREEN);
         t.setName("T 3");
 
-        TurnoutDAO instance = new TurnoutDAO();
+        SwitchDAO instance = new SwitchDAO();
         BigDecimal result = instance.persist(t);
-        Turnout tr = instance.find(3);
+        Switch tr = instance.find(3);
 
         BigDecimal expResult = new BigDecimal(3);
         assertEquals(expResult, result);
@@ -114,9 +114,9 @@ public class TurnoutDAOTest {
     @Test
     public void testPersistUpdate() {
         System.out.println("persist");
-        TurnoutDAO instance = new TurnoutDAO();
+        SwitchDAO instance = new SwitchDAO();
 
-        Turnout t = instance.find(2);
+        Switch t = instance.find(2);
         assertNotNull(t);
         assertEquals(AccessoryValue.RED, t.getValue());
         BigDecimal expResult = t.getId();
@@ -125,7 +125,7 @@ public class TurnoutDAOTest {
         BigDecimal result = instance.persist(t);
         assertEquals(expResult, result);
 
-        Turnout tr = instance.find(2);
+        Switch tr = instance.find(2);
         assertNotNull(tr);
         assertEquals(AccessoryValue.GREEN, tr.getValue());
     }
@@ -134,12 +134,12 @@ public class TurnoutDAOTest {
     public void testPersistNullValue() {
         System.out.println("persistNullValue");
 
-        Turnout t = new Turnout(4, "T 4", "5117 R");
+        Switch t = new Switch(4, "T 4", "5117 R");
         t.setName("T 4");
 
-        TurnoutDAO instance = new TurnoutDAO();
+        SwitchDAO instance = new SwitchDAO();
         BigDecimal result = instance.persist(t);
-        Turnout tr = instance.find(4);
+        Switch tr = instance.find(4);
 
         BigDecimal expResult = new BigDecimal(3);
         assertEquals(expResult, result);
@@ -151,15 +151,15 @@ public class TurnoutDAOTest {
     @Test
     public void testPersist2() {
         System.out.println("persist");
-        Turnout t = new Turnout(79, "T 79", "5117 L");
+        Switch t = new Switch(79, "T 79", "5117 L");
 
         t.setValue(AccessoryValue.OFF);
         t.setName("W 79");
 
-        TurnoutDAO instance = new TurnoutDAO();
+        SwitchDAO instance = new SwitchDAO();
         BigDecimal result = instance.persist(t);
 
-        Turnout tr = instance.find(79);
+        Switch tr = instance.find(79);
 
         BigDecimal expResult = new BigDecimal(3);
         assertEquals(expResult, result);
@@ -173,17 +173,17 @@ public class TurnoutDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        Turnout t = new Turnout(12, "T 12", "5117 L");
+        Switch t = new Switch(12, "T 12", "5117 L");
         t.setValue(AccessoryValue.GREEN);
         t.setName("T 12");
         t.setValue(AccessoryValue.OFF);
         t.setName("W 12");
         t.setSwitchTime(0);
 
-        TurnoutDAO instance = new TurnoutDAO();
+        SwitchDAO instance = new SwitchDAO();
 
         instance.persist(t);
-        Turnout tr = instance.find(12);
+        Switch tr = instance.find(12);
 
         assertEquals(t, tr);
         instance.remove(t);

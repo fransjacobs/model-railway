@@ -20,14 +20,14 @@ package lan.wervel.jcs.ui.options.table;
 
 import java.util.ArrayList;
 import java.util.List;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 
 /**
  *
  * @author frans
  */
-public class TurnoutTableModel extends DeviceTableModel<Turnout> {
+public class TurnoutTableModel extends DeviceTableModel<Switch> {
 
   public TurnoutTableModel() {
     super();
@@ -47,12 +47,12 @@ public class TurnoutTableModel extends DeviceTableModel<Turnout> {
   }
 
   @Override
-  protected List<Turnout> getDevices() {
-    return TrackServiceFactory.getTrackService().getTurnouts();
+  protected List<Switch> getDevices() {
+    return TrackServiceFactory.getTrackService().getSwitches();
   }
 
   @Override
-  public Object getColumnValue(Turnout device, int column) {
+  public Object getColumnValue(Switch device, int column) {
     switch (column) {
       case 0:
         return device.getAddress();
@@ -84,7 +84,7 @@ public class TurnoutTableModel extends DeviceTableModel<Turnout> {
   }
 
   @Override
-  void setColumnValue(Turnout device, int column, Object value) {
+  void setColumnValue(Switch device, int column, Object value) {
     switch (column) {
       case 0:
         device.setAddress((Integer) value);

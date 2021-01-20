@@ -28,7 +28,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
 
 /**
  *
@@ -66,12 +66,12 @@ public class TileTester extends JFrame {
 //        tileNorth = new Block(Orientation.NORTH, 260, 80);
 //        ((Block)tileNorth).setActive(true);
 
-        tileEast = new TurnoutTile(Orientation.EAST, Direction.LEFT, 50, 80);
-        tileSouth = new TurnoutTile(Orientation.SOUTH, Direction.LEFT, 140, 80);
-        ((TurnoutTile) tileSouth).setAccessoryValue(AccessoryValue.RED);
-        tileWest = new TurnoutTile(Orientation.WEST, Direction.RIGHT, 230, 80);
-        ((TurnoutTile) tileWest).setAccessoryValue(AccessoryValue.GREEN);
-        tileNorth = new TurnoutTile(Orientation.NORTH, Direction.RIGHT, 320, 80);
+        tileEast = new SwitchTile(Orientation.EAST, Direction.LEFT, 50, 80);
+        tileSouth = new SwitchTile(Orientation.SOUTH, Direction.LEFT, 140, 80);
+        ((SwitchTile) tileSouth).setAccessoryValue(AccessoryValue.RED);
+        tileWest = new SwitchTile(Orientation.WEST, Direction.RIGHT, 230, 80);
+        ((SwitchTile) tileWest).setAccessoryValue(AccessoryValue.GREEN);
+        tileNorth = new SwitchTile(Orientation.NORTH, Direction.RIGHT, 320, 80);
 
         
 //        tileEast = new SignalTile(Orientation.EAST, 50, 80);

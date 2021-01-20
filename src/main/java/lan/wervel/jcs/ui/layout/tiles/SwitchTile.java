@@ -32,31 +32,31 @@ import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Orientation.EAST;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Orientation.SOUTH;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Orientation.WEST;
+import lan.wervel.jcs.entities.enums.Orientation;
+import static lan.wervel.jcs.entities.enums.Orientation.EAST;
+import static lan.wervel.jcs.entities.enums.Orientation.SOUTH;
+import static lan.wervel.jcs.entities.enums.Orientation.WEST;
 
 /**
  * Draw a Turnout
  *
  * @author frans
  */
-public class TurnoutTile extends AbstractTile implements AccessoryListener {
+public class SwitchTile extends AbstractTile implements AccessoryListener {
 
     private AccessoryValue accessoryValue;
 
-    public TurnoutTile(LayoutTile layoutTile) {
+    public SwitchTile(LayoutTile layoutTile) {
         super(layoutTile);
         this.width = DEFAULT_WIDTH * 2;
         this.height = DEFAULT_HEIGHT * 2;
     }
 
-    public TurnoutTile(Orientation orientation, Direction direction, int x, int y) {
+    public SwitchTile(Orientation orientation, Direction direction, int x, int y) {
         this(orientation, direction, new Point(x, y));
     }
 
-    public TurnoutTile(Orientation orientation, Direction direction, Point center) {
+    public SwitchTile(Orientation orientation, Direction direction, Point center) {
         super(orientation, direction, center);
         this.width = DEFAULT_WIDTH * 2;
         this.height = DEFAULT_HEIGHT * 2;

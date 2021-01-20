@@ -5,6 +5,7 @@
  */
 package lan.wervel.jcs.ui.layout;
 
+import lan.wervel.jcs.entities.enums.TileType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -18,7 +19,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Logger;
 
@@ -414,7 +415,7 @@ public class DesignPanel extends JPanel {
   private void addTurnoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTurnoutBtnActionPerformed
       //Logger.trace("Set mode to add turnout");
       this.objectLbl.setIcon(this.addTurnoutBtn.getIcon());
-      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation,  Direction.RIGHT, TileType.TURNOUT);
+      this.designCanvas.selectionModeChanged(Mode.ADD, this.orientation,  Direction.RIGHT, TileType.SWITCH);
   }//GEN-LAST:event_addTurnoutBtnActionPerformed
 
   private void addSensorBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSensorBtnActionPerformed

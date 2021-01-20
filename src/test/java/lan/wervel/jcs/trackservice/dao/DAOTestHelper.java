@@ -152,7 +152,7 @@ public class DAOTestHelper extends DatabaseCreator {
             try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
-                        + "VALUES(lati_seq.nextval,'TurnoutTile','East','Left', 30, 30)");
+                        + "VALUES(lati_seq.nextval,'SwitchTile','East','Left', 30, 30)");
 
                 stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
                         + "VALUES(lati_seq.nextval,'DiagonalTrack','South','Center', 40, 50)");
@@ -160,6 +160,21 @@ public class DAOTestHelper extends DatabaseCreator {
                 stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
                         + "VALUES(lati_seq.nextval,'StraightTrack','West','Center', 50, 60)");
 
+                
+                
+
+
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (1,'StraightTrack','East','Center',200,140,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (2,'DiagonalTrack','North','Center',160,160,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (3,'DiagonalTrack','East','Center',240,160,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (4,'StraightTrack','North','Center',140,200,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (5,'StraightTrack','South','Center',260,200,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (6,'DiagonalTrack','West','Center',160,240,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (7,'DiagonalTrack','South','Center',240,240,null,null);
+//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (8,'StraightTrack','West','Center',200,260,null,null);
+                
+                
+                
                 c.commit();
             }
         } catch (SQLException ex) {

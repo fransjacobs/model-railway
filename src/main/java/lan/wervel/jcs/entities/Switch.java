@@ -22,25 +22,25 @@ import java.math.BigDecimal;
 import lan.wervel.jcs.entities.enums.AccessoryType;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 
-public class Turnout extends SolenoidAccessory {
+public class Switch extends SolenoidAccessory {
 
-    public Turnout() {
+    public Switch() {
         this(null, "?", null, null, null);
     }
 
-    public Turnout(Integer address, String description) {
+    public Switch(Integer address, String description) {
         this(address, description, null, null, null);
     }
 
-    public Turnout(Integer address, String description, String catalogNumber) {
+    public Switch(Integer address, String description, String catalogNumber) {
         this(address, description, catalogNumber, null, null);
     }
 
-    public Turnout(Integer address, String description, String catalogNumber, BigDecimal id) {
+    public Switch(Integer address, String description, String catalogNumber, BigDecimal id) {
         this(address, description, catalogNumber, id, null);
     }
 
-    public Turnout(Integer address, String description, String catalogNumber, BigDecimal id, AccessoryValue value) {
+    public Switch(Integer address, String description, String catalogNumber, BigDecimal id, AccessoryValue value) {
         super(address, description, catalogNumber, id, AccessoryType.TURNOUT, value, null, 2);
     }
 

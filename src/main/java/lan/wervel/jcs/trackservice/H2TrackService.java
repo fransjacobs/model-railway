@@ -47,7 +47,7 @@ import lan.wervel.jcs.entities.Sensor;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.TrackPower;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
@@ -59,7 +59,7 @@ import lan.wervel.jcs.trackservice.dao.JCSPropertiesDAO;
 import lan.wervel.jcs.trackservice.dao.LocomotiveDAO;
 import lan.wervel.jcs.trackservice.dao.SignalDAO;
 import lan.wervel.jcs.trackservice.dao.TrackPowerDAO;
-import lan.wervel.jcs.trackservice.dao.TurnoutDAO;
+import lan.wervel.jcs.trackservice.dao.SwitchDAO;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.trackservice.events.LocomotiveListener;
@@ -73,13 +73,13 @@ import lan.wervel.jcs.trackservice.dao.LayoutTileDAO;
 import lan.wervel.jcs.trackservice.dao.LayoutTileGroupDAO;
 import lan.wervel.jcs.trackservice.dao.SensorDAO;
 import lan.wervel.jcs.trackservice.events.SensorListener;
-import lan.wervel.jcs.ui.layout.TileType;
+import lan.wervel.jcs.entities.enums.TileType;
 
 public class H2TrackService implements TrackService {
 
     private final SensorDAO sensDAO;
     private final LocomotiveDAO locoDAO;
-    private final TurnoutDAO turnoutDAO;
+    private final SwitchDAO turnoutDAO;
     private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
 
@@ -118,7 +118,7 @@ public class H2TrackService implements TrackService {
 
         sensDAO = new SensorDAO();
         locoDAO = new LocomotiveDAO();
-        turnoutDAO = new TurnoutDAO();
+        turnoutDAO = new SwitchDAO();
         signalDAO = new SignalDAO();
         trpoDAO = new TrackPowerDAO();
         latiDao = new LayoutTileDAO();
@@ -346,9 +346,9 @@ public class H2TrackService implements TrackService {
             sensDAO.remove((Sensor) entity);
         } else if (entity instanceof Locomotive) {
             locoDAO.remove((Locomotive) entity);
-        } else if (entity instanceof Turnout) {
+        } else if (entity instanceof Switch) {
             //Check whether the turnout is linked to a layout tile
-            turnoutDAO.remove((Turnout) entity);
+            turnoutDAO.remove((Switch) entity);
         } else if (entity instanceof Signal) {
             //Check whether the signal is linked to a layout tile
             signalDAO.remove((Signal) entity);
@@ -363,7 +363,7 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public List<Turnout> getTurnouts() {
+    public List<Switch> getSwitches() {
         return this.turnoutDAO.findAll();
     }
 
@@ -373,7 +373,7 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public Turnout getTurnout(Integer address) {
+    public Switch getSwitchTurnout(Integer address) {
         return this.turnoutDAO.find(address);
     }
 
@@ -418,7 +418,7 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public Turnout persist(Turnout turnout) {
+    public Switch persist(Switch turnout) {
         this.turnoutDAO.persist(turnout);
         return turnout;
     }
@@ -450,8 +450,8 @@ public class H2TrackService implements TrackService {
             return null;
         }
         if (lt.getSoacId() != null) {
-            if (TileType.TURNOUT.getTileType().equals(lt.getTiletype())) {
-                Turnout t = turnoutDAO.findById(lt.getSoacId());
+            if (TileType.SWITCH.getTileType().equals(lt.getTiletype())) {
+                Switch t = turnoutDAO.findById(lt.getSoacId());
                 lt.setSolenoidAccessoiry(t);
             }
             if (TileType.SIGNAL.getTileType().equals(lt.getTiletype())) {
@@ -678,9 +678,9 @@ public class H2TrackService implements TrackService {
 
         for (SolenoidAccessory sa : sal) {
             if (sa.isTurnout()) {
-                Turnout t = (Turnout) sa;
+                Switch t = (Switch) sa;
                 Integer addr = t.getAddress();
-                Turnout dbt = this.turnoutDAO.find(addr);
+                Switch dbt = this.turnoutDAO.find(addr);
                 if (dbt != null) {
                     t.setId(dbt.getId());
                     Logger.trace("Update " + t);
@@ -709,9 +709,9 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void synchronizeAccessories() {
-        List<Turnout> tl = this.getTurnouts();
+        List<Switch> tl = this.getSwitches();
 
-        for (Turnout t : tl) {
+        for (Switch t : tl) {
             this.switchAccessory(t.getValue(), t);
         }
 
@@ -733,7 +733,7 @@ public class H2TrackService implements TrackService {
 
         for (AccessoryStatus as : asl) {
             Integer a = as.getAddress();
-            Turnout t = turnoutDAO.find(a);
+            Switch t = turnoutDAO.find(a);
             if (t != null) {
                 AccessoryValue av = as.getAccessoryValue();
                 if (!av.equals(t.getValue())) {
@@ -883,8 +883,8 @@ public class H2TrackService implements TrackService {
             controllerService.switchAccessoiry(accessoiry.getAddress(), accessoiry.getValue());
 
             if (accessoiry.isTurnout()) {
-                persist((Turnout) accessoiry);
-                this.notifyAccessoiryListeners((Turnout) accessoiry);
+                persist((Switch) accessoiry);
+                this.notifyAccessoiryListeners((Switch) accessoiry);
             }
         }
     }
@@ -983,7 +983,7 @@ public class H2TrackService implements TrackService {
     public void notifyAllAccessoiryListeners() {
 
         List<Signal> signals = this.getSignals();
-        List<Turnout> turnouts = this.getTurnouts();
+        List<Switch> turnouts = this.getSwitches();
 
         List<SolenoidAccessory> accessoiries = new ArrayList<>();
         accessoiries.addAll(signals);

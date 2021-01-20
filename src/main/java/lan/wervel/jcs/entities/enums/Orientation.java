@@ -16,40 +16,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.ui.layout;
+package lan.wervel.jcs.entities.enums;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public enum TileType {
-    STRAIGHT("StraightTrack"), DIAGONAL("DiagonalTrack"), TURNOUT("TurnoutTile"), SIGNAL("SignalTile"), SENSOR("SensorTile"), BLOCK("BlockTile");
+public enum Orientation {
+    NORTH("North"), SOUTH("South"), EAST("East"), WEST("West");
 
-    private final String tileType;
+    private final String orientation;
+    private static final Map<String, Orientation> ENUM_MAP;
 
-    private static final Map<String, TileType> ENUM_MAP;
-
-    TileType(String tileType) {
-        this.tileType = tileType;
-    }
-
-    public String getTileType() {
-        return this.tileType;
+    Orientation(String orientation) {
+        this.orientation = orientation;
     }
 
     static {
-        Map<String, TileType> map = new ConcurrentHashMap<>();
-        for (TileType instance : TileType.values()) {
-            map.put(instance.getTileType(), instance);
+        Map<String, Orientation> map = new ConcurrentHashMap<>();
+        for (Orientation instance : Orientation.values()) {
+            map.put(instance.getOrientation(), instance);
         }
         ENUM_MAP = Collections.unmodifiableMap(map);
     }
 
-    public static TileType get(String tileType) {
-        if (tileType == null) {
-            return null;
-        }
-        return ENUM_MAP.get(tileType);
+    public String getOrientation() {
+        return this.orientation;
     }
 
+    public static Orientation get(String direction) {
+        return ENUM_MAP.get(direction);
+    }
 }

@@ -14,7 +14,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import lan.wervel.jcs.entities.enums.AccessoryType;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
@@ -90,7 +90,7 @@ public class SwitchPanel extends JPanel {
             return;
         }
 
-        Turnout t = TrackServiceFactory.getTrackService().getTurnout(address);
+        Switch t = TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
             button.setForeground(new java.awt.Color(0, 153, 0));
             button.setSelected(AccessoryValue.RED.equals(t.getValue()));
@@ -419,7 +419,7 @@ public class SwitchPanel extends JPanel {
     }
 
     private void updateAccessoiry(Integer address, AccessoryValue value) {
-        Turnout t = TrackServiceFactory.getTrackService().getTurnout(address);
+        Switch t = TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
             t.setValue(value);
             TrackServiceFactory.getTrackService().persist(t);

@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import lan.wervel.jcs.entities.LayoutTile;
+import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.entities.enums.TileType;
 import static lan.wervel.jcs.trackservice.dao.AbstractDAO.connection;
 import org.pmw.tinylog.Logger;
 
@@ -44,29 +46,30 @@ public class LayoutTileDAO extends AbstractDAO<LayoutTile> {
     @Override
     protected LayoutTile map(ResultSet rs) throws SQLException {
         BigDecimal id = rs.getBigDecimal("ID");
-        String tiletype = rs.getString("TILETYPE");
-        String orientation = rs.getString("ORIENTATION");
+        String tt = rs.getString("TILETYPE");
+        TileType tileType = TileType.get(tt);
+        String or = rs.getString("ORIENTATION");
+        Orientation orientation = Orientation.get(or);
         String direction = rs.getString("DIRECTION");
         Integer x = rs.getInt("X");
         Integer y = rs.getInt("Y");
         BigDecimal soacId = rs.getBigDecimal("SOAC_ID");
         BigDecimal sensId = rs.getBigDecimal("SENS_ID");
 
-        LayoutTile lt = new LayoutTile(id, tiletype, orientation, direction, x, y, soacId, sensId);
+        LayoutTile lt = new LayoutTile(id, tileType, orientation, direction, x, y, soacId, sensId);
         return lt;
     }
 
     @Override
     protected void bind(PreparedStatement ps, LayoutTile layoutTile) throws SQLException {
-        ps.setString(1, layoutTile.getTiletype());
-        ps.setString(2, layoutTile.getOrientation());
+        ps.setString(1, layoutTile.getTiletype().getTileType());
+        ps.setString(2, layoutTile.getOrientation().getOrientation());
         ps.setString(3, layoutTile.getDirection());
         ps.setInt(4, layoutTile.getX());
         ps.setInt(5, layoutTile.getY());
         if (layoutTile.getSoacId() != null) {
             ps.setBigDecimal(6, layoutTile.getSoacId());
         } else {
-            //ps.setBigDecimal(6, null);
             ps.setNull(6, Types.DECIMAL);
         }
         if (layoutTile.getSensId() != null) {

@@ -5,8 +5,9 @@
  */
 package lan.wervel.jcs.ui.layout;
 
+import lan.wervel.jcs.entities.enums.TileType;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
 
 /**
  *

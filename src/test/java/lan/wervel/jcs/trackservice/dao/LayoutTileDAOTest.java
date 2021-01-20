@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import lan.wervel.jcs.entities.LayoutTile;
+import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.entities.enums.TileType;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -45,13 +47,13 @@ public class LayoutTileDAOTest {
 
     @Before
     public void setUp() {
-        LayoutTile lt1 = new LayoutTile(new BigDecimal(1), "TurnoutTile", "East", "Left", 30, 30);
+        LayoutTile lt1 = new LayoutTile(new BigDecimal(1), TileType.SWITCH, Orientation.EAST, "Left", 30, 30);
         layoutTiles.add(lt1);
 
-        LayoutTile lt2 = new LayoutTile(new BigDecimal(2), "DiagonalTrack", "South", "Center", 40, 50);
+        LayoutTile lt2 = new LayoutTile(new BigDecimal(2), TileType.DIAGONAL, Orientation.SOUTH, "Center", 40, 50);
         layoutTiles.add(lt2);
 
-        LayoutTile lt3 = new LayoutTile(new BigDecimal(3), "StraightTrack", "West", "Center", 50, 60);
+        LayoutTile lt3 = new LayoutTile(new BigDecimal(3), TileType.STRAIGHT, Orientation.WEST, "Center", 50, 60);
         layoutTiles.add(lt3);
     }
 
@@ -159,7 +161,7 @@ public class LayoutTileDAOTest {
     @Test
     public void testPersist() {
         System.out.println("persist");
-        LayoutTile layoutTile = new LayoutTile("TurnoutTile", "North", "Right", 80, 90);
+        LayoutTile layoutTile = new LayoutTile(TileType.SWITCH, Orientation.NORTH, "Right", 80, 90);
         LayoutTileDAO instance = new LayoutTileDAO();
         BigDecimal expResult = new BigDecimal(4);
         BigDecimal result = instance.persist(layoutTile);
@@ -172,7 +174,7 @@ public class LayoutTileDAOTest {
     @Test
     public void testPersist2() {
         System.out.println("persist2");
-        LayoutTile layoutTile = new LayoutTile("TurnoutTile", "North", "Right", 80, 90);
+        LayoutTile layoutTile = new LayoutTile(TileType.SWITCH, Orientation.SOUTH, "Right", 80, 90);
         BigDecimal ltgrId = new BigDecimal(2);
         LayoutTileDAO instance = new LayoutTileDAO();
         BigDecimal expResult = new BigDecimal(4);
@@ -186,7 +188,7 @@ public class LayoutTileDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        LayoutTile layoutTile = new LayoutTile("DIAGONAL", "West", "Center", 110, 240);
+        LayoutTile layoutTile = new LayoutTile(TileType.DIAGONAL, Orientation.NORTH, "Center", 110, 240);
         LayoutTileDAO instance = new LayoutTileDAO();
         instance.persist(layoutTile);
         LayoutTile lt = instance.findByXY(110, 240);

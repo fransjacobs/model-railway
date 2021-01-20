@@ -129,7 +129,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
                 return "loco_seq";
             case "Sensor":
                 return "sens_seq";
-            case "Turnout":
+            case "Switch":
                 return "soac_seq";
             case "Signal":
                 return "soac_seq";

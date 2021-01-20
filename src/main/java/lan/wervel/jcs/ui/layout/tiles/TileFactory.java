@@ -20,15 +20,15 @@ package lan.wervel.jcs.ui.layout.tiles;
 
 import java.awt.Point;
 import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.ui.layout.TileType;
-import static lan.wervel.jcs.ui.layout.TileType.BLOCK;
-import static lan.wervel.jcs.ui.layout.TileType.DIAGONAL;
-import static lan.wervel.jcs.ui.layout.TileType.SENSOR;
-import static lan.wervel.jcs.ui.layout.TileType.SIGNAL;
-import static lan.wervel.jcs.ui.layout.TileType.TURNOUT;
+import lan.wervel.jcs.entities.enums.TileType;
+import static lan.wervel.jcs.entities.enums.TileType.BLOCK;
+import static lan.wervel.jcs.entities.enums.TileType.DIAGONAL;
+import static lan.wervel.jcs.entities.enums.TileType.SENSOR;
+import static lan.wervel.jcs.entities.enums.TileType.SIGNAL;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
 import org.pmw.tinylog.Logger;
+import static lan.wervel.jcs.entities.enums.TileType.SWITCH;
 
 /**
  *
@@ -45,19 +45,19 @@ public class TileFactory {
             return null;
         }
 
-        String tt = layoutTile.getTiletype();
+        TileType tt = layoutTile.getTiletype();
         switch (tt) {
-            case "StraightTrack":
+            case STRAIGHT:
                 return new StraightTrack(layoutTile);
-            case "DiagonalTrack":
+            case DIAGONAL:
                 return new DiagonalTrack(layoutTile);
-            case "TurnoutTile":
-                return new TurnoutTile(layoutTile);
-            case "SignalTile":
+            case SWITCH:
+                return new SwitchTile(layoutTile);
+            case SIGNAL:
                 return new SignalTile(layoutTile);
-            case "SensorTile":
+            case SENSOR:
                 return new SensorTile(layoutTile);
-            case "BlockTile":
+            case BLOCK:
                 return new BlockTile(layoutTile);
             default:
                 return null;
@@ -77,8 +77,8 @@ public class TileFactory {
             case DIAGONAL:
                 tile = new DiagonalTrack(orientation, center);
                 break;
-            case TURNOUT:
-                tile = new TurnoutTile(orientation, direction, center);
+            case SWITCH:
+                tile = new SwitchTile(orientation, direction, center);
                 break;
             case SIGNAL:
                 tile = new SignalTile(orientation, center);

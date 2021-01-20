@@ -32,7 +32,7 @@ import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.Sensor;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
@@ -94,15 +94,15 @@ public interface TrackService {
     void toggleF4(Boolean f4, Locomotive locomotive);
 
     //Accessories / Accessory
-    List<Turnout> getTurnouts();
+    List<Switch> getSwitches();
 
-    Turnout getTurnout(Integer address);
+    Switch getSwitchTurnout(Integer address);
 
     List<Signal> getSignals();
 
     Signal getSignal(Integer address);
 
-    Turnout persist(Turnout turnout);
+    Switch persist(Switch turnout);
 
     Signal persist(Signal signal);
 

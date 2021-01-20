@@ -26,7 +26,7 @@ import java.util.Map;
 import lan.wervel.jcs.controller.cs2.AccessoryStatus;
 import lan.wervel.jcs.entities.Signal;
 import lan.wervel.jcs.entities.SolenoidAccessory;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import org.pmw.tinylog.Logger;
 
 /**
@@ -275,8 +275,8 @@ public class AccessoryParser {
         return s;
     }
 
-    private Turnout createTurnout(Map<String, String> accessoryProps, String type) {
-        Turnout t = new Turnout();
+    private Switch createTurnout(Map<String, String> accessoryProps, String type) {
+        Switch t = new Switch();
         t.setDescription(type);
         String d = accessoryProps.get(STELLUNG);
 

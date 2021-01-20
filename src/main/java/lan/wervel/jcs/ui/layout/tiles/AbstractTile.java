@@ -22,6 +22,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -34,7 +35,8 @@ import java.util.Objects;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.ui.layout.ReDrawListener;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.entities.enums.TileType;
 import org.pmw.tinylog.Logger;
 
 /**
@@ -42,12 +44,12 @@ import org.pmw.tinylog.Logger;
  * default the drawing of a Tile is Horizontal from L to R or West to East.
  * Default orientation is East
  *
- * The default size of a Tile is 40 x 40 pixels.
- * The center point of a Tile is stored and always snapped to the nearest grid point.
- * The basic grid is 20x 20 pixels.
+ * The default size of a Tile is 40 x 40 pixels. The center point of a Tile is
+ * stored and always snapped to the nearest grid point. The basic grid is 20x 20
+ * pixels.
  *
- * A Tile can be rotated (always clockwise). Rotation will change the orientation from
- * East -> South -> West -> North -> East.
+ * A Tile can be rotated (always clockwise). Rotation will change the
+ * orientation from East -> South -> West -> North -> East.
  *
  * A Tile is rendered to a Buffered Image to speed up the display
  *
@@ -115,6 +117,7 @@ public abstract class AbstractTile implements Shape {
             BufferedImage bi = createImage();
 
             Graphics2D g2di = bi.createGraphics();
+            g2di.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             if (trackColor == null) {
                 trackColor = DEFAULT_TRACK_COLOR;
             }
@@ -293,13 +296,13 @@ public abstract class AbstractTile implements Shape {
     }
 
     public void setOrientation(Orientation orientation) {
-        if (!this.orientation.equals(orientation))  {
+        if (!this.orientation.equals(orientation)) {
             //image is cached, so remove will be created again
             image = null;
         }
         this.orientation = orientation;
         if (this.layoutTile != null) {
-            this.layoutTile.setOrientation(orientation.getOrientation());
+            this.layoutTile.setOrientation(orientation);
         }
     }
 
@@ -308,7 +311,7 @@ public abstract class AbstractTile implements Shape {
     }
 
     public void setDirection(Direction direction) {
-        if (!this.direction.equals(direction))  {
+        if (!this.direction.equals(direction)) {
             //image is cached, so remove will be created again
             image = null;
         }
@@ -376,18 +379,17 @@ public abstract class AbstractTile implements Shape {
     public LayoutTile getLayoutTile() {
         if (layoutTile == null) {
             Logger.trace("Create new LayoutTile for: " + getClass().getName());
-            String tt = getClass().getSimpleName();
-            String o = orientation.getOrientation();
+            TileType tt = TileType.get(getClass().getSimpleName());
             String d = direction.getDirection();
 
-            layoutTile = new LayoutTile(tt, o, d, center);
+            layoutTile = new LayoutTile(tt, orientation, d, center);
         }
         return layoutTile;
     }
 
     public final void setLayoutTile(LayoutTile layoutTile) {
         this.layoutTile = layoutTile;
-        this.orientation = Orientation.get(layoutTile.getOrientation());
+        this.orientation = layoutTile.getOrientation();
         this.direction = Direction.get(layoutTile.getDirection());
         this.center = layoutTile.getCenter();
     }

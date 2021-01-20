@@ -24,24 +24,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.Switch;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 
 /**
  *
  * @author frans
  */
-public class TurnoutDAO extends AbstractDAO<Turnout> {
+public class SwitchDAO extends AbstractDAO<Switch> {
 
     private static final String INS_SA_STMT = "insert into solenoidaccessories (ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME,ID) values(?,?,?,?,?,?,?,?,?,?)";
     private static final String UPD_SA_STMT = "update solenoidaccessories set ADDRESS = ?,NAME = ?,DESCRIPTION = ?,CATALOG_NUMBER = ?,ACCESSORY_TYPE = ?,CURRENT_STATUS_TYPE = ?, SOAC_ID = ?, LIGHT_IMAGES = ?, SWITCH_TIME = ? where ID = ?";
 
-    public TurnoutDAO() {
+    public SwitchDAO() {
         super();
     }
 
     @Override
-    protected Turnout map(ResultSet rs) throws SQLException {
+    protected Switch map(ResultSet rs) throws SQLException {
         BigDecimal id = rs.getBigDecimal("ID");
         Integer address = rs.getInt("ADDRESS");
         String name = rs.getString("NAME");
@@ -57,7 +57,7 @@ public class TurnoutDAO extends AbstractDAO<Turnout> {
             value = AccessoryValue.OFF;
         }
 
-        Turnout sa = new Turnout(address, description, catalogNumber, id, value);
+        Switch sa = new Switch(address, description, catalogNumber, id, value);
         sa.setName(name);
         sa.setSwitchTime(switchTime);
 
@@ -65,7 +65,7 @@ public class TurnoutDAO extends AbstractDAO<Turnout> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, Turnout turnout) throws SQLException {
+    protected void bind(PreparedStatement ps, Switch turnout) throws SQLException {
         ps.setInt(1, turnout.getAddress());
         ps.setString(2, turnout.getName());
         ps.setString(3, turnout.getDescription());
@@ -95,30 +95,30 @@ public class TurnoutDAO extends AbstractDAO<Turnout> {
     }
 
     @Override
-    public List<Turnout> findAll() {
+    public List<Switch> findAll() {
         String stmt = "select * from solenoidaccessories where accessory_type = 'T' order by address asc";
 
         return this.findAll(stmt);
     }
 
     @Override
-    public Turnout find(Integer address
+    public Switch find(Integer address
     ) {
         String stmt = "select * from solenoidaccessories where accessory_type = 'T' and address = ?";
 
         return this.find(address, stmt);
     }
 
-    public Turnout findById(BigDecimal id) {
+    public Switch findById(BigDecimal id) {
         String stmt = "select * from solenoidaccessories where id = ?";
 
         return this.findById(id, stmt);
     }
 
     @Override
-    public BigDecimal persist(Turnout accessoiry) {
+    public BigDecimal persist(Switch accessoiry) {
         //Check whether the accessoiry exists..
-        Turnout sa = this.find(accessoiry.getAddress());
+        Switch sa = this.find(accessoiry.getAddress());
 
         String statement;
         if (sa == null) {
@@ -133,7 +133,7 @@ public class TurnoutDAO extends AbstractDAO<Turnout> {
     }
 
     @Override
-    public void remove(Turnout accessoiry) {
+    public void remove(Switch accessoiry) {
         String stmt = "delete from solenoidaccessories where id = ?";
         this.remove(accessoiry, stmt);
     }
