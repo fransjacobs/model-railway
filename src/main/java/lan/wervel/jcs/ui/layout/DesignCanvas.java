@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout;
 
+import lan.wervel.jcs.entities.enums.TileType;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -49,11 +50,10 @@ import lan.wervel.jcs.ui.layout.tiles.SensorTile;
 import lan.wervel.jcs.ui.layout.tiles.BlockTile;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
 import lan.wervel.jcs.ui.layout.tiles.TileFactory;
-import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
+import lan.wervel.jcs.ui.layout.tiles.SwitchTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
-import lan.wervel.jcs.ui.layout.tiles.enums.Rotation;
-import org.pmw.tinylog.Logger;
+import lan.wervel.jcs.entities.enums.Orientation;
+import org.tinylog.Logger;
 
 /**
  * This canvas / Panel is used to draw the layout
@@ -346,7 +346,7 @@ public class DesignCanvas extends JPanel {
             }
         }
 
-        TrackServiceFactory.getTrackService().persist(layoutTiles);
+        TrackServiceFactory.getTrackService().persistOld(layoutTiles);
     }
 
     /**
@@ -365,6 +365,7 @@ public class DesignCanvas extends JPanel {
         rightMI = new JMenuItem();
         leftMI = new JMenuItem();
         operationsPM = new JPopupMenu();
+        xyMI = new JMenuItem();
         propertiesMI = new JMenuItem();
         rotateMI = new JMenuItem();
         flipHorizontalMI = new JMenuItem();
@@ -403,6 +404,9 @@ public class DesignCanvas extends JPanel {
             }
         });
         curvedPopupMenu.add(leftMI);
+
+        xyMI.setText("x: y:");
+        operationsPM.add(xyMI);
 
         propertiesMI.setText("Properties");
         propertiesMI.addActionListener(new ActionListener() {
@@ -584,7 +588,7 @@ public class DesignCanvas extends JPanel {
                 showRotate = true;
                 showDelete = true;
                 break;
-            case "TurnoutTile":
+            case "SwitchTile":
                 showProperties = true;
                 showFlip = true;
                 showRotate = true;
@@ -595,6 +599,8 @@ public class DesignCanvas extends JPanel {
                 showDelete = true;
                 break;
         }
+        this.xyMI.setVisible(true);
+        this.xyMI.setText("x: "+x+" y: "+y+", "+tile.getOrientation().getOrientation());
         this.propertiesMI.setVisible(showProperties);
         this.flipHorizontalMI.setVisible(showFlip);
         this.flipVerticalMI.setVisible(showFlip);
@@ -840,7 +846,7 @@ public class DesignCanvas extends JPanel {
                     sd.setVisible(true);
                     break;
                 case "TurnoutTile":
-                    TurnoutDialog td = new TurnoutDialog(getParentFrame(), true, (TurnoutTile) tile);
+                    TurnoutDialog td = new TurnoutDialog(getParentFrame(), true, (SwitchTile) tile);
                     td.setVisible(true);
                     break;
                 default:
@@ -925,5 +931,6 @@ public class DesignCanvas extends JPanel {
     private JMenuItem rotateMI;
     private JPopupMenu straightPopupMenu;
     private JMenuItem verticalMI;
+    private JMenuItem xyMI;
     // End of variables declaration//GEN-END:variables
 }

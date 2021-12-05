@@ -31,7 +31,7 @@ import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
 import lan.wervel.jcs.trackservice.events.SensorListener;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
 
 /**
  * Draw a OccupancyDetector

@@ -44,7 +44,7 @@ import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.ui.widgets.FeedbackPanel;
 import lan.wervel.jcs.ui.widgets.LocoPanel;
 import lan.wervel.jcs.ui.widgets.SwitchPanel;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

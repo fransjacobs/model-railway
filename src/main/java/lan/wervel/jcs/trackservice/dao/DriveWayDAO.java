@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import lan.wervel.jcs.entities.DriveWay;
-import lan.wervel.jcs.entities.enums.DrivewayType;
 
 /**
  *
@@ -91,7 +90,7 @@ public class DriveWayDAO extends AbstractDAO<DriveWay> {
         return this.findAll(stmt);
     }
 
-    @Override
+    //@Override
     public DriveWay find(Integer address) {
         String stmt = "select * from driveways where address = ?";
 

@@ -43,7 +43,7 @@ import javax.imageio.ImageIO;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.JCSGUI;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

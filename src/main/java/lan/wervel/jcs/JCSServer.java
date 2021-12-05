@@ -26,7 +26,7 @@ import java.nio.channels.FileLock;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
 import lan.wervel.jcs.trackservice.TrackService;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  * JCS Server provides Repository and Controller Services for UI. Also it can listen to Feedback providers.

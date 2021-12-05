@@ -19,7 +19,7 @@
 package lan.wervel.jcs.trackservice;
 
 import java.lang.reflect.InvocationTargetException;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

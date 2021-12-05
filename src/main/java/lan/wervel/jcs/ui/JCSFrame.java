@@ -63,7 +63,7 @@ import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.ui.layout.DesignPanel;
 import lan.wervel.jcs.ui.options.OptionDialog;
 import lan.wervel.jcs.ui.util.UICallback;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

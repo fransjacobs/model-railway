@@ -31,7 +31,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import lan.wervel.jcs.util.ProgressUpdater;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

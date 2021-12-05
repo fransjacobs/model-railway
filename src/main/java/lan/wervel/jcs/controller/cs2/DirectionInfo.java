@@ -21,7 +21,7 @@ package lan.wervel.jcs.controller.cs2;
 import java.io.Serializable;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.entities.enums.Direction;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

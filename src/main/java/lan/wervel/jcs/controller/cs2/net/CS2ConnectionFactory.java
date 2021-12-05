@@ -26,7 +26,7 @@ import java.net.SocketTimeoutException;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.CanMessageFactory;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  * Try to connect with a CS2/3. A "ping" is send to the broadcast address like

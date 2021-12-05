@@ -24,17 +24,14 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R180;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R270;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R90;
+import lan.wervel.jcs.entities.enums.Orientation;
 
 /**
  * Draw a Straight Track
@@ -54,16 +51,16 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
 
         if (layoutTile != null
                 && layoutTile.getSolenoidAccessoiry() != null
-                && layoutTile.getSolenoidAccessoiry() instanceof Signal) {
+                && layoutTile.getSolenoidAccessoiry() instanceof SignalBean) {
 
-            Signal s = (Signal) layoutTile.getSolenoidAccessoiry();
+            SignalBean s = (SignalBean) layoutTile.getSolenoidAccessoiry();
 
             signalType = s.getLightImages();
             signalValue = s.getSignalValue();
             midget = "Midget".equals(s.getDescription());
             //Logger.trace("A: " + s.getAddress() + " A2: " + s.getAddress2() + " V: " + s.getValue() + " V2 " + s.getValue2() + " SV: " + s.getSignalValue());
         } else {
-            signalType = Signal.HP01;
+            signalType = SignalBean.HP01;
         }
     }
 
@@ -73,7 +70,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
 
     public SignalTile(Orientation orientation, Point center) {
         super(orientation, center);
-        signalType = Signal.HP01;
+        signalType = SignalBean.HP01;
         this.width = DEFAULT_WIDTH;
         this.height = DEFAULT_HEIGHT;
     }
@@ -81,7 +78,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
     @Override
     public void switched(AccessoryEvent event) {
         if (layoutTile != null && layoutTile.getSolenoidAccessoiry() != null && event.isEventFor(layoutTile.getSolenoidAccessoiry())) {
-            Signal s = (Signal) layoutTile.getSolenoidAccessoiry();
+            SignalBean s = (SignalBean) layoutTile.getSolenoidAccessoiry();
             s.setSignalValue(event.getSignalValue());
             this.setSignalValue(event.getSignalValue());
         }
@@ -112,7 +109,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
         g2d.setBackground(Color.white);
         g2d.clearRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-        if (Signal.HP012SH1 == this.signalType) {
+        if (SignalBean.HP012SH1 == this.signalType) {
             renderSignal4(g2d);
         } else {
             if (midget) {
@@ -142,7 +139,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
     }
 
     /**
-     * Render a Signal with 2 lights
+     * Render a SignalBean with 2 lights
      *
      * @param g2d the graphics context
      */
@@ -187,7 +184,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
     }
 
     /**
-     * Render a entry Signal which can show 4 light images
+     * Render a entry SignalBean which can show 4 light images
      *
      * @param g2d the Graphics context
      */
@@ -261,7 +258,7 @@ public class SignalTile extends AbstractTile implements AccessoryListener {
     }
 
     /**
-     * Render a midget Signal
+     * Render a midget SignalBean
      *
      * @param g2d the Graphics context
      */

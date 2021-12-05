@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Properties;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  * Obtain Version information from the project generated pom.properties file

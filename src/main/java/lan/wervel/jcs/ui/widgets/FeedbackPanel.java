@@ -28,10 +28,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-import lan.wervel.jcs.entities.Sensor;
+import lan.wervel.jcs.entities.SensorBean;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.SensorListener;
-import org.pmw.tinylog.Configurator;
 
 /**
  * Diagnostic panel for a feedback module
@@ -71,37 +70,37 @@ public class FeedbackPanel extends JPanel {
 
     private void registerForRefresh() {
         if (TrackServiceFactory.getTrackService() != null) {
-            FeedbackPort p1 = new FeedbackPort(this.lbl1, Sensor.calculateContactId(moduleNumber, 1));
+            FeedbackPort p1 = new FeedbackPort(this.lbl1, SensorBean.calculateContactId(moduleNumber, 1));
             TrackServiceFactory.getTrackService().addSensorListener(p1);
-            FeedbackPort p2 = new FeedbackPort(this.lbl2, Sensor.calculateContactId(moduleNumber, 2));
+            FeedbackPort p2 = new FeedbackPort(this.lbl2, SensorBean.calculateContactId(moduleNumber, 2));
             TrackServiceFactory.getTrackService().addSensorListener(p2);
-            FeedbackPort p3 = new FeedbackPort(this.lbl3, Sensor.calculateContactId(moduleNumber, 3));
+            FeedbackPort p3 = new FeedbackPort(this.lbl3, SensorBean.calculateContactId(moduleNumber, 3));
             TrackServiceFactory.getTrackService().addSensorListener(p3);
-            FeedbackPort p4 = new FeedbackPort(this.lbl4, Sensor.calculateContactId(moduleNumber, 4));
+            FeedbackPort p4 = new FeedbackPort(this.lbl4, SensorBean.calculateContactId(moduleNumber, 4));
             TrackServiceFactory.getTrackService().addSensorListener(p4);
-            FeedbackPort p5 = new FeedbackPort(this.lbl5, Sensor.calculateContactId(moduleNumber, 5));
+            FeedbackPort p5 = new FeedbackPort(this.lbl5, SensorBean.calculateContactId(moduleNumber, 5));
             TrackServiceFactory.getTrackService().addSensorListener(p5);
-            FeedbackPort p6 = new FeedbackPort(this.lbl6, Sensor.calculateContactId(moduleNumber, 6));
+            FeedbackPort p6 = new FeedbackPort(this.lbl6, SensorBean.calculateContactId(moduleNumber, 6));
             TrackServiceFactory.getTrackService().addSensorListener(p6);
-            FeedbackPort p7 = new FeedbackPort(this.lbl7, Sensor.calculateContactId(moduleNumber, 7));
+            FeedbackPort p7 = new FeedbackPort(this.lbl7, SensorBean.calculateContactId(moduleNumber, 7));
             TrackServiceFactory.getTrackService().addSensorListener(p7);
-            FeedbackPort p8 = new FeedbackPort(this.lbl8, Sensor.calculateContactId(moduleNumber, 8));
+            FeedbackPort p8 = new FeedbackPort(this.lbl8, SensorBean.calculateContactId(moduleNumber, 8));
             TrackServiceFactory.getTrackService().addSensorListener(p8);
-            FeedbackPort p9 = new FeedbackPort(this.lbl9, Sensor.calculateContactId(moduleNumber, 9));
+            FeedbackPort p9 = new FeedbackPort(this.lbl9, SensorBean.calculateContactId(moduleNumber, 9));
             TrackServiceFactory.getTrackService().addSensorListener(p9);
-            FeedbackPort p10 = new FeedbackPort(this.lbl10, Sensor.calculateContactId(moduleNumber, 10));
+            FeedbackPort p10 = new FeedbackPort(this.lbl10, SensorBean.calculateContactId(moduleNumber, 10));
             TrackServiceFactory.getTrackService().addSensorListener(p10);
-            FeedbackPort p11 = new FeedbackPort(this.lbl11, Sensor.calculateContactId(moduleNumber, 11));
+            FeedbackPort p11 = new FeedbackPort(this.lbl11, SensorBean.calculateContactId(moduleNumber, 11));
             TrackServiceFactory.getTrackService().addSensorListener(p11);
-            FeedbackPort p12 = new FeedbackPort(this.lbl12, Sensor.calculateContactId(moduleNumber, 12));
+            FeedbackPort p12 = new FeedbackPort(this.lbl12, SensorBean.calculateContactId(moduleNumber, 12));
             TrackServiceFactory.getTrackService().addSensorListener(p12);
-            FeedbackPort p13 = new FeedbackPort(this.lbl13, Sensor.calculateContactId(moduleNumber, 13));
+            FeedbackPort p13 = new FeedbackPort(this.lbl13, SensorBean.calculateContactId(moduleNumber, 13));
             TrackServiceFactory.getTrackService().addSensorListener(p13);
-            FeedbackPort p14 = new FeedbackPort(this.lbl14, Sensor.calculateContactId(moduleNumber, 14));
+            FeedbackPort p14 = new FeedbackPort(this.lbl14, SensorBean.calculateContactId(moduleNumber, 14));
             TrackServiceFactory.getTrackService().addSensorListener(p14);
-            FeedbackPort p15 = new FeedbackPort(this.lbl15, Sensor.calculateContactId(moduleNumber, 15));
+            FeedbackPort p15 = new FeedbackPort(this.lbl15, SensorBean.calculateContactId(moduleNumber, 15));
             TrackServiceFactory.getTrackService().addSensorListener(p15);
-            FeedbackPort p16 = new FeedbackPort(this.lbl16, Sensor.calculateContactId(moduleNumber, 16));
+            FeedbackPort p16 = new FeedbackPort(this.lbl16, SensorBean.calculateContactId(moduleNumber, 16));
             TrackServiceFactory.getTrackService().addSensorListener(p16);
 
             TrackServiceFactory.getTrackService().notifyAllSensorListeners();
@@ -154,11 +153,6 @@ public class FeedbackPanel extends JPanel {
     }
 
     public static void main(String args[]) {
-        Configurator.
-                currentConfig().formatPattern("{date:yyyy-MM-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
-                level(org.pmw.tinylog.Level.TRACE).
-                activate();
-
         //Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
         JFrame f = new JFrame("FeedbackPanel Tester");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

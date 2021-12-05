@@ -30,8 +30,11 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Dtinylog.level=trace -Xms256m -Xmx512m -classpath %classpath lan.wervel.jcs.JCSGUI</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx512m</exec.vmArgs>
+                <exec.appArgs></exec.appArgs>
+                <exec.mainClass>lan.wervel.jcs.JCSGUI</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -44,9 +47,12 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address} -Dtinylog.level=trace -Xms256m -Xmx512m -classpath %classpath lan.wervel.jcs.JCSGUI</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
+                <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx512m -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+                <exec.appArgs></exec.appArgs>
+                <exec.mainClass>lan.wervel.jcs.JCSGUI</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -59,8 +65,11 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:1.5.0:exec</goal>
             </goals>
             <properties>
-                <exec.args>-Dtinylog.level=trace -Xms256m -Xmx512m -classpath %classpath lan.wervel.jcs.JCSGUI</exec.args>
+                <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
+                <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx512m</exec.vmArgs>
+                <exec.appArgs></exec.appArgs>
+                <exec.mainClass>lan.wervel.jcs.JCSGUI</exec.mainClass>
             </properties>
         </action>
     </actions>

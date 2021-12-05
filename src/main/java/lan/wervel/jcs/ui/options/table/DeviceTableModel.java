@@ -23,7 +23,7 @@ import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 import lan.wervel.jcs.entities.ControllableDevice;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

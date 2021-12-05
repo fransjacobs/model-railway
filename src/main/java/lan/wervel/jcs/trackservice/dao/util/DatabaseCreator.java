@@ -24,8 +24,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import lan.wervel.jcs.util.RunUtil;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -81,20 +80,24 @@ public class DatabaseCreator {
         String path = System.getProperty("user.home") + File.separator + ".jcs";
         File jcsPath = new File(path);
         boolean success;
+        int fileCntDel = 0;
+        int fileCntLst = 0;
 
-        String fileName = testMode ? "jcs-test-db" : "jcs-db1";
+        String fileName = testMode ? "jcs-test-db" : "jcs-db";
 
         if (jcsPath.exists() && jcsPath.isDirectory()) {
             File[] files = jcsPath.listFiles((File f, String n) -> {
                 return n.contains(fileName);
             });
 
+            fileCntDel = files.length;
             for (int i = 1; i < files.length; i++) {
                 Logger.trace("deleting " + files[i].getName());
                 success = files[i].delete();
                 if (!success) {
                     break;
                 }
+
             }
 
             success = true;
@@ -103,14 +106,20 @@ public class DatabaseCreator {
                 return n.contains("jcs-test-db");
             });
 
+            fileCntLst = files.length;
             for (int i = 1; i < files.length; i++) {
+
                 success = false;
             }
         } else {
             success = true;
         }
 
-        Logger.info("Database file(s) " + (success ? "successfully" : "not") + " deleted...");
+        if (fileCntDel > 0) {
+            Logger.info(fileCntDel + " Database file(s) " + (success ? "successfully" : "not") + " deleted...");
+        } else {
+            Logger.info("No Database file(s) removed...");
+        }
 
         //On Windows the files is not released... but the database is wiped anyway...
         if (!success && RunUtil.getOsType() == RunUtil.OS_WINDOWS) {
@@ -162,6 +171,20 @@ public class DatabaseCreator {
         stmt.executeUpdate("CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1");
 
         Logger.trace("Sequences created...");
+    }
+
+    private static void createTiles(Statement stmt) throws SQLException {
+        stmt.executeUpdate("create table tiles ("
+                + "id          VARCHAR(255) not null"
+                + ",tileType    VARCHAR(255) not null"
+                + ",orientation VARCHAR(255) not null"
+                + ",direction   VARCHAR(255) not null"
+                + ",x           INTEGER NOT NULL"
+                + ",y           INTEGER NOT NULL"
+                + ",signalType  VARCHAR(255))");
+
+        stmt.executeUpdate("ALTER TABLE tiles ADD CONSTRAINT tile_pk PRIMARY KEY ( id )");
+        Logger.trace("Table tiles created...");
     }
 
     private static void createTrackpower(Statement stmt) throws SQLException {
@@ -434,13 +457,15 @@ public class DatabaseCreator {
     private static void createSchema(boolean testMode) {
         Logger.trace(testMode ? "Test Mode: " : "" + "Creating JCS schema objects...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("set SCHEMA JCS");
 
                 dropObjects(stmt);
                 createSequences(stmt);
+                createTiles(stmt);
+                
                 createTrackpower(stmt);
                 accessoryTypes(stmt);
                 sensors(stmt);
@@ -467,13 +492,15 @@ public class DatabaseCreator {
 
     private static void createDatabase(boolean testMode) {
         Logger.info("Creating new " + (testMode ? "TEST " : "") + "JCS Database...");
+
         if (!deleteDatebaseFile(testMode)) {
             Logger.error("Could not remove database file " + DB_PATH + (testMode ? TEST_DB_NAME : DB_NAME) + " quitting.");
             System.exit(1);
         }
 
         try {
-            try (Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
+            try ( Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
+                //try (Connection c = connect(ADMIN_USER, "", false, testMode)) {
                 if (c != null) {
                     Statement stmt = c.createStatement();
 
@@ -507,8 +534,10 @@ public class DatabaseCreator {
     }
 
     public static void main(String[] a) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        recreateTest();
+        //Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
+
+        //recreateTest();
+        create();
     }
 
 }

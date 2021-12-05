@@ -20,14 +20,14 @@ package lan.wervel.jcs.ui.options.table;
 
 import java.util.ArrayList;
 import java.util.List;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 
 /**
  *
  * @author frans
  */
-public class SignalTableModel extends DeviceTableModel<Signal> {
+public class SignalTableModel extends DeviceTableModel<SignalBean> {
 
   public SignalTableModel() {
     super();
@@ -48,12 +48,12 @@ public class SignalTableModel extends DeviceTableModel<Signal> {
   }
 
   @Override
-  protected List<Signal> getDevices() {
+  protected List<SignalBean> getDevices() {
     return TrackServiceFactory.getTrackService().getSignals();
   }
 
   @Override
-  Object getColumnValue(Signal device, int column) {
+  Object getColumnValue(SignalBean device, int column) {
     switch (column) {
       case 0:
         return device.getAddress();
@@ -89,7 +89,7 @@ public class SignalTableModel extends DeviceTableModel<Signal> {
   }
 
   @Override
-  void setColumnValue(Signal device, int column, Object value) {
+  void setColumnValue(SignalBean device, int column, Object value) {
     switch (column) {
       case 0:
         device.setAddress((Integer) value);

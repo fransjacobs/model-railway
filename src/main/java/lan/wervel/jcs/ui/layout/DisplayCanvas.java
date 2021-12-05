@@ -40,8 +40,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.Signal;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SignalBean;
+import lan.wervel.jcs.entities.SwitchBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
@@ -50,12 +50,11 @@ import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import lan.wervel.jcs.ui.layout.tiles.SensorTile;
 import lan.wervel.jcs.ui.layout.tiles.BlockTile;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
-import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
+import lan.wervel.jcs.ui.layout.tiles.SwitchTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.trackservice.events.SensorListener;
 import lan.wervel.jcs.ui.layout.tiles.TileFactory;
+import org.tinylog.Logger;
 
 /**
  * This panel is used to show the layout and be able use the layout as switch
@@ -102,7 +101,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
             
             if (!tile.equals(this.selectedTile)) {
                 tile.setDrawName(true);
-                if (tile instanceof SignalTile | tile instanceof TurnoutTile) {
+                if (tile instanceof SignalTile | tile instanceof SwitchTile) {
                     tile.drawCenterPoint(g2d);
                 }
             }
@@ -357,7 +356,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
   }// </editor-fold>//GEN-END:initComponents
 
     private void showSignalPopup(SignalTile st, MouseEvent evt) {
-        Signal signal = (Signal) st.getLayoutTile().getSolenoidAccessoiry();
+        SignalBean signal = (SignalBean) st.getLayoutTile().getSolenoidAccessoiry();
         if (signal != null) {
             if (signal.getLightImages() > 2) {
                 this.signal4PopupMenu.show(this, evt.getX(), evt.getY());
@@ -368,14 +367,14 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
     }
 
     private void setTurnoutValue(AccessoryValue value) {
-        Turnout turnout = (Turnout) this.selectedTile.getLayoutTile().getSolenoidAccessoiry();
+        SwitchBean turnout = (SwitchBean) this.selectedTile.getLayoutTile().getSolenoidAccessoiry();
         turnout.setValue(value);
 
         this.executor.execute(() -> TrackServiceFactory.getTrackService().switchAccessory(turnout.getValue(), turnout));
     }
 
     private void setSignalValue(SignalValue signalValue) {
-        Signal signal = (Signal) this.selectedTile.getLayoutTile().getSolenoidAccessoiry();
+        SignalBean signal = (SignalBean) this.selectedTile.getLayoutTile().getSolenoidAccessoiry();
         signal.setSignalValue(signalValue);
 
         this.executor.execute(() -> TrackServiceFactory.getTrackService().switchAccessory(signal.getValue(), signal));
@@ -393,7 +392,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
           showSignalPopup((SignalTile) selectedTile, evt);
       }
 
-      if (this.selectedTile instanceof TurnoutTile) {
+      if (this.selectedTile instanceof SwitchTile) {
           if (Direction.LEFT.equals(selectedTile.getDirection())) {
               this.turnoutLeftPopupMenu.show(this, evt.getX(), evt.getY());
           } else {
@@ -452,7 +451,7 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
         }
 
         for (AbstractTile e : snapshot) {
-            if (e.getCenter().equals(p) && ((e instanceof SignalTile) || (e instanceof TurnoutTile))) {
+            if (e.getCenter().equals(p) && ((e instanceof SignalTile) || (e instanceof SwitchTile))) {
                 toSelect = e;
                 Logger.trace("Direct search found Tile " + toSelect + "...");
                 break;
@@ -473,8 +472,6 @@ public class DisplayCanvas extends JPanel implements ReDrawListener {
     }
 
     public static void main(String args[]) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {

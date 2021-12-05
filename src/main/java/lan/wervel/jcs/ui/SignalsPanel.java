@@ -20,10 +20,10 @@ package lan.wervel.jcs.ui;
 
 import java.awt.GridLayout;
 import java.util.List;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.widgets.SignalRowPanel;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -47,7 +47,7 @@ public class SignalsPanel extends javax.swing.JPanel {
         if (TrackServiceFactory.getTrackService() == null) {
             return;
         }
-        List<Signal> signals = TrackServiceFactory.getTrackService().getSignals();
+        List<SignalBean> signals = TrackServiceFactory.getTrackService().getSignals();
 
         Logger.trace("There are " + signals.size() + " signals...");
 
@@ -55,7 +55,7 @@ public class SignalsPanel extends javax.swing.JPanel {
         int maxW = this.getPreferredSize().width;
         int w = 0, rows = 1, cols = 0;
 
-        for (Signal signal : signals) {
+        for (SignalBean signal : signals) {
             SignalRowPanel signalRowPanel = new SignalRowPanel(signal, SignalRowPanel.Y_AXIS);
             signalRowPanel.requestFocusInWindow();
             w = w + signalRowPanel.getPreferredSize().width;

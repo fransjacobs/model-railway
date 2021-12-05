@@ -26,7 +26,7 @@ import java.util.Map;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

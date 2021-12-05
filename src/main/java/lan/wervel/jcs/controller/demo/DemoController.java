@@ -42,9 +42,9 @@ import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
-import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.controller.HeartbeatListener;
 import lan.wervel.jcs.util.NetworkUtil;
+import org.tinylog.Logger;
 
 /**
  *

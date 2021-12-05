@@ -43,8 +43,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.entities.JCSProperty;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -240,8 +239,6 @@ public class PropertiesPanel extends JPanel {
   }//GEN-LAST:event_deleteBtnActionPerformed
 
   public static void main(String args[]) {
-    Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");

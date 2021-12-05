@@ -29,10 +29,11 @@ import lan.wervel.jcs.entities.JCSProperty;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.entities.Locomotive;
-import lan.wervel.jcs.entities.Sensor;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SensorBean;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.SolenoidAccessory;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SwitchBean;
+import lan.wervel.jcs.entities.TileBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
@@ -94,17 +95,17 @@ public interface TrackService {
     void toggleF4(Boolean f4, Locomotive locomotive);
 
     //Accessories / Accessory
-    List<Turnout> getTurnouts();
+    List<SwitchBean> getSwitches();
 
-    Turnout getTurnout(Integer address);
+    SwitchBean getSwitchTurnout(Integer address);
 
-    List<Signal> getSignals();
+    List<SignalBean> getSignals();
 
-    Signal getSignal(Integer address);
+    SignalBean getSignal(Integer address);
 
-    Turnout persist(Turnout turnout);
+    SwitchBean persist(SwitchBean turnout);
 
-    Signal persist(Signal signal);
+    SignalBean persist(SignalBean signal);
 
     void switchAccessory(AccessoryValue value, SolenoidAccessory accessory);
 
@@ -130,11 +131,11 @@ public interface TrackService {
     void notifyAllSensorListeners();
 
     //Sensors
-    List<Sensor> getSensors();
+    List<SensorBean> getSensors();
     
-    Sensor getSensor(Integer contactId);
+    SensorBean getSensor(Integer contactId);
     
-    Sensor persist(Sensor sensor);
+    SensorBean persist(SensorBean sensor);
     
     void addPersistedEventListener(PersistedEventListener listener);
 
@@ -167,14 +168,19 @@ public interface TrackService {
     void removeMessageListener(CanMessageListener listener);
 
     //Trackplan
+    @Deprecated
     Set<LayoutTile> getLayoutTiles();
 
+    @Deprecated
     LayoutTile getLayoutTile(Integer x, Integer y);
 
+    @Deprecated
     LayoutTile persist(LayoutTile layoutTile);
 
-    void persist(Set<LayoutTile> layoutTiles);
+    @Deprecated
+    void persistOld(Set<LayoutTile> layoutTiles);
 
+    @Deprecated
     void remove(LayoutTile layoutTile);
 
     List<LayoutTileGroup> getLayoutTileGroups();
@@ -187,6 +193,17 @@ public interface TrackService {
 
     void remove(LayoutTileGroup layoutTileGroup);
     
+
+    Set<TileBean> getTiles();
+
+    TileBean getTile(Integer x, Integer y);
+
+    TileBean persist(TileBean tile);
+
+    void persist(Set<TileBean> tiles);
+
+    void remove(TileBean tile);
+
     void synchronizeLocomotivesWithController();
 
     void synchronizeAccessoriesWithController();

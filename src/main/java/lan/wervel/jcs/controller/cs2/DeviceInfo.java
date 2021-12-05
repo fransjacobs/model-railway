@@ -34,8 +34,8 @@ public class DeviceInfo implements Serializable {
     private String catalogNumber;
     private String description;
 
-    private Integer gfpUid;
-    private Integer guiUid;
+    private String gfpUid;
+    private String guiUid;
     private String hardwareVersion;
     private String softwareVersion;
 
@@ -57,8 +57,8 @@ public class DeviceInfo implements Serializable {
     }
 
     public DeviceInfo(String gfpUid, String guiUid, String hardwareVersion, String serialNumber) {
-        this.gfpUid = Integer.decode(gfpUid);
-        this.guiUid = Integer.decode(guiUid);
+        this.gfpUid = gfpUid;
+        this.guiUid = guiUid;
         this.hardwareVersion = hardwareVersion;
         this.serialNumber = serialNumber;
     }
@@ -201,19 +201,19 @@ public class DeviceInfo implements Serializable {
         this.deviceHostName = deviceHostName;
     }
 
-    public Integer getGfpUid() {
+    public String getGfpUid() {
         return gfpUid;
     }
 
-    public void setGfpUid(Integer gfpUid) {
+    public void setGfpUid(String gfpUid) {
         this.gfpUid = gfpUid;
     }
 
-    public Integer getGuiUid() {
+    public String getGuiUid() {
         return guiUid;
     }
 
-    public void setGuiUid(Integer guiUid) {
+    public void setGuiUid(String guiUid) {
         this.guiUid = guiUid;
     }
 

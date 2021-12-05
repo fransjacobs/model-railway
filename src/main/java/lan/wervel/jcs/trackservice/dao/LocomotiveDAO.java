@@ -130,7 +130,7 @@ public class LocomotiveDAO extends AbstractDAO<Locomotive> {
     return this.findAll(stmt);
   }
 
-  @Override
+  //@Override
   public Locomotive find(Integer address) {
     String stmt = "select * from locomotives where address = ?";
 

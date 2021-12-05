@@ -21,7 +21,7 @@ package lan.wervel.jcs.ui.layout.tiles;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
 import org.junit.After;
 import org.junit.Before;
 import static org.junit.Assert.*;

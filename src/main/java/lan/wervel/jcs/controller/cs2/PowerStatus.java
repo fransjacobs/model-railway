@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.List;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
-import org.pmw.tinylog.Logger;
 
 /**
  *

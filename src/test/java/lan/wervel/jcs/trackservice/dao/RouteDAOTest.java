@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.trackservice.dao;
 
+import lan.wervel.jcs.trackservice.dao.util.DAOTestHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +76,7 @@ public class RouteDAOTest {
     /**
      * Test of findAll method, of class RouteDAO.
      */
-    @Test
+    //@Test
     public void testFindAll() {
         System.out.println("findAll");
         RouteDAO instance = new RouteDAO();
@@ -87,7 +88,7 @@ public class RouteDAOTest {
     /**
      * Test of find method, of class RouteDAO.
      */
-    @Test
+    //@Test
     public void testFind() {
         System.out.println("find");
         Integer address = 1;
@@ -100,7 +101,7 @@ public class RouteDAOTest {
     /**
      * Test of findById method, of class RouteDAO.
      */
-    @Test
+    //@Test
     public void testFindById() {
         System.out.println("findById");
         BigDecimal id = new BigDecimal(1);
@@ -113,7 +114,7 @@ public class RouteDAOTest {
     /**
      * Test of findByDrwaId method, of class RouteDAO.
      */
-    @Test
+    //@Test
     public void testFindByDrwaId() {
         System.out.println("findByDrwaId");
         BigDecimal drwaId = new BigDecimal(1);
@@ -126,7 +127,7 @@ public class RouteDAOTest {
     /**
      * Test of findByLatiId method, of class RouteDAO.
      */
-    @Test
+    //@Test
     public void testFindByLatiId() {
         System.out.println("findByLatiId");
         BigDecimal latiId = new BigDecimal(1);
@@ -139,7 +140,7 @@ public class RouteDAOTest {
     /**
      * Test of persist method, of class RouteDAO.
      */
-    @Test
+    //@Test
     public void testPersist() {
         System.out.println("persist");
         Route route = new Route(2, new BigDecimal(1), new BigDecimal(2));
@@ -166,7 +167,7 @@ public class RouteDAOTest {
     /**
      * Test of remove method, of class RouteDAO.
      */
-    @Test
+    //@Test
     public void testRemove() {
         System.out.println("remove");
         Route route = new Route(2, new BigDecimal(1), new BigDecimal(2));

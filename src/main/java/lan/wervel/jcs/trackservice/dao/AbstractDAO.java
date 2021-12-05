@@ -30,15 +30,16 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import lan.wervel.jcs.entities.ControllableDevice;
+import lan.wervel.jcs.entities.JCSEntity;
 import lan.wervel.jcs.trackservice.dao.util.DatabaseCreator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
  * @author frans
  * @param <T> the ControllableDevice theDAO implements
  */
-public abstract class AbstractDAO<T extends ControllableDevice> {
+public abstract class AbstractDAO<T extends JCSEntity> {
 
     protected static final String JCS = "jcs";
 
@@ -110,7 +111,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
 
         BigDecimal id = null;
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(stmt)) {
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(stmt)) {
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {
@@ -129,7 +130,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
                 return "loco_seq";
             case "Sensor":
                 return "sens_seq";
-            case "Turnout":
+            case "Switch":
                 return "soac_seq";
             case "Signal":
                 return "soac_seq";
@@ -146,17 +147,22 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         }
     }
 
-    protected int upsert(T controllableDevice, String statement) {
+    protected int upsert(T jcsEntity, String statement) {
         int rows = 0;
-        if (controllableDevice.getId() == null) {
-            String sequenceName = getSequenceName(controllableDevice);
-            if (sequenceName != null) {
-                controllableDevice.setId(getNextId(sequenceName));
+
+        if (jcsEntity instanceof ControllableDevice) {
+            ControllableDevice controllableDevice = (ControllableDevice) jcsEntity;
+
+            if (controllableDevice.getId() == null) {
+                String sequenceName = getSequenceName(controllableDevice);
+                if (sequenceName != null) {
+                    controllableDevice.setId(getNextId(sequenceName));
+                }
             }
         }
 
-        try (PreparedStatement ps = connection.prepareStatement(statement)) {
-            bind(ps, controllableDevice);
+        try ( PreparedStatement ps = connection.prepareStatement(statement)) {
+            bind(ps, jcsEntity);
 
             rows = ps.executeUpdate();
 
@@ -175,7 +181,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         List<T> devices = new LinkedList<>();
 
         if (connection != null) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 ResultSet rs = preparedStatement.executeQuery();
 
                 while (rs.next()) {
@@ -193,7 +199,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
     protected List<T> findBy(BigDecimal id, String statement) {
         List<T> devices = new ArrayList<>();
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, id);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -211,7 +217,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
     protected List<T> findBy(String key, String statement) {
         List<T> devices = new ArrayList<>();
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setString(1, key);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -230,7 +236,7 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         T controllableDevice = null;
 
         if (connection != null) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.setInt(1, address);
 
                 ResultSet rs = preparedStatement.executeQuery();
@@ -247,68 +253,72 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
     }
 
     protected <T> T find(Integer address, String key, String statement) {
-        T controllableDevice = null;
+        T jcsEntity = null;
 
         if (connection != null) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.setInt(1, address);
                 preparedStatement.setString(2, key);
 
                 ResultSet rs = preparedStatement.executeQuery();
 
                 while (rs.next()) {
-                    controllableDevice = map(rs);
+                    jcsEntity = map(rs);
                 }
             } catch (SQLException ex) {
                 Logger.error(ex);
             }
         }
 
-        return controllableDevice;
+        return jcsEntity;
     }
 
     protected <T> T find(String key, String statement) {
-        T controllableDevice = null;
+        T jcsEntity = null;
 
         if (connection != null) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.setString(1, key);
 
                 ResultSet rs = preparedStatement.executeQuery();
 
                 while (rs.next()) {
-                    controllableDevice = map(rs);
+                    jcsEntity = map(rs);
                 }
             } catch (SQLException ex) {
                 Logger.error(ex);
             }
         }
 
-        return controllableDevice;
+        return jcsEntity;
     }
 
-    protected <T> T findById(BigDecimal id, String statement) {
-        T controllableDevice = null;
+    protected <T> T findById(Object id, String statement) {
+        T jcsEntity = null;
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-            preparedStatement.setBigDecimal(1, id);
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            if (id instanceof BigDecimal) {
+                preparedStatement.setBigDecimal(1, (BigDecimal) id);
+            } else {
+                preparedStatement.setString(1, (String) id);
+            }
 
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {
-                controllableDevice = map(rs);
+                jcsEntity = map(rs);
             }
         } catch (SQLException ex) {
             Logger.error(ex);
         }
 
-        return controllableDevice;
+        return jcsEntity;
     }
 
     protected <T> T findById(BigDecimal otherId, Integer otherInt, String statement) {
         T controllableDevice = null;
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, otherId);
             preparedStatement.setInt(2, otherInt);
 
@@ -324,36 +334,30 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         return controllableDevice;
     }
 
-    protected void remove(ControllableDevice device, String statement) {
-        remove(device, statement, false);
-    }
-
-    protected int remove(String statement, BigDecimal otherId) {
-        return remove(null, statement, false, otherId);
-    }
-
-    protected void remove(ControllableDevice device, String statement, boolean useKey) {
-        remove(device, statement, useKey, null);
-    }
-
-    protected int remove(ControllableDevice device, String statement, boolean useKey, BigDecimal otherId) {
+    //protected void remove(JCSEntity jcsEntity, String statement) {
+    //    remove(jcsEntity, statement);
+    //}
+//    protected int remove(String statement, BigDecimal otherId) {
+//        return remove(null, statement, false, otherId);
+//    }
+//    protected void remove(JCSEntity jcsEntity, String statement, boolean useKey) {
+//        remove(jcsEntity, statement, useKey, null);
+//    }
+    protected int remove(JCSEntity jcsEntity, String statement) {
         int rows = 0;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-            if (useKey) {
-                preparedStatement.setString(1, device.getKey());
-            } else {
-                if (otherId != null || device == null) {
-                    preparedStatement.setBigDecimal(1, otherId);
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            if (jcsEntity != null && jcsEntity.getId() != null) {
+                if (jcsEntity.getId() instanceof BigDecimal) {
+                    preparedStatement.setBigDecimal(1, (BigDecimal) jcsEntity.getId());
                 } else {
-                    preparedStatement.setBigDecimal(1, device.getId());
+                    preparedStatement.setString(1, (String) jcsEntity.getId());
                 }
-            }
-            rows = preparedStatement.executeUpdate();
 
-            if (device != null) {
-                Logger.trace("Removed " + device.getClass().getSimpleName() + " with " + device.getAddress() + " and ID: " + device.getId() + " Rows: " + rows);
-            } else {
-                Logger.trace("Removed " + rows + " with otherId: " + otherId + " and statement: " + statement);
+                rows = preparedStatement.executeUpdate();
+            }
+
+            if (jcsEntity != null) {
+                Logger.trace("Removed " + jcsEntity.getClass().getSimpleName() + " ID: " + jcsEntity.getId() + " Rows: " + rows);
             }
 
             if (rows > 0) {
@@ -383,15 +387,15 @@ public abstract class AbstractDAO<T extends ControllableDevice> {
         }
     }
 
-    protected abstract void bind(PreparedStatement ps, T controllableDevice) throws SQLException;
+    protected abstract void bind(PreparedStatement ps, T jcsEntity) throws SQLException;
 
     protected abstract <T> T map(ResultSet rs) throws SQLException;
 
     protected abstract List<T> findAll();
 
-    protected abstract <T> T find(Integer address);
+    //protected abstract <T> T find(Integer address);
 
-    protected abstract BigDecimal persist(T device);
+    protected abstract Object persist(T device);
 
     protected abstract void remove(T device);
 

@@ -75,7 +75,7 @@ public class TrackPowerDAO extends AbstractDAO<TrackPower> {
     return this.findAll(stmt);
   }
 
-  @Override
+  //@Override
   public TrackPower find(Integer address) {
     String stmt = "select * from trackpower where id = ?";
     TrackPower tp;

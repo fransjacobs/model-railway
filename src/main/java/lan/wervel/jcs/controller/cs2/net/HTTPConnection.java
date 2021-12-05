@@ -33,8 +33,7 @@ import lan.wervel.jcs.controller.cs2.http.DeviceParser;
 import lan.wervel.jcs.controller.cs2.http.LocomotiveParser;
 import lan.wervel.jcs.entities.Locomotive;
 import lan.wervel.jcs.entities.SolenoidAccessory;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -158,8 +157,7 @@ public class HTTPConnection {
     }
 
     public static void main(String[] args) throws Exception {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-        InetAddress inetAddr = InetAddress.getByName("192.168.1.126");
+        InetAddress inetAddr = InetAddress.getByName("192.168.1.180");
         HTTPConnection hc = new HTTPConnection(inetAddr);
         String loks = hc.getLocomotivesFile();
         LocomotiveParser lp = new LocomotiveParser();

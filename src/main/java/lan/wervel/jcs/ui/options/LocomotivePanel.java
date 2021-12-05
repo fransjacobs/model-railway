@@ -55,8 +55,7 @@ import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.options.table.LocomotiveTableModel;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -639,8 +638,6 @@ public class LocomotivePanel extends JPanel {
     }
 
     public static void main(String args[]) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 

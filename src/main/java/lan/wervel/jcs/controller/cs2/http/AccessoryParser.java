@@ -24,10 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lan.wervel.jcs.controller.cs2.AccessoryStatus;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.SolenoidAccessory;
-import lan.wervel.jcs.entities.Turnout;
-import org.pmw.tinylog.Logger;
+import lan.wervel.jcs.entities.SwitchBean;
+import org.tinylog.Logger;
 
 /**
  *
@@ -253,8 +253,8 @@ public class AccessoryParser {
         return sa;
     }
 
-    private Signal createSignal(Map<String, String> accessoryProps, String type, int lightImages) {
-        Signal s = new Signal();
+    private SignalBean createSignal(Map<String, String> accessoryProps, String type, int lightImages) {
+        SignalBean s = new SignalBean();
         s.setDescription(type);
         s.setLightImages(lightImages);
 
@@ -275,8 +275,8 @@ public class AccessoryParser {
         return s;
     }
 
-    private Turnout createTurnout(Map<String, String> accessoryProps, String type) {
-        Turnout t = new Turnout();
+    private SwitchBean createTurnout(Map<String, String> accessoryProps, String type) {
+        SwitchBean t = new SwitchBean();
         t.setDescription(type);
         String d = accessoryProps.get(STELLUNG);
 

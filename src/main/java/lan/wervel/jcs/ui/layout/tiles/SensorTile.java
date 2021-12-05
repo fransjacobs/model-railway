@@ -30,10 +30,7 @@ import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.trackservice.events.SensorListener;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R180;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R270;
-import static lan.wervel.jcs.ui.layout.tiles.enums.Rotation.R90;
+import lan.wervel.jcs.entities.enums.Orientation;
 
 /**
  * Draw a FeedbackPort Track

@@ -47,11 +47,10 @@ import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.entities.enums.DecoderType;
-import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.controller.HeartbeatListener;
-import org.pmw.tinylog.Configurator;
 import lan.wervel.jcs.controller.cs2.events.SensorMessageListener;
 import lan.wervel.jcs.controller.cs2.http.DeviceParser;
+import org.tinylog.Logger;
 
 /**
  *
@@ -127,8 +126,10 @@ public class CS2Controller implements ControllerService {
         if (connected) {
             Logger.debug("Obtaining controller device information...");
             getControllerInfo();
-            CanMessageFactory.setGFPUid(deviceInfo.getGfpUid());
-            CanMessageFactory.setGUIUid(deviceInfo.getGuiUid());
+            int gfpUid = Integer.getInteger(deviceInfo.getGfpUid());
+            int guiUid = Integer.getInteger(deviceInfo.getGuiUid());
+            CanMessageFactory.setGFPUid(gfpUid);
+            CanMessageFactory.setGUIUid(guiUid);
             PowerStatus ps = getPowerStatus();
 
             Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". GFPUID : " + deviceInfo.getGfpUid() + ". GUIUID : " + deviceInfo.getGuiUid());
@@ -366,7 +367,8 @@ public class CS2Controller implements ControllerService {
             DeviceParser dp = new DeviceParser();
             deviceInfo = dp.parseAccessoryFile(deviceFile);
 
-            deviceInfo.updateFromStatusMessageResponse(connection.sendCanMessage(CanMessageFactory.statusConfig(deviceInfo.getGfpUid())));
+            int gfpUid = Integer.getInteger(deviceInfo.getGfpUid());
+            deviceInfo.updateFromStatusMessageResponse(connection.sendCanMessage(CanMessageFactory.statusConfig(gfpUid)));
             String deviceHostName = connection.getCs2Address().getHostName();
             deviceInfo.setDeviceHostName(deviceHostName);
             deviceInfo.setMaxFunctions(32);
@@ -587,9 +589,9 @@ public class CS2Controller implements ControllerService {
     }
 
     public static void main(String[] a) {
-        Configurator.
-                currentConfig().formatPattern("{date:yyyy-MM-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
-                activate();
+        //Configurator.
+        //        currentConfig().formatPattern("{date:yyyy-MM-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
+        //        activate();
 
         CS2Controller cs2 = new CS2Controller(false);
 

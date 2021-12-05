@@ -35,8 +35,7 @@ import lan.wervel.jcs.entities.enums.Direction;
 import lan.wervel.jcs.trackservice.LocomotiveEvent;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.LocomotiveListener;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -517,8 +516,6 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
     }
 
     public static void main(String[] a) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
 

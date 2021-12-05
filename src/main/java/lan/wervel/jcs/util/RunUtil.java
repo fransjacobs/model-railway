@@ -21,15 +21,10 @@ package lan.wervel.jcs.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 @SuppressWarnings("unused")
 public class RunUtil {

@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

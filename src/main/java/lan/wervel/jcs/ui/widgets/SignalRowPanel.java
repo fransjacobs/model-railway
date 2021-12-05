@@ -24,14 +24,13 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -39,7 +38,7 @@ import org.pmw.tinylog.Logger;
  */
 public class SignalRowPanel extends JPanel implements AccessoryListener {
 
-    private Signal signal;
+    private SignalBean signal;
 
     private static final String SIGNAL4 = "/media/signal4.png";
     private static final String SIGNAL4_HP0 = "/media/signal4-Hp0.png";
@@ -63,11 +62,11 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         this(null, X_AXIS);
     }
 
-    public SignalRowPanel(Signal signal) {
+    public SignalRowPanel(SignalBean signal) {
         this(signal, X_AXIS);
     }
 
-    public SignalRowPanel(Signal signal, int axis) {
+    public SignalRowPanel(SignalBean signal, int axis) {
         this.signal = signal;
         this.axis = axis;
 
@@ -226,11 +225,11 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         }
     }
 
-    public Signal getSignal() {
+    public SignalBean getSignal() {
         return signal;
     }
 
-    public void setSignal(Signal signal) {
+    public void setSignal(SignalBean signal) {
         this.signal = signal;
 
         if (signal != null) {
@@ -272,7 +271,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         }
     }
 
-    private void sendCommand(AccessoryValue value, Signal signal, boolean useValue2) {
+    private void sendCommand(AccessoryValue value, SignalBean signal, boolean useValue2) {
         if (TrackServiceFactory.getTrackService() != null) {
             TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
         }
@@ -280,7 +279,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
 
     private void setButtonStatus() {
         if (this.signal != null) {
-            //Logger.trace("Signal: " + signal + " Signal Value: " + signal.getSignalValue());
+            //Logger.trace("SignalBean: " + signal + " SignalBean Value: " + signal.getSignalValue());
 
             switch (signal.getSignalValue()) {
                 case Hp0:
@@ -307,15 +306,13 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
     }
 
     public static void main(String args[]) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-
         JFrame f = new JFrame("SignalRowPanel Tester");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        List<Signal> signals = TrackServiceFactory.getTrackService().getSignals();
+        List<SignalBean> signals = TrackServiceFactory.getTrackService().getSignals();
         f.setLayout(new GridLayout(signals.size(), 1));
 
-        for (Signal signal : signals) {
+        for (SignalBean signal : signals) {
             SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
             f.add(signalRowPanel);
 

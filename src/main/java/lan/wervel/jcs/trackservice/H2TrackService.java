@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.trackservice;
 
+import java.awt.Point;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import static javax.management.Query.lt;
 import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
@@ -43,11 +45,11 @@ import lan.wervel.jcs.entities.JCSProperty;
 import lan.wervel.jcs.entities.LayoutTile;
 import lan.wervel.jcs.entities.LayoutTileGroup;
 import lan.wervel.jcs.entities.Locomotive;
-import lan.wervel.jcs.entities.Sensor;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SensorBean;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.TrackPower;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SwitchBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.DecoderType;
 import lan.wervel.jcs.entities.enums.Direction;
@@ -59,33 +61,37 @@ import lan.wervel.jcs.trackservice.dao.JCSPropertiesDAO;
 import lan.wervel.jcs.trackservice.dao.LocomotiveDAO;
 import lan.wervel.jcs.trackservice.dao.SignalDAO;
 import lan.wervel.jcs.trackservice.dao.TrackPowerDAO;
-import lan.wervel.jcs.trackservice.dao.TurnoutDAO;
+import lan.wervel.jcs.trackservice.dao.SwitchDAO;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
 import lan.wervel.jcs.trackservice.events.HeartBeatListener;
 import lan.wervel.jcs.trackservice.events.LocomotiveListener;
 import lan.wervel.jcs.trackservice.events.PersistedEventListener;
-import org.pmw.tinylog.Logger;
 import lan.wervel.jcs.controller.HeartbeatListener;
 import lan.wervel.jcs.controller.cs2.AccessoryStatus;
 import lan.wervel.jcs.controller.cs2.events.SensorMessageListener;
+import lan.wervel.jcs.entities.TileBean;
 import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.dao.LayoutTileDAO;
 import lan.wervel.jcs.trackservice.dao.LayoutTileGroupDAO;
 import lan.wervel.jcs.trackservice.dao.SensorDAO;
 import lan.wervel.jcs.trackservice.events.SensorListener;
-import lan.wervel.jcs.ui.layout.TileType;
+import lan.wervel.jcs.entities.enums.TileType;
+import lan.wervel.jcs.trackservice.dao.TileBeanDAO;
+import org.tinylog.Logger;
 
 public class H2TrackService implements TrackService {
 
     private final SensorDAO sensDAO;
     private final LocomotiveDAO locoDAO;
-    private final TurnoutDAO turnoutDAO;
+    private final SwitchDAO turnoutDAO;
     private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
 
     private final LayoutTileDAO latiDao;
     private final LayoutTileGroupDAO ltgtDao;
     private final JCSPropertiesDAO propDao;
+
+    private final TileBeanDAO tileDAO;
 
     private ControllerService controllerService;
     int feedbackModules;
@@ -118,11 +124,14 @@ public class H2TrackService implements TrackService {
 
         sensDAO = new SensorDAO();
         locoDAO = new LocomotiveDAO();
-        turnoutDAO = new TurnoutDAO();
+        turnoutDAO = new SwitchDAO();
         signalDAO = new SignalDAO();
         trpoDAO = new TrackPowerDAO();
         latiDao = new LayoutTileDAO();
         ltgtDao = new LayoutTileGroupDAO();
+
+        tileDAO = new TileBeanDAO();
+
         executor = Executors.newCachedThreadPool();
 
         accessoiryListeners = new ArrayList<>();
@@ -207,16 +216,16 @@ public class H2TrackService implements TrackService {
 
         //Configure the sensors
         int sensorCount = feedbackModules * 16;
-        List<Sensor> allSensors = sensDAO.findAll();
+        List<SensorBean> allSensors = sensDAO.findAll();
 
         System.setProperty("sensorCount", "" + sensorCount);
 
         if (sensorCount != allSensors.size()) {
-            Logger.debug("The Sensor count has changed since last run...");
-            //remove sensors whic are not in the system
+            Logger.debug("The Sensor count has changed since last run from "+allSensors.size()+" to "+sensorCount+"...");
+            //remove sensors which are not in the system
             if (allSensors.size() > sensorCount) {
                 for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
-                    Sensor s = this.sensDAO.find(contactId);
+                    SensorBean s = this.sensDAO.find(contactId);
                     if (s == null) {
                         //remove the sensor
                         sensDAO.remove(s);
@@ -225,13 +234,15 @@ public class H2TrackService implements TrackService {
             }
             for (int contactId = 1; contactId <= sensorCount; contactId++) {
                 //is there a sensor in the database?
-                Sensor s = this.sensDAO.find(contactId);
+                SensorBean s = this.sensDAO.find(contactId);
                 if (s == null) {
-                    String name = "m" + Sensor.calculateModuleNumber(contactId) + "p" + Sensor.calculatePortNumber(contactId);
+                    String name = "m" + SensorBean.calculateModuleNumber(contactId) + "p" + SensorBean.calculatePortNumber(contactId);
                     String description = name;
                     //create the sensor
-                    s = new Sensor(contactId, name, description, 0, 0, 0, 0);
-                    sensDAO.persist(s);
+                    s = new SensorBean(contactId, name, description, 0, 0, 0, 0);
+                    if(s.getId() != null) {
+                      sensDAO.persist(s);
+                    }  
                 }
             }
         } else {
@@ -250,18 +261,18 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public List<Sensor> getSensors() {
+    public List<SensorBean> getSensors() {
         return sensDAO.findAll();
     }
 
     @Override
-    public Sensor getSensor(Integer contactId) {
+    public SensorBean getSensor(Integer contactId) {
         return sensDAO.find(contactId);
     }
 
     @Override
-    public Sensor persist(Sensor sensor) {
-        Sensor prev = sensDAO.find(sensor.getContactId());
+    public SensorBean persist(SensorBean sensor) {
+        SensorBean prev = sensDAO.find(sensor.getContactId());
         //make shure the name etc is kept
         if (prev != null) {
             sensor.setId(prev.getId());
@@ -270,7 +281,7 @@ public class H2TrackService implements TrackService {
             sensDAO.persist(sensor);
             firePersistEvent(sensor, prev);
 
-            //Logger.trace("Updated Sensor: " + sensor.toLogString());
+            //Logger.trace("Updated SensorBean: " + sensor.toLogString());
             executor.execute(() -> broadcastSensorChanged(sensor));
         } else {
             //Sensor does not exit is database
@@ -288,7 +299,7 @@ public class H2TrackService implements TrackService {
         }
     }
 
-    private void broadcastSensorChanged(Sensor sensor) {
+    private void broadcastSensorChanged(SensorBean sensor) {
         List<SensorListener> sll = sensorListeners.get(sensor.getContactId());
 
         if (sll != null) {
@@ -304,7 +315,7 @@ public class H2TrackService implements TrackService {
         //obtain the current sensorstatus
         List<SensorMessageEvent> sml = controllerService.querySensors(sensorCount);
         for (SensorMessageEvent sme : sml) {
-            Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
+            SensorBean s = new SensorBean(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
             persist(s);
         }
         Logger.debug("Updated " + sml.size() + " Sensor statuses...");
@@ -312,12 +323,12 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void notifyAllSensorListeners() {
-        List<Sensor> sl = this.sensDAO.findAll();
+        List<SensorBean> sl = this.sensDAO.findAll();
         //Query all sensors
 //        List<SensorMessageEvent> sel = this.controllerService.querySensors(sl.size());
 //        for (SensorMessageEvent se : sel) {
 //            
-//            Sensor s = sensDAO.find(se.getContactId());
+//            SensorBean s = sensDAO.find(se.getContactId());
 //            s.setDeviceId(se.getDeviceId());
 //            s.setActive(se.isNewValue());
 //            s.setPreviousActive(se.isOldValue());
@@ -327,7 +338,7 @@ public class H2TrackService implements TrackService {
 //        }
 
 //        sl = this.sensDAO.findAll();
-        for (Sensor s : sl) {
+        for (SensorBean s : sl) {
             broadcastSensorChanged(s);
         }
 //        Logger.trace("Refreshed " + sl.size() + " Sensors...");
@@ -342,38 +353,38 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void remove(ControllableDevice entity) {
-        if (entity instanceof Sensor) {
-            sensDAO.remove((Sensor) entity);
+        if (entity instanceof SensorBean) {
+            sensDAO.remove((SensorBean) entity);
         } else if (entity instanceof Locomotive) {
             locoDAO.remove((Locomotive) entity);
-        } else if (entity instanceof Turnout) {
+        } else if (entity instanceof SwitchBean) {
             //Check whether the turnout is linked to a layout tile
-            turnoutDAO.remove((Turnout) entity);
-        } else if (entity instanceof Signal) {
+            turnoutDAO.remove((SwitchBean) entity);
+        } else if (entity instanceof SignalBean) {
             //Check whether the signal is linked to a layout tile
-            signalDAO.remove((Signal) entity);
+            signalDAO.remove((SignalBean) entity);
         } else if (entity instanceof JCSProperty) {
             this.propDao.remove((JCSProperty) entity);
         }
     }
 
     @Override
-    public List<Signal> getSignals() {
+    public List<SignalBean> getSignals() {
         return this.signalDAO.findAll();
     }
 
     @Override
-    public List<Turnout> getTurnouts() {
+    public List<SwitchBean> getSwitches() {
         return this.turnoutDAO.findAll();
     }
 
     @Override
-    public Signal getSignal(Integer address) {
+    public SignalBean getSignal(Integer address) {
         return this.signalDAO.find(address);
     }
 
     @Override
-    public Turnout getTurnout(Integer address) {
+    public SwitchBean getSwitchTurnout(Integer address) {
         return this.turnoutDAO.find(address);
     }
 
@@ -418,13 +429,13 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public Turnout persist(Turnout turnout) {
+    public SwitchBean persist(SwitchBean turnout) {
         this.turnoutDAO.persist(turnout);
         return turnout;
     }
 
     @Override
-    public Signal persist(Signal signal) {
+    public SignalBean persist(SignalBean signal) {
         this.signalDAO.persist(signal);
         return signal;
     }
@@ -450,8 +461,8 @@ public class H2TrackService implements TrackService {
             return null;
         }
         if (lt.getSoacId() != null) {
-            if (TileType.TURNOUT.getTileType().equals(lt.getTiletype())) {
-                Turnout t = turnoutDAO.findById(lt.getSoacId());
+            if (TileType.SWITCH.getTileType().equals(lt.getTiletype())) {
+                SwitchBean t = turnoutDAO.findById(lt.getSoacId());
                 lt.setSolenoidAccessoiry(t);
             }
             if (TileType.SIGNAL.getTileType().equals(lt.getTiletype())) {
@@ -494,7 +505,7 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void persist(Set<LayoutTile> layoutTiles) {
+    public void persistOld(Set<LayoutTile> layoutTiles) {
         //Remove the ones not in the current list...
         List<LayoutTile> cltl = latiDao.findAll();
 
@@ -539,6 +550,69 @@ public class H2TrackService implements TrackService {
     @Override
     public void remove(LayoutTileGroup layoutTileGroup) {
         this.ltgtDao.remove(layoutTileGroup);
+    }
+
+    @Override
+    public Set<TileBean> getTiles() {
+        Set<TileBean> beans = new HashSet<>();
+
+        beans.addAll(this.tileDAO.findAll());
+
+        return beans;
+    }
+
+    @Override
+    public TileBean getTile(Integer x, Integer y) {
+        return this.tileDAO.findByXY(x, y);
+    }
+
+    @Override
+    public TileBean persist(TileBean tile) {
+        this.tileDAO.persist(tile);
+        return tile;
+    }
+
+    @Override
+    public void persist(Set<TileBean> tiles) {
+        //get all existing tiles from database
+        List<TileBean> existing = tileDAO.findAll();
+
+        Map<Point, TileBean> currentTP = new HashMap<>();
+        Map<Point, TileBean> updatedTP = new HashMap<>();
+
+        for (TileBean tb : existing) {
+            currentTP.put(tb.getCenter(), tb);
+        }
+
+        for (TileBean tb : tiles) {
+            updatedTP.put(tb.getCenter(), tb);
+        }
+
+        //remove the ones which do no longer exists
+        Set<Point> currentPoints = currentTP.keySet();
+        Set<Point> updatedPoints = updatedTP.keySet();
+
+        for (Point p : currentPoints) {
+            if (!updatedPoints.contains(p)) {
+                tileDAO.remove(p.x, p.y);
+            }
+        }
+
+        for (TileBean tb : tiles) {
+            if (tb.getId() == null) {
+                //store the layouttile but incase check if it exist based on x and y
+                TileBean tbxy = this.tileDAO.findByXY(tb.getX(), tb.getY());
+                if (tbxy != null) {
+                    tb.setId(tbxy.getId());
+                }
+            }
+            persist(tb);
+        }
+    }
+
+    @Override
+    public void remove(TileBean tile) {
+        this.tileDAO.remove(tile);
     }
 
     @Override
@@ -678,9 +752,9 @@ public class H2TrackService implements TrackService {
 
         for (SolenoidAccessory sa : sal) {
             if (sa.isTurnout()) {
-                Turnout t = (Turnout) sa;
+                SwitchBean t = (SwitchBean) sa;
                 Integer addr = t.getAddress();
-                Turnout dbt = this.turnoutDAO.find(addr);
+                SwitchBean dbt = this.turnoutDAO.find(addr);
                 if (dbt != null) {
                     t.setId(dbt.getId());
                     Logger.trace("Update " + t);
@@ -689,9 +763,9 @@ public class H2TrackService implements TrackService {
                 }
                 this.turnoutDAO.persist(t);
             } else if (sa.isSignal()) {
-                Signal s = (Signal) sa;
+                SignalBean s = (SignalBean) sa;
                 Integer addr = s.getAddress();
-                Signal dbs = this.signalDAO.find(addr);
+                SignalBean dbs = this.signalDAO.find(addr);
                 if (dbs != null) {
                     s.setId(dbs.getId());
                     if (dbs.getLightImages() > 2) {
@@ -709,14 +783,14 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void synchronizeAccessories() {
-        List<Turnout> tl = this.getTurnouts();
+        List<SwitchBean> tl = this.getSwitches();
 
-        for (Turnout t : tl) {
+        for (SwitchBean t : tl) {
             this.switchAccessory(t.getValue(), t);
         }
 
-        List<Signal> sl = this.getSignals();
-        for (Signal s : sl) {
+        List<SignalBean> sl = this.getSignals();
+        for (SignalBean s : sl) {
             this.switchAccessory(s.getValue(), s, true);
         }
     }
@@ -733,7 +807,7 @@ public class H2TrackService implements TrackService {
 
         for (AccessoryStatus as : asl) {
             Integer a = as.getAddress();
-            Turnout t = turnoutDAO.find(a);
+            SwitchBean t = turnoutDAO.find(a);
             if (t != null) {
                 AccessoryValue av = as.getAccessoryValue();
                 if (!av.equals(t.getValue())) {
@@ -742,7 +816,7 @@ public class H2TrackService implements TrackService {
                     accessoiries.add(t);
                 }
             } else {
-                Signal s = signalDAO.find(a);
+                SignalBean s = signalDAO.find(a);
                 if (s != null) {
                     SignalValue sv = as.getSignalValue();
                     if (!sv.equals(s.getSignalValue())) {
@@ -853,7 +927,7 @@ public class H2TrackService implements TrackService {
 
         if (accessoiry.isSignal()) {
             //incase of a signal the SignalValue is set in the signal
-            Signal s = (Signal) accessoiry;
+            SignalBean s = (SignalBean) accessoiry;
 
             switch (s.getSignalValue()) {
                 case Hp0:
@@ -883,8 +957,8 @@ public class H2TrackService implements TrackService {
             controllerService.switchAccessoiry(accessoiry.getAddress(), accessoiry.getValue());
 
             if (accessoiry.isTurnout()) {
-                persist((Turnout) accessoiry);
-                this.notifyAccessoiryListeners((Turnout) accessoiry);
+                persist((SwitchBean) accessoiry);
+                this.notifyAccessoiryListeners((SwitchBean) accessoiry);
             }
         }
     }
@@ -982,8 +1056,8 @@ public class H2TrackService implements TrackService {
     @Override
     public void notifyAllAccessoiryListeners() {
 
-        List<Signal> signals = this.getSignals();
-        List<Turnout> turnouts = this.getTurnouts();
+        List<SignalBean> signals = this.getSignals();
+        List<SwitchBean> turnouts = this.getSwitches();
 
         List<SolenoidAccessory> accessoiries = new ArrayList<>();
         accessoiries.addAll(signals);
@@ -1005,7 +1079,7 @@ public class H2TrackService implements TrackService {
 
         @Override
         public void onSensorMessage(SensorMessageEvent event) {
-            Sensor s = new Sensor(event.getContactId(), event.isNewValue() ? 1 : 0, event.isOldValue() ? 1 : 0, event.getDeviceId(), event.getMillis(), new Date());
+            SensorBean s = new SensorBean(event.getContactId(), event.isNewValue() ? 1 : 0, event.isOldValue() ? 1 : 0, event.getDeviceId(), event.getMillis(), new Date());
             trackService.persist(s);
         }
     }

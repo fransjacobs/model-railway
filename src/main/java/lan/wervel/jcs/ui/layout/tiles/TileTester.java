@@ -26,9 +26,9 @@ import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
-import lan.wervel.jcs.entities.enums.AccessoryValue;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.SignalBean;
+import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.entities.enums.SignalValue;
 
 /**
  *
@@ -66,22 +66,25 @@ public class TileTester extends JFrame {
 //        tileNorth = new Block(Orientation.NORTH, 260, 80);
 //        ((Block)tileNorth).setActive(true);
 
-        tileEast = new TurnoutTile(Orientation.EAST, Direction.LEFT, 50, 80);
-        tileSouth = new TurnoutTile(Orientation.SOUTH, Direction.LEFT, 140, 80);
-        ((TurnoutTile) tileSouth).setAccessoryValue(AccessoryValue.RED);
-        tileWest = new TurnoutTile(Orientation.WEST, Direction.RIGHT, 230, 80);
-        ((TurnoutTile) tileWest).setAccessoryValue(AccessoryValue.GREEN);
-        tileNorth = new TurnoutTile(Orientation.NORTH, Direction.RIGHT, 320, 80);
+//        tileEast = new SwitchTile(Orientation.EAST, Direction.LEFT, 50, 80);
+//        tileSouth = new SwitchTile(Orientation.SOUTH, Direction.LEFT, 140, 80);
+//        ((SwitchTile) tileSouth).setAccessoryValue(AccessoryValue.RED);
+//        tileWest = new SwitchTile(Orientation.WEST, Direction.RIGHT, 230, 80);
+//        ((SwitchTile) tileWest).setAccessoryValue(AccessoryValue.GREEN);
+//        tileNorth = new SwitchTile(Orientation.NORTH, Direction.RIGHT, 320, 80);
 
         
-//        tileEast = new SignalTile(Orientation.EAST, 50, 80);
-//        tileSouth = new SignalTile(Orientation.SOUTH, 120, 80);
-//        tileWest = new SignalTile(Orientation.WEST, 190, 80);
-//        tileNorth = new SignalTile(Orientation.NORTH, 260, 80);
-        
+        tileEast = new SignalTile(Orientation.EAST, 50, 80);
+        tileSouth = new SignalTile(Orientation.SOUTH, 120, 80);
+        ((SignalTile)tileSouth).setSignalType(SignalBean.HP012SH1);
+
+        tileWest = new SignalTile(Orientation.WEST, 190, 80);
+        ((SignalTile)tileWest).setMidget(true);
+        tileNorth = new SignalTile(Orientation.NORTH, 260, 80);
+        ((SignalTile)tileNorth).setSignalValue(SignalValue.Hp1);
         
         //this.tile = new SignalTile(Rotation.R0, 100, 100);
-        //((SignalTile)tile).setSignalType(Signal.HP012SH1);
+        //((SignalTile)tile).setSignalType(SignalBean.HP012SH1);
         //((SignalTile)tile).setMidget(true);
         //((SignalTile)tile).setSignalValue(SignalValue.Hp1);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

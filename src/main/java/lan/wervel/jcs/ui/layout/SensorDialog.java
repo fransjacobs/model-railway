@@ -24,10 +24,10 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.Sensor;
+import lan.wervel.jcs.entities.SensorBean;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.SensorTile;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -48,23 +48,23 @@ public class SensorDialog extends javax.swing.JDialog {
     private void postInit() {
         LayoutTile lt = tile.getLayoutTile();
         if (lt.getSensor() != null) {
-            Sensor fm = lt.getSensor();
+            SensorBean fm = lt.getSensor();
             this.sensorCB.setSelectedItem(fm);
         }
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
         this.setLocation(tile.getCenter());
     }
 
-    private ComboBoxModel<Sensor> getSensorComboBoxModel() {
+    private ComboBoxModel<SensorBean> getSensorComboBoxModel() {
         ComboBoxModel sensorCBM;
         if (TrackServiceFactory.getTrackService() != null) {
-            List<Sensor> sl = new ArrayList<>();
-            Sensor def = new Sensor();
+            List<SensorBean> sl = new ArrayList<>();
+            SensorBean def = new SensorBean();
             def.setName("-");
             sl.add(def);
             sl.addAll(TrackServiceFactory.getTrackService().getSensors());
 
-            Sensor[] sens = new Sensor[sl.size()];
+            SensorBean[] sens = new SensorBean[sl.size()];
             sl.toArray(sens);
 
             sensorCBM = new DefaultComboBoxModel<>(sens);
@@ -75,7 +75,7 @@ public class SensorDialog extends javax.swing.JDialog {
     }
 
     private void setSensor() {
-        Sensor s = (Sensor) this.sensorCB.getSelectedItem();
+        SensorBean s = (SensorBean) this.sensorCB.getSelectedItem();
 
         if (this.tile.getLayoutTile() != null && s != null) {
             if ("-".equals(s.getName())) {
@@ -84,7 +84,7 @@ public class SensorDialog extends javax.swing.JDialog {
             } else {
                 Logger.trace("Setting Sensor " + s);
                 this.tile.getLayoutTile().setSensor(s);
-                this.moduleLbl.setText("Module #: " + Sensor.calculateModuleNumber(s.getContactId()) + " Port#: " + Sensor.calculatePortNumber(s.getContactId()));
+                this.moduleLbl.setText("Module #: " + SensorBean.calculateModuleNumber(s.getContactId()) + " Port#: " + SensorBean.calculatePortNumber(s.getContactId()));
             }
         }
     }
@@ -167,6 +167,6 @@ public class SensorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JLabel moduleLbl;
     private javax.swing.JLabel selectLbl;
-    private javax.swing.JComboBox<Sensor> sensorCB;
+    private javax.swing.JComboBox<SensorBean> sensorCB;
     // End of variables declaration//GEN-END:variables
 }

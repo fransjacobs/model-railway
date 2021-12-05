@@ -54,13 +54,12 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.SignalValue;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.options.table.SignalTableModel;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -102,7 +101,7 @@ public class SignalPanel extends JPanel {
   private void initComponents() {
 
     directionBG = new ButtonGroup();
-    selectedSignal = new Signal();
+    selectedSignal = new SignalBean();
     lightImagesBG = new ButtonGroup();
     topPanel = new JPanel();
     refreshBtn = new JButton();
@@ -424,7 +423,7 @@ public class SignalPanel extends JPanel {
     this.signalTableModel.refresh();
     alignSignalTable();
     Logger.debug("Create new Signal...");
-    this.selectedSignal = new Signal(0, "Block", null);
+    this.selectedSignal = new SignalBean(0, "Block", null);
     Integer a = this.signalTableModel.getRowCount() + 1;
 
     this.selectedSignal.setName("S " + a);
@@ -439,7 +438,7 @@ public class SignalPanel extends JPanel {
   private void signalTableMouseClicked(MouseEvent evt) {//GEN-FIRST:event_signalTableMouseClicked
     JTable source = (JTable) evt.getSource();
     int row = source.rowAtPoint(evt.getPoint());
-    Signal s = signalTableModel.getControllableDeviceAt(row);
+    SignalBean s = signalTableModel.getControllableDeviceAt(row);
 
     if (s != null) {
       Logger.debug("Selected row: " + row + ", Signal Address: " + s.getAddress());
@@ -452,7 +451,7 @@ public class SignalPanel extends JPanel {
     this.selectedSignal = this.setSignalValues();
     Logger.debug("Save the Signal: " + selectedSignal);
 
-    Signal s = TrackServiceFactory.getTrackService().getSignal(selectedSignal.getAddress());
+    SignalBean s = TrackServiceFactory.getTrackService().getSignal(selectedSignal.getAddress());
     if (s != null) {
       selectedSignal.setId(s.getId());
       selectedSignal.setId2(s.getId2());
@@ -494,8 +493,8 @@ public class SignalPanel extends JPanel {
     refresh();
   }//GEN-LAST:event_refreshBtnActionPerformed
 
-  //Create Signal from fields  
-  protected Signal setSignalValues() {
+  //Create SignalBean from fields  
+  protected SignalBean setSignalValues() {
     Integer address = (Integer) this.addressSpinner.getValue();
     String name = this.nameTF.getText();
     String description = (String) this.signalTypeCB.getSelectedItem();
@@ -510,7 +509,7 @@ public class SignalPanel extends JPanel {
       address2 = address + 1;
     }
 
-    Signal s = new Signal(address, description, catalogNumber);
+    SignalBean s = new SignalBean(address, description, catalogNumber);
     s.setName(name);
     if (lightImages.equals(4)) {
       s.setAddress2(address2);
@@ -520,7 +519,7 @@ public class SignalPanel extends JPanel {
     return s;
   }
 
-  protected void setComponentValues(Signal signal) {
+  protected void setComponentValues(SignalBean signal) {
     if (signal != null) {
       addressSpinner.setValue(signal.getAddress());
       nameTF.setText(signal.getName());
@@ -551,8 +550,6 @@ public class SignalPanel extends JPanel {
   }
 
   public static void main(String args[]) {
-    Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -617,7 +614,7 @@ public class SignalPanel extends JPanel {
   private JPanel row8Panel;
   private JPanel row9Panel;
   private JButton saveBtn;
-  private Signal selectedSignal;
+  private SignalBean selectedSignal;
   private JPanel signalDetailPanel;
   private JTable signalTable;
   private JScrollPane signalTableScrollPane;

@@ -64,7 +64,7 @@ public class JCSPropertiesDAO extends AbstractDAO<JCSProperty> {
     return p;
   }
 
-  @Override
+  //@Override
   public JCSProperty find(Integer address) {
     String stmt = "select * from jcsproperties where id = ?";
     JCSProperty p = this.find(address, stmt);

@@ -4,7 +4,7 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="directionBG">
     </Component>
-    <Component class="lan.wervel.jcs.entities.Signal" name="selectedSignal">
+    <Component class="lan.wervel.jcs.entities.SignalBean" name="selectedSignal">
     </Component>
     <Component class="javax.swing.ButtonGroup" name="lightImagesBG">
     </Component>

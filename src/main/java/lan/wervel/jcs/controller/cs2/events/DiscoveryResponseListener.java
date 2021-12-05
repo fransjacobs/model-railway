@@ -21,7 +21,7 @@ package lan.wervel.jcs.controller.cs2.events;
 import java.net.InetAddress;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.can.MarklinCan;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

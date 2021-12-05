@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import lan.wervel.jcs.controller.cs2.can.CanMessage;
 import lan.wervel.jcs.controller.cs2.events.CanMessageEvent;
 import lan.wervel.jcs.controller.cs2.events.CanMessageListener;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *

@@ -24,10 +24,10 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -48,7 +48,7 @@ public class SignalDialog extends javax.swing.JDialog {
     private void postInit() {
         LayoutTile lt = tile.getLayoutTile();
         if (lt.getSignal() != null) {
-            Signal s = lt.getSignal();
+            SignalBean s = lt.getSignal();
             this.signalCB.setSelectedItem(s);
         }
         this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
@@ -56,16 +56,16 @@ public class SignalDialog extends javax.swing.JDialog {
         this.setLocation(tile.getCenter());
     }
 
-    private ComboBoxModel<Signal> getSignalComboBoxModel() {
+    private ComboBoxModel<SignalBean> getSignalComboBoxModel() {
         ComboBoxModel signalCBM;
         if (TrackServiceFactory.getTrackService() != null) {
-            List<Signal> sl = new ArrayList<>();
-            Signal def = new Signal();
+            List<SignalBean> sl = new ArrayList<>();
+            SignalBean def = new SignalBean();
             def.setName("-");
             sl.add(def);
             sl.addAll(TrackServiceFactory.getTrackService().getSignals());
 
-            Signal[] signals = new Signal[sl.size()];
+            SignalBean[] signals = new SignalBean[sl.size()];
             sl.toArray(signals);
 
             signalCBM = new DefaultComboBoxModel<>(signals);
@@ -128,7 +128,7 @@ public class SignalDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void signalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signalCBActionPerformed
-        Signal s = (Signal) this.signalCB.getSelectedItem();
+        SignalBean s = (SignalBean) this.signalCB.getSelectedItem();
         if (this.tile.getLayoutTile() != null && s != null) {
             Logger.trace("Setting signal " + s);
             if ("-".equals(s.getName())) {
@@ -150,6 +150,6 @@ public class SignalDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel selectLbl;
-    private javax.swing.JComboBox<Signal> signalCB;
+    private javax.swing.JComboBox<SignalBean> signalCB;
     // End of variables declaration//GEN-END:variables
 }

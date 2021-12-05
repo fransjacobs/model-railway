@@ -39,6 +39,24 @@ CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1;
 
+/*
+ * JCS Database creation script
+ */
+
+create table tiles (
+   id          VARCHAR(255) not null
+  ,tileType    VARCHAR(255) not null
+  ,orientation VARCHAR(255) not null
+  ,direction   VARCHAR(255) not null
+  ,x           INTEGER NOT NULL
+  ,y           INTEGER NOT NULL
+  ,signalType  VARCHAR(255) 
+);
+
+ALTER TABLE tiles ADD CONSTRAINT tile_pk PRIMARY KEY ( id );
+
+--============
+-- OLD
 
 CREATE TABLE trackpower (
   id             NUMBER NOT NULL,

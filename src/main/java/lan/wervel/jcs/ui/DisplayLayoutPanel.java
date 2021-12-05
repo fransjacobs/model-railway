@@ -23,8 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.ui.widgets.LocoPanel;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -153,8 +152,6 @@ public class DisplayLayoutPanel extends JPanel {
   }// </editor-fold>//GEN-END:initComponents
 
     public static void main(String args[]) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {

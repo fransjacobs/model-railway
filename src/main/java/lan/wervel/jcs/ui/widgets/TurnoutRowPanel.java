@@ -24,13 +24,12 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SwitchBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -38,7 +37,7 @@ import org.pmw.tinylog.Logger;
  */
 public class TurnoutRowPanel extends JPanel implements AccessoryListener {
 
-    private Turnout turnout;
+    private SwitchBean turnout;
 
     private static final String TURNOUT_L = "/media/turnout-l.png";
     private static final String TURNOUT_L_S = "/media/turnout-l-s.png";
@@ -61,7 +60,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         this(null);
     }
 
-    public TurnoutRowPanel(Turnout turnout) {
+    public TurnoutRowPanel(SwitchBean turnout) {
         this(turnout, X_AXIS);
     }
 
@@ -71,7 +70,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
      * @param turnout
      * @param axis
      */
-    public TurnoutRowPanel(Turnout turnout, int axis) {
+    public TurnoutRowPanel(SwitchBean turnout, int axis) {
         this.turnout = turnout;
         this.axis = axis;
 
@@ -184,11 +183,11 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         }
     }
 
-    public Turnout getTurnout() {
+    public SwitchBean getTurnout() {
         return turnout;
     }
 
-    public void setTurnout(Turnout turnout) {
+    public void setTurnout(SwitchBean turnout) {
         this.turnout = turnout;
 
         if (turnout != null) {
@@ -250,15 +249,13 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
   // End of variables declaration//GEN-END:variables
 
     public static void main(String args[]) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-
         JFrame f = new JFrame("SignalRowPanel Tester");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        List<Turnout> turnouts = TrackServiceFactory.getTrackService().getTurnouts();
+        List<SwitchBean> turnouts = TrackServiceFactory.getTrackService().getSwitches();
         f.setLayout(new GridLayout(turnouts.size(), 1));
 
-        for (Turnout turnout : turnouts) {
+        for (SwitchBean turnout : turnouts) {
             TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
             f.add(signalRowPanel);
 

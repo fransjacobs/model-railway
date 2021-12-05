@@ -51,12 +51,11 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SwitchBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.options.table.TurnoutTableModel;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -88,7 +87,7 @@ public class TurnoutPanel extends JPanel {
   private void initComponents() {
 
     directionBG = new ButtonGroup();
-    selectedTurnout = new Turnout();
+    selectedTurnout = new SwitchBean();
     topPanel = new JPanel();
     refreshBtn = new JButton();
     newBtn = new JButton();
@@ -380,7 +379,7 @@ public class TurnoutPanel extends JPanel {
     alignTurnoutTable();
     
     Logger.debug("Create new Turnout...");
-    selectedTurnout = new Turnout(0, "U", null);
+    selectedTurnout = new SwitchBean(0, "U", null);
     Integer a  = turnoutTableModel.getRowCount()+1;
     
     selectedTurnout.setName("W " + a);
@@ -395,11 +394,11 @@ public class TurnoutPanel extends JPanel {
     JTable source = (JTable) evt.getSource();
     int row = source.rowAtPoint(evt.getPoint());
     
-    Turnout t = this.turnoutTableModel.getControllableDeviceAt(row);
+    SwitchBean t = this.turnoutTableModel.getControllableDeviceAt(row);
     if (t != null) {
       Logger.debug("Selected row: " + row + ", Turnout Address: " + t.getAddress());
       //Refresh from repo
-      this.selectedTurnout = TrackServiceFactory.getTrackService().getTurnout(t.getAddress());
+      this.selectedTurnout = TrackServiceFactory.getTrackService().getSwitchTurnout(t.getAddress());
       this.setComponentValues(this.selectedTurnout);
     }
   }//GEN-LAST:event_turnoutTableMouseClicked
@@ -408,7 +407,7 @@ public class TurnoutPanel extends JPanel {
     this.selectedTurnout = setTurnoutValues();
     Logger.debug("Save the Turnout: " + this.selectedTurnout);
     
-    Turnout t = TrackServiceFactory.getTrackService().getTurnout(selectedTurnout.getAddress());
+    SwitchBean t = TrackServiceFactory.getTrackService().getSwitchTurnout(selectedTurnout.getAddress());
     if (t != null) {
       this.selectedTurnout.setId(t.getId());
       this.selectedTurnout.setValue(t.getValue());
@@ -442,7 +441,7 @@ public class TurnoutPanel extends JPanel {
   }//GEN-LAST:event_refreshBtnActionPerformed
 
   //Create Turnout from fields  
-  protected Turnout setTurnoutValues() {
+  protected SwitchBean setTurnoutValues() {
     Integer address = (Integer) addressSpinner.getValue();
     String name = nameTF.getText();
     
@@ -459,13 +458,13 @@ public class TurnoutPanel extends JPanel {
     
     String catalogNumber = catalogNrTF.getText();
     
-    Turnout t = new Turnout(address, description, catalogNumber);
+    SwitchBean t = new SwitchBean(address, description, catalogNumber);
     t.setName(name);
     
     return t;
   }
 
-  protected void setComponentValues(Turnout turnout) {
+  protected void setComponentValues(SwitchBean turnout) {
     if (turnout != null) {
       addressSpinner.setValue(turnout.getAddress());
       nameTF.setText(turnout.getName());
@@ -501,8 +500,6 @@ public class TurnoutPanel extends JPanel {
   }
   
   public static void main(String args[]) {
-    Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-    
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -565,7 +562,7 @@ public class TurnoutPanel extends JPanel {
   private JPanel row8Panel;
   private JPanel row9Panel;
   private JButton saveBtn;
-  private Turnout selectedTurnout;
+  private SwitchBean selectedTurnout;
   private JPanel topPanel;
   private JPanel turnoutDetailPanel;
   private JTable turnoutTable;

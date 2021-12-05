@@ -25,13 +25,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import lan.wervel.jcs.entities.Sensor;
+import lan.wervel.jcs.entities.SensorBean;
 
 /**
  *
  * @author frans
  */
-public class SensorDAO extends AbstractDAO<Sensor> {
+public class SensorDAO extends AbstractDAO<SensorBean> {
 
     private static final String INS_SENS_STMT = "insert into SENSORS (address,device_id,name,description,value,previous_value,millis,lastupdated,id) values(?,?,?,?,?,?,?,?,?)";
     private static final String UPD_SENS_STMT = "update SENSORS set ADDRESS = ?,DEVICE_ID = ?,NAME = ?,DESCRIPTION = ?,VALUE = ?,PREVIOUS_VALUE = ?,MILLIS = ?,LASTUPDATED = ? where ID = ?";
@@ -41,7 +41,7 @@ public class SensorDAO extends AbstractDAO<Sensor> {
     }
 
     @Override
-    protected Sensor map(ResultSet rs) throws SQLException {
+    protected SensorBean map(ResultSet rs) throws SQLException {
         BigDecimal id = rs.getBigDecimal("ID");
         Integer contactId = rs.getInt("ADDRESS");
         Integer deviceId = rs.getInt("DEVICE_ID");
@@ -52,13 +52,13 @@ public class SensorDAO extends AbstractDAO<Sensor> {
         Integer millis = rs.getInt("MILLIS");
         Date lastUpdated = rs.getTimestamp("LASTUPDATED");
 
-        Sensor sensor = new Sensor(id, contactId, name, description, value, previousValue, deviceId, millis, lastUpdated);
+        SensorBean sensor = new SensorBean(id, contactId, name, description, value, previousValue, deviceId, millis, lastUpdated);
 
         return sensor;
     }
 
     @Override
-    protected void bind(PreparedStatement ps, Sensor sensor) throws SQLException {
+    protected void bind(PreparedStatement ps, SensorBean sensor) throws SQLException {
         ps.setInt(1, sensor.getAddress());
         ps.setInt(2, sensor.getDeviceId());
         ps.setString(3, sensor.getName());
@@ -76,28 +76,28 @@ public class SensorDAO extends AbstractDAO<Sensor> {
     }
 
     @Override
-    public List<Sensor> findAll() {
+    public List<SensorBean> findAll() {
         String stmt = "select * from sensors order by address asc";
 
         return this.findAll(stmt);
     }
 
-    @Override
-    public Sensor find(Integer address) {
+    //@Override
+    public SensorBean find(Integer address) {
         String stmt = "select * from sensors where address = ?";
 
         return this.find(address, stmt);
     }
 
-    public Sensor findById(BigDecimal id) {
+    public SensorBean findById(BigDecimal id) {
         String stmt = "select * from sensors where id = ?";
 
         return this.findById(id, stmt);
     }
 
     @Override
-    public BigDecimal persist(Sensor sensor) {
-        Sensor sens = this.find(sensor.getAddress());
+    public BigDecimal persist(SensorBean sensor) {
+        SensorBean sens = this.find(sensor.getAddress());
 
         boolean update = false;
         String statement;
@@ -112,7 +112,7 @@ public class SensorDAO extends AbstractDAO<Sensor> {
     }
 
     @Override
-    public void remove(Sensor sensor) {
+    public void remove(SensorBean sensor) {
         String stmt = "delete from sensors where id = ?";
         this.remove(sensor, stmt);
     }

@@ -24,7 +24,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import lan.wervel.jcs.entities.LayoutTile;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import lan.wervel.jcs.ui.layout.tiles.enums.Orientation;
+import lan.wervel.jcs.entities.enums.Orientation;
 
 /**
  * Draw a Straight Track

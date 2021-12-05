@@ -20,7 +20,7 @@ package lan.wervel.jcs.trackservice;
 
 import java.io.Serializable;
 import java.util.Objects;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.enums.AccessoryType;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
@@ -34,7 +34,7 @@ public class AccessoryEvent implements Serializable {
 
   private final AccessoryType accessoryType;
 
-  //Turnout / Signal
+  //Turnout / SignalBean
   private final Integer address;
   private final AccessoryValue value;
 
@@ -54,10 +54,10 @@ public class AccessoryEvent implements Serializable {
     } else if (accessoiry.isSignal()) {
       this.accessoryType = AccessoryType.SIGNAL;
       this.address = accessoiry.getAddress();
-      this.address2 = ((Signal) accessoiry).getAddress2();
+      this.address2 = ((SignalBean) accessoiry).getAddress2();
       this.value = accessoiry.getValue();
-      this.value2 = ((Signal) accessoiry).getValue2();
-      this.signalValue = ((Signal) accessoiry).getSignalValue();
+      this.value2 = ((SignalBean) accessoiry).getValue2();
+      this.signalValue = ((SignalBean) accessoiry).getSignalValue();
     } else {
       this.accessoryType = AccessoryType.GENERAL;
       this.address = accessoiry.getAddress();
@@ -83,7 +83,7 @@ public class AccessoryEvent implements Serializable {
       if (!Objects.equals(this.address, accessoiry.getAddress())) {
         return false;
       }
-      return Objects.equals(this.address2, ((Signal) accessoiry).getAddress2());
+      return Objects.equals(this.address2, ((SignalBean) accessoiry).getAddress2());
     } else {
       return Objects.equals(this.address, accessoiry.getAddress());
     }

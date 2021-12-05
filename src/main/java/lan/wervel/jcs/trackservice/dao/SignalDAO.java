@@ -24,7 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.entities.enums.SignalValue;
 
@@ -32,7 +32,7 @@ import lan.wervel.jcs.entities.enums.SignalValue;
  *
  * @author frans
  */
-public class SignalDAO extends AbstractDAO<Signal> {
+public class SignalDAO extends AbstractDAO<SignalBean> {
 
     private static final String INS_SA_STMT = "insert into solenoidaccessories (ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE,SWITCH_TIME, ID) values(?,?,?,?,?,?,?,?,?,?,?)";
     private static final String UPD_SA_STMT = "update solenoidaccessories set ADDRESS = ?,NAME = ?,DESCRIPTION = ?,CATALOG_NUMBER = ?,ACCESSORY_TYPE = ?,CURRENT_STATUS_TYPE = ?, SOAC_ID = ?, LIGHT_IMAGES = ?, SIGNAL_VALUE = ?,SWITCH_TIME = ? where ID = ?";
@@ -42,7 +42,7 @@ public class SignalDAO extends AbstractDAO<Signal> {
     }
 
     @Override
-    protected Signal map(ResultSet rs) throws SQLException {
+    protected SignalBean map(ResultSet rs) throws SQLException {
         BigDecimal id = rs.getBigDecimal(1);
         Integer address = rs.getInt(2);
         String name = rs.getString("NAME");
@@ -77,7 +77,7 @@ public class SignalDAO extends AbstractDAO<Signal> {
             signalValue = SignalValue.get(sigVal);
         }
 
-        Signal signal = new Signal(address, description, catalogNumber, id, value, null, lightImages, id2, address2, value2, signalValue);
+        SignalBean signal = new SignalBean(address, description, catalogNumber, id, value, null, lightImages, id2, address2, value2, signalValue);
         signal.setName(name);
         signal.setSwitchTime(switchTime);
 
@@ -85,7 +85,7 @@ public class SignalDAO extends AbstractDAO<Signal> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, Signal signal) throws SQLException {
+    protected void bind(PreparedStatement ps, SignalBean signal) throws SQLException {
         ps.setInt(1, signal.getAddress());
         ps.setString(2, signal.getName());
         ps.setString(3, signal.getDescription());
@@ -121,7 +121,7 @@ public class SignalDAO extends AbstractDAO<Signal> {
     }
 
     @Override
-    public List<Signal> findAll() {
+    public List<SignalBean> findAll() {
         String stmt = "select s1.id,s1.address,s1.name,s1.description,s1.catalog_number,s1.accessory_type,s1.current_status_type,s1.light_images,s1.signal_value"
                 + ",s2.id as id2,s2.address as address2,s2.current_status_type as current_status_type2, s1.switch_time "
                 + "from solenoidaccessories as s1 "
@@ -133,8 +133,8 @@ public class SignalDAO extends AbstractDAO<Signal> {
         return this.findAll(stmt);
     }
 
-    @Override
-    public Signal find(Integer address) {
+    //@Override
+    public SignalBean find(Integer address) {
         String stmt = "select s1.id,s1.address,s1.name,s1.description,s1.catalog_number,s1.accessory_type,s1.current_status_type,s1.light_images,s1.signal_value"
                 + ",s2.id as id2,s2.address as address2,s2.current_status_type as current_status_type2, s1.switch_time "
                 + "from solenoidaccessories as s1 "
@@ -145,7 +145,7 @@ public class SignalDAO extends AbstractDAO<Signal> {
         return this.find(address, stmt);
     }
 
-    public Signal findById(BigDecimal id) {
+    public SignalBean findById(BigDecimal id) {
         String stmt = "select s1.id,s1.address,s1.name,s1.description,s1.catalog_number,s1.accessory_type,s1.current_status_type,s1.light_images,s1.signal_value"
                 + ",s2.id as id2,s2.address as address2,s2.current_status_type as current_status_type2, s1.switch_time "
                 + "from solenoidaccessories as s1 "
@@ -157,9 +157,9 @@ public class SignalDAO extends AbstractDAO<Signal> {
     }
 
     @Override
-    public BigDecimal persist(Signal signal) {
+    public BigDecimal persist(SignalBean signal) {
         //Check whether the signal exists..
-        Signal sr = this.find(signal.getAddress());
+        SignalBean sr = this.find(signal.getAddress());
 
         String statement;
         if (sr == null) {
@@ -172,7 +172,7 @@ public class SignalDAO extends AbstractDAO<Signal> {
 
         if (signal.getAddress2() != null) {
             //2nd "part" of signal on an even address...
-            Signal s2 = new Signal(signal.getAddress2(), signal.getDescription(), signal.getCatalogNumber(), signal.getId2(), signal.getValue2(), signal.getId(), signal.getLightImages(), signal.getSignalValue());
+            SignalBean s2 = new SignalBean(signal.getAddress2(), signal.getDescription(), signal.getCatalogNumber(), signal.getId2(), signal.getValue2(), signal.getId(), signal.getLightImages(), signal.getSignalValue());
             s2.setName(signal.getName());
             s2.setSwitchTime(signal.getSwitchTime());
             upsert(s2, statement);
@@ -184,11 +184,11 @@ public class SignalDAO extends AbstractDAO<Signal> {
     }
 
     @Override
-    public void remove(Signal signal) {
+    public void remove(SignalBean signal) {
         String stmt = "delete from solenoidaccessories where id = ?";
 
         if (signal.getAddress2() != null) {
-            Signal s2 = new Signal(signal.getAddress2(), signal.getDescription(), signal.getCatalogNumber(), signal.getId2(), signal.getValue2(), signal.getId(), signal.getLightImages(), signal.getSignalValue());
+            SignalBean s2 = new SignalBean(signal.getAddress2(), signal.getDescription(), signal.getCatalogNumber(), signal.getId2(), signal.getValue2(), signal.getId(), signal.getLightImages(), signal.getSignalValue());
             this.remove(s2, stmt);
         }
 

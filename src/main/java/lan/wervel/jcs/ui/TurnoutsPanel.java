@@ -20,10 +20,10 @@ package lan.wervel.jcs.ui;
 
 import java.awt.GridLayout;
 import java.util.List;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SwitchBean;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.widgets.TurnoutRowPanel;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -47,7 +47,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
         if (TrackServiceFactory.getTrackService() == null) {
             return;
         }
-        List<Turnout> turnouts = TrackServiceFactory.getTrackService().getTurnouts();
+        List<SwitchBean> turnouts = TrackServiceFactory.getTrackService().getSwitches();
 
         Logger.trace("There are " + turnouts.size() + " turnouts...");
 
@@ -55,7 +55,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
         int maxW = this.getPreferredSize().width;
         int w = 0, rows = 1, cols = 0;
 
-        for (Turnout turnout : turnouts) {
+        for (SwitchBean turnout : turnouts) {
             TurnoutRowPanel turnoutRowPanel = new TurnoutRowPanel(turnout, TurnoutRowPanel.Y_AXIS);
             w = w + turnoutRowPanel.getPreferredSize().width;
             if (rows == 1) {

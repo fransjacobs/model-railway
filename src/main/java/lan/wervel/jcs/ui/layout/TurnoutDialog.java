@@ -24,10 +24,10 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SwitchBean;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
-import lan.wervel.jcs.ui.layout.tiles.TurnoutTile;
-import org.pmw.tinylog.Logger;
+import lan.wervel.jcs.ui.layout.tiles.SwitchTile;
+import org.tinylog.Logger;
 
 /**
  *
@@ -35,9 +35,9 @@ import org.pmw.tinylog.Logger;
  */
 public class TurnoutDialog extends javax.swing.JDialog {
 
-    private final TurnoutTile tile;
+    private final SwitchTile tile;
 
-    public TurnoutDialog(java.awt.Frame parent, boolean modal, TurnoutTile tile) {
+    public TurnoutDialog(java.awt.Frame parent, boolean modal, SwitchTile tile) {
         super(parent, modal);
         this.tile = tile;
 
@@ -48,7 +48,7 @@ public class TurnoutDialog extends javax.swing.JDialog {
     private void postInit() {
         LayoutTile lt = tile.getLayoutTile();
         if (lt.getTurnout() != null) {
-            Turnout t = lt.getTurnout();
+            SwitchBean t = lt.getTurnout();
             //this.turnoutsCBM.setSelectedItem(t);
             this.turnoutCB.setSelectedItem(t);
         }
@@ -57,16 +57,16 @@ public class TurnoutDialog extends javax.swing.JDialog {
         this.setLocation(tile.getCenter());
     }
 
-    private ComboBoxModel<Turnout> getTurnoutComboBoxModel() {
+    private ComboBoxModel<SwitchBean> getTurnoutComboBoxModel() {
         ComboBoxModel turnoutCBM;
         if (TrackServiceFactory.getTrackService() != null) {
-            List<Turnout> tl = new ArrayList<>();
-            Turnout def = new Turnout();
+            List<SwitchBean> tl = new ArrayList<>();
+            SwitchBean def = new SwitchBean();
             def.setName("-");
             tl.add(def);
-            tl.addAll(TrackServiceFactory.getTrackService().getTurnouts());
+            tl.addAll(TrackServiceFactory.getTrackService().getSwitches());
 
-            Turnout[] turnouts = new Turnout[tl.size()];
+            SwitchBean[] turnouts = new SwitchBean[tl.size()];
             tl.toArray(turnouts);
 
             turnoutCBM = new DefaultComboBoxModel<>(turnouts);
@@ -129,7 +129,7 @@ public class TurnoutDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void turnoutCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_turnoutCBActionPerformed
-        Turnout t = (Turnout) this.turnoutCB.getSelectedItem();
+        SwitchBean t = (SwitchBean) this.turnoutCB.getSelectedItem();
         if (this.tile.getLayoutTile() != null && t != null) {
             Logger.trace("Setting turnout "+t);
             if("-".equals(t.getName())) {
@@ -152,6 +152,6 @@ public class TurnoutDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel selectLbl;
-    private javax.swing.JComboBox<Turnout> turnoutCB;
+    private javax.swing.JComboBox<SwitchBean> turnoutCB;
     // End of variables declaration//GEN-END:variables
 }

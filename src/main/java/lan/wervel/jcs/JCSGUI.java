@@ -32,7 +32,7 @@ import lan.wervel.jcs.ui.Refreshable;
 import lan.wervel.jcs.ui.splash.JCSSplashScreen;
 import lan.wervel.jcs.ui.util.MacOsAdapter;
 import lan.wervel.jcs.util.VersionInfo;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  * Single Locomotive Control This is the run time start point for this

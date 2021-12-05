@@ -12,16 +12,15 @@ import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
-import lan.wervel.jcs.entities.Signal;
+import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.SolenoidAccessory;
-import lan.wervel.jcs.entities.Turnout;
+import lan.wervel.jcs.entities.SwitchBean;
 import lan.wervel.jcs.entities.enums.AccessoryType;
 import lan.wervel.jcs.entities.enums.AccessoryValue;
 import lan.wervel.jcs.trackservice.AccessoryEvent;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.trackservice.events.AccessoryListener;
-import org.pmw.tinylog.Configurator;
-import org.pmw.tinylog.Logger;
+import org.tinylog.Logger;
 
 /**
  *
@@ -90,14 +89,14 @@ public class SwitchPanel extends JPanel {
             return;
         }
 
-        Turnout t = TrackServiceFactory.getTrackService().getTurnout(address);
+        SwitchBean t = TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
             button.setForeground(new java.awt.Color(0, 153, 0));
             button.setSelected(AccessoryValue.RED.equals(t.getValue()));
         }
 
         if (t == null) {
-            Signal s = TrackServiceFactory.getTrackService().getSignal(address);
+            SignalBean s = TrackServiceFactory.getTrackService().getSignal(address);
             if (s != null) {
                 button.setForeground(new java.awt.Color(0, 153, 0));
                 button.setSelected(AccessoryValue.RED.equals(s.getValue()));
@@ -419,14 +418,14 @@ public class SwitchPanel extends JPanel {
     }
 
     private void updateAccessoiry(Integer address, AccessoryValue value) {
-        Turnout t = TrackServiceFactory.getTrackService().getTurnout(address);
+        SwitchBean t = TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
             t.setValue(value);
             TrackServiceFactory.getTrackService().persist(t);
             return;
         }
 
-        Signal s = TrackServiceFactory.getTrackService().getSignal(address);
+        SignalBean s = TrackServiceFactory.getTrackService().getSignal(address);
         if (s != null) {
             s.setValue(value);
             TrackServiceFactory.getTrackService().persist(s);
@@ -515,8 +514,6 @@ public class SwitchPanel extends JPanel {
     }
 
     public static void main(String[] a) {
-        Configurator.defaultConfig().level(org.pmw.tinylog.Level.TRACE).activate();
-
         try {
             //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
