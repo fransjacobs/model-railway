@@ -1092,7 +1092,6 @@ public class LayoutCanvas extends JPanel {
         r.createGraph(snapshot);
 
         Color[] colors = {Color.blue, Color.cyan, Color.magenta, Color.orange, Color.pink, Color.red, Color.yellow, Color.green, Color.black, Color.darkGray};
-
         List<List<AbstractTile2>> routes = new ArrayList<>();
 
         int col = 0;
