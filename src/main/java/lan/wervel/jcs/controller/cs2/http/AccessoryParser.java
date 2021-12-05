@@ -27,6 +27,7 @@ import lan.wervel.jcs.controller.cs2.AccessoryStatus;
 import lan.wervel.jcs.entities.SignalBean;
 import lan.wervel.jcs.entities.SolenoidAccessory;
 import lan.wervel.jcs.entities.SwitchBean;
+import lan.wervel.jcs.ui.layout2.tiles2.Switch;
 import org.tinylog.Logger;
 
 /**

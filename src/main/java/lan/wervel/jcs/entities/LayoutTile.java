@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Set;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.entities.enums.TileType;
+import lan.wervel.jcs.ui.layout2.tiles2.Switch;
 import org.tinylog.Logger;
 
 public class LayoutTile extends ControllableDevice {
