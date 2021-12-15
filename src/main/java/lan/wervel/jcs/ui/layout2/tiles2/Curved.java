@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout2.tiles2;
 
+import lan.wervel.jcs.ui.layout2.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -25,22 +26,23 @@ import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
+import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.entities.enums.Orientation;
-import static lan.wervel.jcs.ui.layout2.tiles2.AbstractTile2.DEFAULT_HEIGHT;
-import static lan.wervel.jcs.ui.layout2.tiles2.AbstractTile2.DEFAULT_WIDTH;
+import lan.wervel.jcs.ui.layout2.LayoutUtil;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
 
 /**
  * Draw a Curved Track
  *
  */
-public class Curved extends AbstractTile2 {
+public class Curved extends AbstractTile2 implements Tile {
 
     private static int idSeq;
 
     public Curved(TileBean tileBean) {
         super(tileBean);
-        this.width = DEFAULT_WIDTH;
-        this.height = DEFAULT_HEIGHT;
+        this.width = LayoutUtil.DEFAULT_WIDTH;
+        this.height = LayoutUtil.DEFAULT_HEIGHT;
     }
 
     public Curved(Orientation orientation, int x, int y) {
@@ -49,8 +51,8 @@ public class Curved extends AbstractTile2 {
 
     public Curved(Orientation orientation, Point center) {
         super(orientation, center);
-        this.width = DEFAULT_WIDTH;
-        this.height = DEFAULT_HEIGHT;
+        this.width = LayoutUtil.DEFAULT_WIDTH;
+        this.height = LayoutUtil.DEFAULT_HEIGHT;
     }
 
     @Override
@@ -100,6 +102,77 @@ public class Curved extends AbstractTile2 {
                 break;
         }
         return adjacent;
+    }
+
+    /**
+     *
+     * @return a Set with Points which are on the edges of the Tile
+     */
+    @Override
+    public Set<Point> getConnectingPoints() {
+        Set<Point> connecting = new HashSet<>();
+        int x = this.getCenterX();
+        int y = this.getCenterY();
+
+        int ox = this.width / 2;
+        int oy = this.height / 2;
+
+        switch (this.orientation) {
+            case SOUTH:
+                connecting.add(new Point((x - ox), y));
+                connecting.add(new Point(x, y + oy));
+                break;
+            case WEST:
+                connecting.add(new Point((x - ox), y));
+                connecting.add(new Point(x, (y - oy)));
+                break;
+            case NORTH:
+                connecting.add(new Point((x + ox), y));
+                connecting.add(new Point(x, (y - oy)));
+                break;
+            default:
+                //EAST
+                connecting.add(new Point((x + ox), y));
+                connecting.add(new Point(x, (y + oy)));
+                break;
+        }
+        return connecting;
+    }
+
+    @Override
+    public Point getWest() {
+        if (Orientation.WEST.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
+            return new Point(this.center.x - this.width / 2, this.center.y);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Point getEast() {
+        if (Orientation.EAST.equals(this.orientation) || Orientation.NORTH.equals(this.orientation)) {
+            return new Point(this.center.x + this.width / 2, this.center.y);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Point getSouth() {
+        if (Orientation.EAST.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
+            return new Point(this.center.x, this.center.y + this.height / 2);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Point getNorth() {
+        if (Orientation.NORTH.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
+            return new Point(this.center.x, this.center.y - this.height / 2);
+        } else {
+            return null;
+        }
     }
 
     @Override

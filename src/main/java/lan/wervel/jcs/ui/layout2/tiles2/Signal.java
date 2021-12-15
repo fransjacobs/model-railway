@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout2.tiles2;
 
+import lan.wervel.jcs.ui.layout2.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -36,7 +37,7 @@ import lan.wervel.jcs.entities.enums.SignalType;
  *
  * @author frans
  */
-public class Signal extends Straight {
+public class Signal extends Straight implements Tile {
 
     private static int idSeq;
 

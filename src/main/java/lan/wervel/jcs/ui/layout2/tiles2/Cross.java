@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout2.tiles2;
 
+import lan.wervel.jcs.ui.layout2.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -25,20 +26,22 @@ import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
+import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import static lan.wervel.jcs.ui.layout2.tiles2.AbstractTile2.DEFAULT_HEIGHT;
-import static lan.wervel.jcs.ui.layout2.tiles2.AbstractTile2.DEFAULT_WIDTH;
+import lan.wervel.jcs.ui.layout2.LayoutUtil;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.GRID;
 
 /**
  *
  * @author frans
  */
-public class Cross extends Switch {
+public class Cross extends Switch implements Tile {
 
     private static int idSeq;
 
-    public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
+    public static final int CROSS_WIDTH = LayoutUtil.DEFAULT_WIDTH * 2;
     public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
     public static final int CROSS_OFFSET = GRID;
 

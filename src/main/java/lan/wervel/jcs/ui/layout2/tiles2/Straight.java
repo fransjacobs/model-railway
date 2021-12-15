@@ -18,25 +18,29 @@
  */
 package lan.wervel.jcs.ui.layout2.tiles2;
 
+import lan.wervel.jcs.ui.layout2.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import lan.wervel.jcs.entities.TileBean;
+import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.ui.layout2.LayoutUtil;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
 
 /**
  * Draw a Straight Track
  *
  */
-public class Straight extends AbstractTile2 {
+public class Straight extends AbstractTile2 implements Tile {
 
     private static int idSeq;
 
     public Straight(TileBean tileBean) {
         super(tileBean);
-        this.width = DEFAULT_WIDTH;
-        this.height = DEFAULT_HEIGHT;
+        this.width = LayoutUtil.DEFAULT_WIDTH;
+        this.height = LayoutUtil.DEFAULT_HEIGHT;
     }
 
     public Straight(Orientation orientation, int x, int y) {

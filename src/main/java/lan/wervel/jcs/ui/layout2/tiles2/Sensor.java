@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout2.tiles2;
 
+import lan.wervel.jcs.ui.layout2.Tile;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.MultipleGradientPaint.CycleMethod;
@@ -31,7 +32,7 @@ import lan.wervel.jcs.entities.enums.Orientation;
  *
  * @author fransjacobs
  */
-public class Sensor extends Straight {
+public class Sensor extends Straight implements Tile {
 
     private static int idSeq;
     private boolean active;

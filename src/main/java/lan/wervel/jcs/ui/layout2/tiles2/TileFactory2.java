@@ -26,6 +26,7 @@ import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.entities.enums.Orientation;
 import org.tinylog.Logger;
 import static lan.wervel.jcs.entities.enums.TileType.CURVED;
+import lan.wervel.jcs.ui.layout2.Tile;
 
 /**
  *
@@ -60,7 +61,7 @@ public class TileFactory2 {
         }
     }
 
-    public static AbstractTile2 createTile(TileBean tileBean, boolean drawOutline) {
+    public static Tile createTile(TileBean tileBean, boolean drawOutline) {
         if (tileBean == null) {
             return null;
         }
@@ -70,37 +71,37 @@ public class TileFactory2 {
         switch (tileType) {
             case STRAIGHT:
                 tile = new Straight(tileBean);
-                straightIdSeq = getHeighestIdSeq(straightIdSeq,getIdSeq(tileBean.getId()));
+                straightIdSeq = getHeighestIdSeq(straightIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(straightIdSeq);
                 break;
             case CURVED:
                 tile = new Curved(tileBean);
-                curvedIdSeq = getHeighestIdSeq(curvedIdSeq,getIdSeq(tileBean.getId()));
+                curvedIdSeq = getHeighestIdSeq(curvedIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(curvedIdSeq);
                 break;
             case SWITCH:
                 tile = new Switch(tileBean);
-                switchIdSeq = getHeighestIdSeq(switchIdSeq,getIdSeq(tileBean.getId()));
+                switchIdSeq = getHeighestIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(switchIdSeq);
                 break;
             case CROSS:
                 tile = new Cross(tileBean);
-                crossIdSeq = getHeighestIdSeq(crossIdSeq,getIdSeq(tileBean.getId()));
+                crossIdSeq = getHeighestIdSeq(crossIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(crossIdSeq);
                 break;
             case SIGNAL:
                 tile = new Signal(tileBean);
-                signalIdSeq = getHeighestIdSeq(signalIdSeq,getIdSeq(tileBean.getId()));
+                signalIdSeq = getHeighestIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(signalIdSeq);
                 break;
             case SENSOR:
                 tile = new Sensor(tileBean);
-                sensorIdSeq = getHeighestIdSeq(sensorIdSeq,getIdSeq(tileBean.getId()));
+                sensorIdSeq = getHeighestIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(sensorIdSeq);
                 break;
             case BLOCK:
                 tile = new Block(tileBean);
-                blockIdSeq = getHeighestIdSeq(blockIdSeq,getIdSeq(tileBean.getId()));
+                blockIdSeq = getHeighestIdSeq(blockIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(blockIdSeq);
                 break;
             default:
@@ -110,10 +111,10 @@ public class TileFactory2 {
         if (tile != null) {
             tile.setDrawOutline(drawOutline);
         }
-        return tile;
+        return (Tile) tile;
     }
 
-    public static AbstractTile2 createTile(TileType tileType, Orientation orientation, Direction direction, Point center, boolean drawOutline) {
+    public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, Point center, boolean drawOutline) {
         AbstractTile2 tile = null;
         switch (tileType) {
             case STRAIGHT:
@@ -143,7 +144,7 @@ public class TileFactory2 {
         if (tile != null) {
             tile.setDrawOutline(drawOutline);
         }
-        return tile;
+        return (Tile) tile;
     }
 
 }

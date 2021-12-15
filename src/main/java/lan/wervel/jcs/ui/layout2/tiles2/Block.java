@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout2.tiles2;
 
+import lan.wervel.jcs.ui.layout2.Tile;
 import java.awt.BasicStroke;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import java.awt.Color;
@@ -26,18 +27,22 @@ import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
+import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.ui.layout2.LayoutUtil;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.GRID;
 
 /**
  * Draw a OccupancyDetector
  *
  * @author frans
  */
-public class Block extends AbstractTile2 {
+public class Block extends AbstractTile2 implements Tile {
 
     private static int idSeq;
 
-    public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
+    public static final int BLOCK_WIDTH = LayoutUtil.DEFAULT_WIDTH * 3;
     public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 
     public Block(TileBean tileBean) {
@@ -108,7 +113,6 @@ public class Block extends AbstractTile2 {
             this.width = DEFAULT_WIDTH;
             this.height = DEFAULT_HEIGHT * 3;
         }
-
     }
 
     @Override
@@ -123,25 +127,17 @@ public class Block extends AbstractTile2 {
         g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
         g2.setPaint(Color.darkGray);
         g2.drawRect(x, y, w, h);
-
-        switch (this.orientation) {
-            case EAST:
-                drawRotate(g2, x + 3, GRID + 4, 0, "a");
-                drawRotate(g2, w - 7, GRID + 4, 0, "b");
-                break;
-            case WEST:
-                drawRotate(g2, x + 10, GRID - 4, 180, "a");
-                drawRotate(g2, w - 1, GRID - 4, 180, "b");
-                break;
-            case NORTH:
-                drawRotate(g2, x + 3, GRID - 4, 90, "a");
-                drawRotate(g2, w - 10, GRID - 4, 90, "b");
-                break;
-            case SOUTH:
-                drawRotate(g2, x + 10, GRID + 4, 270, "a");
-                drawRotate(g2, w - 1, GRID + 4, 270, "b");
-                break;
-        }
+        
+        //Block needs to have a direction so travel from a to b or from - to +
+        //so in east direction the block is -[ - bk-nn + ]- 
+        g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+        g2.setPaint(Color.black);
+        
+        //a - at the start and end of the block
+        g2.drawLine(x+4, y+10, x+10, y+10);
+        g2.drawLine(w-10, y+10, w-4, y+10);
+        //a | at the end of the block 
+        g2.drawLine(w-7, y+7, w-7, y+13);
 
         drawName(g2);
     }
@@ -149,16 +145,12 @@ public class Block extends AbstractTile2 {
     @Override
     public void drawName(Graphics2D g2d) {
 
-        //int x, y;
-        //x = 2;
-        //y = 10;
-
         switch (this.orientation) {
             case EAST:
-                drawRotate(g2d, 15, GRID + 4, 0, getId());
+                drawRotate(g2d, 16, GRID + 4, 0, getId());
                 break;
             case WEST:
-                drawRotate(g2d, 105, GRID - 4, 180, getId());
+                drawRotate(g2d, 104, GRID - 4, 180, getId());
                 break;
             case NORTH:
                 drawRotate(g2d, 20, GRID + 4, 0, getId());

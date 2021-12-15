@@ -36,7 +36,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +50,7 @@ import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.ui.layout.Mode;
-import lan.wervel.jcs.ui.layout2.router.impl.Router;
-import lan.wervel.jcs.ui.layout2.tiles2.AbstractTile2;
+import lan.wervel.jcs.ui.layout2.pathfinding.BreathFirst;
 import lan.wervel.jcs.ui.layout2.tiles2.Block;
 import lan.wervel.jcs.ui.layout2.tiles2.TileFactory2;
 import org.tinylog.Logger;
@@ -81,12 +79,12 @@ public class LayoutCanvas extends JPanel {
 
     private final ExecutorService executor;
 
-    private final Map<Point, AbstractTile2> tiles;
-    private final Map<Point, AbstractTile2> altTiles;
+    private final Map<Point, Tile> tiles;
+    private final Map<Point, Tile> altTiles;
     private final Set<Point> selectedTiles;
     private final Set<Point> movingTiles;
 
-    private AbstractTile2 movingTile;
+    private Tile movingTile;
 
     /**
      * Creates new form GridsCanvas
@@ -117,7 +115,7 @@ public class LayoutCanvas extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
 
-        Set<AbstractTile2> snapshot;
+        Set<Tile> snapshot;
         synchronized (tiles) {
             snapshot = new HashSet<>(tiles.values());
         }
@@ -127,9 +125,8 @@ public class LayoutCanvas extends JPanel {
             paintLineGrid(g);
         }
 
-        for (AbstractTile2 tile : snapshot) {
+        for (Tile tile : snapshot) {
             if (tile != null) {
-
                 tile.setDrawOutline(drawGrid);
 
                 if (selectedTiles.contains(tile.getCenter())) {
@@ -317,10 +314,10 @@ public class LayoutCanvas extends JPanel {
         Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
         Logger.trace("Start loading " + beans.size() + " Tiles. Currently there are " + this.tiles.size() + " tiles...");
 
-        Set<AbstractTile2> snapshot = new HashSet<>();
+        Set<Tile> snapshot = new HashSet<>();
 
         for (TileBean tb : beans) {
-            AbstractTile2 tile = TileFactory2.createTile(tb, this.drawGrid);
+            Tile tile = TileFactory2.createTile(tb, this.drawGrid);
             snapshot.add(tile);
         }
 
@@ -329,9 +326,9 @@ public class LayoutCanvas extends JPanel {
         synchronized (tiles) {
             tiles.clear();
             altTiles.clear();
-            for (AbstractTile2 t : snapshot) {
-                tiles.put(t.getCenter(), t);
+            for (Tile t : snapshot) {
 
+                tiles.put(t.getCenter(), t);
                 //Alternative point(s) to be able to find all points
                 if (!t.getAltPoints().isEmpty()) {
                     Set<Point> alt = t.getAltPoints();
@@ -344,8 +341,6 @@ public class LayoutCanvas extends JPanel {
         }
         Logger.debug("Loaded " + this.tiles.size() + " from " + beans.size() + " tiles...");
         this.repaint();
-        //this.executor.execute(() -> repaint());
-
     }
 
     public void saveLayout() {
@@ -355,14 +350,14 @@ public class LayoutCanvas extends JPanel {
     private void saveTiles() {
         Logger.debug("Saving " + this.tiles.size() + " tiles...");
 
-        Set<AbstractTile2> snapshot;
+        Set<Tile> snapshot;
         synchronized (tiles) {
             snapshot = new HashSet<>(tiles.values());
         }
 
         Set<TileBean> beans = new HashSet<>();
 
-        for (AbstractTile2 tile : snapshot) {
+        for (Tile tile : snapshot) {
             if (tile != null) {
                 TileBean tb = tile.getTileBean();
                 Logger.trace("Saving " + tile + " -> " + tb);
@@ -514,11 +509,11 @@ public class LayoutCanvas extends JPanel {
 
   private void formMouseClicked(MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
       Logger.trace("Click Mouse @ X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
-      Point p = AbstractTile2.snapToGrid(evt.getPoint());
+      Point p = LayoutUtil.snapToGrid(evt.getPoint());
       Logger.trace("Snap Tile X: " + p.getX() + " Y:" + p.getY());
 
       //cross tile selectie gaat fout
-      AbstractTile2 tile = this.findTile(p);
+      Tile tile = this.findTile(p);
 
       //Always make a new selection
       this.selectedTiles.clear();
@@ -577,7 +572,7 @@ public class LayoutCanvas extends JPanel {
 
   }//GEN-LAST:event_formMouseDragged
 
-    private void showOperationsPopupMenu(AbstractTile2 tile, Point p) {
+    private void showOperationsPopupMenu(Tile tile, Point p) {
         //which items should be shown
         boolean showProperties = false;
         boolean showFlip = false;
@@ -628,7 +623,7 @@ public class LayoutCanvas extends JPanel {
                 break;
         }
         this.xyMI.setVisible(true);
-        this.xyMI.setText("x: " + p.x + " y: " + p.y + ", " + tile.getOrientation().getOrientation());
+        this.xyMI.setText(tile.getId() + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
         this.propertiesMI.setVisible(showProperties);
         this.flipHorizontalMI.setVisible(showFlip);
         this.flipVerticalMI.setVisible(showFlip);
@@ -641,8 +636,8 @@ public class LayoutCanvas extends JPanel {
 
   private void formMousePressed(MouseEvent evt) {//GEN-FIRST:event_formMousePressed
       Logger.trace("Press X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
-      Point p = AbstractTile.snapToGrid(evt.getPoint());
-      AbstractTile2 tile = this.findTile(p);
+      Point p = LayoutUtil.snapToGrid(evt.getPoint());
+      Tile tile = this.findTile(p);
 
       if (MouseEvent.BUTTON1 == evt.getButton() && tile != null) {
           this.movingTiles.clear();
@@ -661,7 +656,7 @@ public class LayoutCanvas extends JPanel {
   private void formMouseReleased(MouseEvent evt) {//GEN-FIRST:event_formMouseReleased
       Logger.trace("X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
 
-      Point p = AbstractTile.snapToGrid(evt.getPoint());
+      Point p = LayoutUtil.snapToGrid(evt.getPoint());
 
       if (this.movingTile != null) {
           Point tp = this.movingTile.getCenter();
@@ -672,7 +667,7 @@ public class LayoutCanvas extends JPanel {
                   Logger.debug("Point " + p + " is occupied by tile: " + tiles.get(p));
                   this.movingTile = null;
               } else {
-                  AbstractTile2 tile = this.tiles.remove(tp);
+                  Tile tile = this.tiles.remove(tp);
                   if (tile != null) {
                       Set<Point> rps = tile.getAltPoints();
                       //Also remove alt points
@@ -763,13 +758,13 @@ public class LayoutCanvas extends JPanel {
 ////            listener.setSelectedLayoutTiles(snapshot);
 ////        }
 //    }
-    private AbstractTile2 findTile(Point cp) {
-        AbstractTile2 result = this.tiles.get(cp);
+    private Tile findTile(Point cp) {
+        Tile result = this.tiles.get(cp);
         if (result == null) {
             //Logger.trace("Using alternative points...");
             result = this.altTiles.get(cp);
             if (result != null) {
-                Logger.trace("Found " + result + " in alt tiles");
+                //Logger.trace("Found " + result + " in alt tiles");
             }
         }
 
@@ -778,9 +773,9 @@ public class LayoutCanvas extends JPanel {
 
   private void formMouseMoved(MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
       //Only repaint when the mouse is snapped to the next grid
-      Point sp = AbstractTile.snapToGrid(evt.getPoint());
+      Point sp = LayoutUtil.snapToGrid(evt.getPoint());
 
-      AbstractTile2 tile = findTile(sp);
+      Tile tile = findTile(sp);
       if (tile != null) {
           setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       } else {
@@ -817,7 +812,7 @@ public class LayoutCanvas extends JPanel {
 
     private Point getCheckAvailable(Point newPoint) {
         if (this.tiles.containsKey(newPoint)) {
-            AbstractTile2 et = this.tiles.get(newPoint);
+            Tile et = this.tiles.get(newPoint);
 
             Logger.debug("@ " + newPoint + " is allready occcupied by: " + et + "...");
             //Search for the nearest avalaible free point 
@@ -870,7 +865,7 @@ public class LayoutCanvas extends JPanel {
 
         boolean fullRepaint = !chkp.equals(p);
 
-        AbstractTile2 tile = TileFactory2.createTile(tileType, orientation, direction, chkp, drawGrid);
+        Tile tile = TileFactory2.createTile(tileType, orientation, direction, chkp, drawGrid);
 
         tiles.put(chkp, tile);
         //Alternative point(s) to be able to find all points
@@ -895,7 +890,7 @@ public class LayoutCanvas extends JPanel {
     private void removeTiles(Set<Point> pointsToRemove) {
         for (Point p : pointsToRemove) {
             synchronized (tiles) {
-                AbstractTile2 removed = this.tiles.remove(p);
+                Tile removed = this.tiles.remove(p);
                 if (removed != null && removed.getAllPoints() != null) {
                     Set<Point> rps = removed.getAltPoints();
                     //Also remove alt points
@@ -976,7 +971,7 @@ public class LayoutCanvas extends JPanel {
         for (Point p : snapshot) {
             Logger.trace("Selected Tile @ " + p);
             if (this.tiles.containsKey(p)) {
-                AbstractTile2 t = this.tiles.get(p);
+                Tile t = this.tiles.get(p);
                 //Remove the alternative or extra points...
                 for (Point ep : t.getAltPoints()) {
                     this.altTiles.remove(ep);
@@ -1007,7 +1002,7 @@ public class LayoutCanvas extends JPanel {
         for (Point p : snapshot) {
             Logger.trace("Selected Tile @ " + p);
             if (this.tiles.containsKey(p)) {
-                AbstractTile2 t = this.tiles.get(p);
+                Tile t = this.tiles.get(p);
                 //Remove the alternative or extra points...
                 for (Point ep : t.getAltPoints()) {
                     this.altTiles.remove(ep);
@@ -1039,7 +1034,7 @@ public class LayoutCanvas extends JPanel {
         for (Point p : snapshot) {
             Logger.trace("Selected Tile @ " + p);
             if (this.tiles.containsKey(p)) {
-                AbstractTile2 t = this.tiles.get(p);
+                Tile t = this.tiles.get(p);
                 //Remove the alternative or extra points...
                 for (Point ep : t.getAltPoints()) {
                     this.altTiles.remove(ep);
@@ -1079,38 +1074,44 @@ public class LayoutCanvas extends JPanel {
         //only routes from block to block so
         List<Block> blocks = new ArrayList<>();
         //Find blocks..
-        Set<AbstractTile2> snapshot = new HashSet<>(tiles.values());
+        Set<Tile> snapshot = new HashSet<>(tiles.values());
         Logger.trace("Layout has " + snapshot.size() + " tiles...");
-        for (AbstractTile2 b : snapshot) {
+        for (Tile b : snapshot) {
             if (b instanceof Block) {
                 blocks.add((Block) b);
             }
         }
         Logger.trace("Layout has " + blocks.size() + " blocks...");
 
-        Router r = new Router();
-        r.createGraph(snapshot);
+        //Router2 r = new Router2();
+        //r.createGraph(snapshot);
+        BreathFirst bfr = new BreathFirst();
+        bfr.createGraph(snapshot);
 
         Color[] colors = {Color.blue, Color.cyan, Color.magenta, Color.orange, Color.pink, Color.red, Color.yellow, Color.green, Color.black, Color.darkGray};
-        List<List<AbstractTile2>> routes = new ArrayList<>();
+        List<List<Tile>> routes = new ArrayList<>();
 
         int col = 0;
         for (Block from : blocks) {
             for (Block to : blocks) {
                 if (!from.getId().equals(to.getId())) {
                     Logger.trace("Route from: " + from.getId() + " (" + from.getCenterX() + "," + from.getCenterY() + ") to: " + to.getId() + " (" + to.getCenterX() + "," + to.getCenterY() + ")...");
-                    List<AbstractTile2> route = r.route(from, to);
-                    routes.add(route);
+                    //List<Tile> route = r.route(from, to);
 
-                    for (AbstractTile2 at : route) {
-                        at.setTrackColor(colors[col]);
-                        //?
-                        this.tiles.put(at.getCenter(), at);
-                    }
-                    if (col < colors.length) {
-                        col++;
-                    } else {
-                        col = 0;
+                    List<Tile> route = bfr.search(from, to);
+                    if (route != null && !route.isEmpty()) {
+                        routes.add(route);
+
+                        for (Tile at : route) {
+                            at.setTrackColor(colors[col]);
+                            //?
+                            //this.tiles.put(at.getCenter(), at);
+                        }
+                        if (col < colors.length) {
+                            col++;
+                        } else {
+                            col = 0;
+                        }
                     }
                 }
             }

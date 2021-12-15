@@ -29,8 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -49,7 +47,6 @@ import javax.swing.border.LineBorder;
 import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.ui.layout.Mode;
-import lan.wervel.jcs.ui.layout2.tiles2.Block;
 import org.tinylog.Logger;
 
 /**

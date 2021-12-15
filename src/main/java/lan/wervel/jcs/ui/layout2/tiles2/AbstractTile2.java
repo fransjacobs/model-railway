@@ -37,11 +37,15 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
+import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.entities.enums.SignalType;
 import lan.wervel.jcs.entities.enums.TileType;
-import lan.wervel.jcs.ui.layout2.router.GraphNode;
+import lan.wervel.jcs.ui.layout2.LayoutUtil;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
+import static lan.wervel.jcs.ui.layout2.LayoutUtil.GRID;
+import lan.wervel.jcs.ui.layout2.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -59,12 +63,11 @@ import org.tinylog.Logger;
  * A Tile is rendered to a Buffered Image to speed up the display
  *
  */
-public abstract class AbstractTile2 implements Shape, GraphNode {
+abstract class AbstractTile2 implements Shape, Tile {
 
-    public static final int GRID = 20;
-    public static final int DEFAULT_WIDTH = GRID * 2;
-    public static final int DEFAULT_HEIGHT = GRID * 2;
-
+//    public static final int GRID = 20;
+//    public static final int DEFAULT_WIDTH = GRID * 2;
+//    public static final int DEFAULT_HEIGHT = GRID * 2;
     protected Orientation orientation;
     protected Direction direction;
 
@@ -86,8 +89,10 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
     protected String id;
 
     protected boolean drawOutline = false;
+
+    protected Set<Tile> adjacentTiles;
     
-    protected Set<AbstractTile2> adjacentTiles;
+    protected Tile parent;
 
     public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
@@ -126,10 +131,12 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         this.backgroundColor = Color.white;
     }
 
+    @Override
     public Color getTrackColor() {
         return trackColor;
     }
 
+    @Override
     public final void setTrackColor(Color trackColor) {
         if (!this.trackColor.equals(trackColor)) {
             this.trackColor = trackColor;
@@ -137,10 +144,12 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         }
     }
 
+    @Override
     public Color getBackgroundColor() {
         return backgroundColor;
     }
 
+    @Override
     public void setBackgroundColor(Color backgroundColor) {
         if (!this.backgroundColor.equals(backgroundColor)) {
             this.backgroundColor = backgroundColor;
@@ -157,6 +166,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         return this.id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }
@@ -167,6 +177,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
      * @param g2d The graphics handle
      * @param drawOutline
      */
+    @Override
     public void drawTile(Graphics2D g2d, boolean drawOutline) {
         if (image == null) {
             BufferedImage bi = createImage();
@@ -228,7 +239,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
                 g2di.setPaint(Color.lightGray);
                 g2di.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 if (this instanceof Block) {
-                    g2di.drawRect(0, 0, DEFAULT_WIDTH * 3, DEFAULT_HEIGHT);
+                    g2di.drawRect(0, 0, LayoutUtil.DEFAULT_WIDTH * 3, DEFAULT_HEIGHT);
                 } else if (this instanceof Cross) {
                     g2di.drawRect(0, 0, DEFAULT_WIDTH * 2, DEFAULT_HEIGHT);
                 } else {
@@ -251,20 +262,23 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
      *
      * @param g2d the Graphic context
      */
-    abstract void renderTile(Graphics2D g2d, Color trackColor, Color backgroundColor);
-
+    //abstract void renderTile(Graphics2D g2d, Color trackColor, Color backgroundColor);
+    @Override
     public void drawName(Graphics2D g2) {
 
     }
 
+    @Override
     public void drawCenterPoint(Graphics2D g2d) {
         drawCenterPoint(g2d, Color.GRAY);
     }
 
+    @Override
     public void drawCenterPoint(Graphics2D g2, Color color) {
         drawCenterPoint(g2, color, 4);
     }
 
+    @Override
     public void drawCenterPoint(Graphics2D g2d, Color color, double size) {
         double x = (this.center.x - size / 2);
         double y = (this.center.y - size / 2);
@@ -282,6 +296,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         }
     }
 
+    @Override
     public void drawBounds(Graphics2D g2d) {
         g2d.setColor(Color.yellow);
         g2d.draw(getBounds());
@@ -290,6 +305,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
     /**
      * Rotate the tile clockwise 90 deg
      */
+    @Override
     public void rotate() {
         switch (this.orientation) {
             case EAST:
@@ -307,6 +323,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         }
     }
 
+    @Override
     public void flipHorizontal() {
         if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
             rotate();
@@ -314,6 +331,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         }
     }
 
+    @Override
     public void flipVertical() {
         if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
             rotate();
@@ -321,34 +339,34 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         }
     }
 
+    @Override
     public void move(int newX, int newY) {
-        Point cs = snapToGrid(newX, newY);
+        Point cs = LayoutUtil.snapToGrid(newX, newY);
         this.setCenter(cs);
     }
 
-    public static final Point snapToGrid(Point p) {
-        return snapToGrid(p.x, p.y);
-    }
-
-    /**
-     * Snap coordinates to the nearest grid point
-     *
-     * @param x the X
-     * @param y the Y
-     * @return Coordinates which are the X en Y wrapped
-     */
-    public static final Point snapToGrid(int x, int y) {
-        int steps = x / DEFAULT_WIDTH;
-        int sx = steps;
-        sx = sx * DEFAULT_WIDTH + GRID;
-
-        steps = y / DEFAULT_HEIGHT;
-        int sy = steps;
-        sy = sy * DEFAULT_HEIGHT + GRID;
-
-        return new Point(sx, sy);
-    }
-
+//    public static final Point snapToGrid(Point p) {
+//        return snapToGrid(p.x, p.y);
+//    }
+//
+//    /**
+//     * Snap coordinates to the nearest grid point
+//     *
+//     * @param x the X
+//     * @param y the Y
+//     * @return Coordinates which are the X en Y wrapped
+//     */
+//    public static final Point snapToGrid(int x, int y) {
+//        int steps = x / DEFAULT_WIDTH;
+//        int sx = steps;
+//        sx = sx * DEFAULT_WIDTH + GRID;
+//
+//        steps = y / DEFAULT_HEIGHT;
+//        int sy = steps;
+//        sy = sy * DEFAULT_HEIGHT + GRID;
+//
+//        return new Point(sx, sy);
+//    }
     protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
         g2d.translate((float) x, (float) y);
         g2d.rotate(Math.toRadians(angle));
@@ -381,10 +399,12 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         return output;
     }
 
+    @Override
     public Orientation getOrientation() {
         return orientation;
     }
 
+    @Override
     public void setOrientation(Orientation orientation) {
         if (!this.orientation.equals(orientation)) {
             //image is cached, so remove will be created again
@@ -393,10 +413,12 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         this.orientation = orientation;
     }
 
+    @Override
     public Direction getDirection() {
         return direction;
     }
 
+    @Override
     public void setDirection(Direction direction) {
         if (!this.direction.equals(direction)) {
             //image is cached, so remove will be created again
@@ -405,23 +427,26 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         this.direction = direction;
     }
 
+    @Override
     public Point getCenter() {
         return this.center;
     }
 
+    @Override
     public void setCenter(Point center) {
         if (!this.center.equals(center)) {
             //image is cached, so remove will be created again
             image = null;
         }
         this.center = center;
-
     }
 
+    @Override
     public Set<Point> getAltPoints() {
         return Collections.EMPTY_SET;
     }
 
+    @Override
     public Set<Point> getAllPoints() {
         Set<Point> aps = new HashSet<>();
         aps.add(center);
@@ -429,18 +454,22 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         return aps;
     }
 
+    @Override
     public int getOffsetX() {
         return offsetX;
     }
 
+    @Override
     public void setOffsetX(int offsetX) {
         this.offsetX = offsetX;
     }
 
+    @Override
     public int getOffsetY() {
         return offsetY;
     }
 
+    @Override
     public void setOffsetY(int offsetY) {
         this.offsetY = offsetY;
     }
@@ -449,14 +478,17 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         return new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
     }
 
+    @Override
     public int getHeight() {
         return this.height;
     }
 
+    @Override
     public int getWidth() {
         return this.width;
     }
 
+    @Override
     public int getCenterX() {
         int cx;
         if (this.center != null) {
@@ -473,6 +505,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         return cx;
     }
 
+    @Override
     public int getCenterY() {
         int cy;
         if (this.center != null) {
@@ -489,6 +522,7 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         return cy;
     }
 
+    @Override
     public TileBean getTileBean() {
         if (tileBean == null) {
             Logger.trace("Create new TileBean for: " + getClass().getName());
@@ -508,10 +542,10 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
                 this.tileBean.setSignalType(((Signal) this).getSignalType());
             }
         }
-
         return tileBean;
     }
 
+    @Override
     public final void setTileBean(TileBean tileBean) {
         this.tileBean = tileBean;
         this.orientation = tileBean.getOrientation();
@@ -532,10 +566,12 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         this.drawName = drawName;
     }
 
+    @Override
     public boolean isDrawOutline() {
         return drawOutline;
     }
 
+    @Override
     public void setDrawOutline(boolean drawOutline) {
         if (this.drawOutline != drawOutline) {
             this.drawOutline = drawOutline;
@@ -543,9 +579,6 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         }
     }
 
-//    public void setReDrawListener(ReDrawListener listener) {
-//        this.reDrawListener = listener;
-//    }
     @Override
     public int hashCode() {
         int hash = 5;
@@ -675,15 +708,27 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
         return getBounds().getPathIterator(at, flatness);
     }
 
-    public Set<AbstractTile2> getAdjacentTiles() {
+    @Override
+    public Set<Tile> getAdjacentTiles() {
         return adjacentTiles;
     }
 
-    public void setAdjacentTiles(Set<AbstractTile2> adjacentTiles) {
+    @Override
+    public void setAdjacentTiles(Set<Tile> adjacentTiles) {
         this.adjacentTiles = adjacentTiles;
     }
 
+    @Override
+    public Tile getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(Tile parent) {
+        this.parent = parent;
+    }
     
+    @Override
     public Set<Point> getAdjacentPoints() {
         Set<Point> adjacent = new HashSet<>();
 
@@ -702,6 +747,75 @@ public abstract class AbstractTile2 implements Shape, GraphNode {
             adjacent.add(new Point(this.getCenterX(), this.getCenterY() - oY));
         }
         return adjacent;
+    }
+
+    /**
+     *
+     * @return a Set with Points which are on the edges of the Tile
+     */
+    @Override
+    public Set<Point> getConnectingPoints() {
+        Set<Point> connecting = new HashSet<>();
+        int x = this.getCenterX();
+        int y = this.getCenterY();
+        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
+            //Tile center X - w / 2 is the west connecting point,
+            //X + w / 2 is the east connecting point
+            int ox = this.width / 2;
+            connecting.add(new Point((x - ox), y));
+            connecting.add(new Point((x + ox), y));
+        } else {
+            //Tile center Y - h / 2 is the north connecting point,
+            //Y + h / 2 is the south connecting point
+            int oy = this.height / 2;
+            connecting.add(new Point(x, (y - oy)));
+            connecting.add(new Point(x, (y + oy)));
+        }
+        return connecting;
+    }
+
+    @Override
+    public Point getWest() {
+        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
+            //Horizontal
+            return new Point(this.center.x - this.width / 2, this.center.y);
+        } else {
+            //There is no west point when the direction is North and South, ie vertical 
+            return null;
+        }
+    }
+
+    @Override
+    public Point getEast() {
+        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
+            //Horizontal
+            return new Point(this.center.x + this.width / 2, this.center.y);
+        } else {
+            //There is no east point when the direction is North and South, ie vertical 
+            return null;
+        }
+    }
+
+    @Override
+    public Point getSouth() {
+        if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
+            //Vertical
+            return new Point(this.center.x, this.center.y + this.height / 2);
+        } else {
+            //There is no south point when the direction is West and East, ie horizontal 
+            return null;
+        }
+    }
+
+    @Override
+    public Point getNorth() {
+        if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
+            //Vertical
+            return new Point(this.center.x, this.center.y - this.height / 2);
+        } else {
+            //There is no south point when the direction is West and East, ie horizontal 
+            return null;
+        }
     }
 
 }
