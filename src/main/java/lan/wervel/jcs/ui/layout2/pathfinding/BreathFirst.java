@@ -33,7 +33,7 @@ import lan.wervel.jcs.ui.layout2.tiles2.Switch;
 import org.tinylog.Logger;
 
 /**
- *
+ * Inspired by https://www.peachpit.com/articles/article.aspx?p=101142
  * @author frans
  */
 public class BreathFirst {
