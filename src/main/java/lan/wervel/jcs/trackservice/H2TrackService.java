@@ -33,7 +33,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import static javax.management.Query.lt;
 import lan.wervel.jcs.controller.ControllerEvent;
 import lan.wervel.jcs.controller.ControllerEventListener;
 import lan.wervel.jcs.controller.cs2.DeviceInfo;
@@ -163,24 +162,22 @@ public class H2TrackService implements TrackService {
     }
 
     private void aquireControllerService() {
+        String activeControllerService = System.getProperty("activeControllerService");
+
+        String moduleCount = System.getProperty("S88-module-count", "1");
+        feedbackModules = Integer.decode(moduleCount);
+
+        Logger.trace("There are " + feedbackModules + " FeedbackModules");
+        Logger.debug("ActiveControllerService: " + activeControllerService);
+
+        String controllerImpl = null;
+
         //String m6050Local = jcsProperties.getProperty("M6050-local");
         //String m6050Remote = jcsProperties.getProperty("M6050-remote");
         String m6050Demo = System.getProperty("M6050-demo");
         String cs2 = System.getProperty("CS2");
-        String activeControllerService = System.getProperty("activeControllerService");
-
-        String moduleCount = System.getProperty("S88-module-count", "1");
-        this.feedbackModules = Integer.decode(moduleCount);
-
-        Logger.debug("There are " + feedbackModules + " FeedbackModules");
-        Logger.debug("ActiveControllerService: " + activeControllerService);
-
-        String controllerImpl;
 
         switch (activeControllerService) {
-//            case "M6050-remote":
-//                controllerImpl = m6050Remote;
-//                break;
             case "CS2":
                 controllerImpl = cs2;
                 break;
@@ -189,17 +186,20 @@ public class H2TrackService implements TrackService {
                 break;
         }
 
-        if (controllerService == null) {
-            try {
-                this.controllerService = (ControllerService) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+        String trackServiceAlwaysUseDemo = System.getProperty("trackServiceAlwaysUseDemo", "false");
+        if ("false".equalsIgnoreCase(trackServiceAlwaysUseDemo)) {
+            if (controllerService == null) {
+                try {
+                    this.controllerService = (ControllerService) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
 
-                if (!this.controllerService.isConnected()) {
-                    Logger.info("Not connected to Real CS2/3. Switch to demo...");
-                    this.controllerService.disconnect();
-                    this.controllerService = null;
+                    if (!this.controllerService.isConnected()) {
+                        Logger.info("Not connected to Real CS2/3. Switch to demo...");
+                        this.controllerService.disconnect();
+                        this.controllerService = null;
+                    }
+                } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+                    Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
                 }
-            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-                Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
             }
         }
 
@@ -221,7 +221,7 @@ public class H2TrackService implements TrackService {
         System.setProperty("sensorCount", "" + sensorCount);
 
         if (sensorCount != allSensors.size()) {
-            Logger.debug("The Sensor count has changed since last run from "+allSensors.size()+" to "+sensorCount+"...");
+            Logger.debug("The Sensor count has changed since last run from " + allSensors.size() + " to " + sensorCount + "...");
             //remove sensors which are not in the system
             if (allSensors.size() > sensorCount) {
                 for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
@@ -240,9 +240,9 @@ public class H2TrackService implements TrackService {
                     String description = name;
                     //create the sensor
                     s = new SensorBean(contactId, name, description, 0, 0, 0, 0);
-                    if(s.getId() != null) {
-                      sensDAO.persist(s);
-                    }  
+                    if (s.getId() != null) {
+                        sensDAO.persist(s);
+                    }
                 }
             }
         } else {

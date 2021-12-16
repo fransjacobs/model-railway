@@ -71,8 +71,6 @@ public class LayoutCanvas extends JPanel {
     private Direction direction;
     private TileType tileType;
 
-    //private boolean mouseInCanvas = false;
-    //private Point movedPoint;
     private Point mouseLocation = new Point(0, 0);
 
     private BufferedImage grid;
@@ -246,32 +244,9 @@ public class LayoutCanvas extends JPanel {
         this.grid = null;
     }
 
-//    void addSelectionListener(SelectionListener listener) {
-//        this.selectionListeners.add(listener);
-//    }
-//    void setSelectionModeChangedListener(SelectionModeChangedListener listener) {
-//        selectionModeChangedListener = listener;
-//        if (selectionModeChangedListener != null) {
-//            this.selectionModeChangedListener.selectionModeChanged(mode, orientation, direction, tileType);
-//        }
-//    }
-//    void selectionModeChanged(Mode mode, Orientation orientation, Direction direction, TileType tileType) {
-//        Logger.debug("Mode: " + mode + " Orientation: " + orientation + " Direction: " + direction + " Tile: " + tileType);
-//        this.mode = mode;
-//        this.orientation = orientation;
-//        this.direction = direction;
-//        this.tileType = tileType;
-//        notifySelectionModeChange();
-//    }
-//    private void notifySelectionModeChange() {
-//        if (selectionModeChangedListener != null) {
-//            this.selectionModeChangedListener.selectionModeChanged(mode, orientation, direction, tileType);
-//        }
-//    }
     void setMode(Mode mode) {
         this.mode = mode;
         Logger.trace("Mode: " + mode);
-        //notifySelectionModeChange();
     }
 
     void setDrawGrid(boolean flag) {
@@ -281,7 +256,6 @@ public class LayoutCanvas extends JPanel {
     void setTileType(TileType tileType) {
         this.tileType = tileType;
         Logger.trace("TileType: " + this.tileType);
-        //notifySelectionModeChange();
     }
 
     Orientation getOrientation() {
@@ -290,12 +264,10 @@ public class LayoutCanvas extends JPanel {
 
     void setOrientation(Orientation orientation) {
         this.orientation = orientation;
-        //notifySelectionModeChange();
     }
 
     void setDirection(Direction direction) {
         this.direction = direction;
-        //notifySelectionModeChange();
     }
 
     Direction getDirection() {
@@ -307,39 +279,27 @@ public class LayoutCanvas extends JPanel {
     }
 
     private void loadTiles() {
-        if (TrackServiceFactory.getTrackService() == null) {
-            return;
-        }
-
-        Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
-        Logger.trace("Start loading " + beans.size() + " Tiles. Currently there are " + this.tiles.size() + " tiles...");
-
-        Set<Tile> snapshot = new HashSet<>();
-
-        for (TileBean tb : beans) {
-            Tile tile = TileFactory2.createTile(tb, this.drawGrid);
-            snapshot.add(tile);
-        }
-
-        this.selectedTiles.clear();
-
+        Map<Point, Tile> tm = LayoutUtil.loadTiles(this.drawGrid);
+        Set<Point> ps = tm.keySet();
         synchronized (tiles) {
-            tiles.clear();
+            selectedTiles.clear();
             altTiles.clear();
-            for (Tile t : snapshot) {
+            tiles.clear();
 
+            for (Point p : ps) {
+                Tile t = tm.get(p);
                 tiles.put(t.getCenter(), t);
                 //Alternative point(s) to be able to find all points
                 if (!t.getAltPoints().isEmpty()) {
                     Set<Point> alt = t.getAltPoints();
                     for (Point ap : alt) {
-                        this.altTiles.put(ap, t);
+                        altTiles.put(ap, t);
                     }
                 }
-
             }
         }
-        Logger.debug("Loaded " + this.tiles.size() + " from " + beans.size() + " tiles...");
+
+        Logger.debug("Loaded " + this.tiles.size()+" tiles...");
         this.repaint();
     }
 
@@ -744,20 +704,6 @@ public class LayoutCanvas extends JPanel {
       }
   }//GEN-LAST:event_leftMIActionPerformed
 
-//    private void notifySelectionListeners() {
-//        Set<AbstractTile2> snapshot;
-//        if (selectedTiles.isEmpty()) {
-//            snapshot = Collections.emptySet();
-//        } else {
-//            synchronized (this.selectedTiles) {
-//                snapshot = new HashSet(selectedTiles);
-//            }
-//        }
-//
-////        for (SelectionListener listener : this.selectionListeners) {
-////            listener.setSelectedLayoutTiles(snapshot);
-////        }
-//    }
     private Tile findTile(Point cp) {
         Tile result = this.tiles.get(cp);
         if (result == null) {
@@ -782,8 +728,8 @@ public class LayoutCanvas extends JPanel {
           setCursor(Cursor.getDefaultCursor());
       }
 
-      int x = evt.getX();
-      int y = evt.getY();
+      //int x = evt.getX();
+      //int y = evt.getY();
   }//GEN-LAST:event_formMouseMoved
 
     private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed

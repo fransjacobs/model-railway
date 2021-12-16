@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lan.wervel.jcs.ui.layout2.LayoutUtil;
 import lan.wervel.jcs.ui.layout2.Tile;
 import lan.wervel.jcs.ui.layout2.tiles2.Block;
 import lan.wervel.jcs.ui.layout2.tiles2.Curved;
@@ -38,7 +39,7 @@ import org.tinylog.Logger;
  */
 public class BreathFirst {
 
-    private final Map<Point, Tile> tiles;
+    private Map<Point, Tile> tiles;
     private final Map<String, Tile> tileIdLookup;
 
     private final Map<Point, Tile> tileLookup;
@@ -84,13 +85,15 @@ public class BreathFirst {
     }
 
     private void loadLayout() {
-        TileLoader tl = new TileLoader();
-        Map<Point, Tile> tm = tl.getTiles();
-
-        Set<Point> ks = tm.keySet();
-        for (Point p : ks) {
-            this.tiles.put(p, tm.get(p));
-        }
+        this.tiles = LayoutUtil.loadTiles(true);
+        
+//        TileLoader tl = new TileLoader();
+//        Map<Point, Tile> tm = tl.getTiles();
+//
+//        Set<Point> ks = tm.keySet();
+//        for (Point p : ks) {
+//            this.tiles.put(p, tm.get(p));
+//        }
         Logger.trace("Loaded " + this.tiles.size() + " tiles...");
     }
 
@@ -334,6 +337,8 @@ public class BreathFirst {
     }
 
     public static void main(String[] a) {
+        System.setProperty("trackServiceAlwaysUseDemo", "true");
+        
         BreathFirst bf = new BreathFirst();
         bf.loadLayout();
         bf.createGraph(bf.getTileSet());
