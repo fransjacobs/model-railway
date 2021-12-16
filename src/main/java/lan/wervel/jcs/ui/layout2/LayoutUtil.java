@@ -19,6 +19,15 @@
 package lan.wervel.jcs.ui.layout2;
 
 import java.awt.Point;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import lan.wervel.jcs.entities.TileBean;
+import lan.wervel.jcs.trackservice.TrackServiceFactory;
+import lan.wervel.jcs.ui.layout2.tiles2.TileFactory2;
+import org.tinylog.Logger;
 
 /**
  *
@@ -51,6 +60,35 @@ public class LayoutUtil {
         sy = sy * DEFAULT_HEIGHT + GRID;
 
         return new Point(sx, sy);
+    }
+
+    /**
+     * Load Tiles from the persistent store
+     * @return A Map of tiles, key is the center point of the tile
+     */
+    public static final Map<Point, Tile> loadTiles(boolean drawGridLines) {
+        if (TrackServiceFactory.getTrackService() == null) {
+            return Collections.EMPTY_MAP;
+        }
+
+        Map<Point, Tile> tiles = new HashMap<>();
+
+        Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
+        Logger.trace("Loading " + beans.size() + " TileBeans from persistent store...");
+
+        Set<Tile> snapshot = new HashSet<>();
+
+        for (TileBean tb : beans) {
+            Tile tile = TileFactory2.createTile(tb, drawGridLines);
+            snapshot.add(tile);
+        }
+
+        for (Tile t : snapshot) {
+            tiles.put(t.getCenter(), t);
+        }
+
+        Logger.debug("Loaded " + tiles.size() + " Tiles...");
+        return tiles;
     }
 
 }
