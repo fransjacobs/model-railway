@@ -31,7 +31,6 @@ import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.ui.layout2.LayoutUtil;
 import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
-import static lan.wervel.jcs.ui.layout2.LayoutUtil.GRID;
 
 /**
  * Draw a OccupancyDetector

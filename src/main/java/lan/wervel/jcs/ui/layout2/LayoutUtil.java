@@ -25,7 +25,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
+import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
+import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.ui.layout2.tiles2.TileFactory2;
 import org.tinylog.Logger;
 
@@ -64,6 +66,8 @@ public class LayoutUtil {
 
     /**
      * Load Tiles from the persistent store
+     *
+     * @param drawGridLines
      * @return A Map of tiles, key is the center point of the tile
      */
     public static final Map<Point, Tile> loadTiles(boolean drawGridLines) {
@@ -89,6 +93,111 @@ public class LayoutUtil {
 
         Logger.debug("Loaded " + tiles.size() + " Tiles...");
         return tiles;
+    }
+
+    public static double euclideanDistance(Point p1, Point p2) {
+        double d = Math.hypot(Math.pow((p2.x - p1.x), 2), Math.pow((p2.y - p1.y), 2));
+        return d;
+    }
+
+    public static Set<Point> adjacentPointFor(Tile tile) {
+        Set<Point> adjacent = new HashSet<>();
+        int x = tile.getCenterX();
+        int y = tile.getCenterY();
+        int w = tile.getWidth();
+        int h = tile.getHeight();
+        int oX = w / 2 + Tile.GRID / 2;
+        int oY = h / 2 + Tile.GRID / 2;
+
+        Orientation orientation = tile.getOrientation();
+        Direction direction = tile.getDirection();
+        switch (tile.getTileType()) {
+            case CURVED:
+                switch (orientation) {
+                    case SOUTH:
+                        adjacent.add(new Point(x - oX, y));
+                        adjacent.add(new Point(x, y + oY));
+                        break;
+                    case WEST:
+                        adjacent.add(new Point(x - oX, y));
+                        adjacent.add(new Point(x, y - oY));
+                        break;
+                    case NORTH:
+                        adjacent.add(new Point(x + oX, y));
+                        adjacent.add(new Point(x, y - oY));
+                        break;
+                    default:
+                        //EAST
+                        adjacent.add(new Point(x + oX, y));
+                        adjacent.add(new Point(x, y + oY));
+                        break;
+                }
+                break;
+            case CROSS:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+                    adjacent.add(new Point(x + oX, y));
+                    adjacent.add(new Point(x - oX, y));
+                } else {
+                    adjacent.add(new Point(x, y + oY));
+                    adjacent.add(new Point(x, y - oY));
+                }
+                break;
+            case SWITCH:
+                switch (orientation) {
+                    case SOUTH:
+                        adjacent.add(new Point(x, y + oY));
+                        adjacent.add(new Point(x, y - oY));
+
+                        if (Direction.RIGHT.equals(direction)) {
+                            adjacent.add(new Point(x + oX, y));
+                        } else if (Direction.LEFT.equals(direction)) {
+                            adjacent.add(new Point(x - oX, y));
+                        }
+                        break;
+                    case WEST:
+                        adjacent.add(new Point(x + oX, y));
+                        adjacent.add(new Point(x - oX, y));
+
+                        if (Direction.RIGHT.equals(direction)) {
+                            adjacent.add(new Point(x, y + oY));
+                        } else if (Direction.LEFT.equals(direction)) {
+                            adjacent.add(new Point(x, y - oY));
+                        }
+                        break;
+                    case NORTH:
+                        adjacent.add(new Point(x, y + oY));
+                        adjacent.add(new Point(x, y - oY));
+
+                        if (Direction.RIGHT.equals(direction)) {
+                            adjacent.add(new Point(x - oX, y));
+                        } else if (Direction.LEFT.equals(direction)) {
+                            adjacent.add(new Point(x + oX, y));
+                        }
+                        break;
+                    default:
+                        //EAST
+                        adjacent.add(new Point(x + oX, y));
+                        adjacent.add(new Point(x - oX, y));
+                        if (Direction.RIGHT.equals(direction)) {
+                            adjacent.add(new Point(x, y - oY));
+                        } else if (Direction.LEFT.equals(direction)) {
+                            adjacent.add(new Point(x, y + oY));
+                        }
+                        break;
+                }
+            default:
+                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+                    adjacent.add(new Point(x + oX, y));
+                    adjacent.add(new Point(x - oX, y));
+                } else {
+                    adjacent.add(new Point(x, y + oY));
+                    adjacent.add(new Point(x, y - oY));
+                }
+                break;
+
+        }
+        return adjacent;
+
     }
 
 }

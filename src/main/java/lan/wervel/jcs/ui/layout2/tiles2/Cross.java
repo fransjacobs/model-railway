@@ -31,7 +31,6 @@ import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.ui.layout2.LayoutUtil;
 import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
-import static lan.wervel.jcs.ui.layout2.LayoutUtil.GRID;
 
 /**
  *
@@ -213,23 +212,6 @@ public class Cross extends Switch implements Tile {
         renderStraight(g2, trackColor, backgroundColor);
         renderDiagonal(g2, trackColor, backgroundColor);
         renderDiagonal2(g2, trackColor, backgroundColor);
-    }
-
-    @Override
-    public Set<Point> getAdjacentPoints() {
-        Set<Point> adjacent = new HashSet<>();
-
-        //TOD Cross has 4 adjacent points and is asymetrical!
-        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
-            int oX = this.width / 2 + DEFAULT_WIDTH / 2;
-            adjacent.add(new Point(this.getCenterX() + oX, this.getCenterY()));
-            adjacent.add(new Point(this.getCenterX() - oX, this.getCenterY()));
-        } else {
-            int oY = this.height / 2 + DEFAULT_HEIGHT / 2;
-            adjacent.add(new Point(this.getCenterX(), this.getCenterY() + oY));
-            adjacent.add(new Point(this.getCenterX(), this.getCenterY() - oY));
-        }
-        return adjacent;
     }
 
     @Override

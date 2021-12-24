@@ -25,6 +25,7 @@ import java.awt.Shape;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
 import lan.wervel.jcs.entities.enums.Orientation;
+import lan.wervel.jcs.entities.enums.TileType;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 
 /**
@@ -32,6 +33,12 @@ import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
  * @author frans
  */
 public interface Tile extends Shape {
+
+    public static final int GRID = 20;
+    public static final int DEFAULT_WIDTH = GRID * 2;
+    public static final int DEFAULT_HEIGHT = GRID * 2;
+    
+    public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
     Color getTrackColor();
 
@@ -41,8 +48,6 @@ public interface Tile extends Shape {
 
     void setBackgroundColor(Color backgroundColor);
 
-    //String getNewId();
-    //void setIdSeq(int id);
     String getId();
 
     void setId(String id);
@@ -115,24 +120,6 @@ public interface Tile extends Shape {
 
     void setDrawOutline(boolean drawOutline);
 
-    Set<Tile> getAdjacentTiles();
-
-    Tile getParent();
-
-    void setParent(Tile parent);
-
-    void setAdjacentTiles(Set<Tile> adjacentTiles);
-
-    Set<Point> getAdjacentPoints();
-
-    Set<Point> getConnectingPoints();
-
-    Point getWest();
-
-    Point getEast();
-
-    Point getSouth();
-
-    Point getNorth();
+    TileType getTileType();
 
 }

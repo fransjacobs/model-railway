@@ -29,6 +29,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.entities.enums.SignalType;
+import lan.wervel.jcs.ui.layout2.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -37,50 +38,50 @@ import org.tinylog.Logger;
  */
 public class TileTester2 extends JFrame {
 
-    private final AbstractTile2 tileEast;
-    private final AbstractTile2 tileSouth;
-    private final AbstractTile2 tileWest;
-    private final AbstractTile2 tileNorth;
+    private final Tile tileEast;
+    private final Tile tileSouth;
+    private final Tile tileWest;
+    private final Tile tileNorth;
 
-    private final AbstractTile2 tileEast1;
-    private final AbstractTile2 tileSouth1;
-    private final AbstractTile2 tileWest1;
-    private final AbstractTile2 tileNorth1;
+    private final Tile tileEast1;
+    private final Tile tileSouth1;
+    private final Tile tileWest1;
+    private final Tile tileNorth1;
 
-    private final AbstractTile2 tileEast2;
-    private final AbstractTile2 tileSouth2;
-    private final AbstractTile2 tileWest2;
-    private final AbstractTile2 tileNorth2;
+    private final Tile tileEast2;
+    private final Tile tileSouth2;
+    private final Tile tileWest2;
+    private final Tile tileNorth2;
 
-    private final AbstractTile2 tileEast3;
-    private final AbstractTile2 tileSouth3;
-    private final AbstractTile2 tileWest3;
-    private final AbstractTile2 tileNorth3;
+    private final Tile tileEast3;
+    private final Tile tileSouth3;
+    private final Tile tileWest3;
+    private final Tile tileNorth3;
 
-    private final AbstractTile2 tileEast4;
-    private final AbstractTile2 tileSouth4;
-    private final AbstractTile2 tileWest4;
-    private final AbstractTile2 tileNorth4;
+    private final Tile tileEast4;
+    private final Tile tileSouth4;
+    private final Tile tileWest4;
+    private final Tile tileNorth4;
 
-    private final AbstractTile2 tileEast5;
-    private final AbstractTile2 tileSouth5;
-    private final AbstractTile2 tileWest5;
-    private final AbstractTile2 tileNorth5;
+    private final Tile tileEast5;
+    private final Tile tileSouth5;
+    private final Tile tileWest5;
+    private final Tile tileNorth5;
 
-    private final AbstractTile2 tileEast6;
-    private final AbstractTile2 tileSouth6;
-    private final AbstractTile2 tileWest6;
-    private final AbstractTile2 tileNorth6;
+    private final Tile tileEast6;
+    private final Tile tileSouth6;
+    private final Tile tileWest6;
+    private final Tile tileNorth6;
 
-    private final AbstractTile2 tileEast7;
-    private final AbstractTile2 tileSouth7;
-    private final AbstractTile2 tileWest7;
-    private final AbstractTile2 tileNorth7;
+    private final Tile tileEast7;
+    private final Tile tileSouth7;
+    private final Tile tileWest7;
+    private final Tile tileNorth7;
 
-    private final AbstractTile2 tileEast8;
-    private final AbstractTile2 tileSouth8;
-    private final AbstractTile2 tileWest8;
-    private final AbstractTile2 tileNorth8;
+    private final Tile tileEast8;
+    private final Tile tileSouth8;
+    private final Tile tileWest8;
+    private final Tile tileNorth8;
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public TileTester2(String title) {
@@ -299,7 +300,7 @@ public class TileTester2 extends JFrame {
         TileTester2 app = new TileTester2("Tile Tester 2");
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        app.setSize(400, 700);
+        app.setSize(400, 710);
 
         app.setLocation(dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 

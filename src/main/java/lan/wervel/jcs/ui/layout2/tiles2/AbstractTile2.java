@@ -44,7 +44,6 @@ import lan.wervel.jcs.entities.enums.SignalType;
 import lan.wervel.jcs.entities.enums.TileType;
 import lan.wervel.jcs.ui.layout2.LayoutUtil;
 import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
-import static lan.wervel.jcs.ui.layout2.LayoutUtil.GRID;
 import lan.wervel.jcs.ui.layout2.Tile;
 import org.tinylog.Logger;
 
@@ -65,9 +64,6 @@ import org.tinylog.Logger;
  */
 abstract class AbstractTile2 implements Shape, Tile {
 
-//    public static final int GRID = 20;
-//    public static final int DEFAULT_WIDTH = GRID * 2;
-//    public static final int DEFAULT_HEIGHT = GRID * 2;
     protected Orientation orientation;
     protected Direction direction;
 
@@ -90,12 +86,6 @@ abstract class AbstractTile2 implements Shape, Tile {
 
     protected boolean drawOutline = false;
 
-    protected Set<Tile> adjacentTiles;
-    
-    protected Tile parent;
-
-    public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
-
     protected AbstractTile2(Point center) {
         this(Orientation.EAST, Direction.CENTER, center);
     }
@@ -117,7 +107,6 @@ abstract class AbstractTile2 implements Shape, Tile {
         if (this.backgroundColor == null) {
             this.backgroundColor = Color.white;
         }
-        this.adjacentTiles = new HashSet<>();
         init();
     }
 
@@ -709,113 +698,8 @@ abstract class AbstractTile2 implements Shape, Tile {
     }
 
     @Override
-    public Set<Tile> getAdjacentTiles() {
-        return adjacentTiles;
-    }
-
-    @Override
-    public void setAdjacentTiles(Set<Tile> adjacentTiles) {
-        this.adjacentTiles = adjacentTiles;
-    }
-
-    @Override
-    public Tile getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(Tile parent) {
-        this.parent = parent;
-    }
-    
-    @Override
-    public Set<Point> getAdjacentPoints() {
-        Set<Point> adjacent = new HashSet<>();
-
-//        } else if (this instanceof Cross) {
-//            //TODO Cros is asymetrycal
-//            int offsetX = tile.getWidth() / 2 + TileBean.DEFAULT_WIDTH / 2;
-//            int offsetY = tile.getHeight() / 2 + TileBean.DEFAULT_HEIGHT / 2;
-//}    
-        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
-            int oX = this.width / 2 + DEFAULT_WIDTH / 2;
-            adjacent.add(new Point(this.getCenterX() + oX, this.getCenterY()));
-            adjacent.add(new Point(this.getCenterX() - oX, this.getCenterY()));
-        } else {
-            int oY = this.height / 2 + DEFAULT_HEIGHT / 2;
-            adjacent.add(new Point(this.getCenterX(), this.getCenterY() + oY));
-            adjacent.add(new Point(this.getCenterX(), this.getCenterY() - oY));
-        }
-        return adjacent;
-    }
-
-    /**
-     *
-     * @return a Set with Points which are on the edges of the Tile
-     */
-    @Override
-    public Set<Point> getConnectingPoints() {
-        Set<Point> connecting = new HashSet<>();
-        int x = this.getCenterX();
-        int y = this.getCenterY();
-        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
-            //Tile center X - w / 2 is the west connecting point,
-            //X + w / 2 is the east connecting point
-            int ox = this.width / 2;
-            connecting.add(new Point((x - ox), y));
-            connecting.add(new Point((x + ox), y));
-        } else {
-            //Tile center Y - h / 2 is the north connecting point,
-            //Y + h / 2 is the south connecting point
-            int oy = this.height / 2;
-            connecting.add(new Point(x, (y - oy)));
-            connecting.add(new Point(x, (y + oy)));
-        }
-        return connecting;
-    }
-
-    @Override
-    public Point getWest() {
-        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
-            //Horizontal
-            return new Point(this.center.x - this.width / 2, this.center.y);
-        } else {
-            //There is no west point when the direction is North and South, ie vertical 
-            return null;
-        }
-    }
-
-    @Override
-    public Point getEast() {
-        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
-            //Horizontal
-            return new Point(this.center.x + this.width / 2, this.center.y);
-        } else {
-            //There is no east point when the direction is North and South, ie vertical 
-            return null;
-        }
-    }
-
-    @Override
-    public Point getSouth() {
-        if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
-            //Vertical
-            return new Point(this.center.x, this.center.y + this.height / 2);
-        } else {
-            //There is no south point when the direction is West and East, ie horizontal 
-            return null;
-        }
-    }
-
-    @Override
-    public Point getNorth() {
-        if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
-            //Vertical
-            return new Point(this.center.x, this.center.y - this.height / 2);
-        } else {
-            //There is no south point when the direction is West and East, ie horizontal 
-            return null;
-        }
+    public TileType getTileType() {
+        return getTileBean().getTileType();
     }
 
 }

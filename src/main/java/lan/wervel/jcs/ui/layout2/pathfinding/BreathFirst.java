@@ -112,12 +112,12 @@ public class BreathFirst {
     private List<Tile> constructPath(Tile from, Tile to) {
         LinkedList<Tile> path = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
-        while (to.getParent() != null) {
-            sb.append(to.getId());
-            sb.append(" ");
-            path.addFirst(to);
-            to = to.getParent();
-        }
+//        while (to.getParent() != null) {
+//            sb.append(to.getId());
+//            sb.append(" ");
+//            path.addFirst(to);
+//            to = to.getParent();
+//        }
 
         return checkRoute(from, path);
     }
@@ -227,16 +227,16 @@ public class BreathFirst {
     }
 
     private boolean checkEdges(Tile from, Tile to) {
-        Set<Point> fromEdges = from.getConnectingPoints();
-        Set<Point> toEdges = to.getConnectingPoints();
-        boolean result = false;
-        for (Point p : fromEdges) {
-            if (toEdges.contains(p)) {
-                result = true;
-                Logger.trace("From " + from.getId() + " connected with " + to.getId() + " on " + p);
-                break;
-            }
-        }
+//        Set<Point> fromEdges = from.getConnectingPoints();
+//        Set<Point> toEdges = to.getConnectingPoints();
+        boolean result = true; //false;
+//        for (Point p : fromEdges) {
+//            if (toEdges.contains(p)) {
+//                result = true;
+//                Logger.trace("From " + from.getId() + " connected with " + to.getId() + " on " + p);
+//                break;
+//            }
+//        }
         return result;
     }
 
@@ -249,7 +249,7 @@ public class BreathFirst {
         LinkedList<String> searchList = new LinkedList<>();
         Logger.trace("Adding from " + from.getId() + " to the 'search' list");
         searchList.add(from.getId());
-        from.setParent(null);
+        //from.setParent(null);
 
         while (!searchList.isEmpty()) {
             String nodeId = searchList.removeFirst();
@@ -265,7 +265,7 @@ public class BreathFirst {
             } else {
                 visited.add(nodeId);
                 //get neighbour points
-                Set<Point> ajp = node.getAdjacentPoints();
+                Set<Point> ajp = LayoutUtil.adjacentPointFor(node);
                 // get the neighbour tiles
                 Set<Tile> neighbours = findNeighbours(ajp);
                 Logger.trace("Node " + node.getId() + " (" + node.getCenterX() + "," + node.getCenterY() + ") has " + ajp.size() + " adjacent points and " + neighbours.size() + " neighbours");
@@ -278,7 +278,7 @@ public class BreathFirst {
                     //edge point of neighbor should match the edge of the tile
                     if (!visited.contains(neighbor.getId()) && !searchList.contains(neighbor.getId())) {
                         if (checkEdges(node, neighbor)) {
-                            neighbor.setParent(node);
+//                            neighbor.setParent(node);
                             searchList.add(neighbor.getId());
                             Logger.trace("Added neighbor " + neighbor.getId() + " to searchlist. Node " + node.getId() + " is parent of " + neighbor.getId());
                         }
