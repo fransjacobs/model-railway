@@ -267,6 +267,7 @@ public class LayoutUtil {
                         }
                         break;
                 }
+                break;
             default:
                 if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
                     adjacent.add(new Point(x + oX, y));

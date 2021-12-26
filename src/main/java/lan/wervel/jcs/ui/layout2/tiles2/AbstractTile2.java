@@ -37,13 +37,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
-import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.entities.enums.SignalType;
 import lan.wervel.jcs.entities.enums.TileType;
 import lan.wervel.jcs.ui.layout2.LayoutUtil;
-import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
 import lan.wervel.jcs.ui.layout2.Tile;
 import org.tinylog.Logger;
 
@@ -110,8 +108,6 @@ abstract class AbstractTile2 implements Shape, Tile {
         init();
     }
 
-    
-    
     private void init() {
         this.id = getNewId();
     }

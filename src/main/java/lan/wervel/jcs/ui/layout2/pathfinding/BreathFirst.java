@@ -18,121 +18,54 @@
  */
 package lan.wervel.jcs.ui.layout2.pathfinding;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lan.wervel.jcs.ui.layout2.LayoutUtil;
-import lan.wervel.jcs.ui.layout2.Tile;
-import lan.wervel.jcs.ui.layout2.tiles2.Block;
+import lan.wervel.jcs.ui.layout2.pathfinding.graph.Node;
 import lan.wervel.jcs.ui.layout2.tiles2.Curved;
 import lan.wervel.jcs.ui.layout2.tiles2.Switch;
 import org.tinylog.Logger;
 
 /**
- * Inspired by https://www.peachpit.com/articles/article.aspx?p=101142
+ *
  * @author frans
  */
 public class BreathFirst {
 
-    private Map<Point, Tile> tiles;
-    private final Map<String, Tile> tileIdLookup;
-
-    private final Map<Point, Tile> tileLookup;
-    private final Map<Point, Tile> altTileLookup;
+    private final Map<String, Node> nodeCache;
 
     public BreathFirst() {
-        this.tiles = new HashMap<>();
-        this.tileLookup = new HashMap<>();
-        this.altTileLookup = new HashMap<>();
-        this.tileIdLookup = new HashMap<>();
+        this.nodeCache = new HashMap<>();
     }
 
-    public Set<Tile> getTileSet() {
-        Set<Tile> ts = new HashSet<>(this.tiles.values());
-        return ts;
-    }
-
-    private void createLookup(Set<Tile> tiles) {
-        for (Tile tile : tiles) {
-            this.tileIdLookup.put(tile.getId(), tile);
-
-            this.tileLookup.put(tile.getCenter(), tile);
-            for (Point p : tile.getAltPoints()) {
-                this.altTileLookup.put(p, tile);
-            }
-        }
-
-        Logger.debug("Id Lookup: " + tileIdLookup.size() + " Tile lookup: " + tileLookup.size());
-
-    }
-
-    private Tile findTile(Point cp) {
-        Tile result = this.tiles.get(cp);
-        if (result == null) {
-            //Logger.trace("Using alternative points...");
-            result = this.altTileLookup.get(cp);
-            if (result != null) {
-                //Logger.trace("Found " + result + " in alt tiles");
-            }
-        }
-
-        return result;
-    }
-
-    private void loadLayout() {
-        this.tiles = LayoutUtil.loadTiles(true);
-        
-//        TileLoader tl = new TileLoader();
-//        Map<Point, Tile> tm = tl.getTiles();
-//
-//        Set<Point> ks = tm.keySet();
-//        for (Point p : ks) {
-//            this.tiles.put(p, tm.get(p));
-//        }
-        Logger.trace("Loaded " + this.tiles.size() + " tiles...");
-    }
-
-    
-    private Set<Tile> findNeighbours(Set<Point> adjacent) {
-        Set<Tile> ats = new HashSet<>();
-        for (Point p : adjacent) {
-            Tile a = findTile(p);
-            if (a != null) {
-                ats.add(a);
-            }
-        }
-        return ats;
-    }
-
-    private List<Tile> constructPath(Tile from, Tile to) {
-        LinkedList<Tile> path = new LinkedList<>();
+    private List<Node> constructPath(Node from, Node to) {
+        LinkedList<Node> path = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
-//        while (to.getParent() != null) {
-//            sb.append(to.getId());
-//            sb.append(" ");
-//            path.addFirst(to);
-//            to = to.getParent();
-//        }
+        while (to.getParent() != null) {
+            sb.append(to.getId());
+            sb.append(" ");
+            path.addFirst(to);
+            to = to.getParent();
+        }
 
         return checkRoute(from, path);
     }
 
     //Check if the toFrom is valid
-    private List<Tile> checkRoute(Tile from, List<Tile> toFrom) {
-
-        ArrayList<Tile> path = new ArrayList<>();
+    private List<Node> checkRoute(Node from, List<Node> toFrom) {
+        //return toFrom;
+        ArrayList<Node> path = new ArrayList<>();
         path.add(from);
         path.addAll(toFrom);
 
         StringBuilder sb = new StringBuilder();
         sb.append("Path from: ");
         for (int i = 0; i < path.size(); i++) {
-            Tile t = path.get(i);
+            Node t = path.get(i);
             sb.append(t.getId());
             if (i + 1 < path.size()) {
                 sb.append(" -> ");
@@ -143,7 +76,7 @@ public class BreathFirst {
         int x = -1, y = -1, px = -1, py = -1;
         String xdir = "none", pxdir = "none";
         String ydir = "none", pydir = "none";
-        Tile t = null, pt = null;
+        Node t = null, pt = null;
         boolean directionChanged = false;
         for (int i = 0; i < path.size(); i++) {
             pt = t;
@@ -153,12 +86,12 @@ public class BreathFirst {
             } else if (i == path.size() - 1) {
                 Logger.trace(t.getId() + " is end");
             } else {
-                Logger.trace(t.getId() + " " + t.getOrientation() + " " + t.getDirection());
+                Logger.trace(t.getId() + " " + t.getTile().getOrientation() + " " + t.getTile().getDirection());
             }
 
             if (i == 0) {
-                px = t.getCenterX();
-                py = t.getCenterY();
+                px = t.getCP().x;
+                py = t.getCP().y;
                 pxdir = "none";
                 pydir = "none";
                 pt = t;
@@ -169,8 +102,8 @@ public class BreathFirst {
                 pydir = ydir;
             }
 
-            x = t.getCenterX();
-            y = t.getCenterY();
+            x = t.getCP().x;
+            y = t.getCP().y;
 
             //Travel direction
             int dx = x - px;
@@ -178,7 +111,7 @@ public class BreathFirst {
 
             String travelX;
             if (dx == 0) {
-                if ((t instanceof Curved || t instanceof Switch) && "none".equals(pydir)) {
+                if ((t.getTile() instanceof Curved || t.getTile() instanceof Switch) && "none".equals(pydir)) {
                     //keep current x direction
                     travelX = pxdir;
                 } else {
@@ -192,7 +125,7 @@ public class BreathFirst {
 
             String travelY;
             if (dy == 0) {
-                if ((t instanceof Curved || t instanceof Switch) && "none".equals(pxdir)) {
+                if ((t.getTile() instanceof Curved || t.getTile() instanceof Switch) && "none".equals(pxdir)) {
                     //keep current y direction
                     travelY = pydir;
                 } else {
@@ -226,61 +159,50 @@ public class BreathFirst {
         return toFrom;
     }
 
-    private boolean checkEdges(Tile from, Tile to) {
-//        Set<Point> fromEdges = from.getConnectingPoints();
-//        Set<Point> toEdges = to.getConnectingPoints();
-        boolean result = true; //false;
-//        for (Point p : fromEdges) {
-//            if (toEdges.contains(p)) {
-//                result = true;
-//                Logger.trace("From " + from.getId() + " connected with " + to.getId() + " on " + p);
-//                break;
-//            }
-//        }
-        return result;
-    }
-
-    public List<Tile> search(Tile from, Tile to) {
-        Logger.trace("From: " + from.getId() + " (" + from.getCenterX() + "," + from.getCenterY() + ") to: " + to.getId() + " (" + to.getCenterX() + "," + to.getCenterY() + ")...");
+    public List<Node> search(Node from, Node to) {
+        Logger.trace("Search From: " + from.getId() + " to: " + to.getId());
 
         LinkedList<String> visited = new LinkedList<>();
-
-        // list of nodes to visit (sorted)
         LinkedList<String> searchList = new LinkedList<>();
+
         Logger.trace("Adding from " + from.getId() + " to the 'search' list");
         searchList.add(from.getId());
-        //from.setParent(null);
+        from.setParent(null);
+        //Avoid routes trhough blocks ie a route from bkn- to bkn+ is invalid
+        String fromBk = from.getTile().getId();
 
         while (!searchList.isEmpty()) {
             String nodeId = searchList.removeFirst();
 
-            Tile node = this.tileIdLookup.get(nodeId);
-
+            //if (nodeCache.containsKey(nodeId)) {
+            Node node = nodeCache.get(nodeId);
             if (nodeId.equals(to.getId())) {
-                // path found!
-                Logger.trace("Path found from " + from.getId() + " to " + nodeId);
-                List<Tile> route = constructPath(from, to);
+                List<Node> route = constructPath(from, to);
+
+                if (route != null) {
+                    Logger.trace("==========================================================");
+                    Logger.trace("Path found from " + from.getId() + " to " + nodeId);
+                    Logger.trace("==========================================================");
+                }
 
                 return route;
             } else {
                 visited.add(nodeId);
-                //get neighbour points
-                Set<Point> ajp = LayoutUtil.adjacentPointsFor(node);
-                // get the neighbour tiles
-                Set<Tile> neighbours = findNeighbours(ajp);
-                Logger.trace("Node " + node.getId() + " (" + node.getCenterX() + "," + node.getCenterY() + ") has " + ajp.size() + " adjacent points and " + neighbours.size() + " neighbours");
+                Set<Node.Edge> neighbours = node.getNeighbors();
+                //Logger.trace("Node " + node);
 
-                for (Tile neighbor : neighbours) {
-                    Logger.trace("Checking neighbours of node " + node.getId() + "; Neighbor: " + neighbor.getId());
+                for (Node.Edge neighbor : neighbours) {
+                    //Logger.trace("Checking neighbours of node " + node.getId() + "; Neighbor: " + neighbor.getNode().getId());
 
-                    Logger.trace("F: " + node.getId() + " O: " + node.getOrientation() + " D: " + node.getDirection() + " T: " + neighbor.getId() + " O: " + neighbor.getOrientation() + " D: " + neighbor.getDirection());
+                    String nNid = neighbor.getNode().getTile().getId();
 
-                    //edge point of neighbor should match the edge of the tile
-                    if (!visited.contains(neighbor.getId()) && !searchList.contains(neighbor.getId())) {
-                        if (checkEdges(node, neighbor)) {
-//                            neighbor.setParent(node);
-                            searchList.add(neighbor.getId());
-                            Logger.trace("Added neighbor " + neighbor.getId() + " to searchlist. Node " + node.getId() + " is parent of " + neighbor.getId());
+                    if (!nNid.equals(fromBk)) {
+                        Logger.trace("Check: " + neighbor.getNodeId() + "...");
+
+                        if (!visited.contains(neighbor.getNodeId()) && !searchList.contains(neighbor.getNodeId())) {
+                            neighbor.getNode().setParent(node);
+                            searchList.add(neighbor.getNodeId());
+                            Logger.trace("Added neighbor node " + neighbor.getNodeId() + " to searchlist. Node " + node.getId() + " is parent of " + neighbor.getNodeId());
                         }
                     }
                 }
@@ -292,59 +214,62 @@ public class BreathFirst {
         return null;
     }
 
-    public void createGraph(Set<Tile> layout) {
-        if(this.tiles.size() != layout.size()) {
-            this.tiles.clear();
-            
-            for(Tile t : layout) {
-                this.tiles.put(t.getCenter(), t);
-            }
-        }
-        
-        createLookup(layout);
-        Logger.trace("Created lookup map with " + tileLookup.size() + " entries from " + tiles.size() + " tiles...");
-    }
+    List<List<Node>> prepareFromToNodes() {
+        List<List<Node>> fromToList = new ArrayList<>();
 
-    public List<List<Tile>> routeAll() {
-        List<Block> blocks = new ArrayList<>();
-        //Find blocks..
-        Set<Tile> snapshot = new HashSet<>(tiles.values());
-        Logger.trace("Layout has " + snapshot.size() + " tiles...");
-        for (Tile b : snapshot) {
-            if (b instanceof Block) {
-                blocks.add((Block) b);
-            }
-        }
-        Logger.trace("Layout has " + blocks.size() + " blocks...");
+        Collection<Node> fromNodes = this.nodeCache.values();
+        Collection<Node> toNodes = this.nodeCache.values();
 
-        List<List<Tile>> routes = new ArrayList<>();
-
-        for (Block from : blocks) {
-            for (Block to : blocks) {
-                if (!from.getId().equals(to.getId())) {
-                    Logger.trace("Route from: " + from.getId() + " (" + from.getCenterX() + "," + from.getCenterY() + ") to: " + to.getId() + " (" + to.getCenterX() + "," + to.getCenterY() + ")...");
-
-                    List<Tile> route = search(from, to);
-                    if (route != null && !route.isEmpty()) {
-                        routes.add(route);
-                    }
+        for (Node from : fromNodes) {
+            for (Node to : toNodes) {
+                if (from.isBlock() && to.isBlock() && from != to && !from.getTile().getId().equals(to.getTile().getId())) {
+                    List<Node> fromTo = new ArrayList<>();
+                    fromTo.add(from);
+                    fromTo.add(to);
+                    fromToList.add(fromTo);
+                    //Logger.trace("From: "+from.getId()+" to: "+to.getId());
                 }
             }
         }
+        return fromToList;
+    }
 
-        Logger.debug("Found " + routes.size() + " routes...");
-        return routes;
+    public void createGraph() {
+        LayoutAnalyzer la = new LayoutAnalyzer();
+        la.createGraph();
+        Set<Node> nodes = la.getGraph();
+
+        this.nodeCache.clear();
+        for (Node n : nodes) {
+            this.nodeCache.put(n.getId(), n);
+        }
+
+        Logger.trace("Created lookup map with " + nodeCache.size() + " entries...");
     }
 
     public static void main(String[] a) {
         System.setProperty("trackServiceAlwaysUseDemo", "true");
-        
+
         BreathFirst bf = new BreathFirst();
-        bf.loadLayout();
-        bf.createGraph(bf.getTileSet());
 
-        bf.routeAll();
+        bf.createGraph();
 
+        List<List<Node>> candidateRoutes = bf.prepareFromToNodes();
+
+        Logger.trace("Try to route " + candidateRoutes.size() + " Candidate Routes");
+
+        List<List<Node>> driveways = new ArrayList<>();
+
+        for (List<Node> fromTo : candidateRoutes) {
+            Node from = fromTo.get(0);
+            Node to = fromTo.get(1);
+            List<Node> driveway = bf.search(from, to);
+            if (driveway != null) {
+                driveways.add(driveway);
+            }
+        }
+
+        Logger.trace("Found " + driveways.size() + " driveways");
         System.exit(0);
     }
 

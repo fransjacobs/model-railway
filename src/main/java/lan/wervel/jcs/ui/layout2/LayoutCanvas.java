@@ -1032,38 +1032,38 @@ public class LayoutCanvas extends JPanel {
         //Router2 r = new Router2();
         //r.createGraph(snapshot);
         BreathFirst bfr = new BreathFirst();
-        bfr.createGraph(snapshot);
+        //bfr.createGraph(snapshot);
 
-        Color[] colors = {Color.blue, Color.cyan, Color.magenta, Color.orange, Color.pink, Color.red, Color.yellow, Color.green, Color.black, Color.darkGray};
-        List<List<Tile>> routes = new ArrayList<>();
+//        Color[] colors = {Color.blue, Color.cyan, Color.magenta, Color.orange, Color.pink, Color.red, Color.yellow, Color.green, Color.black, Color.darkGray};
+//        List<List<Tile>> routes = new ArrayList<>();
+//
+//        int col = 0;
+//        for (Block from : blocks) {
+//            for (Block to : blocks) {
+//                if (!from.getId().equals(to.getId())) {
+//                    Logger.trace("Route from: " + from.getId() + " (" + from.getCenterX() + "," + from.getCenterY() + ") to: " + to.getId() + " (" + to.getCenterX() + "," + to.getCenterY() + ")...");
+//                    //List<Tile> route = r.route(from, to);
+//
+//                    List<Tile> route = bfr.search(from, to);
+//                    if (route != null && !route.isEmpty()) {
+//                        routes.add(route);
+//
+//                        for (Tile at : route) {
+//                            at.setTrackColor(colors[col]);
+//                            //?
+//                            //this.tiles.put(at.getCenter(), at);
+//                        }
+//                        if (col < colors.length) {
+//                            col++;
+//                        } else {
+//                            col = 0;
+//                        }
+//                    }
+//                }
+//            }
+//        }
 
-        int col = 0;
-        for (Block from : blocks) {
-            for (Block to : blocks) {
-                if (!from.getId().equals(to.getId())) {
-                    Logger.trace("Route from: " + from.getId() + " (" + from.getCenterX() + "," + from.getCenterY() + ") to: " + to.getId() + " (" + to.getCenterX() + "," + to.getCenterY() + ")...");
-                    //List<Tile> route = r.route(from, to);
-
-                    List<Tile> route = bfr.search(from, to);
-                    if (route != null && !route.isEmpty()) {
-                        routes.add(route);
-
-                        for (Tile at : route) {
-                            at.setTrackColor(colors[col]);
-                            //?
-                            //this.tiles.put(at.getCenter(), at);
-                        }
-                        if (col < colors.length) {
-                            col++;
-                        } else {
-                            col = 0;
-                        }
-                    }
-                }
-            }
-        }
-
-        Logger.debug("Found " + routes.size() + " routes...");
+//        Logger.debug("Found " + routes.size() + " routes...");
 
         this.repaint();
 

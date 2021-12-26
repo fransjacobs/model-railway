@@ -21,6 +21,7 @@ package lan.wervel.jcs.ui.layout2.pathfinding.graph;
 import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
+import lan.wervel.jcs.entities.enums.TileType;
 import lan.wervel.jcs.ui.layout2.Tile;
 
 /**
@@ -107,29 +108,37 @@ public class Node implements Comparable<Node> {
         return this.neighbors.isEmpty();
     }
 
+    public boolean isBlock() {
+        return TileType.BLOCK.equals(this.tile.getTileType());
+    }
+
+    public boolean isSwitch() {
+        return TileType.SWITCH.equals(this.tile.getTileType());
+    }
+
     public void addBranch(double distance, Node node) {
         Edge newEdge = new Edge(distance, node);
         neighbors.add(newEdge);
     }
-;
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if(this.neighbors.isEmpty()) {
+        if (this.neighbors.isEmpty()) {
             sb.append("||");
-        } else {      
-          for(Edge e : neighbors) {
-              sb.append("|");
-              sb.append(e.node.id);
-              sb.append(" [");
-              sb.append(e.distance);
-              sb.append("]|");
-          }
-        }  
-        
-        return this.id+" ("+p.x+","+p.y+") "+neighbors.size()+" E: "+ sb.toString();
+        } else {
+            for (Edge e : neighbors) {
+                sb.append("|");
+                sb.append(e.node.id);
+                sb.append(" [");
+                sb.append(e.distance);
+                sb.append("]|");
+            }
+        }
+
+        return this.id + " (" + p.x + "," + p.y + ") " + neighbors.size() + " E: " + sb.toString();
     }
-    
+
     public static class Edge {
 
         private final double distance;
@@ -151,12 +160,12 @@ public class Node implements Comparable<Node> {
         public Node getNode() {
             return node;
         }
-        
+
         @Override
         public String toString() {
-            return node.toString()+"|d: "+this.distance+"|";
+            return node.toString() + "|d: " + this.distance + "|";
         }
-        
+
     }
 
 }

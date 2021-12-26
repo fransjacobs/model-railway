@@ -100,10 +100,9 @@ public class LayoutAnalyzer {
                 //Find the adjacent nodes
                 List<Node> branches;
                 if (id.contains("-G")) {
-                    branches = getAdjacentNodesFor(tile, AccessoryValue.GREEN);
+                    branches = getAdjacentNodesFor(node, AccessoryValue.GREEN);
                 } else {
-                    branches = getAdjacentNodesFor(tile, AccessoryValue.RED);
-
+                    branches = getAdjacentNodesFor(node, AccessoryValue.RED);
                 }
 
                 for (Node n : branches) {
@@ -146,7 +145,7 @@ public class LayoutAnalyzer {
 
             if (node.isNeighborsNotSet()) {
                 //Find the adjacent nodes
-                List<Node> branches = getAdjacentNodesFor(tile);
+                List<Node> branches = getAdjacentNodesFor(node);
                 for (Node n : branches) {
                     Point p = n.getCP();
                     double d = LayoutUtil.euclideanDistance(cp, p);
@@ -157,17 +156,33 @@ public class LayoutAnalyzer {
         }
     }
 
-    private List<Node> getAdjacentNodesFor(Tile tile) {
-        return getAdjacentNodesFor(tile, AccessoryValue.OFF);
+    private List<Node> getAdjacentNodesFor(Node node) {
+        return getAdjacentNodesFor(node, AccessoryValue.OFF);
     }
 
-    private List<Node> getAdjacentNodesFor(Tile tile, AccessoryValue accessoryValue) {
-        Point tcp = tile.getCenter();
+    private List<Node> getAdjacentNodesFor(Node node, AccessoryValue accessoryValue) {
+        Tile tile = node.getTile();
+        Point tcp = node.getCP();
         List<Node> adjacentNodes = new ArrayList<>();
         //Find the adjacent tiles
         Set<Point> adjacent = LayoutUtil.adjacentPointsFor(tile, accessoryValue);
+
         for (Point adj : adjacent) {
-            if (isTile(adj)) {
+            boolean skip;
+            if (node.isBlock()) {
+                if (node.getId().contains("+")) {
+                    skip = LayoutUtil.isMinusAdjacent(tile, adj);
+                } else {
+                    skip = LayoutUtil.isPlusAdjacent(tile, adj);
+                }
+            } else if(node.isSwitch()) {
+                //switch also depend on the G or R direction...
+                skip = false;
+            } else {
+                skip = false;
+            }
+
+            if (isTile(adj) && !skip) {
                 Tile t = findTile(adj);
                 Point cp;
                 List<String> nodeIds = new ArrayList<>();
@@ -202,10 +217,10 @@ public class LayoutAnalyzer {
                     if (this.nodeCache.containsKey(nodeId)) {
                         adjacentNodes.add(this.nodeCache.get(nodeId));
                     } else {
-                        Node node = new Node(nodeId, cp);
+                        Node adjacentNode = new Node(nodeId, cp);
                         //add it to the cache for reuse 
-                        this.nodeCache.put(nodeId, node);
-                        adjacentNodes.add(node);
+                        this.nodeCache.put(nodeId, adjacentNode);
+                        adjacentNodes.add(adjacentNode);
                     }
                 }
             }
@@ -229,7 +244,7 @@ public class LayoutAnalyzer {
 
         if (node.isNeighborsNotSet()) {
             //Find the adjacent nodes
-            List<Node> branches = getAdjacentNodesFor(tile);
+            List<Node> branches = getAdjacentNodesFor(node);
             Point cp = tile.getCenter();
             for (Node n : branches) {
                 double d = LayoutUtil.euclideanDistance(cp, n.getCP());
@@ -270,10 +285,10 @@ public class LayoutAnalyzer {
             //A Tile can result in one or more nodes
             createNodes(tile);
         }
-        
+
         //Add all nodes to the Graph
-        for(Node node: nodeCache.values()) {
-            Logger.trace("Node: "+node);
+        for (Node node : nodeCache.values()) {
+            Logger.trace("Node: " + node);
             this.graph.add(node);
         }
         Logger.trace("Graph has " + graph.size() + " nodes...");
@@ -300,6 +315,16 @@ public class LayoutAnalyzer {
         }
         Logger.trace("Loaded " + this.tiles.size() + " tiles...");
     }
+
+    public static void main(String[] a) {
+        System.setProperty("trackServiceAlwaysUseDemo", "true");
+
+        LayoutAnalyzer la = new LayoutAnalyzer();
+        la.createGraph();
+
+        System.exit(0);
+    }
+}
 
 //    public Node aStar(Node from, Node to) {
 //
@@ -387,23 +412,3 @@ public class LayoutAnalyzer {
 //        Logger.debug("Node " + id + " has " + neighbors.size() + " neighbors: " + neigborIds);
 //
 //    }
-
-    public static void main(String[] a) {
-        System.setProperty("trackServiceAlwaysUseDemo", "true");
-
-        LayoutAnalyzer la = new LayoutAnalyzer();
-        la.createGraph();
-
-//        for (Node n : la.graph) {
-//            la.logNode(n);
-//        }
-
-        //Node f = la.nodeCache.get("bk-1+");
-        //Node t = la.nodeCache.get("bk-3+");
-        //Logger.debug("From: " + f.getId() + " Tile: " + f.getTile());
-        //Logger.debug("To: " + t.getId() + " Tile: " + t.getTile());
-        //Node res = la.aStar(f, t);
-        //la.logPath(res);
-        System.exit(0);
-    }
-}
