@@ -265,7 +265,7 @@ public class BreathFirst {
             } else {
                 visited.add(nodeId);
                 //get neighbour points
-                Set<Point> ajp = LayoutUtil.adjacentPointFor(node);
+                Set<Point> ajp = LayoutUtil.adjacentPointsFor(node);
                 // get the neighbour tiles
                 Set<Tile> neighbours = findNeighbours(ajp);
                 Logger.trace("Node " + node.getId() + " (" + node.getCenterX() + "," + node.getCenterY() + ") has " + ajp.size() + " adjacent points and " + neighbours.size() + " neighbours");

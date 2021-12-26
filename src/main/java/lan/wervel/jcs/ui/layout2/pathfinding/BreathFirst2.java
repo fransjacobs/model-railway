@@ -138,8 +138,8 @@ public class BreathFirst2 {
             }
 
             if (i == 0) {
-                px = t.getP().x;
-                py = t.getP().y;
+                px = t.getCP().x;
+                py = t.getCP().y;
                 pxdir = "none";
                 pydir = "none";
                 pt = t;
@@ -150,8 +150,8 @@ public class BreathFirst2 {
                 pydir = ydir;
             }
 
-            x = t.getP().x;
-            y = t.getP().y;
+            x = t.getCP().x;
+            y = t.getCP().y;
 
             //Travel direction
             int dx = x - px;
@@ -208,7 +208,7 @@ public class BreathFirst2 {
     }
 
     public List<Node> search(Node from, Node to) {
-        Logger.trace("From: " + from.getId() + " (" + from.getP().x + "," + from.getP().y + ") to: " + to.getId() + " (" + to.getP().x + "," + to.getP().y + ")...");
+        Logger.trace("From: " + from.getId() + " (" + from.getCP().x + "," + from.getCP().y + ") to: " + to.getId() + " (" + to.getCP().x + "," + to.getCP().y + ")...");
 
         LinkedList<String> visited = new LinkedList<>();
 
@@ -238,7 +238,7 @@ public class BreathFirst2 {
                 // get the neighbour nodes
                 if(node != null && node.getNeighbors() !=null) {
                     Set<Node.Edge> neighbours = node.getNeighbors();
-                    Logger.trace("Node " + node.getId() + " (" + node.getP().x + "," + node.getP().y + ") has " + neighbours.size() + " neighbours");
+                    Logger.trace("Node " + node.getId() + " (" + node.getCP().x + "," + node.getCP().y + ") has " + neighbours.size() + " neighbours");
    
                     for (Node.Edge neighbor : neighbours) {
                         Logger.trace("Checking neighbours of node " + node.getId() + "; Neighbor: " + neighbor.getNode().getId());

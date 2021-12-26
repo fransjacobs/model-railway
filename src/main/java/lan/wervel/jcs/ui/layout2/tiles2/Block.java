@@ -27,10 +27,8 @@ import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 import lan.wervel.jcs.entities.TileBean;
-import static lan.wervel.jcs.entities.TileBean.DEFAULT_WIDTH;
 import lan.wervel.jcs.entities.enums.Orientation;
 import lan.wervel.jcs.ui.layout2.LayoutUtil;
-import static lan.wervel.jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
 
 /**
  * Draw a OccupancyDetector
@@ -72,6 +70,12 @@ public class Block extends AbstractTile2 implements Tile {
             this.width = DEFAULT_WIDTH;
             this.height = DEFAULT_HEIGHT * 3;
         }
+    }
+
+    @Override
+    public Block clone() throws CloneNotSupportedException {
+        super.clone();
+        return new Block(this.tileBean);
     }
 
     @Override
@@ -126,17 +130,17 @@ public class Block extends AbstractTile2 implements Tile {
         g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
         g2.setPaint(Color.darkGray);
         g2.drawRect(x, y, w, h);
-        
+
         //Block needs to have a direction so travel from a to b or from - to +
         //so in east direction the block is -[ - bk-nn + ]- 
         g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
         g2.setPaint(Color.black);
-        
+
         //a - at the start and end of the block
-        g2.drawLine(x+4, y+10, x+10, y+10);
-        g2.drawLine(w-10, y+10, w-4, y+10);
+        g2.drawLine(x + 4, y + 10, x + 10, y + 10);
+        g2.drawLine(w - 10, y + 10, w - 4, y + 10);
         //a | at the end of the block 
-        g2.drawLine(w-7, y+7, w-7, y+13);
+        g2.drawLine(w - 7, y + 7, w - 7, y + 13);
 
         drawName(g2);
     }

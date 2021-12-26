@@ -110,6 +110,8 @@ abstract class AbstractTile2 implements Shape, Tile {
         init();
     }
 
+    
+    
     private void init() {
         this.id = getNewId();
     }
@@ -334,28 +336,6 @@ abstract class AbstractTile2 implements Shape, Tile {
         this.setCenter(cs);
     }
 
-//    public static final Point snapToGrid(Point p) {
-//        return snapToGrid(p.x, p.y);
-//    }
-//
-//    /**
-//     * Snap coordinates to the nearest grid point
-//     *
-//     * @param x the X
-//     * @param y the Y
-//     * @return Coordinates which are the X en Y wrapped
-//     */
-//    public static final Point snapToGrid(int x, int y) {
-//        int steps = x / DEFAULT_WIDTH;
-//        int sx = steps;
-//        sx = sx * DEFAULT_WIDTH + GRID;
-//
-//        steps = y / DEFAULT_HEIGHT;
-//        int sy = steps;
-//        sy = sy * DEFAULT_HEIGHT + GRID;
-//
-//        return new Point(sx, sy);
-//    }
     protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
         g2d.translate((float) x, (float) y);
         g2d.rotate(Math.toRadians(angle));

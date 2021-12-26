@@ -35,7 +35,7 @@ public class Node implements Comparable<Node> {
 
     private Node parent = null;
 
-    private Set<Edge> neighbors;
+    private final Set<Edge> neighbors;
 
     // Evaluation functions
     public double f = Double.MAX_VALUE;
@@ -45,6 +45,10 @@ public class Node implements Comparable<Node> {
 
     public Node(Tile tile) {
         this(tile, tile.getId());
+    }
+
+    public Node(String id, Point p) {
+        this(null, id, p);
     }
 
     public Node(Tile tile, String id) {
@@ -71,12 +75,16 @@ public class Node implements Comparable<Node> {
         return this.id;
     }
 
-    public Point getP() {
+    public Point getCP() {
         return p;
     }
 
     public Tile getTile() {
         return tile;
+    }
+
+    public void setTile(Tile tile) {
+        this.tile = tile;
     }
 
     public Node getParent() {
@@ -91,29 +99,64 @@ public class Node implements Comparable<Node> {
         return neighbors;
     }
 
-    public void addBranch(double weight, Node node) {
-        Edge newEdge = new Edge(weight, node);
-        neighbors.add(newEdge);
+    public boolean isTileNotSet() {
+        return this.tile == null;
     }
 
+    public boolean isNeighborsNotSet() {
+        return this.neighbors.isEmpty();
+    }
+
+    public void addBranch(double distance, Node node) {
+        Edge newEdge = new Edge(distance, node);
+        neighbors.add(newEdge);
+    }
+;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if(this.neighbors.isEmpty()) {
+            sb.append("||");
+        } else {      
+          for(Edge e : neighbors) {
+              sb.append("|");
+              sb.append(e.node.id);
+              sb.append(" [");
+              sb.append(e.distance);
+              sb.append("]|");
+          }
+        }  
+        
+        return this.id+" ("+p.x+","+p.y+") "+neighbors.size()+" E: "+ sb.toString();
+    }
+    
     public static class Edge {
 
-        private final double weight;
+        private final double distance;
         private final Node node;
 
-        Edge(double weight, Node node) {
-            this.weight = weight;
+        Edge(double distance, Node node) {
+            this.distance = distance;
             this.node = node;
         }
 
         public double getWeight() {
-            return weight;
+            return distance;
+        }
+
+        public String getNodeId() {
+            return this.node.getId();
         }
 
         public Node getNode() {
             return node;
         }
-
+        
+        @Override
+        public String toString() {
+            return node.toString()+"|d: "+this.distance+"|";
+        }
+        
     }
 
 }
