@@ -20,7 +20,6 @@ package lan.wervel.jcs.ui.layout2;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,9 +31,9 @@ import lan.wervel.jcs.entities.enums.Orientation;
 import static lan.wervel.jcs.entities.enums.Orientation.NORTH;
 import static lan.wervel.jcs.entities.enums.Orientation.SOUTH;
 import static lan.wervel.jcs.entities.enums.Orientation.WEST;
+import lan.wervel.jcs.entities.enums.TileType;
 import lan.wervel.jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout2.tiles2.Switch;
 import lan.wervel.jcs.ui.layout2.tiles2.TileFactory2;
 import org.tinylog.Logger;
 
@@ -47,6 +46,13 @@ public class LayoutUtil {
     private static final int GRID = 20;
     public static final int DEFAULT_WIDTH = GRID * 2;
     public static final int DEFAULT_HEIGHT = GRID * 2;
+
+    private final static Map<String, Tile> tileIdLookup = new HashMap<>();
+    private final static Map<Point, Tile> tiles = new HashMap<>();
+    private final static Map<Point, Tile> altTilesLookup = new HashMap<>();
+
+    private LayoutUtil() {
+    }
 
     public static final Point snapToGrid(Point p) {
         return snapToGrid(p.x, p.y);
@@ -77,31 +83,118 @@ public class LayoutUtil {
      * @param drawGridLines
      * @return A Map of tiles, key is the center point of the tile
      */
-    public static final Map<Point, Tile> loadTiles(boolean drawGridLines) {
-        if (TrackServiceFactory.getTrackService() == null) {
-            return Collections.EMPTY_MAP;
+    public static final Map<Point, Tile> loadLayout(boolean drawGridLines) {
+        synchronized (LayoutUtil.tileIdLookup) {
+            LayoutUtil.tileIdLookup.clear();
+            LayoutUtil.tiles.clear();
+            LayoutUtil.altTilesLookup.clear();
+
+            if (TrackServiceFactory.getTrackService() != null) {
+                Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
+
+                for (TileBean tb : beans) {
+                    Tile tile = TileFactory2.createTile(tb, drawGridLines);
+                    LayoutUtil.tileIdLookup.put(tile.getId(), tile);
+                    LayoutUtil.tiles.put(tile.getCenter(), tile);
+                    for (Point ap : tile.getAltPoints()) {
+                        LayoutUtil.altTilesLookup.put(ap, tile);
+                    }
+                }
+
+                Logger.debug("Loaded " + tileIdLookup.size() + " Tiles...");
+            } else {
+                Logger.error("Can't load tiles, no Trackservice available");
+            }
         }
-
-        Map<Point, Tile> tiles = new HashMap<>();
-
-        Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
-        Logger.trace("Loading " + beans.size() + " TileBeans from persistent store...");
-
-        Set<Tile> snapshot = new HashSet<>();
-
-        for (TileBean tb : beans) {
-            Tile tile = TileFactory2.createTile(tb, drawGridLines);
-            snapshot.add(tile);
-        }
-
-        for (Tile t : snapshot) {
-            tiles.put(t.getCenter(), t);
-        }
-
-        Logger.debug("Loaded " + tiles.size() + " Tiles...");
-        return tiles;
+        return LayoutUtil.tiles;
     }
 
+    private static boolean isNotLoaded() {
+        return LayoutUtil.tileIdLookup == null || LayoutUtil.tileIdLookup.isEmpty();
+    }
+
+    public static Tile findTile(String id) {
+        if (isNotLoaded()) {
+            LayoutUtil.loadLayout(true);
+        }
+        Tile result = LayoutUtil.tileIdLookup.get(id);
+        if(result == null) {
+            //check also with the original Id
+            String orgId;
+            if(id.endsWith("-")||id.endsWith("+")) {
+                orgId = id.substring(0,id.length() -1);
+            } else {
+               orgId = id.replaceAll("-G","").replaceAll("-R","");
+            }   
+            result = LayoutUtil.tileIdLookup.get(orgId);
+        }
+        return result;
+    }
+
+    public static Tile findTile(Point cp) {
+        if (isNotLoaded()) {
+            LayoutUtil.loadLayout(true);
+        }
+        Tile result = LayoutUtil.tiles.get(cp);
+
+        if (result == null) {
+            result = LayoutUtil.altTilesLookup.get(cp);
+            if (result != null) {
+            }
+        }
+        return result;
+    }
+
+    public static boolean isTile(Point cp) {
+        return findTile(cp) != null;
+    }
+
+    public static boolean isTile(String id) {
+        return findTile(id) != null;
+    }
+
+    public static boolean isBlock(Point cp) {
+        Tile t = findTile(cp);
+        if (t == null) {
+            return false;
+        }
+        return TileType.BLOCK.equals(t.getTileType());
+    }
+
+    public static boolean isBlock(String id) {
+        Tile t = findTile(id);
+        if (t == null) {
+            return false;
+        }
+        return TileType.BLOCK.equals(t.getTileType());
+    }
+
+    public static boolean isTrack(Point cp) {
+        Tile t = findTile(cp);
+        if (t == null) {
+            return false;
+        }
+        TileType tt = t.getTileType();
+        return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
+    }
+
+    public static boolean isTrack(String id) {
+        Tile t = findTile(id);
+        if (t == null) {
+            return false;
+        }
+        TileType tt = t.getTileType();
+        return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
+    }
+
+    public static final Map<Point, Tile> getTiles() {
+        if (isNotLoaded()) {
+            LayoutUtil.loadLayout(true);
+        }
+
+        return LayoutUtil.tiles;
+    }
+    
     /**
      * Returns the euclidean distance of 2 Points
      *
@@ -168,11 +261,9 @@ public class LayoutUtil {
                     case SOUTH:
                         switch (accessoryValue) {
                             case GREEN:
-                                adjacent.add(new Point(x, y + oY));
                                 adjacent.add(new Point(x, y - oY));
                                 break;
                             case RED:
-                                adjacent.add(new Point(x, y + oY));
                                 if (Direction.LEFT.equals(direction)) {
                                     adjacent.add(new Point(x - oX, y));
                                 } else {
@@ -181,23 +272,14 @@ public class LayoutUtil {
                                 break;
                             default:
                                 adjacent.add(new Point(x, y + oY));
-                                adjacent.add(new Point(x, y - oY));
-
-                                if (Direction.RIGHT.equals(direction)) {
-                                    adjacent.add(new Point(x + oX, y));
-                                } else if (Direction.LEFT.equals(direction)) {
-                                    adjacent.add(new Point(x - oX, y));
-                                }
                         }
                         break;
                     case WEST:
                         switch (accessoryValue) {
                             case GREEN:
-                                adjacent.add(new Point(x - oX, y));
                                 adjacent.add(new Point(x + oX, y));
                                 break;
                             case RED:
-                                adjacent.add(new Point(x - oX, y));
                                 if (Direction.LEFT.equals(direction)) {
                                     adjacent.add(new Point(x, y - oY));
                                 } else {
@@ -205,24 +287,15 @@ public class LayoutUtil {
                                 }
                                 break;
                             default:
-                                adjacent.add(new Point(x + oX, y));
                                 adjacent.add(new Point(x - oX, y));
-
-                                if (Direction.RIGHT.equals(direction)) {
-                                    adjacent.add(new Point(x, y + oY));
-                                } else if (Direction.LEFT.equals(direction)) {
-                                    adjacent.add(new Point(x, y - oY));
-                                }
                                 break;
                         }
                     case NORTH:
                         switch (accessoryValue) {
                             case GREEN:
-                                adjacent.add(new Point(x, y - oY));
                                 adjacent.add(new Point(x, y + oY));
                                 break;
                             case RED:
-                                adjacent.add(new Point(x, y - oY));
                                 if (Direction.LEFT.equals(direction)) {
                                     adjacent.add(new Point(x + oX, y));
                                 } else {
@@ -230,25 +303,16 @@ public class LayoutUtil {
                                 }
                                 break;
                             default:
-                                adjacent.add(new Point(x, y + oY));
                                 adjacent.add(new Point(x, y - oY));
-
-                                if (Direction.RIGHT.equals(direction)) {
-                                    adjacent.add(new Point(x - oX, y));
-                                } else if (Direction.LEFT.equals(direction)) {
-                                    adjacent.add(new Point(x + oX, y));
-                                }
                                 break;
                         }
                     default:
                         //EAST
                         switch (accessoryValue) {
                             case GREEN:
-                                adjacent.add(new Point(x + oX, y));
                                 adjacent.add(new Point(x - oX, y));
                                 break;
                             case RED:
-                                adjacent.add(new Point(x + oX, y));
                                 if (Direction.LEFT.equals(direction)) {
                                     adjacent.add(new Point(x, y + oY));
                                 } else {
@@ -257,12 +321,6 @@ public class LayoutUtil {
                                 break;
                             default:
                                 adjacent.add(new Point(x + oX, y));
-                                adjacent.add(new Point(x - oX, y));
-                                if (Direction.RIGHT.equals(direction)) {
-                                    adjacent.add(new Point(x, y - oY));
-                                } else if (Direction.LEFT.equals(direction)) {
-                                    adjacent.add(new Point(x, y + oY));
-                                }
                                 break;
                         }
                         break;
@@ -325,6 +383,16 @@ public class LayoutUtil {
     public static boolean isPlusAdjacent(Tile block, Point point) {
         Point p = getAdjacentPoint(block, "+");
         return p.equals(point);
+    }
+
+    public static Point getPlusAdjacent(Tile block) {
+        Point p = getAdjacentPoint(block, "+");
+        return p;
+    }
+
+    public static Point getMinusAdjacent(Tile block) {
+        Point p = getAdjacentPoint(block, "-");
+        return p;
     }
 
     /**
@@ -414,31 +482,30 @@ public class LayoutUtil {
                 if (adjX == tileX && adjY != tileY) {
                     //North or South
                     if (adjX < tileX) {
-                        // South
-                        nodeIds.add(switchTile.getId() + "-G");
+                        //Common
+                        nodeIds.add(switchTile.getId());
                     } else {
-                        // North, common point
+                        //Green
                         nodeIds.add(switchTile.getId() + "-G");
-                        nodeIds.add(switchTile.getId() + "-R");
                     }
                 } else {
-                    //East or West
+                    //Red
                     nodeIds.add(switchTile.getId() + "-R");
                 }
                 break;
             case WEST:
+                //East
                 if (adjX != tileX && adjY == tileY) {
-                    //east or west
+                    //The common of a East L or R Switch 
                     if (adjX > tileX) {
-                        // east, a the switch common point so
-                        nodeIds.add(switchTile.getId() + "-G");
-                        nodeIds.add(switchTile.getId() + "-R");
+                        //Common    
+                        nodeIds.add(switchTile.getId());
                     } else {
-                        //west
+                        //Green    
                         nodeIds.add(switchTile.getId() + "-G");
                     }
                 } else {
-                    //North or South
+                    //Red
                     nodeIds.add(switchTile.getId() + "-R");
                 }
                 break;
@@ -446,32 +513,30 @@ public class LayoutUtil {
                 if (adjX == tileX && adjY != tileY) {
                     //North or South
                     if (adjX > tileX) {
-                        // North
-                        nodeIds.add(switchTile.getId() + "-G");
+                        //Common
+                        nodeIds.add(switchTile.getId());
                     } else {
-                        //South, common point
+                        //Green
                         nodeIds.add(switchTile.getId() + "-G");
-                        nodeIds.add(switchTile.getId() + "-R");
                     }
                 } else {
-                    //East or West
+                    //Red
                     nodeIds.add(switchTile.getId() + "-R");
                 }
                 break;
             default:
                 //East
                 if (adjX != tileX && adjY == tileY) {
-                    //east or west
+                    //The common of a East L or R Switch 
                     if (adjX < tileX) {
-                        // west, a the switch common point so
-                        nodeIds.add(switchTile.getId() + "-G");
-                        nodeIds.add(switchTile.getId() + "-R");
+                        //Common    
+                        nodeIds.add(switchTile.getId());
                     } else {
-                        //east
+                        //Green    
                         nodeIds.add(switchTile.getId() + "-G");
                     }
                 } else {
-                    //North or South
+                    //Red
                     nodeIds.add(switchTile.getId() + "-R");
                 }
                 break;

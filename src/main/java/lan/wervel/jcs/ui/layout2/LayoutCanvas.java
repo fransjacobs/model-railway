@@ -279,7 +279,7 @@ public class LayoutCanvas extends JPanel {
     }
 
     private void loadTiles() {
-        Map<Point, Tile> tm = LayoutUtil.loadTiles(this.drawGrid);
+        Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid);
         Set<Point> ps = tm.keySet();
         synchronized (tiles) {
             selectedTiles.clear();
