@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.SensorBean;
-import lan.wervel.jcs.trackservice.TrackServiceFactory;
+import jcs.entities.LayoutTile;
+import jcs.entities.SensorBean;
+import jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.SensorTile;
 import org.tinylog.Logger;
 

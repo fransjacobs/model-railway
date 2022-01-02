@@ -5,7 +5,7 @@
  */
 package lan.wervel.jcs.ui.layout;
 
-import lan.wervel.jcs.entities.enums.TileType;
+import jcs.entities.enums.TileType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -16,10 +16,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import lan.wervel.jcs.entities.LayoutTileGroup;
-import lan.wervel.jcs.trackservice.TrackServiceFactory;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.entities.enums.Orientation;
+import jcs.entities.LayoutTileGroup;
+import jcs.trackservice.TrackServiceFactory;
+import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.enums.Orientation;
 import org.tinylog.Logger;
 
 /**

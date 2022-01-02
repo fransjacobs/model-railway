@@ -18,7 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout;
 
-import lan.wervel.jcs.entities.enums.TileType;
+import jcs.entities.enums.TileType;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -42,17 +42,17 @@ import java.util.concurrent.Executors;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.LayoutTileGroup;
-import lan.wervel.jcs.trackservice.TrackServiceFactory;
+import jcs.entities.LayoutTile;
+import jcs.entities.LayoutTileGroup;
+import jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import lan.wervel.jcs.ui.layout.tiles.SensorTile;
 import lan.wervel.jcs.ui.layout.tiles.BlockTile;
 import lan.wervel.jcs.ui.layout.tiles.SignalTile;
 import lan.wervel.jcs.ui.layout.tiles.TileFactory;
 import lan.wervel.jcs.ui.layout.tiles.SwitchTile;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.entities.enums.Orientation;
+import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.enums.Orientation;
 import org.tinylog.Logger;
 
 /**

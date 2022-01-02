@@ -32,11 +32,11 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
-import lan.wervel.jcs.entities.LayoutTile;
+import jcs.entities.LayoutTile;
 import lan.wervel.jcs.ui.layout.ReDrawListener;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.entities.enums.Orientation;
-import lan.wervel.jcs.entities.enums.TileType;
+import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.enums.Orientation;
+import jcs.entities.enums.TileType;
 import org.tinylog.Logger;
 
 /**

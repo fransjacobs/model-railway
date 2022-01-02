@@ -24,13 +24,13 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import lan.wervel.jcs.entities.LayoutTile;
+import jcs.entities.LayoutTile;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.trackservice.events.SensorListener;
-import lan.wervel.jcs.entities.enums.Orientation;
+import jcs.ui.layout.tiles.enums.Direction;
+import jcs.trackservice.events.SensorListener;
+import jcs.entities.enums.Orientation;
 
 /**
  * Draw a FeedbackPort Track

@@ -26,9 +26,9 @@ import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
-import lan.wervel.jcs.entities.SignalBean;
-import lan.wervel.jcs.entities.enums.Orientation;
-import lan.wervel.jcs.entities.enums.SignalValue;
+import jcs.entities.SignalBean;
+import jcs.entities.enums.Orientation;
+import jcs.entities.enums.SignalValue;
 
 /**
  *

@@ -18,24 +18,24 @@
  */
 package lan.wervel.jcs.ui.layout.tiles;
 
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
+import jcs.ui.layout.tiles.enums.Direction;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
-import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.enums.AccessoryValue;
-import lan.wervel.jcs.trackservice.AccessoryEvent;
-import lan.wervel.jcs.trackservice.events.AccessoryListener;
+import jcs.entities.LayoutTile;
+import jcs.entities.enums.AccessoryValue;
+import jcs.trackservice.AccessoryEvent;
+import jcs.trackservice.events.AccessoryListener;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
-import lan.wervel.jcs.entities.enums.Orientation;
-import static lan.wervel.jcs.entities.enums.Orientation.EAST;
-import static lan.wervel.jcs.entities.enums.Orientation.SOUTH;
-import static lan.wervel.jcs.entities.enums.Orientation.WEST;
+import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.EAST;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 
 /**
  * Draw a Turnout

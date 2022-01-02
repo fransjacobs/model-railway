@@ -19,16 +19,16 @@
 package lan.wervel.jcs.ui.layout.tiles;
 
 import java.awt.Point;
-import lan.wervel.jcs.entities.LayoutTile;
-import lan.wervel.jcs.entities.enums.TileType;
-import static lan.wervel.jcs.entities.enums.TileType.BLOCK;
-import static lan.wervel.jcs.entities.enums.TileType.SENSOR;
-import static lan.wervel.jcs.entities.enums.TileType.SIGNAL;
-import lan.wervel.jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.entities.enums.Orientation;
-import static lan.wervel.jcs.entities.enums.TileType.SWITCH;
+import jcs.entities.LayoutTile;
+import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.SENSOR;
+import static jcs.entities.enums.TileType.SIGNAL;
+import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.TileType.SWITCH;
 import org.tinylog.Logger;
-import static lan.wervel.jcs.entities.enums.TileType.CURVED;
+import static jcs.entities.enums.TileType.CURVED;
 
 /**
  *

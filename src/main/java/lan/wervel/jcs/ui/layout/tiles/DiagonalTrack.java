@@ -23,10 +23,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import lan.wervel.jcs.entities.LayoutTile;
+import jcs.entities.LayoutTile;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_HEIGHT;
 import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.DEFAULT_WIDTH;
-import lan.wervel.jcs.entities.enums.Orientation;
+import jcs.entities.enums.Orientation;
 
 /**
  * Draw a DiagonalTrack (Curved) Track
