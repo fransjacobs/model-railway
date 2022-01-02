@@ -30,6 +30,7 @@ import jcs.entities.enums.Orientation;
  * Draw a Straight Track
  *
  */
+@Deprecated
 public class StraightTrack extends AbstractTile {
 
     public StraightTrack(LayoutTile layoutTile) {

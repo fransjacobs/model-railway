@@ -34,6 +34,7 @@ import jcs.entities.enums.SignalValue;
  *
  * @author Frans Jacobs
  */
+@Deprecated
 public class TileTester extends JFrame {
 
     private final AbstractTile tileEast;

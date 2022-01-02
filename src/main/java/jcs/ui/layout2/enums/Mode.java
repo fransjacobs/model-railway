@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package lan.wervel.jcs.ui.layout;
+package jcs.ui.layout2.enums;
 
 public enum Mode {
   SELECT,

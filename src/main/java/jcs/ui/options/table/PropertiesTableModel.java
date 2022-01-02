@@ -18,8 +18,8 @@
  */
 package jcs.ui.options.table;
 
-import jcs.ui.options.table.DeviceTableModel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import jcs.entities.JCSProperty;
 import jcs.trackservice.TrackServiceFactory;
@@ -30,67 +30,71 @@ import jcs.trackservice.TrackServiceFactory;
  */
 public class PropertiesTableModel extends DeviceTableModel<JCSProperty> {
 
-  public PropertiesTableModel() {
-    super();
-  }
-
-  @Override
-  protected List<String> getColumns() {
-    if (this.columns == null) {
-      List<String> cols = new ArrayList<>(6);
-      cols.add("Key");
-      cols.add("Value");
-      return cols;
+    public PropertiesTableModel() {
+        super();
     }
-    return this.columns;
-  }
-
-  @Override
-  protected List<JCSProperty> getDevices() {
-    return TrackServiceFactory.getTrackService().getProperties();
-  }
-
-  @Override
-  Object getColumnValue(JCSProperty device, int column) {
-    switch (column) {
-      case 0:
-        return device.getKey();
-      case 1:
-        return device.getValue();
-      default:
-        return null;
-    }
-  }
-
-  @Override
-  public Class<?> getColumnClass(int columnIndex) {
-    switch (columnIndex) {
-      case 0:
-        return String.class;
-      case 1:
-        return String.class;
-      default:
-        return String.class;
-    }
-  }
-
-  @Override
-  void setColumnValue(JCSProperty device, int column, Object value) {
-    switch (column) {
-      case 0:
-        device.setKey((String) value);
-        break;
-      case 1:
-        device.setValue((String) value);
-        break;
-      default:
-        break;
-    }
-  }
 
     @Override
-  public boolean isCellEditable(int row, int column) {
-    return true;
-  }
+    protected List<String> getColumns() {
+        if (this.columns == null) {
+            List<String> cols = new ArrayList<>(6);
+            cols.add("Key");
+            cols.add("Value");
+            return cols;
+        }
+        return this.columns;
+    }
+
+    @Override
+    protected List<JCSProperty> getDevices() {
+        if (TrackServiceFactory.getTrackService() != null) {
+            return TrackServiceFactory.getTrackService().getProperties();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+
+    @Override
+    Object getColumnValue(JCSProperty device, int column) {
+        switch (column) {
+            case 0:
+                return device.getKey();
+            case 1:
+                return device.getValue();
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+            case 0:
+                return String.class;
+            case 1:
+                return String.class;
+            default:
+                return String.class;
+        }
+    }
+
+    @Override
+    void setColumnValue(JCSProperty device, int column, Object value) {
+        switch (column) {
+            case 0:
+                device.setKey((String) value);
+                break;
+            case 1:
+                device.setValue((String) value);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return true;
+    }
 
 }

@@ -32,6 +32,7 @@ import jcs.ui.Refreshable;
 import jcs.ui.splash.JCSSplashScreen;
 import jcs.ui.util.MacOsAdapter;
 import jcs.util.VersionInfo;
+import org.apache.commons.lang3.SystemUtils;
 import org.tinylog.Logger;
 
 /**
@@ -54,7 +55,6 @@ public class JCSGUI extends Thread {
     private static MacOsAdapter osAdapter;
     private static JCSFrame jcsFrame;
 
-    private static boolean macOS = "Mac OS X".equals(System.getProperty("os.name"));
     private static VersionInfo versionInfo;
 
     private final List<Refreshable> refreshables;
@@ -62,7 +62,6 @@ public class JCSGUI extends Thread {
     private JCSGUI() {
         refreshables = new ArrayList<>();
         headless = GraphicsEnvironment.isHeadless();
-        macOS = "Mac OS X".equals(System.getProperty("os.name"));
         versionInfo = new VersionInfo(JCSGUI.class, "lan.wervel.jcs", "gui");
 
         updateProgress();
@@ -82,7 +81,7 @@ public class JCSGUI extends Thread {
         }
 
         try {
-            if (macOS) {
+            if (SystemUtils.IS_OS_MAC) {
                 MacOsAdapter.setMacOsProperties();
                 osAdapter = new MacOsAdapter();
             } else {
@@ -130,11 +129,11 @@ public class JCSGUI extends Thread {
     }
 
     public static boolean isMacOS() {
-        return macOS;
+        return SystemUtils.IS_OS_MAC_OSX;
     }
 
     public static void showTouchbar(JCSFrame frame) {
-        if (macOS) {
+        if (SystemUtils.IS_OS_MAC_OSX) {
             osAdapter.showTouchbar(frame);
         }
     }
@@ -161,40 +160,6 @@ public class JCSGUI extends Thread {
         return instance.refreshables;
     }
 
-//  private static ServiceInfo startTrackServerJVM() {
-//    ServiceInfo si = null;
-//    Logger.debug("Starting a TrackServer Process...");
-//
-//    String jvmOptions = "-Xms128m -Xmx256m -Dcallback=true";
-//    String mainClass = "lan.wervel.jcs.JCSServer";
-//    String[] arguments = new String[]{"callback=" + TrackService.SERVICE_TYPE};
-//
-//    Process p = ProcessFactory.getInstance().startJVMProcess(jvmOptions, mainClass, arguments);
-//
-//    if (p != null) {
-//      Logger.info("Started TrackServer Process " + p.toString());
-//      //Wait for the initialization to finish
-//      si = DiscoveryClient.waitForProcessCallback(TrackService.SERVICE_TYPE);
-//
-//      if (si != null) {
-//        Logger.debug("Trackserver has initialized: " + si);
-//        updateProgress();
-//        ServiceInfo dsi = DiscoveryClient.discover(TrackServiceFactory.createClientInfo(), 5000L, 3);
-//
-//        Logger.debug("Discovered: " + dsi);
-//        si = dsi;
-//
-//        updateProgress();
-//        trackService = TrackServiceFactory.getRemoteTrackService(si);
-//
-//      } else {
-//        Logger.error("Could not obtain a TrackService ServiceInfo object");
-//      }
-//    } else {
-//      Logger.error("Could not start TrackServer process");
-//    }
-//    return si;
-//  }
     private void init() {
         //Logger.debug("Starting UI. Connected with: " + trackService.getServiceInfo().getIp() + "...");
         updateProgress();
@@ -203,7 +168,7 @@ public class JCSGUI extends Thread {
             jcsFrame = new JCSFrame();
             updateProgress();
 
-            if (macOS) {
+            if (SystemUtils.IS_OS_MAC_OSX) {
                 osAdapter.setUiCallback(jcsFrame);
             }
 
@@ -260,3 +225,40 @@ public class JCSGUI extends Thread {
         return instance;
     }
 }
+
+
+//  private static ServiceInfo startTrackServerJVM() {
+//    ServiceInfo si = null;
+//    Logger.debug("Starting a TrackServer Process...");
+//
+//    String jvmOptions = "-Xms128m -Xmx256m -Dcallback=true";
+//    String mainClass = "lan.wervel.jcs.JCSServer";
+//    String[] arguments = new String[]{"callback=" + TrackService.SERVICE_TYPE};
+//
+//    Process p = ProcessFactory.getInstance().startJVMProcess(jvmOptions, mainClass, arguments);
+//
+//    if (p != null) {
+//      Logger.info("Started TrackServer Process " + p.toString());
+//      //Wait for the initialization to finish
+//      si = DiscoveryClient.waitForProcessCallback(TrackService.SERVICE_TYPE);
+//
+//      if (si != null) {
+//        Logger.debug("Trackserver has initialized: " + si);
+//        updateProgress();
+//        ServiceInfo dsi = DiscoveryClient.discover(TrackServiceFactory.createClientInfo(), 5000L, 3);
+//
+//        Logger.debug("Discovered: " + dsi);
+//        si = dsi;
+//
+//        updateProgress();
+//        trackService = TrackServiceFactory.getRemoteTrackService(si);
+//
+//      } else {
+//        Logger.error("Could not obtain a TrackService ServiceInfo object");
+//      }
+//    } else {
+//      Logger.error("Could not start TrackServer process");
+//    }
+//    return si;
+//  }
+

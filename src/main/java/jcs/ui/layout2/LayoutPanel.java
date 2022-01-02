@@ -44,9 +44,8 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.LineBorder;
-import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import jcs.ui.layout.tiles.enums.Direction;
-import lan.wervel.jcs.ui.layout.Mode;
+import jcs.ui.layout2.enums.Mode;
 import org.tinylog.Logger;
 
 /**
@@ -56,12 +55,10 @@ import org.tinylog.Logger;
  */
 public class LayoutPanel extends JPanel {
 
-    public static final int GRID_SIZE = AbstractTile.MIN_GRID;
+    public static final int GRID_SIZE = Tile.GRID;
 
     private Mode mode;
 
-    //private Orientation orientation;
-    //private Direction direction;
     private TileType tileType;
 
     //private final ExecutorService executor;
@@ -70,14 +67,9 @@ public class LayoutPanel extends JPanel {
      */
     public LayoutPanel() {
         //this.executor = Executors.newSingleThreadExecutor();
-        //Default 
         this.mode = Mode.SELECT;
-        //this.orientation = Orientation.EAST;
-        //this.direction = Direction.CENTER;
         this.tileType = TileType.STRAIGHT;
-
         initComponents();
-
         postInit();
     }
 
@@ -763,9 +755,9 @@ public class LayoutPanel extends JPanel {
 
     private void routeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
         Logger.debug("Start Routing...");
-        
+
         this.canvas.routeLayout();
-        
+
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void setTileType(TileType tileType) {
@@ -812,7 +804,9 @@ public class LayoutPanel extends JPanel {
     public static void main(String args[]) {
         System.setProperty("trackServiceAlwaysUseDemo", "true");
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+
+            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.error(ex);
         }

@@ -42,6 +42,7 @@ import static jcs.entities.enums.Orientation.WEST;
  *
  * @author frans
  */
+@Deprecated
 public class SwitchTile extends AbstractTile implements AccessoryListener {
 
     private AccessoryValue accessoryValue;

@@ -4,9 +4,9 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="directionBG">
     </Component>
-    <Component class="lan.wervel.jcs.entities.SignalBean" name="selectedSignal">
-    </Component>
     <Component class="javax.swing.ButtonGroup" name="lightImagesBG">
+    </Component>
+    <Component class="jcs.entities.SignalBean" name="selectedSignal">
     </Component>
   </NonVisualComponents>
   <Properties>

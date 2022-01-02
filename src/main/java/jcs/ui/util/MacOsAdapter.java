@@ -25,18 +25,20 @@ import com.thizzer.jtouchbar.item.view.TouchBarButton;
 import com.thizzer.jtouchbar.item.view.TouchBarTextField;
 import com.thizzer.jtouchbar.item.view.TouchBarView;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Taskbar;
-import java.awt.Window;
+import java.awt.desktop.AboutEvent;
+import java.awt.desktop.AboutHandler;
+import java.awt.desktop.OpenFilesEvent;
+import java.awt.desktop.OpenFilesHandler;
+import java.awt.desktop.PreferencesEvent;
+import java.awt.desktop.PreferencesHandler;
+import java.awt.desktop.QuitEvent;
+import java.awt.desktop.QuitHandler;
+import java.awt.desktop.QuitResponse;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Arrays;
-import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -47,9 +49,8 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class MacOsAdapter implements InvocationHandler {
+public class MacOsAdapter {
 
-    private Object eawtApplication;
     private UICallback uiCallback;
     private JTouchBar touchBar;
 
@@ -60,6 +61,7 @@ public class MacOsAdapter implements InvocationHandler {
     public static void setMacOsProperties() {
         System.setProperty("apple.awt.application.name", "JCS");
         System.setProperty("apple.laf.useScreenMenuBar", "true");
+        //System.setProperty("java.net.preferIPv4Stack", "true");
     }
 
     public void setUiCallback(UICallback uiCallback) {
@@ -74,22 +76,14 @@ public class MacOsAdapter implements InvocationHandler {
             Logger.warn("Can't set the LookAndFeel: " + ex);
         }
         try {
-
-            //Desktop desktop = Desktop.getDesktop();
-
-            Class<?> quitHandler = findHandlerClass("QuitHandler");
-            Class<?> aboutHandler = findHandlerClass("AboutHandler");
-            Class<?> openFilesHandler = findHandlerClass("OpenFilesHandler");
-            Class<?> preferencesHandler = findHandlerClass("PreferencesHandler");
-
-            Object proxy = Proxy.newProxyInstance(MacOsAdapter.class.getClassLoader(), new Class<?>[]{
-                quitHandler, aboutHandler, openFilesHandler, preferencesHandler}, this);
+            Desktop desktop = Desktop.getDesktop();
+            desktop.setAboutHandler(new JCSAboutHandler());
+            desktop.setQuitHandler(new JCSQuitHandler());
+            desktop.setPreferencesHandler(new JCSPreferencesHandler());
 
             Taskbar taskbar = Taskbar.getTaskbar();
-
             try {
                 BufferedImage img = ImageIO.read(JCSGUI.class.getResource("/media/jcs-train-64.png"));
-
                 taskbar.setIconImage(img);
             } catch (final UnsupportedOperationException e) {
                 Logger.warn("The os does not support: 'taskbar.setIconImage'");
@@ -98,7 +92,7 @@ public class MacOsAdapter implements InvocationHandler {
             }
 
             initTouchBar();
-        } catch (ReflectiveOperationException | SecurityException | IllegalArgumentException | IOException ex) {
+        } catch (SecurityException | IllegalArgumentException | IOException ex) {
             Logger.warn("Failed to register with MacOS: " + ex);
         }
     }
@@ -133,13 +127,13 @@ public class MacOsAdapter implements InvocationHandler {
             });
             touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
 
-//      TouchBarButton overviewButton = new TouchBarButton();
-//      overviewButton.setImage(displayLayoutImage);
-//      overviewButton.setAction((TouchBarView view) -> {
-//        Logger.trace("Touchbar Overview button clicked...");
-//        JCSGUI.getJCSFrame().showDisplayLayoutPanel();
-//      });
-//      touchBar.addItem(new TouchBarItem("overviewButton", overviewButton, true));
+            //TouchBarButton overviewButton = new TouchBarButton();
+            //overviewButton.setImage(displayLayoutImage);
+            //overviewButton.setAction((TouchBarView view) -> {
+            //Logger.trace("Touchbar Overview button clicked...");
+            //JCSGUI.getJCSFrame().showDisplayLayoutPanel();
+            //});
+            //touchBar.addItem(new TouchBarItem("overviewButton", overviewButton, true));
             TouchBarButton locoButton = new TouchBarButton();
             locoButton.setImage(locomotiveImage);
             locoButton.setAction((TouchBarView view) -> {
@@ -190,77 +184,37 @@ public class MacOsAdapter implements InvocationHandler {
         this.touchBar.show(c);
     }
 
-    private void setHandlers(Class<?> appClass, Class<?> quitHandler, Class<?> aboutHandler, Class<?> openFilesHandler, Class<?> preferencesHandler, Object proxy, Object appInstance)
-            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private class JCSQuitHandler implements QuitHandler {
 
-        appClass.getDeclaredMethod("setQuitHandler", quitHandler).invoke(appInstance, proxy);
-        appClass.getDeclaredMethod("setAboutHandler", aboutHandler).invoke(appInstance, proxy);
-        appClass.getDeclaredMethod("setOpenFileHandler", openFilesHandler).invoke(appInstance, proxy);
-        appClass.getDeclaredMethod("setPreferencesHandler", preferencesHandler).invoke(appInstance, proxy);
-    }
-
-    private Class<?> findHandlerClass(String className) throws ClassNotFoundException {
-        try {
-            // Java 8 handlers
-            return Class.forName("com.apple.eawt." + className);
-        } catch (ClassNotFoundException e) {
-            //Logger.trace(e);
-            // Java 9 handlers
-            return Class.forName("java.awt.desktop." + className);
+        @Override
+        public void handleQuitRequestWith(QuitEvent e, QuitResponse response) {
+            uiCallback.handleQuitRequest();
         }
     }
 
-    public static void enableOSXFullscreen(Window window) {
-        try {
-            // http://stackoverflow.com/a/8693890/2257172
-            Class<?> eawtFullScreenUtilities = Class.forName("com.apple.eawt.FullScreenUtilities");
-            eawtFullScreenUtilities.getDeclaredMethod("setWindowCanFullScreen",
-                    Window.class, boolean.class).invoke(eawtFullScreenUtilities, window, Boolean.TRUE);
-        } catch (ReflectiveOperationException | SecurityException | IllegalArgumentException e) {
-            Logger.warn("Failed to register with OSX: " + e);
+    private class JCSAboutHandler implements AboutHandler {
+
+        @Override
+        public void handleAbout(AboutEvent e) {
+            uiCallback.handleAbout();
         }
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Logger.debug("OSX handler: {0} - {1}", method.getName(), Arrays.toString(args));
+    private class JCSPreferencesHandler implements PreferencesHandler {
 
-        switch (method.getName()) {
-            case "openFiles":
-                if (args[0] != null) {
-                    try {
-                        Object oFiles = args[0].getClass().getMethod("getFiles").invoke(args[0]);
-                        if (oFiles instanceof List) {
-                            Logger.debug("Open Files...");
-                            this.uiCallback.openFiles((List<File>) oFiles);
-                        }
-                    } catch (ReflectiveOperationException | SecurityException | IllegalArgumentException ex) {
-                        Logger.warn("Failed to access open files event: " + ex);
-                    }
-                }
-                break;
-            case "handleQuitRequestWith":
-                boolean closed = JCSGUI.getJCSFrame().handleQuitRequest();
-                if (args[1] != null) {
-                    try {
-                        args[1].getClass().getDeclaredMethod(closed ? "performQuit" : "cancelQuit").invoke(args[1]);
-                    } catch (IllegalAccessException e) {
-                        Logger.debug(e);
-                        // with Java 9, module java.desktop does not export com.apple.eawt, use new Desktop API instead
-                        Class.forName("java.awt.desktop.QuitResponse").getMethod(closed ? "performQuit" : "cancelQuit").invoke(args[1]);
-                    }
-                }
-                break;
-            case "handleAbout":
-                this.uiCallback.handleAbout();
-                break;
-            case "handlePreferences":
-                this.uiCallback.handlePreferences();
-                break;
-            default:
-                Logger.warn("OSX unsupported method: " + method.getName());
+        @Override
+        public void handlePreferences(PreferencesEvent e) {
+            uiCallback.handlePreferences();
         }
-        return null;
     }
+
+    private class JCSOpenFilesHandler implements OpenFilesHandler {
+
+        @Override
+        public void openFiles(OpenFilesEvent e) {
+            //STUB
+            uiCallback.openFiles(null);
+        }
+    }
+
 }

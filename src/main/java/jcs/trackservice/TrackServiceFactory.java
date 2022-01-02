@@ -56,7 +56,9 @@ public class TrackServiceFactory {
             Logger.error("Can't instantiate a 'jcs.trackservice.H2TrackService' " + ex.getMessage());
             Logger.trace(ex);
         }
-        Logger.debug("Using " + trackService.getClass().getSimpleName() + " as Track Service...");
+        if (trackService != null) {
+            Logger.debug("Using " + trackService.getClass().getSimpleName() + " as Track Service...");
+        }
         return trackService != null;
     }
 }

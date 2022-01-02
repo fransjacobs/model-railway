@@ -38,6 +38,7 @@ import jcs.entities.enums.Orientation;
  *
  * @author frans
  */
+@Deprecated
 public class SignalTile extends AbstractTile implements AccessoryListener {
 
     private int signalType;

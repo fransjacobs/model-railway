@@ -34,6 +34,7 @@ import static jcs.entities.enums.TileType.CURVED;
  *
  * @author frans
  */
+@Deprecated
 public class TileFactory {
 
     private TileFactory() {

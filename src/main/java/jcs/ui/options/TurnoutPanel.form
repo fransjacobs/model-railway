@@ -4,7 +4,7 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="directionBG">
     </Component>
-    <Component class="lan.wervel.jcs.entities.SwitchBean" name="selectedTurnout">
+    <Component class="jcs.entities.SwitchBean" name="selectedTurnout">
     </Component>
   </NonVisualComponents>
   <Properties>

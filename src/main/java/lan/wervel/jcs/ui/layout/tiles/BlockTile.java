@@ -38,6 +38,7 @@ import jcs.entities.enums.Orientation;
  *
  * @author frans
  */
+@Deprecated
 public class BlockTile extends AbstractTile implements SensorListener {
 
     private boolean portActive;

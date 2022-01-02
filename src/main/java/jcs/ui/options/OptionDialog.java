@@ -72,6 +72,9 @@ public class OptionDialog extends javax.swing.JDialog {
         centerPanel = new JPanel();
         prefsTP = new JTabbedPane();
         locomotivePanel = new LocomotivePanel();
+        propertiesPanel = new PropertiesPanel();
+        signalPanel = new SignalPanel();
+        turnoutPanel = new TurnoutPanel();
         southPanel = new JPanel();
         closeBtn = new JButton();
 
@@ -100,6 +103,15 @@ public class OptionDialog extends javax.swing.JDialog {
 
         locomotivePanel.setName("locomotivePanel"); // NOI18N
         prefsTP.addTab("Locomotives", locomotivePanel);
+
+        propertiesPanel.setName("propertiesPanel"); // NOI18N
+        prefsTP.addTab("Properties", propertiesPanel);
+
+        signalPanel.setName("signalPanel"); // NOI18N
+        prefsTP.addTab("Signals", signalPanel);
+
+        turnoutPanel.setName("turnoutPanel"); // NOI18N
+        prefsTP.addTab("Turnouts", turnoutPanel);
 
         centerPanel.add(prefsTP, BorderLayout.CENTER);
         prefsTP.getAccessibleContext().setAccessibleName("Locomotives");
@@ -154,7 +166,9 @@ public class OptionDialog extends javax.swing.JDialog {
      */
     public static void main(String args[]) {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.warn("Can't set the LookAndFeel: " + ex);
         }
@@ -177,7 +191,10 @@ public class OptionDialog extends javax.swing.JDialog {
     private JButton closeBtn;
     private LocomotivePanel locomotivePanel;
     private JTabbedPane prefsTP;
+    private PropertiesPanel propertiesPanel;
+    private SignalPanel signalPanel;
     private JPanel southPanel;
     private JPanel topPanel;
+    private TurnoutPanel turnoutPanel;
     // End of variables declaration//GEN-END:variables
 }

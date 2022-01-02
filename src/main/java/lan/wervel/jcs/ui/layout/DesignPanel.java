@@ -5,6 +5,7 @@
  */
 package lan.wervel.jcs.ui.layout;
 
+import jcs.ui.layout2.enums.Mode;
 import jcs.entities.enums.TileType;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
+@Deprecated
 public class DesignPanel extends JPanel {
 
     //private Set<AbstractTile> selectedTiles;

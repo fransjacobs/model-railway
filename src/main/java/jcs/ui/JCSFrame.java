@@ -60,6 +60,7 @@ import jcs.controller.ControllerEventListener;
 import jcs.controller.cs2.DeviceInfo;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.HeartBeatListener;
+import jcs.ui.layout2.DisplayLayoutPanel;
 import jcs.ui.layout2.LayoutPanel;
 import jcs.ui.options.OptionDialog;
 import jcs.ui.util.UICallback;
@@ -262,7 +263,6 @@ public class JCSFrame extends JFrame implements UICallback {
         setBounds(new Rectangle(0, 23, 1600, 900));
         setMinimumSize(new Dimension(1400, 900));
         setName("JCSFrame"); // NOI18N
-        setPreferredSize(new Dimension(1600, 900));
         setSize(new Dimension(1600, 900));
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent evt) {
@@ -457,6 +457,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
         overviewPanel.setName("overviewPanel"); // NOI18N
         centerPanel.add(overviewPanel, "overviewPanel");
+        overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
         getContentPane().add(centerPanel, BorderLayout.CENTER);
 
@@ -697,7 +698,7 @@ public class JCSFrame extends JFrame implements UICallback {
         this.signalsPanel.refreshPanel();
         this.turnoutsPanel.refreshPanel();
         this.diagnosticPanel.refreshPanel();
-        this.overviewPanel.refreshPanel();
+        //this.overviewPanel.refreshPanel();
     }
 
     private String getTitleString() {
@@ -745,7 +746,7 @@ public class JCSFrame extends JFrame implements UICallback {
         this.signalsPanel.refreshPanel();
         this.turnoutsPanel.refreshPanel();
         this.diagnosticPanel.refreshPanel();
-        this.overviewPanel.refreshPanel();
+        //this.overviewPanel.refreshPanel();
     }
 
     private void setPowerStatus(boolean powerOn, boolean controllerConnected) {
@@ -821,45 +822,45 @@ public class JCSFrame extends JFrame implements UICallback {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JLabel blinkLbl;
-    private JPanel centerPanel;
-    private DiagnosticPanel diagnosticPanel;
-    private JMenu editMenu;
-    private JMenu fileMenu;
-    private Box.Filler filler1;
-    private Box.Filler filler2;
-    private Box.Filler filler3;
-    private Box.Filler filler4;
-    private Box.Filler filler5;
-    private JLabel jLabel1;
-    private JMenuBar jcsMenuBar;
-    private JToolBar jcsToolBar;
-    private LayoutPanel layoutPanel;
-    private JMenuItem optionsMI;
-    private DisplayLayoutPanel overviewPanel;
-    private JButton powerBtn;
-    private JMenuItem quitMI;
-    private JPanel settingsPanel;
-    private JButton showDiagnosticsBtn;
-    private JMenuItem showDiagnosticsMI;
-    private JButton showEditDesignBtn;
-    private JMenuItem showLocosMI;
-    private JButton showOverviewBtn;
-    private JButton showSignalBtn;
-    private JMenuItem showSignalsMI;
-    private JButton showTurnoutsBtn;
-    private JMenuItem showTurnoutsMI;
-    private SignalsPanel signalsPanel;
-    private JButton startOfDayBtn;
-    private JPanel statusPanel;
-    private JPanel statusPanelLeft;
-    private JPanel statusPanelMiddle;
-    private JPanel statusPanelRight;
-    private JButton stopBtn;
-    private JMenuItem synchronizeAccessoriesMI;
-    private JButton synchronizeLocosBtn;
-    private JMenu toolsMenu;
-    private TurnoutsPanel turnoutsPanel;
-    private JMenu viewMenu;
+    JLabel blinkLbl;
+    JPanel centerPanel;
+    DiagnosticPanel diagnosticPanel;
+    JMenu editMenu;
+    JMenu fileMenu;
+    Box.Filler filler1;
+    Box.Filler filler2;
+    Box.Filler filler3;
+    Box.Filler filler4;
+    Box.Filler filler5;
+    JLabel jLabel1;
+    JMenuBar jcsMenuBar;
+    JToolBar jcsToolBar;
+    LayoutPanel layoutPanel;
+    JMenuItem optionsMI;
+    DisplayLayoutPanel overviewPanel;
+    JButton powerBtn;
+    JMenuItem quitMI;
+    JPanel settingsPanel;
+    JButton showDiagnosticsBtn;
+    JMenuItem showDiagnosticsMI;
+    JButton showEditDesignBtn;
+    JMenuItem showLocosMI;
+    JButton showOverviewBtn;
+    JButton showSignalBtn;
+    JMenuItem showSignalsMI;
+    JButton showTurnoutsBtn;
+    JMenuItem showTurnoutsMI;
+    SignalsPanel signalsPanel;
+    JButton startOfDayBtn;
+    JPanel statusPanel;
+    JPanel statusPanelLeft;
+    JPanel statusPanelMiddle;
+    JPanel statusPanelRight;
+    JButton stopBtn;
+    JMenuItem synchronizeAccessoriesMI;
+    JButton synchronizeLocosBtn;
+    JMenu toolsMenu;
+    TurnoutsPanel turnoutsPanel;
+    JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 }

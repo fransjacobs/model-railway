@@ -62,6 +62,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
+@Deprecated
 public class DisplayCanvas extends JPanel implements ReDrawListener {
 
     private final Set<AbstractTile> tiles;

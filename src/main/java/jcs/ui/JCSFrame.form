@@ -131,9 +131,6 @@
       <Dimension value="[1400, 900]"/>
     </Property>
     <Property name="name" type="java.lang.String" value="JCSFrame" noResource="true"/>
-    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1600, 900]"/>
-    </Property>
     <Property name="size" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1600, 900]"/>
     </Property>
@@ -155,7 +152,7 @@
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="0"/>
     <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,3,112,0,0,6,66"/>
   </AuxValues>
 
@@ -558,16 +555,22 @@
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="designPanel"/>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="JCSFrame_layoutPanel"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="designPanel"/>
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="jcs.ui.DisplayLayoutPanel" name="overviewPanel">
+        <Component class="jcs.ui.layout2.DisplayLayoutPanel" name="overviewPanel">
           <Properties>
             <Property name="name" type="java.lang.String" value="overviewPanel" noResource="true"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="overviewPanel"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
               <CardConstraints cardName="overviewPanel"/>
@@ -673,7 +676,7 @@
             </CodeStatement>
             <CodeStatement>
               <CodeExpression id="6_statusPanelLeft">
-                <CodeVariable name="statusPanelLeft" type="8194" declaredType="javax.swing.JPanel"/>
+                <CodeVariable name="statusPanelLeft" type="8192" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
                     <ComponentRef name="statusPanelLeft"/>
@@ -694,7 +697,7 @@
               </StatementProvider>
               <Parameters>
                 <CodeExpression id="7_filler4">
-                  <CodeVariable name="filler4" type="8194" declaredType="javax.swing.Box$Filler"/>
+                  <CodeVariable name="filler4" type="8192" declaredType="javax.swing.Box$Filler"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
                       <ComponentRef name="filler4"/>
@@ -809,7 +812,7 @@
             </CodeStatement>
             <CodeStatement>
               <CodeExpression id="13_statusPanelRight">
-                <CodeVariable name="statusPanelRight" type="8194" declaredType="javax.swing.JPanel"/>
+                <CodeVariable name="statusPanelRight" type="8192" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
                     <ComponentRef name="statusPanelRight"/>
@@ -830,7 +833,7 @@
               </StatementProvider>
               <Parameters>
                 <CodeExpression id="14_blinkLbl">
-                  <CodeVariable name="blinkLbl" type="8194" declaredType="javax.swing.JLabel"/>
+                  <CodeVariable name="blinkLbl" type="8192" declaredType="javax.swing.JLabel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
                       <ComponentRef name="blinkLbl"/>

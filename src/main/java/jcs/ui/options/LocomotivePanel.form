@@ -4,7 +4,7 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="directionBG">
     </Component>
-    <Component class="lan.wervel.jcs.entities.Locomotive" name="selectedLocomotive">
+    <Component class="jcs.entities.Locomotive" name="selectedLocomotive">
     </Component>
   </NonVisualComponents>
   <Properties>

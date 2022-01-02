@@ -54,6 +54,7 @@ import org.tinylog.Logger;
  * A Tile is rendered to a Buffered Image to speed up the display
  *
  */
+@Deprecated
 public abstract class AbstractTile implements Shape {
 
     public static final int MIN_GRID = 20;

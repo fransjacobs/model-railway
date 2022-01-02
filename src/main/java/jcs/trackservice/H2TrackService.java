@@ -22,6 +22,7 @@ import java.awt.Point;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -529,7 +530,8 @@ public class H2TrackService implements TrackService {
 
     @Override
     public List<LayoutTileGroup> getLayoutTileGroups() {
-        return this.ltgtDao.findAll();
+        //STUB
+        return Collections.EMPTY_LIST;// this.ltgtDao.findAll();
     }
 
     @Override

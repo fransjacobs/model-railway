@@ -49,7 +49,7 @@ import jcs.trackservice.TrackServiceFactory;
 import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
-import lan.wervel.jcs.ui.layout.Mode;
+import jcs.ui.layout2.enums.Mode;
 import jcs.ui.layout2.pathfinding.BreathFirst;
 import jcs.ui.layout2.tiles2.Block;
 import jcs.ui.layout2.tiles2.TileFactory2;

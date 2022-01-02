@@ -18,6 +18,7 @@
  */
 package lan.wervel.jcs.ui.layout;
 
+import jcs.ui.layout2.enums.Mode;
 import jcs.entities.enums.TileType;
 import java.awt.Color;
 import java.awt.Cursor;

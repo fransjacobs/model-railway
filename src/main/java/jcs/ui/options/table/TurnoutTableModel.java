@@ -19,6 +19,7 @@
 package jcs.ui.options.table;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import jcs.entities.SwitchBean;
 import jcs.trackservice.TrackServiceFactory;
@@ -29,78 +30,82 @@ import jcs.trackservice.TrackServiceFactory;
  */
 public class TurnoutTableModel extends DeviceTableModel<SwitchBean> {
 
-  public TurnoutTableModel() {
-    super();
-  }
-
-  @Override
-  protected List<String> getColumns() {
-    if (this.columns == null) {
-      List<String> cols = new ArrayList<>(6);
-      cols.add("Address");
-      cols.add("Direction");
-      cols.add("Name");
-      cols.add("Catalog Number");
-      return cols;
+    public TurnoutTableModel() {
+        super();
     }
-    return this.columns;
-  }
 
-  @Override
-  protected List<SwitchBean> getDevices() {
-    return TrackServiceFactory.getTrackService().getSwitches();
-  }
-
-  @Override
-  public Object getColumnValue(SwitchBean device, int column) {
-    switch (column) {
-      case 0:
-        return device.getAddress();
-      case 1:
-        return device.getDescription();
-      case 2:
-        return device.getName();
-      case 3:
-        return device.getCatalogNumber();
-      default:
-        return null;
+    @Override
+    protected List<String> getColumns() {
+        if (this.columns == null) {
+            List<String> cols = new ArrayList<>(6);
+            cols.add("Address");
+            cols.add("Direction");
+            cols.add("Name");
+            cols.add("Catalog Number");
+            return cols;
+        }
+        return this.columns;
     }
-  }
 
-  @Override
-  public Class<?> getColumnClass(int columnIndex) {
-    switch (columnIndex) {
-      case 0:
-        return Integer.class;
-      case 1:
-        return String.class;
-      case 2:
-        return String.class;
-      case 3:
-        return String.class;
-      default:
-        return null;
+    @Override
+    protected List<SwitchBean> getDevices() {
+        if (TrackServiceFactory.getTrackService() != null) {
+            return TrackServiceFactory.getTrackService().getSwitches();
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
-  }
 
-  @Override
-  void setColumnValue(SwitchBean device, int column, Object value) {
-    switch (column) {
-      case 0:
-        device.setAddress((Integer) value);
-        break;
-      case 1:
-        device.setDescription((String) value);
-        break;
-      case 2:
-        device.setName((String) value);
-        break;
-      case 3:
-        device.setCatalogNumber((String) value);
-        break;
-      default:
-        break;
+    @Override
+    public Object getColumnValue(SwitchBean device, int column) {
+        switch (column) {
+            case 0:
+                return device.getAddress();
+            case 1:
+                return device.getDescription();
+            case 2:
+                return device.getName();
+            case 3:
+                return device.getCatalogNumber();
+            default:
+                return null;
+        }
     }
-  }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+            case 0:
+                return Integer.class;
+            case 1:
+                return String.class;
+            case 2:
+                return String.class;
+            case 3:
+                return String.class;
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    void setColumnValue(SwitchBean device, int column, Object value) {
+        switch (column) {
+            case 0:
+                device.setAddress((Integer) value);
+                break;
+            case 1:
+                device.setDescription((String) value);
+                break;
+            case 2:
+                device.setName((String) value);
+                break;
+            case 3:
+                device.setCatalogNumber((String) value);
+                break;
+            default:
+                break;
+        }
+    }
 
 }
