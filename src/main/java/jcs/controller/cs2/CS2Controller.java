@@ -20,6 +20,7 @@ package jcs.controller.cs2;
 
 import jcs.controller.cs2.events.SensorMessageEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -126,10 +127,16 @@ public class CS2Controller implements ControllerService {
         if (connected) {
             Logger.debug("Obtaining controller device information...");
             getControllerInfo();
-            int gfpUid = Integer.getInteger(deviceInfo.getGfpUid());
-            int guiUid = Integer.getInteger(deviceInfo.getGuiUid());
-            CanMessageFactory.setGFPUid(gfpUid);
-            CanMessageFactory.setGUIUid(guiUid);
+            //int gfpUid = Integer.getInteger(deviceInfo.getGfpUid());
+            long gfpUid = Long.parseLong(deviceInfo.getGfpUid(), 16);
+
+            int gfpUidInt = (int) gfpUid;
+
+            //int guiUid = Integer.getInteger(deviceInfo.getGuiUid());
+            long guiUid = Integer.getInteger(deviceInfo.getGuiUid(), 16);
+
+            CanMessageFactory.setGFPUid((int) gfpUid);
+            CanMessageFactory.setGUIUid((int) guiUid);
             PowerStatus ps = getPowerStatus();
 
             Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". GFPUID : " + deviceInfo.getGfpUid() + ". GUIUID : " + deviceInfo.getGuiUid());
@@ -349,14 +356,19 @@ public class CS2Controller implements ControllerService {
 
     @Override
     public List<AccessoryStatus> getAccessoryStatuses() {
+        //This piece does not seem to work with a CS3
+        //TO sort out how to get the statuses
+
         //Update the file by sending a configRequest first
-        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
-        //give it some time to process
-        pause(100L);
-        HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
-        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
-        AccessoryParser ap = new AccessoryParser();
-        return ap.parseAccessoryStatusFile(accessoryStatuses);
+//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
+//        //give it some time to process
+//        pause(100L);
+//        HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
+//        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
+//        AccessoryParser ap = new AccessoryParser();
+//        return ap.parseAccessoryStatusFile(accessoryStatuses);
+        //STUB
+        return Collections.EMPTY_LIST;
     }
 
     @Override
@@ -366,9 +378,9 @@ public class CS2Controller implements ControllerService {
             String deviceFile = httpCon.getDeviceFile();
             DeviceParser dp = new DeviceParser();
             deviceInfo = dp.parseAccessoryFile(deviceFile);
+            long gfpUid = Long.parseLong(deviceInfo.getGfpUid(), 16);
 
-            int gfpUid = Integer.getInteger(deviceInfo.getGfpUid());
-            deviceInfo.updateFromStatusMessageResponse(connection.sendCanMessage(CanMessageFactory.statusConfig(gfpUid)));
+            deviceInfo.updateFromStatusMessageResponse(connection.sendCanMessage(CanMessageFactory.statusConfig((int) gfpUid)));
             String deviceHostName = connection.getCs2Address().getHostName();
             deviceInfo.setDeviceHostName(deviceHostName);
             deviceInfo.setMaxFunctions(32);
