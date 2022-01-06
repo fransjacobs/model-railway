@@ -24,11 +24,11 @@ import java.util.Set;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.cs2.DeviceInfo;
 import jcs.controller.cs2.events.CanMessageListener;
-import jcs.entities.ControllableDevice;
+import jcs.entities.JCSEntity;
 import jcs.entities.JCSProperty;
 import jcs.entities.LayoutTile;
 import jcs.entities.LayoutTileGroup;
-import jcs.entities.Locomotive;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
 import jcs.entities.SignalBean;
 import jcs.entities.SolenoidAccessory;
@@ -70,29 +70,29 @@ public interface TrackService {
     void disconnect();
 
     //Locomotive 
-    List<Locomotive> getLocomotives();
+    List<LocomotiveBean> getLocomotives();
 
-    Locomotive getLocomotive(Integer address, DecoderType decoderType);
+    LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
 
-    Locomotive getLocomotive(BigDecimal id);
+    LocomotiveBean getLocomotive(BigDecimal id);
 
-    Locomotive persist(Locomotive locomotive);
+    LocomotiveBean persist(LocomotiveBean locomotive);
 
-    void toggleDirection(Direction direction, Locomotive locomotive);
+    void toggleDirection(Direction direction, LocomotiveBean locomotive);
 
-    void changeSpeed(Integer speed, Locomotive locomotive);
+    void changeSpeed(Integer speed, LocomotiveBean locomotive);
 
-    void setFunction(Boolean value, Integer functionNumber, Locomotive locomotive);
+    void setFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
-    void toggleFunction(Boolean function, Locomotive locomotive);
+    void toggleFunction(Boolean function, LocomotiveBean locomotive);
 
-    void toggleF1(Boolean f1, Locomotive locomotive);
+    void toggleF1(Boolean f1, LocomotiveBean locomotive);
 
-    void toggleF2(Boolean f2, Locomotive locomotive);
+    void toggleF2(Boolean f2, LocomotiveBean locomotive);
 
-    void toggleF3(Boolean f3, Locomotive locomotive);
+    void toggleF3(Boolean f3, LocomotiveBean locomotive);
 
-    void toggleF4(Boolean f4, Locomotive locomotive);
+    void toggleF4(Boolean f4, LocomotiveBean locomotive);
 
     //Accessories / Accessory
     List<SwitchBean> getSwitches();
@@ -148,7 +148,7 @@ public interface TrackService {
     void removeAllLocomotiveListeners();
         
     //Generic remove for Loco/accessory/feedback
-    void remove(ControllableDevice entity);
+    void remove(JCSEntity entity);
 
     DeviceInfo getControllerInfo();
 

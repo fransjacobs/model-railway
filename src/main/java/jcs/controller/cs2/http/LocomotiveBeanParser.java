@@ -18,29 +18,30 @@
  */
 package jcs.controller.cs2.http;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import jcs.entities.Locomotive;
-import jcs.entities.enums.DecoderType;
-import jcs.entities.enums.Direction;
+import jcs.entities.FunctionBean;
+import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class LocomotiveParser {
+public class LocomotiveBeanParser {
 
-    private static final String LOCOMOTIVE_START = "[lokomotive]";
+    private static final String LOCOMOTIVES_START = "[lokomotive]";
     private static final String VERSION = "version";
     private static final String MINOR = ".minor";
     private static final String SESSION = "session";
     private static final String ID = ".id";
     private static final String LOCOMOTIVE = "lokomotive";
     private static final String NAME = ".name";
+    private static final String VORNAME = ".vorname";
     private static final String SYMBOL = ".symbol";
     private static final String UID = ".uid";
     private static final String ADDRESSE = ".adresse";
@@ -67,16 +68,17 @@ public class LocomotiveParser {
     private static final String TYP = "..typ";
     private static final String WERT = "..wert";
 
-    public List<Locomotive> parseLocomotivesFile(String locofile) {
-        List<Locomotive> locs = new ArrayList<>();
+    public List<LocomotiveBean> parseLocomotivesFile(String locofile) {
+        List<LocomotiveBean> locs = new LinkedList<>();
         List<String> items = Arrays.asList(locofile.split("\n"));
         Map<String, String> lm = new HashMap<>();
-        Map<String, String> fm = new HashMap<>();
-        String fkey = null;
+        Map<Integer, FunctionBean> locoFunctions = new HashMap<>();
+        FunctionBean locoFunction = null;
         boolean functions = false;
+
         for (String s : items) {
             switch (s) {
-                case LOCOMOTIVE_START:
+                case LOCOMOTIVES_START:
                     break;
                 case VERSION:
                     break;
@@ -84,15 +86,20 @@ public class LocomotiveParser {
                     break;
                 case LOCOMOTIVE:
                     if (lm.containsKey(".uid")) {
-                        Locomotive loc = createLoco(lm, fm);
+                        LocomotiveBean loc = createLoco(lm, locoFunctions);
                         locs.add(loc);
                     }
                     functions = false;
                     lm.clear();
-                    fm.clear();
+                    locoFunctions.clear();
+                    locoFunction = null;
                     break;
                 case FUNCTIONEN:
                     functions = true;
+                    if (locoFunction != null && locoFunction.getNumber() != null) {
+                        locoFunctions.put(locoFunction.getNumber(), locoFunction);
+                    }
+                    locoFunction = new FunctionBean();
                     break;
                 case FUNCTIONEN_2:
                     functions = true;
@@ -107,11 +114,16 @@ public class LocomotiveParser {
 
                         if (functions) {
                             if (NR.equals(key) || TYP.equals(key) || WERT.equals(key)) {
-                                if (NR.equals(key)) {
-                                    fkey = "f" + val;
-                                }
-                                if (TYP.equals(key)) {
-                                    fm.put(fkey, val);
+                                if (locoFunction != null) {
+                                    if (NR.equals(key)) {
+                                        locoFunction.setNumber(val);
+                                    }
+                                    if (TYP.equals(key)) {
+                                        locoFunction.setFunctionType(val);
+                                    }
+                                    if (WERT.equals(key)) {
+                                        locoFunction.setValue(val);
+                                    }
                                 }
                             }
                         } else {
@@ -124,125 +136,80 @@ public class LocomotiveParser {
             }
         }
         // parse the last loc
-        if (lm.containsKey(".uid")) {
-            Locomotive loc = createLoco(lm, fm);
+        if (lm.containsKey(
+                ".uid")) {
+            LocomotiveBean loc = createLoco(lm, locoFunctions);
             locs.add(loc);
         }
         return locs;
     }
 
-    private Locomotive createLoco(Map<String, String> locoProps, Map<String, String> funcProps) {
+    private LocomotiveBean createLoco(Map<String, String> locoProps, Map<Integer, FunctionBean> locoFunctions) {
+        String name = locoProps.get(NAME);
+        String previousName = locoProps.get(VORNAME);
+        Long uid = null;
+        if (locoProps.get(UID) != null) {
+            uid = Long.decode(locoProps.get(UID));
+        }
+        Long mfxUid = null;
+        if (locoProps.get(MFXUID) != null) {
+            mfxUid = Long.decode(locoProps.get(MFXUID));
+        }
         Integer address = null;
         if (locoProps.get(ADDRESSE) != null) {
             address = Integer.decode(locoProps.get(ADDRESSE));
         }
-        Integer uid = null;
-        if (locoProps.get(UID) != null) {
-            uid = Integer.decode(locoProps.get(UID));
-        }
-        String name = locoProps.get(NAME);
-        String description = name;
-
-        DecoderType decoderType = DecoderType.get(locoProps.get(TYPE));
-        Direction direction = null;
-        if (locoProps.get(RICHTUNG) != null) {
-            direction = Direction.cs2Get(Integer.parseInt(locoProps.get(RICHTUNG)));
-        }
-        Direction defaultDirection = Direction.FORWARDS;
-
-        Integer speed = 0;
-        if (locoProps.get(VELOCITY) != null) {
-            speed = Integer.parseInt(locoProps.get(VELOCITY));
-        }
-        Integer speedSteps;
-        
-        if(decoderType == null) {
-            //set a default!
-            decoderType = DecoderType.MM;
-        }
-        
-        switch (decoderType) {
-            case MM2:
-                speedSteps = 27;
-                break;
-            case MFX:
-                speedSteps = 126;
-                break;
-            case DCC:
-                speedSteps = 28;
-                break;
-            default:
-                speedSteps = 14;
-                break;
-        }
+        String icon = locoProps.get(ICON);
+        String decoderType = locoProps.get(TYPE);
+        String mfxSid = locoProps.get(SID);
         Integer tachoMax = null;
         if (locoProps.get(TACHOMAX) != null) {
-            tachoMax = Integer.parseInt(locoProps.get(TACHOMAX));
+            tachoMax = Integer.decode(locoProps.get(TACHOMAX));
         }
         Integer vMin = null;
         if (locoProps.get(VMIN) != null) {
             vMin = Integer.parseInt(locoProps.get(VMIN));
         }
-        Integer vMax = null;
-        if (locoProps.get(VMAX) != null) {
-            vMax = Integer.parseInt(locoProps.get(VMAX));
+        Integer accelerationDelay = null;
+        if (locoProps.get(AV) != null) {
+            accelerationDelay = Integer.parseInt(locoProps.get(AV));
         }
-        String iconName = locoProps.get(ICON);
-
-        Locomotive loc = new Locomotive();
-        if (address == null) {
-            loc.setAddress(uid);
-        } else {
-            loc.setAddress(address);
+        Integer brakeDelay = null;
+        if (locoProps.get(BV) != null) {
+            brakeDelay = Integer.parseInt(locoProps.get(BV));
         }
-        loc.setName(name);
-        loc.setDescription(description);
-        loc.setDecoderType(decoderType);
-        loc.setTachoMax(tachoMax);
-        loc.setvMin(vMin);
-        loc.setvMax(vMax);
-        loc.setDirection(direction);
-        loc.setDefaultDirection(defaultDirection);
-        loc.setSpeedSteps(speedSteps);
-        loc.setSpeed(speed);
-        loc.setIconName(iconName);
-
-        int functionCount;
-        if (funcProps.size() == 1) {
-            functionCount = 1;
-        } else if (funcProps.size() > 1 && funcProps.size() < 6) {
-            functionCount = 5;
-        } else if (funcProps.size() > 5 && funcProps.size() < 9) {
-            functionCount = 8;
-        } else if (funcProps.size() > 8 && funcProps.size() < 17) {
-            functionCount = 16;
-        } else {
-            functionCount = 32;
+        Integer volume = null;
+        if (locoProps.get(VOLUME) != null) {
+            volume = Integer.parseInt(locoProps.get(VOLUME));
         }
-        int[] functionValues = new int[functionCount];
-        StringBuilder ft = new StringBuilder();
-        for (int i = 0; i < functionValues.length; i++) {
-            //Lights always on
-            if (i == 0) {
-                functionValues[i] = 1;
-            } else {
-                functionValues[i] = 0;
-            }
+        String spm = locoProps.get(SPM);
+        Integer velocity = null;
+        if (locoProps.get(VELOCITY) != null) {
+            velocity = Integer.parseInt(locoProps.get(VELOCITY));
+        }
+        Integer direction = null;
+        if (locoProps.get(RICHTUNG) != null) {
+            direction = Integer.parseInt(locoProps.get(RICHTUNG));
+        }
+        String mfxType = locoProps.get(MFXTYPE);
+        String blocks = locoProps.get(BLOCKS);
 
-            if (funcProps.containsKey("f" + i)) {
-                ft.append(funcProps.get("f" + i));
-            } else {
-                ft.append("0");
-            }
-            if (i + 1 < functionValues.length) {
-                ft.append(",");
+        BigDecimal id = new BigDecimal(uid);
+
+        LocomotiveBean lb = new LocomotiveBean(id, name, previousName, uid, mfxUid, address, icon, decoderType,
+                mfxSid, tachoMax, vMin, accelerationDelay, brakeDelay, volume, spm,
+                velocity, direction, mfxType, blocks);
+
+        //Ignore functions which have no functionType
+        for (FunctionBean function : locoFunctions.values()) {
+            if (function.getNumber() != null && function.getFunctionType() != null) {
+                if (function.getValue() == null) {
+                    function.setValue(0);
+                }
+                function.setLocomotiveId(id);
+                lb.getFunctions().put(function.getNumber(), function);
             }
         }
-        loc.setFunctionCount(functionCount);
-        loc.setFunctionValues(functionValues);
-        loc.setFunctionTypes(ft.toString());
-
-        return loc;
+        return lb;
     }
-
 }

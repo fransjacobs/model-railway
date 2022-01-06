@@ -39,11 +39,10 @@ import static jcs.controller.cs2.can.MarklinCan.FUNCTION_ON;
 import jcs.controller.cs2.events.CanMessageEvent;
 import jcs.controller.cs2.events.CanMessageListener;
 import jcs.controller.cs2.http.AccessoryParser;
-import jcs.controller.cs2.http.LocomotiveParser;
+import jcs.controller.cs2.http.LocomotiveBeanParser;
 import jcs.controller.cs2.net.Connection;
 import jcs.controller.cs2.net.CS2ConnectionFactory;
 import jcs.controller.cs2.net.HTTPConnection;
-import jcs.entities.Locomotive;
 import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
@@ -51,6 +50,7 @@ import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
 import jcs.controller.cs2.events.SensorMessageListener;
 import jcs.controller.cs2.http.DeviceParser;
+import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
@@ -204,7 +204,7 @@ public class CS2Controller implements ControllerService {
             case SX1:
                 locoAddress = 0x0800 + address;
                 break;
-            case MM2:
+            case MM:
                 locoAddress = address;
                 break;
             default:
@@ -339,10 +339,10 @@ public class CS2Controller implements ControllerService {
     }
 
     @Override
-    public List<Locomotive> getLocomotives() {
+    public List<LocomotiveBean> getLocomotives() {
         HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
         String lokomotiveCs2 = httpCon.getLocomotivesFile();
-        LocomotiveParser lp = new LocomotiveParser();
+        LocomotiveBeanParser lp = new LocomotiveBeanParser();
         return lp.parseLocomotivesFile(lokomotiveCs2);
     }
 
@@ -602,7 +602,7 @@ public class CS2Controller implements ControllerService {
 
     public static void main(String[] a) {
         //Configurator.
-        //        currentConfig().formatPattern("{date:yyyy-MM-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
+        //        currentConfig().formatPattern("{date:yyyy-MM_DIL-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
         //        activate();
 
         CS2Controller cs2 = new CS2Controller(false);
@@ -627,7 +627,7 @@ public class CS2Controller implements ControllerService {
 //            Logger.debug("Sending  member ping\n");
 //            List<PingResponse> prl = cs2.membersPing();
 //            //Logger.info("Query direction of loc 12");
-//            //DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
+//            //DirectionInfo info = cs2.getDirection(12, DecoderType.MM);
 //            Logger.debug("got " + prl.size() + " responses");
 //            for (PingResponse pr : prl) {
 //                Logger.debug(pr);
@@ -645,7 +645,7 @@ public class CS2Controller implements ControllerService {
 
         //PingResponse pr2 = cs2.memberPing();
         //Logger.info("Query direction of loc 12");
-        //DirectionInfo info = cs2.getDirection(12, DecoderType.MM2);
+        //DirectionInfo info = cs2.getDirection(12, DecoderType.MM);
         Logger.debug("DONE");
         cs2.pause(5L);
     }

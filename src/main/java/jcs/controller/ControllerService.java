@@ -25,7 +25,7 @@ import jcs.controller.cs2.PowerStatus;
 import jcs.controller.cs2.events.SensorMessageEvent;
 import jcs.controller.cs2.events.CanMessageListener;
 import jcs.controller.cs2.events.SensorMessageListener;
-import jcs.entities.Locomotive;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
@@ -87,7 +87,7 @@ public interface ControllerService {
 
     void removeAllHeartbeatListeners();
 
-    List<Locomotive> getLocomotives();
+    List<LocomotiveBean> getLocomotives();
 
     List<SolenoidAccessory> getAccessories();
 

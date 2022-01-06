@@ -26,13 +26,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
-import jcs.controller.cs2.AccessoryStatus;
-import jcs.controller.cs2.DeviceInfo;
-import jcs.controller.cs2.http.AccessoryParser;
-import jcs.controller.cs2.http.DeviceParser;
-import jcs.controller.cs2.http.LocomotiveParser;
-import jcs.entities.Locomotive;
-import jcs.entities.SolenoidAccessory;
+import jcs.controller.cs2.http.LocomotiveBeanParser;
+import jcs.entities.FunctionBean;
+import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
@@ -60,7 +56,7 @@ public class HTTPConnection {
         try {
             URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + LOCOMOTIVE);
             URLConnection lc = cs2.openConnection();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     locs.append(inputLine.strip());
@@ -75,32 +71,31 @@ public class HTTPConnection {
         return locs.toString();
     }
 
-    public String getLocomotiveStatusesFile() {
-        StringBuilder locs = new StringBuilder();
-        try {
-            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + LOCOMOTIVESTATUS);
-            URLConnection lc = cs2.openConnection();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    locs.append(inputLine.strip());
-                    locs.append("\n");
-                }
-            }
-        } catch (MalformedURLException ex) {
-            Logger.error(ex);
-        } catch (IOException ex) {
-            Logger.error(ex);
-        }
-        return locs.toString();
-    }
-
+//    public String getLocomotiveStatusesFile() {
+//        StringBuilder locs = new StringBuilder();
+//        try {
+//            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + LOCOMOTIVESTATUS);
+//            URLConnection lc = cs2.openConnection();
+//            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+//                String inputLine;
+//                while ((inputLine = in.readLine()) != null) {
+//                    locs.append(inputLine.strip());
+//                    locs.append("\n");
+//                }
+//            }
+//        } catch (MalformedURLException ex) {
+//            Logger.error(ex);
+//        } catch (IOException ex) {
+//            Logger.error(ex);
+//        }
+//        return locs.toString();
+//    }
     public String getAccessoriesFile() {
         StringBuilder locs = new StringBuilder();
         try {
             URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + MAGNETARTIKEL);
             URLConnection lc = cs2.openConnection();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     locs.append(inputLine.strip());
@@ -115,32 +110,31 @@ public class HTTPConnection {
         return locs.toString();
     }
 
-    public String getAccessoryStatusesFile() {
-        StringBuilder locs = new StringBuilder();
-        try {
-            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + ACCESSORYSTATUS);
-            URLConnection lc = cs2.openConnection();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    locs.append(inputLine.strip());
-                    locs.append("\n");
-                }
-            }
-        } catch (MalformedURLException ex) {
-            Logger.error(ex);
-        } catch (IOException ex) {
-            Logger.error(ex);
-        }
-        return locs.toString();
-    }
-
+//    public String getAccessoryStatusesFile() {
+//        StringBuilder locs = new StringBuilder();
+//        try {
+//            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + ACCESSORYSTATUS);
+//            URLConnection lc = cs2.openConnection();
+//            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+//                String inputLine;
+//                while ((inputLine = in.readLine()) != null) {
+//                    locs.append(inputLine.strip());
+//                    locs.append("\n");
+//                }
+//            }
+//        } catch (MalformedURLException ex) {
+//            Logger.error(ex);
+//        } catch (IOException ex) {
+//            Logger.error(ex);
+//        }
+//        return locs.toString();
+//    }
     public String getDeviceFile() {
         StringBuilder device = new StringBuilder();
         try {
             URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + DEVICE);
             URLConnection lc = cs2.openConnection();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     device.append(inputLine.strip());
@@ -160,12 +154,21 @@ public class HTTPConnection {
         InetAddress inetAddr = InetAddress.getByName("192.168.1.180");
         HTTPConnection hc = new HTTPConnection(inetAddr);
         String loks = hc.getLocomotivesFile();
-        LocomotiveParser lp = new LocomotiveParser();
-        List<Locomotive> locList = lp.parseLocomotivesFile(loks);
+        LocomotiveBeanParser lp = new LocomotiveBeanParser();
+        List<LocomotiveBean> locList = lp.parseLocomotivesFile(loks);
 
-        for (Locomotive loc : locList) {
+        for (LocomotiveBean loc : locList) {
             System.out.println(loc.toLogString());
+
+            for (Integer fnnr : loc.getFunctions().keySet()) {
+                FunctionBean fn = loc.getFunctions().get(fnnr);
+
+                System.out.println(".Fn: " + fn.getNumber() + ", Type: " + fn.getFunctionType() + ", Value: " + fn.getValue());
+            }
+
         }
+
+        /*        
         String accessories = hc.getAccessoriesFile();
         AccessoryParser ap = new AccessoryParser();
         List<SolenoidAccessory> acList = ap.parseAccessoryFile(accessories);
@@ -173,18 +176,19 @@ public class HTTPConnection {
         for (SolenoidAccessory sa : acList) {
             System.out.println(sa.toLogString());
         }
-
+         */
+ /*
         String deviceFile = hc.getDeviceFile();
         DeviceParser dp = new DeviceParser();
         DeviceInfo di = dp.parseAccessoryFile(deviceFile);
 
         System.out.println(di);
-
-        String accessoryStatuses = hc.getAccessoryStatusesFile();
-        List<AccessoryStatus> acsList = ap.parseAccessoryStatusFile(accessoryStatuses);
-
-        for (AccessoryStatus as : acsList) {
-            System.out.println(as.toString());
-        }
+         */
+//        String accessoryStatuses = hc.getAccessoryStatusesFile();
+//        List<AccessoryStatus> acsList = ap.parseAccessoryStatusFile(accessoryStatuses);
+//
+//        for (AccessoryStatus as : acsList) {
+//            System.out.println(as.toString());
+//        }
     }
 }

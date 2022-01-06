@@ -40,12 +40,12 @@ import jcs.controller.ControllerService;
 import jcs.controller.cs2.events.CanMessageListener;
 import jcs.controller.cs2.events.SensorMessageListener;
 import jcs.controller.cs2.net.Connection;
-import jcs.entities.Locomotive;
 import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
+import jcs.entities.LocomotiveBean;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
 
@@ -192,7 +192,7 @@ public class DemoController implements ControllerService {
             case SX1:
                 locoAddress = 0x0800 + address;
                 break;
-            case MM2:
+            case MM:
                 locoAddress = address;
                 break;
             default:
@@ -376,7 +376,7 @@ public class DemoController implements ControllerService {
     }
 
     @Override
-    public List<Locomotive> getLocomotives() {
+    public List<LocomotiveBean> getLocomotives() {
         return Collections.EMPTY_LIST;
     }
 

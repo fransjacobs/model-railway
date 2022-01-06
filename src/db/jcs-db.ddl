@@ -2,7 +2,10 @@ DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS;
 DROP TABLE if exists drivewaytypes CASCADE CONSTRAINTS;  --
 DROP TABLE if exists driveways CASCADE CONSTRAINTS;
 DROP TABLE if exists drivewayactivationlogs CASCADE CONSTRAINTS; ---
+
 DROP TABLE if exists locomotives CASCADE CONSTRAINTS;
+DROP TABLE if exists functions CASCADE CONSTRAINTS;
+
 DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS;
 DROP TABLE if exists accessorysettings CASCADE CONSTRAINTS;
 DROP TABLE if exists statustypes CASCADE CONSTRAINTS;
@@ -17,7 +20,10 @@ DROP TABLE if exists routes CASCADE CONSTRAINTS;
 
 DROP SEQUENCE if exists drwa_seq;
 DROP SEQUENCE if exists dwal_seq; ---
+
 DROP SEQUENCE if exists loco_seq;
+DROP SEQUENCE if exists func_seq;
+
 DROP SEQUENCE if exists soac_seq;
 DROP SEQUENCE if exists acse_seq;
 DROP SEQUENCE if exists trpo_seq;
@@ -29,7 +35,8 @@ DROP SEQUENCE if exists sens_seq;
 DROP SEQUENCE if exists rout_seq;
 
 CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1;
+--CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1;
+--CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE acse_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1;
@@ -54,6 +61,45 @@ create table tiles (
 );
 
 ALTER TABLE tiles ADD CONSTRAINT tile_pk PRIMARY KEY ( id );
+
+CREATE TABLE locomotives (
+  id                 NUMBER NOT NULL,
+  name               VARCHAR2(255 CHAR) NOT NULL,
+  previousname       VARCHAR2(255 CHAR),
+  uid                VARCHAR2(255 CHAR),
+  mfxuid             VARCHAR2(255 CHAR),
+  address            INTEGER NOT NULL,
+  icon               VARCHAR2(255 CHAR),
+  decodertype        VARCHAR2(255 CHAR),
+  mfxsid             VARCHAR2(255 CHAR),
+  tachomax           INTEGER,
+  vmin               INTEGER,
+  accelerationDelay  INTEGER,
+  brakeDelay         INTEGER,
+  volume             INTEGER,
+  spm                VARCHAR2(255 CHAR),
+  velocity           INTEGER,
+  direction          INTEGER,
+  mfxtype            VARCHAR2(255 CHAR),
+  blocks             VARCHAR2(255 CHAR)
+);
+
+ALTER TABLE locomotives ADD CONSTRAINT locomotive_pk PRIMARY KEY ( id );
+
+CREATE TABLE functions (
+  id                 NUMBER NOT NULL,
+  locoid             NUMBER NOT NULL,
+  number             INTEGER NOT NULL,
+  type               INTEGER NOT NULL,
+  value              INTEGER
+);
+
+--ALTER TABLE functions ADD CONSTRAINT function_pk PRIMARY KEY ( id );
+
+ALTER TABLE functions ADD CONSTRAINT function_loco_number_un UNIQUE ( locoid, number );
+
+ALTER TABLE functions ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid ) REFERENCES locomotives ( id ) NOT DEFERRABLE;  
+
 
 --============
 -- OLD
@@ -91,7 +137,7 @@ ALTER TABLE sensors ADD CONSTRAINT sens_pk PRIMARY KEY ( id );
 
 ALTER TABLE sensors ADD CONSTRAINT sens_address_un UNIQUE ( address );
 
-
+/*
 CREATE TABLE locomotives (
   id                 NUMBER NOT NULL,
   address            INTEGER NOT NULL,
@@ -115,7 +161,7 @@ CREATE TABLE locomotives (
 ALTER TABLE locomotives ADD CONSTRAINT loco_pk PRIMARY KEY ( id );
 
 ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype );
-
+*/
 
 CREATE TABLE solenoidaccessories (
   id                    NUMBER NOT NULL,
@@ -232,6 +278,7 @@ ALTER TABLE accessorysettings
   NOT DEFERRABLE;
 */
 
+/*
 -- Layout
 CREATE TABLE layouttiles (
   id                    NUMBER NOT NULL,
@@ -258,6 +305,7 @@ ALTER TABLE layouttiles
   ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )
     REFERENCES sensors ( id )
   NOT DEFERRABLE;  
+*/
 
 CREATE TABLE driveways (
   id             NUMBER NOT NULL,

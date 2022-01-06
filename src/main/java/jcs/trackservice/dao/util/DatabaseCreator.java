@@ -81,7 +81,6 @@ public class DatabaseCreator {
         File jcsPath = new File(path);
         boolean success;
         int fileCntDel = 0;
-        int fileCntLst = 0;
 
         String fileName = testMode ? "jcs-test-db" : "jcs-db";
 
@@ -106,9 +105,7 @@ public class DatabaseCreator {
                 return n.contains("jcs-test-db");
             });
 
-            fileCntLst = files.length;
             for (int i = 1; i < files.length; i++) {
-
                 success = false;
             }
         } else {
@@ -132,6 +129,7 @@ public class DatabaseCreator {
     private static void dropObjects(Statement stmt) throws SQLException {
         stmt.executeUpdate("DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists locomotives CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists functions CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists statustypes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
@@ -140,35 +138,37 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists sensors CASCADE CONSTRAINTS");
 
         //trackplan
-        stmt.executeUpdate("DROP TABLE if exists layouttiles CASCADE CONSTRAINTS");
-        stmt.executeUpdate("DROP TABLE if exists driveways CASCADE CONSTRAINTS");
-        stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
+        //stmt.executeUpdate("DROP TABLE if exists driveways CASCADE CONSTRAINTS");
+        //stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP SEQUENCE if exists femo_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists loco_seq");
+        stmt.executeUpdate("DROP SEQUENCE if exists func_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists soac_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists trpo_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists prop_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists sens_seq");
         //trackplan
-        stmt.executeUpdate("DROP SEQUENCE if exists lati_seq");
-        stmt.executeUpdate("DROP SEQUENCE if exists drwa_seq");
-        stmt.executeUpdate("DROP SEQUENCE if exists rout_seq");
+        //stmt.executeUpdate("DROP SEQUENCE if exists lati_seq");
+        //stmt.executeUpdate("DROP SEQUENCE if exists drwa_seq");
+        //stmt.executeUpdate("DROP SEQUENCE if exists rout_seq");
 
         Logger.trace("Existing schema object dropped...");
     }
 
     private static void createSequences(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
         stmt.executeUpdate("CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1");
 
         //trackplan
-        stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
-        stmt.executeUpdate("CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1");
-        stmt.executeUpdate("CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1");
 
         Logger.trace("Sequences created...");
     }
@@ -226,7 +226,7 @@ public class DatabaseCreator {
         Logger.trace("Table sensors created...");
     }
 
-    private static void locomotives(Statement stmt) throws SQLException {
+    private static void locomotives_old(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE locomotives ("
                 + "id                 NUMBER NOT NULL, "
                 + "address            INTEGER NOT NULL, "
@@ -251,6 +251,47 @@ public class DatabaseCreator {
         stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype )");
 
         Logger.trace("Table locomotives created...");
+    }
+
+    private static void locomotives(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE locomotives ("
+                + "id                 NUMBER NOT NULL, "
+                + "name               VARCHAR2(255 CHAR) NOT NULL, "
+                + "previousname       VARCHAR2(255 CHAR), "
+                + "uid                VARCHAR2(255 CHAR), "
+                + "mfxuid             VARCHAR2(255 CHAR), "
+                + "address            INTEGER NOT NULL, "
+                + "icon               VARCHAR2(255), "
+                + "decodertype        VARCHAR2(255 CHAR), "
+                + "mfxsid             VARCHAR2(255 CHAR), "
+                + "tachomax           INTEGER, "
+                + "vmin               INTEGER, "
+                + "accelerationDelay  INTEGER, "
+                + "brakeDelay         INTEGER, "
+                + "volume             INTEGER, "
+                + "spm                VARCHAR2(255 CHAR), "
+                + "velocity           INTEGER, "
+                + "direction          INTEGER, "
+                + "mfxtype            VARCHAR2(255), "
+                + "blocks             VARCHAR2(255))");
+
+        stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_pk PRIMARY KEY ( id )");
+        stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype )");
+        Logger.trace("Table locomotives created...");
+    }
+
+    private static void functions(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE functions ("
+                + "id               NUMBER NOT NULL, "
+                + "locoid           NUMBER NOT NULL, "
+                + "number           INTEGER NOT NULL, "
+                + "type             INTEGER  NOT NULL, "
+                + "value            INTEGER  NOT NULL)");
+
+        //stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( id )");
+        stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT function_loco_number_un UNIQUE ( locoid, number )");
+
+        Logger.trace("Table functions created...");
     }
 
     private static void solenoidaccessories(Statement stmt) throws SQLException {
@@ -307,61 +348,66 @@ public class DatabaseCreator {
         Logger.trace("Table jcsproperties created...");
     }
 
-    private static void layoutTiles(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE TABLE layouttiles ("
-                + "id            NUMBER NOT NULL,"
-                + "tiletype      VARCHAR2(255 CHAR) NOT NULL,"
-                + "orientation   VARCHAR2(255 CHAR) NOT NULL,"
-                + "direction     VARCHAR2(255 CHAR) NOT NULL,"
-                + "x             INTEGER NOT NULL,"
-                + "y             INTEGER NOT NULL,"
-                + "soac_id       NUMBER NULL,"
-                + "sens_id       NUMBER NULL)");
+//    private static void layoutTiles(Statement stmt) throws SQLException {
+//        stmt.executeUpdate("CREATE TABLE layouttiles ("
+//                + "id            NUMBER NOT NULL,"
+//                + "tiletype      VARCHAR2(255 CHAR) NOT NULL,"
+//                + "orientation   VARCHAR2(255 CHAR) NOT NULL,"
+//                + "direction     VARCHAR2(255 CHAR) NOT NULL,"
+//                + "x             INTEGER NOT NULL,"
+//                + "y             INTEGER NOT NULL,"
+//                + "soac_id       NUMBER NULL,"
+//                + "sens_id       NUMBER NULL)");
+//
+//        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id )");
+//
+//        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_x_y_un UNIQUE ( x, y )");
+//
+//        Logger.trace("Table layouttiles created...");
+//    }
 
-        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id )");
+//    private static void driveways(Statement stmt) throws SQLException {
+//        stmt.executeUpdate("CREATE TABLE driveways ("
+//                + "id             NUMBER NOT NULL,"
+//                + "address        INTEGER NOT NULL,"
+//                + "name           VARCHAR2(255 CHAR),"
+//                + "description    VARCHAR2(255 CHAR),"
+//                + "from_lati_id   NUMBER,"
+//                + "to_lati_id     NUMBER,"
+//                + "loco_id        NUMBER,"
+//                + "active         INTEGER NOT NULL,"
+//                + "reserved       INTEGER NOT NULL,"
+//                + "occupied       INTEGER NOT NULL)");
+//
+//        stmt.executeUpdate("ALTER TABLE driveways ADD CONSTRAINT drwa_pk PRIMARY KEY ( id )");
+//
+//        stmt.executeUpdate("ALTER TABLE driveways ADD CONSTRAINT drwa_address_un UNIQUE ( address )");
+//
+//        Logger.trace("Table driveways created...");
+//    }
 
-        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_x_y_un UNIQUE ( x, y )");
-
-        Logger.trace("Table layouttiles created...");
-    }
-
-    private static void driveways(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE TABLE driveways ("
-                + "id             NUMBER NOT NULL,"
-                + "address        INTEGER NOT NULL,"
-                + "name           VARCHAR2(255 CHAR),"
-                + "description    VARCHAR2(255 CHAR),"
-                + "from_lati_id   NUMBER,"
-                + "to_lati_id     NUMBER,"
-                + "loco_id        NUMBER,"
-                + "active         INTEGER NOT NULL,"
-                + "reserved       INTEGER NOT NULL,"
-                + "occupied       INTEGER NOT NULL)");
-
-        stmt.executeUpdate("ALTER TABLE driveways ADD CONSTRAINT drwa_pk PRIMARY KEY ( id )");
-
-        stmt.executeUpdate("ALTER TABLE driveways ADD CONSTRAINT drwa_address_un UNIQUE ( address )");
-
-        Logger.trace("Table driveways created...");
-    }
-
-    private static void routes(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE TABLE routes ("
-                + "id             NUMBER NOT NULL,"
-                + "address        INTEGER NOT NULL,"
-                + "name           VARCHAR2(255 CHAR),"
-                + "description    VARCHAR2(255 CHAR),"
-                + "drwa_id        NUMBER NOT NULL,"
-                + "lati_id        NUMBER NOT NULL)");
-
-        stmt.executeUpdate("ALTER TABLE routes ADD CONSTRAINT rout_pk PRIMARY KEY ( id )");
-
-        stmt.executeUpdate("ALTER TABLE routes ADD CONSTRAINT rout_address_un UNIQUE ( address )");
-
-        Logger.trace("Table routes created...");
-    }
+//    private static void routes(Statement stmt) throws SQLException {
+//        stmt.executeUpdate("CREATE TABLE routes ("
+//                + "id             NUMBER NOT NULL,"
+//                + "address        INTEGER NOT NULL,"
+//                + "name           VARCHAR2(255 CHAR),"
+//                + "description    VARCHAR2(255 CHAR),"
+//                + "drwa_id        NUMBER NOT NULL,"
+//                + "lati_id        NUMBER NOT NULL)");
+//
+//        stmt.executeUpdate("ALTER TABLE routes ADD CONSTRAINT rout_pk PRIMARY KEY ( id )");
+//
+//        stmt.executeUpdate("ALTER TABLE routes ADD CONSTRAINT rout_address_un UNIQUE ( address )");
+//
+//        Logger.trace("Table routes created...");
+//    }
 
     private static void createForeignKeys(Statement stmt) throws SQLException {
+        stmt.executeUpdate("ALTER TABLE functions"
+                + " ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid )"
+                + " REFERENCES locomotives ( id )"
+                + " NOT DEFERRABLE");
+
         stmt.executeUpdate("ALTER TABLE solenoidaccessories"
                 + " ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )"
                 + " REFERENCES accessorytypes ( accessory_type )"
@@ -382,40 +428,40 @@ public class DatabaseCreator {
                 + " REFERENCES signalvalues ( signal_value )"
                 + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE layouttiles"
-                + " ADD CONSTRAINT lati_soac_fk FOREIGN KEY ( soac_id )"
-                + " REFERENCES solenoidaccessories ( id )"
-                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE layouttiles"
+//                + " ADD CONSTRAINT lati_soac_fk FOREIGN KEY ( soac_id )"
+//                + " REFERENCES solenoidaccessories ( id )"
+//                + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE layouttiles"
-                + " ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )"
-                + " REFERENCES sensors ( id )"
-                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE layouttiles"
+//                + " ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )"
+//                + " REFERENCES sensors ( id )"
+//                + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE driveways"
-                + " ADD CONSTRAINT from_lati_fk FOREIGN KEY ( from_lati_id )"
-                + " REFERENCES layouttiles ( id )"
-                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE driveways"
+//                + " ADD CONSTRAINT from_lati_fk FOREIGN KEY ( from_lati_id )"
+//                + " REFERENCES layouttiles ( id )"
+//                + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE driveways"
-                + " ADD CONSTRAINT to_lati_fk FOREIGN KEY ( to_lati_id )"
-                + " REFERENCES layouttiles ( id )"
-                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE driveways"
+//                + " ADD CONSTRAINT to_lati_fk FOREIGN KEY ( to_lati_id )"
+//                + " REFERENCES layouttiles ( id )"
+//                + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE driveways"
-                + " ADD CONSTRAINT loco_drwa_fk FOREIGN KEY ( loco_id )"
-                + " REFERENCES locomotives ( id )"
-                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE driveways"
+//                + " ADD CONSTRAINT loco_drwa_fk FOREIGN KEY ( loco_id )"
+//                + " REFERENCES locomotives ( id )"
+//                + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE routes"
-                + " ADD CONSTRAINT drwa_rout_fk FOREIGN KEY ( drwa_id )"
-                + " REFERENCES driveways ( id )"
-                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE routes"
+//                + " ADD CONSTRAINT drwa_rout_fk FOREIGN KEY ( drwa_id )"
+//                + " REFERENCES driveways ( id )"
+//                + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE routes"
-                + " ADD CONSTRAINT lati_rout_fk FOREIGN KEY ( lati_id )"
-                + " REFERENCES layouttiles ( id )"
-                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE routes"
+//                + " ADD CONSTRAINT lati_rout_fk FOREIGN KEY ( lati_id )"
+//                + " REFERENCES layouttiles ( id )"
+//                + " NOT DEFERRABLE");
 
         Logger.trace("Foreign Keys created...");
     }
@@ -465,19 +511,20 @@ public class DatabaseCreator {
                 dropObjects(stmt);
                 createSequences(stmt);
                 createTiles(stmt);
-                
+
                 createTrackpower(stmt);
                 accessoryTypes(stmt);
                 sensors(stmt);
                 locomotives(stmt);
+                functions(stmt);
                 solenoidaccessories(stmt);
                 statustypes(stmt);
                 signalvalues(stmt);
                 jcsproperties(stmt);
                 //trackplan
-                layoutTiles(stmt);
-                driveways(stmt);
-                routes(stmt);
+                //layoutTiles(stmt);
+                //driveways(stmt);
+                //routes(stmt);
 
                 createForeignKeys(stmt);
 

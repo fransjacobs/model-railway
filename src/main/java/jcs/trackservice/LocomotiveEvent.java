@@ -20,7 +20,7 @@ package jcs.trackservice;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import jcs.entities.Locomotive;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
 
 /**
@@ -29,68 +29,68 @@ import jcs.entities.enums.Direction;
  */
 public class LocomotiveEvent implements Serializable {
 
-  private final BigDecimal id;
-  private final Direction direction;
-  private final Integer speed;
-  private final boolean f0;
-  private final boolean f1;
-  private final boolean f2;
-  private final boolean f3;
-  private final boolean f4;
+    private final BigDecimal id;
+    private final Direction direction;
+    private final Integer speed;
+    private final boolean f0;
+    private final boolean f1;
+    private final boolean f2;
+    private final boolean f3;
+    private final boolean f4;
 
-  public LocomotiveEvent(Locomotive locomotive) {
-    this.id = locomotive.getId();
-    this.direction = locomotive.getDirection();
-    this.speed = locomotive.getSpeed();
-    this.f0 = locomotive.isF0();
-    this.f1 = locomotive.isF1();
-    this.f2 = locomotive.isF2();
-    this.f3 = locomotive.isF3();
-    this.f4 = locomotive.isF4();
-  }
-
-  public BigDecimal getId() {
-    return id;
-  }
-
-  public boolean isEventFor(BigDecimal id) {
-    if (id != null) {
-      return id.equals(this.id);
+    public LocomotiveEvent(LocomotiveBean locomotive) {
+        this.id = locomotive.getId();
+        this.direction = locomotive.getDirection();
+        this.speed = locomotive.getVelocity();
+        this.f0 = locomotive.isFunctionValue(0);
+        this.f1 = locomotive.isFunctionValue(1);
+        this.f2 = locomotive.isFunctionValue(2);
+        this.f3 = locomotive.isFunctionValue(3);
+        this.f4 = locomotive.isFunctionValue(4);
     }
-    return false;
-  }
 
-  public Direction getDirection() {
-    return direction;
-  }
+    public BigDecimal getId() {
+        return id;
+    }
 
-  public Integer getSpeed() {
-    return speed;
-  }
+    public boolean isEventFor(BigDecimal id) {
+        if (id != null) {
+            return id.equals(this.id);
+        }
+        return false;
+    }
 
-  public boolean isF0() {
-    return f0;
-  }
+    public Direction getDirection() {
+        return direction;
+    }
 
-  public boolean isF1() {
-    return f1;
-  }
+    public Integer getSpeed() {
+        return speed;
+    }
 
-  public boolean isF2() {
-    return f2;
-  }
+    public boolean isF0() {
+        return f0;
+    }
 
-  public boolean isF3() {
-    return f3;
-  }
+    public boolean isF1() {
+        return f1;
+    }
 
-  public boolean isF4() {
-    return f4;
-  }
+    public boolean isF2() {
+        return f2;
+    }
 
-  @Override
-  public String toString() {
-    return "LocomotiveEvent{" + "id=" + id + ", direction=" + direction + ", speed=" + speed + ", f0=" + f0 + ", f1=" + f1 + ", f2=" + f2 + ", f3=" + f3 + ", f4=" + f4 + '}';
-  }
+    public boolean isF3() {
+        return f3;
+    }
+
+    public boolean isF4() {
+        return f4;
+    }
+
+    @Override
+    public String toString() {
+        return "LocomotiveEvent{" + "id=" + id + ", direction=" + direction + ", speed=" + speed + ", f0=" + f0 + ", f1=" + f1 + ", f2=" + f2 + ", f3=" + f3 + ", f4=" + f4 + '}';
+    }
 
 }

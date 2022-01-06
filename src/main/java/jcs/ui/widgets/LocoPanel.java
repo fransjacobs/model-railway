@@ -30,7 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
-import jcs.entities.Locomotive;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.LocomotiveEvent;
 import jcs.trackservice.TrackServiceFactory;
@@ -275,7 +275,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
         Logger.trace("Retrieve prefs: " + this.getName() + "_ID: " + lid);
 
         if (TrackServiceFactory.getTrackService() != null) {
-            Locomotive psl = TrackServiceFactory.getTrackService().getLocomotive(lid);
+            LocomotiveBean psl = TrackServiceFactory.getTrackService().getLocomotive(lid);
             if (psl != null) {
                 this.id = psl.getId();
                 locoCB.setSelectedItem(psl);
@@ -284,7 +284,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
     }
 
   private void locoCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locoCBActionPerformed
-      Locomotive sl = (Locomotive) locoCB.getSelectedItem();
+      LocomotiveBean sl = (LocomotiveBean) locoCB.getSelectedItem();
       BigDecimal i = sl.getId();
       if (i != null) {
           setId(i);
@@ -297,29 +297,28 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
           Logger.debug("Unreg: " + this.id);
           TrackServiceFactory.getTrackService().removeLocomotiveListener(this);
 
-          Locomotive cl = TrackServiceFactory.getTrackService().getLocomotive(i);
+          LocomotiveBean cl = TrackServiceFactory.getTrackService().getLocomotive(i);
           this.direction = cl.getDirection();
           setDirectionIcon();
-          this.f0Btn.setSelected(cl.isF0());
-          this.f1Btn.setSelected(cl.isF1());
-          this.f2Btn.setSelected(cl.isF2());
-          this.f3Btn.setSelected(cl.isF3());
-          this.f4Btn.setSelected(cl.isF4());
+          this.f0Btn.setSelected(cl.hasFunction(0));
+          this.f1Btn.setSelected(cl.hasFunction(1));
+          this.f2Btn.setSelected(cl.hasFunction(2));
+          this.f3Btn.setSelected(cl.hasFunction(3));
+          this.f4Btn.setSelected(cl.hasFunction(4));
 
           //int max = this.speedSlider.getMaximum();
-          int sliderSpeed = cl.getSpeed();
+          int sliderSpeed = cl.getVelocity();
           this.speedSlider.setValue(sliderSpeed);
 
-          //max = this.speedPBar.getMaximum();
-          int sp = cl.getSpeed();
+          int sp = cl.getVelocity();
           this.speedPBar.setValue(sp);
 
-          this.f1Btn.setEnabled(cl.getFunctionCount() > 1);
-          this.f2Btn.setEnabled(cl.getFunctionCount() > 1);
-          this.f3Btn.setEnabled(cl.getFunctionCount() > 1);
-          this.f4Btn.setEnabled(cl.getFunctionCount() > 1);
+          this.f1Btn.setEnabled(cl.hasFunction(1));
+          this.f2Btn.setEnabled(cl.hasFunction(2));
+          this.f3Btn.setEnabled(cl.hasFunction(3));
+          this.f4Btn.setEnabled(cl.hasFunction(4));
 
-          Logger.trace("Loc: " + cl.getName() + " Dir: " + cl.getDirection() + " Speed: " + cl.getSpeed());
+          Logger.trace("Loc: " + cl.getName() + " Dir: " + cl.getDirection() + " Speed: " + cl.getVelocity());
 
           this.setTitle(sl.getName());
 
@@ -349,7 +348,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
       setDirectionIcon();
       Logger.debug(this.direction);
 
-      Locomotive locomotive = getSelectedLoco();
+      LocomotiveBean locomotive = getSelectedLoco();
       TrackServiceFactory.getTrackService().toggleDirection(direction, locomotive);
   }//GEN-LAST:event_directionBtnActionPerformed
 
@@ -363,7 +362,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
           this.speedPBar.setValue(sp);
           Logger.trace("Speed: " + speed);
 
-          Locomotive locomotive = getSelectedLoco();
+          LocomotiveBean locomotive = getSelectedLoco();
 
           if (TrackServiceFactory.getTrackService() != null) {
               TrackServiceFactory.getTrackService().changeSpeed(speed, locomotive);
@@ -371,64 +370,61 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
       }
   }//GEN-LAST:event_speedSliderStateChanged
 
-    private Locomotive getSelectedLoco() {
-        Locomotive l = (Locomotive) this.locoCB.getSelectedItem();
+    private LocomotiveBean getSelectedLoco() {
+        LocomotiveBean l = (LocomotiveBean) this.locoCB.getSelectedItem();
 
-        Locomotive loco;
+        LocomotiveBean loco;
         if (l.getId().equals(this.id)) {
             loco = l;
         } else {
-            loco = new Locomotive(0, "");
+            loco = new LocomotiveBean();
             loco.setId(id);
+            loco.setName("");
+            loco.setAddress(0);
             Logger.trace("Use tmp Loco: " + loco);
         }
 
-        loco.setF0(this.f0Btn.isSelected());
-        loco.setF1(this.f1Btn.isSelected());
-        loco.setF2(this.f2Btn.isSelected());
-        loco.setF3(this.f3Btn.isSelected());
-        loco.setF4(this.f4Btn.isSelected());
+        loco.setFunctionValue(0, this.f0Btn.isSelected());
+        loco.setFunctionValue(1, this.f1Btn.isSelected());
+        loco.setFunctionValue(2, this.f2Btn.isSelected());
+        loco.setFunctionValue(3, this.f3Btn.isSelected());
+        loco.setFunctionValue(4, this.f4Btn.isSelected());
         loco.setDirection(this.direction);
         return loco;
     }
 
   private void f0BtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f0BtnActionPerformed
       Logger.trace("F0: " + (f0Btn.isSelected() ? "On" : "Off"));
-      Locomotive locomotive = getSelectedLoco();
-      locomotive.setSpeed(getSpeed());
-      //TrackServiceFactory.getTrackService().toggleFunction(f0Btn.isSelected(), locomotive);
+      LocomotiveBean locomotive = getSelectedLoco();
+      locomotive.setVelocity(getSpeed());
       TrackServiceFactory.getTrackService().setFunction(f0Btn.isSelected(), 0, locomotive);
   }//GEN-LAST:event_f0BtnActionPerformed
 
   private void f1BtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f1BtnActionPerformed
       Logger.trace("F1: " + (f1Btn.isSelected() ? "On" : "Off"));
-      Locomotive locomotive = getSelectedLoco();
-      locomotive.setSpeed(getSpeed());
-      //TrackServiceFactory.getTrackService().toggleF1(f1Btn.isSelected(), locomotive);
+      LocomotiveBean locomotive = getSelectedLoco();
+      locomotive.setVelocity(getSpeed());
       TrackServiceFactory.getTrackService().setFunction(f1Btn.isSelected(), 1, locomotive);
   }//GEN-LAST:event_f1BtnActionPerformed
 
   private void f2BtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f2BtnActionPerformed
       Logger.trace("F2: " + (f2Btn.isSelected() ? "On" : "Off"));
-      Locomotive locomotive = getSelectedLoco();
-      locomotive.setSpeed(getSpeed());
-      //TrackServiceFactory.getTrackService().toggleF2(f2Btn.isSelected(), locomotive);
+      LocomotiveBean locomotive = getSelectedLoco();
+      locomotive.setVelocity(getSpeed());
       TrackServiceFactory.getTrackService().setFunction(f2Btn.isSelected(), 2, locomotive);
   }//GEN-LAST:event_f2BtnActionPerformed
 
   private void f3BtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f3BtnActionPerformed
       Logger.trace("F3: " + (f3Btn.isSelected() ? "On" : "Off"));
-      Locomotive locomotive = getSelectedLoco();
-      locomotive.setSpeed(getSpeed());
-      //TrackServiceFactory.getTrackService().toggleF3(f3Btn.isSelected(), locomotive);
+      LocomotiveBean locomotive = getSelectedLoco();
+      locomotive.setVelocity(getSpeed());
       TrackServiceFactory.getTrackService().setFunction(f3Btn.isSelected(), 3, locomotive);
   }//GEN-LAST:event_f3BtnActionPerformed
 
   private void f4BtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f4BtnActionPerformed
       Logger.trace("F4: " + (f4Btn.isSelected() ? "On" : "Off"));
-      Locomotive locomotive = getSelectedLoco();
-      locomotive.setSpeed(getSpeed());
-      //TrackServiceFactory.getTrackService().toggleF4(f4Btn.isSelected(), locomotive);
+      LocomotiveBean locomotive = getSelectedLoco();
+      locomotive.setVelocity(getSpeed());
       TrackServiceFactory.getTrackService().setFunction(f4Btn.isSelected(), 4, locomotive);
   }//GEN-LAST:event_f4BtnActionPerformed
 
@@ -436,7 +432,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
       this.speedSlider.setValue(0);
       int speed = this.getSpeed();
       this.directionBtn.setEnabled(speed == 0);
-      Locomotive locomotive = getSelectedLoco();
+      LocomotiveBean locomotive = getSelectedLoco();
       TrackServiceFactory.getTrackService().changeSpeed(0, locomotive);
   }//GEN-LAST:event_stopBtnActionPerformed
 
@@ -456,11 +452,13 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
         }
     }
 
-    private ComboBoxModel<Locomotive> createLocoCBM() {
-        List<Locomotive> locoList = new ArrayList<>();
+    private ComboBoxModel<LocomotiveBean> createLocoCBM() {
+        List<LocomotiveBean> locoList = new ArrayList<>();
         //Need one "null or empty" loc on top in the list...
-        Locomotive emtpy = new Locomotive(0, "");
-        locoList.add(emtpy);
+        LocomotiveBean empty = new LocomotiveBean();
+        empty.setAddress(0);
+        empty.setName("");
+        locoList.add(empty);
         //Add existing loco's  
 
         if (TrackServiceFactory.getTrackService() == null) {
@@ -469,10 +467,10 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
 
         locoList.addAll(TrackServiceFactory.getTrackService().getLocomotives());
 
-        Locomotive[] locs = new Locomotive[locoList.size()];
+        LocomotiveBean[] locs = new LocomotiveBean[locoList.size()];
         locoList.toArray(locs);
 
-        ComboBoxModel<Locomotive> locoCBM = new DefaultComboBoxModel<>(locs);
+        ComboBoxModel<LocomotiveBean> locoCBM = new DefaultComboBoxModel<>(locs);
         Logger.trace("Created Loco CBM with " + locs.length + " loco's...");
         return locoCBM;
     }
@@ -547,7 +545,7 @@ public class LocoPanel extends JPanel implements LocomotiveListener {
     private javax.swing.Box.Filler filler3;
     private javax.swing.Box.Filler filler4;
     private javax.swing.JPanel functionPanel;
-    private javax.swing.JComboBox<Locomotive> locoCB;
+    private javax.swing.JComboBox<LocomotiveBean> locoCB;
     private javax.swing.JPanel speedFunctionPanel;
     private javax.swing.JLabel speedLbl1;
     private javax.swing.JProgressBar speedPBar;

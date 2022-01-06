@@ -100,17 +100,7 @@ public class JCSGUI extends Thread {
 
         trackService = TrackServiceFactory.getTrackService();
 
-//    if (trackService == null) {
-//      //start a new track server in a jvm
-//      Logger.debug("Start new JVM procees with Track Server");
-//      updateProgress();
-//      ServiceInfo tsi = startTrackServerJVM();
-//
-//      if (tsi != null) {
-//        Logger.debug("Trackserver has initialized: " + tsi);
-//        trackService = TrackServiceFactory.getTrackService(splashScreen);
-//      }
-//    }
+
         if (trackService != null) {
             JCSGUI jcs = JCSGUI.getInstance();
             jcs.init();
@@ -226,6 +216,17 @@ public class JCSGUI extends Thread {
     }
 }
 
+//    if (trackService == null) {
+//      //start a new track server in a jvm
+//      Logger.debug("Start new JVM procees with Track Server");
+//      updateProgress();
+//      ServiceInfo tsi = startTrackServerJVM();
+//
+//      if (tsi != null) {
+//        Logger.debug("Trackserver has initialized: " + tsi);
+//        trackService = TrackServiceFactory.getTrackService(splashScreen);
+//      }
+//    }
 
 //  private static ServiceInfo startTrackServerJVM() {
 //    ServiceInfo si = null;

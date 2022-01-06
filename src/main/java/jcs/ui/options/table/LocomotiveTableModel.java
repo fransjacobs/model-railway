@@ -22,22 +22,21 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import jcs.entities.Locomotive;
-import jcs.entities.enums.DecoderType;
+import jcs.entities.LocomotiveBean;
 import jcs.trackservice.TrackServiceFactory;
 
 /**
  *
  * @author frans
  */
-public class LocomotiveTableModel extends DeviceTableModel<Locomotive> {
+public class LocomotiveTableModel extends DeviceTableModel<LocomotiveBean> {
 
     public LocomotiveTableModel() {
         super();
     }
 
     @Override
-    protected List<Locomotive> getDevices() {
+    protected List<LocomotiveBean> getDevices() {
         if (TrackServiceFactory.getTrackService() != null) {
             return TrackServiceFactory.getTrackService().getLocomotives();
         } else {
@@ -53,25 +52,25 @@ public class LocomotiveTableModel extends DeviceTableModel<Locomotive> {
             cols.add("Address");
             cols.add("Decoder");
             cols.add("Name");
-            cols.add("Description");
+            cols.add("Icon");
             return cols;
         }
         return this.columns;
     }
 
     @Override
-    Object getColumnValue(Locomotive device, int column) {
+    Object getColumnValue(LocomotiveBean device, int column) {
         switch (column) {
             case 0:
                 return device.getId();
             case 1:
                 return device.getAddress();
             case 2:
-                return device.getDecoderType().getDecoderType();
+                return device.getDecoderType();
             case 3:
                 return device.getName();
             case 4:
-                return device.getDescription();
+                return device.getIcon();
             default:
                 return null;
         }
@@ -96,7 +95,7 @@ public class LocomotiveTableModel extends DeviceTableModel<Locomotive> {
     }
 
     @Override
-    void setColumnValue(Locomotive device, int column, Object value) {
+    void setColumnValue(LocomotiveBean device, int column, Object value) {
         switch (column) {
             case 0:
                 device.setId((BigDecimal) value);
@@ -105,13 +104,13 @@ public class LocomotiveTableModel extends DeviceTableModel<Locomotive> {
                 device.setAddress((Integer) value);
                 break;
             case 2:
-                device.setDecoderType(DecoderType.get((String) value));
+                device.setDecoderType((String) value);
                 break;
             case 3:
                 device.setName((String) value);
                 break;
             case 4:
-                device.setDescription((String) value);
+                device.setIcon((String) value);
                 break;
             default:
                 break;

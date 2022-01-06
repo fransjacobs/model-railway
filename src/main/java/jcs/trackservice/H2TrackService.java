@@ -44,7 +44,6 @@ import jcs.entities.ControllableDevice;
 import jcs.entities.JCSProperty;
 import jcs.entities.LayoutTile;
 import jcs.entities.LayoutTileGroup;
-import jcs.entities.Locomotive;
 import jcs.entities.SensorBean;
 import jcs.entities.SignalBean;
 import jcs.entities.SolenoidAccessory;
@@ -58,7 +57,6 @@ import static jcs.entities.enums.SignalValue.Hp0Sh1;
 import static jcs.entities.enums.SignalValue.Hp1;
 import static jcs.entities.enums.SignalValue.Hp2;
 import jcs.trackservice.dao.JCSPropertiesDAO;
-import jcs.trackservice.dao.LocomotiveDAO;
 import jcs.trackservice.dao.SignalDAO;
 import jcs.trackservice.dao.TrackPowerDAO;
 import jcs.trackservice.dao.SwitchDAO;
@@ -69,6 +67,9 @@ import jcs.trackservice.events.PersistedEventListener;
 import jcs.controller.HeartbeatListener;
 import jcs.controller.cs2.AccessoryStatus;
 import jcs.controller.cs2.events.SensorMessageListener;
+import jcs.entities.FunctionBean;
+import jcs.entities.JCSEntity;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.SignalValue;
 import jcs.trackservice.dao.LayoutTileDAO;
@@ -76,13 +77,17 @@ import jcs.trackservice.dao.LayoutTileGroupDAO;
 import jcs.trackservice.dao.SensorDAO;
 import jcs.trackservice.events.SensorListener;
 import jcs.entities.enums.TileType;
+import jcs.trackservice.dao.FunctionBeanDAO;
+import jcs.trackservice.dao.LocomotiveBeanDAO;
 import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
 
 public class H2TrackService implements TrackService {
 
     private final SensorDAO sensDAO;
-    private final LocomotiveDAO locoDAO;
+    private final LocomotiveBeanDAO locoDAO;
+    private final FunctionBeanDAO funcDAO;
+
     private final SwitchDAO turnoutDAO;
     private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
@@ -123,7 +128,8 @@ public class H2TrackService implements TrackService {
         jcsProperties = new Properties();
 
         sensDAO = new SensorDAO();
-        locoDAO = new LocomotiveDAO();
+        locoDAO = new LocomotiveBeanDAO();
+        funcDAO = new FunctionBeanDAO();
         turnoutDAO = new SwitchDAO();
         signalDAO = new SignalDAO();
         trpoDAO = new TrackPowerDAO();
@@ -151,6 +157,7 @@ public class H2TrackService implements TrackService {
         }
 
         Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
+
     }
 
     private void retrieveJCSProperties() {
@@ -353,11 +360,12 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void remove(ControllableDevice entity) {
+    public void remove(JCSEntity entity) {
         if (entity instanceof SensorBean) {
             sensDAO.remove((SensorBean) entity);
-        } else if (entity instanceof Locomotive) {
-            locoDAO.remove((Locomotive) entity);
+        } else if (entity instanceof LocomotiveBean) {
+            funcDAO.remove(((LocomotiveBean) entity).getFunctions().values());
+            locoDAO.remove((LocomotiveBean) entity);
         } else if (entity instanceof SwitchBean) {
             //Check whether the turnout is linked to a layout tile
             turnoutDAO.remove((SwitchBean) entity);
@@ -390,31 +398,42 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public Locomotive getLocomotive(Integer address, DecoderType decoderType) {
-        return locoDAO.find(address, decoderType);
+    public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
+        return locoDAO.find(address, decoderType.getDecoderType());
     }
 
     @Override
-    public Locomotive getLocomotive(BigDecimal id) {
+    public LocomotiveBean getLocomotive(BigDecimal id) {
         return locoDAO.findById(id);
     }
 
     @Override
-    public List<Locomotive> getLocomotives() {
-        return locoDAO.findAll();
+    public List<LocomotiveBean> getLocomotives() {
+        List<LocomotiveBean> locos = locoDAO.findAll();
+
+        for (LocomotiveBean loco : locos) {
+            List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
+            loco.addAllFunctions(functions);
+        }
+
+        return locos;
     }
 
     @Override
-    public Locomotive persist(Locomotive locomotive) {
-        Locomotive cl = locoDAO.findById(locomotive.getId());
+    public LocomotiveBean persist(LocomotiveBean locomotive) {
+        return persist(locomotive, true);
+    }
+
+    private LocomotiveBean persist(LocomotiveBean locomotive, boolean fireEvent) {
+        LocomotiveBean cl = locoDAO.findById(locomotive.getId());
         locoDAO.persist(locomotive);
+        funcDAO.persist(locomotive.getFunctions().values());
 
-        if (cl != null && cl.isChanged(locomotive)) {
-            LocomotiveEvent event = new LocomotiveEvent(locomotive);
-            Logger.debug("Changed loco-> " + event);
-            broadcastLocomotiveEvent(event);
-        }
-
+//        if (cl != null && cl.isChanged(locomotive)) {
+//            LocomotiveEvent event = new LocomotiveEvent(locomotive);
+//            Logger.debug("Changed loco-> " + event);
+//            broadcastLocomotiveEvent(event);
+//        }
         return locomotive;
     }
 
@@ -732,19 +751,20 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void synchronizeLocomotivesWithController() {
-        List<Locomotive> fromCs2 = this.controllerService.getLocomotives();
+        List<LocomotiveBean> fromCs2 = this.controllerService.getLocomotives();
 
-        for (Locomotive loc : fromCs2) {
+        for (LocomotiveBean loc : fromCs2) {
             Integer addr = loc.getAddress();
-            DecoderType dt = loc.getDecoderType();
-            Locomotive dbLoc = this.locoDAO.find(addr, dt);
+            String dt = loc.getDecoderType();
+            LocomotiveBean dbLoc = this.locoDAO.find(addr, dt);
             if (dbLoc != null) {
                 loc.setId(dbLoc.getId());
                 Logger.trace("Update " + loc);
             } else {
                 Logger.trace("Add " + loc);
             }
-            this.locoDAO.persist(loc);
+
+            persist(loc, false);
         }
     }
 
@@ -836,19 +856,20 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void toggleDirection(Direction direction, Locomotive locomotive) {
+    public void toggleDirection(Direction direction, LocomotiveBean locomotive) {
         String cs = jcsProperties.getProperty("activeControllerService");
         Logger.debug("New: " + direction + " for: " + locomotive.toLogString() + " Current: " + locomotive.getDirection() + " Decoder: " + locomotive.getDecoderType());
 
         locomotive.setDirection(direction);
 
         if ("CS2".equals(cs)) {
-            controllerService.toggleDirection(locomotive.getAddress(), locomotive.getDecoderType());
+            controllerService.toggleDirection(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
         } else {
-            controllerService.toggleDirection(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF0());
-            if (locomotive.getFunctionCount() > 1) {
-                controllerService.setFunctions(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF1(), locomotive.isF2(), locomotive.isF3(), locomotive.isF4());
-            }
+            //P50 
+            //controllerService.toggleDirection(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF0());
+            //if (locomotive.getFunctionCount() > 1) {
+            //    controllerService.setFunctions(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF1(), locomotive.isF2(), locomotive.isF3(), locomotive.isF4());
+            Logger.warn("P50x commands not supported");
         }
 
         if (locoDAO.findById(locomotive.getId()) != null) {
@@ -857,15 +878,16 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void changeSpeed(Integer speed, Locomotive locomotive) {
+    public void changeSpeed(Integer velocity, LocomotiveBean locomotive) {
         String cs = jcsProperties.getProperty("activeControllerService");
-        Logger.trace("Changing speed to " + speed + " for " + locomotive.toLogString() + " Decoder: " + locomotive.getDecoderType());
-        locomotive.setSpeed(speed);
+        Logger.trace("Changing velocity to " + velocity + " for " + locomotive.toLogString() + " Decoder: " + locomotive.getDecoderType());
+
+        locomotive.setVelocity(velocity);
 
         if ("CS2".equals(cs)) {
-            controllerService.setSpeed(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.getSpeed());
+            controllerService.setSpeed(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), locomotive.getVelocity());
         } else {
-            controllerService.setSpeedAndFunction(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF0(), locomotive.getSpeed());
+            Logger.warn("P50x commands not supported");
         }
         if (locoDAO.findById(locomotive.getId()) != null) {
             persist(locomotive);
@@ -873,20 +895,25 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void setFunction(Boolean value, Integer functionNumber, Locomotive locomotive) {
+    public void setFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive) {
         String cs = jcsProperties.getProperty("activeControllerService");
         Logger.trace("Changing Function nr. " + functionNumber + " to " + (value ? "on" : "off") + " for: " + locomotive.toLogString() + " Decoder: " + locomotive.getDecoderType());
 
-        locomotive.setFunctionValue(functionNumber, value);
+        if (locomotive.getFunctions().containsKey(functionNumber)) {
+            FunctionBean function = locomotive.getFunctions().get(functionNumber);
 
+            function.setValue(value ? 1 : 0);
+        }
         if ("CS2".equals(cs)) {
-            controllerService.setFunction(locomotive.getAddress(), locomotive.getDecoderType(), functionNumber, locomotive.getFunctionValue(functionNumber));
+            controllerService.setFunction(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), functionNumber, value);
         } else {
-            if (functionNumber == 0) {
-                controllerService.setSpeedAndFunction(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF0(), locomotive.getSpeed());
-            } else {
-                controllerService.setFunctions(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF1(), locomotive.isF2(), locomotive.isF3(), locomotive.isF4());
-            }
+            Logger.warn("P50x commands not supported");
+
+//            if (functionNumber == 0) {
+//                controllerService.setSpeedAndFunction(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF0(), locomotive.getSpeed());
+//            } else {
+//                controllerService.setFunctions(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF1(), locomotive.isF2(), locomotive.isF3(), locomotive.isF4());
+//            }
         }
         if (locoDAO.findById(locomotive.getId()) != null) {
             persist(locomotive);
@@ -894,27 +921,27 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void toggleFunction(Boolean function, Locomotive locomotive) {
+    public void toggleFunction(Boolean function, LocomotiveBean locomotive) {
         this.setFunction(function, 0, locomotive);
     }
 
     @Override
-    public void toggleF1(Boolean f1, Locomotive locomotive) {
+    public void toggleF1(Boolean f1, LocomotiveBean locomotive) {
         this.setFunction(f1, 1, locomotive);
     }
 
     @Override
-    public void toggleF2(Boolean f2, Locomotive locomotive) {
+    public void toggleF2(Boolean f2, LocomotiveBean locomotive) {
         this.setFunction(f2, 2, locomotive);
     }
 
     @Override
-    public void toggleF3(Boolean f3, Locomotive locomotive) {
+    public void toggleF3(Boolean f3, LocomotiveBean locomotive) {
         this.setFunction(f3, 4, locomotive);
     }
 
     @Override
-    public void toggleF4(Boolean f4, Locomotive locomotive) {
+    public void toggleF4(Boolean f4, LocomotiveBean locomotive) {
         this.setFunction(f4, 4, locomotive);
     }
 

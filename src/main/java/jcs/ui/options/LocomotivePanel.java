@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -38,7 +39,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
@@ -50,9 +50,8 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
-import jcs.entities.Locomotive;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.DecoderType;
-import jcs.entities.enums.Direction;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.options.table.LocomotiveTableModel;
 import org.tinylog.Logger;
@@ -98,7 +97,7 @@ public class LocomotivePanel extends JPanel {
     private void initComponents() {
 
         directionBG = new ButtonGroup();
-        selectedLocomotive = new Locomotive();
+        selectedLocomotive = new LocomotiveBean();
         topPanel = new JPanel();
         locIconLbl = new JLabel();
         synchronizeBtn = new JButton();
@@ -119,28 +118,15 @@ public class LocomotivePanel extends JPanel {
         nameLbl = new JLabel();
         nameTF = new JTextField();
         row3Panel = new JPanel();
-        descriptionLbl = new JLabel();
-        descriptionTF = new JTextField();
         row4Panel = new JPanel();
-        catalogeNrLbl = new JLabel();
-        catalogNrTF = new JTextField();
         row5Panel = new JPanel();
-        defaultDirectionLbl = new JLabel();
-        forwardsRB = new JRadioButton();
-        backwardsRB = new JRadioButton();
         row6Panel = new JPanel();
-        speedStepsLbl = new JLabel();
-        speedStepsSpinner = new JSpinner();
         minSpeedLbl = new JLabel();
         minSpeedSpinner = new JSpinner();
-        maxSpeedLbl = new JLabel();
-        maxSpeedSpinner = new JSpinner();
         row7Panel = new JPanel();
         tachoMaxLbl = new JLabel();
         tachoMaxSpinner = new JSpinner();
         row8Panel = new JPanel();
-        functionCountLbl = new JLabel();
-        functionCountCB = new JComboBox<>();
         row9Panel = new JPanel();
         filler2 = new Box.Filler(new Dimension(0, 50), new Dimension(0, 50), new Dimension(32767, 300));
         buttonPanel = new JPanel();
@@ -294,17 +280,6 @@ public class LocomotivePanel extends JPanel {
         FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
         flowLayout4.setAlignOnBaseline(true);
         row3Panel.setLayout(flowLayout4);
-
-        descriptionLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        descriptionLbl.setLabelFor(descriptionTF);
-        descriptionLbl.setText("Description");
-        descriptionLbl.setPreferredSize(new Dimension(100, 16));
-        row3Panel.add(descriptionLbl);
-
-        descriptionTF.setMinimumSize(new Dimension(215, 26));
-        descriptionTF.setPreferredSize(new Dimension(200, 26));
-        row3Panel.add(descriptionTF);
-
         locoDetailPanel.add(row3Panel);
 
         row4Panel.setMinimumSize(new Dimension(380, 30));
@@ -312,17 +287,6 @@ public class LocomotivePanel extends JPanel {
         FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT);
         flowLayout5.setAlignOnBaseline(true);
         row4Panel.setLayout(flowLayout5);
-
-        catalogeNrLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        catalogeNrLbl.setLabelFor(catalogNrTF);
-        catalogeNrLbl.setText("Catalog Nr.");
-        catalogeNrLbl.setPreferredSize(new Dimension(100, 16));
-        row4Panel.add(catalogeNrLbl);
-
-        catalogNrTF.setMinimumSize(new Dimension(120, 26));
-        catalogNrTF.setPreferredSize(new Dimension(200, 26));
-        row4Panel.add(catalogNrTF);
-
         locoDetailPanel.add(row4Panel);
 
         row5Panel.setMinimumSize(new Dimension(380, 30));
@@ -330,23 +294,6 @@ public class LocomotivePanel extends JPanel {
         FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
         flowLayout6.setAlignOnBaseline(true);
         row5Panel.setLayout(flowLayout6);
-
-        defaultDirectionLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        defaultDirectionLbl.setLabelFor(backwardsRB);
-        defaultDirectionLbl.setText("Def. Direction");
-        defaultDirectionLbl.setMaximumSize(new Dimension(100, 16));
-        defaultDirectionLbl.setPreferredSize(new Dimension(100, 16));
-        row5Panel.add(defaultDirectionLbl);
-
-        directionBG.add(forwardsRB);
-        forwardsRB.setSelected(true);
-        forwardsRB.setText("Forwards");
-        row5Panel.add(forwardsRB);
-
-        directionBG.add(backwardsRB);
-        backwardsRB.setText("Backwards");
-        row5Panel.add(backwardsRB);
-
         locoDetailPanel.add(row5Panel);
 
         row6Panel.setMinimumSize(new Dimension(380, 30));
@@ -354,18 +301,6 @@ public class LocomotivePanel extends JPanel {
         FlowLayout flowLayout7 = new FlowLayout(FlowLayout.LEFT);
         flowLayout7.setAlignOnBaseline(true);
         row6Panel.setLayout(flowLayout7);
-
-        speedStepsLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        speedStepsLbl.setLabelFor(speedStepsSpinner);
-        speedStepsLbl.setText("Speedsteps");
-        speedStepsLbl.setPreferredSize(new Dimension(100, 16));
-        row6Panel.add(speedStepsLbl);
-
-        speedStepsSpinner.setModel(new SpinnerNumberModel(0, 0, 128, 1));
-        speedStepsSpinner.setEditor(new JSpinner.NumberEditor(speedStepsSpinner, ""));
-        speedStepsSpinner.setMinimumSize(new Dimension(51, 26));
-        speedStepsSpinner.setPreferredSize(new Dimension(60, 26));
-        row6Panel.add(speedStepsSpinner);
 
         minSpeedLbl.setHorizontalAlignment(SwingConstants.TRAILING);
         minSpeedLbl.setText("Min. Speed");
@@ -375,15 +310,6 @@ public class LocomotivePanel extends JPanel {
         minSpeedSpinner.setModel(new SpinnerNumberModel());
         minSpeedSpinner.setPreferredSize(new Dimension(60, 26));
         row6Panel.add(minSpeedSpinner);
-
-        maxSpeedLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        maxSpeedLbl.setText("Max. Speed");
-        maxSpeedLbl.setPreferredSize(new Dimension(75, 16));
-        row6Panel.add(maxSpeedLbl);
-
-        maxSpeedSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
-        maxSpeedSpinner.setPreferredSize(new Dimension(60, 26));
-        row6Panel.add(maxSpeedSpinner);
 
         locoDetailPanel.add(row6Panel);
 
@@ -409,15 +335,6 @@ public class LocomotivePanel extends JPanel {
         FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
         flowLayout8.setAlignOnBaseline(true);
         row8Panel.setLayout(flowLayout8);
-
-        functionCountLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        functionCountLbl.setText("Nr. Functions");
-        functionCountLbl.setPreferredSize(new Dimension(100, 16));
-        row8Panel.add(functionCountLbl);
-
-        functionCountCB.setModel(new DefaultComboBoxModel<>(new String[] { "0", "1", "5", "8", "16", "32" }));
-        row8Panel.add(functionCountCB);
-
         locoDetailPanel.add(row8Panel);
 
         row9Panel.setMinimumSize(new Dimension(380, 30));
@@ -474,21 +391,22 @@ public class LocomotivePanel extends JPanel {
       this.locoTableModel.refresh();
       alignLocoTable();
       Logger.trace("Create new Loco...");
-      this.selectedLocomotive = new Locomotive(0, "new Loco " + (locoTableModel.getRowCount() + 1), null, null, 5, false, false, false, false, false);
-      this.selectedLocomotive.setSpeedSteps(14);
+
+      this.selectedLocomotive = new LocomotiveBean();
+      this.selectedLocomotive.setId(new BigDecimal(locoTableModel.getRowCount() + 1));
+      this.selectedLocomotive.setName("new Loco " + (locoTableModel.getRowCount() + 1));
       this.selectedLocomotive.setvMin(0);
-      this.selectedLocomotive.setvMax(0);
       this.selectedLocomotive.setTachoMax(0);
       this.setComponentValues(selectedLocomotive);
   }//GEN-LAST:event_newBtnActionPerformed
 
-    private Locomotive getLococomotiveFromTrackService(Locomotive locomotive) {
-        Locomotive loco;
+    private LocomotiveBean getLococomotiveFromTrackService(LocomotiveBean locomotive) {
+        LocomotiveBean loco;
 
         if (locomotive.getId() != null) {
             loco = TrackServiceFactory.getTrackService().getLocomotive(locomotive.getId());
         } else {
-            loco = TrackServiceFactory.getTrackService().getLocomotive(locomotive.getAddress(), locomotive.getDecoderType());
+            loco = TrackServiceFactory.getTrackService().getLocomotive(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
         }
         return loco;
     }
@@ -498,7 +416,7 @@ public class LocomotivePanel extends JPanel {
       JTable source = (JTable) evt.getSource();
       int row = source.rowAtPoint(evt.getPoint());
 
-      Locomotive loc = locoTableModel.getControllableDeviceAt(row);
+      LocomotiveBean loc = locoTableModel.getControllableDeviceAt(row);
       if (loc != null) {
           Logger.trace("Selected row: " + row + ", Id: " + loc.getId() + " Address: " + loc.getAddress() + " Decoder: " + loc.getDecoderType());
           selectedLocomotive = getLococomotiveFromTrackService(loc);
@@ -512,7 +430,7 @@ public class LocomotivePanel extends JPanel {
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
       if (this.selectedLocomotive != null) {
 
-          Locomotive loco = getLococomotiveFromTrackService(selectedLocomotive);
+          LocomotiveBean loco = getLococomotiveFromTrackService(selectedLocomotive);
           loco = setLocomotiveValues(loco);
           Logger.trace("Save the Loco: " + this.selectedLocomotive);
 
@@ -551,89 +469,49 @@ public class LocomotivePanel extends JPanel {
         synchronize();
     }//GEN-LAST:event_synchronizeBtnActionPerformed
 
-    protected Locomotive setLocomotiveValues(Locomotive loco) {
+    protected LocomotiveBean setLocomotiveValues(LocomotiveBean loco) {
         Integer address = (Integer) this.addressSpinner.getValue();
         String decoder = (String) this.decoderCB.getSelectedItem();
 
         String name = this.nameTF.getText();
-        String description = this.descriptionTF.getText();
-        String catalogNumber = this.catalogNrTF.getText();
 
-        Integer speedSteps = (Integer) this.speedStepsSpinner.getValue();
         Integer minSpeed = (Integer) this.minSpeedSpinner.getValue();
-        Integer maxSpeed = (Integer) this.maxSpeedSpinner.getValue();
         Integer tachoMax = (Integer) this.tachoMaxSpinner.getValue();
 
-        Direction direction;
-        if (this.forwardsRB.isSelected()) {
-            direction = Direction.FORWARDS;
-        } else {
-            direction = Direction.BACKWARDS;
-        }
-
-        Integer functionCount = Integer.parseInt((String) this.functionCountCB.getSelectedItem());
-
-        Locomotive loc;
+        LocomotiveBean loc;
         if (loco != null) {
             loc = loco;
         } else {
-            loc = new Locomotive();
+            loc = new LocomotiveBean();
         }
 
         loc.setAddress(address);
-        loc.setDecoderType(DecoderType.get(decoder));
+        loc.setDecoderType(decoder);
         loc.setName(name);
-        loc.setDescription(description);
-        loc.setCatalogNumber(catalogNumber);
-        loc.setSpeedSteps(speedSteps);
         loc.setvMin(minSpeed);
-        loc.setvMax(maxSpeed);
         loc.setTachoMax(tachoMax);
-        loc.setDefaultDirection(direction);
-        loc.setFunctionCount(functionCount);
 
         return loc;
     }
 
-    protected void setComponentValues(Locomotive loco) {
+    protected void setComponentValues(LocomotiveBean loco) {
         if (loco != null) {
             this.idLbl.setText("ID: " + loco.getId());
             this.addressSpinner.setValue(loco.getAddress());
-            this.decoderCB.setSelectedItem(loco.getDecoderType().getDecoderType());
+            this.decoderCB.setSelectedItem(loco.getDecoderType());
             this.nameTF.setText(loco.getName());
-            this.descriptionTF.setText(loco.getDescription());
-            this.catalogNrTF.setText(loco.getCatalogNumber());
-
-            if (loco.getDefaultDirection() != null) {
-                if (loco.getDefaultDirection().equals(Direction.FORWARDS)) {
-                    this.forwardsRB.setSelected(true);
-                } else {
-                    this.backwardsRB.setSelected(true);
-                }
-            } else {
-                this.forwardsRB.setSelected(true);
-            }
 
             this.minSpeedSpinner.setValue(loco.getvMin());
-            this.maxSpeedSpinner.setValue(loco.getvMax());
             this.tachoMaxSpinner.setValue(loco.getTachoMax());
-            this.speedStepsSpinner.setValue(loco.getSpeedSteps());
-            this.functionCountCB.setSelectedItem(loco.getFunctionCount() + "");
         } else {
             this.idLbl.setText("ID: --");
 
             this.addressSpinner.setValue(0);
-            this.decoderCB.setSelectedItem("mm2_dil8");
+            this.decoderCB.setSelectedItem("mm_prg");
             this.nameTF.setText("");
-            this.descriptionTF.setText("");
-            this.catalogNrTF.setText("");
-            this.forwardsRB.setSelected(true);
 
             this.minSpeedSpinner.setValue(0);
-            this.maxSpeedSpinner.setValue(0);
             this.tachoMaxSpinner.setValue(0);
-            this.speedStepsSpinner.setValue(0);
-            this.functionCountCB.setSelectedItem("0");
         }
     }
 
@@ -669,32 +547,21 @@ public class LocomotivePanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel addressLbl;
     private JSpinner addressSpinner;
-    private JRadioButton backwardsRB;
     private JPanel bottomPanel;
     private JPanel buttonPanel;
-    private JTextField catalogNrTF;
-    private JLabel catalogeNrLbl;
     private JPanel centerPanel;
     private JSplitPane centerSplitPane;
     private JComboBox<String> decoderCB;
     private JLabel decoderLabel;
-    private JLabel defaultDirectionLbl;
     private JButton deleteBtn;
-    private JLabel descriptionLbl;
-    private JTextField descriptionTF;
     private ButtonGroup directionBG;
     private Box.Filler filler1;
     private Box.Filler filler2;
-    private JRadioButton forwardsRB;
-    private JComboBox<String> functionCountCB;
-    private JLabel functionCountLbl;
     private JLabel idLbl;
     private JLabel locIconLbl;
     private JPanel locoDetailPanel;
     private JTable locoTable;
     private JScrollPane locoTableScrollPane;
-    private JLabel maxSpeedLbl;
-    private JSpinner maxSpeedSpinner;
     private JLabel minSpeedLbl;
     private JSpinner minSpeedSpinner;
     private JLabel nameLbl;
@@ -711,9 +578,7 @@ public class LocomotivePanel extends JPanel {
     private JPanel row8Panel;
     private JPanel row9Panel;
     private JButton saveBtn;
-    private Locomotive selectedLocomotive;
-    private JLabel speedStepsLbl;
-    private JSpinner speedStepsSpinner;
+    private LocomotiveBean selectedLocomotive;
     private JButton synchronizeBtn;
     private JLabel tachoMaxLbl;
     private JSpinner tachoMaxSpinner;

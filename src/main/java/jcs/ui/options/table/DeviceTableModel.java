@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
-import jcs.entities.ControllableDevice;
+import jcs.entities.JCSEntity;
 import org.tinylog.Logger;
 
 /**
@@ -30,7 +30,7 @@ import org.tinylog.Logger;
  * @author Frans Jacobs
  * @param <T>
  */
-public abstract class DeviceTableModel<T extends ControllableDevice> extends AbstractTableModel implements Serializable {
+public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTableModel implements Serializable {
 
     protected List<T> devices;
 
@@ -182,13 +182,13 @@ public abstract class DeviceTableModel<T extends ControllableDevice> extends Abs
     protected int findRowIndex(T device) {
         int row = -1;
 
-        if (device != null && device.getAddress() != null) {
-            Integer address = device.getAddress();
+        if (device != null && device.getId() != null) {
+            Object id = device.getId();
             int rowCount = this.devices.size();
 
             for (int i = 0; i < rowCount; i++) {
                 T d = devices.get(i);
-                if (address.equals(d.getAddress())) {
+                if (id.equals(d.getId())) {
                     row = i;
                     break;
                 }

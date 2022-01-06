@@ -334,15 +334,6 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         return controllableDevice;
     }
 
-    //protected void remove(JCSEntity jcsEntity, String statement) {
-    //    remove(jcsEntity, statement);
-    //}
-//    protected int remove(String statement, BigDecimal otherId) {
-//        return remove(null, statement, false, otherId);
-//    }
-//    protected void remove(JCSEntity jcsEntity, String statement, boolean useKey) {
-//        remove(jcsEntity, statement, useKey, null);
-//    }
     protected int remove(JCSEntity jcsEntity, String statement) {
         int rows = 0;
         try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
@@ -359,6 +350,47 @@ public abstract class AbstractDAO<T extends JCSEntity> {
             if (jcsEntity != null) {
                 Logger.trace("Removed " + jcsEntity.getClass().getSimpleName() + " ID: " + jcsEntity.getId() + " Rows: " + rows);
             }
+
+            if (rows > 0) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+        } catch (SQLException ex) {
+            Logger.error(ex);
+        }
+        return rows;
+    }
+
+    protected int remove(BigDecimal id, Integer otherId, String statement) {
+        int rows = 0;
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            preparedStatement.setBigDecimal(1, id);
+            preparedStatement.setInt(2, otherId);
+
+            rows = preparedStatement.executeUpdate();
+
+            Logger.trace("Removed entity with id" + id + " and otherId " + otherId + " Rows: " + rows);
+
+            if (rows > 0) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+        } catch (SQLException ex) {
+            Logger.error(ex);
+        }
+        return rows;
+    }
+
+    protected int remove(BigDecimal id, String statement) {
+        int rows = 0;
+        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            preparedStatement.setBigDecimal(1, id);
+
+            rows = preparedStatement.executeUpdate();
+
+            Logger.trace("Removed entities with id" + id + " Rows: " + rows);
 
             if (rows > 0) {
                 connection.commit();
@@ -394,7 +426,6 @@ public abstract class AbstractDAO<T extends JCSEntity> {
     protected abstract List<T> findAll();
 
     //protected abstract <T> T find(Integer address);
-
     protected abstract Object persist(T device);
 
     protected abstract void remove(T device);

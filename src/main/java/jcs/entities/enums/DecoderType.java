@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Decoder Types of a locomotive
  */
 public enum DecoderType {
-  MM2("mm2_prg"), MM("mm2_dil8"), MFX("mfx"), DCC("dcc"), SX1("sx1");
+  MM("mm_prg"), MM_DIL("mm2_dil8"), MFX("mfx"), DCC("dcc"), SX1("sx1");
 
   private final String decoderType;
 
