@@ -172,6 +172,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
                 connection.rollback();
             }
         } catch (SQLException ex) {
+            Logger.error(jcsEntity.getClass().getSimpleName()+" "+statement );
             Logger.error(ex);
         }
         return rows;

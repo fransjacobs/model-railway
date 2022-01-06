@@ -137,7 +137,7 @@ public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTabl
     @Override
     public Object getValueAt(int row, int column) {
         if (devices != null && row < devices.size()) {
-            Logger.trace("row: " + row + " column: " + column);
+            //Logger.trace("row: " + row + " column: " + column);
             T device = this.devices.get(row);
             return getColumnValue(device, column);
         }
@@ -172,7 +172,7 @@ public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTabl
      */
     public T getControllableDeviceAt(int row) {
         if (devices != null && row >= 0 && row < devices.size()) {
-            Logger.trace("Row: " + row);
+            //Logger.trace("Row: " + row);
             return this.devices.get(row);
         }
         Logger.warn("No row " + row + " rowsize is " + (devices == null ? "null" : "" + devices.size()));

@@ -22,6 +22,7 @@ import java.awt.Point;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -364,7 +365,8 @@ public class H2TrackService implements TrackService {
         if (entity instanceof SensorBean) {
             sensDAO.remove((SensorBean) entity);
         } else if (entity instanceof LocomotiveBean) {
-            funcDAO.remove(((LocomotiveBean) entity).getFunctions().values());
+            Collection<FunctionBean> functions = ((LocomotiveBean) entity).getFunctions().values();
+            funcDAO.remove(functions);
             locoDAO.remove((LocomotiveBean) entity);
         } else if (entity instanceof SwitchBean) {
             //Check whether the turnout is linked to a layout tile
@@ -399,12 +401,18 @@ public class H2TrackService implements TrackService {
 
     @Override
     public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
-        return locoDAO.find(address, decoderType.getDecoderType());
+        LocomotiveBean loco = locoDAO.find(address, decoderType.getDecoderType());
+        List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
+        loco.addAllFunctions(functions);
+        return loco;
     }
 
     @Override
     public LocomotiveBean getLocomotive(BigDecimal id) {
-        return locoDAO.findById(id);
+        LocomotiveBean loco = locoDAO.findById(id);
+        List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
+        loco.addAllFunctions(functions);
+        return loco;
     }
 
     @Override
@@ -759,9 +767,9 @@ public class H2TrackService implements TrackService {
             LocomotiveBean dbLoc = this.locoDAO.find(addr, dt);
             if (dbLoc != null) {
                 loc.setId(dbLoc.getId());
-                Logger.trace("Update " + loc);
+                Logger.trace("Update " + loc.toLogString());
             } else {
-                Logger.trace("Add " + loc);
+                Logger.trace("Add " + loc.toLogString());
             }
 
             persist(loc, false);

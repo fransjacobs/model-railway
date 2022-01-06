@@ -26,6 +26,7 @@ import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
 import jcs.entities.FunctionBean;
+import org.tinylog.Logger;
 
 /**
  *
@@ -33,8 +34,8 @@ import jcs.entities.FunctionBean;
  */
 public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
 
-    private static final String INS_FUN_STMT = "insert into functions (NUMBER,TYPE,VALUE,LOCOID,ID) values(?,?,?,?,?)";
-    private static final String UPD_FUN_STMT = "update locomotives set NUMBER = ?,TYPE = ?,VALUE = ? where LOCOID = ? and ID = ?";
+    private static final String INS_FUN_STMT = "insert into functions (TYPE,VALUE,ID,LOCOID,NUMBER) values(?,?,?,?,?)";
+    private static final String UPD_FUN_STMT = "update functions set TYPE = ?,VALUE = ?, ID = ? where LOCOID = ? and NUMBER = ?";
 
     public FunctionBeanDAO() {
         super();
@@ -46,7 +47,7 @@ public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
         Integer functionType = rs.getInt("TYPE");
         Integer value = rs.getInt("VALUE");
         BigDecimal locoId = rs.getBigDecimal("LOCOID");
-        BigDecimal id = rs.getBigDecimal("ID");
+        //BigDecimal id = rs.getBigDecimal("ID");
 
         FunctionBean function = new FunctionBean(number, functionType, value, locoId);
         return function;
@@ -54,15 +55,19 @@ public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
 
     @Override
     protected void bind(PreparedStatement ps, FunctionBean function) throws SQLException {
-        ps.setInt(1, function.getNumber());
-        ps.setInt(2, function.getFunctionType());
+        ps.setInt(1, function.getFunctionType());
+        
         if (function.getValue() != null) {
-            ps.setInt(3, function.getValue());
+            ps.setInt(2, function.getValue());
         } else {
-            ps.setNull(3, Types.INTEGER);
+            ps.setNull(2, Types.INTEGER);
         }
+        //TODO fix id
+        ps.setBigDecimal(3, function.getId());
+         
         ps.setBigDecimal(4, function.getLocomotiveId());
-        ps.setBigDecimal(5, function.getId());
+        ps.setInt(5, function.getNumber());
+
     }
 
     @Override
@@ -72,7 +77,7 @@ public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
     }
 
     public FunctionBean findById(BigDecimal locomotiveId, Integer number) {
-        String stmt = "select * from functions where number = ? and locoid = ?";
+        String stmt = "select * from functions where locoid = ? and number = ?";
         return this.findById(locomotiveId, number, stmt);
     }
 

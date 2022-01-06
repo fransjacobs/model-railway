@@ -26,30 +26,30 @@ import java.util.concurrent.ConcurrentHashMap;
  * Decoder Types of a locomotive
  */
 public enum DecoderType {
-  MM("mm_prg"), MM_DIL("mm2_dil8"), MFX("mfx"), DCC("dcc"), SX1("sx1");
+    MM("mm_prg"), MFX("mfx"), DCC("dcc"), SX1("sx1");
 
-  private final String decoderType;
+    private final String decoderType;
 
-  private static final Map<String, DecoderType> ENUM_MAP;
+    private static final Map<String, DecoderType> ENUM_MAP;
 
-  DecoderType(String decoderType) {
-    this.decoderType = decoderType;
-  }
-
-  public String getDecoderType() {
-    return this.decoderType;
-  }
-
-  static {
-    Map<String, DecoderType> map = new ConcurrentHashMap<>();
-    for (DecoderType instance : DecoderType.values()) {
-      map.put(instance.getDecoderType(), instance);
+    DecoderType(String decoderType) {
+        this.decoderType = decoderType;
     }
-    ENUM_MAP = Collections.unmodifiableMap(map);
-  }
 
-  public static DecoderType get(String decoderType) {
-    return ENUM_MAP.get(decoderType);
-  }
+    public String getDecoderType() {
+        return this.decoderType;
+    }
+
+    static {
+        Map<String, DecoderType> map = new ConcurrentHashMap<>();
+        for (DecoderType instance : DecoderType.values()) {
+            map.put(instance.getDecoderType(), instance);
+        }
+        ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static DecoderType get(String decoderType) {
+        return ENUM_MAP.get(decoderType);
+    }
 
 }
