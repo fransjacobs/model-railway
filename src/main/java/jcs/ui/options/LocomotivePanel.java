@@ -76,8 +76,10 @@ public class LocomotivePanel extends JPanel {
         alignLocoTable();
 
         //Select the firt row
-        this.selectLoco(0);
-        this.locoTable.setRowSelectionInterval(0, 0);
+        if (locoTableModel.getRowCount() > 0) {
+            this.selectLoco(0);
+            this.locoTable.setRowSelectionInterval(0, 0);
+        }
 
     }
 
@@ -556,6 +558,13 @@ public class LocomotivePanel extends JPanel {
         if (loco != null) {
             //TODO repalce by the real ICON
             this.imageLbl.setText(loco.getIcon());
+
+            if (loco.getLocIcon() != null) {
+                this.imageLbl.setIcon(new ImageIcon(loco.getLocIcon()));
+                this.imageLbl.setText("");
+            } else {
+                this.imageLbl.setText(loco.getIcon());
+            }
 
             this.addressSpinner.setValue(loco.getAddress());
             this.decoderCB.setSelectedItem(loco.getDecoderType());

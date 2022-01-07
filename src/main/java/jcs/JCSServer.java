@@ -23,7 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
-import jcs.controller.cs2.DeviceInfo;
+import jcs.controller.cs3.DeviceInfo;
 import jcs.trackservice.TrackService;
 import jcs.trackservice.TrackServiceFactory;
 import org.tinylog.Logger;

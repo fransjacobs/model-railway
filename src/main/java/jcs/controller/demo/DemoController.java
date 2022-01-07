@@ -18,11 +18,12 @@
  */
 package jcs.controller.demo;
 
-import jcs.controller.cs2.DeviceInfo;
-import jcs.controller.cs2.DirectionInfo;
-import jcs.controller.cs2.AccessoryStatus;
-import jcs.controller.cs2.PowerStatus;
-import jcs.controller.cs2.events.SensorMessageEvent;
+import java.awt.Image;
+import jcs.controller.cs3.DeviceInfo;
+import jcs.controller.cs3.DirectionInfo;
+import jcs.controller.cs3.AccessoryStatus;
+import jcs.controller.cs3.PowerStatus;
+import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,9 +38,9 @@ import java.util.concurrent.Executors;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.ControllerService;
-import jcs.controller.cs2.events.CanMessageListener;
-import jcs.controller.cs2.events.SensorMessageListener;
-import jcs.controller.cs2.net.Connection;
+import jcs.controller.cs3.events.CanMessageListener;
+import jcs.controller.cs3.events.SensorMessageListener;
+import jcs.controller.cs3.net.Connection;
 import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
@@ -389,6 +390,13 @@ public class DemoController implements ControllerService {
     public List<AccessoryStatus> getAccessoryStatuses() {
         return Collections.EMPTY_LIST;
     }
+
+    @Override
+    public Image getLocomotiveImage(String icon) {
+        return null;
+    }
+    
+    
 
     private void notifyControllerEventListeners(ControllerEvent event) {
         Set<ControllerEventListener> snapshot;

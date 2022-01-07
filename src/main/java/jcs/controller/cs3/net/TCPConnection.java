@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2.net;
+package jcs.controller.cs3.net;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -26,10 +26,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import jcs.controller.cs2.can.CanMessage;
-import jcs.controller.cs2.can.MarklinCan;
-import jcs.controller.cs2.events.CanMessageEvent;
-import jcs.controller.cs2.events.CanMessageListener;
+import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs3.can.MarklinCan;
+import jcs.controller.cs3.events.CanMessageEvent;
+import jcs.controller.cs3.events.CanMessageListener;
 import org.tinylog.Logger;
 
 /**

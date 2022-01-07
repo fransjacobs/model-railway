@@ -16,11 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2;
+package jcs.controller.cs3;
 
 import java.io.Serializable;
-import jcs.controller.cs2.can.CanMessage;
-import jcs.controller.cs2.can.MarklinCan;
+import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs3.can.MarklinCan;
 
 /**
  *

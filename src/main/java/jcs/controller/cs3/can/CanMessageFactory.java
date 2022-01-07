@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2.can;
+package jcs.controller.cs3.can;
 
 import jcs.entities.enums.AccessoryValue;
 

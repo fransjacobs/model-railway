@@ -18,6 +18,7 @@
  */
 package jcs.entities;
 
+import java.awt.Image;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -47,6 +48,8 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     private Integer richtung;
     private String mfxType;
     private String blocks;
+
+    private Image locIcon;
 
     private final Map<Integer, FunctionBean> functions;
 
@@ -233,6 +236,14 @@ public class LocomotiveBean implements JCSEntity, Serializable {
 
     public void setBlocks(String blocks) {
         this.blocks = blocks;
+    }
+
+    public Image getLocIcon() {
+        return locIcon;
+    }
+
+    public void setLocIcon(Image locIcon) {
+        this.locIcon = locIcon;
     }
 
     @Override

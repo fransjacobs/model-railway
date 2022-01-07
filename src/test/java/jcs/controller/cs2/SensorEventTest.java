@@ -18,8 +18,8 @@
  */
 package jcs.controller.cs2;
 
-import jcs.controller.cs2.events.SensorMessageEvent;
-import jcs.controller.cs2.can.CanMessage;
+import jcs.controller.cs3.events.SensorMessageEvent;
+import jcs.controller.cs3.can.CanMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

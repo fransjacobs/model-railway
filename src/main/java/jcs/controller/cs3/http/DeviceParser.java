@@ -16,13 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2.http;
+package jcs.controller.cs3.http;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import jcs.controller.cs2.DeviceInfo;
+import jcs.controller.cs3.DeviceInfo;
 import org.tinylog.Logger;
 
 /**

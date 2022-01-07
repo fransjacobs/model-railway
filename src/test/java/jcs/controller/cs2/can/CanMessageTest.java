@@ -18,7 +18,7 @@
  */
 package jcs.controller.cs2.can;
 
-import jcs.controller.cs2.can.CanMessage;
+import jcs.controller.cs3.can.CanMessage;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

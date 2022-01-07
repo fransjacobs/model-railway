@@ -18,7 +18,11 @@
  */
 package jcs.trackservice;
 
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -35,12 +39,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.imageio.ImageIO;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs2.DeviceInfo;
+import jcs.controller.cs3.DeviceInfo;
 import jcs.controller.ControllerService;
-import jcs.controller.cs2.events.SensorMessageEvent;
-import jcs.controller.cs2.events.CanMessageListener;
+import jcs.controller.cs3.events.SensorMessageEvent;
+import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.ControllableDevice;
 import jcs.entities.JCSProperty;
 import jcs.entities.LayoutTile;
@@ -66,8 +71,8 @@ import jcs.trackservice.events.HeartBeatListener;
 import jcs.trackservice.events.LocomotiveListener;
 import jcs.trackservice.events.PersistedEventListener;
 import jcs.controller.HeartbeatListener;
-import jcs.controller.cs2.AccessoryStatus;
-import jcs.controller.cs2.events.SensorMessageListener;
+import jcs.controller.cs3.AccessoryStatus;
+import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSEntity;
 import jcs.entities.LocomotiveBean;
@@ -120,6 +125,8 @@ public class H2TrackService implements TrackService {
     private DeviceInfo controllerInfo;
     private final Timer timer;
 
+    private HashMap<String, Image> imageCache;
+
     public H2TrackService() {
         this(true);
     }
@@ -127,6 +134,8 @@ public class H2TrackService implements TrackService {
     private H2TrackService(boolean aquireControllerService) {
         propDao = new JCSPropertiesDAO();
         jcsProperties = new Properties();
+
+        imageCache = new HashMap<>();
 
         sensDAO = new SensorDAO();
         locoDAO = new LocomotiveBeanDAO();
@@ -404,6 +413,9 @@ public class H2TrackService implements TrackService {
         LocomotiveBean loco = locoDAO.find(address, decoderType.getDecoderType());
         List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
         loco.addAllFunctions(functions);
+
+        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+
         return loco;
     }
 
@@ -412,6 +424,9 @@ public class H2TrackService implements TrackService {
         LocomotiveBean loco = locoDAO.findById(id);
         List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
         loco.addAllFunctions(functions);
+
+        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+
         return loco;
     }
 
@@ -422,9 +437,58 @@ public class H2TrackService implements TrackService {
         for (LocomotiveBean loco : locos) {
             List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
             loco.addAllFunctions(functions);
+
+            loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
         }
 
         return locos;
+    }
+
+    public Image getLocomotiveImage(String imageName) {
+        if (!imageCache.containsKey(imageName)) {
+            //Try to load the image from the file cache
+            Image image = readImage(imageName);
+            if (image == null) {
+                image = controllerService.getLocomotiveImage(imageName);
+            }
+            if (image != null) {
+                int size = 85;
+                storeImage(image, imageName);
+                float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
+                this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), 1));
+                //this.imageCache.put(imageName, image);
+            }
+        }
+        return this.imageCache.get(imageName);
+    }
+
+    private void storeImage(Image image, String imageName) {
+        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache";
+        File cachePath = new File(path);
+        if (cachePath.mkdir()) {
+            Logger.trace("Created new directory " + cachePath);
+        }
+        try {
+            ImageIO.write((BufferedImage) image, "png", new File(path + File.separator + imageName + ".png"));
+        } catch (IOException ex) {
+            Logger.error("Cant store image " + cachePath.getName() + "! ", ex.getMessage());
+        }
+        Logger.trace("Stored image " + imageName + ".png in the cache");
+    }
+
+    private Image readImage(String imageName) {
+        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
+        Image image = null;
+
+        File imgFile = new File(path + imageName + ".png");
+        if (imgFile.exists()) {
+            try {
+                image = ImageIO.read(imgFile);
+            } catch (IOException e) {
+                Logger.trace("Image file " + imageName + ".png does not exists");
+            }
+        }
+        return image;
     }
 
     @Override

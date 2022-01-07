@@ -16,16 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2.net;
+package jcs.controller.cs3.net;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import jcs.controller.cs2.can.CanMessage;
-import jcs.controller.cs2.can.CanMessageFactory;
-import jcs.controller.cs2.can.MarklinCan;
+import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs3.can.CanMessageFactory;
+import jcs.controller.cs3.can.MarklinCan;
 import org.tinylog.Logger;
 
 /**
@@ -34,9 +34,9 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs <frans.jacobs@gmail.com>
  */
-public class CS2ConnectionFactory {
+public class CS3ConnectionFactory {
 
-    private static CS2ConnectionFactory instance;
+    private static CS3ConnectionFactory instance;
 
     private Connection cs2Connection;
     private HTTPConnection httpConnection;
@@ -44,12 +44,12 @@ public class CS2ConnectionFactory {
 
     private static final String BROADCAST_ADDRESS = "255.255.255.255";
 
-    private CS2ConnectionFactory() {
+    private CS3ConnectionFactory() {
     }
 
-    public static CS2ConnectionFactory getInstance() {
+    public static CS3ConnectionFactory getInstance() {
         if (instance == null) {
-            instance = new CS2ConnectionFactory();
+            instance = new CS3ConnectionFactory();
         }
         return instance;
     }

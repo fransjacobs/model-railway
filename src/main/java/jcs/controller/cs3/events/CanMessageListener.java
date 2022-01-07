@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Frans Jacobs <frans.jacobs@gmail.com>.
+ * Copyright (C) 2020 Frans Jacobs.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,30 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2.net;
+package jcs.controller.cs3.events;
 
-import java.net.InetAddress;
-import jcs.controller.cs2.can.CanMessage;
-import jcs.controller.cs2.events.CanMessageListener;
+public interface CanMessageListener {
 
-/**
- *
- * @author Frans Jacobs <frans.jacobs@gmail.com>
- */
-public interface Connection extends AutoCloseable {
-
-    static final int MAX_ERRORS = 15;
-
-    static final int CS2_TX_PORT = 15730;
-
-    static final int CS2_RX_PORT = 15731;
-
-    CanMessage sendCanMessage(CanMessage message);
-
-    void addCanMessageListener(CanMessageListener listener);
-
-    void removeCanMessageListener(CanMessageListener listener);
-
-    InetAddress getCs2Address();
+    void onCanMessage(CanMessageEvent canEvent);
 
 }

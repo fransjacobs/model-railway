@@ -16,9 +16,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2.net;
+package jcs.controller.cs3.net;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -26,7 +29,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
-import jcs.controller.cs2.http.LocomotiveBeanParser;
+import javax.imageio.ImageIO;
+import jcs.controller.cs3.http.LocomotiveBeanParser;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
@@ -37,24 +41,27 @@ import org.tinylog.Logger;
  */
 public class HTTPConnection {
 
-    private final InetAddress cs2Address;
+    private final InetAddress cs3Address;
 
     private final static String HTTP = "http://";
     private final static String CONFIG = "/config/";
     private final static String LOCOMOTIVE = "lokomotive.cs2";
     private final static String MAGNETARTIKEL = "magnetartikel.cs2";
     private final static String DEVICE = "geraet.vrs";
-    private final static String LOCOMOTIVESTATUS = "lokomotive.sr2";
-    private final static String ACCESSORYSTATUS = "magnetartikel.sr2";
+    private final static String IMAGE_FOLDER = "/app/assets/lok/";
 
-    HTTPConnection(InetAddress cs2Address) {
-        this.cs2Address = cs2Address;
+    HTTPConnection(InetAddress cs3Address) {
+        this.cs3Address = cs3Address;
+    }
+
+    private static String fixURL(String url) {
+        return url.replace(" ", "%20");
     }
 
     public String getLocomotivesFile() {
         StringBuilder locs = new StringBuilder();
         try {
-            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + LOCOMOTIVE);
+            URL cs2 = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + LOCOMOTIVE);
             URLConnection lc = cs2.openConnection();
             try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
@@ -71,30 +78,11 @@ public class HTTPConnection {
         return locs.toString();
     }
 
-//    public String getLocomotiveStatusesFile() {
-//        StringBuilder locs = new StringBuilder();
-//        try {
-//            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + LOCOMOTIVESTATUS);
-//            URLConnection lc = cs2.openConnection();
-//            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
-//                String inputLine;
-//                while ((inputLine = in.readLine()) != null) {
-//                    locs.append(inputLine.strip());
-//                    locs.append("\n");
-//                }
-//            }
-//        } catch (MalformedURLException ex) {
-//            Logger.error(ex);
-//        } catch (IOException ex) {
-//            Logger.error(ex);
-//        }
-//        return locs.toString();
-//    }
     public String getAccessoriesFile() {
         StringBuilder locs = new StringBuilder();
         try {
-            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + MAGNETARTIKEL);
-            URLConnection lc = cs2.openConnection();
+            URL url = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + MAGNETARTIKEL);
+            URLConnection lc = url.openConnection();
             try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
@@ -110,30 +98,11 @@ public class HTTPConnection {
         return locs.toString();
     }
 
-//    public String getAccessoryStatusesFile() {
-//        StringBuilder locs = new StringBuilder();
-//        try {
-//            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + ACCESSORYSTATUS);
-//            URLConnection lc = cs2.openConnection();
-//            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
-//                String inputLine;
-//                while ((inputLine = in.readLine()) != null) {
-//                    locs.append(inputLine.strip());
-//                    locs.append("\n");
-//                }
-//            }
-//        } catch (MalformedURLException ex) {
-//            Logger.error(ex);
-//        } catch (IOException ex) {
-//            Logger.error(ex);
-//        }
-//        return locs.toString();
-//    }
     public String getDeviceFile() {
         StringBuilder device = new StringBuilder();
         try {
-            URL cs2 = new URL(HTTP + cs2Address.getHostAddress() + CONFIG + DEVICE);
-            URLConnection lc = cs2.openConnection();
+            URL url = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + DEVICE);
+            URLConnection lc = url.openConnection();
             try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
@@ -148,6 +117,19 @@ public class HTTPConnection {
             Logger.error(ex);
         }
         return device.toString();
+    }
+
+    public Image getLocomotiveImage(String imageName) {
+        BufferedImage image = null;
+        try {
+            URL url = new URL(fixURL(HTTP + cs3Address.getHostAddress() + IMAGE_FOLDER + imageName + ".png"));
+            image = ImageIO.read(url);
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return image;
     }
 
     public static void main(String[] args) throws Exception {
@@ -165,7 +147,6 @@ public class HTTPConnection {
 
                 System.out.println(".Fn: " + fn.getNumber() + ", Type: " + fn.getFunctionType() + ", Value: " + fn.getValue());
             }
-
         }
 
         /*        

@@ -16,9 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2;
+package jcs.controller.cs3;
 
-import jcs.controller.cs2.events.SensorMessageEvent;
+import java.awt.Image;
+import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,25 +32,25 @@ import java.util.concurrent.Executors;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.ControllerService;
-import jcs.controller.cs2.can.CanMessage;
-import jcs.controller.cs2.can.CanMessageFactory;
-import jcs.controller.cs2.can.MarklinCan;
-import static jcs.controller.cs2.can.MarklinCan.FUNCTION_OFF;
-import static jcs.controller.cs2.can.MarklinCan.FUNCTION_ON;
-import jcs.controller.cs2.events.CanMessageEvent;
-import jcs.controller.cs2.events.CanMessageListener;
-import jcs.controller.cs2.http.AccessoryParser;
-import jcs.controller.cs2.http.LocomotiveBeanParser;
-import jcs.controller.cs2.net.Connection;
-import jcs.controller.cs2.net.CS2ConnectionFactory;
-import jcs.controller.cs2.net.HTTPConnection;
+import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs3.can.CanMessageFactory;
+import jcs.controller.cs3.can.MarklinCan;
+import static jcs.controller.cs3.can.MarklinCan.FUNCTION_OFF;
+import static jcs.controller.cs3.can.MarklinCan.FUNCTION_ON;
+import jcs.controller.cs3.events.CanMessageEvent;
+import jcs.controller.cs3.events.CanMessageListener;
+import jcs.controller.cs3.http.AccessoryParser;
+import jcs.controller.cs3.http.LocomotiveBeanParser;
+import jcs.controller.cs3.net.Connection;
+import jcs.controller.cs3.net.CS3ConnectionFactory;
+import jcs.controller.cs3.net.HTTPConnection;
 import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
-import jcs.controller.cs2.events.SensorMessageListener;
-import jcs.controller.cs2.http.DeviceParser;
+import jcs.controller.cs3.events.SensorMessageListener;
+import jcs.controller.cs3.http.DeviceParser;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
@@ -57,7 +58,7 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class CS2Controller implements ControllerService {
+public class MarklinCS3 implements ControllerService {
 
     private Connection connection;
     private boolean connected = false;
@@ -75,11 +76,11 @@ public class CS2Controller implements ControllerService {
 
     private static final long DELAY = 0L;
 
-    public CS2Controller() {
+    public MarklinCS3() {
         this(true);
     }
 
-    CS2Controller(boolean useTimer) {
+    MarklinCS3(boolean useTimer) {
         controllerEventListeners = new ArrayList<>();
         sensorMessageEventListeners = new ArrayList<>();
         heartbeatListeners = new ArrayList<>();
@@ -119,8 +120,8 @@ public class CS2Controller implements ControllerService {
     @Override
     public final boolean connect() {
         if (!connected) {
-            Logger.debug("Connecting to CS2/3...");
-            this.connection = CS2ConnectionFactory.getConnection();
+            Logger.debug("Connecting to CS3...");
+            this.connection = CS3ConnectionFactory.getConnection();
             this.connected = this.connection != null;
         }
 
@@ -340,7 +341,7 @@ public class CS2Controller implements ControllerService {
 
     @Override
     public List<LocomotiveBean> getLocomotives() {
-        HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
+        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
         String lokomotiveCs2 = httpCon.getLocomotivesFile();
         LocomotiveBeanParser lp = new LocomotiveBeanParser();
         return lp.parseLocomotivesFile(lokomotiveCs2);
@@ -348,10 +349,17 @@ public class CS2Controller implements ControllerService {
 
     @Override
     public List<SolenoidAccessory> getAccessories() {
-        HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
+        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
         String magnetartikelCs2 = httpCon.getAccessoriesFile();
         AccessoryParser ap = new AccessoryParser();
         return ap.parseAccessoryFile(magnetartikelCs2);
+    }
+
+    @Override
+    public Image getLocomotiveImage(String icon) {
+        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        Image locIcon = httpCon.getLocomotiveImage(icon);
+        return locIcon;
     }
 
     @Override
@@ -363,7 +371,7 @@ public class CS2Controller implements ControllerService {
 //        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
 //        //give it some time to process
 //        pause(100L);
-//        HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
+//        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
 //        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
 //        AccessoryParser ap = new AccessoryParser();
 //        return ap.parseAccessoryStatusFile(accessoryStatuses);
@@ -374,7 +382,7 @@ public class CS2Controller implements ControllerService {
     @Override
     public DeviceInfo getControllerInfo() {
         if (deviceInfo == null) {
-            HTTPConnection httpCon = CS2ConnectionFactory.getHTTPConnection();
+            HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
             String deviceFile = httpCon.getDeviceFile();
             DeviceParser dp = new DeviceParser();
             deviceInfo = dp.parseAccessoryFile(deviceFile);
@@ -454,7 +462,7 @@ public class CS2Controller implements ControllerService {
     }
 
     public String getDeviceIp() {
-        return CS2ConnectionFactory.getInstance().getDeviceIp();
+        return CS3ConnectionFactory.getInstance().getDeviceIp();
     }
 
     public SensorMessageEvent querySensor(int contactId) {
@@ -526,13 +534,13 @@ public class CS2Controller implements ControllerService {
 
     private class IdleTask extends TimerTask {
 
-        private final CS2Controller controller;
+        private final MarklinCS3 controller;
         private boolean powerOn;
         private boolean toggle = false;
 
         private int cnt = 0;
 
-        IdleTask(CS2Controller cs2Controller) {
+        IdleTask(MarklinCS3 cs2Controller) {
             controller = cs2Controller;
         }
 
@@ -576,9 +584,9 @@ public class CS2Controller implements ControllerService {
 
     private class ExtraMessageListener implements CanMessageListener {
 
-        private final CS2Controller controller;
+        private final MarklinCS3 controller;
 
-        ExtraMessageListener(CS2Controller cs2Controller) {
+        ExtraMessageListener(MarklinCS3 cs2Controller) {
             controller = cs2Controller;
         }
 
@@ -605,7 +613,7 @@ public class CS2Controller implements ControllerService {
         //        currentConfig().formatPattern("{date:yyyy-MM_DIL-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
         //        activate();
 
-        CS2Controller cs2 = new CS2Controller(false);
+        MarklinCS3 cs2 = new MarklinCS3(false);
 
         if (cs2.isConnected()) {
             //cs2.powerOn();

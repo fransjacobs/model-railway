@@ -57,7 +57,7 @@ import javax.swing.WindowConstants;
 import jcs.JCSGUI;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs2.DeviceInfo;
+import jcs.controller.cs3.DeviceInfo;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.HeartBeatListener;
 import jcs.ui.layout2.DisplayLayoutPanel;

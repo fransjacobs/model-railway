@@ -487,12 +487,12 @@ public class DatabaseCreator {
 
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-demo','jcs.feedback.DemoFeedbackService')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-remote','FeedbackService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','jcs.controller.cs2.CS2Controller')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','jcs.controller.cs3.MarklinCS3')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeFeedbackService','CS2FeedbackService')");
 
         //Supported Controllers
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-remote','ControllerService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'CS2','jcs.controller.cs2.CS2Controller')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'CS2','jcs.controller.cs3.MarklinCS3')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-demo','jcs.controller.m6050.M6050DemoController')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-local','jcs.controller.m6050.M6050Controller')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeControllerService','CS2')");
