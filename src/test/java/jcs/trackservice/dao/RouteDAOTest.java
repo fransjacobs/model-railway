@@ -26,7 +26,6 @@ import jcs.entities.Route;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 
@@ -55,7 +54,7 @@ public class RouteDAOTest {
     public static void tearDownClass() throws Exception {
     }
 
-    @Before
+    //@Before
     public void setUp() {
         routes = new ArrayList<>();
         BigDecimal id = new BigDecimal(1);

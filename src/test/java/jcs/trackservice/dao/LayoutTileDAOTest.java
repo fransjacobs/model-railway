@@ -28,7 +28,6 @@ import jcs.entities.enums.TileType;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -46,7 +45,7 @@ public class LayoutTileDAOTest {
         layoutTiles = new ArrayList<>();
     }
 
-    @Before
+    //@Before
     public void setUp() {
         LayoutTile lt1 = new LayoutTile(new BigDecimal(1), TileType.SWITCH, Orientation.EAST, "Left", 30, 30);
         layoutTiles.add(lt1);

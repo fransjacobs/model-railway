@@ -70,8 +70,8 @@ public class MacOsAdapter {
 
     private void init() {
         try {
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            //UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.warn("Can't set the LookAndFeel: " + ex);
         }

@@ -190,14 +190,12 @@ public class H2TrackService implements TrackService {
 
         String controllerImpl = null;
 
-        //String m6050Local = jcsProperties.getProperty("M6050-local");
-        //String m6050Remote = jcsProperties.getProperty("M6050-remote");
         String m6050Demo = System.getProperty("M6050-demo");
-        String cs2 = System.getProperty("CS2");
+        String cs3 = System.getProperty("CS3");
 
         switch (activeControllerService) {
-            case "CS2":
-                controllerImpl = cs2;
+            case "CS3":
+                controllerImpl = cs3;
                 break;
             default:
                 controllerImpl = m6050Demo;
@@ -211,7 +209,7 @@ public class H2TrackService implements TrackService {
                     this.controllerService = (ControllerService) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
 
                     if (!this.controllerService.isConnected()) {
-                        Logger.info("Not connected to Real CS2/3. Switch to demo...");
+                        Logger.info("Not connected to Real CS3. Switch to demo...");
                         this.controllerService.disconnect();
                         this.controllerService = null;
                     }
@@ -411,29 +409,29 @@ public class H2TrackService implements TrackService {
     @Override
     public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
         LocomotiveBean loco = locoDAO.find(address, decoderType.getDecoderType());
-        List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
-        loco.addAllFunctions(functions);
-
-        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-
+        if(loco != null) {
+          List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
+          loco.addAllFunctions(functions);
+          loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+        }
         return loco;
     }
 
     @Override
     public LocomotiveBean getLocomotive(BigDecimal id) {
         LocomotiveBean loco = locoDAO.findById(id);
-        List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
-        loco.addAllFunctions(functions);
-
-        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-
+        if(loco != null) {
+          List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
+          loco.addAllFunctions(functions);
+          loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+        }
         return loco;
     }
 
     @Override
     public List<LocomotiveBean> getLocomotives() {
         List<LocomotiveBean> locos = locoDAO.findAll();
-
+        
         for (LocomotiveBean loco : locos) {
             List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
             loco.addAllFunctions(functions);
@@ -447,13 +445,17 @@ public class H2TrackService implements TrackService {
     public Image getLocomotiveImage(String imageName) {
         if (!imageCache.containsKey(imageName)) {
             //Try to load the image from the file cache
+            boolean fromCS3 = false;
             Image image = readImage(imageName);
             if (image == null) {
                 image = controllerService.getLocomotiveImage(imageName);
+                fromCS3 = (image != null);
             }
             if (image != null) {
-                int size = 85;
-                storeImage(image, imageName);
+                int size = 100;
+                if (fromCS3) {
+                    storeImage(image, imageName);
+                }
                 float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
                 this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), 1));
                 //this.imageCache.put(imageName, image);

@@ -484,18 +484,17 @@ public class DatabaseCreator {
         stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('OFF','OFF')");
 
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-module-count','3')");
-
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-demo','jcs.feedback.DemoFeedbackService')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-remote','FeedbackService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','jcs.controller.cs3.MarklinCS3')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeFeedbackService','CS2FeedbackService')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS3','jcs.controller.cs3.MarklinCS3')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeFeedbackService','CS3FeedbackService')");
 
         //Supported Controllers
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-remote','ControllerService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'CS2','jcs.controller.cs3.MarklinCS3')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'CS3','jcs.controller.cs3.MarklinCS3')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-demo','jcs.controller.m6050.M6050DemoController')");
         stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-local','jcs.controller.m6050.M6050Controller')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeControllerService','CS2')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeControllerService','CS3')");
 
         Logger.trace("Reference Data inserted...");
     }

@@ -23,12 +23,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.LayoutTileGroup;
-import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *

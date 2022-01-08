@@ -215,7 +215,11 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     }
 
     public Direction getDirection() {
-        return Direction.cs2Get(this.richtung);
+        if (this.richtung != null) {
+            return Direction.cs2Get(this.richtung);
+        } else {
+            return Direction.FORWARDS;
+        }
     }
 
     public void setDirection(Direction direction) {

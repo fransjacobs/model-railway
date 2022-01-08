@@ -30,7 +30,6 @@ import java.math.BigDecimal;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -49,7 +48,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.DecoderType;
@@ -75,7 +73,7 @@ public class LocomotivePanel extends JPanel {
 
         alignLocoTable();
 
-        //Select the firt row
+        //Select the firts row
         if (locoTableModel.getRowCount() > 0) {
             this.selectLoco(0);
             this.locoTable.setRowSelectionInterval(0, 0);
@@ -104,10 +102,8 @@ public class LocomotivePanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        directionBG = new ButtonGroup();
         selectedLocomotive = new LocomotiveBean();
         topPanel = new JPanel();
-        locIconLbl = new JLabel();
         synchronizeBtn = new JButton();
         refreshBtn = new JButton();
         newBtn = new JButton();
@@ -117,6 +113,7 @@ public class LocomotivePanel extends JPanel {
         locoTable = new JTable();
         locoDetailPanel = new JPanel();
         row1Panel = new JPanel();
+        filler3 = new Box.Filler(new Dimension(100, 0), new Dimension(50, 0), new Dimension(100, 32767));
         imageLbl = new JLabel();
         row2Panel = new JPanel();
         nameLbl = new JLabel();
@@ -160,10 +157,6 @@ public class LocomotivePanel extends JPanel {
         flowLayout2.setAlignOnBaseline(true);
         topPanel.setLayout(flowLayout2);
 
-        locIconLbl.setIcon(new ImageIcon(getClass().getResource("/media/electric-loc-24.png"))); // NOI18N
-        locIconLbl.setPreferredSize(new Dimension(860, 40));
-        topPanel.add(locIconLbl);
-
         synchronizeBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
         synchronizeBtn.setToolTipText("Synchronize Locomotives met CS 2/3");
         synchronizeBtn.setMaximumSize(new Dimension(40, 40));
@@ -206,7 +199,7 @@ public class LocomotivePanel extends JPanel {
         centerPanel.setPreferredSize(new Dimension(1000, 500));
         centerPanel.setLayout(new BorderLayout());
 
-        centerSplitPane.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        centerSplitPane.setBorder(null);
         centerSplitPane.setDividerLocation(500);
         centerSplitPane.setDoubleBuffered(true);
         centerSplitPane.setPreferredSize(new Dimension(1000, 540));
@@ -233,7 +226,6 @@ public class LocomotivePanel extends JPanel {
 
         centerSplitPane.setLeftComponent(locoTableScrollPane);
 
-        locoDetailPanel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
         locoDetailPanel.setMinimumSize(new Dimension(390, 540));
         locoDetailPanel.setPreferredSize(new Dimension(480, 500));
         locoDetailPanel.setLayout(new BoxLayout(locoDetailPanel, BoxLayout.Y_AXIS));
@@ -243,6 +235,7 @@ public class LocomotivePanel extends JPanel {
         FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
         flowLayout1.setAlignOnBaseline(true);
         row1Panel.setLayout(flowLayout1);
+        row1Panel.add(filler3);
 
         imageLbl.setHorizontalAlignment(SwingConstants.TRAILING);
         imageLbl.setPreferredSize(new Dimension(128, 48));
@@ -463,7 +456,7 @@ public class LocomotivePanel extends JPanel {
         if (loc != null) {
             //Logger.trace("Selected row: " + row + ", Id: " + loc.getId() + " Address: " + loc.getAddress() + " Decoder: " + loc.getDecoderType());
             selectedLocomotive = getLococomotiveFromTrackService(loc);
-            locoDetailPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(), "Edit " + selectedLocomotive.getName()));
+            //locoDetailPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(), "Edit " + selectedLocomotive.getName()));
             setComponentValues(selectedLocomotive);
         } else {
             Logger.trace("No loc found @ row " + row);
@@ -556,9 +549,6 @@ public class LocomotivePanel extends JPanel {
 
     protected void setComponentValues(LocomotiveBean loco) {
         if (loco != null) {
-            //TODO repalce by the real ICON
-            this.imageLbl.setText(loco.getIcon());
-
             if (loco.getLocIcon() != null) {
                 this.imageLbl.setIcon(new ImageIcon(loco.getLocIcon()));
                 this.imageLbl.setText("");
@@ -592,10 +582,9 @@ public class LocomotivePanel extends JPanel {
 
     public static void main(String args[]) {
         try {
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.warn("Can't set the LookAndFeel: " + ex);
+            Logger.error("Can't set the LookAndFeel: " + ex);
         }
         java.awt.EventQueue.invokeLater(() -> {
 
@@ -633,11 +622,10 @@ public class LocomotivePanel extends JPanel {
     private JComboBox<String> decoderCB;
     private JLabel decoderLabel;
     private JButton deleteBtn;
-    private ButtonGroup directionBG;
     private Box.Filler filler1;
     private Box.Filler filler2;
+    private Box.Filler filler3;
     private JLabel imageLbl;
-    private JLabel locIconLbl;
     private JPanel locoDetailPanel;
     private JTable locoTable;
     private JScrollPane locoTableScrollPane;
