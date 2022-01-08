@@ -498,8 +498,10 @@ public class LocomotivePanel extends JPanel {
         this.selectedLocomotive = null;
         this.locoTableModel.refresh();
         alignLocoTable();
-        this.selectLoco(0);
-        this.locoTable.setRowSelectionInterval(0, 0);
+        if (this.locoTable.getRowCount() > 0) {
+            this.selectLoco(0);
+            this.locoTable.setRowSelectionInterval(0, 0);
+        }
     }
 
     private void synchronize() {
