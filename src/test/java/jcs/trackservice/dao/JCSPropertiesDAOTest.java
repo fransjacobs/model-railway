@@ -19,7 +19,6 @@
 package jcs.trackservice.dao;
 
 import jcs.trackservice.dao.util.DAOTestHelper;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.JCSProperty;
@@ -100,8 +99,8 @@ public class JCSPropertiesDAOTest {
         System.out.println("persist");
         JCSProperty property = new JCSProperty("k3", "v3");
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
-        BigDecimal expResult = new BigDecimal(13);
-        BigDecimal result = instance.persist(property);
+        String expResult = "k3";
+        String result = instance.persist(property);
         assertEquals(expResult, result);
 
         //really check

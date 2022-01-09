@@ -48,6 +48,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -220,17 +221,23 @@ public class JCSFrame extends JFrame implements UICallback {
 
         jcsToolBar = new JToolBar();
         powerBtn = new JButton();
-        filler1 = new Box.Filler(new Dimension(0, 10), new Dimension(0, 10), new Dimension(32767, 10));
         showOverviewBtn = new JButton();
-        filler2 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
         showTurnoutsBtn = new JButton();
         showSignalBtn = new JButton();
         showDiagnosticsBtn = new JButton();
-        filler5 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
         showEditDesignBtn = new JButton();
-        filler3 = new Box.Filler(new Dimension(0, 20), new Dimension(0, 20), new Dimension(32767, 20));
         startOfDayBtn = new JButton();
         synchronizeLocosBtn = new JButton();
+        statusPanel = new JPanel();
+        statusPanelLeft = new JPanel();
+        filler4 = new Box.Filler(new Dimension(440, 0), new Dimension(140, 0), new Dimension(440, 32767));
+        statusPanelMiddle = new JPanel();
+        stopBtn = new JButton();
+        statusPanelRight = new JPanel();
+        blinkLbl = new JLabel();
+        mainPanel = new JPanel();
+        jSplitPane1 = new JSplitPane();
+        jPanel1 = new JPanel();
         centerPanel = new JPanel();
         settingsPanel = new JPanel();
         jLabel1 = new JLabel();
@@ -239,13 +246,6 @@ public class JCSFrame extends JFrame implements UICallback {
         diagnosticPanel = new DiagnosticPanel();
         layoutPanel = new LayoutPanel();
         overviewPanel = new DisplayLayoutPanel();
-        statusPanel = new JPanel();
-        statusPanelLeft = new JPanel();
-        filler4 = new Box.Filler(new Dimension(440, 0), new Dimension(140, 0), new Dimension(440, 32767));
-        statusPanelMiddle = new JPanel();
-        stopBtn = new JButton();
-        statusPanelRight = new JPanel();
-        blinkLbl = new JLabel();
         jcsMenuBar = new JMenuBar();
         fileMenu = new JMenu();
         quitMI = new JMenuItem();
@@ -270,13 +270,10 @@ public class JCSFrame extends JFrame implements UICallback {
             }
         });
 
-        jcsToolBar.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jcsToolBar.setBorder(null);
         jcsToolBar.setFloatable(false);
-        jcsToolBar.setOrientation(SwingConstants.VERTICAL);
-        jcsToolBar.setMaximumSize(new Dimension(50, 65775));
-        jcsToolBar.setMinimumSize(new Dimension(40, 241));
-        jcsToolBar.setName("jcsToolBar"); // NOI18N
-        jcsToolBar.setPreferredSize(new Dimension(40, 200));
+        jcsToolBar.setName("ToolBar"); // NOI18N
+        jcsToolBar.setPreferredSize(new Dimension(2, 40));
 
         powerBtn.setIcon(new ImageIcon(getClass().getResource("/media/power-green-24.png"))); // NOI18N
         powerBtn.setToolTipText("Track Power");
@@ -294,9 +291,6 @@ public class JCSFrame extends JFrame implements UICallback {
         });
         jcsToolBar.add(powerBtn);
 
-        filler1.setName("filler1"); // NOI18N
-        jcsToolBar.add(filler1);
-
         showOverviewBtn.setIcon(new ImageIcon(getClass().getResource("/media/earth-24.png"))); // NOI18N
         showOverviewBtn.setToolTipText("Overview");
         showOverviewBtn.setFocusable(false);
@@ -305,16 +299,12 @@ public class JCSFrame extends JFrame implements UICallback {
         showOverviewBtn.setMinimumSize(new Dimension(40, 40));
         showOverviewBtn.setName("showOverviewBtn"); // NOI18N
         showOverviewBtn.setPreferredSize(new Dimension(40, 40));
-        showOverviewBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         showOverviewBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 showOverviewBtnActionPerformed(evt);
             }
         });
         jcsToolBar.add(showOverviewBtn);
-
-        filler2.setName("filler2"); // NOI18N
-        jcsToolBar.add(filler2);
 
         showTurnoutsBtn.setIcon(new ImageIcon(getClass().getResource("/media/turnout-24.png"))); // NOI18N
         showTurnoutsBtn.setToolTipText("Turnouts");
@@ -364,9 +354,6 @@ public class JCSFrame extends JFrame implements UICallback {
         });
         jcsToolBar.add(showDiagnosticsBtn);
 
-        filler5.setName("filler5"); // NOI18N
-        jcsToolBar.add(filler5);
-
         showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/layout-24.png"))); // NOI18N
         showEditDesignBtn.setToolTipText("Design Layout");
         showEditDesignBtn.setFocusable(false);
@@ -382,9 +369,6 @@ public class JCSFrame extends JFrame implements UICallback {
             }
         });
         jcsToolBar.add(showEditDesignBtn);
-
-        filler3.setName("filler3"); // NOI18N
-        jcsToolBar.add(filler3);
 
         startOfDayBtn.setIcon(new ImageIcon(getClass().getResource("/media/accessory-data-sync.png"))); // NOI18N
         startOfDayBtn.setToolTipText("Synchronize Accessories with the stored settings");
@@ -418,48 +402,7 @@ public class JCSFrame extends JFrame implements UICallback {
         });
         jcsToolBar.add(synchronizeLocosBtn);
 
-        getContentPane().add(jcsToolBar, BorderLayout.WEST);
-
-        centerPanel.setMinimumSize(new Dimension(1024, 845));
-        centerPanel.setName("centerPanel"); // NOI18N
-        centerPanel.setPreferredSize(new Dimension(1324, 845));
-        centerPanel.setLayout(new CardLayout());
-
-        settingsPanel.setMinimumSize(new Dimension(1024, 723));
-        settingsPanel.setName("settingsPanel"); // NOI18N
-        settingsPanel.setOpaque(false);
-        settingsPanel.setPreferredSize(new Dimension(1024, 723));
-
-        jLabel1.setText("Settings");
-        jLabel1.setName("jLabel1"); // NOI18N
-        settingsPanel.add(jLabel1);
-
-        centerPanel.add(settingsPanel, "settingsPanel");
-        settingsPanel.getAccessibleContext().setAccessibleName("settingPanel");
-
-        signalsPanel.setName("signalsPanel"); // NOI18N
-        signalsPanel.setPreferredSize(new Dimension(1024, 840));
-        centerPanel.add(signalsPanel, "signalsPanel");
-        signalsPanel.getAccessibleContext().setAccessibleName("signalsPanel");
-
-        turnoutsPanel.setName("turnoutsPanel"); // NOI18N
-        turnoutsPanel.setPreferredSize(new Dimension(1024, 840));
-        turnoutsPanel.setLayout(new GridLayout(1, 0));
-        centerPanel.add(turnoutsPanel, "turnoutsPanel");
-        turnoutsPanel.getAccessibleContext().setAccessibleName("turnoutsPanel");
-
-        diagnosticPanel.setName("diagnosticPanel"); // NOI18N
-        centerPanel.add(diagnosticPanel, "diagnosticPanel");
-
-        layoutPanel.setName("layoutPanel"); // NOI18N
-        centerPanel.add(layoutPanel, "designPanel");
-        layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
-
-        overviewPanel.setName("overviewPanel"); // NOI18N
-        centerPanel.add(overviewPanel, "overviewPanel");
-        overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
-
-        getContentPane().add(centerPanel, BorderLayout.CENTER);
+        getContentPane().add(jcsToolBar, BorderLayout.NORTH);
 
         statusPanel.setMinimumSize(new Dimension(574, 45));
         statusPanel.setName("statusPanel"); // NOI18N
@@ -511,6 +454,58 @@ public class JCSFrame extends JFrame implements UICallback {
         statusPanel.add(statusPanelRight);
 
         getContentPane().add(statusPanel, BorderLayout.SOUTH);
+
+        mainPanel.setName("mainPanel"); // NOI18N
+
+        jSplitPane1.setName("jSplitPane1"); // NOI18N
+
+        jPanel1.setName("jPanel1"); // NOI18N
+        jSplitPane1.setLeftComponent(jPanel1);
+
+        centerPanel.setMinimumSize(new Dimension(1024, 845));
+        centerPanel.setName("centerPanel"); // NOI18N
+        centerPanel.setPreferredSize(new Dimension(1324, 845));
+        centerPanel.setLayout(new CardLayout());
+
+        settingsPanel.setMinimumSize(new Dimension(1024, 723));
+        settingsPanel.setName("settingsPanel"); // NOI18N
+        settingsPanel.setOpaque(false);
+        settingsPanel.setPreferredSize(new Dimension(1024, 723));
+
+        jLabel1.setText("Settings");
+        jLabel1.setName("jLabel1"); // NOI18N
+        settingsPanel.add(jLabel1);
+
+        centerPanel.add(settingsPanel, "settingsPanel");
+        settingsPanel.getAccessibleContext().setAccessibleName("settingPanel");
+
+        signalsPanel.setName("signalsPanel"); // NOI18N
+        signalsPanel.setPreferredSize(new Dimension(1024, 840));
+        centerPanel.add(signalsPanel, "signalsPanel");
+        signalsPanel.getAccessibleContext().setAccessibleName("signalsPanel");
+
+        turnoutsPanel.setName("turnoutsPanel"); // NOI18N
+        turnoutsPanel.setPreferredSize(new Dimension(1024, 840));
+        turnoutsPanel.setLayout(new GridLayout(1, 0));
+        centerPanel.add(turnoutsPanel, "turnoutsPanel");
+        turnoutsPanel.getAccessibleContext().setAccessibleName("turnoutsPanel");
+
+        diagnosticPanel.setName("diagnosticPanel"); // NOI18N
+        centerPanel.add(diagnosticPanel, "diagnosticPanel");
+
+        layoutPanel.setName("layoutPanel"); // NOI18N
+        centerPanel.add(layoutPanel, "designPanel");
+        layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
+
+        overviewPanel.setName("overviewPanel"); // NOI18N
+        centerPanel.add(overviewPanel, "overviewPanel");
+        overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
+
+        jSplitPane1.setRightComponent(centerPanel);
+
+        mainPanel.add(jSplitPane1);
+
+        getContentPane().add(mainPanel, BorderLayout.CENTER);
 
         jcsMenuBar.setName("jcsMenuBar"); // NOI18N
 
@@ -827,15 +822,14 @@ public class JCSFrame extends JFrame implements UICallback {
     DiagnosticPanel diagnosticPanel;
     JMenu editMenu;
     JMenu fileMenu;
-    Box.Filler filler1;
-    Box.Filler filler2;
-    Box.Filler filler3;
     Box.Filler filler4;
-    Box.Filler filler5;
     JLabel jLabel1;
+    JPanel jPanel1;
+    JSplitPane jSplitPane1;
     JMenuBar jcsMenuBar;
     JToolBar jcsToolBar;
     LayoutPanel layoutPanel;
+    JPanel mainPanel;
     JMenuItem optionsMI;
     DisplayLayoutPanel overviewPanel;
     JButton powerBtn;

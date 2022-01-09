@@ -41,13 +41,13 @@ public class SignalDAOTest {
   public SignalDAOTest() {
     DAOTestHelper.setConnectProperties();
     DAOTestHelper.createNewDatabase();
-    DAOTestHelper.insertTurnoutData();
-    DAOTestHelper.insertSignalData();
+    //DAOTestHelper.insertTurnoutData();
+    //DAOTestHelper.insertSignalData();
 
     signals = new ArrayList<>();
   }
 
-  @Before
+  //@Before
   public void setUp() {
     SignalBean s3 = new SignalBean(3, "S 3", "home made", new BigDecimal(3), AccessoryValue.GREEN, null, 2, null, null, null, null);
     s3.setName("S 3");
@@ -74,7 +74,7 @@ public class SignalDAOTest {
   public void tearDown() {
   }
 
-  @Test
+  //@Test
   public void testEquals() {
     System.out.println("equals");
 
@@ -99,7 +99,7 @@ public class SignalDAOTest {
     assertEquals(exp, signal);
   }
 
-  @Test
+  //@Test
   public void testEquals2() {
     System.out.println("equals2");
 
@@ -123,7 +123,7 @@ public class SignalDAOTest {
     assertEquals(exp, signal);
   }
 
-  @Test
+  //@Test
   public void testFindAll() {
     System.out.println("findAll");
     SignalDAO instance = new SignalDAO();
@@ -139,7 +139,7 @@ public class SignalDAOTest {
     assertEquals(expResult, result);
   }
 
-  @Test
+  //@Test
   public void testSignalValue() {
     System.out.println("signalValue");
     SignalBean s2 = new SignalBean(4, "S 4", "3942", new BigDecimal(4), AccessoryValue.RED, null, 2, null, null, null, null);
@@ -154,7 +154,7 @@ public class SignalDAOTest {
     assertEquals(s2.getSignalValue(), SignalValue.Hp0Sh1);
   }
 
-  @Test
+  //@Test
   public void testFind() {
     System.out.println("find");
 

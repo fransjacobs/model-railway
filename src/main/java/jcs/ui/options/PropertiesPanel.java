@@ -218,8 +218,8 @@ public class PropertiesPanel extends JPanel {
 
       JCSProperty cp = TrackServiceFactory.getTrackService().getProperty(p.getKey());
       if (cp != null) {
-          p.setId(cp.getId());
-          Logger.debug("Found existing " + cp + " ID: " + cp.getId());
+          //p.setId(cp.getId());
+          Logger.debug("Found existing " + cp );
       }
 
       TrackServiceFactory.getTrackService().persist(p);

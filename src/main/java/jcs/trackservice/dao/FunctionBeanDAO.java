@@ -26,7 +26,6 @@ import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
 import jcs.entities.FunctionBean;
-import org.tinylog.Logger;
 
 /**
  *
@@ -34,8 +33,8 @@ import org.tinylog.Logger;
  */
 public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
 
-    private static final String INS_FUN_STMT = "insert into functions (TYPE,VALUE,ID,LOCOID,NUMBER) values(?,?,?,?,?)";
-    private static final String UPD_FUN_STMT = "update functions set TYPE = ?,VALUE = ?, ID = ? where LOCOID = ? and NUMBER = ?";
+    private static final String INS_FUN_STMT = "insert into functions (TYPE,CURVALUE,ID,LOCOID,NUMBER) values(?,?,?,?,?)";
+    private static final String UPD_FUN_STMT = "update functions set TYPE = ?,CURVALUE = ?, ID = ? where LOCOID = ? and NUMBER = ?";
 
     public FunctionBeanDAO() {
         super();
@@ -45,9 +44,8 @@ public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
     protected FunctionBean map(ResultSet rs) throws SQLException {
         Integer number = rs.getInt("NUMBER");
         Integer functionType = rs.getInt("TYPE");
-        Integer value = rs.getInt("VALUE");
-        BigDecimal locoId = rs.getBigDecimal("LOCOID");
-        //BigDecimal id = rs.getBigDecimal("ID");
+        Integer value = rs.getInt("CURVALUE");
+        BigDecimal locoId = new BigDecimal(rs.getLong("LOCOID"));
 
         FunctionBean function = new FunctionBean(number, functionType, value, locoId);
         return function;

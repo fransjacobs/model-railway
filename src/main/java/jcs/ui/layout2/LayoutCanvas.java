@@ -46,7 +46,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import jcs.entities.TileBean;
 import jcs.trackservice.TrackServiceFactory;
-import lan.wervel.jcs.ui.layout.tiles.AbstractTile;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout2.enums.Mode;
@@ -61,8 +60,6 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class LayoutCanvas extends JPanel {
-
-    public static final int GRID_SIZE = AbstractTile.MIN_GRID;
 
     private Mode mode;
     private boolean drawGrid = true;
@@ -189,7 +186,7 @@ public class LayoutCanvas extends JPanel {
 
             for (int r = 0; r < width; r++) {
                 for (int c = 0; c < height; c++) {
-                    gc.drawOval(r * GRID_SIZE * 2, c * GRID_SIZE * 2, 1, 1);
+                    gc.drawOval(r * Tile.GRID * 2, c * Tile.GRID * 2, 1, 1);
                 }
             }
             gc.dispose();
@@ -299,7 +296,7 @@ public class LayoutCanvas extends JPanel {
             }
         }
 
-        Logger.debug("Loaded " + this.tiles.size()+" tiles...");
+        Logger.debug("Loaded " + this.tiles.size() + " tiles...");
         this.repaint();
     }
 
@@ -1062,9 +1059,7 @@ public class LayoutCanvas extends JPanel {
 //                }
 //            }
 //        }
-
 //        Logger.debug("Found " + routes.size() + " routes...");
-
         this.repaint();
 
     }

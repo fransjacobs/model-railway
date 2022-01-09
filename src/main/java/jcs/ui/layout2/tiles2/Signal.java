@@ -30,7 +30,6 @@ import static jcs.entities.enums.SignalValue.Hp0;
 import static jcs.entities.enums.SignalValue.Hp0Sh1;
 import static jcs.entities.enums.SignalValue.Hp1;
 import static jcs.entities.enums.SignalValue.Hp2;
-import static lan.wervel.jcs.ui.layout.tiles.AbstractTile.MIN_GRID;
 import jcs.entities.enums.SignalType;
 
 /**
@@ -94,14 +93,14 @@ public class Signal extends Straight implements Tile {
      * @param g2d the graphics context
      */
     protected void renderSignal2(Graphics2D g2d) {
-        int rx = MIN_GRID;
-        int ry = MIN_GRID + 5;
+        int rx = GRID;
+        int ry = GRID + 5;
         int rw = 18;
         int rh = 10;
-        int l1x = MIN_GRID + 2;
-        int l1y = MIN_GRID + 7;
-        int l2x = MIN_GRID + 10;
-        int l2y = MIN_GRID + 7;
+        int l1x = GRID + 2;
+        int l1y = GRID + 7;
+        int l2x = GRID + 10;
+        int l2y = GRID + 7;
 
         Color color1 = Color.gray;
         Color color2 = Color.gray;
@@ -144,22 +143,22 @@ public class Signal extends Straight implements Tile {
      * @param g2d the Graphics context
      */
     protected void renderSignal4(Graphics2D g2d) {
-        int rx = MIN_GRID - 5;
-        int ry = MIN_GRID + 5;
+        int rx = GRID - 5;
+        int ry = GRID + 5;
         int rw = 24;
         int rh = 12;
-        int c1x = MIN_GRID + 14;
-        int c1y = MIN_GRID + 6;
-        int c2x = MIN_GRID + 9;
-        int c2y = MIN_GRID + 6;
-        int c3x = MIN_GRID + 9;
-        int c3y = MIN_GRID + 11;
-        int c4x = MIN_GRID + 5;
-        int c4y = MIN_GRID + 12;
-        int c5x = MIN_GRID + 2;
-        int c5y = MIN_GRID + 7;
-        int c6x = MIN_GRID - 4;
-        int c6y = MIN_GRID + 6;
+        int c1x = GRID + 14;
+        int c1y = GRID + 6;
+        int c2x = GRID + 9;
+        int c2y = GRID + 6;
+        int c3x = GRID + 9;
+        int c3y = GRID + 11;
+        int c4x = GRID + 5;
+        int c4y = GRID + 12;
+        int c5x = GRID + 2;
+        int c5y = GRID + 7;
+        int c6x = GRID - 4;
+        int c6y = GRID + 6;
 
         //Initialize all "lights"
         Color color1 = Color.gray;
@@ -218,18 +217,18 @@ public class Signal extends Straight implements Tile {
      * @param g2d the Graphics context
      */
     protected void renderSignal2m(Graphics2D g2d) {
-        int rx = MIN_GRID + 5;
-        int ry = MIN_GRID + 5;
+        int rx = GRID + 5;
+        int ry = GRID + 5;
         int rw = 12;
         int rh = 12;
-        int c1x = MIN_GRID + 12;
-        int c1y = MIN_GRID + 5;
-        int c2x = MIN_GRID + 12;
-        int c2y = MIN_GRID + 12;
-        int c3x = MIN_GRID + 12;
-        int c3y = MIN_GRID + 10;
-        int c4x = MIN_GRID + 6;
-        int c4y = MIN_GRID + 6;
+        int c1x = GRID + 12;
+        int c1y = GRID + 5;
+        int c2x = GRID + 12;
+        int c2y = GRID + 12;
+        int c3x = GRID + 12;
+        int c3y = GRID + 10;
+        int c4x = GRID + 6;
+        int c4y = GRID + 6;
 
         Color color1 = Color.gray;
         Color color2 = Color.gray;

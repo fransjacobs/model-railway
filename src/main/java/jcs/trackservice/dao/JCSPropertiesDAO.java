@@ -27,73 +27,72 @@ import jcs.entities.JCSProperty;
 
 public class JCSPropertiesDAO extends AbstractDAO<JCSProperty> {
 
-  private static final String INS_PROP_STMT = "insert into JCSPROPERTIES (KEY,VALUE,ID) values(?,?,?)";
-  private static final String UPD_PROP_STMT = "update JCSPROPERTIES set KEY = ?, VALUE = ? where ID = ?";
+    private static final String INS_PROP_STMT = "insert into JCSPROPERTIES (VALUE1,KEY1) values(?,?)";
+    private static final String UPD_PROP_STMT = "update JCSPROPERTIES set VALUE1 = ? where KEY1 = ?";
 
-  public JCSPropertiesDAO() {
-    super();
-  }
-
-  @Override
-  protected JCSProperty map(ResultSet rs) throws SQLException {
-    String key = rs.getString("KEY");
-    String value = rs.getString("VALUE");
-    BigDecimal id = rs.getBigDecimal("ID");
-
-    JCSProperty property = new JCSProperty(id, key, value);
-    return property;
-  }
-
-  @Override
-  protected void bind(PreparedStatement ps, JCSProperty property) throws SQLException {
-    ps.setString(1, property.getKey());
-    ps.setString(2, property.getValue());
-    ps.setBigDecimal(3, property.getId());
-  }
-
-  @Override
-  public List<JCSProperty> findAll() {
-    String stmt = "select * from jcsproperties order by id";
-
-    return this.findAll(stmt);
-  }
-
-  public JCSProperty find(String key) {
-    String stmt = "select * from jcsproperties where key = ?";
-    JCSProperty p = this.find(key, stmt);
-    return p;
-  }
-
-  //@Override
-  public JCSProperty find(Integer address) {
-    String stmt = "select * from jcsproperties where id = ?";
-    JCSProperty p = this.find(address, stmt);
-    return p;
-  }
-
-  @Override
-  public BigDecimal persist(JCSProperty property) {
-    JCSProperty p = null;
-    if (property != null && property.getKey() != null) {
-      p = this.find(property.getKey());
+    public JCSPropertiesDAO() {
+        super();
     }
 
-    String statement;
-    if (p == null) {
-      statement = INS_PROP_STMT;
-    } else {
-      statement = UPD_PROP_STMT;
+    @Override
+    protected JCSProperty map(ResultSet rs) throws SQLException {
+        String key = rs.getString("KEY1");
+        String value = rs.getString("VALUE1");
+        //BigDecimal id = rs.getBigDecimal("ID");
+
+        JCSProperty property = new JCSProperty(key, value);
+        return property;
     }
 
-    upsert(property, statement);
+    @Override
+    protected void bind(PreparedStatement ps, JCSProperty property) throws SQLException {
+        ps.setString(1, property.getValue());
+        ps.setString(2, property.getKey());
+        //ps.setBigDecimal(3, property.getId());
+    }
 
-    return property.getId();
-  }
+    @Override
+    public List<JCSProperty> findAll() {
+        String stmt = "select * from jcsproperties order by id";
 
-  @Override
-  public void remove(JCSProperty property) {
-    String stmt = "delete from jcsproperties where id = ?";
-    this.remove(property, stmt);
-  }
+        return this.findAll(stmt);
+    }
+
+    public JCSProperty find(String key) {
+        String stmt = "select * from jcsproperties where key1 = ?";
+        JCSProperty p = this.find(key, stmt);
+        return p;
+    }
+
+//  //@Override
+//  public JCSProperty find(Integer address) {
+//    String stmt = "select * from jcsproperties where id = ?";
+//    JCSProperty p = this.find(address, stmt);
+//    return p;
+//  }
+    @Override
+    public String persist(JCSProperty property) {
+        JCSProperty p = null;
+        if (property != null && property.getKey() != null) {
+            p = this.find(property.getKey());
+        }
+
+        String statement;
+        if (p == null) {
+            statement = INS_PROP_STMT;
+        } else {
+            statement = UPD_PROP_STMT;
+        }
+
+        upsert(property, statement);
+
+        return property.getKey();
+    }
+
+    @Override
+    public void remove(JCSProperty property) {
+        String stmt = "delete from jcsproperties where key1 = ?";
+        this.remove(property, stmt);
+    }
 
 }

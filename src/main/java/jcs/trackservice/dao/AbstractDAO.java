@@ -26,7 +26,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.ControllableDevice;
@@ -126,16 +125,16 @@ public abstract class AbstractDAO<T extends JCSEntity> {
 
     protected static String getSequenceName(ControllableDevice cd) {
         switch (cd.getClass().getSimpleName()) {
-            case "Locomotive":
-                return "loco_seq";
+            //case "Locomotive":
+            //    return "loco_seq";
             case "Sensor":
                 return "sens_seq";
             case "Switch":
                 return "soac_seq";
             case "Signal":
                 return "soac_seq";
-            case "JCSProperty":
-                return "prop_seq";
+            //case "JCSProperty":
+            //    return "prop_seq";
             case "LayoutTile":
                 return "lati_seq";
             case "DriveWay":
@@ -172,7 +171,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
                 connection.rollback();
             }
         } catch (SQLException ex) {
-            Logger.error(jcsEntity.getClass().getSimpleName()+" "+statement );
+            Logger.error(jcsEntity.getClass().getSimpleName() + " " + statement);
             Logger.error(ex);
         }
         return rows;
@@ -198,7 +197,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
     }
 
     protected List<T> findBy(BigDecimal id, String statement) {
-        List<T> devices = new ArrayList<>();
+        List<T> devices = new LinkedList<>();
 
         try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, id);
@@ -216,7 +215,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
     }
 
     protected List<T> findBy(String key, String statement) {
-        List<T> devices = new ArrayList<>();
+        List<T> devices = new LinkedList<>();
 
         try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setString(1, key);

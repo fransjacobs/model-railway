@@ -106,8 +106,8 @@ ALTER TABLE functions ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid ) REFEREN
 
 CREATE TABLE trackpower (
   id             NUMBER NOT NULL,
-  status         VARCHAR2(255 CHAR) NOT NULL,
-  feedbacksource VARCHAR2(255 CHAR) NOT NULL,
+  status         VARCHAR2(255) NOT NULL,
+  feedbacksource VARCHAR2(255) NOT NULL,
   lastupdated    DATE
 );
 

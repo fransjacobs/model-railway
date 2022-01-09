@@ -271,6 +271,11 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     }
 
     @Override
+    public String toString() {
+        return this.name;
+    }
+
+    @Override
     public String toLogString() {
         return this.name;
     }

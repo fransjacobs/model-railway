@@ -409,9 +409,9 @@ public class DAOTestHelper extends DatabaseCreator {
         try {
             try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
-                stmt.executeUpdate("INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval,'k1','v1')");
+                stmt.executeUpdate("INSERT INTO JCSPROPERTIES (KEY1,VALUE1) VALUES ('k1','v1')");
 
-                stmt.executeUpdate("INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval,'k2','v2')");
+                stmt.executeUpdate("INSERT INTO JCSPROPERTIES (KEY1,VALUE1) VALUES ('k2','v2')");
 
                 c.commit();
             }
