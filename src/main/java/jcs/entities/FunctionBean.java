@@ -24,6 +24,7 @@ import java.util.Objects;
 
 public class FunctionBean implements JCSEntity, Serializable {
 
+    private BigDecimal id;
     private BigDecimal locomotiveId;
     private Integer number;
     private Integer functionType;
@@ -33,14 +34,18 @@ public class FunctionBean implements JCSEntity, Serializable {
     }
 
     public FunctionBean(Integer number) {
-        this(number, null, null, null);
+        this(null, number, null, null);
     }
 
-    public FunctionBean(Integer number, Integer functionType, Integer value, BigDecimal locomotiveId) {
+    public FunctionBean(Integer number, BigDecimal locomotiveId) {
+        this(locomotiveId, number, null, null);
+    }
+
+    public FunctionBean(BigDecimal locomotiveId, Integer number, Integer functionType, Integer value) {
+        this.locomotiveId = locomotiveId;
         this.number = number;
         this.functionType = functionType;
         this.value = value;
-        this.locomotiveId = locomotiveId;
     }
 
     public Integer getNumber() {
@@ -89,16 +94,20 @@ public class FunctionBean implements JCSEntity, Serializable {
 
     @Override
     public BigDecimal getId() {
-        return new BigDecimal(this.number);
+        return this.id;
     }
 
     public void setId(BigDecimal id) {
-        this.number = id.intValue();
+        this.id = id;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
+        int hash = 3;
+        hash = 71 * hash + Objects.hashCode(this.locomotiveId);
+        hash = 71 * hash + Objects.hashCode(this.number);
+        hash = 71 * hash + Objects.hashCode(this.functionType);
+        hash = 71 * hash + Objects.hashCode(this.value);
         return hash;
     }
 
@@ -127,8 +136,13 @@ public class FunctionBean implements JCSEntity, Serializable {
     }
 
     @Override
+    public String toString() {
+        return "locoId:" + locomotiveId + ", number:" + number + ";type: " + functionType + ", value: " + value;
+    }
+
+    @Override
     public String toLogString() {
-        return "FunctionBean{" + "locomotiveId=" + locomotiveId + ", number=" + number + ", value=" + value + '}';
+        return toString();
     }
 
 }

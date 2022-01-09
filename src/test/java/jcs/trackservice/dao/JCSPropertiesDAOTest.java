@@ -19,7 +19,7 @@
 package jcs.trackservice.dao;
 
 import jcs.trackservice.dao.util.DAOTestHelper;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.JCSProperty;
 import static org.junit.Assert.assertEquals;
@@ -39,25 +39,22 @@ public class JCSPropertiesDAOTest {
         DAOTestHelper.setConnectProperties();
         DAOTestHelper.createNewDatabase();
         DAOTestHelper.insertJCSPropertiesData();
-        jcsPropertyList = new ArrayList<>();
+        jcsPropertyList = new LinkedList<>();
     }
 
     @Before
     public void setUp() {
-        
-        JCSProperty p0 = new JCSProperty("S88-module-count", "3");
 
-        JCSProperty p1 = new JCSProperty("S88-demo", "jcs.feedback.DemoFeedbackService");
-        JCSProperty p2 = new JCSProperty("S88-remote", "FeedbackService");
-        JCSProperty p3 = new JCSProperty("S88-CS3", "jcs.controller.cs3.MarklinCS3");
-        JCSProperty p4 = new JCSProperty("activeFeedbackService", "CS3FeedbackService");
-
-        JCSProperty p5 = new JCSProperty("M6050-remote", "ControllerService");
-        JCSProperty p6 = new JCSProperty("CS3", "jcs.controller.cs3.MarklinCS3");
-        JCSProperty p7 = new JCSProperty("M6050-demo", "jcs.controller.m6050.M6050DemoController");
-        JCSProperty p8 = new JCSProperty("M6050-local", "jcs.controller.m6050.M6050Controller");
-        JCSProperty p9 = new JCSProperty("activeControllerService", "CS3");
-
+        JCSProperty p0 = new JCSProperty("CS3", "jcs.controller.cs3.MarklinCS3");
+        JCSProperty p1 = new JCSProperty("M6050-demo", "jcs.controller.m6050.M6050DemoController");
+        JCSProperty p2 = new JCSProperty("M6050-local", "jcs.controller.m6050.M6050Controller");
+        JCSProperty p3 = new JCSProperty("M6050-remote", "ControllerService");
+        JCSProperty p4 = new JCSProperty("S88-CS3", "jcs.controller.cs3.MarklinCS3");
+        JCSProperty p5 = new JCSProperty("S88-demo", "jcs.feedback.DemoFeedbackService");
+        JCSProperty p6 = new JCSProperty("S88-module-count", "3");
+        JCSProperty p7 = new JCSProperty("S88-remote", "FeedbackService");
+        JCSProperty p8 = new JCSProperty("activeControllerService", "CS3");
+        JCSProperty p9 = new JCSProperty("activeFeedbackService", "CS3FeedbackService");
         JCSProperty p10 = new JCSProperty("k1", "v1");
         JCSProperty p11 = new JCSProperty("k2", "v2");
 
@@ -113,7 +110,6 @@ public class JCSPropertiesDAOTest {
 
         chkP = instance.find("k3");
         assertEquals(property, chkP);
-
     }
 
     @Test

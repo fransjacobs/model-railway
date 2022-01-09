@@ -33,8 +33,8 @@ import jcs.entities.FunctionBean;
  */
 public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
 
-    private static final String INS_FUN_STMT = "insert into functions (TYPE,CURVALUE,ID,LOCOID,NUMBER) values(?,?,?,?,?)";
-    private static final String UPD_FUN_STMT = "update functions set TYPE = ?,CURVALUE = ?, ID = ? where LOCOID = ? and NUMBER = ?";
+    private static final String INS_FUN_STMT = "insert into functions (TYPE,FVALUE,NUMBER,LOCOID) values(?,?,?,?)";
+    private static final String UPD_FUN_STMT = "update functions set TYPE = ?,FVALUE = ? where LOCOID = ? and NUMBER = ?";
 
     public FunctionBeanDAO() {
         super();
@@ -42,36 +42,41 @@ public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
 
     @Override
     protected FunctionBean map(ResultSet rs) throws SQLException {
+        BigDecimal locoId = new BigDecimal(rs.getLong("LOCOID"));
         Integer number = rs.getInt("NUMBER");
         Integer functionType = rs.getInt("TYPE");
-        Integer value = rs.getInt("CURVALUE");
-        BigDecimal locoId = new BigDecimal(rs.getLong("LOCOID"));
+        Integer value = rs.getInt("FVALUE");
 
-        FunctionBean function = new FunctionBean(number, functionType, value, locoId);
+        FunctionBean function = new FunctionBean(locoId, number, functionType, value);
         return function;
     }
 
     @Override
     protected void bind(PreparedStatement ps, FunctionBean function) throws SQLException {
         ps.setInt(1, function.getFunctionType());
-        
+
         if (function.getValue() != null) {
             ps.setInt(2, function.getValue());
         } else {
             ps.setNull(2, Types.INTEGER);
         }
-        //TODO fix id
-        ps.setBigDecimal(3, function.getId());
-         
-        ps.setBigDecimal(4, function.getLocomotiveId());
-        ps.setInt(5, function.getNumber());
+        ps.setInt(3, function.getNumber());
 
+        ps.setBigDecimal(4, function.getLocomotiveId());
+        if (function.getId() != null) {
+            ps.setBigDecimal(5, function.getId());
+        }
     }
 
     @Override
     public List<FunctionBean> findAll() {
-        String stmt = "select * from functions order by id asc";
+        String stmt = "select * from functions order by locoid, number asc";
         return this.findAll(stmt);
+    }
+
+    public FunctionBean findById(BigDecimal id) {
+        String stmt = "select * from functions where id = ?";
+        return this.findById(id, stmt);
     }
 
     public FunctionBean findById(BigDecimal locomotiveId, Integer number) {
@@ -80,7 +85,7 @@ public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
     }
 
     public List<FunctionBean> findBy(BigDecimal locomotiveId) {
-        String stmt = "select * from functions where locoid = ?";
+        String stmt = "select * from functions where locoid = ? order by number";
         return this.findBy(locomotiveId, stmt);
     }
 

@@ -64,7 +64,7 @@ public class JCSProperty implements JCSEntity {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.key);
-        sb.append(",");
+        sb.append("=");
         sb.append(this.value);
         return sb.toString();
     }

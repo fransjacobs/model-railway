@@ -18,7 +18,6 @@
  */
 package jcs.trackservice.dao;
 
-import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,8 +26,8 @@ import jcs.entities.JCSProperty;
 
 public class JCSPropertiesDAO extends AbstractDAO<JCSProperty> {
 
-    private static final String INS_PROP_STMT = "insert into JCSPROPERTIES (VALUE1,KEY1) values(?,?)";
-    private static final String UPD_PROP_STMT = "update JCSPROPERTIES set VALUE1 = ? where KEY1 = ?";
+    private static final String INS_PROP_STMT = "insert into JCSPROPERTIES (PVALUE,PKEY) values(?,?)";
+    private static final String UPD_PROP_STMT = "update JCSPROPERTIES set PVALUE = ? where PKEY = ?";
 
     public JCSPropertiesDAO() {
         super();
@@ -36,9 +35,8 @@ public class JCSPropertiesDAO extends AbstractDAO<JCSProperty> {
 
     @Override
     protected JCSProperty map(ResultSet rs) throws SQLException {
-        String key = rs.getString("KEY1");
-        String value = rs.getString("VALUE1");
-        //BigDecimal id = rs.getBigDecimal("ID");
+        String key = rs.getString("PKEY");
+        String value = rs.getString("PVALUE");
 
         JCSProperty property = new JCSProperty(key, value);
         return property;
@@ -53,23 +51,17 @@ public class JCSPropertiesDAO extends AbstractDAO<JCSProperty> {
 
     @Override
     public List<JCSProperty> findAll() {
-        String stmt = "select * from jcsproperties order by id";
+        String stmt = "select * from jcsproperties order by pkey asc";
 
         return this.findAll(stmt);
     }
 
     public JCSProperty find(String key) {
-        String stmt = "select * from jcsproperties where key1 = ?";
+        String stmt = "select * from jcsproperties where pkey = ?";
         JCSProperty p = this.find(key, stmt);
         return p;
     }
 
-//  //@Override
-//  public JCSProperty find(Integer address) {
-//    String stmt = "select * from jcsproperties where id = ?";
-//    JCSProperty p = this.find(address, stmt);
-//    return p;
-//  }
     @Override
     public String persist(JCSProperty property) {
         JCSProperty p = null;
@@ -91,7 +83,7 @@ public class JCSPropertiesDAO extends AbstractDAO<JCSProperty> {
 
     @Override
     public void remove(JCSProperty property) {
-        String stmt = "delete from jcsproperties where key1 = ?";
+        String stmt = "delete from jcsproperties where pkey = ?";
         this.remove(property, stmt);
     }
 

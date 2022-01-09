@@ -59,7 +59,6 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         String jdbcURL = null;
         Connection conn = null;
         try {
-
             if (!databaseFileExists()) {
                 Logger.info("Database does not exist. Creating a new one...");
 
@@ -148,17 +147,6 @@ public abstract class AbstractDAO<T extends JCSEntity> {
 
     protected int upsert(T jcsEntity, String statement) {
         int rows = 0;
-
-        if (jcsEntity instanceof ControllableDevice) {
-            ControllableDevice controllableDevice = (ControllableDevice) jcsEntity;
-
-            if (controllableDevice.getId() == null) {
-                String sequenceName = getSequenceName(controllableDevice);
-                if (sequenceName != null) {
-                    controllableDevice.setId(getNextId(sequenceName));
-                }
-            }
-        }
 
         try ( PreparedStatement ps = connection.prepareStatement(statement)) {
             bind(ps, jcsEntity);

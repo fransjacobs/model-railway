@@ -27,7 +27,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,8 +47,6 @@ import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.ControllableDevice;
 import jcs.entities.JCSProperty;
-import jcs.entities.LayoutTile;
-import jcs.entities.LayoutTileGroup;
 import jcs.entities.SensorBean;
 import jcs.entities.SignalBean;
 import jcs.entities.SolenoidAccessory;
@@ -78,11 +75,8 @@ import jcs.entities.JCSEntity;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.SignalValue;
-import jcs.trackservice.dao.LayoutTileDAO;
-import jcs.trackservice.dao.LayoutTileGroupDAO;
 import jcs.trackservice.dao.SensorDAO;
 import jcs.trackservice.events.SensorListener;
-import jcs.entities.enums.TileType;
 import jcs.trackservice.dao.FunctionBeanDAO;
 import jcs.trackservice.dao.LocomotiveBeanDAO;
 import jcs.trackservice.dao.TileBeanDAO;
@@ -98,8 +92,8 @@ public class H2TrackService implements TrackService {
     private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
 
-    private final LayoutTileDAO latiDao;
-    private final LayoutTileGroupDAO ltgtDao;
+    //private final LayoutTileDAO latiDao;
+    //private final LayoutTileGroupDAO ltgtDao;
     private final JCSPropertiesDAO propDao;
 
     private final TileBeanDAO tileDAO;
@@ -143,8 +137,8 @@ public class H2TrackService implements TrackService {
         turnoutDAO = new SwitchDAO();
         signalDAO = new SignalDAO();
         trpoDAO = new TrackPowerDAO();
-        latiDao = new LayoutTileDAO();
-        ltgtDao = new LayoutTileGroupDAO();
+        //latiDao = new LayoutTileDAO();
+        //ltgtDao = new LayoutTileGroupDAO();
 
         tileDAO = new TileBeanDAO();
 
@@ -548,103 +542,6 @@ public class H2TrackService implements TrackService {
     public JCSProperty persist(JCSProperty property) {
         this.propDao.persist(property);
         return property;
-    }
-
-    private LayoutTile addDependencies(LayoutTile lt) {
-        if (lt == null) {
-            return null;
-        }
-        if (lt.getSoacId() != null) {
-            if (TileType.SWITCH.getTileType().equals(lt.getTiletype())) {
-                SwitchBean t = turnoutDAO.findById(lt.getSoacId());
-                lt.setSolenoidAccessoiry(t);
-            }
-            if (TileType.SIGNAL.getTileType().equals(lt.getTiletype())) {
-                lt.setSolenoidAccessoiry(signalDAO.findById(lt.getSoacId()));
-            }
-        }
-        if (lt.getSensId() != null) {
-            lt.setSensor(this.sensDAO.findById(lt.getSensId()));
-        }
-
-        return lt;
-    }
-
-    @Override
-    public Set<LayoutTile> getLayoutTiles() {
-        List<LayoutTile> ltl = latiDao.findAll();
-        Set<LayoutTile> layoutTiles = new HashSet<>(ltl);
-
-        layoutTiles.forEach((lt) -> {
-            addDependencies(lt);
-        });
-        return layoutTiles;
-    }
-
-    @Override
-    public LayoutTile getLayoutTile(Integer x, Integer y) {
-        LayoutTile layoutTile = this.latiDao.findByXY(x, y);
-        return addDependencies(layoutTile);
-    }
-
-    @Override
-    public LayoutTile persist(LayoutTile layoutTile) {
-        latiDao.persist(layoutTile);
-        return layoutTile;
-    }
-
-    @Override
-    public void remove(LayoutTile layoutTile) {
-        latiDao.remove(layoutTile);
-    }
-
-    @Override
-    public void persistOld(Set<LayoutTile> layoutTiles) {
-        //Remove the ones not in the current list...
-        List<LayoutTile> cltl = latiDao.findAll();
-
-        for (LayoutTile lt : cltl) {
-            if (!layoutTiles.contains(lt)) {
-                latiDao.remove(lt);
-            }
-        }
-
-        for (LayoutTile lt : layoutTiles) {
-            if (lt.getId() == null) {
-                //store the layouttile but incase check if it exist based on x and y
-                LayoutTile ltxy = this.latiDao.findByXY(lt.getX(), lt.getY());
-                if (ltxy != null) {
-                    lt.setId(ltxy.getId());
-                }
-            }
-            persist(lt);
-        }
-    }
-
-    @Override
-    public List<LayoutTileGroup> getLayoutTileGroups() {
-        //STUB
-        return Collections.EMPTY_LIST;// this.ltgtDao.findAll();
-    }
-
-    @Override
-    public LayoutTileGroup getLayoutTileGroup(Integer ltgrNr) {
-        return this.ltgtDao.find(ltgrNr);
-    }
-
-    @Override
-    public LayoutTileGroup getLayoutTileGroup(BigDecimal ltgrId) {
-        return this.ltgtDao.findById(ltgrId);
-    }
-
-    @Override
-    public void persist(LayoutTileGroup layoutTileGroup) {
-        this.ltgtDao.persist(layoutTileGroup);
-    }
-
-    @Override
-    public void remove(LayoutTileGroup layoutTileGroup) {
-        this.ltgtDao.remove(layoutTileGroup);
     }
 
     @Override

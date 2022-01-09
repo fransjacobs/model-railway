@@ -127,62 +127,65 @@ public class DatabaseCreator {
     }
 
     private static void dropObjects(Statement stmt) throws SQLException {
-        stmt.executeUpdate("DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists locomotives CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists functions CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;");
+
+        stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
+
+        
+        stmt.executeUpdate("DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists statustypes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
-        stmt.executeUpdate("DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;");
         stmt.executeUpdate("DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;");
         stmt.executeUpdate("DROP TABLE if exists sensors CASCADE CONSTRAINTS");
 
-        //trackplan
-        stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
         //stmt.executeUpdate("DROP TABLE if exists driveways CASCADE CONSTRAINTS");
         //stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP SEQUENCE if exists femo_seq");
-        stmt.executeUpdate("DROP SEQUENCE if exists loco_seq");
-        stmt.executeUpdate("DROP SEQUENCE if exists func_seq");
+        //stmt.executeUpdate("DROP SEQUENCE if exists loco_seq");
+        //stmt.executeUpdate("DROP SEQUENCE if exists func_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists soac_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists trpo_seq");
-        stmt.executeUpdate("DROP SEQUENCE if exists prop_seq");
+        //stmt.executeUpdate("DROP SEQUENCE if exists prop_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists sens_seq");
         //trackplan
         //stmt.executeUpdate("DROP SEQUENCE if exists lati_seq");
         //stmt.executeUpdate("DROP SEQUENCE if exists drwa_seq");
         //stmt.executeUpdate("DROP SEQUENCE if exists rout_seq");
 
-        Logger.trace("Existing schema object dropped...");
+        Logger.trace("Existing schema objects dropped...");
     }
 
-    private static void createSequences(Statement stmt) throws SQLException {
+    //private static void createSequences(Statement stmt) throws SQLException {
         //stmt.executeUpdate("CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1");
         //stmt.executeUpdate("CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1");
-        stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
         //stmt.executeUpdate("CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1");
-        stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
-        stmt.executeUpdate("CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
+        //stmt.executeUpdate("CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1");
 
         //trackplan
         //stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
         //stmt.executeUpdate("CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1");
         //stmt.executeUpdate("CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1");
-        Logger.trace("Sequences created...");
-    }
+        //Logger.trace("Sequences created...");
+    //}
 
     private static void createTiles(Statement stmt) throws SQLException {
         stmt.executeUpdate("create table tiles ("
-                + "id           VARCHAR(255) not null"
-                + ",tileType    VARCHAR(255) not null"
-                + ",orientation VARCHAR(255) not null"
-                + ",direction   VARCHAR(255) not null"
-                + ",x           INTEGER NOT NULL"
-                + ",y           INTEGER NOT NULL"
-                + ",signalType  VARCHAR(255))");
+                + "id           VARCHAR(255) not null,"
+                + "tileType     VARCHAR(255) not null,"
+                + "orientation  VARCHAR(255) not null,"
+                + "direction    VARCHAR(255) not null,"
+                + "x            INTEGER NOT NULL,"
+                + "y            INTEGER NOT NULL,"
+                + "signalType   VARCHAR(255))");
 
         stmt.executeUpdate("ALTER TABLE tiles ADD CONSTRAINT tile_pk PRIMARY KEY ( id )");
+        stmt.executeUpdate("CREATE UNIQUE INDEX tiles_x_y_idx on tiles ( x, y )");
         Logger.trace("Table tiles created...");
     }
 
@@ -212,12 +215,11 @@ public class DatabaseCreator {
                 + "device_id         INTEGER,"
                 + "name              VARCHAR2(255) NOT NULL,"
                 + "DESCRIPTION       VARCHAR2(255),"
-                + "curvalue             INTEGER,"
+                + "\"value\"         INTEGER,"
                 + "previous_value    INTEGER,"
                 + "millis            INTEGER,"
                 + "lastupdated       DATE)");
 
-        //stmt.executeUpdate("ALTER TABLE sensors ADD CONSTRAINT sens_pk PRIMARY KEY ( id )");
         stmt.executeUpdate("ALTER TABLE sensors ADD CONSTRAINT sens_address_un UNIQUE ( address )");
 
         Logger.trace("Table sensors created...");
@@ -252,21 +254,19 @@ public class DatabaseCreator {
 
     private static void functions(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE functions ("
-                + "id               NUMBER NOT NULL, "
                 + "locoid           NUMBER NOT NULL, "
                 + "number           INTEGER NOT NULL, "
                 + "type             INTEGER NOT NULL, "
-                + "curvalue         INTEGER NOT NULL)");
+                + "fvalue           INTEGER)");
 
-        //stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( id )");
-        stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT function_loco_number_un UNIQUE ( locoid, number )");
-
+        stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( locoid, number )");
+        //stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT function_loco_number_un UNIQUE ( locoid, number )");
         Logger.trace("Table functions created...");
     }
 
     private static void solenoidaccessories(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE solenoidaccessories ("
-                + "id                    NUMBER NOT NULL,"
+                + "id                    IDENTITY NOT NULL,"
                 + "address               INTEGER NOT NULL,"
                 + "name                  VARCHAR2(255) NOT NULL,"
                 + "description           VARCHAR2(255),"
@@ -279,10 +279,7 @@ public class DatabaseCreator {
                 + "switch_time           INTEGER)"
         );
 
-        stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id )");
-
         stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_address_un UNIQUE ( address )");
-
         Logger.trace("Table solenoidaccessories created...");
     }
 
@@ -308,33 +305,16 @@ public class DatabaseCreator {
 
     private static void jcsproperties(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE jcsproperties ("
-                + "id         IDENTITY NOT NULL,"
-                + "key1        VARCHAR2(255) NOT NULL,"
-                + "value1      VARCHAR2(255))");
+                //+ "id         IDENTITY,"
+                + "pkey    VARCHAR2(255) NOT NULL,"
+                + "pvalue  VARCHAR2(255) )");
 
-        //stmt.executeUpdate("ALTER TABLE jcsproperties ADD CONSTRAINT prop_pk PRIMARY KEY ( id );");
-        stmt.executeUpdate("ALTER TABLE jcsproperties ADD CONSTRAINT prop_key_un UNIQUE ( key1 );");
+        stmt.executeUpdate("ALTER TABLE jcsproperties ADD CONSTRAINT prop_pk PRIMARY KEY ( pkey )");
+        //stmt.executeUpdate("ALTER TABLE jcsproperties ADD CONSTRAINT prop_key_un UNIQUE ( \"key\" );");
 
         Logger.trace("Table jcsproperties created...");
     }
 
-//    private static void layoutTiles(Statement stmt) throws SQLException {
-//        stmt.executeUpdate("CREATE TABLE layouttiles ("
-//                + "id            NUMBER NOT NULL,"
-//                + "tiletype      VARCHAR2(255 CHAR) NOT NULL,"
-//                + "orientation   VARCHAR2(255 CHAR) NOT NULL,"
-//                + "direction     VARCHAR2(255 CHAR) NOT NULL,"
-//                + "x             INTEGER NOT NULL,"
-//                + "y             INTEGER NOT NULL,"
-//                + "soac_id       NUMBER NULL,"
-//                + "sens_id       NUMBER NULL)");
-//
-//        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id )");
-//
-//        stmt.executeUpdate("ALTER TABLE layouttiles ADD CONSTRAINT lati_x_y_un UNIQUE ( x, y )");
-//
-//        Logger.trace("Table layouttiles created...");
-//    }
 //    private static void driveways(Statement stmt) throws SQLException {
 //        stmt.executeUpdate("CREATE TABLE driveways ("
 //                + "id             NUMBER NOT NULL,"
@@ -443,18 +423,18 @@ public class DatabaseCreator {
         stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0Sh1','Hp0Sh1')");
         stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('OFF','OFF')");
 
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('S88-module-count','3')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('S88-demo','jcs.feedback.DemoFeedbackService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('S88-remote','FeedbackService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('S88-CS3','jcs.controller.cs3.MarklinCS3')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('activeFeedbackService','CS3FeedbackService')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('S88-module-count','3')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('S88-demo','jcs.feedback.DemoFeedbackService')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('S88-remote','FeedbackService')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('S88-CS3','jcs.controller.cs3.MarklinCS3')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('activeFeedbackService','CS3FeedbackService')");
 
         //Supported Controllers
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('M6050-remote','ControllerService')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('CS3','jcs.controller.cs3.MarklinCS3')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('M6050-demo','jcs.controller.m6050.M6050DemoController')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('M6050-local','jcs.controller.m6050.M6050Controller')");
-        stmt.executeUpdate("INSERT INTO jcsproperties (KEY1,VALUE1) VALUES ('activeControllerService','CS3')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('M6050-remote','ControllerService')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('CS3','jcs.controller.cs3.MarklinCS3')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('M6050-demo','jcs.controller.m6050.M6050DemoController')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('M6050-local','jcs.controller.m6050.M6050Controller')");
+        stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('activeControllerService','CS3')");
 
         Logger.trace("Reference Data inserted...");
     }
@@ -468,7 +448,6 @@ public class DatabaseCreator {
                 stmt.executeUpdate("set SCHEMA JCS");
 
                 dropObjects(stmt);
-                createSequences(stmt);
                 createTiles(stmt);
 
                 createTrackpower(stmt);
@@ -481,7 +460,6 @@ public class DatabaseCreator {
                 signalvalues(stmt);
                 jcsproperties(stmt);
                 //trackplan
-                //layoutTiles(stmt);
                 //driveways(stmt);
                 //routes(stmt);
 
@@ -506,7 +484,6 @@ public class DatabaseCreator {
 
         try {
             try ( Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
-                //try (Connection c = connect(ADMIN_USER, "", false, testMode)) {
                 if (c != null) {
                     Statement stmt = c.createStatement();
 

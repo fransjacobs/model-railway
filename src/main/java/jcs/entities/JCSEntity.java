@@ -23,8 +23,8 @@ package jcs.entities;
  * @author fransjacobs
  */
 public interface JCSEntity {
-    
-     Object getId();
-    
-     String toLogString();
+
+    Object getId();
+
+    String toLogString();
 }

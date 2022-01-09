@@ -26,8 +26,6 @@ import jcs.controller.cs3.DeviceInfo;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.JCSEntity;
 import jcs.entities.JCSProperty;
-import jcs.entities.LayoutTile;
-import jcs.entities.LayoutTileGroup;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
 import jcs.entities.SignalBean;
@@ -166,33 +164,6 @@ public interface TrackService {
     void addMessageListener(CanMessageListener listener);
 
     void removeMessageListener(CanMessageListener listener);
-
-    //Trackplan
-    @Deprecated
-    Set<LayoutTile> getLayoutTiles();
-
-    @Deprecated
-    LayoutTile getLayoutTile(Integer x, Integer y);
-
-    @Deprecated
-    LayoutTile persist(LayoutTile layoutTile);
-
-    @Deprecated
-    void persistOld(Set<LayoutTile> layoutTiles);
-
-    @Deprecated
-    void remove(LayoutTile layoutTile);
-
-    List<LayoutTileGroup> getLayoutTileGroups();
-
-    LayoutTileGroup getLayoutTileGroup(Integer ltgrNr);
-
-    LayoutTileGroup getLayoutTileGroup(BigDecimal ltgrId);
-
-    void persist(LayoutTileGroup layoutTileGroup);
-
-    void remove(LayoutTileGroup layoutTileGroup);
-    
 
     Set<TileBean> getTiles();
 

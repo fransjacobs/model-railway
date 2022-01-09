@@ -98,6 +98,7 @@ public abstract class ControllableDevice implements JCSEntity, Serializable, Com
         return description;
     }
 
+    @Override
     public BigDecimal getId() {
         return id;
     }

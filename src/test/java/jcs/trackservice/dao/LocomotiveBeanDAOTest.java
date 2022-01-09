@@ -46,9 +46,6 @@ public class LocomotiveBeanDAOTest {
 
     @Before
     public void setUp() {
-//LocomotiveBean(BigDecimal id, String name, String previousName, Long uid,Long mfxUid, Integer address, String icon, String decoderType,
-//            String mfxSid, Integer tachoMax, Integer vMin, Integer accelerationDelay,Integer brakeDelay, Integer volume, String spm, Integer velocity,
-//            Integer direction, String mfxType, String blocks) 
         LocomotiveBean loco2 = new LocomotiveBean(new BigDecimal(2), "BR 81 002", "BR  81 002", 2L, 0L, 2, "DB BR 81 008", "mm_prg", null, 120, 1, 1, 2, 64, null, 600, 0, null, null);
         locomotives.add(loco2);
         LocomotiveBean loco11 = new LocomotiveBean(new BigDecimal(11), "NS 1205", null, 11L, 0L, 11, "NS 1211", "mm_prg", null, 120, 0, 0, 0, 64, null, 0, 1, null, null);
@@ -121,13 +118,8 @@ public class LocomotiveBeanDAOTest {
             assertEquals(lbe.getDirection(), lbr.getDirection());
             assertEquals(lbe.getMfxType(), lbr.getMfxType());
             assertEquals(lbe.getBlocks(), lbr.getBlocks());
-
         }
-
         assertEquals(expResult, result);
-
-        //[BR 81 002, NS 1205, BR 141 015-08, BR 101 003-2, NS 1720, NS 6513, 193 304-3 DB AG, 152 119-4 DBAG, DB 640 017-9, BR 44 690, Rheingold 1, 561-05 RRF, E 186 007-8 NS, BR 216 059-6, NS 1139, Rheingold 2, NS Plan Y]
-        //[BR 81 002, NS 1205, BR 141 015-08, BR 101 003-2, NS 1720, NS 6513, 193 304-3 DB AG, 152 119-4 DBAG, DB 640 017-9, BR 44 690, Rheingold 1, 561-05 RRF, E 186 007-8 NS, BR 216 059-6, NS 1139, Rheingold 2, NS Plan Y]
     }
 
     @Test
