@@ -372,7 +372,6 @@ public class LayoutPanel extends JPanel {
 
         tileBtnGroup.add(straightBtn);
         straightBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-straight.png"))); // NOI18N
-        straightBtn.setSelected(true);
         straightBtn.setToolTipText("Straight Track");
         straightBtn.setBorder(null);
         straightBtn.setDoubleBuffered(true);
@@ -381,6 +380,7 @@ public class LayoutPanel extends JPanel {
         straightBtn.setMinimumSize(new Dimension(38, 38));
         straightBtn.setPreferredSize(new Dimension(38, 38));
         straightBtn.setRolloverEnabled(true);
+        straightBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight_Y.png"))); // NOI18N
         straightBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         straightBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -398,6 +398,7 @@ public class LayoutPanel extends JPanel {
         curvedBtn.setMinimumSize(new Dimension(38, 38));
         curvedBtn.setPreferredSize(new Dimension(38, 38));
         curvedBtn.setRolloverEnabled(true);
+        curvedBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-diagonal_Y.png"))); // NOI18N
         curvedBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         curvedBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -415,6 +416,7 @@ public class LayoutPanel extends JPanel {
         blockBtn.setMinimumSize(new Dimension(38, 38));
         blockBtn.setPreferredSize(new Dimension(38, 38));
         blockBtn.setRolloverEnabled(true);
+        blockBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-block_Y.png"))); // NOI18N
         blockBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         blockBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -432,6 +434,7 @@ public class LayoutPanel extends JPanel {
         sensorBtn.setMinimumSize(new Dimension(38, 38));
         sensorBtn.setPreferredSize(new Dimension(38, 38));
         sensorBtn.setRolloverEnabled(true);
+        sensorBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight-feedback_Y.png"))); // NOI18N
         sensorBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         sensorBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -448,6 +451,7 @@ public class LayoutPanel extends JPanel {
         signalBtn.setMinimumSize(new Dimension(38, 38));
         signalBtn.setPreferredSize(new Dimension(38, 38));
         signalBtn.setRolloverEnabled(true);
+        signalBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight-signal_Y.png"))); // NOI18N
         signalBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         signalBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -464,6 +468,7 @@ public class LayoutPanel extends JPanel {
         leftSwitchBtn.setMinimumSize(new Dimension(38, 38));
         leftSwitchBtn.setPreferredSize(new Dimension(38, 38));
         leftSwitchBtn.setRolloverEnabled(true);
+        leftSwitchBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-LY-turnout.png"))); // NOI18N
         leftSwitchBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         leftSwitchBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -481,6 +486,7 @@ public class LayoutPanel extends JPanel {
         rightSwitchBtn.setMinimumSize(new Dimension(38, 38));
         rightSwitchBtn.setPreferredSize(new Dimension(38, 38));
         rightSwitchBtn.setRolloverEnabled(true);
+        rightSwitchBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-RY-turnout.png"))); // NOI18N
         rightSwitchBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         rightSwitchBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -498,6 +504,7 @@ public class LayoutPanel extends JPanel {
         crossLBtn.setMinimumSize(new Dimension(38, 38));
         crossLBtn.setPreferredSize(new Dimension(38, 38));
         crossLBtn.setRolloverEnabled(true);
+        crossLBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-cross-LY.png"))); // NOI18N
         crossLBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         crossLBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -515,6 +522,7 @@ public class LayoutPanel extends JPanel {
         crossRBtn.setMinimumSize(new Dimension(38, 38));
         crossRBtn.setPreferredSize(new Dimension(38, 38));
         crossRBtn.setRolloverEnabled(true);
+        crossRBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-cross-RY.png"))); // NOI18N
         crossRBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         crossRBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -774,30 +782,30 @@ public class LayoutPanel extends JPanel {
         this.mode = mode;
         this.canvas.setMode(mode);
 
-        switch (this.mode) {
-            case ADD:
-                straightBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.curvedBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.blockBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.sensorBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.leftSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.rightSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.signalBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.crossLBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                this.crossRBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-                break;
-            default:
-                this.straightBtn.setBorder(null);
-                this.curvedBtn.setBorder(null);
-                this.blockBtn.setBorder(null);
-                this.sensorBtn.setBorder(null);
-                this.leftSwitchBtn.setBorder(null);
-                this.rightSwitchBtn.setBorder(null);
-                this.signalBtn.setBorder(null);
-                this.crossLBtn.setBorder(null);
-                this.crossRBtn.setBorder(null);
-                break;
-        }
+//        switch (this.mode) {
+//            case ADD:
+//                straightBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.curvedBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.blockBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.sensorBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.leftSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.rightSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.signalBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.crossLBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                this.crossRBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
+//                break;
+//            default:
+//                this.straightBtn.setBorder(null);
+//                this.curvedBtn.setBorder(null);
+//                this.blockBtn.setBorder(null);
+//                this.sensorBtn.setBorder(null);
+//                this.leftSwitchBtn.setBorder(null);
+//                this.rightSwitchBtn.setBorder(null);
+//                this.signalBtn.setBorder(null);
+//                this.crossLBtn.setBorder(null);
+//                this.crossRBtn.setBorder(null);
+//                break;
+//        }
 
     }
 

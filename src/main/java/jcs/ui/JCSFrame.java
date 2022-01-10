@@ -237,7 +237,6 @@ public class JCSFrame extends JFrame implements UICallback {
         blinkLbl = new JLabel();
         mainPanel = new JPanel();
         jSplitPane1 = new JSplitPane();
-        jPanel1 = new JPanel();
         centerPanel = new JPanel();
         settingsPanel = new JPanel();
         jLabel1 = new JLabel();
@@ -246,6 +245,8 @@ public class JCSFrame extends JFrame implements UICallback {
         diagnosticPanel = new DiagnosticPanel();
         layoutPanel = new LayoutPanel();
         overviewPanel = new DisplayLayoutPanel();
+        jPanel1 = new JPanel();
+        locomotivesPanel1 = new LocomotivesPanel();
         jcsMenuBar = new JMenuBar();
         fileMenu = new JMenu();
         quitMI = new JMenuItem();
@@ -456,11 +457,10 @@ public class JCSFrame extends JFrame implements UICallback {
         getContentPane().add(statusPanel, BorderLayout.SOUTH);
 
         mainPanel.setName("mainPanel"); // NOI18N
+        mainPanel.setLayout(new BorderLayout());
 
+        jSplitPane1.setDividerLocation(350);
         jSplitPane1.setName("jSplitPane1"); // NOI18N
-
-        jPanel1.setName("jPanel1"); // NOI18N
-        jSplitPane1.setLeftComponent(jPanel1);
 
         centerPanel.setMinimumSize(new Dimension(1024, 845));
         centerPanel.setName("centerPanel"); // NOI18N
@@ -503,7 +503,14 @@ public class JCSFrame extends JFrame implements UICallback {
 
         jSplitPane1.setRightComponent(centerPanel);
 
-        mainPanel.add(jSplitPane1);
+        jPanel1.setName("jPanel1"); // NOI18N
+
+        locomotivesPanel1.setName("locomotivesPanel1"); // NOI18N
+        jPanel1.add(locomotivesPanel1);
+
+        jSplitPane1.setLeftComponent(jPanel1);
+
+        mainPanel.add(jSplitPane1, BorderLayout.CENTER);
 
         getContentPane().add(mainPanel, BorderLayout.CENTER);
 
@@ -829,6 +836,7 @@ public class JCSFrame extends JFrame implements UICallback {
     JMenuBar jcsMenuBar;
     JToolBar jcsToolBar;
     LayoutPanel layoutPanel;
+    LocomotivesPanel locomotivesPanel1;
     JPanel mainPanel;
     JMenuItem optionsMI;
     DisplayLayoutPanel overviewPanel;

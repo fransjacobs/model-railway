@@ -416,7 +416,6 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/media/new-straight.png"/>
                 </Property>
-                <Property name="selected" type="boolean" value="true"/>
                 <Property name="toolTipText" type="java.lang.String" value="Straight Track"/>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="null"/>
@@ -433,6 +432,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-straight_Y.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -460,6 +462,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-diagonal_Y.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -487,6 +492,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-block_Y.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -514,6 +522,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-straight-feedback_Y.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -540,6 +551,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-straight-signal_Y.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -566,6 +580,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-LY-turnout.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -593,6 +610,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-RY-turnout.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -620,6 +640,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-cross-LY.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
@@ -647,6 +670,9 @@
                   <Dimension value="[38, 38]"/>
                 </Property>
                 <Property name="rolloverEnabled" type="boolean" value="true"/>
+                <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/media/new-cross-RY.png"/>
+                </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
