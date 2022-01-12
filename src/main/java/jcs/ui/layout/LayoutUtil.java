@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2;
+package jcs.ui.layout;
 
+import jcs.ui.layout.Tile;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.enums.Direction;
-import jcs.ui.layout2.tiles2.TileFactory2;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -93,7 +94,7 @@ public class LayoutUtil {
                 Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
 
                 for (TileBean tb : beans) {
-                    Tile tile = TileFactory2.createTile(tb, drawGridLines);
+                    Tile tile = TileFactory.createTile(tb, drawGridLines);
                     LayoutUtil.tileIdLookup.put(tile.getId(), tile);
                     LayoutUtil.tiles.put(tile.getCenter(), tile);
                     for (Point ap : tile.getAltPoints()) {

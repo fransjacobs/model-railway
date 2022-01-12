@@ -16,10 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2;
+package jcs.ui.layout;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import jcs.entities.enums.TileType;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -43,9 +42,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.LineBorder;
 import jcs.ui.layout.tiles.enums.Direction;
-import jcs.ui.layout2.enums.Mode;
+import jcs.ui.layout.enums.Mode;
 import org.tinylog.Logger;
 
 /**

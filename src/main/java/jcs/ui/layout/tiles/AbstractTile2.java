@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2.tiles2;
+package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -41,8 +41,8 @@ import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.TileType;
-import jcs.ui.layout2.LayoutUtil;
-import jcs.ui.layout2.Tile;
+import jcs.ui.layout.LayoutUtil;
+import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
 /**

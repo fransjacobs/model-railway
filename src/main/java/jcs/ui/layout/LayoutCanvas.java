@@ -16,8 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2;
+package jcs.ui.layout;
 
+import jcs.ui.layout.Tile;
 import java.awt.BasicStroke;
 import jcs.entities.enums.TileType;
 import java.awt.Color;
@@ -48,10 +49,10 @@ import jcs.entities.TileBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
-import jcs.ui.layout2.enums.Mode;
-import jcs.ui.layout2.pathfinding.BreathFirst;
-import jcs.ui.layout2.tiles2.Block;
-import jcs.ui.layout2.tiles2.TileFactory2;
+import jcs.ui.layout.enums.Mode;
+import jcs.ui.layout.pathfinding.BreathFirst;
+import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -808,7 +809,7 @@ public class LayoutCanvas extends JPanel {
 
         boolean fullRepaint = !chkp.equals(p);
 
-        Tile tile = TileFactory2.createTile(tileType, orientation, direction, chkp, drawGrid);
+        Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
 
         tiles.put(chkp, tile);
         //Alternative point(s) to be able to find all points

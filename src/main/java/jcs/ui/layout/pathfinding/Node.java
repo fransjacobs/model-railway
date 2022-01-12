@@ -16,12 +16,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2.pathfinding;
+package jcs.ui.layout.pathfinding;
 
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.enums.TileType;
-import jcs.ui.layout2.Tile;
+import jcs.ui.layout.Tile;
 
 /**
  *

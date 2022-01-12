@@ -40,97 +40,182 @@ public class LocomotivesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        directionBG = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        jSlider1 = new javax.swing.JSlider();
-        jPanel4 = new javax.swing.JPanel();
-        jPanel7 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        locNamePanel = new javax.swing.JPanel();
+        nameLbL = new javax.swing.JLabel();
+        iconLbl = new javax.swing.JLabel();
+        velocityBtnPanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
-        jPanel8 = new javax.swing.JPanel();
+        jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
-        functionsPanel1 = new jcs.ui.widgets.FunctionsPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        directionPanel = new javax.swing.JPanel();
+        backForwPanel = new javax.swing.JPanel();
+        backwardsBtn = new javax.swing.JToggleButton();
+        forwardsBtn = new javax.swing.JToggleButton();
+        stopPanel = new javax.swing.JPanel();
+        stopBtn = new javax.swing.JButton();
+        funcSpeedPanel = new javax.swing.JPanel();
+        functionsPanel = new jcs.ui.widgets.FunctionsPanel();
+        speedPanel = new javax.swing.JPanel();
+        jSlider1 = new javax.swing.JSlider();
+        locoScrollPane = new javax.swing.JScrollPane();
+        locoList = new javax.swing.JList<>();
 
+        setMinimumSize(new java.awt.Dimension(220, 560));
+        setName("Form"); // NOI18N
+        setPreferredSize(new java.awt.Dimension(220, 560));
         setLayout(new java.awt.BorderLayout());
 
+        jPanel1.setName("jPanel1"); // NOI18N
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.Y_AXIS));
 
-        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout();
+        locNamePanel.setName("locNamePanel"); // NOI18N
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
         flowLayout1.setAlignOnBaseline(true);
-        jPanel2.setLayout(flowLayout1);
+        locNamePanel.setLayout(flowLayout1);
 
-        jLabel2.setText("name");
-        jPanel2.add(jLabel2);
+        nameLbL.setText("name");
+        nameLbL.setName("nameLbL"); // NOI18N
+        nameLbL.setPreferredSize(new java.awt.Dimension(75, 16));
+        locNamePanel.add(nameLbL);
 
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("icon");
-        jLabel1.setPreferredSize(new java.awt.Dimension(180, 70));
-        jPanel2.add(jLabel1);
+        iconLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        iconLbl.setText("icon");
+        iconLbl.setName("iconLbl"); // NOI18N
+        iconLbl.setPreferredSize(new java.awt.Dimension(140, 60));
+        locNamePanel.add(iconLbl);
 
-        jPanel1.add(jPanel2);
+        jPanel1.add(locNamePanel);
 
-        jSlider1.setValue(0);
-        jPanel3.add(jSlider1);
+        velocityBtnPanel.setName("velocityBtnPanel"); // NOI18N
+        java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
+        flowLayout2.setAlignOnBaseline(true);
+        velocityBtnPanel.setLayout(flowLayout2);
 
-        jPanel1.add(jPanel3);
+        jButton1.setText("1");
+        jButton1.setMaximumSize(new java.awt.Dimension(40, 40));
+        jButton1.setMinimumSize(new java.awt.Dimension(40, 40));
+        jButton1.setName("jButton1"); // NOI18N
+        jButton1.setPreferredSize(new java.awt.Dimension(40, 40));
+        velocityBtnPanel.add(jButton1);
 
-        jPanel4.setLayout(new java.awt.GridLayout(2, 0));
+        jButton2.setText("2");
+        jButton2.setToolTipText("");
+        jButton2.setMaximumSize(new java.awt.Dimension(40, 40));
+        jButton2.setMinimumSize(new java.awt.Dimension(40, 40));
+        jButton2.setName("jButton2"); // NOI18N
+        jButton2.setPreferredSize(new java.awt.Dimension(40, 40));
+        velocityBtnPanel.add(jButton2);
 
-        jButton2.setText("jButton2");
-        jPanel7.add(jButton2);
+        jButton3.setText("3");
+        jButton3.setMaximumSize(new java.awt.Dimension(40, 40));
+        jButton3.setMinimumSize(new java.awt.Dimension(40, 40));
+        jButton3.setName("jButton3"); // NOI18N
+        jButton3.setPreferredSize(new java.awt.Dimension(40, 40));
+        velocityBtnPanel.add(jButton3);
 
-        jButton1.setText("jButton1");
-        jPanel7.add(jButton1);
+        jPanel1.add(velocityBtnPanel);
 
-        jPanel4.add(jPanel7);
+        directionPanel.setName("directionPanel"); // NOI18N
+        directionPanel.setLayout(new java.awt.GridLayout(2, 1, 0, 2));
 
-        jButton3.setText("jButton3");
-        jPanel8.add(jButton3);
+        backForwPanel.setName("backForwPanel"); // NOI18N
+        java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
+        flowLayout4.setAlignOnBaseline(true);
+        backForwPanel.setLayout(flowLayout4);
 
-        jPanel4.add(jPanel8);
+        directionBG.add(backwardsBtn);
+        backwardsBtn.setText("<<");
+        backwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
+        backwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
+        backwardsBtn.setName("backwardsBtn"); // NOI18N
+        backwardsBtn.setPreferredSize(new java.awt.Dimension(40, 40));
+        backForwPanel.add(backwardsBtn);
 
-        jPanel1.add(jPanel4);
+        directionBG.add(forwardsBtn);
+        forwardsBtn.setText(">>");
+        forwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
+        forwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
+        forwardsBtn.setName("forwardsBtn"); // NOI18N
+        forwardsBtn.setPreferredSize(new java.awt.Dimension(40, 40));
+        backForwPanel.add(forwardsBtn);
+
+        directionPanel.add(backForwPanel);
+
+        stopPanel.setName("stopPanel"); // NOI18N
+        java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
+        flowLayout3.setAlignOnBaseline(true);
+        stopPanel.setLayout(flowLayout3);
+
+        stopBtn.setText("Stop");
+        stopBtn.setMaximumSize(new java.awt.Dimension(100, 40));
+        stopBtn.setMinimumSize(new java.awt.Dimension(100, 40));
+        stopBtn.setName("stopBtn"); // NOI18N
+        stopBtn.setPreferredSize(new java.awt.Dimension(100, 40));
+        stopPanel.add(stopBtn);
+
+        directionPanel.add(stopPanel);
+
+        jPanel1.add(directionPanel);
 
         add(jPanel1, java.awt.BorderLayout.NORTH);
 
-        jPanel5.setLayout(new java.awt.BorderLayout());
-        jPanel5.add(functionsPanel1, java.awt.BorderLayout.CENTER);
+        funcSpeedPanel.setName("funcSpeedPanel"); // NOI18N
+        funcSpeedPanel.setLayout(new java.awt.BorderLayout());
 
-        add(jPanel5, java.awt.BorderLayout.CENTER);
+        functionsPanel.setName("functionsPanel"); // NOI18N
+        funcSpeedPanel.add(functionsPanel, java.awt.BorderLayout.CENTER);
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        speedPanel.setName("speedPanel"); // NOI18N
+        java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
+        flowLayout5.setAlignOnBaseline(true);
+        speedPanel.setLayout(flowLayout5);
+
+        jSlider1.setOrientation(javax.swing.JSlider.VERTICAL);
+        jSlider1.setValue(0);
+        jSlider1.setName("jSlider1"); // NOI18N
+        speedPanel.add(jSlider1);
+
+        funcSpeedPanel.add(speedPanel, java.awt.BorderLayout.EAST);
+
+        add(funcSpeedPanel, java.awt.BorderLayout.CENTER);
+
+        locoScrollPane.setName("locoScrollPane"); // NOI18N
+
+        locoList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        locoList.setName("locoList"); // NOI18N
+        locoScrollPane.setViewportView(locoList);
 
-        add(jScrollPane1, java.awt.BorderLayout.SOUTH);
+        add(locoScrollPane, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private jcs.ui.widgets.FunctionsPanel functionsPanel1;
+    private javax.swing.JPanel backForwPanel;
+    private javax.swing.JToggleButton backwardsBtn;
+    private javax.swing.ButtonGroup directionBG;
+    private javax.swing.JPanel directionPanel;
+    private javax.swing.JToggleButton forwardsBtn;
+    private javax.swing.JPanel funcSpeedPanel;
+    private jcs.ui.widgets.FunctionsPanel functionsPanel;
+    private javax.swing.JLabel iconLbl;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel8;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSlider jSlider1;
+    private javax.swing.JPanel locNamePanel;
+    private javax.swing.JList<String> locoList;
+    private javax.swing.JScrollPane locoScrollPane;
+    private javax.swing.JLabel nameLbL;
+    private javax.swing.JPanel speedPanel;
+    private javax.swing.JButton stopBtn;
+    private javax.swing.JPanel stopPanel;
+    private javax.swing.JPanel velocityBtnPanel;
     // End of variables declaration//GEN-END:variables
 }

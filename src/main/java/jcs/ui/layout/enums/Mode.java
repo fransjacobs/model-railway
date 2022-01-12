@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2.enums;
+package jcs.ui.layout.enums;
 
 public enum Mode {
   SELECT,

@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2.tiles2;
+package jcs.ui.layout.tiles;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,14 +29,14 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.SignalType;
-import jcs.ui.layout2.Tile;
+import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class TileTester2 extends JFrame {
+public class TileTester extends JFrame {
 
     private final Tile tileEast;
     private final Tile tileSouth;
@@ -84,7 +84,7 @@ public class TileTester2 extends JFrame {
     private final Tile tileNorth8;
 
     @SuppressWarnings("OverridableMethodCallInConstructor")
-    public TileTester2(String title) {
+    public TileTester(String title) {
         super(title);
 
         tileEast = new Straight(Orientation.EAST, 70, 50);
@@ -297,7 +297,7 @@ public class TileTester2 extends JFrame {
             Logger.error(ex);
         }
 
-        TileTester2 app = new TileTester2("Tile Tester 2");
+        TileTester app = new TileTester("Tile Tester 2");
 
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         app.setSize(400, 710);

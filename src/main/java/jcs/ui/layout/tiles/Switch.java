@@ -16,39 +16,40 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2.tiles2;
+package jcs.ui.layout.tiles;
 
-import jcs.ui.layout2.Tile;
+import jcs.ui.layout.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.HashSet;
+import java.util.Set;
 import jcs.entities.TileBean;
-import static jcs.entities.TileBean.DEFAULT_WIDTH;
 import jcs.entities.enums.Orientation;
-import jcs.ui.layout2.LayoutUtil;
-import static jcs.ui.layout2.LayoutUtil.DEFAULT_HEIGHT;
+import jcs.ui.layout.tiles.enums.Direction;
+import static jcs.ui.layout.LayoutUtil.DEFAULT_HEIGHT;
+import static jcs.ui.layout.LayoutUtil.DEFAULT_WIDTH;
 
 /**
- * Draw a Straight Track
- *
+ * Draw a Railway Switch Depending on the Direction it is a Left or Right switch
  */
-public class Straight extends AbstractTile2 implements Tile {
+public class Switch extends AbstractTile2 implements Tile {
 
     private static int idSeq;
 
-    public Straight(TileBean tileBean) {
+    public Switch(TileBean tileBean) {
         super(tileBean);
-        this.width = LayoutUtil.DEFAULT_WIDTH;
-        this.height = LayoutUtil.DEFAULT_HEIGHT;
+        this.width = DEFAULT_WIDTH;
+        this.height = DEFAULT_HEIGHT;
     }
 
-    public Straight(Orientation orientation, int x, int y) {
-        this(orientation, new Point(x, y));
+    public Switch(Orientation orientation, Direction direction, int x, int y) {
+        this(orientation, direction, new Point(x, y));
     }
 
-    public Straight(Orientation orientation, Point center) {
-        super(orientation, center);
+    public Switch(Orientation orientation, Direction direction, Point center) {
+        super(orientation, direction, center);
         this.width = DEFAULT_WIDTH;
         this.height = DEFAULT_HEIGHT;
     }
@@ -56,7 +57,7 @@ public class Straight extends AbstractTile2 implements Tile {
     @Override
     protected String getNewId() {
         idSeq++;
-        return "st-" + idSeq;
+        return "sw-" + idSeq;
     }
 
     protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
@@ -71,9 +72,26 @@ public class Straight extends AbstractTile2 implements Tile {
         g2.fillRect(x, y, w, h);
     }
 
+    protected void renderDiagonal(Graphics2D g2, Color trackColor, Color backgroundColor) {
+        int[] xPoints, yPoints;
+        if (Direction.RIGHT.equals(this.direction)) {
+            xPoints = new int[]{40, 40, 16, 24};
+            yPoints = new int[]{16, 24, 0, 0};
+        } else {
+            xPoints = new int[]{40, 40, 16, 24};
+            yPoints = new int[]{24, 16, 40, 40};
+        }
+
+        g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setPaint(trackColor);
+
+        g2.fillPolygon(xPoints, yPoints, xPoints.length);
+    }
+
     @Override
     public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
         renderStraight(g2, trackColor, backgroundColor);
+        renderDiagonal(g2, trackColor, backgroundColor);
     }
 
     @Override

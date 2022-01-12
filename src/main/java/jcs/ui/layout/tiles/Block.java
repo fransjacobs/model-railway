@@ -16,9 +16,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2.tiles2;
+package jcs.ui.layout.tiles;
 
-import jcs.ui.layout2.Tile;
+import jcs.ui.layout.Tile;
 import java.awt.BasicStroke;
 import jcs.ui.layout.tiles.enums.Direction;
 import java.awt.Color;
@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
-import jcs.ui.layout2.LayoutUtil;
+import jcs.ui.layout.LayoutUtil;
 
 /**
  * Draw a OccupancyDetector

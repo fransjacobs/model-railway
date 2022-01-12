@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.ui.layout2.pathfinding;
+package jcs.ui.layout.pathfinding;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -28,8 +28,8 @@ import java.util.Set;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
-import jcs.ui.layout2.LayoutUtil;
-import jcs.ui.layout2.Tile;
+import jcs.ui.layout.LayoutUtil;
+import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
 /**
