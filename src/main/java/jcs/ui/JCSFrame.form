@@ -649,10 +649,10 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
       <SubComponents>
-        <Container class="javax.swing.JSplitPane" name="jSplitPane1">
+        <Container class="javax.swing.JSplitPane" name="locoDisplaySP">
           <Properties>
-            <Property name="dividerLocation" type="int" value="350"/>
-            <Property name="name" type="java.lang.String" value="jSplitPane1" noResource="true"/>
+            <Property name="dividerLocation" type="int" value="230"/>
+            <Property name="name" type="java.lang.String" value="locoDisplaySP" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
@@ -762,7 +762,7 @@
                     </Constraint>
                   </Constraints>
                 </Component>
-                <Component class="jcs.ui.layout2.LayoutPanel" name="layoutPanel">
+                <Component class="jcs.ui.layout.LayoutPanel" name="layoutPanel">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="layoutPanel" noResource="true"/>
                   </Properties>
@@ -778,7 +778,7 @@
                     </Constraint>
                   </Constraints>
                 </Component>
-                <Component class="jcs.ui.layout2.DisplayLayoutPanel" name="overviewPanel">
+                <Component class="jcs.ui.layout.DisplayLayoutPanel" name="overviewPanel">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="overviewPanel" noResource="true"/>
                   </Properties>
@@ -793,9 +793,9 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JPanel" name="jPanel1">
+            <Container class="javax.swing.JPanel" name="leftPanel">
               <Properties>
-                <Property name="name" type="java.lang.String" value="jPanel1" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="leftPanel" noResource="true"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription">
@@ -805,9 +805,9 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
               <SubComponents>
-                <Component class="jcs.ui.LocomotivesPanel" name="locomotivesPanel1">
+                <Component class="jcs.ui.LocomotivePanel" name="locomotivesPanel">
                   <Properties>
-                    <Property name="name" type="java.lang.String" value="locomotivesPanel1" noResource="true"/>
+                    <Property name="name" type="java.lang.String" value="locomotivesPanel" noResource="true"/>
                   </Properties>
                 </Component>
               </SubComponents>

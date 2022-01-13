@@ -99,10 +99,10 @@ public class FunctionsPanel extends javax.swing.JPanel {
             Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
             for (int i = 0; i < 32; i++) {
-                Logger.trace("Button " + i);
                 JToggleButton button = this.buttons.get(i);
 
                 if (functions.containsKey(i)) {
+                    Logger.trace("Button " + i);
                     FunctionBean fb = functions.get(i);
 
                     int type = fb.getFunctionType();
@@ -657,7 +657,8 @@ public class FunctionsPanel extends javax.swing.JPanel {
 
             if (TrackServiceFactory.getTrackService() != null) {
 
-                LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16390));
+                //LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16390));
+                LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16394));
 
                 testPanel.setLocomotive(loc);
 

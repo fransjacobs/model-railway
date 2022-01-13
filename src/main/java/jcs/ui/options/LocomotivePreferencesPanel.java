@@ -59,14 +59,14 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LocomotivePanel extends JPanel {
+public class LocomotivePreferencesPanel extends JPanel {
 
     private final LocomotiveTableModel locoTableModel;
 
     /**
      * Creates new form LocomotivePanel
      */
-    public LocomotivePanel() {
+    public LocomotivePreferencesPanel() {
         locoTableModel = new LocomotiveTableModel();
 
         initComponents();
@@ -590,7 +590,7 @@ public class LocomotivePanel extends JPanel {
         }
         java.awt.EventQueue.invokeLater(() -> {
 
-            LocomotivePanel testPanel = new LocomotivePanel();
+            LocomotivePreferencesPanel testPanel = new LocomotivePreferencesPanel();
             JFrame testFrame = new JFrame();
             JDialog testDialog = new JDialog(testFrame, true);
 

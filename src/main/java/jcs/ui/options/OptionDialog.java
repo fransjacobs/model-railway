@@ -71,7 +71,7 @@ public class OptionDialog extends javax.swing.JDialog {
         topPanel = new JPanel();
         centerPanel = new JPanel();
         prefsTP = new JTabbedPane();
-        locomotivePanel = new LocomotivePanel();
+        locomotivePanel = new LocomotivePreferencesPanel();
         propertiesPanel = new PropertiesPanel();
         signalPanel = new SignalPanel();
         turnoutPanel = new TurnoutPanel();
@@ -148,7 +148,7 @@ public class OptionDialog extends javax.swing.JDialog {
   private void prefsTPStateChanged(ChangeEvent evt) {//GEN-FIRST:event_prefsTPStateChanged
       Component c = this.prefsTP.getSelectedComponent();
 
-      if (c instanceof LocomotivePanel) {
+      if (c instanceof LocomotivePreferencesPanel) {
           this.locomotivePanel.refresh();
       } else if (c instanceof TurnoutPanel) {
           //this.turnoutPanel.refresh();
@@ -189,7 +189,7 @@ public class OptionDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPanel centerPanel;
     private JButton closeBtn;
-    private LocomotivePanel locomotivePanel;
+    private LocomotivePreferencesPanel locomotivePanel;
     private JTabbedPane prefsTP;
     private PropertiesPanel propertiesPanel;
     private SignalPanel signalPanel;

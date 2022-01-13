@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -127,7 +126,10 @@ public class JCSFrame extends JFrame implements UICallback {
             TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
             TrackServiceFactory.getTrackService().addControllerListener(new ControllerListener(this));
 
+            this.locomotivesPanel.loadLocomotives();
+            
             boolean powerOn = TrackServiceFactory.getTrackService().isPowerOn();
+                       
             this.setPowerStatus(powerOn, true);
 
             checkTimer = new Timer(1000, new ActionListener() {
@@ -236,7 +238,7 @@ public class JCSFrame extends JFrame implements UICallback {
         statusPanelRight = new JPanel();
         blinkLbl = new JLabel();
         mainPanel = new JPanel();
-        jSplitPane1 = new JSplitPane();
+        locoDisplaySP = new JSplitPane();
         centerPanel = new JPanel();
         settingsPanel = new JPanel();
         jLabel1 = new JLabel();
@@ -245,8 +247,8 @@ public class JCSFrame extends JFrame implements UICallback {
         diagnosticPanel = new DiagnosticPanel();
         layoutPanel = new LayoutPanel();
         overviewPanel = new DisplayLayoutPanel();
-        jPanel1 = new JPanel();
-        locomotivesPanel1 = new LocomotivesPanel();
+        leftPanel = new JPanel();
+        locomotivesPanel = new LocomotivePanel();
         jcsMenuBar = new JMenuBar();
         fileMenu = new JMenu();
         quitMI = new JMenuItem();
@@ -459,8 +461,8 @@ public class JCSFrame extends JFrame implements UICallback {
         mainPanel.setName("mainPanel"); // NOI18N
         mainPanel.setLayout(new BorderLayout());
 
-        jSplitPane1.setDividerLocation(350);
-        jSplitPane1.setName("jSplitPane1"); // NOI18N
+        locoDisplaySP.setDividerLocation(230);
+        locoDisplaySP.setName("locoDisplaySP"); // NOI18N
 
         centerPanel.setMinimumSize(new Dimension(1024, 845));
         centerPanel.setName("centerPanel"); // NOI18N
@@ -501,16 +503,16 @@ public class JCSFrame extends JFrame implements UICallback {
         centerPanel.add(overviewPanel, "overviewPanel");
         overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
-        jSplitPane1.setRightComponent(centerPanel);
+        locoDisplaySP.setRightComponent(centerPanel);
 
-        jPanel1.setName("jPanel1"); // NOI18N
+        leftPanel.setName("leftPanel"); // NOI18N
 
-        locomotivesPanel1.setName("locomotivesPanel1"); // NOI18N
-        jPanel1.add(locomotivesPanel1);
+        locomotivesPanel.setName("locomotivesPanel"); // NOI18N
+        leftPanel.add(locomotivesPanel);
 
-        jSplitPane1.setLeftComponent(jPanel1);
+        locoDisplaySP.setLeftComponent(leftPanel);
 
-        mainPanel.add(jSplitPane1, BorderLayout.CENTER);
+        mainPanel.add(locoDisplaySP, BorderLayout.CENTER);
 
         getContentPane().add(mainPanel, BorderLayout.CENTER);
 
@@ -712,9 +714,7 @@ public class JCSFrame extends JFrame implements UICallback {
             String description = si.getDescription();
             String catalogNumber = si.getCatalogNumber();
             String serialNumber = si.getSerialNumber();
-            //String cs2IpAddress = si.getIp();
-            //return "JCS " + jcsVersion + " - Connected to CS 2/3 @ " + cs2IpAddress + " - " + description + " - " + catalogNumber + " sn: " + serialNumber;
-            return "JCS " + jcsVersion + " - Connected to CS 2/3 @ " + description + " - " + catalogNumber + " sn: " + serialNumber;
+            return "JCS " + jcsVersion + " - Connected to CS 3 @ " + description + " - " + catalogNumber + " sn: " + serialNumber;
         } else {
             return "JCS " + jcsVersion + " - NOT Connected!";
         }
@@ -803,25 +803,6 @@ public class JCSFrame extends JFrame implements UICallback {
         }
     }
     
-//    TBT
-//    public void doOSX() {
-//		try {
-//			/* Issue #744: The file handler must be the first handler to be established! Otherwise the
-//			 * event of the double-clicked file that led to launching Structorizer might slip through!
-//			 */
-//			OSXAdapter.setFileHandler(this, getClass().getDeclaredMethod("loadFile", new Class[]{String.class}));
-//			OSXAdapter.setQuitHandler(this, getClass().getDeclaredMethod("quit", (Class[]) null));
-//			OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("about", (Class[]) null));
-//			OSXAdapter.setPreferencesHandler(this, getClass().getDeclaredMethod("preferences", (Class[]) null));
-//			OSXAdapter.setDockIconImage(getIconImage());
-//
-//			logger.info("OS X handlers established.");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			logger.log(Level.WARNING, "Failed to establish OS X handlers", e);
-//		}
-//	}
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     JLabel blinkLbl;
@@ -831,12 +812,12 @@ public class JCSFrame extends JFrame implements UICallback {
     JMenu fileMenu;
     Box.Filler filler4;
     JLabel jLabel1;
-    JPanel jPanel1;
-    JSplitPane jSplitPane1;
     JMenuBar jcsMenuBar;
     JToolBar jcsToolBar;
     LayoutPanel layoutPanel;
-    LocomotivesPanel locomotivesPanel1;
+    JPanel leftPanel;
+    JSplitPane locoDisplaySP;
+    LocomotivePanel locomotivesPanel;
     JPanel mainPanel;
     JMenuItem optionsMI;
     DisplayLayoutPanel overviewPanel;

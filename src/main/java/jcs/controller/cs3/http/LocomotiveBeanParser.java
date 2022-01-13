@@ -103,6 +103,10 @@ public class LocomotiveBeanParser {
                     break;
                 case FUNCTIONEN_2:
                     functions = true;
+                    if (locoFunction != null && locoFunction.getNumber() != null) {
+                        locoFunctions.put(locoFunction.getNumber(), locoFunction);
+                    }
+                    locoFunction = new FunctionBean();
                     break;
                 case PRG:
                     break;
@@ -201,6 +205,7 @@ public class LocomotiveBeanParser {
                 velocity, direction, mfxType, blocks);
 
         //Ignore functions which have no functionType
+        Logger.trace("Loc: "+name+" has "+locoFunctions.size()+" functions");
         for (FunctionBean function : locoFunctions.values()) {
             if (function.getNumber() != null && function.getFunctionType() != null) {
                 if (function.getValue() == null) {
