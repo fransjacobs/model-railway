@@ -19,7 +19,6 @@
 package jcs;
 
 import jcs.ui.util.ProcessFactory;
-import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,7 +99,6 @@ public class JCSGUI extends Thread {
 
         trackService = TrackServiceFactory.getTrackService();
 
-
         if (trackService != null) {
             JCSGUI jcs = JCSGUI.getInstance();
             jcs.init();
@@ -151,7 +149,6 @@ public class JCSGUI extends Thread {
     }
 
     private void init() {
-        //Logger.debug("Starting UI. Connected with: " + trackService.getServiceInfo().getIp() + "...");
         updateProgress();
 
         java.awt.EventQueue.invokeLater(() -> {
@@ -162,10 +159,9 @@ public class JCSGUI extends Thread {
                 osAdapter.setUiCallback(jcsFrame);
             }
 
+            jcsFrame.pack();
+            jcsFrame.setLocationRelativeTo(null);
             jcsFrame.setVisible(true);
-            jcsFrame.setPreferredSize(new Dimension(1310, 650));
-            // X, Y, W, H
-            jcsFrame.setBounds(100, 100, 1310, 650);
         });
 
         Logger.info("JCSGUI started...");
@@ -227,7 +223,6 @@ public class JCSGUI extends Thread {
 //        trackService = TrackServiceFactory.getTrackService(splashScreen);
 //      }
 //    }
-
 //  private static ServiceInfo startTrackServerJVM() {
 //    ServiceInfo si = null;
 //    Logger.debug("Starting a TrackServer Process...");

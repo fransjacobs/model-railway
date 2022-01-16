@@ -39,9 +39,7 @@ import org.tinylog.Logger;
  */
 public class FunctionsPanel extends javax.swing.JPanel {
 
-    private LocomotiveBean locomotive;
-
-    private Map<Integer, JToggleButton> buttons;
+    private final Map<Integer, JToggleButton> buttons;
 
     /**
      * Creates new form FunctionsPanel
@@ -89,8 +87,6 @@ public class FunctionsPanel extends javax.swing.JPanel {
     }
 
     public void setLocomotive(LocomotiveBean locomotive) {
-        this.locomotive = locomotive;
-
         setFunctionIcons(locomotive);
     }
 
@@ -102,7 +98,7 @@ public class FunctionsPanel extends javax.swing.JPanel {
                 JToggleButton button = this.buttons.get(i);
 
                 if (functions.containsKey(i)) {
-                    Logger.trace("Button " + i);
+                    //Logger.trace("Button " + i);
                     FunctionBean fb = functions.get(i);
 
                     int type = fb.getFunctionType();
@@ -125,7 +121,7 @@ public class FunctionsPanel extends javax.swing.JPanel {
                         urlOn = getClass().getResource(iconOn);
                     }
 
-                    Logger.trace("type: " + type + " URL off " + urlOff + " path: " + iconOff);
+                    //Logger.trace("type: " + type + " URL off " + urlOff + " path: " + iconOff);
                     button.setText("");
                     button.setIcon(new ImageIcon(urlOff));
                     button.setText("");
@@ -140,13 +136,11 @@ public class FunctionsPanel extends javax.swing.JPanel {
                     button.setEnabled(false);
                 }
             }
-
         }
-
     }
 
     private void buttonActionPerformed(ActionEvent evt) {
-        Logger.debug("ac: " + evt.getActionCommand());
+        Logger.trace("ac: " + evt.getActionCommand());
     }
 
     /**

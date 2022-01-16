@@ -61,7 +61,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         directionBG = new javax.swing.ButtonGroup();
-        jPanel1 = new javax.swing.JPanel();
+        locIdPanel = new javax.swing.JPanel();
         locNamePanel = new javax.swing.JPanel();
         iconLbl = new javax.swing.JLabel();
         nameLbL = new javax.swing.JLabel();
@@ -79,20 +79,22 @@ public class LocomotivePanel extends javax.swing.JPanel {
         functionsPanel = new jcs.ui.widgets.FunctionsPanel();
         speedPanel = new javax.swing.JPanel();
         velocitySlider = new javax.swing.JSlider();
+        locSelectionPanel = new javax.swing.JPanel();
         locoScrollPane = new javax.swing.JScrollPane();
         locoList = new javax.swing.JList<>();
 
-        setMinimumSize(new java.awt.Dimension(220, 570));
+        setMinimumSize(new java.awt.Dimension(220, 580));
         setName("Form"); // NOI18N
         setPreferredSize(new java.awt.Dimension(220, 570));
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.BorderLayout(1, 1));
 
-        jPanel1.setName("jPanel1"); // NOI18N
-        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.Y_AXIS));
+        locIdPanel.setName("locIdPanel"); // NOI18N
+        locIdPanel.setPreferredSize(new java.awt.Dimension(130, 214));
+        locIdPanel.setLayout(new javax.swing.BoxLayout(locIdPanel, javax.swing.BoxLayout.Y_AXIS));
 
         locNamePanel.setName("locNamePanel"); // NOI18N
         locNamePanel.setPreferredSize(new java.awt.Dimension(120, 80));
-        locNamePanel.setLayout(new java.awt.GridLayout(2, 1, 1, 0));
+        locNamePanel.setLayout(new java.awt.GridLayout(2, 1, 2, 0));
 
         iconLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         iconLbl.setText("icon");
@@ -107,7 +109,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
         nameLbL.setPreferredSize(new java.awt.Dimension(120, 16));
         locNamePanel.add(nameLbL);
 
-        jPanel1.add(locNamePanel);
+        locIdPanel.add(locNamePanel);
 
         velocityBtnPanel.setName("velocityBtnPanel"); // NOI18N
         java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
@@ -151,7 +153,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
         });
         velocityBtnPanel.add(speedBtn3);
 
-        jPanel1.add(velocityBtnPanel);
+        locIdPanel.add(velocityBtnPanel);
 
         directionPanel.setName("directionPanel"); // NOI18N
         directionPanel.setLayout(new java.awt.GridLayout(2, 1, 0, 2));
@@ -208,9 +210,9 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
         directionPanel.add(stopPanel);
 
-        jPanel1.add(directionPanel);
+        locIdPanel.add(directionPanel);
 
-        add(jPanel1, java.awt.BorderLayout.NORTH);
+        add(locIdPanel, java.awt.BorderLayout.NORTH);
 
         funcSpeedPanel.setName("funcSpeedPanel"); // NOI18N
         funcSpeedPanel.setPreferredSize(new java.awt.Dimension(235, 230));
@@ -242,6 +244,11 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
         add(funcSpeedPanel, java.awt.BorderLayout.CENTER);
 
+        locSelectionPanel.setName("locSelectionPanel"); // NOI18N
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout();
+        flowLayout1.setAlignOnBaseline(true);
+        locSelectionPanel.setLayout(flowLayout1);
+
         locoScrollPane.setName("locoScrollPane"); // NOI18N
         locoScrollPane.setPreferredSize(new java.awt.Dimension(220, 130));
 
@@ -255,7 +262,9 @@ public class LocomotivePanel extends javax.swing.JPanel {
         });
         locoScrollPane.setViewportView(locoList);
 
-        add(locoScrollPane, java.awt.BorderLayout.SOUTH);
+        locSelectionPanel.add(locoScrollPane);
+
+        add(locSelectionPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
     private void locoListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_locoListValueChanged
@@ -339,8 +348,9 @@ public class LocomotivePanel extends javax.swing.JPanel {
     private javax.swing.JPanel funcSpeedPanel;
     private jcs.ui.widgets.FunctionsPanel functionsPanel;
     private javax.swing.JLabel iconLbl;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel locIdPanel;
     private javax.swing.JPanel locNamePanel;
+    private javax.swing.JPanel locSelectionPanel;
     private javax.swing.JList<LocomotiveBean> locoList;
     private javax.swing.JScrollPane locoScrollPane;
     private javax.swing.JLabel nameLbL;

@@ -80,6 +80,7 @@ public class DisplayLayoutPanel extends JPanel {
         });
         setLayout(new BorderLayout());
 
+        canvasScrollPane.setBorder(null);
         canvasScrollPane.setDoubleBuffered(true);
         canvasScrollPane.setMinimumSize(new Dimension(110, 110));
         canvasScrollPane.setPreferredSize(new Dimension(1000, 700));
