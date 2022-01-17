@@ -882,7 +882,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Container class="jcs.ui.layout2.LayoutCanvas" name="canvas">
+        <Container class="jcs.ui.layout.LayoutCanvas" name="canvas">
           <Properties>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[100, 100]"/>

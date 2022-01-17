@@ -288,9 +288,6 @@ public class JCSFrame extends JFrame implements UICallback {
         synchronizeAccessoriesMI = new JMenuItem();
         viewMenu = new JMenu();
         showLocosMI = new JMenuItem();
-        showTurnoutsMI = new JMenuItem();
-        showSignalsMI = new JMenuItem();
-        showDiagnosticsMI = new JMenuItem();
         toolsMenu = new JMenu();
         optionsMI = new JMenuItem();
 
@@ -335,7 +332,7 @@ public class JCSFrame extends JFrame implements UICallback {
         filler1.setName("filler1"); // NOI18N
         jcsToolBar.add(filler1);
 
-        showOverviewBtn.setIcon(new ImageIcon(getClass().getResource("/media/earth-24.png"))); // NOI18N
+        showOverviewBtn.setIcon(new ImageIcon(getClass().getResource("/media/home-24.png"))); // NOI18N
         showOverviewBtn.setToolTipText("Overview");
         showOverviewBtn.setFocusable(false);
         showOverviewBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -353,7 +350,7 @@ public class JCSFrame extends JFrame implements UICallback {
         filler2.setName("filler2"); // NOI18N
         jcsToolBar.add(filler2);
 
-        showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/layout-24.png"))); // NOI18N
+        showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/paintbrush-24.png"))); // NOI18N
         showEditDesignBtn.setToolTipText("Design Layout");
         showEditDesignBtn.setFocusable(false);
         showEditDesignBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -372,7 +369,7 @@ public class JCSFrame extends JFrame implements UICallback {
         filler3.setName("filler3"); // NOI18N
         jcsToolBar.add(filler3);
 
-        showDiagnosticsBtn.setIcon(new ImageIcon(getClass().getResource("/media/stethoscope-24.png"))); // NOI18N
+        showDiagnosticsBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
         showDiagnosticsBtn.setToolTipText("Diagnostics");
         showDiagnosticsBtn.setFocusable(false);
         showDiagnosticsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -636,37 +633,6 @@ public class JCSFrame extends JFrame implements UICallback {
         });
         viewMenu.add(showLocosMI);
 
-        showTurnoutsMI.setIcon(new ImageIcon(getClass().getResource("/media/turnout-24.png"))); // NOI18N
-        showTurnoutsMI.setToolTipText("");
-        showTurnoutsMI.setLabel("Turnouts");
-        showTurnoutsMI.setName("showTurnoutsMI"); // NOI18N
-        showTurnoutsMI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                showTurnoutsMIActionPerformed(evt);
-            }
-        });
-        viewMenu.add(showTurnoutsMI);
-
-        showSignalsMI.setIcon(new ImageIcon(getClass().getResource("/media/signal-24.png"))); // NOI18N
-        showSignalsMI.setLabel("Signals");
-        showSignalsMI.setName("showSignalsMI"); // NOI18N
-        showSignalsMI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                showSignalsMIActionPerformed(evt);
-            }
-        });
-        viewMenu.add(showSignalsMI);
-
-        showDiagnosticsMI.setIcon(new ImageIcon(getClass().getResource("/media/stethoscope-24.png"))); // NOI18N
-        showDiagnosticsMI.setLabel("Diagnostics");
-        showDiagnosticsMI.setName("showDiagnosticsMI"); // NOI18N
-        showDiagnosticsMI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                showDiagnosticsMIActionPerformed(evt);
-            }
-        });
-        viewMenu.add(showDiagnosticsMI);
-
         jcsMenuBar.add(viewMenu);
 
         toolsMenu.setText("Tools");
@@ -692,14 +658,6 @@ public class JCSFrame extends JFrame implements UICallback {
       showLocomotives();
   }//GEN-LAST:event_showLocosMIActionPerformed
 
-  private void showTurnoutsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showTurnoutsMIActionPerformed
-      showTurnouts();
-  }//GEN-LAST:event_showTurnoutsMIActionPerformed
-
-  private void showSignalsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSignalsMIActionPerformed
-      showSignals();
-  }//GEN-LAST:event_showSignalsMIActionPerformed
-
   private void showDiagnosticsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDiagnosticsBtnActionPerformed
       showDiagnostics();
   }//GEN-LAST:event_showDiagnosticsBtnActionPerformed
@@ -720,10 +678,6 @@ public class JCSFrame extends JFrame implements UICallback {
   private void optionsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_optionsMIActionPerformed
       handlePreferences();
   }//GEN-LAST:event_optionsMIActionPerformed
-
-  private void showDiagnosticsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDiagnosticsMIActionPerformed
-      showDiagnostics();
-  }//GEN-LAST:event_showDiagnosticsMIActionPerformed
 
   private void stopBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopBtnActionPerformed
       stop();
@@ -881,12 +835,9 @@ public class JCSFrame extends JFrame implements UICallback {
     JMenuItem quitMI;
     JPanel settingsPanel;
     JButton showDiagnosticsBtn;
-    JMenuItem showDiagnosticsMI;
     JButton showEditDesignBtn;
     JMenuItem showLocosMI;
     JButton showOverviewBtn;
-    JMenuItem showSignalsMI;
-    JMenuItem showTurnoutsMI;
     JPanel statusPanel;
     JPanel statusPanelLeft;
     JPanel statusPanelMiddle;

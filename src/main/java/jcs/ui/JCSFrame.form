@@ -63,43 +63,6 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showLocosMIActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="showTurnoutsMI">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/turnout-24.png"/>
-                </Property>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
-                <Property name="label" type="java.lang.String" value="Turnouts"/>
-                <Property name="name" type="java.lang.String" value="showTurnoutsMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showTurnoutsMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="showSignalsMI">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/signal-24.png"/>
-                </Property>
-                <Property name="label" type="java.lang.String" value="Signals"/>
-                <Property name="name" type="java.lang.String" value="showSignalsMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showSignalsMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="showDiagnosticsMI">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/stethoscope-24.png"/>
-                </Property>
-                <Property name="label" type="java.lang.String" value="Diagnostics"/>
-                <Property name="name" type="java.lang.String" value="showDiagnosticsMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showDiagnosticsMIActionPerformed"/>
-              </Events>
-            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="toolsMenu">
@@ -233,7 +196,7 @@
         <Component class="javax.swing.JButton" name="showOverviewBtn">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/media/earth-24.png"/>
+              <Image iconType="3" name="/media/home-24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Overview"/>
             <Property name="focusable" type="boolean" value="false"/>
@@ -273,7 +236,7 @@
         <Component class="javax.swing.JButton" name="showEditDesignBtn">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/media/layout-24.png"/>
+              <Image iconType="3" name="/media/paintbrush-24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Design Layout"/>
             <Property name="focusable" type="boolean" value="false"/>
@@ -314,7 +277,7 @@
         <Component class="javax.swing.JButton" name="showDiagnosticsBtn">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/media/stethoscope-24.png"/>
+              <Image iconType="3" name="/media/controller-24.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Diagnostics"/>
             <Property name="focusable" type="boolean" value="false"/>
