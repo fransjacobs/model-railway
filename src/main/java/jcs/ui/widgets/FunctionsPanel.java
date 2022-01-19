@@ -21,7 +21,6 @@ package jcs.ui.widgets;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -41,6 +40,15 @@ import org.tinylog.Logger;
 public class FunctionsPanel extends javax.swing.JPanel {
 
     private final Map<Integer, JToggleButton> buttons;
+
+    private final String IMG_PREFIX = "FktIcon_";
+    private final String IMG_A = "a_";
+    private final String IMG_I = "i_";
+    private final String IMG_YELLOW = "ge_";
+    private final String IMG_BLACK = "sw_";
+    private final String IMG_WHITE = "we_";
+    private final String IMG_GREY = "gr_";
+    private final String NMB_FORMAT = "%02d";
 
     /**
      * Creates new form FunctionsPanel
@@ -92,15 +100,6 @@ public class FunctionsPanel extends javax.swing.JPanel {
     }
 
     private void setFunctionIcons(LocomotiveBean locomotive) {
-        
-        String imagePre = "FktIcon_"; 
-        String imageA = "a_"; 
-        String imageI = "i_"; 
-        String imageYellow = "ge_"; 
-        String imageBlack = "sw_"; 
-        String imageWhite = "we_"; 
-        String imageGrey = "gr_"; 
-        
         if (TrackServiceFactory.getTrackService() != null && locomotive != null) {
             Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
@@ -113,49 +112,25 @@ public class FunctionsPanel extends javax.swing.JPanel {
 
                     int type = fb.getFunctionType();
                     boolean val = fb.getValue() == 1;
-                    
-                      
-    
-    //http://192.168.1.180/fcticons/FktIcon_a_ge_111.png
-    //public static final String[] COLOR_YELLOW = {"i_gr", "a_ge"};
-    //public static final String[] COLOR_WHITE = {"i_we", "a_we"};
-    
-                    //String iconOff = "/media/functions/function_off_" + String.format("%02d", type) + ".png";
-                    //String iconOn = "/media/functions/function_on_" + String.format("%02d", type) + ".png";
-                    //URL urlOff = getClass().getResource(iconOff);
-                    //URL urlOn = getClass().getResource(iconOn);
-                    
-                    //int altType = 50 + i;
-                    //if (urlOff == null) {
-                    //    //Use a default Fnn icon
-                    //    iconOff = "/media/functions/function_off_" + String.format("%02d", altType) + ".png";
-                    //    urlOff = getClass().getResource(iconOff);
-                    //}
-                    //if (urlOn == null) {
-                    //    iconOn = "/media/functions/function_on_" + String.format("%02d", altType) + ".png";
-                    //    urlOn = getClass().getResource(iconOn);
-                    //}
-                    
-                    String functionOff = imagePre + imageA + imageBlack + String.format("%02d", type);
-                    String functionOn = imagePre + imageA + imageYellow + String.format("%02d", type);
-                    
+
+                    String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
+                    String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
+
                     Image iconOff = TrackServiceFactory.getTrackService().getFunctionImage(functionOff);
-                    if(iconOff == null) {
+                    if (iconOff == null) {
                         int altType = 50 + i;
-                        functionOff = imagePre + imageA + imageBlack + String.format("%02d", altType);
+                        functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, altType);
                         iconOff = TrackServiceFactory.getTrackService().getFunctionImage(functionOff);
                     }
-                    
+
                     Image iconOn = TrackServiceFactory.getTrackService().getFunctionImage(functionOn);
-                    if(iconOn == null) {
+                    if (iconOn == null) {
                         int altType = 50 + i;
-                        functionOn = imagePre + imageA + imageYellow + String.format("%02d", altType);
+                        functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, altType);
                         iconOn = TrackServiceFactory.getTrackService().getFunctionImage(functionOn);
                     }
 
-                    //Logger.trace("type: " + type + " URL off " + urlOff + " path: " + iconOff);
                     button.setText("");
-                    //button.setIcon(new ImageIcon(urlOff));
                     button.setIcon(new ImageIcon(iconOff));
                     button.setText("");
                     button.setSelectedIcon(new ImageIcon(iconOn));
