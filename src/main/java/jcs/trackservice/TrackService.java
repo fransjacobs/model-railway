@@ -18,12 +18,14 @@
  */
 package jcs.trackservice;
 
+import java.awt.Image;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.DeviceInfo;
 import jcs.controller.cs3.events.CanMessageListener;
+import jcs.entities.AccessoryBean;
 import jcs.entities.JCSEntity;
 import jcs.entities.JCSProperty;
 import jcs.entities.LocomotiveBean;
@@ -75,6 +77,8 @@ public interface TrackService {
     LocomotiveBean getLocomotive(BigDecimal id);
 
     LocomotiveBean persist(LocomotiveBean locomotive);
+    
+    Image getFunctionImage(String imageName); 
 
     void toggleDirection(Direction direction, LocomotiveBean locomotive);
 
@@ -93,21 +97,21 @@ public interface TrackService {
     void toggleF4(Boolean f4, LocomotiveBean locomotive);
 
     //Accessories / Accessory
-    List<SwitchBean> getSwitches();
+    //List<SwitchBean> getSwitches();
 
-    SwitchBean getSwitchTurnout(Integer address);
+    //SwitchBean getSwitchTurnout(Integer address);
 
-    List<SignalBean> getSignals();
+    //List<SignalBean> getSignals();
 
-    SignalBean getSignal(Integer address);
+    //SignalBean getSignal(Integer address);
 
-    SwitchBean persist(SwitchBean turnout);
+    //SwitchBean persist(SwitchBean turnout);
 
-    SignalBean persist(SignalBean signal);
+    //SignalBean persist(SignalBean signal);
 
-    void switchAccessory(AccessoryValue value, SolenoidAccessory accessory);
+    void switchAccessory(AccessoryValue value, AccessoryBean accessory);
 
-    void switchAccessory(AccessoryValue value, SolenoidAccessory accessory, boolean value2);
+    void switchAccessory(AccessoryValue value, AccessoryBean accessory, boolean value2);
 
     void addAccessoiryListener(AccessoryListener listener);
 

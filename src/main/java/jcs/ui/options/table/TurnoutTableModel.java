@@ -50,7 +50,7 @@ public class TurnoutTableModel extends DeviceTableModel<SwitchBean> {
     @Override
     protected List<SwitchBean> getDevices() {
         if (TrackServiceFactory.getTrackService() != null) {
-            return TrackServiceFactory.getTrackService().getSwitches();
+            return Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSwitches();
         } else {
             return Collections.EMPTY_LIST;
         }

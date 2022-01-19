@@ -19,6 +19,7 @@
 package jcs.ui;
 
 import java.awt.GridLayout;
+import java.util.Collections;
 import java.util.List;
 import jcs.entities.SignalBean;
 import jcs.trackservice.TrackServiceFactory;
@@ -47,7 +48,8 @@ public class SignalsPanel extends javax.swing.JPanel {
         if (TrackServiceFactory.getTrackService() == null) {
             return;
         }
-        List<SignalBean> signals = TrackServiceFactory.getTrackService().getSignals();
+        //stub
+        List<SignalBean> signals = Collections.EMPTY_LIST; // TrackServiceFactory.getTrackService().getSignals();
 
         Logger.trace("There are " + signals.size() + " signals...");
 

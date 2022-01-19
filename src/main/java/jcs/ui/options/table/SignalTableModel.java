@@ -51,7 +51,7 @@ public class SignalTableModel extends DeviceTableModel<SignalBean> {
     @Override
     protected List<SignalBean> getDevices() {
         if (TrackServiceFactory.getTrackService() != null) {
-            return TrackServiceFactory.getTrackService().getSignals();
+            return Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSignals();
         } else {
             return Collections.EMPTY_LIST;
         }

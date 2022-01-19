@@ -19,6 +19,7 @@
 package jcs.ui.widgets;
 
 import java.awt.GridLayout;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -273,7 +274,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
 
     private void sendCommand(AccessoryValue value, SignalBean signal, boolean useValue2) {
         if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
+            //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
         }
     }
 
@@ -309,7 +310,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         JFrame f = new JFrame("SignalRowPanel Tester");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        List<SignalBean> signals = TrackServiceFactory.getTrackService().getSignals();
+        List<SignalBean> signals = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSignals();
         f.setLayout(new GridLayout(signals.size(), 1));
 
         for (SignalBean signal : signals) {

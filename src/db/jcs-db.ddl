@@ -3,15 +3,15 @@ DROP TABLE if exists drivewaytypes CASCADE CONSTRAINTS;  --
 DROP TABLE if exists driveways CASCADE CONSTRAINTS;
 DROP TABLE if exists drivewayactivationlogs CASCADE CONSTRAINTS; ---
 
-DROP TABLE if exists locomotives CASCADE CONSTRAINTS;
-DROP TABLE if exists functions CASCADE CONSTRAINTS;
 
-DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS;
+
+
+
 DROP TABLE if exists accessorysettings CASCADE CONSTRAINTS;
 DROP TABLE if exists statustypes CASCADE CONSTRAINTS;
 DROP TABLE if exists trackpower CASCADE CONSTRAINTS;
 DROP TABLE if exists feedbacksource CASCADE CONSTRAINTS;
-DROP TABLE if exists layouttiles CASCADE CONSTRAINTS;
+
 DROP TABLE if exists layouttilegroups CASCADE CONSTRAINTS; ---
 DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;
 DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;
@@ -37,7 +37,7 @@ DROP SEQUENCE if exists rout_seq;
 CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1;
 --CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1;
 --CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1;
+--CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE acse_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE feso_seq START WITH 1 INCREMENT BY 1;
@@ -50,6 +50,8 @@ CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1;
  * JCS Database creation script
  */
 
+drop table if exists tiles cascade constraints;
+
 create table tiles (
    id          VARCHAR(255) not null
   ,tileType    VARCHAR(255) not null
@@ -60,45 +62,61 @@ create table tiles (
   ,signalType  VARCHAR(255) 
 );
 
-ALTER TABLE tiles ADD CONSTRAINT tile_pk PRIMARY KEY ( id );
+alter table tiles add constraint tile_pk primary key ( id );
+
+DROP TABLE if exists locomotives CASCADE CONSTRAINTS;
 
 CREATE TABLE locomotives (
   id                 NUMBER NOT NULL,
-  name               VARCHAR2(255 CHAR) NOT NULL,
-  previousname       VARCHAR2(255 CHAR),
-  uid                VARCHAR2(255 CHAR),
-  mfxuid             VARCHAR2(255 CHAR),
+  name               VARCHAR(255) NOT NULL,
+  previousname       VARCHAR(255),
+  uid                VARCHAR(255),
+  mfxuid             VARCHAR(255),
   address            INTEGER NOT NULL,
-  icon               VARCHAR2(255 CHAR),
-  decodertype        VARCHAR2(255 CHAR),
-  mfxsid             VARCHAR2(255 CHAR),
+  icon               VARCHAR(255),
+  decodertype        VARCHAR(255),
+  mfxsid             VARCHAR(255),
   tachomax           INTEGER,
   vmin               INTEGER,
   accelerationDelay  INTEGER,
   brakeDelay         INTEGER,
   volume             INTEGER,
-  spm                VARCHAR2(255 CHAR),
+  spm                VARCHAR(255),
   velocity           INTEGER,
   direction          INTEGER,
-  mfxtype            VARCHAR2(255 CHAR),
-  blocks             VARCHAR2(255 CHAR)
+  mfxtype            VARCHAR(255),
+  blocks             VARCHAR(255)
 );
 
 ALTER TABLE locomotives ADD CONSTRAINT locomotive_pk PRIMARY KEY ( id );
 
+DROP TABLE if exists functions CASCADE CONSTRAINTS;
+
 CREATE TABLE functions (
-  id                 NUMBER NOT NULL,
   locoid             NUMBER NOT NULL,
   number             INTEGER NOT NULL,
   type               INTEGER NOT NULL,
   value              INTEGER
 );
 
---ALTER TABLE functions ADD CONSTRAINT function_pk PRIMARY KEY ( id );
-
-ALTER TABLE functions ADD CONSTRAINT function_loco_number_un UNIQUE ( locoid, number );
+ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( locoid, number );
 
 ALTER TABLE functions ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid ) REFERENCES locomotives ( id ) NOT DEFERRABLE;  
+
+
+DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS;
+
+CREATE TABLE solenoidaccessories (
+  id                    NUMBER NOT NULL,
+  name                  VARCHAR(255) NOT NULL,
+  type                  INTEGER NOT NULL,
+  position              INTEGER,
+  switchtime            INTEGER,
+  decodertype           VARCHAR(255),
+  decoder               VARCHAR(255)
+);
+
+ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id );
 
 
 --============
@@ -163,6 +181,7 @@ ALTER TABLE locomotives ADD CONSTRAINT loco_pk PRIMARY KEY ( id );
 ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype );
 */
 
+/*
 CREATE TABLE solenoidaccessories (
   id                    NUMBER NOT NULL,
   address               INTEGER NOT NULL,
@@ -185,7 +204,7 @@ ALTER TABLE solenoidaccessories
   ADD CONSTRAINT soac_soac_fk FOREIGN KEY ( soac_id )
     REFERENCES solenoidaccessories ( id )
   NOT DEFERRABLE;
-
+*/
 /*
 CREATE TABLE accessorysettings (
   id                    NUMBER NOT NULL,

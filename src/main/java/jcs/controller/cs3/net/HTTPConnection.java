@@ -21,7 +21,6 @@ package jcs.controller.cs3.net;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -29,10 +28,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
-import jcs.controller.cs3.http.LocomotiveBeanParser;
-import jcs.entities.FunctionBean;
-import jcs.entities.LocomotiveBean;
+import jcs.controller.cs3.http.AccessoryBeanParser;
+import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
 /**
@@ -49,6 +48,7 @@ public class HTTPConnection {
     private final static String MAGNETARTIKEL = "magnetartikel.cs2";
     private final static String DEVICE = "geraet.vrs";
     private final static String IMAGE_FOLDER = "/app/assets/lok/";
+    private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
 
     HTTPConnection(InetAddress cs3Address) {
         this.cs3Address = cs3Address;
@@ -132,9 +132,31 @@ public class HTTPConnection {
         return image;
     }
 
+    public Image getFunctionImage(String imageName) {
+        BufferedImage image = null;
+        String iurl = fixURL(HTTP + cs3Address.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
+
+        try {
+            Logger.trace("Try to fetch: " + iurl);
+            //URL url = new URL(fixURL(HTTP + cs3Address.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png"));
+            URL url = new URL(iurl);
+            image = ImageIO.read(url);
+        } catch (IIOException iio) {
+            //Image not avalable
+            //Logger.trace("Image: " + iurl + " is not available");
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return image;
+    }
+
     public static void main(String[] args) throws Exception {
         InetAddress inetAddr = InetAddress.getByName("192.168.1.180");
         HTTPConnection hc = new HTTPConnection(inetAddr);
+
+        /*
         String loks = hc.getLocomotivesFile();
         LocomotiveBeanParser lp = new LocomotiveBeanParser();
         List<LocomotiveBean> locList = lp.parseLocomotivesFile(loks);
@@ -148,17 +170,17 @@ public class HTTPConnection {
                 System.out.println(".Fn: " + fn.getNumber() + ", Type: " + fn.getFunctionType() + ", Value: " + fn.getValue());
             }
         }
-
-        /*        
+         */
         String accessories = hc.getAccessoriesFile();
-        AccessoryParser ap = new AccessoryParser();
-        List<SolenoidAccessory> acList = ap.parseAccessoryFile(accessories);
+        AccessoryBeanParser ap = new AccessoryBeanParser();
 
-        for (SolenoidAccessory sa : acList) {
+        List<AccessoryBean> acList = ap.parseAccessoryFile(accessories);
+
+        for (AccessoryBean sa : acList) {
             System.out.println(sa.toLogString());
         }
-         */
- /*
+
+        /*
         String deviceFile = hc.getDeviceFile();
         DeviceParser dp = new DeviceParser();
         DeviceInfo di = dp.parseAccessoryFile(deviceFile);

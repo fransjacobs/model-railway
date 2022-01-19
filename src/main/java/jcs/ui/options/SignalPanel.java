@@ -442,7 +442,7 @@ public class SignalPanel extends JPanel {
 
       if (s != null) {
           Logger.debug("Selected row: " + row + ", Signal Address: " + s.getAddress());
-          selectedSignal = TrackServiceFactory.getTrackService().getSignal(s.getAddress());
+          selectedSignal = null; //TrackServiceFactory.getTrackService().getSignal(s.getAddress());
           setComponentValues(selectedSignal);
       }
   }//GEN-LAST:event_signalTableMouseClicked
@@ -451,7 +451,7 @@ public class SignalPanel extends JPanel {
       this.selectedSignal = this.setSignalValues();
       Logger.debug("Save the Signal: " + selectedSignal);
 
-      SignalBean s = TrackServiceFactory.getTrackService().getSignal(selectedSignal.getAddress());
+      SignalBean s = null; //TrackServiceFactory.getTrackService().getSignal(selectedSignal.getAddress());
       if (s != null) {
           selectedSignal.setId(s.getId());
           selectedSignal.setId2(s.getId2());
@@ -469,7 +469,7 @@ public class SignalPanel extends JPanel {
           }
       }
 
-      selectedSignal = TrackServiceFactory.getTrackService().persist(selectedSignal);
+      selectedSignal = null; //TrackServiceFactory.getTrackService().persist(selectedSignal);
       setComponentValues(selectedSignal);
       signalTableModel.refresh();
       alignSignalTable();

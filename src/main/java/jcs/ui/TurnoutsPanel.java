@@ -19,6 +19,7 @@
 package jcs.ui;
 
 import java.awt.GridLayout;
+import java.util.Collections;
 import java.util.List;
 import jcs.entities.SwitchBean;
 import jcs.trackservice.TrackServiceFactory;
@@ -47,7 +48,8 @@ public class TurnoutsPanel extends javax.swing.JPanel {
         if (TrackServiceFactory.getTrackService() == null) {
             return;
         }
-        List<SwitchBean> turnouts = TrackServiceFactory.getTrackService().getSwitches();
+        //stub
+        List<SwitchBean> turnouts = Collections.EMPTY_LIST; // TrackServiceFactory.getTrackService().getSwitches();
 
         Logger.trace("There are " + turnouts.size() + " turnouts...");
 

@@ -130,12 +130,11 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists locomotives CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists functions CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;");
+        stmt.executeUpdate("DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
 
-        
         stmt.executeUpdate("DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS");
-        stmt.executeUpdate("DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists statustypes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;");
@@ -143,7 +142,6 @@ public class DatabaseCreator {
 
         //stmt.executeUpdate("DROP TABLE if exists driveways CASCADE CONSTRAINTS");
         //stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
-
         stmt.executeUpdate("DROP SEQUENCE if exists femo_seq");
         //stmt.executeUpdate("DROP SEQUENCE if exists loco_seq");
         //stmt.executeUpdate("DROP SEQUENCE if exists func_seq");
@@ -160,20 +158,18 @@ public class DatabaseCreator {
     }
 
     //private static void createSequences(Statement stmt) throws SQLException {
-        //stmt.executeUpdate("CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1");
-        //stmt.executeUpdate("CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1");
-        //stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
-        //stmt.executeUpdate("CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1");
-        //stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
-        //stmt.executeUpdate("CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1");
-
-        //trackplan
-        //stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
-        //stmt.executeUpdate("CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1");
-        //stmt.executeUpdate("CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1");
-        //Logger.trace("Sequences created...");
+    //stmt.executeUpdate("CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1");
+    //stmt.executeUpdate("CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1");
+    //stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
+    //stmt.executeUpdate("CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1");
+    //stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
+    //stmt.executeUpdate("CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1");
+    //trackplan
+    //stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
+    //stmt.executeUpdate("CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1");
+    //stmt.executeUpdate("CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1");
+    //Logger.trace("Sequences created...");
     //}
-
     private static void createTiles(Statement stmt) throws SQLException {
         stmt.executeUpdate("create table tiles ("
                 + "id           VARCHAR(255) not null,"
@@ -266,20 +262,16 @@ public class DatabaseCreator {
 
     private static void solenoidaccessories(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE solenoidaccessories ("
-                + "id                    IDENTITY NOT NULL,"
-                + "address               INTEGER NOT NULL,"
+                + "id                    NUMBER NOT NULL,"
                 + "name                  VARCHAR2(255) NOT NULL,"
-                + "description           VARCHAR2(255),"
-                + "catalog_number        VARCHAR2(255),"
-                + "accessory_type        VARCHAR2(255) NOT NULL,"
-                + "current_status_type   VARCHAR2(255) NOT NULL,"
-                + "soac_id               NUMBER NULL,"
-                + "light_images          INTEGER NOT NULL DEFAULT 2,"
-                + "signal_value          VARCHAR2(255),"
-                + "switch_time           INTEGER)"
+                + "type                  INTEGER NOT NULL,"
+                + "position              INTEGER,"
+                + "switchtime            INTEGER,"
+                + "decodertype           VARCHAR2(255),"
+                + "decoder               VARCHAR2(255))"
         );
 
-        stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_address_un UNIQUE ( address )");
+        stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id )");
         Logger.trace("Table solenoidaccessories created...");
     }
 
@@ -355,26 +347,22 @@ public class DatabaseCreator {
                 + " REFERENCES locomotives ( id )"
                 + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
-                + " ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )"
-                + " REFERENCES accessorytypes ( accessory_type )"
-                + " NOT DEFERRABLE");
-
-        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
-                + " ADD CONSTRAINT soac_stty_fk FOREIGN KEY ( current_status_type )"
-                + " REFERENCES statustypes ( status_type )"
-                + " NOT DEFERRABLE");
-
-        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
-                + " ADD CONSTRAINT soac_soac_fk FOREIGN KEY ( soac_id )"
-                + " REFERENCES solenoidaccessories ( id )"
-                + " NOT DEFERRABLE");
-
-        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
-                + " ADD CONSTRAINT soac_siva_fk FOREIGN KEY ( signal_value )"
-                + " REFERENCES signalvalues ( signal_value )"
-                + " NOT DEFERRABLE");
-
+//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//                + " ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )"
+//                + " REFERENCES accessorytypes ( accessory_type )"
+//                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//                + " ADD CONSTRAINT soac_stty_fk FOREIGN KEY ( current_status_type )"
+//                + " REFERENCES statustypes ( status_type )"
+//                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//                + " ADD CONSTRAINT soac_soac_fk FOREIGN KEY ( soac_id )"
+//                + " REFERENCES solenoidaccessories ( id )"
+//                + " NOT DEFERRABLE");
+//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//                + " ADD CONSTRAINT soac_siva_fk FOREIGN KEY ( signal_value )"
+//                + " REFERENCES signalvalues ( signal_value )"
+//                + " NOT DEFERRABLE");
 //        stmt.executeUpdate("ALTER TABLE layouttiles"
 //                + " ADD CONSTRAINT lati_soac_fk FOREIGN KEY ( soac_id )"
 //                + " REFERENCES solenoidaccessories ( id )"

@@ -89,14 +89,14 @@ public class SwitchPanel extends JPanel {
             return;
         }
 
-        SwitchBean t = TrackServiceFactory.getTrackService().getSwitchTurnout(address);
+        SwitchBean t = null;//TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
             button.setForeground(new java.awt.Color(0, 153, 0));
             button.setSelected(AccessoryValue.RED.equals(t.getValue()));
         }
 
         if (t == null) {
-            SignalBean s = TrackServiceFactory.getTrackService().getSignal(address);
+            SignalBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
             if (s != null) {
                 button.setForeground(new java.awt.Color(0, 153, 0));
                 button.setSelected(AccessoryValue.RED.equals(s.getValue()));
@@ -104,7 +104,7 @@ public class SwitchPanel extends JPanel {
 
             if (address % 2 == 0) {
                 //even addres check one lower
-                s = TrackServiceFactory.getTrackService().getSignal(address - 1);
+                s = null; //TrackServiceFactory.getTrackService().getSignal(address - 1);
                 if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
                     button.setForeground(new java.awt.Color(0, 153, 0));
                     button.setSelected(AccessoryValue.RED.equals(s.getValue2()));
@@ -412,32 +412,32 @@ public class SwitchPanel extends JPanel {
 
         Logger.trace("Address: " + address + " Value: " + value);
 
-        TrackServiceFactory.getTrackService().switchAccessory(value, new Accessoiry(address, value));
+        //TrackServiceFactory.getTrackService().switchAccessory(value, new Accessoiry(address, value));
 
         updateAccessoiry(address, value);
     }
 
     private void updateAccessoiry(Integer address, AccessoryValue value) {
-        SwitchBean t = TrackServiceFactory.getTrackService().getSwitchTurnout(address);
+        SwitchBean t = null; //TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
             t.setValue(value);
-            TrackServiceFactory.getTrackService().persist(t);
+            //TrackServiceFactory.getTrackService().persist(t);
             return;
         }
 
-        SignalBean s = TrackServiceFactory.getTrackService().getSignal(address);
+        SignalBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
         if (s != null) {
             s.setValue(value);
-            TrackServiceFactory.getTrackService().persist(s);
+            //TrackServiceFactory.getTrackService().persist(s);
             return;
         }
 
         if (address % 2 == 0) {
             //even addres check one lower
-            s = TrackServiceFactory.getTrackService().getSignal(address - 1);
+            s = null; //TrackServiceFactory.getTrackService().getSignal(address - 1);
             if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
                 s.setValue2(value);
-                TrackServiceFactory.getTrackService().persist(s);
+                //TrackServiceFactory.getTrackService().persist(s);
             }
         }
     }

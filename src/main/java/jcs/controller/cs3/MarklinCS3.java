@@ -21,7 +21,6 @@ package jcs.controller.cs3;
 import java.awt.Image;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,18 +38,18 @@ import static jcs.controller.cs3.can.MarklinCan.FUNCTION_OFF;
 import static jcs.controller.cs3.can.MarklinCan.FUNCTION_ON;
 import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
-import jcs.controller.cs3.http.AccessoryParser;
+import jcs.controller.cs3.http.AccessoryBeanParser;
 import jcs.controller.cs3.http.LocomotiveBeanParser;
 import jcs.controller.cs3.net.Connection;
 import jcs.controller.cs3.net.CS3ConnectionFactory;
 import jcs.controller.cs3.net.HTTPConnection;
-import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.controller.cs3.http.DeviceParser;
+import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
@@ -348,10 +347,10 @@ public class MarklinCS3 implements ControllerService {
     }
 
     @Override
-    public List<SolenoidAccessory> getAccessories() {
+    public List<AccessoryBean> getAccessories() {
         HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
         String magnetartikelCs2 = httpCon.getAccessoriesFile();
-        AccessoryParser ap = new AccessoryParser();
+        AccessoryBeanParser ap = new AccessoryBeanParser();
         return ap.parseAccessoryFile(magnetartikelCs2);
     }
 
@@ -363,7 +362,19 @@ public class MarklinCS3 implements ControllerService {
     }
 
     @Override
-    public List<AccessoryStatus> getAccessoryStatuses() {
+    public Image getFunctionImage(String functionImageName) {
+        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        Image funcIcon = httpCon.getFunctionImage(functionImageName);
+        return funcIcon;
+    }
+
+    
+    
+    
+    
+    
+//    @Override
+//    public List<AccessoryStatus> getAccessoryStatuses() {
         //This piece does not seem to work with a CS3
         //TO sort out how to get the statuses
 
@@ -373,11 +384,11 @@ public class MarklinCS3 implements ControllerService {
 //        pause(100L);
 //        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
 //        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
-//        AccessoryParser ap = new AccessoryParser();
+//        AccessoryBeanParser ap = new AccessoryBeanParser();
 //        return ap.parseAccessoryStatusFile(accessoryStatuses);
         //STUB
-        return Collections.EMPTY_LIST;
-    }
+//        return Collections.EMPTY_LIST;
+//    }
 
     @Override
     public DeviceInfo getControllerInfo() {
@@ -623,10 +634,10 @@ public class MarklinCS3 implements ControllerService {
 //                Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
 //                Logger.debug(s.toLogString());
 //            }
-            List<AccessoryStatus> asl = cs2.getAccessoryStatuses();
-            for (AccessoryStatus as : asl) {
-                Logger.debug(as.toString());
-            }
+            //List<AccessoryBean> asl = cs2.getAccessoryStatuses();
+            //for (AccessoryStatus as : asl) {
+            //    Logger.debug(as.toString());
+            //}
 
 //            for (int i = 0; i < 30; i++) {
 //                cs2.sendIdle();

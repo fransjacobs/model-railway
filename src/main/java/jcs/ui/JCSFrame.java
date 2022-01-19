@@ -93,10 +93,10 @@ public class JCSFrame extends JFrame implements UICallback {
     public JCSFrame() {
         actionMap = new HashMap<>();
 
-        blinkErrorIcon = new ImageIcon(DiagnosticPanel.class.getResource("/media/sync-red-24.png"));
-        blinkOnIcon = new ImageIcon(DiagnosticPanel.class.getResource("/media/sync-green-90-24.png"));
-        blinkOnIcon2 = new ImageIcon(DiagnosticPanel.class.getResource("/media/sync-dark-green-24.png"));
-        blinkOffIcon = new ImageIcon(DiagnosticPanel.class.getResource("/media/sync-black-24.png"));
+        blinkErrorIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-red-24.png"));
+        blinkOnIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-green-90-24.png"));
+        blinkOnIcon2 = new ImageIcon(ControllerPanel.class.getResource("/media/sync-dark-green-24.png"));
+        blinkOffIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-black-24.png"));
 
         initComponents();
 
@@ -261,7 +261,7 @@ public class JCSFrame extends JFrame implements UICallback {
         centerPanel = new JPanel();
         settingsPanel = new JPanel();
         jLabel1 = new JLabel();
-        diagnosticPanel = new DiagnosticPanel();
+        diagnosticPanel = new ControllerPanel();
         layoutPanel = new LayoutPanel();
         overviewPanel = new DisplayLayoutPanel();
         leftPanel = new JPanel();
@@ -808,7 +808,7 @@ public class JCSFrame extends JFrame implements UICallback {
     JLabel controllerLbl;
     JLabel controllerSerialLbl;
     JLabel controllerSerialNumberLbl;
-    DiagnosticPanel diagnosticPanel;
+    ControllerPanel diagnosticPanel;
     JMenu editMenu;
     JMenu fileMenu;
     Box.Filler filler1;

@@ -48,33 +48,25 @@ import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.ControllableDevice;
 import jcs.entities.JCSProperty;
 import jcs.entities.SensorBean;
-import jcs.entities.SignalBean;
 import jcs.entities.SolenoidAccessory;
 import jcs.entities.TrackPower;
-import jcs.entities.SwitchBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
-import static jcs.entities.enums.SignalValue.Hp0;
-import static jcs.entities.enums.SignalValue.Hp0Sh1;
-import static jcs.entities.enums.SignalValue.Hp1;
-import static jcs.entities.enums.SignalValue.Hp2;
 import jcs.trackservice.dao.JCSPropertiesDAO;
-import jcs.trackservice.dao.SignalDAO;
 import jcs.trackservice.dao.TrackPowerDAO;
-import jcs.trackservice.dao.SwitchDAO;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.trackservice.events.HeartBeatListener;
 import jcs.trackservice.events.LocomotiveListener;
 import jcs.trackservice.events.PersistedEventListener;
 import jcs.controller.HeartbeatListener;
-import jcs.controller.cs3.AccessoryStatus;
 import jcs.controller.cs3.events.SensorMessageListener;
+import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSEntity;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.SignalValue;
+import jcs.trackservice.dao.AccessoryBeanDAO;
 import jcs.trackservice.dao.SensorDAO;
 import jcs.trackservice.events.SensorListener;
 import jcs.trackservice.dao.FunctionBeanDAO;
@@ -87,9 +79,10 @@ public class H2TrackService implements TrackService {
     private final SensorDAO sensDAO;
     private final LocomotiveBeanDAO locoDAO;
     private final FunctionBeanDAO funcDAO;
+    private final AccessoryBeanDAO acceDAO;
 
-    private final SwitchDAO turnoutDAO;
-    private final SignalDAO signalDAO;
+    //private final SwitchDAO turnoutDAO;
+    //private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
 
     //private final LayoutTileDAO latiDao;
@@ -120,6 +113,7 @@ public class H2TrackService implements TrackService {
     private final Timer timer;
 
     private HashMap<String, Image> imageCache;
+    private HashMap<String, Image> functionImageCache;
 
     public H2TrackService() {
         this(true);
@@ -130,12 +124,15 @@ public class H2TrackService implements TrackService {
         jcsProperties = new Properties();
 
         imageCache = new HashMap<>();
+        functionImageCache = new HashMap<>();
 
         sensDAO = new SensorDAO();
         locoDAO = new LocomotiveBeanDAO();
         funcDAO = new FunctionBeanDAO();
-        turnoutDAO = new SwitchDAO();
-        signalDAO = new SignalDAO();
+        acceDAO = new AccessoryBeanDAO();
+
+        //turnoutDAO = new SwitchDAO();
+        //signalDAO = new SignalDAO();
         trpoDAO = new TrackPowerDAO();
         //latiDao = new LayoutTileDAO();
         //ltgtDao = new LayoutTileGroupDAO();
@@ -369,44 +366,44 @@ public class H2TrackService implements TrackService {
             Collection<FunctionBean> functions = ((LocomotiveBean) entity).getFunctions().values();
             funcDAO.remove(functions);
             locoDAO.remove((LocomotiveBean) entity);
-        } else if (entity instanceof SwitchBean) {
+        } else if (entity instanceof AccessoryBean) {
             //Check whether the turnout is linked to a layout tile
-            turnoutDAO.remove((SwitchBean) entity);
-        } else if (entity instanceof SignalBean) {
-            //Check whether the signal is linked to a layout tile
-            signalDAO.remove((SignalBean) entity);
+            this.acceDAO.remove((AccessoryBean) entity);
+//        } else if (entity instanceof SignalBean) {
+//            //Check whether the signal is linked to a layout tile
+//            signalDAO.remove((SignalBean) entity);
         } else if (entity instanceof JCSProperty) {
             this.propDao.remove((JCSProperty) entity);
         }
     }
 
-    @Override
-    public List<SignalBean> getSignals() {
-        return this.signalDAO.findAll();
-    }
+//    @Override
+//    public List<SignalBean> getSignals() {
+//        return this.signalDAO.findAll();
+//    }
 
-    @Override
-    public List<SwitchBean> getSwitches() {
-        return this.turnoutDAO.findAll();
-    }
+//    @Override
+//    public List<SwitchBean> getSwitches() {
+//        return this.turnoutDAO.findAll();
+//    }
 
-    @Override
-    public SignalBean getSignal(Integer address) {
-        return this.signalDAO.find(address);
-    }
+//    @Override
+//    public SignalBean getSignal(Integer address) {
+//        return this.signalDAO.find(address);
+//    }
 
-    @Override
-    public SwitchBean getSwitchTurnout(Integer address) {
-        return this.turnoutDAO.find(address);
-    }
+//    @Override
+//    public SwitchBean getSwitchTurnout(Integer address) {
+//        return this.turnoutDAO.find(address);
+//    }
 
     @Override
     public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
         LocomotiveBean loco = locoDAO.find(address, decoderType.getDecoderType());
-        if(loco != null) {
-          List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
-          loco.addAllFunctions(functions);
-          loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+        if (loco != null) {
+            List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
+            loco.addAllFunctions(functions);
+            loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
         }
         return loco;
     }
@@ -414,10 +411,10 @@ public class H2TrackService implements TrackService {
     @Override
     public LocomotiveBean getLocomotive(BigDecimal id) {
         LocomotiveBean loco = locoDAO.findById(id);
-        if(loco != null) {
-          List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
-          loco.addAllFunctions(functions);
-          loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+        if (loco != null) {
+            List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
+            loco.addAllFunctions(functions);
+            loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
         }
         return loco;
     }
@@ -425,7 +422,7 @@ public class H2TrackService implements TrackService {
     @Override
     public List<LocomotiveBean> getLocomotives() {
         List<LocomotiveBean> locos = locoDAO.findAll();
-        
+
         for (LocomotiveBean loco : locos) {
             List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
             loco.addAllFunctions(functions);
@@ -451,13 +448,35 @@ public class H2TrackService implements TrackService {
                     storeImage(image, imageName);
                 }
                 float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-                this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), 1));
+                this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
                 //this.imageCache.put(imageName, image);
             }
         }
         return this.imageCache.get(imageName);
     }
 
+    @Override
+    public Image getFunctionImage(String imageName) {
+        if (!functionImageCache.containsKey(imageName)) {
+            //Try to load the image from the file cache
+            boolean fromCS3 = false;
+            Image image = readFunctionImage(imageName);
+            if (image == null) {
+                image = controllerService.getFunctionImage(imageName);
+                fromCS3 = (image != null);
+            }
+            if (image != null) {
+                int size = 30;
+                if (fromCS3) {
+                    storeFunctionImage(image, imageName);
+                }
+                float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
+                this.functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+            }
+        }
+        return this.functionImageCache.get(imageName);
+    }
+    
     private void storeImage(Image image, String imageName) {
         String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache";
         File cachePath = new File(path);
@@ -467,9 +486,23 @@ public class H2TrackService implements TrackService {
         try {
             ImageIO.write((BufferedImage) image, "png", new File(path + File.separator + imageName + ".png"));
         } catch (IOException ex) {
-            Logger.error("Cant store image " + cachePath.getName() + "! ", ex.getMessage());
+            Logger.error("Can't store image " + cachePath.getName() + "! ", ex.getMessage());
         }
         Logger.trace("Stored image " + imageName + ".png in the cache");
+    }
+
+    private void storeFunctionImage(Image image, String imageName) {
+        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions";
+        File cachePath = new File(path);
+        if (cachePath.mkdir()) {
+            Logger.trace("Created new directory " + cachePath);
+        }
+        try {
+            ImageIO.write((BufferedImage) image, "png", new File(path + File.separator + imageName + ".png"));
+        } catch (IOException ex) {
+            Logger.error("Can't store image " + cachePath.getName() + "! ", ex.getMessage());
+        }
+        Logger.trace("Stored image " + imageName + ".png in the functions cache");
     }
 
     private Image readImage(String imageName) {
@@ -487,6 +520,23 @@ public class H2TrackService implements TrackService {
         return image;
     }
 
+    private Image readFunctionImage(String imageName) {
+        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions" + File.separator ;
+        Image image = null;
+
+        File imgFile = new File(path + imageName + ".png");
+        if (imgFile.exists()) {
+            try {
+                image = ImageIO.read(imgFile);
+            } catch (IOException e) {
+                Logger.trace("Image file " + imageName + ".png does not exists");
+            }
+        }
+        return image;
+    }
+
+    
+    
     @Override
     public LocomotiveBean persist(LocomotiveBean locomotive) {
         return persist(locomotive, true);
@@ -516,17 +566,17 @@ public class H2TrackService implements TrackService {
         }
     }
 
-    @Override
-    public SwitchBean persist(SwitchBean turnout) {
-        this.turnoutDAO.persist(turnout);
-        return turnout;
-    }
+//    @Override
+//    public SwitchBean persist(SwitchBean turnout) {
+//        this.turnoutDAO.persist(turnout);
+//        return turnout;
+//    }
 
-    @Override
-    public SignalBean persist(SignalBean signal) {
-        this.signalDAO.persist(signal);
-        return signal;
-    }
+//    @Override
+//    public SignalBean persist(SignalBean signal) {
+//        this.signalDAO.persist(signal);
+//        return signal;
+//    }
 
     @Override
     public List<JCSProperty> getProperties() {
@@ -741,91 +791,90 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void synchronizeAccessoriesWithController() {
-        List<SolenoidAccessory> sal = this.controllerService.getAccessories();
+        List<AccessoryBean> sal = this.controllerService.getAccessories();
 
-        for (SolenoidAccessory sa : sal) {
-            if (sa.isTurnout()) {
-                SwitchBean t = (SwitchBean) sa;
-                Integer addr = t.getAddress();
-                SwitchBean dbt = this.turnoutDAO.find(addr);
-                if (dbt != null) {
-                    t.setId(dbt.getId());
-                    Logger.trace("Update " + t);
-                } else {
-                    Logger.trace("Add " + t);
-                }
-                this.turnoutDAO.persist(t);
-            } else if (sa.isSignal()) {
-                SignalBean s = (SignalBean) sa;
-                Integer addr = s.getAddress();
-                SignalBean dbs = this.signalDAO.find(addr);
-                if (dbs != null) {
-                    s.setId(dbs.getId());
-                    if (dbs.getLightImages() > 2) {
-                        s.setId2(dbs.getId2());
-                        s.setAddress2(dbs.getAddress2());
-                    }
-                    Logger.trace("Update " + s);
-                } else {
-                    Logger.trace("Add " + s);
-                }
-                this.signalDAO.persist(s);
-            }
-        }
+//        for (SolenoidAccessory sa : sal) {
+//            if (sa.isTurnout()) {
+//                SwitchBean t = (SwitchBean) sa;
+//                Integer addr = t.getAddress();
+//                SwitchBean dbt = this.turnoutDAO.find(addr);
+//                if (dbt != null) {
+//                    t.setId(dbt.getId());
+//                    Logger.trace("Update " + t);
+//                } else {
+//                    Logger.trace("Add " + t);
+//                }
+//                this.turnoutDAO.persist(t);
+//            } else if (sa.isSignal()) {
+//                SignalBean s = (SignalBean) sa;
+//                Integer addr = s.getAddress();
+//                SignalBean dbs = this.signalDAO.find(addr);
+//                if (dbs != null) {
+//                    s.setId(dbs.getId());
+//                    if (dbs.getLightImages() > 2) {
+//                        s.setId2(dbs.getId2());
+//                        s.setAddress2(dbs.getAddress2());
+//                    }
+//                    Logger.trace("Update " + s);
+//                } else {
+//                    Logger.trace("Add " + s);
+//                }
+//                this.signalDAO.persist(s);
+//            }
+//        }
     }
 
     @Override
     public void synchronizeAccessories() {
-        List<SwitchBean> tl = this.getSwitches();
-
-        for (SwitchBean t : tl) {
-            this.switchAccessory(t.getValue(), t);
-        }
-
-        List<SignalBean> sl = this.getSignals();
-        for (SignalBean s : sl) {
-            this.switchAccessory(s.getValue(), s, true);
-        }
+//        List<SwitchBean> tl = this.getSwitches();
+//
+//        for (SwitchBean t : tl) {
+//            this.switchAccessory(t.getValue(), t);
+//        }
+//
+//        List<SignalBean> sl = this.getSignals();
+//        for (SignalBean s : sl) {
+//            this.switchAccessory(s.getValue(), s, true);
+//        }
     }
 
     @Override
     public void updateGuiStatuses() {
-        updateAccessoryStatuses();
+        //updateAccessoryStatuses();
 
     }
 
-    private void updateAccessoryStatuses() {
-        List<AccessoryStatus> asl = controllerService.getAccessoryStatuses();
-        List<SolenoidAccessory> accessoiries = new ArrayList<>();
-
-        for (AccessoryStatus as : asl) {
-            Integer a = as.getAddress();
-            SwitchBean t = turnoutDAO.find(a);
-            if (t != null) {
-                AccessoryValue av = as.getAccessoryValue();
-                if (!av.equals(t.getValue())) {
-                    t.setValue(av);
-                    turnoutDAO.persist(t);
-                    accessoiries.add(t);
-                }
-            } else {
-                SignalBean s = signalDAO.find(a);
-                if (s != null) {
-                    SignalValue sv = as.getSignalValue();
-                    if (!sv.equals(s.getSignalValue())) {
-                        s.setSignalValue(sv);
-                        signalDAO.persist(s);
-                        accessoiries.add(s);
-                    }
-                }
-            }
-        }
-        //notify the changed listeners
-        accessoiries.forEach((accessoiry) -> {
-            notifyAccessoiryListeners(accessoiry);
-        });
-    }
-
+//    private void updateAccessoryStatuses() {
+//        List<AccessoryStatus> asl = controllerService.getAccessoryStatuses();
+//        List<SolenoidAccessory> accessoiries = new ArrayList<>();
+//
+//        for (AccessoryStatus as : asl) {
+//            Integer a = as.getAddress();
+//            SwitchBean t = turnoutDAO.find(a);
+//            if (t != null) {
+//                AccessoryValue av = as.getAccessoryValue();
+//                if (!av.equals(t.getValue())) {
+//                    t.setValue(av);
+//                    turnoutDAO.persist(t);
+//                    accessoiries.add(t);
+//                }
+//            } else {
+//                SignalBean s = signalDAO.find(a);
+//                if (s != null) {
+//                    SignalValue sv = as.getSignalValue();
+//                    if (!sv.equals(s.getSignalValue())) {
+//                        s.setSignalValue(sv);
+//                        signalDAO.persist(s);
+//                        accessoiries.add(s);
+//                    }
+//                }
+//            }
+//        }
+//        //notify the changed listeners
+//        accessoiries.forEach((accessoiry) -> {
+//            notifyAccessoiryListeners(accessoiry);
+//        });
+//    }
     @Override
     public void toggleDirection(Direction direction, LocomotiveBean locomotive) {
         String cs = jcsProperties.getProperty("activeControllerService");
@@ -917,50 +966,50 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void switchAccessory(AccessoryValue value, SolenoidAccessory accessoiry) {
+    public void switchAccessory(AccessoryValue value, AccessoryBean accessoiry) {
         switchAccessory(value, accessoiry, false);
     }
 
     @Override
-    public void switchAccessory(AccessoryValue value, SolenoidAccessory accessoiry, boolean useValue2) {
+    public void switchAccessory(AccessoryValue value, AccessoryBean accessoiry, boolean useValue2) {
         Logger.trace("Value: " + value + " Accessoiry: " + accessoiry.toLogString() + " useValue2: " + useValue2);
 
-        if (accessoiry.isSignal()) {
-            //incase of a signal the SignalValue is set in the signal
-            SignalBean s = (SignalBean) accessoiry;
-
-            switch (s.getSignalValue()) {
-                case Hp0:
-                    sendSignalCommand(s.getAddress(), s.getValue(), s.getLightImages() > 2);
-                    break;
-                case Hp1:
-                    sendSignalCommand(s.getAddress(), s.getValue(), s.getLightImages() > 2);
-                    break;
-                case Hp2:
-                    sendSignalCommand(s.getAddress2(), s.getValue2(), s.getLightImages() > 2);
-                    break;
-                case Hp0Sh1:
-                    sendSignalCommand(s.getAddress2(), s.getValue2(), s.getLightImages() > 2);
-                    break;
-                default:
-                    Logger.warn("No command send for " + s.toLogString());
-                    break;
-            }
-
-            persist(s);
-
-            this.notifyAccessoiryListeners(s);
-        } else {
-            //turnout or else...
-            //ensure the values is also set...
-            accessoiry.setValue(value);
-            controllerService.switchAccessoiry(accessoiry.getAddress(), accessoiry.getValue());
-
-            if (accessoiry.isTurnout()) {
-                persist((SwitchBean) accessoiry);
-                this.notifyAccessoiryListeners((SwitchBean) accessoiry);
-            }
-        }
+//        if (accessoiry.isSignal()) {
+//            //incase of a signal the SignalValue is set in the signal
+//            SignalBean s = (SignalBean) accessoiry;
+//
+//            switch (s.getSignalValue()) {
+//                case Hp0:
+//                    sendSignalCommand(s.getAddress(), s.getValue(), s.getLightImages() > 2);
+//                    break;
+//                case Hp1:
+//                    sendSignalCommand(s.getAddress(), s.getValue(), s.getLightImages() > 2);
+//                    break;
+//                case Hp2:
+//                    sendSignalCommand(s.getAddress2(), s.getValue2(), s.getLightImages() > 2);
+//                    break;
+//                case Hp0Sh1:
+//                    sendSignalCommand(s.getAddress2(), s.getValue2(), s.getLightImages() > 2);
+//                    break;
+//                default:
+//                    Logger.warn("No command send for " + s.toLogString());
+//                    break;
+//            }
+//
+//            persist(s);
+//
+//            this.notifyAccessoiryListeners(s);
+//        } else {
+//            //turnout or else...
+//            //ensure the values is also set...
+//            accessoiry.setValue(value);
+//            controllerService.switchAccessoiry(accessoiry.getAddress(), accessoiry.getValue());
+//
+//            if (accessoiry.isTurnout()) {
+//                persist((SwitchBean) accessoiry);
+//                this.notifyAccessoiryListeners((SwitchBean) accessoiry);
+//            }
+//        }
     }
 
     private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
@@ -1056,16 +1105,16 @@ public class H2TrackService implements TrackService {
     @Override
     public void notifyAllAccessoiryListeners() {
 
-        List<SignalBean> signals = this.getSignals();
-        List<SwitchBean> turnouts = this.getSwitches();
+//        List<SignalBean> signals = this.getSignals();
+//        List<SwitchBean> turnouts = this.getSwitches();
 
-        List<SolenoidAccessory> accessoiries = new ArrayList<>();
-        accessoiries.addAll(signals);
-        accessoiries.addAll(turnouts);
-
-        accessoiries.forEach((accessoiry) -> {
-            this.notifyAccessoiryListeners(accessoiry);
-        });
+//        List<SolenoidAccessory> accessoiries = new ArrayList<>();
+//        accessoiries.addAll(signals);
+//        accessoiries.addAll(turnouts);
+//
+//        accessoiries.forEach((accessoiry) -> {
+//            this.notifyAccessoiryListeners(accessoiry);
+//        });
 
     }
 

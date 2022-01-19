@@ -19,6 +19,7 @@
 package jcs.ui.widgets;
 
 import java.awt.GridLayout;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -210,10 +211,10 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         if (this.turnout != null) {
             switch (value) {
                 case RED:
-                    TrackServiceFactory.getTrackService().switchAccessory(AccessoryValue.RED, turnout, false);
+                    //TrackServiceFactory.getTrackService().switchAccessory(AccessoryValue.RED, turnout, false);
                     break;
                 case GREEN:
-                    TrackServiceFactory.getTrackService().switchAccessory(AccessoryValue.GREEN, turnout, false);
+                    //TrackServiceFactory.getTrackService().switchAccessory(AccessoryValue.GREEN, turnout, false);
                     break;
                 default:
                     break;
@@ -252,7 +253,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         JFrame f = new JFrame("SignalRowPanel Tester");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        List<SwitchBean> turnouts = TrackServiceFactory.getTrackService().getSwitches();
+        List<SwitchBean> turnouts = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSwitches();
         f.setLayout(new GridLayout(turnouts.size(), 1));
 
         for (SwitchBean turnout : turnouts) {

@@ -748,7 +748,7 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Component class="jcs.ui.DiagnosticPanel" name="diagnosticPanel">
+                <Component class="jcs.ui.ControllerPanel" name="diagnosticPanel">
                   <Properties>
                     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                       <Dimension value="[885, 840]"/>

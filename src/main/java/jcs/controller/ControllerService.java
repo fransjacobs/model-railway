@@ -20,14 +20,13 @@ package jcs.controller;
 
 import java.awt.Image;
 import java.util.List;
-import jcs.controller.cs3.AccessoryStatus;
 import jcs.controller.cs3.DeviceInfo;
 import jcs.controller.cs3.PowerStatus;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.SensorMessageListener;
+import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
@@ -89,13 +88,14 @@ public interface ControllerService {
     void removeAllHeartbeatListeners();
 
     List<LocomotiveBean> getLocomotives();
-    
+
     Image getLocomotiveImage(String icon);
- 
-    List<SolenoidAccessory> getAccessories();
+
+    Image getFunctionImage(String functionImageName);
+
+    List<AccessoryBean> getAccessories();
 
     List<SensorMessageEvent> querySensors(int sensorCount);
 
-    List<AccessoryStatus> getAccessoryStatuses();
-
+    //List<AccessoryStatus> getAccessoryStatuses();
 }

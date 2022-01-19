@@ -21,7 +21,6 @@ package jcs.controller.demo;
 import java.awt.Image;
 import jcs.controller.cs3.DeviceInfo;
 import jcs.controller.cs3.DirectionInfo;
-import jcs.controller.cs3.AccessoryStatus;
 import jcs.controller.cs3.PowerStatus;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
@@ -41,11 +40,11 @@ import jcs.controller.ControllerService;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.controller.cs3.net.Connection;
-import jcs.entities.SolenoidAccessory;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
+import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
@@ -382,12 +381,7 @@ public class DemoController implements ControllerService {
     }
 
     @Override
-    public List<SolenoidAccessory> getAccessories() {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<AccessoryStatus> getAccessoryStatuses() {
+    public List<AccessoryBean> getAccessories() {
         return Collections.EMPTY_LIST;
     }
 
@@ -395,8 +389,11 @@ public class DemoController implements ControllerService {
     public Image getLocomotiveImage(String icon) {
         return null;
     }
-    
-    
+
+    @Override
+    public Image getFunctionImage(String functionImageName) {
+        return null;
+    }
 
     private void notifyControllerEventListeners(ControllerEvent event) {
         Set<ControllerEventListener> snapshot;

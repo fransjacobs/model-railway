@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -399,7 +398,7 @@ public class TurnoutPanel extends JPanel {
       if (t != null) {
           Logger.debug("Selected row: " + row + ", Turnout Address: " + t.getAddress());
           //Refresh from repo
-          this.selectedTurnout = TrackServiceFactory.getTrackService().getSwitchTurnout(t.getAddress());
+          this.selectedTurnout = null; //TrackServiceFactory.getTrackService().getSwitchTurnout(t.getAddress());
           this.setComponentValues(this.selectedTurnout);
       }
   }//GEN-LAST:event_turnoutTableMouseClicked
@@ -408,7 +407,7 @@ public class TurnoutPanel extends JPanel {
       this.selectedTurnout = setTurnoutValues();
       Logger.debug("Save the Turnout: " + this.selectedTurnout);
 
-      SwitchBean t = TrackServiceFactory.getTrackService().getSwitchTurnout(selectedTurnout.getAddress());
+      SwitchBean t = null;//TrackServiceFactory.getTrackService().getSwitchTurnout(selectedTurnout.getAddress());
       if (t != null) {
           this.selectedTurnout.setId(t.getId());
           this.selectedTurnout.setValue(t.getValue());
@@ -417,7 +416,7 @@ public class TurnoutPanel extends JPanel {
           this.selectedTurnout.setValue(AccessoryValue.GREEN);
       }
 
-      selectedTurnout = TrackServiceFactory.getTrackService().persist(selectedTurnout);
+      selectedTurnout = null; //TrackServiceFactory.getTrackService().persist(selectedTurnout);
       setComponentValues(selectedTurnout);
       turnoutTableModel.refresh();
       alignTurnoutTable();
