@@ -391,8 +391,7 @@ public class DemoController implements ControllerService {
     }
 
     @Override
-    public Image getFunctionImage(String functionImageName) {
-        return null;
+    public void getAllFunctionIcons() {
     }
 
     private void notifyControllerEventListeners(ControllerEvent event) {

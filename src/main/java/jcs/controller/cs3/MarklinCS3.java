@@ -49,6 +49,7 @@ import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.controller.cs3.http.DeviceParser;
+import jcs.controller.cs3.http.SvgIconToPngIconConverter;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
@@ -347,6 +348,14 @@ public class MarklinCS3 implements ControllerService {
     }
 
     @Override
+    public void getAllFunctionIcons() {
+        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        String json = httpCon.getAllFunctionsSvgJSON();
+        SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
+        svgp.convertAndCacheAllFunctionsSvgIcons(json);
+    }
+
+    @Override
     public List<AccessoryBean> getAccessories() {
         HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
         String magnetartikelCs2 = httpCon.getAccessoriesFile();
@@ -361,24 +370,11 @@ public class MarklinCS3 implements ControllerService {
         return locIcon;
     }
 
-    @Override
-    public Image getFunctionImage(String functionImageName) {
-        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
-        Image funcIcon = httpCon.getFunctionImage(functionImageName);
-        return funcIcon;
-    }
-
-    
-    
-    
-    
-    
 //    @Override
 //    public List<AccessoryStatus> getAccessoryStatuses() {
-        //This piece does not seem to work with a CS3
-        //TO sort out how to get the statuses
-
-        //Update the file by sending a configRequest first
+    //This piece does not seem to work with a CS3
+    //TO sort out how to get the statuses
+    //Update the file by sending a configRequest first
 //        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
 //        //give it some time to process
 //        pause(100L);
@@ -386,10 +382,9 @@ public class MarklinCS3 implements ControllerService {
 //        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
 //        AccessoryBeanParser ap = new AccessoryBeanParser();
 //        return ap.parseAccessoryStatusFile(accessoryStatuses);
-        //STUB
+    //STUB
 //        return Collections.EMPTY_LIST;
 //    }
-
     @Override
     public DeviceInfo getControllerInfo() {
         if (deviceInfo == null) {
@@ -638,7 +633,6 @@ public class MarklinCS3 implements ControllerService {
             //for (AccessoryStatus as : asl) {
             //    Logger.debug(as.toString());
             //}
-
 //            for (int i = 0; i < 30; i++) {
 //                cs2.sendIdle();
 //                pause(500);

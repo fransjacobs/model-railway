@@ -88,10 +88,10 @@ public interface ControllerService {
     void removeAllHeartbeatListeners();
 
     List<LocomotiveBean> getLocomotives();
+    
+    void getAllFunctionIcons();
 
     Image getLocomotiveImage(String icon);
-
-    Image getFunctionImage(String functionImageName);
 
     List<AccessoryBean> getAccessories();
 

@@ -41,14 +41,11 @@ public class FunctionsPanel extends javax.swing.JPanel {
 
     private final Map<Integer, JToggleButton> buttons;
 
-    private final String IMG_PREFIX = "FktIcon_";
+    private final String IMG_PREFIX = "fkticon_";
     private final String IMG_A = "a_";
-    private final String IMG_I = "i_";
     private final String IMG_YELLOW = "ge_";
     private final String IMG_BLACK = "sw_";
-    private final String IMG_WHITE = "we_";
-    private final String IMG_GREY = "gr_";
-    private final String NMB_FORMAT = "%02d";
+    private final String NMB_FORMAT = "%03d";
 
     /**
      * Creates new form FunctionsPanel
@@ -118,22 +115,20 @@ public class FunctionsPanel extends javax.swing.JPanel {
 
                     Image iconOff = TrackServiceFactory.getTrackService().getFunctionImage(functionOff);
                     if (iconOff == null) {
-                        int altType = 50 + i;
-                        functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, altType);
-                        iconOff = TrackServiceFactory.getTrackService().getFunctionImage(functionOff);
+                        button.setText("F" + i);
+                        Logger.trace("Missing icon " + functionOff);
+
+                    } else {
+                        button.setText("");
+                        button.setIcon(new ImageIcon(iconOff));
                     }
 
                     Image iconOn = TrackServiceFactory.getTrackService().getFunctionImage(functionOn);
                     if (iconOn == null) {
-                        int altType = 50 + i;
-                        functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, altType);
-                        iconOn = TrackServiceFactory.getTrackService().getFunctionImage(functionOn);
+                    } else {
+                        button.setText("");
+                        button.setSelectedIcon(new ImageIcon(iconOn));
                     }
-
-                    button.setText("");
-                    button.setIcon(new ImageIcon(iconOff));
-                    button.setText("");
-                    button.setSelectedIcon(new ImageIcon(iconOn));
 
                     button.setSelected(val);
                     button.setActionCommand("F" + i);

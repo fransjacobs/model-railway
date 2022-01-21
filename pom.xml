@@ -42,6 +42,31 @@
         </dependency>
         
         <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20211205</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-batik</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik</artifactId>
+            <version>1.14</version>
+            <type>pom</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-transcoder</artifactId>
+            <version>1.14</version>
+        </dependency>
+        
+        <dependency>
             <groupId>com.thizzer.jtouchbar</groupId>
             <artifactId>jtouchbar</artifactId>
             <version>1.0.0</version>

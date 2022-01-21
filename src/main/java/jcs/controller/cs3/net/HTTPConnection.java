@@ -27,11 +27,8 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
-import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
-import jcs.controller.cs3.http.AccessoryBeanParser;
-import jcs.entities.AccessoryBean;
+import jcs.controller.cs3.http.SvgIconToPngIconConverter;
 import org.tinylog.Logger;
 
 /**
@@ -48,7 +45,8 @@ public class HTTPConnection {
     private final static String MAGNETARTIKEL = "magnetartikel.cs2";
     private final static String DEVICE = "geraet.vrs";
     private final static String IMAGE_FOLDER = "/app/assets/lok/";
-    private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
+    //private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
+    private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
 
     HTTPConnection(InetAddress cs3Address) {
         this.cs3Address = cs3Address;
@@ -119,6 +117,26 @@ public class HTTPConnection {
         return device.toString();
     }
 
+    public String getAllFunctionsSvgJSON() {
+        StringBuilder device = new StringBuilder();
+        try {
+            URL url = new URL(HTTP + cs3Address.getHostAddress() + FUNCTION_SVG_URL);
+            URLConnection lc = url.openConnection();
+            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    device.append(inputLine.strip());
+                    device.append("\n");
+                }
+            }
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return device.toString();
+    }
+
     public Image getLocomotiveImage(String imageName) {
         BufferedImage image = null;
         try {
@@ -132,25 +150,24 @@ public class HTTPConnection {
         return image;
     }
 
-    public Image getFunctionImage(String imageName) {
-        BufferedImage image = null;
-        String iurl = fixURL(HTTP + cs3Address.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
-
-        try {
-            Logger.trace("Try to fetch: " + iurl);
-            //URL url = new URL(fixURL(HTTP + cs3Address.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png"));
-            URL url = new URL(iurl);
-            image = ImageIO.read(url);
-        } catch (IIOException iio) {
-            //Image not avalable
-            //Logger.trace("Image: " + iurl + " is not available");
-        } catch (MalformedURLException ex) {
-            Logger.error(ex);
-        } catch (IOException ex) {
-            Logger.error(ex);
-        }
-        return image;
-    }
+//    public Image getFunctionImage(String imageName) {
+//        BufferedImage image = null;
+//        String iurl = fixURL(HTTP + cs3Address.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
+//
+//        try {
+//            Logger.trace("Try to fetch: " + iurl);
+//            URL url = new URL(iurl);
+//            image = ImageIO.read(url);
+//        } catch (IIOException iio) {
+//            //Image not avalable
+//            //Logger.trace("Image: " + iurl + " is not available");
+//        } catch (MalformedURLException ex) {
+//            Logger.error(ex);
+//        } catch (IOException ex) {
+//            Logger.error(ex);
+//        }
+//        return image;
+//    }
 
     public static void main(String[] args) throws Exception {
         InetAddress inetAddr = InetAddress.getByName("192.168.1.180");
@@ -171,6 +188,7 @@ public class HTTPConnection {
             }
         }
          */
+        /*
         String accessories = hc.getAccessoriesFile();
         AccessoryBeanParser ap = new AccessoryBeanParser();
 
@@ -179,7 +197,7 @@ public class HTTPConnection {
         for (AccessoryBean sa : acList) {
             System.out.println(sa.toLogString());
         }
-
+        */
         /*
         String deviceFile = hc.getDeviceFile();
         DeviceParser dp = new DeviceParser();
@@ -193,5 +211,8 @@ public class HTTPConnection {
 //        for (AccessoryStatus as : acsList) {
 //            System.out.println(as.toString());
 //        }
+         String json = hc.getAllFunctionsSvgJSON();
+         SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
+         svgp.convertAndCacheAllFunctionsSvgIcons(json);
     }
 }

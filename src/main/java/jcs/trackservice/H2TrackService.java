@@ -381,22 +381,18 @@ public class H2TrackService implements TrackService {
 //    public List<SignalBean> getSignals() {
 //        return this.signalDAO.findAll();
 //    }
-
 //    @Override
 //    public List<SwitchBean> getSwitches() {
 //        return this.turnoutDAO.findAll();
 //    }
-
 //    @Override
 //    public SignalBean getSignal(Integer address) {
 //        return this.signalDAO.find(address);
 //    }
-
 //    @Override
 //    public SwitchBean getSwitchTurnout(Integer address) {
 //        return this.turnoutDAO.find(address);
 //    }
-
     @Override
     public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
         LocomotiveBean loco = locoDAO.find(address, decoderType.getDecoderType());
@@ -449,7 +445,6 @@ public class H2TrackService implements TrackService {
                 }
                 float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
                 this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
-                //this.imageCache.put(imageName, image);
             }
         }
         return this.imageCache.get(imageName);
@@ -459,24 +454,16 @@ public class H2TrackService implements TrackService {
     public Image getFunctionImage(String imageName) {
         if (!functionImageCache.containsKey(imageName)) {
             //Try to load the image from the file cache
-            boolean fromCS3 = false;
             Image image = readFunctionImage(imageName);
-            if (image == null) {
-                image = controllerService.getFunctionImage(imageName);
-                fromCS3 = (image != null);
-            }
             if (image != null) {
                 int size = 30;
-                if (fromCS3) {
-                    storeFunctionImage(image, imageName);
-                }
                 float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
                 this.functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
             }
         }
         return this.functionImageCache.get(imageName);
     }
-    
+
     private void storeImage(Image image, String imageName) {
         String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache";
         File cachePath = new File(path);
@@ -489,20 +476,6 @@ public class H2TrackService implements TrackService {
             Logger.error("Can't store image " + cachePath.getName() + "! ", ex.getMessage());
         }
         Logger.trace("Stored image " + imageName + ".png in the cache");
-    }
-
-    private void storeFunctionImage(Image image, String imageName) {
-        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions";
-        File cachePath = new File(path);
-        if (cachePath.mkdir()) {
-            Logger.trace("Created new directory " + cachePath);
-        }
-        try {
-            ImageIO.write((BufferedImage) image, "png", new File(path + File.separator + imageName + ".png"));
-        } catch (IOException ex) {
-            Logger.error("Can't store image " + cachePath.getName() + "! ", ex.getMessage());
-        }
-        Logger.trace("Stored image " + imageName + ".png in the functions cache");
     }
 
     private Image readImage(String imageName) {
@@ -521,7 +494,7 @@ public class H2TrackService implements TrackService {
     }
 
     private Image readFunctionImage(String imageName) {
-        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions" + File.separator ;
+        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions" + File.separator;
         Image image = null;
 
         File imgFile = new File(path + imageName + ".png");
@@ -535,8 +508,6 @@ public class H2TrackService implements TrackService {
         return image;
     }
 
-    
-    
     @Override
     public LocomotiveBean persist(LocomotiveBean locomotive) {
         return persist(locomotive, true);
@@ -571,13 +542,11 @@ public class H2TrackService implements TrackService {
 //        this.turnoutDAO.persist(turnout);
 //        return turnout;
 //    }
-
 //    @Override
 //    public SignalBean persist(SignalBean signal) {
 //        this.signalDAO.persist(signal);
 //        return signal;
 //    }
-
     @Override
     public List<JCSProperty> getProperties() {
         return this.propDao.findAll();
@@ -787,6 +756,8 @@ public class H2TrackService implements TrackService {
 
             persist(loc, false);
         }
+        //Also cache the function Icons
+        this.controllerService.getAllFunctionIcons();
     }
 
     @Override
@@ -1107,7 +1078,6 @@ public class H2TrackService implements TrackService {
 
 //        List<SignalBean> signals = this.getSignals();
 //        List<SwitchBean> turnouts = this.getSwitches();
-
 //        List<SolenoidAccessory> accessoiries = new ArrayList<>();
 //        accessoiries.addAll(signals);
 //        accessoiries.addAll(turnouts);
@@ -1115,7 +1085,6 @@ public class H2TrackService implements TrackService {
 //        accessoiries.forEach((accessoiry) -> {
 //            this.notifyAccessoiryListeners(accessoiry);
 //        });
-
     }
 
     private class SensorMessageEventHandler implements SensorMessageListener {
