@@ -30,9 +30,6 @@ import jcs.entities.JCSEntity;
 import jcs.entities.JCSProperty;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
-import jcs.entities.SignalBean;
-import jcs.entities.SolenoidAccessory;
-import jcs.entities.SwitchBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
@@ -96,18 +93,13 @@ public interface TrackService {
 
     void toggleF4(Boolean f4, LocomotiveBean locomotive);
 
-    //Accessories / Accessory
-    //List<SwitchBean> getSwitches();
+    List<AccessoryBean> getTurnouts();
 
-    //SwitchBean getSwitchTurnout(Integer address);
+    List<AccessoryBean> getSignals();
 
-    //List<SignalBean> getSignals();
+    AccessoryBean getAccessory(BigDecimal id);
 
-    //SignalBean getSignal(Integer address);
-
-    //SwitchBean persist(SwitchBean turnout);
-
-    //SignalBean persist(SignalBean signal);
+    AccessoryBean persist(AccessoryBean accessory);
 
     void switchAccessory(AccessoryValue value, AccessoryBean accessory);
 
@@ -182,8 +174,6 @@ public interface TrackService {
     void synchronizeLocomotivesWithController();
 
     void synchronizeAccessoriesWithController();
-
-    void synchronizeAccessories();
 
     void updateGuiStatuses();
 }

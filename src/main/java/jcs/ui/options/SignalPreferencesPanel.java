@@ -27,21 +27,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
@@ -53,9 +49,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
-import jcs.entities.SignalBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.SignalValue;
+import jcs.entities.AccessoryBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.options.table.SignalTableModel;
 import org.tinylog.Logger;
@@ -64,31 +58,44 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class SignalPanel extends JPanel {
-
-    private static final String[] SIGNAL_TYPES = {"", "Leave", "Block", "Entry", "Midget"};
+public class SignalPreferencesPanel extends JPanel {
 
     private final SignalTableModel signalTableModel;
 
-    public SignalPanel() {
+    public SignalPreferencesPanel() {
         signalTableModel = new SignalTableModel();
-
         initComponents();
         alignSignalTable();
+
+        //Select the first row
+        if (signalTableModel.getRowCount() > 0) {
+            selectSignal(0);
+            this.signalTable.setRowSelectionInterval(0, 0);
+        }
     }
 
     private void alignSignalTable() {
         this.signalTable.getColumnModel().getColumn(0).setPreferredWidth(40);
-        this.signalTable.getColumnModel().getColumn(1).setPreferredWidth(40);
-        this.signalTable.getColumnModel().getColumn(2).setPreferredWidth(40);
-        this.signalTable.getColumnModel().getColumn(3).setPreferredWidth(40);
-
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         this.signalTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        this.signalTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        this.signalTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
 
+        this.signalTable.getColumnModel().getColumn(3).setPreferredWidth(40);
+        this.signalTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+    }
+
+    private AccessoryBean getAccessoryFromTrackService(AccessoryBean turnout) {
+        return TrackServiceFactory.getTrackService().getAccessory(turnout.getId());
+    }
+
+    private void selectSignal(int row) {
+        AccessoryBean t = this.signalTableModel.getControllableDeviceAt(row);
+        if (t != null) {
+            this.selectedSignal = getAccessoryFromTrackService(t);
+            setComponentValues(selectedSignal);
+        } else {
+            Logger.trace("No Signal found @ row " + row);
+        }
     }
 
     /**
@@ -100,10 +107,9 @@ public class SignalPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        directionBG = new ButtonGroup();
-        lightImagesBG = new ButtonGroup();
-        selectedSignal = new SignalBean();
+        selectedSignal = new AccessoryBean();
         topPanel = new JPanel();
+        synchronizeBtn = new JButton();
         refreshBtn = new JButton();
         newBtn = new JButton();
         centerPanel = new JPanel();
@@ -112,29 +118,29 @@ public class SignalPanel extends JPanel {
         signalTable = new JTable();
         signalDetailPanel = new JPanel();
         row1Panel = new JPanel();
-        addressLbl = new JLabel();
-        addressSpinner = new JSpinner();
         idLbl = new JLabel();
+        idSpinner = new JSpinner();
         row2Panel = new JPanel();
-        signalTypeLbl = new JLabel();
-        signalTypeCB = new JComboBox<>();
-        row3Panel = new JPanel();
         nameLbl = new JLabel();
         nameTF = new JTextField();
+        row3Panel = new JPanel();
+        typeLbl = new JLabel();
+        typeTF = new JTextField();
         row4Panel = new JPanel();
-        catalogeNrLbl = new JLabel();
-        catalogNrTF = new JTextField();
+        switchTimeLbl = new JLabel();
+        switchTimeSpinner = new JSpinner();
         row5Panel = new JPanel();
-        address2Lbl = new JLabel();
-        addressSpinner2 = new JSpinner();
-        lightImagesLbl = new JLabel();
-        lightImage2RB = new JRadioButton();
-        lightImage4RB = new JRadioButton();
+        decoderTypeLbl = new JLabel();
+        decoderTypeTF = new JTextField();
         row6Panel = new JPanel();
+        decoderLbl = new JLabel();
+        decoderTF = new JTextField();
         row7Panel = new JPanel();
+        positionLbl = new JLabel();
+        positionSpinner = new JSpinner();
         row8Panel = new JPanel();
         row9Panel = new JPanel();
-        filler2 = new Box.Filler(new Dimension(0, 150), new Dimension(0, 150), new Dimension(32767, 300));
+        filler2 = new Box.Filler(new Dimension(0, 90), new Dimension(0, 90), new Dimension(32767, 300));
         buttonPanel = new JPanel();
         deleteBtn = new JButton();
         filler1 = new Box.Filler(new Dimension(50, 0), new Dimension(200, 0), new Dimension(150, 32767));
@@ -152,12 +158,19 @@ public class SignalPanel extends JPanel {
         flowLayout1.setAlignOnBaseline(true);
         topPanel.setLayout(flowLayout1);
 
+        synchronizeBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
+        synchronizeBtn.setMaximumSize(new Dimension(40, 40));
+        synchronizeBtn.setMinimumSize(new Dimension(40, 40));
+        synchronizeBtn.setPreferredSize(new Dimension(40, 40));
+        synchronizeBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                synchronizeBtnActionPerformed(evt);
+            }
+        });
+        topPanel.add(synchronizeBtn);
+
         refreshBtn.setIcon(new ImageIcon(getClass().getResource("/media/refresh-24.png"))); // NOI18N
-        refreshBtn.setText("Refresh");
         refreshBtn.setMargin(new Insets(2, 2, 2, 2));
-        refreshBtn.setMaximumSize(new Dimension(120, 36));
-        refreshBtn.setMinimumSize(new Dimension(120, 36));
-        refreshBtn.setPreferredSize(new Dimension(120, 36));
         refreshBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 refreshBtnActionPerformed(evt);
@@ -166,11 +179,10 @@ public class SignalPanel extends JPanel {
         topPanel.add(refreshBtn);
 
         newBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
-        newBtn.setText("New");
         newBtn.setToolTipText("Create new Locomotive");
-        newBtn.setMaximumSize(new Dimension(120, 36));
-        newBtn.setMinimumSize(new Dimension(120, 36));
-        newBtn.setPreferredSize(new Dimension(120, 36));
+        newBtn.setMaximumSize(new Dimension(40, 40));
+        newBtn.setMinimumSize(new Dimension(40, 40));
+        newBtn.setPreferredSize(new Dimension(40, 40));
         newBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 newBtnActionPerformed(evt);
@@ -180,7 +192,7 @@ public class SignalPanel extends JPanel {
 
         add(topPanel, BorderLayout.NORTH);
 
-        centerPanel.setMinimumSize(new Dimension(420, 542));
+        centerPanel.setMinimumSize(new Dimension(1000, 500));
         centerPanel.setPreferredSize(new Dimension(1000, 500));
         centerPanel.setLayout(new BorderLayout());
 
@@ -208,156 +220,166 @@ public class SignalPanel extends JPanel {
 
         centerSplitPane.setLeftComponent(signalTableScrollPane);
 
-        signalDetailPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1), "Edit Signal"));
-        signalDetailPanel.setMinimumSize(new Dimension(500, 490));
-        signalDetailPanel.setPreferredSize(new Dimension(500, 500));
+        signalDetailPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(), "Edit Signal"));
+        signalDetailPanel.setMinimumSize(new Dimension(490, 500));
+        signalDetailPanel.setPreferredSize(new Dimension(390, 540));
         signalDetailPanel.setLayout(new BoxLayout(signalDetailPanel, BoxLayout.Y_AXIS));
 
         row1Panel.setMinimumSize(new Dimension(380, 30));
         row1Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout6.setAlignOnBaseline(true);
-        row1Panel.setLayout(flowLayout6);
-
-        addressLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        addressLbl.setLabelFor(addressSpinner);
-        addressLbl.setText("Address");
-        addressLbl.setPreferredSize(new Dimension(120, 16));
-        row1Panel.add(addressLbl);
-
-        addressSpinner.setModel(new SpinnerNumberModel(0, 0, 256, 1));
-        addressSpinner.setDoubleBuffered(true);
-        addressSpinner.setEditor(new JSpinner.NumberEditor(addressSpinner, ""));
-        addressSpinner.setMinimumSize(new Dimension(50, 26));
-        addressSpinner.setName(""); // NOI18N
-        addressSpinner.setNextFocusableComponent(nameTF);
-        addressSpinner.setPreferredSize(new Dimension(60, 26));
-        row1Panel.add(addressSpinner);
+        FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout2.setAlignOnBaseline(true);
+        row1Panel.setLayout(flowLayout2);
 
         idLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        idLbl.setText("ID: ");
-        idLbl.setPreferredSize(new Dimension(220, 16));
+        idLbl.setLabelFor(idSpinner);
+        idLbl.setText("Address / ID");
+        idLbl.setPreferredSize(new Dimension(120, 16));
         row1Panel.add(idLbl);
+
+        idSpinner.setModel(new SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(256L), Long.valueOf(1L)));
+        idSpinner.setDoubleBuffered(true);
+        idSpinner.setEditor(new JSpinner.NumberEditor(idSpinner, ""));
+        idSpinner.setMinimumSize(new Dimension(70, 26));
+        idSpinner.setName(""); // NOI18N
+        idSpinner.setNextFocusableComponent(nameTF);
+        idSpinner.setPreferredSize(new Dimension(70, 26));
+        row1Panel.add(idSpinner);
 
         signalDetailPanel.add(row1Panel);
 
         row2Panel.setMinimumSize(new Dimension(380, 30));
         row2Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout7 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout7.setAlignOnBaseline(true);
-        row2Panel.setLayout(flowLayout7);
-
-        signalTypeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        signalTypeLbl.setText("Type");
-        signalTypeLbl.setMaximumSize(new Dimension(120, 16));
-        signalTypeLbl.setPreferredSize(new Dimension(120, 16));
-        row2Panel.add(signalTypeLbl);
-
-        signalTypeCB.setModel(getSignalTypeComboBoxModel());
-        signalTypeCB.setPreferredSize(new Dimension(120, 27));
-        row2Panel.add(signalTypeCB);
-
-        signalDetailPanel.add(row2Panel);
-
-        row3Panel.setMinimumSize(new Dimension(380, 30));
-        row3Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout8.setAlignOnBaseline(true);
-        row3Panel.setLayout(flowLayout8);
+        FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout3.setAlignOnBaseline(true);
+        row2Panel.setLayout(flowLayout3);
 
         nameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
         nameLbl.setLabelFor(nameTF);
         nameLbl.setText("Name");
         nameLbl.setPreferredSize(new Dimension(120, 16));
-        row3Panel.add(nameLbl);
+        row2Panel.add(nameLbl);
 
-        nameTF.setMinimumSize(new Dimension(120, 26));
-        nameTF.setPreferredSize(new Dimension(120, 26));
-        row3Panel.add(nameTF);
+        nameTF.setMinimumSize(new Dimension(150, 26));
+        nameTF.setPreferredSize(new Dimension(150, 26));
+        row2Panel.add(nameTF);
+
+        signalDetailPanel.add(row2Panel);
+
+        row3Panel.setMinimumSize(new Dimension(380, 30));
+        row3Panel.setPreferredSize(new Dimension(380, 30));
+        FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout4.setAlignOnBaseline(true);
+        row3Panel.setLayout(flowLayout4);
+
+        typeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        typeLbl.setLabelFor(typeTF);
+        typeLbl.setText("Type");
+        typeLbl.setPreferredSize(new Dimension(120, 16));
+        row3Panel.add(typeLbl);
+
+        typeTF.setMinimumSize(new Dimension(150, 26));
+        typeTF.setPreferredSize(new Dimension(150, 26));
+        row3Panel.add(typeTF);
 
         signalDetailPanel.add(row3Panel);
 
         row4Panel.setMinimumSize(new Dimension(380, 30));
         row4Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout9 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout9.setAlignOnBaseline(true);
-        row4Panel.setLayout(flowLayout9);
+        FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout5.setAlignOnBaseline(true);
+        row4Panel.setLayout(flowLayout5);
 
-        catalogeNrLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        catalogeNrLbl.setLabelFor(catalogNrTF);
-        catalogeNrLbl.setText("Catalog Number");
-        catalogeNrLbl.setPreferredSize(new Dimension(120, 16));
-        row4Panel.add(catalogeNrLbl);
+        switchTimeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        switchTimeLbl.setText("Switch Time");
+        switchTimeLbl.setMaximumSize(new Dimension(120, 16));
+        switchTimeLbl.setMinimumSize(new Dimension(120, 16));
+        switchTimeLbl.setPreferredSize(new Dimension(120, 16));
+        row4Panel.add(switchTimeLbl);
 
-        catalogNrTF.setMinimumSize(new Dimension(120, 26));
-        catalogNrTF.setPreferredSize(new Dimension(120, 26));
-        row4Panel.add(catalogNrTF);
+        switchTimeSpinner.setModel(new SpinnerNumberModel(0, 0, 5000, 1));
+        switchTimeSpinner.setDoubleBuffered(true);
+        switchTimeSpinner.setEditor(new JSpinner.NumberEditor(switchTimeSpinner, ""));
+        switchTimeSpinner.setMinimumSize(new Dimension(70, 26));
+        switchTimeSpinner.setName(""); // NOI18N
+        switchTimeSpinner.setNextFocusableComponent(nameTF);
+        switchTimeSpinner.setPreferredSize(new Dimension(70, 26));
+        row4Panel.add(switchTimeSpinner);
 
         signalDetailPanel.add(row4Panel);
 
         row5Panel.setMinimumSize(new Dimension(380, 30));
-        row5Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout10 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout10.setAlignOnBaseline(true);
-        row5Panel.setLayout(flowLayout10);
+        FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout6.setAlignOnBaseline(true);
+        row5Panel.setLayout(flowLayout6);
 
-        address2Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        address2Lbl.setText("Address 2");
-        address2Lbl.setPreferredSize(new Dimension(120, 16));
-        row5Panel.add(address2Lbl);
+        decoderTypeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        decoderTypeLbl.setText("Decoder Type");
+        decoderTypeLbl.setToolTipText("");
+        decoderTypeLbl.setMaximumSize(new Dimension(120, 16));
+        decoderTypeLbl.setMinimumSize(new Dimension(120, 16));
+        decoderTypeLbl.setPreferredSize(new Dimension(120, 16));
+        row5Panel.add(decoderTypeLbl);
 
-        addressSpinner2.setModel(new SpinnerNumberModel(0, 0, 256, 1));
-        addressSpinner2.setDoubleBuffered(true);
-        addressSpinner2.setEditor(new JSpinner.NumberEditor(addressSpinner2, ""));
-        addressSpinner2.setEnabled(false);
-        addressSpinner2.setMinimumSize(new Dimension(50, 26));
-        addressSpinner2.setName(""); // NOI18N
-        addressSpinner2.setNextFocusableComponent(nameTF);
-        addressSpinner2.setPreferredSize(new Dimension(60, 26));
-        row5Panel.add(addressSpinner2);
-
-        lightImagesLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        lightImagesLbl.setText("Light Images");
-        lightImagesLbl.setPreferredSize(new Dimension(100, 16));
-        row5Panel.add(lightImagesLbl);
-
-        lightImagesBG.add(lightImage2RB);
-        lightImage2RB.setSelected(true);
-        lightImage2RB.setText("2");
-        row5Panel.add(lightImage2RB);
-
-        lightImagesBG.add(lightImage4RB);
-        lightImage4RB.setText("4");
-        row5Panel.add(lightImage4RB);
+        decoderTypeTF.setMinimumSize(new Dimension(150, 26));
+        decoderTypeTF.setPreferredSize(new Dimension(150, 26));
+        row5Panel.add(decoderTypeTF);
 
         signalDetailPanel.add(row5Panel);
 
         row6Panel.setMinimumSize(new Dimension(380, 30));
         row6Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout5.setAlignOnBaseline(true);
-        row6Panel.setLayout(flowLayout5);
+        FlowLayout flowLayout7 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout7.setAlignOnBaseline(true);
+        row6Panel.setLayout(flowLayout7);
+
+        decoderLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        decoderLbl.setText("Decoder");
+        decoderLbl.setMaximumSize(new Dimension(120, 16));
+        decoderLbl.setMinimumSize(new Dimension(120, 16));
+        decoderLbl.setPreferredSize(new Dimension(120, 16));
+        row6Panel.add(decoderLbl);
+
+        decoderTF.setMinimumSize(new Dimension(150, 26));
+        decoderTF.setPreferredSize(new Dimension(150, 26));
+        row6Panel.add(decoderTF);
+
         signalDetailPanel.add(row6Panel);
 
         row7Panel.setMinimumSize(new Dimension(380, 30));
         row7Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout4.setAlignOnBaseline(true);
-        row7Panel.setLayout(flowLayout4);
+        FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout8.setAlignOnBaseline(true);
+        row7Panel.setLayout(flowLayout8);
+
+        positionLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        positionLbl.setText("Position");
+        positionLbl.setMaximumSize(new Dimension(120, 16));
+        positionLbl.setMinimumSize(new Dimension(120, 16));
+        positionLbl.setPreferredSize(new Dimension(120, 16));
+        row7Panel.add(positionLbl);
+
+        positionSpinner.setModel(new SpinnerNumberModel(0, 0, 4, 1));
+        positionSpinner.setDoubleBuffered(true);
+        positionSpinner.setEditor(new JSpinner.NumberEditor(positionSpinner, ""));
+        positionSpinner.setMinimumSize(new Dimension(70, 26));
+        positionSpinner.setName(""); // NOI18N
+        positionSpinner.setNextFocusableComponent(nameTF);
+        positionSpinner.setPreferredSize(new Dimension(70, 26));
+        row7Panel.add(positionSpinner);
+
         signalDetailPanel.add(row7Panel);
 
         row8Panel.setMinimumSize(new Dimension(380, 30));
-        row8Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout3.setAlignOnBaseline(true);
-        row8Panel.setLayout(flowLayout3);
+        FlowLayout flowLayout9 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout9.setAlignOnBaseline(true);
+        row8Panel.setLayout(flowLayout9);
         signalDetailPanel.add(row8Panel);
 
-        row9Panel.setMinimumSize(new Dimension(380, 30));
         row9Panel.setPreferredSize(new Dimension(380, 30));
-        FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
-        flowLayout2.setAlignOnBaseline(true);
-        row9Panel.setLayout(flowLayout2);
+        FlowLayout flowLayout10 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout10.setAlignOnBaseline(true);
+        row9Panel.setLayout(flowLayout10);
         signalDetailPanel.add(row9Panel);
         signalDetailPanel.add(filler2);
 
@@ -400,7 +422,7 @@ public class SignalPanel extends JPanel {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        bottomPanel.setPreferredSize(new Dimension(1000, 50));
+        bottomPanel.setPreferredSize(new Dimension(1014, 50));
         bottomPanel.setRequestFocusEnabled(false);
 
         GroupLayout bottomPanelLayout = new GroupLayout(bottomPanel);
@@ -415,61 +437,49 @@ public class SignalPanel extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
-    private ComboBoxModel getSignalTypeComboBoxModel() {
-        return new DefaultComboBoxModel(SIGNAL_TYPES);
-    }
 
   private void newBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newBtnActionPerformed
-      this.signalTableModel.refresh();
+      signalTableModel.refresh();
       alignSignalTable();
+
       Logger.debug("Create new Signal...");
-      this.selectedSignal = new SignalBean(0, "Block", null);
-      Integer a = this.signalTableModel.getRowCount() + 1;
+      selectedSignal = new AccessoryBean();
+      Long idl = signalTableModel.getRowCount() + 1l;
 
-      this.selectedSignal.setName("S " + a);
-      this.selectedSignal.setAddress(a);
-      this.selectedSignal.setValue(AccessoryValue.GREEN);
-      this.selectedSignal.setLightImages(2);
+      selectedSignal.setName("W " + idl);
+      selectedSignal.setId(new BigDecimal(idl));
+      selectedSignal.setPosition(0);
 
-      this.setComponentValues(selectedSignal);
-      Logger.debug("Create new Signal..." + this.selectedSignal);
+      setComponentValues(selectedSignal);
+      Logger.debug("Created new Signal..." + this.selectedSignal);
   }//GEN-LAST:event_newBtnActionPerformed
 
   private void signalTableMouseClicked(MouseEvent evt) {//GEN-FIRST:event_signalTableMouseClicked
       JTable source = (JTable) evt.getSource();
       int row = source.rowAtPoint(evt.getPoint());
-      SignalBean s = signalTableModel.getControllableDeviceAt(row);
 
-      if (s != null) {
-          Logger.debug("Selected row: " + row + ", Signal Address: " + s.getAddress());
-          selectedSignal = null; //TrackServiceFactory.getTrackService().getSignal(s.getAddress());
-          setComponentValues(selectedSignal);
+      AccessoryBean t = this.signalTableModel.getControllableDeviceAt(row);
+      if (t != null) {
+          Logger.debug("Selected row: " + row + ", Signal ID: " + t.getId());
+          //Refresh from repo
+          this.selectedSignal = TrackServiceFactory.getTrackService().getAccessory(t.getId());
+          this.setComponentValues(this.selectedSignal);
       }
   }//GEN-LAST:event_signalTableMouseClicked
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
-      this.selectedSignal = this.setSignalValues();
-      Logger.debug("Save the Signal: " + selectedSignal);
+      this.selectedSignal = setSignalValues();
+      Logger.debug("Save the Signal: " + this.selectedSignal);
 
-      SignalBean s = null; //TrackServiceFactory.getTrackService().getSignal(selectedSignal.getAddress());
-      if (s != null) {
-          selectedSignal.setId(s.getId());
-          selectedSignal.setId2(s.getId2());
-          selectedSignal.setAddress2(s.getAddress2());
-          selectedSignal.setValue(s.getValue());
-          selectedSignal.setValue2(s.getValue2());
-          selectedSignal.setSignalValue(s.getSignalValue());
-
-          Logger.debug("Found Signal with id " + s.getId());
+      AccessoryBean t = TrackServiceFactory.getTrackService().getAccessory(selectedSignal.getId());
+      if (t != null) {
+          this.selectedSignal.setId(t.getId());
+          Logger.debug("Found signal with id " + t.getId());
       } else {
-          this.selectedSignal.setValue(AccessoryValue.GREEN);
-          if (selectedSignal.getLightImages() == 4) {
-              selectedSignal.setValue2(AccessoryValue.GREEN);
-              selectedSignal.setSignalValue(SignalValue.Hp1);
-          }
+          this.selectedSignal.setPosition(0);
       }
 
-      selectedSignal = null; //TrackServiceFactory.getTrackService().persist(selectedSignal);
+      selectedSignal = TrackServiceFactory.getTrackService().persist(selectedSignal);
       setComponentValues(selectedSignal);
       signalTableModel.refresh();
       alignSignalTable();
@@ -478,87 +488,79 @@ public class SignalPanel extends JPanel {
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       Logger.debug("Delete Signal: " + this.selectedSignal);
       TrackServiceFactory.getTrackService().remove(selectedSignal);
-      this.signalTableModel.refresh();
-      this.selectedSignal = null;
-      this.setComponentValues(selectedSignal);
+      signalTableModel.refresh();
+      selectedSignal = null;
+      setComponentValues(selectedSignal);
       alignSignalTable();
   }//GEN-LAST:event_deleteBtnActionPerformed
 
     public void refresh() {
-        this.signalTableModel.refresh();
+        signalTableModel.refresh();
         alignSignalTable();
+        //Select the first row
+        if (signalTableModel.getRowCount() > 0) {
+            selectSignal(0);
+            this.signalTable.setRowSelectionInterval(0, 0);
+        }
     }
 
-  private void refreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
-      refresh();
-  }//GEN-LAST:event_refreshBtnActionPerformed
-
-    //Create SignalBean from fields  
-    protected SignalBean setSignalValues() {
-        Integer address = (Integer) this.addressSpinner.getValue();
-        String name = this.nameTF.getText();
-        String description = (String) this.signalTypeCB.getSelectedItem();
-        String catalogNumber = this.catalogNrTF.getText();
-        Integer address2 = (Integer) this.addressSpinner2.getValue();
-
-        Integer lightImages;
-        if (this.lightImage2RB.isSelected()) {
-            lightImages = 2;
-        } else {
-            lightImages = 4;
-            address2 = address + 1;
-        }
-
-        SignalBean s = new SignalBean(address, description, catalogNumber);
-        s.setName(name);
-        if (lightImages.equals(4)) {
-            s.setAddress2(address2);
-        }
-        s.setLightImages(lightImages);
-
-        return s;
+    private void synchronize() {
+        TrackServiceFactory.getTrackService().synchronizeAccessoriesWithController();
+        refresh();
     }
 
-    protected void setComponentValues(SignalBean signal) {
+    private void synchronizeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeBtnActionPerformed
+        synchronize();
+    }//GEN-LAST:event_synchronizeBtnActionPerformed
+
+    private void refreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
+        refresh();
+    }//GEN-LAST:event_refreshBtnActionPerformed
+
+    //Create Signal from fields  
+    protected AccessoryBean setSignalValues() {
+        BigDecimal id = (BigDecimal) this.idSpinner.getValue();
+        String name = nameTF.getText();
+        String type = typeTF.getText();
+        Integer switchTime = (Integer) this.switchTimeSpinner.getValue();
+        String decoderType = this.decoderTypeTF.getText();
+        String decoder = this.decoderTF.getText();
+        Integer position = (Integer) this.positionSpinner.getValue();
+
+        AccessoryBean signal = new AccessoryBean(id, name, type, position, switchTime, decoderType, decoder);
+
+        return signal;
+    }
+
+    protected void setComponentValues(AccessoryBean signal) {
         if (signal != null) {
-            addressSpinner.setValue(signal.getAddress());
-            nameTF.setText(signal.getName());
-            catalogNrTF.setText(signal.getCatalogNumber());
-            signalTypeCB.setSelectedItem(signal.getDescription());
-            idLbl.setText("ID: " + signal.getId());
-
-            if (signal.getAddress2() != null) {
-                addressSpinner2.setValue(signal.getAddress2());
-            } else {
-                addressSpinner2.setValue(0);
-            }
-
-            if (signal.getLightImages() == 4) {
-                lightImage4RB.setSelected(true);
-            } else {
-                lightImage2RB.setSelected(true);
-            }
+            this.idSpinner.setValue(signal.getId());
+            this.nameTF.setText(signal.getName());
+            this.typeTF.setText(signal.getType());
+            this.switchTimeSpinner.setValue(signal.getSwitchTime());
+            this.decoderTypeTF.setText(signal.getDecoderType());
+            this.decoderTF.setText(signal.getDecoder());
+            this.positionSpinner.setValue(signal.getPosition());
         } else {
-            addressSpinner.setValue(0);
-            nameTF.setText("");
-            catalogNrTF.setText("");
-            signalTypeCB.setSelectedItem("");
-            idLbl.setText("ID: --");
-            addressSpinner2.setValue(0);
-            lightImage2RB.setSelected(true);
+            this.idSpinner.setValue(0);
+            this.nameTF.setText("");
+            this.typeTF.setText("");
+            this.switchTimeSpinner.setValue(0);
+            this.decoderTypeTF.setText("");
+            this.decoderTF.setText("");
+            this.positionSpinner.setValue(0);
         }
     }
 
     public static void main(String args[]) {
         try {
-            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.warn("Can't set the LookAndFeel: " + ex);
+            Logger.error("Can't set the LookAndFeel: " + ex);
         }
         java.awt.EventQueue.invokeLater(() -> {
 
-            SignalPanel testPanel = new SignalPanel();
+            SignalPreferencesPanel testPanel = new SignalPreferencesPanel();
             JFrame testFrame = new JFrame();
             JDialog testDialog = new JDialog(testFrame, true);
 
@@ -579,28 +581,24 @@ public class SignalPanel extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JLabel address2Lbl;
-    private JLabel addressLbl;
-    private JSpinner addressSpinner;
-    private JSpinner addressSpinner2;
     private JPanel bottomPanel;
     private JPanel buttonPanel;
-    private JTextField catalogNrTF;
-    private JLabel catalogeNrLbl;
     private JPanel centerPanel;
     private JSplitPane centerSplitPane;
+    private JLabel decoderLbl;
+    private JTextField decoderTF;
+    private JLabel decoderTypeLbl;
+    private JTextField decoderTypeTF;
     private JButton deleteBtn;
-    private ButtonGroup directionBG;
     private Box.Filler filler1;
     private Box.Filler filler2;
     private JLabel idLbl;
-    private JRadioButton lightImage2RB;
-    private JRadioButton lightImage4RB;
-    private ButtonGroup lightImagesBG;
-    private JLabel lightImagesLbl;
+    private JSpinner idSpinner;
     private JLabel nameLbl;
     private JTextField nameTF;
     private JButton newBtn;
+    private JLabel positionLbl;
+    private JSpinner positionSpinner;
     private JButton refreshBtn;
     private JPanel row1Panel;
     private JPanel row2Panel;
@@ -612,12 +610,15 @@ public class SignalPanel extends JPanel {
     private JPanel row8Panel;
     private JPanel row9Panel;
     private JButton saveBtn;
-    private SignalBean selectedSignal;
+    private AccessoryBean selectedSignal;
     private JPanel signalDetailPanel;
     private JTable signalTable;
     private JScrollPane signalTableScrollPane;
-    private JComboBox<String> signalTypeCB;
-    private JLabel signalTypeLbl;
+    private JLabel switchTimeLbl;
+    private JSpinner switchTimeSpinner;
+    private JButton synchronizeBtn;
     private JPanel topPanel;
+    private JLabel typeLbl;
+    private JTextField typeTF;
     // End of variables declaration//GEN-END:variables
 }

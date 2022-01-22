@@ -107,7 +107,7 @@
                 </Constraint>
               </Constraints>
             </Component>
-            <Component class="jcs.ui.options.SignalPanel" name="signalPanel">
+            <Component class="jcs.ui.options.SignalPreferencesPanel" name="signalPanel">
               <Properties>
                 <Property name="name" type="java.lang.String" value="signalPanel" noResource="true"/>
               </Properties>
@@ -119,7 +119,7 @@
                 </Constraint>
               </Constraints>
             </Component>
-            <Component class="jcs.ui.options.TurnoutPanel" name="turnoutPanel">
+            <Component class="jcs.ui.options.TurnoutPreferencesPanel" name="turnoutPanel">
               <Properties>
                 <Property name="name" type="java.lang.String" value="turnoutPanel" noResource="true"/>
               </Properties>

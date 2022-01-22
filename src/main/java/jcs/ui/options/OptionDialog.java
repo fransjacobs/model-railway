@@ -73,8 +73,8 @@ public class OptionDialog extends javax.swing.JDialog {
         prefsTP = new JTabbedPane();
         locomotivePanel = new LocomotivePreferencesPanel();
         propertiesPanel = new PropertiesPanel();
-        signalPanel = new SignalPanel();
-        turnoutPanel = new TurnoutPanel();
+        signalPanel = new SignalPreferencesPanel();
+        turnoutPanel = new TurnoutPreferencesPanel();
         southPanel = new JPanel();
         closeBtn = new JButton();
 
@@ -150,9 +150,9 @@ public class OptionDialog extends javax.swing.JDialog {
 
       if (c instanceof LocomotivePreferencesPanel) {
           this.locomotivePanel.refresh();
-      } else if (c instanceof TurnoutPanel) {
+      } else if (c instanceof TurnoutPreferencesPanel) {
           //this.turnoutPanel.refresh();
-      } else if (c instanceof SignalPanel) {
+      } else if (c instanceof SignalPreferencesPanel) {
           //this.signalPanel.refresh();
       } else if (c instanceof PropertiesPanel) {
           //this.propertiesPanel.refresh();
@@ -192,9 +192,9 @@ public class OptionDialog extends javax.swing.JDialog {
     private LocomotivePreferencesPanel locomotivePanel;
     private JTabbedPane prefsTP;
     private PropertiesPanel propertiesPanel;
-    private SignalPanel signalPanel;
+    private SignalPreferencesPanel signalPanel;
     private JPanel southPanel;
     private JPanel topPanel;
-    private TurnoutPanel turnoutPanel;
+    private TurnoutPreferencesPanel turnoutPanel;
     // End of variables declaration//GEN-END:variables
 }

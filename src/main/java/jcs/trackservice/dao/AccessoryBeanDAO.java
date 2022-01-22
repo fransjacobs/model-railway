@@ -33,7 +33,7 @@ import jcs.entities.AccessoryBean;
 public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
     private static final String INS_SA_STMT = "insert into solenoidaccessories (name,type,position,switchtime,decodertype,decoder,id) values(?,?,?,?,?,?,?)";
-    private static final String UPD_SA_STMT = "update solenoidaccessories set name = ?,type = ?,position = ?,switchtime = ?,decodertype = ?,decoder = ?, where id = ?";
+    private static final String UPD_SA_STMT = "update solenoidaccessories set name = ?,type = ?,position = ?,switchtime = ?,decodertype = ?,decoder = ? where id = ?";
 
     public AccessoryBeanDAO() {
         super();
@@ -41,7 +41,7 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
     @Override
     protected AccessoryBean map(ResultSet rs) throws SQLException {
-        BigDecimal id = rs.getBigDecimal("ID");
+        BigDecimal id = new BigDecimal(rs.getLong("ID"));
         String name = rs.getString("NAME");
         String type = rs.getString("TYPE");
         Integer position = rs.getInt("POSITION");
@@ -80,21 +80,18 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
     @Override
     public List<AccessoryBean> findAll() {
         String stmt = "select * from solenoidaccessories order by id asc";
-
-        return this.findAll(stmt);
+        return super.findAll(stmt);
     }
 
-    //@Override
-    public AccessoryBean find(String name) {
-        String stmt = "select * from solenoidaccessories where name = ?";
-
-        return this.find(name, stmt);
+    public List<AccessoryBean> findBy(String key) {
+        String stmt = "select * from solenoidaccessories where type like ?";
+        return super.findBy(key, stmt);
     }
 
     public AccessoryBean findById(BigDecimal id) {
         String stmt = "select * from solenoidaccessories where id = ?";
 
-        return this.findById(id, stmt);
+        return super.findById(id, stmt);
     }
 
     @Override
@@ -109,7 +106,7 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
             statement = UPD_SA_STMT;
         }
 
-        upsert(accessoiry, statement);
+        super.upsert(accessoiry, statement);
 
         return accessoiry.getId();
     }
@@ -117,6 +114,6 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
     @Override
     public void remove(AccessoryBean accessoiry) {
         String stmt = "delete from solenoidaccessories where id = ?";
-        this.remove(accessoiry, stmt);
+        super.remove(accessoiry, stmt);
     }
 }

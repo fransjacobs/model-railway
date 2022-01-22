@@ -702,7 +702,7 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_showOverviewBtnActionPerformed
 
     private void synchronizeAccessories() {
-        TrackServiceFactory.getTrackService().synchronizeAccessories();
+        //TrackServiceFactory.getTrackService().synchronizeAccessories();
     }
 
     private String getTitleString() {

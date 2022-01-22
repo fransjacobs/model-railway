@@ -27,8 +27,10 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 import javax.imageio.ImageIO;
-import jcs.controller.cs3.http.SvgIconToPngIconConverter;
+import jcs.controller.cs3.http.AccessoryBeanParser;
+import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
 /**
@@ -188,7 +190,7 @@ public class HTTPConnection {
             }
         }
          */
-        /*
+        
         String accessories = hc.getAccessoriesFile();
         AccessoryBeanParser ap = new AccessoryBeanParser();
 
@@ -197,7 +199,7 @@ public class HTTPConnection {
         for (AccessoryBean sa : acList) {
             System.out.println(sa.toLogString());
         }
-        */
+        
         /*
         String deviceFile = hc.getDeviceFile();
         DeviceParser dp = new DeviceParser();
@@ -211,8 +213,10 @@ public class HTTPConnection {
 //        for (AccessoryStatus as : acsList) {
 //            System.out.println(as.toString());
 //        }
+         /*
          String json = hc.getAllFunctionsSvgJSON();
          SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
          svgp.convertAndCacheAllFunctionsSvgIcons(json);
+         */
     }
 }

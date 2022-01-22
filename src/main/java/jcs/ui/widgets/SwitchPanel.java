@@ -12,10 +12,7 @@ import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
-import jcs.entities.SignalBean;
-import jcs.entities.SolenoidAccessory;
-import jcs.entities.SwitchBean;
-import jcs.entities.enums.AccessoryType;
+import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.trackservice.AccessoryEvent;
 import jcs.trackservice.TrackServiceFactory;
@@ -89,26 +86,26 @@ public class SwitchPanel extends JPanel {
             return;
         }
 
-        SwitchBean t = null;//TrackServiceFactory.getTrackService().getSwitchTurnout(address);
+        AccessoryBean t = null;//TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
             button.setForeground(new java.awt.Color(0, 153, 0));
-            button.setSelected(AccessoryValue.RED.equals(t.getValue()));
+            //button.setSelected(AccessoryValue.RED.equals(t.getValue()));
         }
 
         if (t == null) {
-            SignalBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
+            AccessoryBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
             if (s != null) {
                 button.setForeground(new java.awt.Color(0, 153, 0));
-                button.setSelected(AccessoryValue.RED.equals(s.getValue()));
+                //button.setSelected(AccessoryValue.RED.equals(s.getValue()));
             }
 
             if (address % 2 == 0) {
                 //even addres check one lower
                 s = null; //TrackServiceFactory.getTrackService().getSignal(address - 1);
-                if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
-                    button.setForeground(new java.awt.Color(0, 153, 0));
-                    button.setSelected(AccessoryValue.RED.equals(s.getValue2()));
-                }
+                ///if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
+                //    button.setForeground(new java.awt.Color(0, 153, 0));
+                //    button.setSelected(AccessoryValue.RED.equals(s.getValue2()));
+                //}
             }
         }
 
@@ -413,21 +410,20 @@ public class SwitchPanel extends JPanel {
         Logger.trace("Address: " + address + " Value: " + value);
 
         //TrackServiceFactory.getTrackService().switchAccessory(value, new Accessoiry(address, value));
-
         updateAccessoiry(address, value);
     }
 
     private void updateAccessoiry(Integer address, AccessoryValue value) {
-        SwitchBean t = null; //TrackServiceFactory.getTrackService().getSwitchTurnout(address);
+        AccessoryBean t = null; //TrackServiceFactory.getTrackService().getSwitchTurnout(address);
         if (t != null) {
-            t.setValue(value);
+            //t.setValue(value);
             //TrackServiceFactory.getTrackService().persist(t);
             return;
         }
 
-        SignalBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
+        AccessoryBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
         if (s != null) {
-            s.setValue(value);
+            //s.setValue(value);
             //TrackServiceFactory.getTrackService().persist(s);
             return;
         }
@@ -435,10 +431,10 @@ public class SwitchPanel extends JPanel {
         if (address % 2 == 0) {
             //even addres check one lower
             s = null; //TrackServiceFactory.getTrackService().getSignal(address - 1);
-            if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
-                s.setValue2(value);
-                //TrackServiceFactory.getTrackService().persist(s);
-            }
+            //if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
+            //    s.setValue2(value);
+            //TrackServiceFactory.getTrackService().persist(s);
+            //}
         }
     }
 
@@ -533,10 +529,10 @@ public class SwitchPanel extends JPanel {
         });
     }
 
-    private class Accessoiry extends SolenoidAccessory {
+    private class Accessoiry extends AccessoryBean {
 
         public Accessoiry(Integer address, AccessoryValue value) {
-            super(address, "Switch only Accessoiry", null, null, AccessoryType.GENERAL, value, null, 2);
+            //super(address, "Switch only Accessoiry", null, null, AccessoryType.GENERAL, value, null, 2);
         }
     }
 

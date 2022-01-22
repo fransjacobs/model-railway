@@ -21,7 +21,7 @@ package jcs.ui;
 import java.awt.GridLayout;
 import java.util.Collections;
 import java.util.List;
-import jcs.entities.SwitchBean;
+import jcs.entities.AccessoryBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.widgets.TurnoutRowPanel;
 import org.tinylog.Logger;
@@ -49,7 +49,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
             return;
         }
         //stub
-        List<SwitchBean> turnouts = Collections.EMPTY_LIST; // TrackServiceFactory.getTrackService().getSwitches();
+        List<AccessoryBean> turnouts = Collections.EMPTY_LIST; // TrackServiceFactory.getTrackService().getSwitches();
 
         Logger.trace("There are " + turnouts.size() + " turnouts...");
 
@@ -57,7 +57,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
         int maxW = this.getPreferredSize().width;
         int w = 0, rows = 1, cols = 0;
 
-        for (SwitchBean turnout : turnouts) {
+        for (AccessoryBean turnout : turnouts) {
             TurnoutRowPanel turnoutRowPanel = new TurnoutRowPanel(turnout, TurnoutRowPanel.Y_AXIS);
             w = w + turnoutRowPanel.getPreferredSize().width;
             if (rows == 1) {

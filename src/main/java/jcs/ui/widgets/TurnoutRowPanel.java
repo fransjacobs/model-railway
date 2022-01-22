@@ -25,8 +25,10 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import jcs.entities.SwitchBean;
+import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
+import static jcs.entities.enums.AccessoryValue.GREEN;
+import static jcs.entities.enums.AccessoryValue.RED;
 import jcs.trackservice.AccessoryEvent;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.AccessoryListener;
@@ -38,7 +40,7 @@ import org.tinylog.Logger;
  */
 public class TurnoutRowPanel extends JPanel implements AccessoryListener {
 
-    private SwitchBean turnout;
+    private AccessoryBean turnout;
 
     private static final String TURNOUT_L = "/media/turnout-l.png";
     private static final String TURNOUT_L_S = "/media/turnout-l-s.png";
@@ -61,7 +63,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         this(null);
     }
 
-    public TurnoutRowPanel(SwitchBean turnout) {
+    public TurnoutRowPanel(AccessoryBean turnout) {
         this(turnout, X_AXIS);
     }
 
@@ -71,7 +73,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
      * @param turnout
      * @param axis
      */
-    public TurnoutRowPanel(SwitchBean turnout, int axis) {
+    public TurnoutRowPanel(AccessoryBean turnout, int axis) {
         this.turnout = turnout;
         this.axis = axis;
 
@@ -88,7 +90,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
             setPreferredSize(new java.awt.Dimension(55, 175));
         }
         if (turnout != null) {
-            setButtonImages(turnout.getDescription());
+            //setButtonImages(turnout.getDescription());
             rowLbl.setText(turnout.getName());
             setButtonStatus();
         }
@@ -184,11 +186,11 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         }
     }
 
-    public SwitchBean getTurnout() {
+    public AccessoryBean getTurnout() {
         return turnout;
     }
 
-    public void setTurnout(SwitchBean turnout) {
+    public void setTurnout(AccessoryBean turnout) {
         this.turnout = turnout;
 
         if (turnout != null) {
@@ -200,9 +202,9 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
 
     @Override
     public void switched(AccessoryEvent event) {
-        if (event.isEventFor(turnout)) {
-            this.turnout.setValue(event.getValue());
-        }
+        //if (event.isEventFor(turnout)) {
+        //    this.turnout.setValue(event.getValue());
+        //}
         setButtonStatus();
     }
 
@@ -226,17 +228,17 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         if (this.turnout != null) {
             //Logger.trace("Turnout: " + turnout);
 
-            switch (turnout.getValue()) {
-                case RED:
-                    this.btnCurved.setSelected(true);
-                    //Logger.trace("Button Curved: selected -> true.");
-                    break;
-                case GREEN:
-                    this.btnStraight.setSelected(true);
-                    //Logger.trace("Button Straight: selected -> true.");
-                    break;
+            switch (turnout.getPosition()) {
+//                case RED:
+//                    this.btnCurved.setSelected(true);
+//                    //Logger.trace("Button Curved: selected -> true.");
+//                    break;
+//                case GREEN:
+//                    this.btnStraight.setSelected(true);
+//                    //Logger.trace("Button Straight: selected -> true.");
+//                    break;
                 default:
-                    Logger.trace("Default called; Value: " + turnout.getValue());
+                    Logger.trace("Default called; Value: " + turnout.getPosition());
                     break;
             }
         }
@@ -253,10 +255,10 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
         JFrame f = new JFrame("SignalRowPanel Tester");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        List<SwitchBean> turnouts = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSwitches();
+        List<AccessoryBean> turnouts = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSwitches();
         f.setLayout(new GridLayout(turnouts.size(), 1));
 
-        for (SwitchBean turnout : turnouts) {
+        for (AccessoryBean turnout : turnouts) {
             TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
             f.add(signalRowPanel);
 

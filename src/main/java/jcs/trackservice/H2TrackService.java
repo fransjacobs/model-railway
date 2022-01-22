@@ -48,7 +48,6 @@ import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.ControllableDevice;
 import jcs.entities.JCSProperty;
 import jcs.entities.SensorBean;
-import jcs.entities.SolenoidAccessory;
 import jcs.entities.TrackPower;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
@@ -351,11 +350,11 @@ public class H2TrackService implements TrackService {
 //        Logger.trace("Refreshed " + sl.size() + " Sensors...");
     }
 
-    private void notifyAccessoiryListeners(SolenoidAccessory accessoiry) {
-        AccessoryEvent ae = new AccessoryEvent(accessoiry);
-        for (AccessoryListener listener : accessoiryListeners) {
-            listener.switched(ae);
-        }
+    private void notifyAccessoiryListeners(AccessoryBean accessoiry) {
+//        AccessoryEvent ae = new AccessoryEvent(accessoiry);
+//        for (AccessoryListener listener : accessoiryListeners) {
+//            listener.switched(ae);
+//        }
     }
 
     @Override
@@ -535,6 +534,28 @@ public class H2TrackService implements TrackService {
         for (LocomotiveListener listener : snapshot) {
             listener.changed(event);
         }
+    }
+
+    @Override
+    public List<AccessoryBean> getTurnouts() {
+        return this.acceDAO.findBy("%weiche");
+
+    }
+
+    @Override
+    public List<AccessoryBean> getSignals() {
+        return this.acceDAO.findBy("%signal%");
+    }
+
+    @Override
+    public AccessoryBean getAccessory(BigDecimal id) {
+        return this.acceDAO.findById(id);
+    }
+
+    @Override
+    public AccessoryBean persist(AccessoryBean accessory) {
+        this.acceDAO.persist(accessory);
+        return accessory;
     }
 
 //    @Override
@@ -762,7 +783,11 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void synchronizeAccessoriesWithController() {
-        List<AccessoryBean> sal = this.controllerService.getAccessories();
+        List<AccessoryBean> ma = this.controllerService.getAccessories();
+
+        for (AccessoryBean ab : ma) {
+            this.acceDAO.persist(ab);
+        }
 
 //        for (SolenoidAccessory sa : sal) {
 //            if (sa.isTurnout()) {
@@ -792,20 +817,6 @@ public class H2TrackService implements TrackService {
 //                }
 //                this.signalDAO.persist(s);
 //            }
-//        }
-    }
-
-    @Override
-    public void synchronizeAccessories() {
-//        List<SwitchBean> tl = this.getSwitches();
-//
-//        for (SwitchBean t : tl) {
-//            this.switchAccessory(t.getValue(), t);
-//        }
-//
-//        List<SignalBean> sl = this.getSignals();
-//        for (SignalBean s : sl) {
-//            this.switchAccessory(s.getValue(), s, true);
 //        }
     }
 

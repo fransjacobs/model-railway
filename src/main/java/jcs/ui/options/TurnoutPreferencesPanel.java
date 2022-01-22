@@ -27,10 +27,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -38,7 +38,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
@@ -50,8 +49,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
-import jcs.entities.SwitchBean;
-import jcs.entities.enums.AccessoryValue;
+import jcs.entities.AccessoryBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.options.table.TurnoutTableModel;
 import org.tinylog.Logger;
@@ -60,21 +58,44 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class TurnoutPanel extends JPanel {
+public class TurnoutPreferencesPanel extends JPanel {
 
     private final TurnoutTableModel turnoutTableModel;
 
-    public TurnoutPanel() {
+    public TurnoutPreferencesPanel() {
         turnoutTableModel = new TurnoutTableModel();
         initComponents();
         alignTurnoutTable();
+
+        //Select the first row
+        if (turnoutTableModel.getRowCount() > 0) {
+            selectTurnout(0);
+            this.turnoutTable.setRowSelectionInterval(0, 0);
+        }
     }
 
     private void alignTurnoutTable() {
-        this.turnoutTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        this.turnoutTable.getColumnModel().getColumn(0).setPreferredWidth(40);
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         this.turnoutTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+
+        this.turnoutTable.getColumnModel().getColumn(3).setPreferredWidth(40);
+        this.turnoutTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+    }
+
+    private AccessoryBean getAccessoryFromTrackService(AccessoryBean turnout) {
+        return TrackServiceFactory.getTrackService().getAccessory(turnout.getId());
+    }
+
+    private void selectTurnout(int row) {
+        AccessoryBean t = this.turnoutTableModel.getControllableDeviceAt(row);
+        if (t != null) {
+            this.selectedTurnout = getAccessoryFromTrackService(t);
+            setComponentValues(selectedTurnout);
+        } else {
+            Logger.trace("No Turnout found @ row " + row);
+        }
     }
 
     /**
@@ -86,9 +107,9 @@ public class TurnoutPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        directionBG = new ButtonGroup();
-        selectedTurnout = new SwitchBean();
+        selectedTurnout = new AccessoryBean();
         topPanel = new JPanel();
+        synchronizeBtn = new JButton();
         refreshBtn = new JButton();
         newBtn = new JButton();
         centerPanel = new JPanel();
@@ -97,23 +118,26 @@ public class TurnoutPanel extends JPanel {
         turnoutTable = new JTable();
         turnoutDetailPanel = new JPanel();
         row1Panel = new JPanel();
-        addressLbl = new JLabel();
-        addressSpinner = new JSpinner();
         idLbl = new JLabel();
+        idSpinner = new JSpinner();
         row2Panel = new JPanel();
-        defaultDirectionLbl = new JLabel();
-        leftRB = new JRadioButton();
-        rightRB = new JRadioButton();
-        crossRB = new JRadioButton();
-        row3Panel = new JPanel();
         nameLbl = new JLabel();
         nameTF = new JTextField();
+        row3Panel = new JPanel();
+        typeLbl = new JLabel();
+        typeTF = new JTextField();
         row4Panel = new JPanel();
-        catalogeNrLbl = new JLabel();
-        catalogNrTF = new JTextField();
+        switchTimeLbl = new JLabel();
+        switchTimeSpinner = new JSpinner();
         row5Panel = new JPanel();
+        decoderTypeLbl = new JLabel();
+        decoderTypeTF = new JTextField();
         row6Panel = new JPanel();
+        decoderLbl = new JLabel();
+        decoderTF = new JTextField();
         row7Panel = new JPanel();
+        positionLbl = new JLabel();
+        positionSpinner = new JSpinner();
         row8Panel = new JPanel();
         row9Panel = new JPanel();
         filler2 = new Box.Filler(new Dimension(0, 90), new Dimension(0, 90), new Dimension(32767, 300));
@@ -134,12 +158,22 @@ public class TurnoutPanel extends JPanel {
         flowLayout1.setAlignOnBaseline(true);
         topPanel.setLayout(flowLayout1);
 
+        synchronizeBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
+        synchronizeBtn.setMaximumSize(new Dimension(40, 40));
+        synchronizeBtn.setMinimumSize(new Dimension(40, 40));
+        synchronizeBtn.setPreferredSize(new Dimension(40, 40));
+        synchronizeBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                synchronizeBtnActionPerformed(evt);
+            }
+        });
+        topPanel.add(synchronizeBtn);
+
         refreshBtn.setIcon(new ImageIcon(getClass().getResource("/media/refresh-24.png"))); // NOI18N
-        refreshBtn.setText("Refresh");
         refreshBtn.setMargin(new Insets(2, 2, 2, 2));
-        refreshBtn.setMaximumSize(new Dimension(120, 36));
-        refreshBtn.setMinimumSize(new Dimension(120, 36));
-        refreshBtn.setPreferredSize(new Dimension(120, 36));
+        refreshBtn.setMaximumSize(new Dimension(40, 40));
+        refreshBtn.setMinimumSize(new Dimension(40, 40));
+        refreshBtn.setPreferredSize(new Dimension(40, 40));
         refreshBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 refreshBtnActionPerformed(evt);
@@ -148,11 +182,10 @@ public class TurnoutPanel extends JPanel {
         topPanel.add(refreshBtn);
 
         newBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
-        newBtn.setText("New");
         newBtn.setToolTipText("Create new Locomotive");
-        newBtn.setMaximumSize(new Dimension(120, 36));
-        newBtn.setMinimumSize(new Dimension(120, 36));
-        newBtn.setPreferredSize(new Dimension(120, 36));
+        newBtn.setMaximumSize(new Dimension(40, 40));
+        newBtn.setMinimumSize(new Dimension(40, 40));
+        newBtn.setPreferredSize(new Dimension(40, 40));
         newBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 newBtnActionPerformed(evt);
@@ -201,25 +234,20 @@ public class TurnoutPanel extends JPanel {
         flowLayout2.setAlignOnBaseline(true);
         row1Panel.setLayout(flowLayout2);
 
-        addressLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        addressLbl.setLabelFor(addressSpinner);
-        addressLbl.setText("Address");
-        addressLbl.setPreferredSize(new Dimension(120, 16));
-        row1Panel.add(addressLbl);
-
-        addressSpinner.setModel(new SpinnerNumberModel(0, 0, 256, 1));
-        addressSpinner.setDoubleBuffered(true);
-        addressSpinner.setEditor(new JSpinner.NumberEditor(addressSpinner, ""));
-        addressSpinner.setMinimumSize(new Dimension(60, 26));
-        addressSpinner.setName(""); // NOI18N
-        addressSpinner.setNextFocusableComponent(nameTF);
-        addressSpinner.setPreferredSize(new Dimension(60, 26));
-        row1Panel.add(addressSpinner);
-
         idLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        idLbl.setText("ID: ");
+        idLbl.setLabelFor(idSpinner);
+        idLbl.setText("Address / ID");
         idLbl.setPreferredSize(new Dimension(120, 16));
         row1Panel.add(idLbl);
+
+        idSpinner.setModel(new SpinnerNumberModel(Long.valueOf(0L), Long.valueOf(0L), Long.valueOf(256L), Long.valueOf(1L)));
+        idSpinner.setDoubleBuffered(true);
+        idSpinner.setEditor(new JSpinner.NumberEditor(idSpinner, ""));
+        idSpinner.setMinimumSize(new Dimension(70, 26));
+        idSpinner.setName(""); // NOI18N
+        idSpinner.setNextFocusableComponent(nameTF);
+        idSpinner.setPreferredSize(new Dimension(70, 26));
+        row1Panel.add(idSpinner);
 
         turnoutDetailPanel.add(row1Panel);
 
@@ -229,24 +257,15 @@ public class TurnoutPanel extends JPanel {
         flowLayout3.setAlignOnBaseline(true);
         row2Panel.setLayout(flowLayout3);
 
-        defaultDirectionLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        defaultDirectionLbl.setLabelFor(rightRB);
-        defaultDirectionLbl.setText("Direction");
-        defaultDirectionLbl.setMaximumSize(new Dimension(120, 16));
-        defaultDirectionLbl.setPreferredSize(new Dimension(120, 16));
-        row2Panel.add(defaultDirectionLbl);
+        nameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        nameLbl.setLabelFor(nameTF);
+        nameLbl.setText("Name");
+        nameLbl.setPreferredSize(new Dimension(120, 16));
+        row2Panel.add(nameLbl);
 
-        directionBG.add(leftRB);
-        leftRB.setText("Left");
-        row2Panel.add(leftRB);
-
-        directionBG.add(rightRB);
-        rightRB.setText("Right");
-        row2Panel.add(rightRB);
-
-        directionBG.add(crossRB);
-        crossRB.setText("Cross");
-        row2Panel.add(crossRB);
+        nameTF.setMinimumSize(new Dimension(150, 26));
+        nameTF.setPreferredSize(new Dimension(150, 26));
+        row2Panel.add(nameTF);
 
         turnoutDetailPanel.add(row2Panel);
 
@@ -256,15 +275,15 @@ public class TurnoutPanel extends JPanel {
         flowLayout4.setAlignOnBaseline(true);
         row3Panel.setLayout(flowLayout4);
 
-        nameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        nameLbl.setLabelFor(nameTF);
-        nameLbl.setText("Name");
-        nameLbl.setPreferredSize(new Dimension(120, 16));
-        row3Panel.add(nameLbl);
+        typeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        typeLbl.setLabelFor(typeTF);
+        typeLbl.setText("Type");
+        typeLbl.setPreferredSize(new Dimension(120, 16));
+        row3Panel.add(typeLbl);
 
-        nameTF.setMinimumSize(new Dimension(120, 26));
-        nameTF.setPreferredSize(new Dimension(120, 26));
-        row3Panel.add(nameTF);
+        typeTF.setMinimumSize(new Dimension(150, 26));
+        typeTF.setPreferredSize(new Dimension(150, 26));
+        row3Panel.add(typeTF);
 
         turnoutDetailPanel.add(row3Panel);
 
@@ -274,15 +293,21 @@ public class TurnoutPanel extends JPanel {
         flowLayout5.setAlignOnBaseline(true);
         row4Panel.setLayout(flowLayout5);
 
-        catalogeNrLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-        catalogeNrLbl.setLabelFor(catalogNrTF);
-        catalogeNrLbl.setText("Catalog Number");
-        catalogeNrLbl.setPreferredSize(new Dimension(120, 16));
-        row4Panel.add(catalogeNrLbl);
+        switchTimeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        switchTimeLbl.setText("Switch Time");
+        switchTimeLbl.setMaximumSize(new Dimension(120, 16));
+        switchTimeLbl.setMinimumSize(new Dimension(120, 16));
+        switchTimeLbl.setPreferredSize(new Dimension(120, 16));
+        row4Panel.add(switchTimeLbl);
 
-        catalogNrTF.setMinimumSize(new Dimension(120, 26));
-        catalogNrTF.setPreferredSize(new Dimension(120, 26));
-        row4Panel.add(catalogNrTF);
+        switchTimeSpinner.setModel(new SpinnerNumberModel(0, 0, 5000, 1));
+        switchTimeSpinner.setDoubleBuffered(true);
+        switchTimeSpinner.setEditor(new JSpinner.NumberEditor(switchTimeSpinner, ""));
+        switchTimeSpinner.setMinimumSize(new Dimension(70, 26));
+        switchTimeSpinner.setName(""); // NOI18N
+        switchTimeSpinner.setNextFocusableComponent(nameTF);
+        switchTimeSpinner.setPreferredSize(new Dimension(70, 26));
+        row4Panel.add(switchTimeSpinner);
 
         turnoutDetailPanel.add(row4Panel);
 
@@ -290,6 +315,19 @@ public class TurnoutPanel extends JPanel {
         FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
         flowLayout6.setAlignOnBaseline(true);
         row5Panel.setLayout(flowLayout6);
+
+        decoderTypeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        decoderTypeLbl.setText("Decoder Type");
+        decoderTypeLbl.setToolTipText("");
+        decoderTypeLbl.setMaximumSize(new Dimension(120, 16));
+        decoderTypeLbl.setMinimumSize(new Dimension(120, 16));
+        decoderTypeLbl.setPreferredSize(new Dimension(120, 16));
+        row5Panel.add(decoderTypeLbl);
+
+        decoderTypeTF.setMinimumSize(new Dimension(150, 26));
+        decoderTypeTF.setPreferredSize(new Dimension(150, 26));
+        row5Panel.add(decoderTypeTF);
+
         turnoutDetailPanel.add(row5Panel);
 
         row6Panel.setMinimumSize(new Dimension(380, 30));
@@ -297,6 +335,18 @@ public class TurnoutPanel extends JPanel {
         FlowLayout flowLayout7 = new FlowLayout(FlowLayout.LEFT);
         flowLayout7.setAlignOnBaseline(true);
         row6Panel.setLayout(flowLayout7);
+
+        decoderLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        decoderLbl.setText("Decoder");
+        decoderLbl.setMaximumSize(new Dimension(120, 16));
+        decoderLbl.setMinimumSize(new Dimension(120, 16));
+        decoderLbl.setPreferredSize(new Dimension(120, 16));
+        row6Panel.add(decoderLbl);
+
+        decoderTF.setMinimumSize(new Dimension(150, 26));
+        decoderTF.setPreferredSize(new Dimension(150, 26));
+        row6Panel.add(decoderTF);
+
         turnoutDetailPanel.add(row6Panel);
 
         row7Panel.setMinimumSize(new Dimension(380, 30));
@@ -304,6 +354,23 @@ public class TurnoutPanel extends JPanel {
         FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
         flowLayout8.setAlignOnBaseline(true);
         row7Panel.setLayout(flowLayout8);
+
+        positionLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+        positionLbl.setText("Position");
+        positionLbl.setMaximumSize(new Dimension(120, 16));
+        positionLbl.setMinimumSize(new Dimension(120, 16));
+        positionLbl.setPreferredSize(new Dimension(120, 16));
+        row7Panel.add(positionLbl);
+
+        positionSpinner.setModel(new SpinnerNumberModel(0, 0, 4, 1));
+        positionSpinner.setDoubleBuffered(true);
+        positionSpinner.setEditor(new JSpinner.NumberEditor(positionSpinner, ""));
+        positionSpinner.setMinimumSize(new Dimension(70, 26));
+        positionSpinner.setName(""); // NOI18N
+        positionSpinner.setNextFocusableComponent(nameTF);
+        positionSpinner.setPreferredSize(new Dimension(70, 26));
+        row7Panel.add(positionSpinner);
+
         turnoutDetailPanel.add(row7Panel);
 
         row8Panel.setMinimumSize(new Dimension(380, 30));
@@ -379,26 +446,26 @@ public class TurnoutPanel extends JPanel {
       alignTurnoutTable();
 
       Logger.debug("Create new Turnout...");
-      selectedTurnout = new SwitchBean(0, "U", null);
-      Integer a = turnoutTableModel.getRowCount() + 1;
+      selectedTurnout = new AccessoryBean();
+      Long idl = turnoutTableModel.getRowCount() + 1l;
 
-      selectedTurnout.setName("W " + a);
-      selectedTurnout.setAddress(a);
-      selectedTurnout.setValue(AccessoryValue.GREEN);
+      selectedTurnout.setName("W " + idl);
+      selectedTurnout.setId(new BigDecimal(idl));
+      selectedTurnout.setPosition(0);
 
       setComponentValues(selectedTurnout);
-      Logger.debug("Create new Turnout..." + this.selectedTurnout);
+      Logger.debug("Created new Turnout..." + this.selectedTurnout);
   }//GEN-LAST:event_newBtnActionPerformed
 
   private void turnoutTableMouseClicked(MouseEvent evt) {//GEN-FIRST:event_turnoutTableMouseClicked
       JTable source = (JTable) evt.getSource();
       int row = source.rowAtPoint(evt.getPoint());
 
-      SwitchBean t = this.turnoutTableModel.getControllableDeviceAt(row);
+      AccessoryBean t = this.turnoutTableModel.getControllableDeviceAt(row);
       if (t != null) {
-          Logger.debug("Selected row: " + row + ", Turnout Address: " + t.getAddress());
+          Logger.debug("Selected row: " + row + ", Turnout ID: " + t.getId());
           //Refresh from repo
-          this.selectedTurnout = null; //TrackServiceFactory.getTrackService().getSwitchTurnout(t.getAddress());
+          this.selectedTurnout = TrackServiceFactory.getTrackService().getAccessory(t.getId());
           this.setComponentValues(this.selectedTurnout);
       }
   }//GEN-LAST:event_turnoutTableMouseClicked
@@ -407,16 +474,15 @@ public class TurnoutPanel extends JPanel {
       this.selectedTurnout = setTurnoutValues();
       Logger.debug("Save the Turnout: " + this.selectedTurnout);
 
-      SwitchBean t = null;//TrackServiceFactory.getTrackService().getSwitchTurnout(selectedTurnout.getAddress());
+      AccessoryBean t = TrackServiceFactory.getTrackService().getAccessory(selectedTurnout.getId());
       if (t != null) {
           this.selectedTurnout.setId(t.getId());
-          this.selectedTurnout.setValue(t.getValue());
           Logger.debug("Found turnout with id " + t.getId());
       } else {
-          this.selectedTurnout.setValue(AccessoryValue.GREEN);
+          this.selectedTurnout.setPosition(0);
       }
 
-      selectedTurnout = null; //TrackServiceFactory.getTrackService().persist(selectedTurnout);
+      selectedTurnout = TrackServiceFactory.getTrackService().persist(selectedTurnout);
       setComponentValues(selectedTurnout);
       turnoutTableModel.refresh();
       alignTurnoutTable();
@@ -434,81 +500,70 @@ public class TurnoutPanel extends JPanel {
     public void refresh() {
         turnoutTableModel.refresh();
         alignTurnoutTable();
+        //Select the first row
+        if (turnoutTableModel.getRowCount() > 0) {
+            selectTurnout(0);
+            this.turnoutTable.setRowSelectionInterval(0, 0);
+        }
     }
 
-  private void refreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
-      refresh();
-  }//GEN-LAST:event_refreshBtnActionPerformed
+    private void synchronize() {
+        TrackServiceFactory.getTrackService().synchronizeAccessoriesWithController();
+        refresh();
+    }
+
+    private void synchronizeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeBtnActionPerformed
+        synchronize();
+    }//GEN-LAST:event_synchronizeBtnActionPerformed
+
+    private void refreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
+        refresh();
+    }//GEN-LAST:event_refreshBtnActionPerformed
 
     //Create Turnout from fields  
-    protected SwitchBean setTurnoutValues() {
-        Integer address = (Integer) addressSpinner.getValue();
+    protected AccessoryBean setTurnoutValues() {
+        BigDecimal id = (BigDecimal) this.idSpinner.getValue();
         String name = nameTF.getText();
+        String type = typeTF.getText();
+        Integer switchTime = (Integer) this.switchTimeSpinner.getValue();
+        String decoderType = this.decoderTypeTF.getText();
+        String decoder = this.decoderTF.getText();
+        Integer position = (Integer) this.positionSpinner.getValue();
 
-        String description = "";
-        if (leftRB.isSelected()) {
-            description = "L";
-        } else if (rightRB.isSelected()) {
-            description = "R";
-        } else if (crossRB.isSelected()) {
-            description = "X";
-        } else {
-            //None selected...
-        }
+        AccessoryBean turnout = new AccessoryBean(id, name, type, position, switchTime, decoderType, decoder);
 
-        String catalogNumber = catalogNrTF.getText();
-
-        SwitchBean t = new SwitchBean(address, description, catalogNumber);
-        t.setName(name);
-
-        return t;
+        return turnout;
     }
 
-    protected void setComponentValues(SwitchBean turnout) {
+    protected void setComponentValues(AccessoryBean turnout) {
         if (turnout != null) {
-            addressSpinner.setValue(turnout.getAddress());
-            nameTF.setText(turnout.getName());
-            catalogNrTF.setText(turnout.getCatalogNumber());
-
-            switch (turnout.getDescription()) {
-                case "R":
-                    this.rightRB.setSelected(true);
-                    break;
-                case "L":
-                    this.leftRB.setSelected(true);
-                    break;
-                case "X":
-                    this.crossRB.setSelected(true);
-                    break;
-                default:
-                    this.rightRB.setSelected(false);
-                    this.leftRB.setSelected(false);
-                    this.crossRB.setSelected(false);
-                    break;
-            }
-
-            this.idLbl.setText("ID: " + turnout.getId());
+            this.idSpinner.setValue(turnout.getId());
+            this.nameTF.setText(turnout.getName());
+            this.typeTF.setText(turnout.getType());
+            this.switchTimeSpinner.setValue(turnout.getSwitchTime());
+            this.decoderTypeTF.setText(turnout.getDecoderType());
+            this.decoderTF.setText(turnout.getDecoder());
+            this.positionSpinner.setValue(turnout.getPosition());
         } else {
-            addressSpinner.setValue(0);
-            nameTF.setText("");
-            catalogNrTF.setText("");
-            rightRB.setSelected(false);
-            leftRB.setSelected(false);
-            crossRB.setSelected(false);
-            idLbl.setText("ID: --");
+            this.idSpinner.setValue(0);
+            this.nameTF.setText("");
+            this.typeTF.setText("");
+            this.switchTimeSpinner.setValue(0);
+            this.decoderTypeTF.setText("");
+            this.decoderTF.setText("");
+            this.positionSpinner.setValue(0);
         }
     }
 
     public static void main(String args[]) {
         try {
-            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.warn("Can't set the LookAndFeel: " + ex);
+            Logger.error("Can't set the LookAndFeel: " + ex);
         }
         java.awt.EventQueue.invokeLater(() -> {
 
-            TurnoutPanel testPanel = new TurnoutPanel();
+            TurnoutPreferencesPanel testPanel = new TurnoutPreferencesPanel();
             JFrame testFrame = new JFrame();
             JDialog testDialog = new JDialog(testFrame, true);
 
@@ -529,27 +584,25 @@ public class TurnoutPanel extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JLabel addressLbl;
-    private JSpinner addressSpinner;
     private JPanel bottomPanel;
     private JPanel buttonPanel;
-    private JTextField catalogNrTF;
-    private JLabel catalogeNrLbl;
     private JPanel centerPanel;
     private JSplitPane centerSplitPane;
-    private JRadioButton crossRB;
-    private JLabel defaultDirectionLbl;
+    private JLabel decoderLbl;
+    private JTextField decoderTF;
+    private JLabel decoderTypeLbl;
+    private JTextField decoderTypeTF;
     private JButton deleteBtn;
-    private ButtonGroup directionBG;
     private Box.Filler filler1;
     private Box.Filler filler2;
     private JLabel idLbl;
-    private JRadioButton leftRB;
+    private JSpinner idSpinner;
     private JLabel nameLbl;
     private JTextField nameTF;
     private JButton newBtn;
+    private JLabel positionLbl;
+    private JSpinner positionSpinner;
     private JButton refreshBtn;
-    private JRadioButton rightRB;
     private JPanel row1Panel;
     private JPanel row2Panel;
     private JPanel row3Panel;
@@ -560,10 +613,15 @@ public class TurnoutPanel extends JPanel {
     private JPanel row8Panel;
     private JPanel row9Panel;
     private JButton saveBtn;
-    private SwitchBean selectedTurnout;
+    private AccessoryBean selectedTurnout;
+    private JLabel switchTimeLbl;
+    private JSpinner switchTimeSpinner;
+    private JButton synchronizeBtn;
     private JPanel topPanel;
     private JPanel turnoutDetailPanel;
     private JTable turnoutTable;
     private JScrollPane turnoutTableScrollPane;
+    private JLabel typeLbl;
+    private JTextField typeTF;
     // End of variables declaration//GEN-END:variables
 }

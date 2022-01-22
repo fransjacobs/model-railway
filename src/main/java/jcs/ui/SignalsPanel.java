@@ -21,7 +21,7 @@ package jcs.ui;
 import java.awt.GridLayout;
 import java.util.Collections;
 import java.util.List;
-import jcs.entities.SignalBean;
+import jcs.entities.AccessoryBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.widgets.SignalRowPanel;
 import org.tinylog.Logger;
@@ -49,7 +49,7 @@ public class SignalsPanel extends javax.swing.JPanel {
             return;
         }
         //stub
-        List<SignalBean> signals = Collections.EMPTY_LIST; // TrackServiceFactory.getTrackService().getSignals();
+        List<AccessoryBean> signals = Collections.EMPTY_LIST; // TrackServiceFactory.getTrackService().getSignals();
 
         Logger.trace("There are " + signals.size() + " signals...");
 
@@ -57,7 +57,7 @@ public class SignalsPanel extends javax.swing.JPanel {
         int maxW = this.getPreferredSize().width;
         int w = 0, rows = 1, cols = 0;
 
-        for (SignalBean signal : signals) {
+        for (AccessoryBean signal : signals) {
             SignalRowPanel signalRowPanel = new SignalRowPanel(signal, SignalRowPanel.Y_AXIS);
             signalRowPanel.requestFocusInWindow();
             w = w + signalRowPanel.getPreferredSize().width;

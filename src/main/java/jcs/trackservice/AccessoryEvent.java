@@ -19,9 +19,7 @@
 package jcs.trackservice;
 
 import java.io.Serializable;
-import java.util.Objects;
-import jcs.entities.SignalBean;
-import jcs.entities.SolenoidAccessory;
+import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryType;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
@@ -32,86 +30,87 @@ import jcs.entities.enums.SignalValue;
  */
 public class AccessoryEvent implements Serializable {
 
-  private final AccessoryType accessoryType;
+    private final AccessoryType accessoryType = null;
 
-  //Turnout / SignalBean
-  private final Integer address;
-  private final AccessoryValue value;
+    //Turnout / SignalBean
+    private final Integer address = null;
+    private final AccessoryValue value = null;
 
-  //Signal  
-  private final Integer address2;
-  private final AccessoryValue value2;
-  private final SignalValue signalValue;
+    //Signal  
+    private Integer address2 = null;
+    private AccessoryValue value2 = null;
+    private SignalValue signalValue = null;
 
-  public AccessoryEvent(SolenoidAccessory accessoiry) {
-    if (accessoiry.isTurnout()) {
-      this.accessoryType = AccessoryType.TURNOUT;
-      this.address = accessoiry.getAddress();
-      this.value = accessoiry.getValue();
-      this.value2 = null;
-      this.address2 = null;
-      this.signalValue = null;
-    } else if (accessoiry.isSignal()) {
-      this.accessoryType = AccessoryType.SIGNAL;
-      this.address = accessoiry.getAddress();
-      this.address2 = ((SignalBean) accessoiry).getAddress2();
-      this.value = accessoiry.getValue();
-      this.value2 = ((SignalBean) accessoiry).getValue2();
-      this.signalValue = ((SignalBean) accessoiry).getSignalValue();
-    } else {
-      this.accessoryType = AccessoryType.GENERAL;
-      this.address = accessoiry.getAddress();
-      this.value = accessoiry.getValue();
-      this.value2 = null;
-      this.address2 = null;
-      this.signalValue = null;
+    public AccessoryEvent(AccessoryBean accessoiry) {
+//    if (accessoiry.isTurnout()) {
+//      this.accessoryType = AccessoryType.TURNOUT;
+//      this.address = accessoiry.getAddress();
+//      this.value = accessoiry.getValue();
+//      this.value2 = null;
+//      this.address2 = null;
+//      this.signalValue = null;
+//    } else if (accessoiry.isSignal()) {
+//      this.accessoryType = AccessoryType.SIGNAL;
+//      this.address = accessoiry.getAddress();
+//      this.address2 = ((SignalBean) accessoiry).getAddress2();
+//      this.value = accessoiry.getValue();
+//      this.value2 = ((SignalBean) accessoiry).getValue2();
+//      this.signalValue = ((SignalBean) accessoiry).getSignalValue();
+//    } else {
+//      this.accessoryType = AccessoryType.GENERAL;
+//      this.address = accessoiry.getAddress();
+//      this.value = accessoiry.getValue();
+//      this.value2 = null;
+//      this.address2 = null;
+//      this.signalValue = null;
+//    }
     }
-  }
 
-  public boolean isSignal() {
-    return AccessoryType.SIGNAL.equals(this.accessoryType);
-  }
+    public boolean isSignal() {
+        return AccessoryType.SIGNAL.equals(this.accessoryType);
+    }
 
-  public boolean isTurnout() {
-    return AccessoryType.TURNOUT.equals(this.accessoryType);
-  }
+    public boolean isTurnout() {
+        return AccessoryType.TURNOUT.equals(this.accessoryType);
+    }
 
-  public boolean isEventFor(SolenoidAccessory accessoiry) {
-    if (accessoiry.isTurnout()) {
-      return Objects.equals(this.address, accessoiry.getAddress());
-    } else if (accessoiry.isSignal()) {
-      if (!Objects.equals(this.address, accessoiry.getAddress())) {
+    public boolean isEventFor(AccessoryBean accessoiry) {
+//    if (accessoiry.isTurnout()) {
+//      return Objects.equals(this.address, accessoiry.getAddress());
+//    } else if (accessoiry.isSignal()) {
+//      if (!Objects.equals(this.address, accessoiry.getAddress())) {
+//        return false;
+//      }
+//      return Objects.equals(this.address2, ((SignalBean) accessoiry).getAddress2());
+//    } else {
+//      return Objects.equals(this.address, accessoiry.getAddress());
+//    }
+//STUB
         return false;
-      }
-      return Objects.equals(this.address2, ((SignalBean) accessoiry).getAddress2());
-    } else {
-      return Objects.equals(this.address, accessoiry.getAddress());
     }
-  }
 
-  public AccessoryType getAccessoryType() {
-    return accessoryType;
-  }
+    public AccessoryType getAccessoryType() {
+        return accessoryType;
+    }
 
-  public Integer getAddress() {
-    return address;
-  }
+    public Integer getAddress() {
+        return address;
+    }
 
-  public AccessoryValue getValue() {
-    return value;
-  }
+    public AccessoryValue getValue() {
+        return value;
+    }
 
-  public Integer getAddress2() {
-    return address2;
-  }
+    public Integer getAddress2() {
+        return address2;
+    }
 
-  public AccessoryValue getValue2() {
-    return value2;
-  }
+    public AccessoryValue getValue2() {
+        return value2;
+    }
 
-  public SignalValue getSignalValue() {
-    return signalValue;
-  }
-
+    public SignalValue getSignalValue() {
+        return signalValue;
+    }
 
 }

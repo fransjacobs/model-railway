@@ -25,7 +25,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import jcs.entities.SignalBean;
+import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
 import jcs.trackservice.AccessoryEvent;
@@ -39,7 +39,7 @@ import org.tinylog.Logger;
  */
 public class SignalRowPanel extends JPanel implements AccessoryListener {
 
-    private SignalBean signal;
+    private AccessoryBean signal;
 
     private static final String SIGNAL4 = "/media/signal4.png";
     private static final String SIGNAL4_HP0 = "/media/signal4-Hp0.png";
@@ -63,11 +63,11 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         this(null, X_AXIS);
     }
 
-    public SignalRowPanel(SignalBean signal) {
+    public SignalRowPanel(AccessoryBean signal) {
         this(signal, X_AXIS);
     }
 
-    public SignalRowPanel(SignalBean signal, int axis) {
+    public SignalRowPanel(AccessoryBean signal, int axis) {
         this.signal = signal;
         this.axis = axis;
 
@@ -83,7 +83,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
             setPreferredSize(new java.awt.Dimension(55, 280));
         }
         if (signal != null) {
-            setButtonImages(signal.getLightImages(), signal.getDescription());
+            //setButtonImages(signal.getLightImages(), signal.getDescription());
             rowLbl.setText(signal.getName());
             setButtonStatus();
         }
@@ -226,15 +226,15 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         }
     }
 
-    public SignalBean getSignal() {
+    public AccessoryBean getSignal() {
         return signal;
     }
 
-    public void setSignal(SignalBean signal) {
+    public void setSignal(AccessoryBean signal) {
         this.signal = signal;
 
         if (signal != null) {
-            setButtonImages(signal.getLightImages(), signal.getDescription());
+            //setButtonImages(signal.getLightImages(), signal.getDescription());
             rowLbl.setText(signal.getName());
             setButtonStatus();
         }
@@ -242,37 +242,37 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
 
     @Override
     public void switched(AccessoryEvent event) {
-        if (this.signal != null && event.isEventFor(this.signal)) {
-            signal.setSignalValue(event.getSignalValue());
-            setButtonStatus();
-        }
+        //if (this.signal != null && event.isEventFor(this.signal)) {
+        //    signal.setSignalValue(event.getSignalValue());
+        //    setButtonStatus();
+        //}
     }
 
     private void switchSignal(SignalValue signalValue) {
         Logger.trace("Setting Signal Value: " + signalValue);
-        if (this.signal != null) {
-            this.signal.setSignalValue(signalValue);
-
-            switch (signalValue) {
-                case Hp0:
-                    sendCommand(AccessoryValue.RED, signal, false);
-                    break;
-                case Hp1:
-                    sendCommand(AccessoryValue.GREEN, signal, false);
-                    break;
-                case Hp2:
-                    sendCommand(AccessoryValue.GREEN, signal, true);
-                    break;
-                case Hp0Sh1:
-                    sendCommand(AccessoryValue.RED, signal, true);
-                    break;
-                default:
-                    break;
-            }
-        }
+//        if (this.signal != null) {
+//            this.signal.setSignalValue(signalValue);
+//
+//            switch (signalValue) {
+//                case Hp0:
+//                    sendCommand(AccessoryValue.RED, signal, false);
+//                    break;
+//                case Hp1:
+//                    sendCommand(AccessoryValue.GREEN, signal, false);
+//                    break;
+//                case Hp2:
+//                    sendCommand(AccessoryValue.GREEN, signal, true);
+//                    break;
+//                case Hp0Sh1:
+//                    sendCommand(AccessoryValue.RED, signal, true);
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
     }
 
-    private void sendCommand(AccessoryValue value, SignalBean signal, boolean useValue2) {
+    private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
         if (TrackServiceFactory.getTrackService() != null) {
             //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
         }
@@ -282,27 +282,27 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         if (this.signal != null) {
             //Logger.trace("SignalBean: " + signal + " SignalBean Value: " + signal.getSignalValue());
 
-            switch (signal.getSignalValue()) {
-                case Hp0:
-                    this.btnHp0.setSelected(true);
-                    //Logger.trace("Button Hp0: selected -> true.");
-                    break;
-                case Hp1:
-                    this.btnHp1.setSelected(true);
-                    //Logger.trace("Button Hp1: selected -> true.");
-                    break;
-                case Hp2:
-                    this.btnHp2.setSelected(true);
-                    //Logger.trace("Button Hp2: selected -> true.");
-                    break;
-                case Hp0Sh1:
-                    this.btnHp0Sh1.setSelected(true);
-                    //Logger.trace("Button Hp0Sh1: selected -> true.");
-                    break;
-                default:
-                    Logger.trace("Default called; Value: " + signal.getSignalValue());
-                    break;
-            }
+//            switch (signal.getSignalValue()) {
+//                case Hp0:
+//                    this.btnHp0.setSelected(true);
+//                    //Logger.trace("Button Hp0: selected -> true.");
+//                    break;
+//                case Hp1:
+//                    this.btnHp1.setSelected(true);
+//                    //Logger.trace("Button Hp1: selected -> true.");
+//                    break;
+//                case Hp2:
+//                    this.btnHp2.setSelected(true);
+//                    //Logger.trace("Button Hp2: selected -> true.");
+//                    break;
+//                case Hp0Sh1:
+//                    this.btnHp0Sh1.setSelected(true);
+//                    //Logger.trace("Button Hp0Sh1: selected -> true.");
+//                    break;
+//                default:
+//                    Logger.trace("Default called; Value: " + signal.getSignalValue());
+//                    break;
+//            }
         }
     }
 
@@ -310,10 +310,10 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
         JFrame f = new JFrame("SignalRowPanel Tester");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        List<SignalBean> signals = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSignals();
+        List<AccessoryBean> signals = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSignals();
         f.setLayout(new GridLayout(signals.size(), 1));
 
-        for (SignalBean signal : signals) {
+        for (AccessoryBean signal : signals) {
             SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
             f.add(signalRowPanel);
 

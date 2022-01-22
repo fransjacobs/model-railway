@@ -19,6 +19,7 @@
 package jcs.entities;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class AccessoryBean implements JCSEntity {
 
@@ -111,6 +112,9 @@ public class AccessoryBean implements JCSEntity {
         return toString();
     }
 
+    
+    
+    
 //    protected AccessoryValue value;
 //    protected AccessoryType accessoiryType;
 //    protected Integer lightImages;
@@ -229,4 +233,50 @@ public class AccessoryBean implements JCSEntity {
 //    public boolean isTurnout() {
 //        return AccessoryType.TURNOUT.equals(this.accessoiryType);
 //    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.id);
+        hash = 53 * hash + Objects.hashCode(this.name);
+        hash = 53 * hash + Objects.hashCode(this.type);
+        hash = 53 * hash + Objects.hashCode(this.position);
+        hash = 53 * hash + Objects.hashCode(this.switchTime);
+        hash = 53 * hash + Objects.hashCode(this.decoderType);
+        hash = 53 * hash + Objects.hashCode(this.decoder);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AccessoryBean other = (AccessoryBean) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.type, other.type)) {
+            return false;
+        }
+        if (!Objects.equals(this.decoderType, other.decoderType)) {
+            return false;
+        }
+        if (!Objects.equals(this.decoder, other.decoder)) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.position, other.position)) {
+            return false;
+        }
+        return Objects.equals(this.switchTime, other.switchTime);
+    }
 }

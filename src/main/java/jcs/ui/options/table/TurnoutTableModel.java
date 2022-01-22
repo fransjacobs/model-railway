@@ -18,17 +18,18 @@
  */
 package jcs.ui.options.table;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import jcs.entities.SwitchBean;
+import jcs.entities.AccessoryBean;
 import jcs.trackservice.TrackServiceFactory;
 
 /**
  *
  * @author frans
  */
-public class TurnoutTableModel extends DeviceTableModel<SwitchBean> {
+public class TurnoutTableModel extends DeviceTableModel<AccessoryBean> {
 
     public TurnoutTableModel() {
         super();
@@ -38,35 +39,35 @@ public class TurnoutTableModel extends DeviceTableModel<SwitchBean> {
     protected List<String> getColumns() {
         if (this.columns == null) {
             List<String> cols = new ArrayList<>(6);
-            cols.add("Address");
-            cols.add("Direction");
+            cols.add("ID");
             cols.add("Name");
-            cols.add("Catalog Number");
+            cols.add("Type");
+            cols.add("Position");
             return cols;
         }
         return this.columns;
     }
 
     @Override
-    protected List<SwitchBean> getDevices() {
+    protected List<AccessoryBean> getDevices() {
         if (TrackServiceFactory.getTrackService() != null) {
-            return Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSwitches();
+            return TrackServiceFactory.getTrackService().getTurnouts();
         } else {
             return Collections.EMPTY_LIST;
         }
     }
 
     @Override
-    public Object getColumnValue(SwitchBean device, int column) {
+    public Object getColumnValue(AccessoryBean device, int column) {
         switch (column) {
             case 0:
-                return device.getAddress();
+                return device.getId();
             case 1:
-                return device.getDescription();
-            case 2:
                 return device.getName();
+            case 2:
+                return device.getType();
             case 3:
-                return device.getCatalogNumber();
+                return device.getPosition();
             default:
                 return null;
         }
@@ -76,32 +77,32 @@ public class TurnoutTableModel extends DeviceTableModel<SwitchBean> {
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return Integer.class;
+                return BigDecimal.class;
             case 1:
                 return String.class;
             case 2:
                 return String.class;
             case 3:
-                return String.class;
+                return Integer.class;
             default:
                 return null;
         }
     }
 
     @Override
-    void setColumnValue(SwitchBean device, int column, Object value) {
+    void setColumnValue(AccessoryBean device, int column, Object value) {
         switch (column) {
             case 0:
-                device.setAddress((Integer) value);
+                device.setId((BigDecimal) value);
                 break;
             case 1:
-                device.setDescription((String) value);
-                break;
-            case 2:
                 device.setName((String) value);
                 break;
+            case 2:
+                device.setType((String) value);
+                break;
             case 3:
-                device.setCatalogNumber((String) value);
+                device.setPosition((Integer) value);
                 break;
             default:
                 break;

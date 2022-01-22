@@ -263,8 +263,8 @@ public class DatabaseCreator {
     private static void solenoidaccessories(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE solenoidaccessories ("
                 + "id                    NUMBER NOT NULL,"
-                + "name                  VARCHAR2(255) NOT NULL,"
-                + "type                  INTEGER NOT NULL,"
+                + "name                  VARCHAR(255) NOT NULL,"
+                + "type                  VARCHAR(255) NOT NULL,"
                 + "position              INTEGER,"
                 + "switchtime            INTEGER,"
                 + "decodertype           VARCHAR2(255),"

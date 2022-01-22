@@ -121,37 +121,30 @@ public class AccessoryBeanParser {
         return accessories;
     }
 
-    public List<AccessoryStatus> parseAccessoryStatusFile(String gaSrfile) {
-        List<AccessoryStatus> accessories = new ArrayList<>();
+    public List<AccessoryBean> parseAccessoryStatusFile(String gaSrfile) {
+        List<AccessoryBean> accessories = new LinkedList<>();
         List<String> items = Arrays.asList(gaSrfile.split("\n"));
-        Map<String, String> am = new HashMap<>();
+        Map<String, String> ma = new HashMap<>();
         for (String s : items) {
-            //Logger.trace("Line: " + s);
+            Logger.trace("Line: " + s);
             switch (s) {
                 case ACCESSORY_START:
                     break;
                 case VERSION:
                     break;
                 case ARTIKEL:
-                    if (am.containsKey(ID)) {
-                        Integer address = Integer.decode(am.get(ID));
-                        String status;
-                        if (am.containsKey(STELLUNG)) {
-                            status = am.get(STELLUNG);
-                        } else {
-                            status = "0";
-                        }
-                        AccessoryStatus as = new AccessoryStatus(address, status);
-                        accessories.add(as);
+                    if (ma.containsKey(ID)) {
+                        AccessoryBean ab = createAccessory(ma);
+                        accessories.add(ab);
                     }
-                    am.clear();
+                    ma.clear();
                     break;
                 default:
                     if (s.contains("=")) {
                         String[] kp = s.split("=");
                         String key = kp[0];
                         String val = kp[1];
-                        am.put(key, val);
+                        ma.put(key, val);
                     } else {
                         Logger.debug("Tag?: " + s);
                     }
@@ -159,17 +152,10 @@ public class AccessoryBeanParser {
             }
         }
         // parse the last Accessory
-        if (am.containsKey(ID)) {
-            if (am.containsKey(ID)) {
-                Integer address = Integer.decode(am.get(ID));
-                String status;
-                if (am.containsKey(STELLUNG)) {
-                    status = am.get(STELLUNG);
-                } else {
-                    status = "0";
-                }
-                AccessoryStatus as = new AccessoryStatus(address, status);
-                accessories.add(as);
+        if (ma.containsKey(ID)) {
+            if (ma.containsKey(ID)) {
+                AccessoryBean ab = createAccessory(ma);
+                accessories.add(ab);
             }
         }
         return accessories;
