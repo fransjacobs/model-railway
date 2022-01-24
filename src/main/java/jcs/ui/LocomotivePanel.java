@@ -167,13 +167,12 @@ public class LocomotivePanel extends javax.swing.JPanel {
         backForwPanel.setLayout(flowLayout4);
 
         directionBG.add(backwardsBtn);
-        backwardsBtn.setSelected(true);
-        backwardsBtn.setText("<<");
-        backwardsBtn.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        backwardsBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-24.png"))); // NOI18N
         backwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
         backwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
         backwardsBtn.setName("backwardsBtn"); // NOI18N
         backwardsBtn.setPreferredSize(new java.awt.Dimension(40, 40));
+        backwardsBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-Y-24.png"))); // NOI18N
         backwardsBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 backwardsBtnActionPerformed(evt);
@@ -182,12 +181,13 @@ public class LocomotivePanel extends javax.swing.JPanel {
         backForwPanel.add(backwardsBtn);
 
         directionBG.add(forwardsBtn);
-        forwardsBtn.setText(">>");
-        forwardsBtn.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        forwardsBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-24.png"))); // NOI18N
+        forwardsBtn.setSelected(true);
         forwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
         forwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
         forwardsBtn.setName("forwardsBtn"); // NOI18N
         forwardsBtn.setPreferredSize(new java.awt.Dimension(40, 40));
+        forwardsBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-Y-24.png"))); // NOI18N
         forwardsBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 forwardsBtnActionPerformed(evt);
