@@ -18,7 +18,6 @@
  */
 package jcs.ui.layout;
 
-import jcs.ui.layout.Tile;
 import java.awt.BasicStroke;
 import jcs.entities.enums.TileType;
 import java.awt.Color;
@@ -27,7 +26,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -103,7 +101,6 @@ public class LayoutCanvas extends JPanel {
     }
 
     private void postInit() {
-
     }
 
     @Override
@@ -119,6 +116,8 @@ public class LayoutCanvas extends JPanel {
         if (this.drawGrid) {
             //paintDotGrid(g);
             paintLineGrid(g);
+        } else {
+            paintNullGrid(g);
         }
 
         for (Tile tile : snapshot) {
@@ -154,6 +153,42 @@ public class LayoutCanvas extends JPanel {
 //            movingTile.drawCenterPoint(g2, Color.blue);
 //        }
         g2.dispose();
+    }
+
+    private void paintNullGrid(Graphics g) {
+        if (this.grid != null) {
+            int pw = this.getWidth();
+            int ph = this.getHeight();
+
+            int gw = grid.getWidth();
+            int gh = grid.getHeight();
+
+            if (pw != gw || ph != gh) {
+                Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
+                this.grid = null;
+            } else {
+            }
+        }
+
+        if (this.grid == null) {
+            int width = getSize().width;
+            int height = getSize().height;
+
+            Logger.trace("Width: " + width + " Height: " + height);
+
+            grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D gc = grid.createGraphics();
+
+            gc.setBackground(Color.white);
+            gc.clearRect(0, 0, width, height);
+
+            gc.setPaint(Color.black);
+
+            gc.dispose();
+        }
+        Graphics2D g2 = (Graphics2D) g;
+        //Draw grid from pre computed image
+        g2.drawImage(grid, null, 0, 0);
     }
 
     private void paintDotGrid(Graphics g) {
@@ -434,7 +469,7 @@ public class LayoutCanvas extends JPanel {
         });
         operationsPM.add(deleteMI);
 
-        setBounds(new Rectangle(0, 0, 800, 700));
+        setBackground(new Color(250, 250, 250));
         setOpaque(false);
         setPreferredSize(new Dimension(800, 700));
         addMouseMotionListener(new MouseMotionAdapter() {

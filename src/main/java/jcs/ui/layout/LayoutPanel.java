@@ -804,7 +804,6 @@ public class LayoutPanel extends JPanel {
 //                this.crossRBtn.setBorder(null);
 //                break;
 //        }
-
     }
 
     public static void main(String args[]) {

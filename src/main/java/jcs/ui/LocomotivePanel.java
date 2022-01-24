@@ -117,6 +117,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
         velocityBtnPanel.setLayout(flowLayout2);
 
         speedBtn1.setText("1");
+        speedBtn1.setMargin(new java.awt.Insets(2, 2, 2, 2));
         speedBtn1.setMaximumSize(new java.awt.Dimension(40, 40));
         speedBtn1.setMinimumSize(new java.awt.Dimension(40, 40));
         speedBtn1.setName("speedBtn1"); // NOI18N
@@ -130,6 +131,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
         speedBtn2.setText("2");
         speedBtn2.setToolTipText("");
+        speedBtn2.setMargin(new java.awt.Insets(2, 2, 2, 2));
         speedBtn2.setMaximumSize(new java.awt.Dimension(40, 40));
         speedBtn2.setMinimumSize(new java.awt.Dimension(40, 40));
         speedBtn2.setName("speedBtn2"); // NOI18N
@@ -142,6 +144,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
         velocityBtnPanel.add(speedBtn2);
 
         speedBtn3.setText("3");
+        speedBtn3.setMargin(new java.awt.Insets(2, 2, 2, 2));
         speedBtn3.setMaximumSize(new java.awt.Dimension(40, 40));
         speedBtn3.setMinimumSize(new java.awt.Dimension(40, 40));
         speedBtn3.setName("speedBtn3"); // NOI18N
@@ -164,7 +167,9 @@ public class LocomotivePanel extends javax.swing.JPanel {
         backForwPanel.setLayout(flowLayout4);
 
         directionBG.add(backwardsBtn);
+        backwardsBtn.setSelected(true);
         backwardsBtn.setText("<<");
+        backwardsBtn.setMargin(new java.awt.Insets(2, 2, 2, 2));
         backwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
         backwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
         backwardsBtn.setName("backwardsBtn"); // NOI18N
@@ -178,6 +183,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
         directionBG.add(forwardsBtn);
         forwardsBtn.setText(">>");
+        forwardsBtn.setMargin(new java.awt.Insets(2, 2, 2, 2));
         forwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
         forwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
         forwardsBtn.setName("forwardsBtn"); // NOI18N
