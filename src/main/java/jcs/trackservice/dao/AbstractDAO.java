@@ -70,14 +70,15 @@ public abstract class AbstractDAO<T extends JCSEntity> {
                 DatabaseCreator.create();
             }
 
-            String dbPath = System.getProperty("db.path", "~/jcs/");
-            String dbName = System.getProperty("db.name", "jcs-db");
-            String dbMode = System.getProperty("db.mode", "AUTO_SERVER=TRUE");
-            String dbUser = System.getProperty("db.user", "jcs");
-            String dbPass = System.getProperty("db.pass", "repo");
-            String dbSchema = System.getProperty("db.schema", "JCS");
+            String dbPath = System.getProperty("db.path");
+            String dbName = System.getProperty("db.name");
+            String dbMode = System.getProperty("db.mode");
+            String dbUser = System.getProperty("db.user");
+            String dbPass = System.getProperty("db.pass");
+            String dbSchema = System.getProperty("db.schema");
+            String jdbc = System.getProperty("db.jdbc.url");
 
-            jdbcURL = "jdbc:h2:" + dbPath + dbName + (dbMode.equals("") ? "" : ";") + dbMode;
+            jdbcURL = jdbc + dbPath + dbName + (dbMode.equals("") ? "" : ";") + dbMode;
 
             conn = DriverManager.getConnection(jdbcURL, dbUser, dbPass);
 

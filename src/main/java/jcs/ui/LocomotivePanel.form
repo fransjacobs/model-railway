@@ -7,11 +7,14 @@
   </NonVisualComponents>
   <Properties>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[220, 580]"/>
+      <Dimension value="[240, 600]"/>
+    </Property>
+    <Property name="mixingCutoutShape" type="java.awt.Shape" editor="org.netbeans.modules.form.ComponentChooserEditor">
+      <ComponentRef name="default"/>
     </Property>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[220, 570]"/>
+      <Dimension value="[220, 600]"/>
     </Property>
   </Properties>
   <AuxValues>
@@ -24,13 +27,10 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,85,0,0,0,-25"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,68,0,0,0,-16"/>
   </AuxValues>
 
-  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout">
-    <Property name="horizontalGap" type="int" value="1"/>
-    <Property name="verticalGap" type="int" value="1"/>
-  </Layout>
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
   <SubComponents>
     <Container class="javax.swing.JPanel" name="locIdPanel">
       <Properties>
@@ -295,16 +295,8 @@
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="3" name="/media/left-24.png"/>
                     </Property>
-                    <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[40, 40]"/>
-                    </Property>
-                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[40, 40]"/>
-                    </Property>
+                    <Property name="actionCommand" type="java.lang.String" value="Backwards"/>
                     <Property name="name" type="java.lang.String" value="backwardsBtn" noResource="true"/>
-                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[40, 40]"/>
-                    </Property>
                     <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="3" name="/media/left-Y-24.png"/>
                     </Property>
@@ -322,16 +314,8 @@
                       <Image iconType="3" name="/media/right-24.png"/>
                     </Property>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[40, 40]"/>
-                    </Property>
-                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[40, 40]"/>
-                    </Property>
+                    <Property name="actionCommand" type="java.lang.String" value="Forwards"/>
                     <Property name="name" type="java.lang.String" value="forwardsBtn" noResource="true"/>
-                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[40, 40]"/>
-                    </Property>
                     <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="3" name="/media/right-Y-24.png"/>
                     </Property>
@@ -480,12 +464,12 @@
                         </CodeExpression>
                         <CodeExpression id="20">
                           <ExpressionOrigin>
-                            <Value type="int" value="2"/>
+                            <Value type="int" value="0"/>
                           </ExpressionOrigin>
                         </CodeExpression>
                         <CodeExpression id="21">
                           <ExpressionOrigin>
-                            <Value type="int" value="2"/>
+                            <Value type="int" value="0"/>
                           </ExpressionOrigin>
                         </CodeExpression>
                       </Parameters>
@@ -553,9 +537,12 @@
     </Container>
     <Container class="javax.swing.JPanel" name="funcSpeedPanel">
       <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[240, 205]"/>
+        </Property>
         <Property name="name" type="java.lang.String" value="funcSpeedPanel" noResource="true"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[235, 230]"/>
+          <Dimension value="[235, 215]"/>
         </Property>
       </Properties>
       <Constraints>
@@ -566,39 +553,43 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
       <SubComponents>
-        <Component class="jcs.ui.widgets.FunctionsPanel" name="functionsPanel">
+        <Container class="javax.swing.JPanel" name="tachoPanel">
           <Properties>
-            <Property name="name" type="java.lang.String" value="functionsPanel" noResource="true"/>
+            <Property name="name" type="java.lang.String" value="tachoPanel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-              <BorderConstraints direction="Center"/>
-            </Constraint>
-          </Constraints>
-        </Component>
-        <Container class="javax.swing.JPanel" name="speedPanel">
-          <Properties>
-            <Property name="name" type="java.lang.String" value="speedPanel" noResource="true"/>
-          </Properties>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-              <BorderConstraints direction="East"/>
+              <BorderConstraints direction="North"/>
             </Constraint>
           </Constraints>
           <SubComponents>
-            <Component class="javax.swing.JSlider" name="velocitySlider">
+            <Component class="javax.swing.JLabel" name="velocityLbl">
               <Properties>
-                <Property name="minorTickSpacing" type="int" value="10"/>
-                <Property name="orientation" type="int" value="1"/>
-                <Property name="paintLabels" type="boolean" value="true"/>
-                <Property name="paintTicks" type="boolean" value="true"/>
-                <Property name="value" type="int" value="0"/>
-                <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="name" type="java.lang.String" value="velocitySlider" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="0%"/>
+                <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[110, 16]"/>
+                </Property>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[110, 16]"/>
+                </Property>
+                <Property name="name" type="java.lang.String" value="velocityLbl" noResource="true"/>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[110, 16]"/>
+                </Property>
               </Properties>
-              <Events>
-                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="velocitySliderStateChanged"/>
-              </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="maxTachoLbl">
+              <Properties>
+                <Property name="horizontalAlignment" type="int" value="0"/>
+                <Property name="text" type="java.lang.String" value="100"/>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[45, 16]"/>
+                </Property>
+                <Property name="name" type="java.lang.String" value="maxTachoLbl" noResource="true"/>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[45, 16]"/>
+                </Property>
+              </Properties>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -612,17 +603,17 @@
                   <Parameters>
                     <CodeExpression id="26">
                       <ExpressionOrigin>
-                        <Value type="int" value="1"/>
+                        <Value type="int" value="2"/>
                       </ExpressionOrigin>
                     </CodeExpression>
                     <CodeExpression id="27">
                       <ExpressionOrigin>
-                        <Value type="int" value="2"/>
+                        <Value type="int" value="0"/>
                       </ExpressionOrigin>
                     </CodeExpression>
                     <CodeExpression id="28">
                       <ExpressionOrigin>
-                        <Value type="int" value="2"/>
+                        <Value type="int" value="0"/>
                       </ExpressionOrigin>
                     </CodeExpression>
                   </Parameters>
@@ -651,11 +642,11 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="30_speedPanel">
-                <CodeVariable name="speedPanel" type="8194" declaredType="javax.swing.JPanel"/>
+              <CodeExpression id="30_tachoPanel">
+                <CodeVariable name="tachoPanel" type="8194" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
-                    <ComponentRef name="speedPanel"/>
+                    <ComponentRef name="tachoPanel"/>
                   </ExpressionProvider>
                 </ExpressionOrigin>
               </CodeExpression>
@@ -667,22 +658,79 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="30_speedPanel"/>
+              <CodeExpression id="30_tachoPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="31_velocitySlider">
-                  <CodeVariable name="velocitySlider" type="8194" declaredType="javax.swing.JSlider"/>
+                <CodeExpression id="31_velocityLbl">
+                  <CodeVariable name="velocityLbl" type="8194" declaredType="javax.swing.JLabel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="velocitySlider"/>
+                      <ComponentRef name="velocityLbl"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="30_tachoPanel"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="32_maxTachoLbl">
+                  <CodeVariable name="maxTachoLbl" type="8194" declaredType="javax.swing.JLabel"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="maxTachoLbl"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
               </Parameters>
             </CodeStatement>
           </LayoutCode>
+        </Container>
+        <Component class="jcs.ui.widgets.FunctionsPanel" name="functionsPanel">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="functionsPanel" noResource="true"/>
+          </Properties>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+              <BorderConstraints direction="Center"/>
+            </Constraint>
+          </Constraints>
+        </Component>
+        <Container class="javax.swing.JPanel" name="speedPanel">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="speedPanel" noResource="true"/>
+          </Properties>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+              <BorderConstraints direction="East"/>
+            </Constraint>
+          </Constraints>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+            <Property name="columns" type="int" value="0"/>
+            <Property name="rows" type="int" value="1"/>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JSlider" name="velocitySlider">
+              <Properties>
+                <Property name="minorTickSpacing" type="int" value="10"/>
+                <Property name="orientation" type="int" value="1"/>
+                <Property name="paintLabels" type="boolean" value="true"/>
+                <Property name="paintTicks" type="boolean" value="true"/>
+                <Property name="value" type="int" value="0"/>
+                <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="name" type="java.lang.String" value="velocitySlider" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="velocitySliderStateChanged"/>
+              </Events>
+            </Component>
+          </SubComponents>
         </Container>
       </SubComponents>
     </Container>
@@ -700,7 +748,7 @@
           <Properties>
             <Property name="name" type="java.lang.String" value="locoScrollPane" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[220, 130]"/>
+              <Dimension value="[220, 110]"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -727,25 +775,47 @@
       </SubComponents>
       <LayoutCode>
         <CodeStatement>
-          <CodeExpression id="32_flowLayout1">
+          <CodeExpression id="33_flowLayout1">
             <CodeVariable name="flowLayout1" type="4096" declaredType="java.awt.FlowLayout"/>
             <ExpressionOrigin>
               <ExpressionProvider type="CodeConstructor">
-                <CodeConstructor class="java.awt.FlowLayout" parameterTypes=""/>
+                <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int, int, int"/>
               </ExpressionProvider>
+              <Parameters>
+                <CodeExpression id="34">
+                  <ExpressionOrigin>
+                    <Value type="int" value="1"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+                <CodeExpression id="35">
+                  <ExpressionOrigin>
+                    <Value type="int" value="2"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+                <CodeExpression id="36">
+                  <ExpressionOrigin>
+                    <Value type="int" value="2"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
             </ExpressionOrigin>
           </CodeExpression>
           <StatementProvider type="CodeExpression">
-            <CodeExpression id="32_flowLayout1"/>
+            <CodeExpression id="33_flowLayout1"/>
           </StatementProvider>
+          <Parameters>
+            <CodeExpression id="34"/>
+            <CodeExpression id="35"/>
+            <CodeExpression id="36"/>
+          </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="32_flowLayout1"/>
+          <CodeExpression id="33_flowLayout1"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="33">
+            <CodeExpression id="37">
               <ExpressionOrigin>
                 <Value type="boolean" value="true"/>
               </ExpressionOrigin>
@@ -753,7 +823,7 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="34_locSelectionPanel">
+          <CodeExpression id="38_locSelectionPanel">
             <CodeVariable name="locSelectionPanel" type="8194" declaredType="javax.swing.JPanel"/>
             <ExpressionOrigin>
               <ExpressionProvider type="ComponentRef">
@@ -765,16 +835,16 @@
             <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="32_flowLayout1"/>
+            <CodeExpression id="33_flowLayout1"/>
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="34_locSelectionPanel"/>
+          <CodeExpression id="38_locSelectionPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="35_locoScrollPane">
+            <CodeExpression id="39_locoScrollPane">
               <CodeVariable name="locoScrollPane" type="8194" declaredType="javax.swing.JScrollPane"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">

@@ -34,7 +34,7 @@
                 <exec.executable>java</exec.executable>
                 <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m</exec.vmArgs>
                 <exec.appArgs></exec.appArgs>
-                <exec.mainClass>jcs.JCSGUI</exec.mainClass>
+                <exec.mainClass>jcs.JCS</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -52,7 +52,7 @@
                 <jpda.listen>true</jpda.listen>
                 <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.appArgs></exec.appArgs>
-                <exec.mainClass>jcs.JCSGUI</exec.mainClass>
+                <exec.mainClass>jcs.JCS</exec.mainClass>
             </properties>
         </action>
         <action>
@@ -69,7 +69,7 @@
                 <exec.executable>java</exec.executable>
                 <exec.vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m</exec.vmArgs>
                 <exec.appArgs></exec.appArgs>
-                <exec.mainClass>jcs.JCSGUI</exec.mainClass>
+                <exec.mainClass>jcs.JCS</exec.mainClass>
             </properties>
         </action>
     </actions>

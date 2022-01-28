@@ -42,7 +42,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.JCSGUI;
+import jcs.JCS;
 import org.tinylog.Logger;
 
 /**
@@ -83,7 +83,7 @@ public class MacOsAdapter {
 
             Taskbar taskbar = Taskbar.getTaskbar();
             try {
-                BufferedImage img = ImageIO.read(JCSGUI.class.getResource("/media/jcs-train-64.png"));
+                BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-64.png"));
                 taskbar.setIconImage(img);
             } catch (final UnsupportedOperationException e) {
                 Logger.warn("The os does not support: 'taskbar.setIconImage'");
@@ -123,7 +123,7 @@ public class MacOsAdapter {
             stopButton.setImage(powerImage);
             stopButton.setAction((TouchBarView view) -> {
                 Logger.trace("Touchbar Stop button clicked...");
-                JCSGUI.getJCSFrame().stop();
+                JCS.getJCSFrame().stop();
             });
             touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
 
@@ -138,7 +138,7 @@ public class MacOsAdapter {
             //locoButton.setImage(locomotiveImage);
             //locoButton.setAction((TouchBarView view) -> {
             //    Logger.trace("Touchbar Loco button clicked...");
-            //    JCSGUI.getJCSFrame().showLocomotives();
+            //    JCS.getJCSFrame().showLocomotives();
             //});
             //touchBar.addItem(new TouchBarItem("locoButton", locoButton, true));
 
@@ -146,7 +146,7 @@ public class MacOsAdapter {
             //turnoutsButton.setImage(turnoutImage);
             //turnoutsButton.setAction((TouchBarView view) -> {
             //    Logger.trace("Touchbar Turnouts button clicked...");
-            //    JCSGUI.getJCSFrame().showTurnouts();
+            //    JCS.getJCSFrame().showTurnouts();
             //});
             //touchBar.addItem(new TouchBarItem("turnoutsButton", turnoutsButton, true));
 
@@ -154,7 +154,7 @@ public class MacOsAdapter {
             //signalsButton.setImage(signalImage);
             //signalsButton.setAction((TouchBarView view) -> {
             //    Logger.trace("Touchbar Signals button clicked...");
-            //    JCSGUI.getJCSFrame().showSignals();
+            //    JCS.getJCSFrame().showSignals();
             //});
             //touchBar.addItem(new TouchBarItem("signalsButton", signalsButton, true));
 
@@ -163,7 +163,7 @@ public class MacOsAdapter {
             //diagnosticsButton.setImage(diagnosticsImage);
             //diagnosticsButton.setAction((TouchBarView view) -> {
             //    Logger.trace("Touchbar diagnostics button clicked...");
-            //    JCSGUI.getJCSFrame().showDiagnostics();
+            //    JCS.getJCSFrame().showDiagnostics();
             //});
             //touchBar.addItem(new TouchBarItem("diagnosticsButton", diagnosticsButton, true));
 
@@ -172,7 +172,7 @@ public class MacOsAdapter {
 //      designButton.setImage(designImage);
 //      designButton.setAction((TouchBarView view) -> {
 //        Logger.trace("Touchbar design button clicked...");
-//        JCSGUI.getJCSFrame().showDesignLayoutPanel();
+//        JCS.getJCSFrame().showDesignLayoutPanel();
 //      });
 //      touchBar.addItem(new TouchBarItem("designButton", designButton, true));
         } catch (IOException e) {

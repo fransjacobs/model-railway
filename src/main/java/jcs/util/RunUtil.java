@@ -20,8 +20,11 @@ package jcs.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.tinylog.Logger;
@@ -98,7 +101,10 @@ public class RunUtil {
     }
 
     /**
-     * Get OS type (OS_LINUX || OS_WINDOWS || OS_SOLARIS || OS_MAC_OS_X) *
+     * Get OS type (OS_LINUX || OS_WINDOWS || OS_SOLARIS || OS_MAC_OS_X)
+     *
+     *
+     * @return
      */
     public static int getOsType() {
         return osType;
@@ -106,6 +112,26 @@ public class RunUtil {
 
     public static boolean hasSerialPort() {
         return !serialPorts.isEmpty();
+    }
+
+    public static void loadProperties() {
+        Properties prop = new Properties();
+        InputStream inputStream = RunUtil.class.getClassLoader().getResourceAsStream("jcs.properties");
+        if (inputStream != null) {
+            try {
+                prop.load(inputStream);
+            } catch (IOException ex) {
+                Logger.error("Can't read jcs.properties");
+            }
+        }
+
+        for (Object pk : prop.keySet()) {
+            String key = (String) pk;
+            String value = (String) prop.get(pk);
+            if (System.getProperty(key) == null) {
+                System.setProperty(key, value);
+            }
+        }
     }
 
 }

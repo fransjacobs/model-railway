@@ -335,61 +335,6 @@ public class LocomotiveBean implements JCSEntity, Serializable {
             f.setValue(value ? 1 : 0);
         }
     }
-
 }
 
-//    private static int[] toFunctionValueArray(String functionValues, Integer functionCount) {
-//        int cnt;
-//        if (functionCount == null) {
-//            cnt = 1;
-//        } else {
-//            cnt = functionCount;
-//        }
-//
-//        String fvals;
-//        if (functionValues == null) {
-//            StringBuilder sb = new StringBuilder();
-//            for (int i = 0; i < cnt; i++) {
-//                sb.append("0");
-//            }
-//            fvals = sb.toString();
-//        } else {
-//            fvals = functionValues;
-//        }
-//
-//        int[] fv = new int[32];
-//        //Preset all functions to false
-//        for (int i = 0; i < fv.length; i++) {
-//            fv[i] = 0;
-//        }
-//
-//        //parse the string
-//        for (int i = 0; i < cnt; i++) {
-//            String v = fvals.substring(i, i + 1);
-//            if ("1".equals(v)) {
-//                fv[i] = 1;
-//            }
-//        }
-//
-//        return fv;
-//    }
-//        if(decoderType == null) {
-//            //set a default!
-//            decoderType = DecoderType.MM;
-//        }
-//        
-//        switch (decoderType) {
-//            case MM2:
-//                speedSteps = 27;
-//                break;
-//            case MFX:
-//                speedSteps = 126;
-//                break;
-//            case DCC:
-//                speedSteps = 28;
-//                break;
-//            default:
-//                speedSteps = 14;
-//                break;
-//        }
 

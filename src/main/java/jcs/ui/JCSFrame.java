@@ -57,7 +57,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
-import jcs.JCSGUI;
+import jcs.JCS;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.DeviceInfo;
@@ -100,19 +100,19 @@ public class JCSFrame extends JFrame implements UICallback {
 
         initComponents();
 
-        JCSGUI.updateProgress();
+        JCS.updateProgress();
 
-        if (JCSGUI.isMacOS()) {
+        if (JCS.isMacOS()) {
             this.quitMI.setVisible(false);
             this.optionsMI.setVisible(false);
             this.toolsMenu.setVisible(false);
         }
 
         init();
-        JCSGUI.updateProgress();
+        JCS.updateProgress();
 
         initKeyStrokes();
-        JCSGUI.updateProgress();
+        JCS.updateProgress();
     }
 
     @SuppressWarnings("Convert2Lambda")
@@ -122,8 +122,8 @@ public class JCSFrame extends JFrame implements UICallback {
             this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
 
             //Initialize the Touchbar for MacOS
-            if (JCSGUI.isMacOS()) {
-                JCSGUI.showTouchbar(this);
+            if (JCS.isMacOS()) {
+                JCS.showTouchbar(this);
             }
 
             this.locomotivesPanel.loadLocomotives();
@@ -706,7 +706,7 @@ public class JCSFrame extends JFrame implements UICallback {
     }
 
     private String getTitleString() {
-        String jcsVersion = JCSGUI.getVersionInfo().getVersion();
+        String jcsVersion = JCS.getVersionInfo().getVersion();
         if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerInfo() != null) {
             return "JCS " + jcsVersion;
         } else {
@@ -721,14 +721,14 @@ public class JCSFrame extends JFrame implements UICallback {
 
     @Override
     public boolean handleQuitRequest() {
-        int result = JOptionPane.showConfirmDialog(JCSGUI.getJCSFrame(), "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
+        int result = JOptionPane.showConfirmDialog(JCS.getJCSFrame(), "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
         return result == JOptionPane.YES_OPTION;
     }
 
     @Override
     public void handleAbout() {
         ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
-        JOptionPane.showMessageDialog(JCSGUI.getJCSFrame(), "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
+        JOptionPane.showMessageDialog(JCS.getJCSFrame(), "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
     }
 
     @Override

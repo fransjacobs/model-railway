@@ -49,6 +49,10 @@ public class HTTPConnection {
     private final static String IMAGE_FOLDER = "/app/assets/lok/";
     //private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
     private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
+    
+    //http://192.168.1.180/images/svgSprites/magicons.json
+    //http://192.168.1.180/app/api/loks
+    //http://192.168.1.180/app/api/mags
 
     HTTPConnection(InetAddress cs3Address) {
         this.cs3Address = cs3Address;

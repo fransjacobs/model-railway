@@ -76,23 +76,17 @@ public interface TrackService {
     LocomotiveBean persist(LocomotiveBean locomotive);
     
     Image getFunctionImage(String imageName); 
+    
+    
 
-    void toggleDirection(Direction direction, LocomotiveBean locomotive);
+    void changeDirection(Direction direction, LocomotiveBean locomotive);
 
-    void changeSpeed(Integer speed, LocomotiveBean locomotive);
+    void changeVelocity(Integer speed, LocomotiveBean locomotive);
 
-    void setFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
+    void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
-    void toggleFunction(Boolean function, LocomotiveBean locomotive);
 
-    void toggleF1(Boolean f1, LocomotiveBean locomotive);
-
-    void toggleF2(Boolean f2, LocomotiveBean locomotive);
-
-    void toggleF3(Boolean f3, LocomotiveBean locomotive);
-
-    void toggleF4(Boolean f4, LocomotiveBean locomotive);
-
+    
     List<AccessoryBean> getTurnouts();
 
     List<AccessoryBean> getSignals();

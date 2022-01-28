@@ -20,8 +20,11 @@ package jcs;
 
 import jcs.ui.util.ProcessFactory;
 import java.awt.GraphicsEnvironment;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.trackservice.TrackService;
@@ -30,6 +33,7 @@ import jcs.ui.JCSFrame;
 import jcs.ui.Refreshable;
 import jcs.ui.splash.JCSSplashScreen;
 import jcs.ui.util.MacOsAdapter;
+import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.apache.commons.lang3.SystemUtils;
 import org.tinylog.Logger;
@@ -42,14 +46,14 @@ import org.tinylog.Logger;
  * @author frans
  *
  */
-public class JCSGUI extends Thread {
+public class JCS extends Thread {
 
     private static boolean headless;
     private static JCSSplashScreen splashScreen;
 
     private static TrackService trackService;
 
-    private static JCSGUI instance = null;
+    private static JCS instance = null;
 
     private static MacOsAdapter osAdapter;
     private static JCSFrame jcsFrame;
@@ -58,36 +62,33 @@ public class JCSGUI extends Thread {
 
     private final List<Refreshable> refreshables;
 
-    private JCSGUI() {
+    private JCS() {
         refreshables = new ArrayList<>();
         headless = GraphicsEnvironment.isHeadless();
-        versionInfo = new VersionInfo(JCSGUI.class, "lan.wervel.jcs", "gui");
+        versionInfo = new VersionInfo(JCS.class, "lan.wervel.jcs", "gui");
 
         updateProgress();
     }
 
     public static void main(String[] args) {
-        System.setProperty("name", "Java Command Station");
-        System.setProperty("useOnlyRemote", "true");
-        System.setProperty("timeoutMillis", "2000");
-        System.setProperty("retryCount", "1");
-
         if (headless) {
-            System.setProperty("java.awt.headless", "true");
             Logger.error("This JDK environment is headless, can't start a GUI!");
             //Quit....
             System.exit(1);
         }
+        RunUtil.loadProperties();
 
         try {
             if (SystemUtils.IS_OS_MAC) {
                 MacOsAdapter.setMacOsProperties();
                 osAdapter = new MacOsAdapter();
             } else {
-                //UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-                //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                //UIManager.setLookAndFeel("com.formdev.NimbusLookAndFeel");
-                UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+                String plaf = System.getProperty("jcs.plaf");
+                if (plaf != null) {
+                    UIManager.setLookAndFeel(plaf);
+                } else {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.error(ex);
@@ -96,11 +97,9 @@ public class JCSGUI extends Thread {
         splashScreen = new JCSSplashScreen();
         splashScreen.showSplash();
         splashScreen.setProgressMax(10);
-
         trackService = TrackServiceFactory.getTrackService();
-
         if (trackService != null) {
-            JCSGUI jcs = JCSGUI.getInstance();
+            JCS jcs = JCS.getInstance();
             jcs.init();
         } else {
             Logger.error("Could not obtain a TrackService. Quitting....");
@@ -182,7 +181,6 @@ public class JCSGUI extends Thread {
         sb.append(" [MB].");
 
         Logger.info(sb);
-
     }
 
     /**
@@ -202,59 +200,12 @@ public class JCSGUI extends Thread {
      *
      * @return Us
      */
-    public static JCSGUI getInstance() {
+    public static JCS getInstance() {
         if (instance == null) {
-            instance = new JCSGUI();
+            instance = new JCS();
             // Prepare for shutdown...
             Runtime.getRuntime().addShutdownHook(instance);
         }
         return instance;
     }
 }
-
-//    if (trackService == null) {
-//      //start a new track server in a jvm
-//      Logger.debug("Start new JVM procees with Track Server");
-//      updateProgress();
-//      ServiceInfo tsi = startTrackServerJVM();
-//
-//      if (tsi != null) {
-//        Logger.debug("Trackserver has initialized: " + tsi);
-//        trackService = TrackServiceFactory.getTrackService(splashScreen);
-//      }
-//    }
-//  private static ServiceInfo startTrackServerJVM() {
-//    ServiceInfo si = null;
-//    Logger.debug("Starting a TrackServer Process...");
-//
-//    String jvmOptions = "-Xms128m -Xmx256m -Dcallback=true";
-//    String mainClass = "lan.wervel.jcs.JCSServer";
-//    String[] arguments = new String[]{"callback=" + TrackService.SERVICE_TYPE};
-//
-//    Process p = ProcessFactory.getInstance().startJVMProcess(jvmOptions, mainClass, arguments);
-//
-//    if (p != null) {
-//      Logger.info("Started TrackServer Process " + p.toString());
-//      //Wait for the initialization to finish
-//      si = DiscoveryClient.waitForProcessCallback(TrackService.SERVICE_TYPE);
-//
-//      if (si != null) {
-//        Logger.debug("Trackserver has initialized: " + si);
-//        updateProgress();
-//        ServiceInfo dsi = DiscoveryClient.discover(TrackServiceFactory.createClientInfo(), 5000L, 3);
-//
-//        Logger.debug("Discovered: " + dsi);
-//        si = dsi;
-//
-//        updateProgress();
-//        trackService = TrackServiceFactory.getRemoteTrackService(si);
-//
-//      } else {
-//        Logger.error("Could not obtain a TrackService ServiceInfo object");
-//      }
-//    } else {
-//      Logger.error("Could not start TrackServer process");
-//    }
-//    return si;
-//  }
-

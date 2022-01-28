@@ -80,12 +80,8 @@ public class H2TrackService implements TrackService {
     private final FunctionBeanDAO funcDAO;
     private final AccessoryBeanDAO acceDAO;
 
-    //private final SwitchDAO turnoutDAO;
-    //private final SignalDAO signalDAO;
     private final TrackPowerDAO trpoDAO;
 
-    //private final LayoutTileDAO latiDao;
-    //private final LayoutTileGroupDAO ltgtDao;
     private final JCSPropertiesDAO propDao;
 
     private final TileBeanDAO tileDAO;
@@ -130,12 +126,7 @@ public class H2TrackService implements TrackService {
         funcDAO = new FunctionBeanDAO();
         acceDAO = new AccessoryBeanDAO();
 
-        //turnoutDAO = new SwitchDAO();
-        //signalDAO = new SignalDAO();
         trpoDAO = new TrackPowerDAO();
-        //latiDao = new LayoutTileDAO();
-        //ltgtDao = new LayoutTileGroupDAO();
-
         tileDAO = new TileBeanDAO();
 
         executor = Executors.newCachedThreadPool();
@@ -153,7 +144,7 @@ public class H2TrackService implements TrackService {
         trpo = trpoDAO.find(1);
 
         if (aquireControllerService) {
-            aquireControllerService();
+            aquireController();
         }
 
         Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
@@ -169,7 +160,7 @@ public class H2TrackService implements TrackService {
         });
     }
 
-    private void aquireControllerService() {
+    private void aquireController() {
         String activeControllerService = System.getProperty("activeControllerService");
 
         String moduleCount = System.getProperty("S88-module-count", "1");
@@ -858,93 +849,59 @@ public class H2TrackService implements TrackService {
 //        });
 //    }
     @Override
-    public void toggleDirection(Direction direction, LocomotiveBean locomotive) {
-        String cs = jcsProperties.getProperty("activeControllerService");
-        Logger.debug("New: " + direction + " for: " + locomotive.toLogString() + " Current: " + locomotive.getDirection() + " Decoder: " + locomotive.getDecoderType());
+    public void changeDirection(Direction direction, LocomotiveBean locomotive) {
+    Logger.debug("Changing direction to " + direction + " for: " + locomotive.toLogString());
 
-        locomotive.setDirection(direction);
+        //Stub For now disable the link to CS 3 
+        if (1 == 2) {
+            String cs = jcsProperties.getProperty("activeControllerService");
+            if ("CS2".equals(cs)) {
+                controllerService.toggleDirection(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
+                locomotive.setDirection(direction);
 
-        if ("CS2".equals(cs)) {
-            controllerService.toggleDirection(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
-        } else {
-            //P50 
-            //controllerService.toggleDirection(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF0());
-            //if (locomotive.getFunctionCount() > 1) {
-            //    controllerService.setFunctions(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF1(), locomotive.isF2(), locomotive.isF3(), locomotive.isF4());
-            Logger.warn("P50x commands not supported");
-        }
-
-        if (locoDAO.findById(locomotive.getId()) != null) {
-            persist(locomotive);
+            }
+            if (locoDAO.findById(locomotive.getId()) != null) {
+                persist(locomotive);
+            }
         }
     }
 
     @Override
-    public void changeSpeed(Integer velocity, LocomotiveBean locomotive) {
-        String cs = jcsProperties.getProperty("activeControllerService");
-        Logger.trace("Changing velocity to " + velocity + " for " + locomotive.toLogString() + " Decoder: " + locomotive.getDecoderType());
+    public void changeVelocity(Integer velocity, LocomotiveBean locomotive) {
+        Logger.trace("Changing velocity to " + velocity + " for " + locomotive.getName());
 
-        locomotive.setVelocity(velocity);
+        //Stub For now disable the link to CS 3 
+        if (1 == 2) {
+            String cs = jcsProperties.getProperty("activeControllerService");
+            locomotive.setVelocity(velocity);
 
-        if ("CS2".equals(cs)) {
-            controllerService.setSpeed(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), locomotive.getVelocity());
-        } else {
-            Logger.warn("P50x commands not supported");
-        }
-        if (locoDAO.findById(locomotive.getId()) != null) {
-            persist(locomotive);
-        }
-    }
-
-    @Override
-    public void setFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive) {
-        String cs = jcsProperties.getProperty("activeControllerService");
-        Logger.trace("Changing Function nr. " + functionNumber + " to " + (value ? "on" : "off") + " for: " + locomotive.toLogString() + " Decoder: " + locomotive.getDecoderType());
-
-        if (locomotive.getFunctions().containsKey(functionNumber)) {
-            FunctionBean function = locomotive.getFunctions().get(functionNumber);
-
-            function.setValue(value ? 1 : 0);
-        }
-        if ("CS2".equals(cs)) {
-            controllerService.setFunction(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), functionNumber, value);
-        } else {
-            Logger.warn("P50x commands not supported");
-
-//            if (functionNumber == 0) {
-//                controllerService.setSpeedAndFunction(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF0(), locomotive.getSpeed());
-//            } else {
-//                controllerService.setFunctions(locomotive.getAddress(), locomotive.getDecoderType(), locomotive.isF1(), locomotive.isF2(), locomotive.isF3(), locomotive.isF4());
-//            }
-        }
-        if (locoDAO.findById(locomotive.getId()) != null) {
-            persist(locomotive);
+            if ("CS2".equals(cs)) {
+                controllerService.setSpeed(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), locomotive.getVelocity());
+            }
+            if (locoDAO.findById(locomotive.getId()) != null) {
+                persist(locomotive);
+            }
         }
     }
 
     @Override
-    public void toggleFunction(Boolean function, LocomotiveBean locomotive) {
-        this.setFunction(function, 0, locomotive);
-    }
+    public void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive) {
+        Logger.trace("Changing Function " + functionNumber + " to " + (value ? "on" : "off") + " on " + locomotive.getName());
 
-    @Override
-    public void toggleF1(Boolean f1, LocomotiveBean locomotive) {
-        this.setFunction(f1, 1, locomotive);
-    }
-
-    @Override
-    public void toggleF2(Boolean f2, LocomotiveBean locomotive) {
-        this.setFunction(f2, 2, locomotive);
-    }
-
-    @Override
-    public void toggleF3(Boolean f3, LocomotiveBean locomotive) {
-        this.setFunction(f3, 4, locomotive);
-    }
-
-    @Override
-    public void toggleF4(Boolean f4, LocomotiveBean locomotive) {
-        this.setFunction(f4, 4, locomotive);
+        //Stub For now disable the link to CS 3 
+        if (1 == 2) {
+            String cs = jcsProperties.getProperty("activeControllerService");
+            if (locomotive.getFunctions().containsKey(functionNumber)) {
+                FunctionBean function = locomotive.getFunctions().get(functionNumber);
+                function.setValue(value ? 1 : 0);
+            }
+            if ("CS2".equals(cs)) {
+                controllerService.setFunction(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), functionNumber, value);
+            }
+            if (locoDAO.findById(locomotive.getId()) != null) {
+                persist(locomotive);
+            }
+        }
     }
 
     @Override

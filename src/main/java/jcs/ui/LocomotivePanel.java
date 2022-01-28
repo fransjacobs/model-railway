@@ -22,10 +22,12 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JSlider;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.enums.Direction;
 import jcs.trackservice.TrackServiceFactory;
 import org.tinylog.Logger;
 
@@ -35,9 +37,6 @@ import org.tinylog.Logger;
  */
 public class LocomotivePanel extends javax.swing.JPanel {
 
-    /**
-     * Creates new form LocomotivesPanel
-     */
     public LocomotivePanel() {
         initComponents();
     }
@@ -46,11 +45,11 @@ public class LocomotivePanel extends javax.swing.JPanel {
         if (TrackServiceFactory.getTrackService() != null) {
             List<LocomotiveBean> locos = TrackServiceFactory.getTrackService().getLocomotives();
             ListModel<LocomotiveBean> listModel = new DefaultListModel<>();
-            ((DefaultListModel)listModel).addAll(locos);
-            this.locoList.setModel(listModel);          
+            ((DefaultListModel) listModel).addAll(locos);
+            this.locoList.setModel(listModel);
         }
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -76,6 +75,9 @@ public class LocomotivePanel extends javax.swing.JPanel {
         stopPanel = new javax.swing.JPanel();
         stopBtn = new javax.swing.JButton();
         funcSpeedPanel = new javax.swing.JPanel();
+        tachoPanel = new javax.swing.JPanel();
+        velocityLbl = new javax.swing.JLabel();
+        maxTachoLbl = new javax.swing.JLabel();
         functionsPanel = new jcs.ui.widgets.FunctionsPanel();
         speedPanel = new javax.swing.JPanel();
         velocitySlider = new javax.swing.JSlider();
@@ -83,10 +85,10 @@ public class LocomotivePanel extends javax.swing.JPanel {
         locoScrollPane = new javax.swing.JScrollPane();
         locoList = new javax.swing.JList<>();
 
-        setMinimumSize(new java.awt.Dimension(220, 580));
+        setMinimumSize(new java.awt.Dimension(240, 600));
         setName("Form"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(220, 570));
-        setLayout(new java.awt.BorderLayout(1, 1));
+        setPreferredSize(new java.awt.Dimension(220, 600));
+        setLayout(new java.awt.BorderLayout());
 
         locIdPanel.setName("locIdPanel"); // NOI18N
         locIdPanel.setPreferredSize(new java.awt.Dimension(130, 214));
@@ -168,10 +170,8 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
         directionBG.add(backwardsBtn);
         backwardsBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-24.png"))); // NOI18N
-        backwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-        backwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
+        backwardsBtn.setActionCommand("Backwards");
         backwardsBtn.setName("backwardsBtn"); // NOI18N
-        backwardsBtn.setPreferredSize(new java.awt.Dimension(40, 40));
         backwardsBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-Y-24.png"))); // NOI18N
         backwardsBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -183,10 +183,8 @@ public class LocomotivePanel extends javax.swing.JPanel {
         directionBG.add(forwardsBtn);
         forwardsBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-24.png"))); // NOI18N
         forwardsBtn.setSelected(true);
-        forwardsBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-        forwardsBtn.setMinimumSize(new java.awt.Dimension(40, 40));
+        forwardsBtn.setActionCommand("Forwards");
         forwardsBtn.setName("forwardsBtn"); // NOI18N
-        forwardsBtn.setPreferredSize(new java.awt.Dimension(40, 40));
         forwardsBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-Y-24.png"))); // NOI18N
         forwardsBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -198,7 +196,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
         directionPanel.add(backForwPanel);
 
         stopPanel.setName("stopPanel"); // NOI18N
-        java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
+        java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
         flowLayout3.setAlignOnBaseline(true);
         stopPanel.setLayout(flowLayout3);
 
@@ -220,17 +218,37 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
         add(locIdPanel, java.awt.BorderLayout.NORTH);
 
+        funcSpeedPanel.setMinimumSize(new java.awt.Dimension(240, 205));
         funcSpeedPanel.setName("funcSpeedPanel"); // NOI18N
-        funcSpeedPanel.setPreferredSize(new java.awt.Dimension(235, 230));
+        funcSpeedPanel.setPreferredSize(new java.awt.Dimension(235, 215));
         funcSpeedPanel.setLayout(new java.awt.BorderLayout());
+
+        tachoPanel.setName("tachoPanel"); // NOI18N
+        java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0);
+        flowLayout5.setAlignOnBaseline(true);
+        tachoPanel.setLayout(flowLayout5);
+
+        velocityLbl.setText("0%");
+        velocityLbl.setMaximumSize(new java.awt.Dimension(110, 16));
+        velocityLbl.setMinimumSize(new java.awt.Dimension(110, 16));
+        velocityLbl.setName("velocityLbl"); // NOI18N
+        velocityLbl.setPreferredSize(new java.awt.Dimension(110, 16));
+        tachoPanel.add(velocityLbl);
+
+        maxTachoLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        maxTachoLbl.setText("100");
+        maxTachoLbl.setMinimumSize(new java.awt.Dimension(45, 16));
+        maxTachoLbl.setName("maxTachoLbl"); // NOI18N
+        maxTachoLbl.setPreferredSize(new java.awt.Dimension(45, 16));
+        tachoPanel.add(maxTachoLbl);
+
+        funcSpeedPanel.add(tachoPanel, java.awt.BorderLayout.NORTH);
 
         functionsPanel.setName("functionsPanel"); // NOI18N
         funcSpeedPanel.add(functionsPanel, java.awt.BorderLayout.CENTER);
 
         speedPanel.setName("speedPanel"); // NOI18N
-        java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
-        flowLayout5.setAlignOnBaseline(true);
-        speedPanel.setLayout(flowLayout5);
+        speedPanel.setLayout(new java.awt.GridLayout());
 
         velocitySlider.setMinorTickSpacing(10);
         velocitySlider.setOrientation(javax.swing.JSlider.VERTICAL);
@@ -251,12 +269,12 @@ public class LocomotivePanel extends javax.swing.JPanel {
         add(funcSpeedPanel, java.awt.BorderLayout.CENTER);
 
         locSelectionPanel.setName("locSelectionPanel"); // NOI18N
-        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout();
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2);
         flowLayout1.setAlignOnBaseline(true);
         locSelectionPanel.setLayout(flowLayout1);
 
         locoScrollPane.setName("locoScrollPane"); // NOI18N
-        locoScrollPane.setPreferredSize(new java.awt.Dimension(220, 130));
+        locoScrollPane.setPreferredSize(new java.awt.Dimension(220, 110));
 
         locoList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         locoList.setDoubleBuffered(true);
@@ -274,49 +292,89 @@ public class LocomotivePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void locoListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_locoListValueChanged
-        
-        if(!evt.getValueIsAdjusting()) {
-            if(this.locoList.getSelectedIndex() != -1) {
-                
-                LocomotiveBean selected  = this.locoList.getSelectedValue();
-                
+
+        if (!evt.getValueIsAdjusting()) {
+            if (this.locoList.getSelectedIndex() != -1) {
+                LocomotiveBean selected = this.locoList.getSelectedValue();
                 this.functionsPanel.setLocomotive(selected);
                 this.nameLbL.setText(selected.getName());
                 this.iconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
+                this.velocitySlider.setMaximum(selected.getTachoMax());
+                this.maxTachoLbl.setText(selected.getTachoMax() + "");
+                this.velocitySlider.setValue(selected.getVelocity());
+
+                Direction d = selected.getDirection();
+                if (Direction.BACKWARDS.equals(d)) {
+                    this.backwardsBtn.setSelected(true);
+                } else {
+                    this.forwardsBtn.setSelected(true);
+                }
+
                 iconLbl.setText("");
             }
         }
-        
     }//GEN-LAST:event_locoListValueChanged
 
     private void velocitySliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_velocitySliderStateChanged
-        Logger.trace(evt);
+        JSlider slider = (JSlider) evt.getSource();
+        if (!slider.getValueIsAdjusting()) {
+            LocomotiveBean selected = this.locoList.getSelectedValue();
+            if (selected != null) {
+                int max = selected.getTachoMax();
+                double value = slider.getValue();
+                int velocity = (int) Math.round(value / max * 100);
+                this.velocityLbl.setText(velocity + "%");
+                Logger.trace("Slider value: " + value + " velocity: " + velocity);
+
+                if (TrackServiceFactory.getTrackService() != null) {
+                    TrackServiceFactory.getTrackService().changeVelocity(velocity, selected);
+                }
+            }
+        }
     }//GEN-LAST:event_velocitySliderStateChanged
 
     private void speedBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedBtn1ActionPerformed
-        this.velocitySlider.setValue(25);
+        LocomotiveBean selected = this.locoList.getSelectedValue();
+        if (selected != null) {
+            int tachoMax = selected.getTachoMax();
+            this.velocitySlider.setValue(tachoMax / 4);
+        }
     }//GEN-LAST:event_speedBtn1ActionPerformed
 
     private void speedBtn2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedBtn2ActionPerformed
-        this.velocitySlider.setValue(50);
+        LocomotiveBean selected = this.locoList.getSelectedValue();
+        if (selected != null) {
+            int tachoMax = selected.getTachoMax();
+            this.velocitySlider.setValue(tachoMax / 2);
+        }
     }//GEN-LAST:event_speedBtn2ActionPerformed
 
     private void speedBtn3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedBtn3ActionPerformed
-        this.velocitySlider.setValue(75);
+        LocomotiveBean selected = this.locoList.getSelectedValue();
+        if (selected != null) {
+            int tachoMax = selected.getTachoMax();
+            this.velocitySlider.setValue((tachoMax / 4) * 3);
+        }
     }//GEN-LAST:event_speedBtn3ActionPerformed
 
     private void stopBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopBtnActionPerformed
         this.velocitySlider.setValue(0);
     }//GEN-LAST:event_stopBtnActionPerformed
 
+    private void changeDirection(Direction direction) {
+        LocomotiveBean locomotive = this.locoList.getSelectedValue();
+        if (TrackServiceFactory.getTrackService() != null && locomotive != null) {
+            TrackServiceFactory.getTrackService().changeDirection(direction, locomotive);
+        }
+    }
+
     private void forwardsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsBtnActionPerformed
-        // TODO add your handling code here:
+        changeDirection(Direction.get(evt.getActionCommand()));
     }//GEN-LAST:event_forwardsBtnActionPerformed
 
     private void backwardsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsBtnActionPerformed
-        // TODO add your handling code here:
+        changeDirection(Direction.get(evt.getActionCommand()));
     }//GEN-LAST:event_backwardsBtnActionPerformed
-
 
     public static void main(String args[]) {
         try {
@@ -339,12 +397,12 @@ public class LocomotivePanel extends javax.swing.JPanel {
             });
             testFrame.pack();
             testFrame.setLocationRelativeTo(null);
-            
+
             testPanel.loadLocomotives();
             testFrame.setVisible(true);
         });
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backForwPanel;
     private javax.swing.JToggleButton backwardsBtn;
@@ -359,6 +417,7 @@ public class LocomotivePanel extends javax.swing.JPanel {
     private javax.swing.JPanel locSelectionPanel;
     private javax.swing.JList<LocomotiveBean> locoList;
     private javax.swing.JScrollPane locoScrollPane;
+    private javax.swing.JLabel maxTachoLbl;
     private javax.swing.JLabel nameLbL;
     private javax.swing.JButton speedBtn1;
     private javax.swing.JButton speedBtn2;
@@ -366,7 +425,9 @@ public class LocomotivePanel extends javax.swing.JPanel {
     private javax.swing.JPanel speedPanel;
     private javax.swing.JButton stopBtn;
     private javax.swing.JPanel stopPanel;
+    private javax.swing.JPanel tachoPanel;
     private javax.swing.JPanel velocityBtnPanel;
+    private javax.swing.JLabel velocityLbl;
     private javax.swing.JSlider velocitySlider;
     // End of variables declaration//GEN-END:variables
 }

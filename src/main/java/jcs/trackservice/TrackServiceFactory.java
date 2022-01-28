@@ -18,7 +18,11 @@
  */
 package jcs.trackservice;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -50,12 +54,24 @@ public class TrackServiceFactory {
     }
 
     private boolean aquireTrackServiceImpl() {
-        try {
-            this.trackService = (TrackService) Class.forName("jcs.trackservice.H2TrackService").getDeclaredConstructor().newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-            Logger.error("Can't instantiate a 'jcs.trackservice.H2TrackService' " + ex.getMessage());
-            Logger.trace(ex);
+        String trackServiceImpl = System.getProperty("trackService");
+
+        if (trackServiceImpl == null) {
+            RunUtil.loadProperties();
+            trackServiceImpl = System.getProperty("trackService");
         }
+
+        if (trackServiceImpl != null) {
+            try {
+                this.trackService = (TrackService) Class.forName(trackServiceImpl).getDeclaredConstructor().newInstance();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+                Logger.error("Can't instantiate a '" + trackServiceImpl + "' " + ex.getMessage());
+                Logger.trace(ex);
+            }
+        } else {
+            Logger.error("Cant find implementation class for 'trackService'!");
+        }
+
         if (trackService != null) {
             Logger.debug("Using " + trackService.getClass().getSimpleName() + " as Track Service...");
         }

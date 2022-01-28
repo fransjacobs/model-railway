@@ -40,6 +40,7 @@ import org.tinylog.Logger;
 public class FunctionsPanel extends javax.swing.JPanel {
 
     private final Map<Integer, JToggleButton> buttons;
+    private LocomotiveBean locomotive;
 
     private final String IMG_PREFIX = "fkticon_";
     private final String IMG_A = "a_";
@@ -90,14 +91,16 @@ public class FunctionsPanel extends javax.swing.JPanel {
         buttons.put(29, f29TB);
         buttons.put(30, f30TB);
         buttons.put(31, f31TB);
+
+        for (int i = 0; i < 32; i++) {
+            JToggleButton button = this.buttons.get(i);
+            button.setEnabled(false);
+        }
     }
 
     public void setLocomotive(LocomotiveBean locomotive) {
-        setFunctionIcons(locomotive);
-    }
-
-    private void setFunctionIcons(LocomotiveBean locomotive) {
         if (TrackServiceFactory.getTrackService() != null && locomotive != null) {
+            this.locomotive = locomotive;
             Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
             for (int i = 0; i < 32; i++) {
@@ -142,8 +145,18 @@ public class FunctionsPanel extends javax.swing.JPanel {
         }
     }
 
+    public LocomotiveBean getLocomotive() {
+        return locomotive;
+    }
+
     private void buttonActionPerformed(ActionEvent evt) {
-        Logger.trace("ac: " + evt.getActionCommand());
+        JToggleButton src = (JToggleButton) evt.getSource();
+        boolean value = src.isSelected();
+        Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
+        Integer functionNumber = Integer.parseInt(evt.getActionCommand().replace("F", ""));
+        if (TrackServiceFactory.getTrackService() != null && this.locomotive != null) {
+            TrackServiceFactory.getTrackService().changeFunction(value, functionNumber, locomotive);
+        }
     }
 
     /**
@@ -191,15 +204,18 @@ public class FunctionsPanel extends javax.swing.JPanel {
         f30TB = new javax.swing.JToggleButton();
         f31TB = new javax.swing.JToggleButton();
 
-        setMinimumSize(new java.awt.Dimension(200, 220));
+        setMinimumSize(new java.awt.Dimension(200, 235));
         setName("Form"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(200, 220));
+        setPreferredSize(new java.awt.Dimension(200, 235));
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 1, 1);
+        flowLayout1.setAlignOnBaseline(true);
+        setLayout(flowLayout1);
 
         buttonsTP.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
         buttonsTP.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
-        buttonsTP.setMinimumSize(new java.awt.Dimension(200, 220));
+        buttonsTP.setMinimumSize(new java.awt.Dimension(200, 230));
         buttonsTP.setName("buttonsTP"); // NOI18N
-        buttonsTP.setPreferredSize(new java.awt.Dimension(200, 220));
+        buttonsTP.setPreferredSize(new java.awt.Dimension(200, 230));
 
         f0f15Panel.setName("f0f15Panel"); // NOI18N
         f0f15Panel.setPreferredSize(new java.awt.Dimension(165, 165));
