@@ -21,6 +21,7 @@ package jcs.trackservice.dao.util;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -329,6 +330,7 @@ INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODE
     }
 
     public static void setConnectProperties() {
+        RunUtil.loadProperties();
         Logger.info("Test Mode Active!");
         System.setProperty("db.path", DB_PATH);
         System.setProperty("db.name", TEST_DB_NAME);
