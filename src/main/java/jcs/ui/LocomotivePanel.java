@@ -39,6 +39,11 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
     public LocomotivePanel() {
         initComponents();
+        postInit();
+    }
+    
+    private void postInit() {
+        setEnabled(false);
     }
 
     public void loadLocomotives() {
@@ -311,6 +316,9 @@ public class LocomotivePanel extends javax.swing.JPanel {
                 }
 
                 iconLbl.setText("");
+                setEnabled(true);
+            } else {
+                setEnabled(false);
             }
         }
     }//GEN-LAST:event_locoListValueChanged
@@ -366,6 +374,19 @@ public class LocomotivePanel extends javax.swing.JPanel {
         if (TrackServiceFactory.getTrackService() != null && locomotive != null) {
             TrackServiceFactory.getTrackService().changeDirection(direction, locomotive);
         }
+    }
+    
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        this.backwardsBtn.setEnabled(enabled);
+        this.forwardsBtn.setEnabled(enabled);
+        this.stopBtn.setEnabled(enabled);
+        this.speedBtn1.setEnabled(enabled);
+        this.speedBtn2.setEnabled(enabled);
+        this.speedBtn3.setEnabled(enabled);
+        this.velocitySlider.setEnabled(enabled);
+        this.functionsPanel.setEnabled(enabled);
     }
 
     private void forwardsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsBtnActionPerformed

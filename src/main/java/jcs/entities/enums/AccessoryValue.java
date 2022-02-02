@@ -27,68 +27,98 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author frans
  */
 public enum AccessoryValue {
-  RED("RED"), GREEN("GREEN"), OFF("OFF");
+    RED("Red"), GREEN("Green"), OFF("Off");
 
-  private final String value;
-  private static final Map<String, AccessoryValue> ENUM_MAP;
+    private final String value;
+    private static final Map<String, AccessoryValue> ENUM_MAP;
 
-  AccessoryValue(String value) {
-    this.value = value;
-  }
-
-  public String getValue() {
-    return this.value;
-  }
-
-  public String getDBValue() {
-    return translate2DBValue(this.value);
-  }
-
-  static {
-    Map<String, AccessoryValue> map = new ConcurrentHashMap<>();
-    for (AccessoryValue instance : AccessoryValue.values()) {
-      map.put(instance.getValue(), instance);
+    AccessoryValue(String value) {
+        this.value = value;
     }
-    ENUM_MAP = Collections.unmodifiableMap(map);
-  }
 
-  public static AccessoryValue get(String value) {
-    if (value == null) {
-      return null;
+    public String getValue() {
+        return this.value;
     }
-    return ENUM_MAP.get(value);
-  }
 
-  public static AccessoryValue dbGet(String dbValue) {
-    if (dbValue == null) {
-      return null;
+    public String getDBValue() {
+        return translate2DBValue(this.value);
     }
-    return ENUM_MAP.get(translateDBValue(dbValue));
-  }
 
-  private static String translateDBValue(String dbValue) {
-    if (dbValue == null) {
-      return null;
+    static {
+        Map<String, AccessoryValue> map = new ConcurrentHashMap<>();
+        for (AccessoryValue instance : AccessoryValue.values()) {
+            map.put(instance.getValue(), instance);
+        }
+        ENUM_MAP = Collections.unmodifiableMap(map);
     }
-    switch (dbValue) {
-      case "R":
-        return "RED";
-      case "G":
-        return "GREEN";
-      default:
-        return "OFF";
-    }
-  }
 
-  private static String translate2DBValue(String value) {
-    switch (value) {
-      case "RED":
-        return "R";
-      case "GREEN":
-        return "G";
-      default:
-        return "O";
+    public static AccessoryValue get(String value) {
+        if (value == null) {
+            return null;
+        }
+        return ENUM_MAP.get(value);
     }
-  }
+
+    public static AccessoryValue dbGet(String dbValue) {
+        if (dbValue == null) {
+            return null;
+        }
+        return ENUM_MAP.get(translateDBValue(dbValue));
+    }
+
+    private static String translateDBValue(String dbValue) {
+        if (dbValue == null) {
+            return null;
+        }
+        switch (dbValue) {
+            case "R":
+                return "RED";
+            case "G":
+                return "GREEN";
+            default:
+                return "OFF";
+        }
+    }
+
+    private static String translate2DBValue(String value) {
+        switch (value) {
+            case "RED":
+                return "R";
+            case "GREEN":
+                return "G";
+            default:
+                return "O";
+        }
+    }
+
+    private static int translate2CS3Value(String value) {
+        switch (value) {
+            case "Red":
+                return 0;
+            case "Green":
+                return 1;
+            default:
+                return -1;
+        }
+    }
+
+    public int getCS3Value() {
+        return translate2CS3Value(this.value);
+    }
+
+    private static String translateCS3Value(int value) {
+        switch (value) {
+            case 0:
+                return "Red";
+            case 1:
+                return "Green";
+            default:
+                return "Off";
+        }
+    }
+
+    public static AccessoryValue cs3Get(int cs2Value) {
+        return ENUM_MAP.get(translateCS3Value(cs2Value));
+    }
 
 }

@@ -1,11 +1,26 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2019, 2022 Frans Jacobs.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
  */
 package jcs.ui.widgets;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.math.BigDecimal;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -27,9 +42,6 @@ public class SwitchPanel extends JPanel {
 
     private int panelNumber;
 
-    /**
-     * Creates new form SwitchPanel
-     */
     public SwitchPanel() {
         this(1);
     }
@@ -77,39 +89,47 @@ public class SwitchPanel extends JPanel {
         presetButtonboolean(tb16);
 
         setTitle();
-        this.repaint();
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+
+        this.tb1.setEnabled(enabled);
+        this.tb2.setEnabled(enabled);
+        this.tb3.setEnabled(enabled);
+        this.tb4.setEnabled(enabled);
+        this.tb5.setEnabled(enabled);
+        this.tb6.setEnabled(enabled);
+        this.tb7.setEnabled(enabled);
+        this.tb8.setEnabled(enabled);
+        this.tb9.setEnabled(enabled);
+        this.tb10.setEnabled(enabled);
+        this.tb11.setEnabled(enabled);
+        this.tb12.setEnabled(enabled);
+        this.tb13.setEnabled(enabled);
+        this.tb14.setEnabled(enabled);
+        this.tb15.setEnabled(enabled);
+        this.tb16.setEnabled(enabled);
     }
 
     private void presetButtonboolean(JToggleButton button) {
-        Integer address = Integer.parseInt(button.getText());
+        button.setActionCommand((button.getText()));
+        Integer address = Integer.parseInt(button.getActionCommand());
         if (TrackServiceFactory.getTrackService() == null) {
             return;
         }
 
-        AccessoryBean t = null;//TrackServiceFactory.getTrackService().getSwitchTurnout(address);
-        if (t != null) {
-            button.setForeground(new java.awt.Color(0, 153, 0));
-            //button.setSelected(AccessoryValue.RED.equals(t.getValue()));
+        AccessoryBean ab = TrackServiceFactory.getTrackService().getAccessory(new BigDecimal(address));
+        if (ab != null) {
+            button.setForeground(new Color(0, 153, 0));
+            button.setSelected(AccessoryValue.RED.equals(ab.getAccessoryValue()));
+            button.setToolTipText(ab.getName());
+        } else {
+            button.setForeground(new Color(0, 0, 0));
         }
 
-        if (t == null) {
-            AccessoryBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
-            if (s != null) {
-                button.setForeground(new java.awt.Color(0, 153, 0));
-                //button.setSelected(AccessoryValue.RED.equals(s.getValue()));
-            }
-
-            if (address % 2 == 0) {
-                //even addres check one lower
-                s = null; //TrackServiceFactory.getTrackService().getSignal(address - 1);
-                ///if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
-                //    button.setForeground(new java.awt.Color(0, 153, 0));
-                //    button.setSelected(AccessoryValue.RED.equals(s.getValue2()));
-                //}
-            }
-        }
-
-        AccessioryStatusListener asl = new AccessioryStatusListener(button, address);
+        AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
         TrackServiceFactory.getTrackService().addAccessoiryListener(asl);
     }
 
@@ -403,103 +423,83 @@ public class SwitchPanel extends JPanel {
         add(tb16);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void sendCommand(String actionCommand, boolean selected) {
+    private void sendCommand(String actionCommand, String name, boolean selected) {
         int address = Integer.parseInt(actionCommand);
         AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
+        String n = name;
+        if(n == null) {
+            n = "Not Assigned";
+        }
 
         Logger.trace("Address: " + address + " Value: " + value);
 
-        //TrackServiceFactory.getTrackService().switchAccessory(value, new Accessoiry(address, value));
-        updateAccessoiry(address, value);
-    }
-
-    private void updateAccessoiry(Integer address, AccessoryValue value) {
-        AccessoryBean t = null; //TrackServiceFactory.getTrackService().getSwitchTurnout(address);
-        if (t != null) {
-            //t.setValue(value);
-            //TrackServiceFactory.getTrackService().persist(t);
-            return;
-        }
-
-        AccessoryBean s = null; //TrackServiceFactory.getTrackService().getSignal(address);
-        if (s != null) {
-            //s.setValue(value);
-            //TrackServiceFactory.getTrackService().persist(s);
-            return;
-        }
-
-        if (address % 2 == 0) {
-            //even addres check one lower
-            s = null; //TrackServiceFactory.getTrackService().getSignal(address - 1);
-            //if (s != null && s.getAddress2() != null && s.getAddress2().equals(address)) {
-            //    s.setValue2(value);
-            //TrackServiceFactory.getTrackService().persist(s);
-            //}
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().switchAccessory(value, new AccessoryBean(address, n, value));
         }
     }
 
   private void tb1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb1ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb1ActionPerformed
 
   private void tb2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb2ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb2ActionPerformed
 
   private void tb3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb3ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb3ActionPerformed
 
   private void tb4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb4ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb4ActionPerformed
 
   private void tb5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb5ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb5ActionPerformed
 
   private void tb6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb6ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb6ActionPerformed
 
   private void tb7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb7ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb7ActionPerformed
 
   private void tb8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb8ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb8ActionPerformed
 
   private void tb9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb9ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb9ActionPerformed
 
   private void tb10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb10ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb10ActionPerformed
 
   private void tb11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb11ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb11ActionPerformed
 
   private void tb12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb12ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb12ActionPerformed
 
   private void tb13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb13ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb13ActionPerformed
 
   private void tb14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb14ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb14ActionPerformed
 
   private void tb15ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb15ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb15ActionPerformed
 
   private void tb16ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb16ActionPerformed
-      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).isSelected());
+      sendCommand(evt.getActionCommand(), ((JToggleButton) evt.getSource()).getToolTipText(), ((JToggleButton) evt.getSource()).isSelected());
   }//GEN-LAST:event_tb16ActionPerformed
 
     private void setTitle() {
@@ -511,9 +511,7 @@ public class SwitchPanel extends JPanel {
 
     public static void main(String[] a) {
         try {
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.warn("Can't set the LookAndFeel: " + ex);
         }
@@ -522,30 +520,23 @@ public class SwitchPanel extends JPanel {
             JFrame f = new JFrame("SwitchPanel Tester");
             f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            SwitchPanel sp = new SwitchPanel(10);
+            SwitchPanel sp = new SwitchPanel(1);
             f.getContentPane().add(sp, BorderLayout.CENTER);
             f.pack();
             f.setVisible(true);
         });
     }
 
-    private class Accessoiry extends AccessoryBean {
-
-        public Accessoiry(Integer address, AccessoryValue value) {
-            //super(address, "Switch only Accessoiry", null, null, AccessoryType.GENERAL, value, null, 2);
-        }
-    }
-
     public int getPanelNumber() {
         return panelNumber;
     }
 
-    private class AccessioryStatusListener implements AccessoryListener {
+    private class AccessoryStatusListener implements AccessoryListener {
 
         private final JToggleButton button;
         private final Integer address;
 
-        AccessioryStatusListener(JToggleButton button, Integer address) {
+        AccessoryStatusListener(JToggleButton button, Integer address) {
             this.button = button;
             this.address = address;
         }

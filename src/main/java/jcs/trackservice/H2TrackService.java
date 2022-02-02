@@ -516,21 +516,20 @@ public class H2TrackService implements TrackService {
         return locomotive;
     }
 
-    private void broadcastLocomotiveEvent(final LocomotiveEvent event) {
-        Set<LocomotiveListener> snapshot;
-        synchronized (this.locomotiveListeners) {
-            snapshot = new HashSet<>(locomotiveListeners);
-        }
-
-        for (LocomotiveListener listener : snapshot) {
-            listener.changed(event);
-        }
-    }
+//    private void broadcastLocomotiveEvent(final LocomotiveEvent event) {
+//        Set<LocomotiveListener> snapshot;
+//        synchronized (this.locomotiveListeners) {
+//            snapshot = new HashSet<>(locomotiveListeners);
+//        }
+//
+//        for (LocomotiveListener listener : snapshot) {
+//            listener.changed(event);
+//        }
+//    }
 
     @Override
     public List<AccessoryBean> getTurnouts() {
         return this.acceDAO.findBy("%weiche");
-
     }
 
     @Override
@@ -549,16 +548,6 @@ public class H2TrackService implements TrackService {
         return accessory;
     }
 
-//    @Override
-//    public SwitchBean persist(SwitchBean turnout) {
-//        this.turnoutDAO.persist(turnout);
-//        return turnout;
-//    }
-//    @Override
-//    public SignalBean persist(SignalBean signal) {
-//        this.signalDAO.persist(signal);
-//        return signal;
-//    }
     @Override
     public List<JCSProperty> getProperties() {
         return this.propDao.findAll();
@@ -686,18 +675,24 @@ public class H2TrackService implements TrackService {
         executor.execute(() -> broadcastHeartBeatToggle());
     }
 
-    @Override
-    public void powerOff() {
-        if (this.controllerService != null) {
-            this.controllerService.powerOff();
-        }
-    }
+//    @Override
+//    public void powerOff() {
+//        if (this.controllerService != null) {
+//            this.controllerService.powerOff();
+//        }
+//    }
 
     @Override
-    public void powerOn() {
-        if (this.controllerService != null) {
-            this.controllerService.powerOn();
-        }
+    public void switchPower(boolean on) {
+        Logger.trace("Switch Power "+(on?"On":"Off"));
+        
+//        if (this.controllerService != null) {
+//            if(on) {
+//              this.controllerService.powerOn();
+//            } else {
+//               this.controllerService.powerOff(); 
+//            }  
+//        }
     }
 
     @Override
@@ -779,36 +774,6 @@ public class H2TrackService implements TrackService {
         for (AccessoryBean ab : ma) {
             this.acceDAO.persist(ab);
         }
-
-//        for (SolenoidAccessory sa : sal) {
-//            if (sa.isTurnout()) {
-//                SwitchBean t = (SwitchBean) sa;
-//                Integer addr = t.getAddress();
-//                SwitchBean dbt = this.turnoutDAO.find(addr);
-//                if (dbt != null) {
-//                    t.setId(dbt.getId());
-//                    Logger.trace("Update " + t);
-//                } else {
-//                    Logger.trace("Add " + t);
-//                }
-//                this.turnoutDAO.persist(t);
-//            } else if (sa.isSignal()) {
-//                SignalBean s = (SignalBean) sa;
-//                Integer addr = s.getAddress();
-//                SignalBean dbs = this.signalDAO.find(addr);
-//                if (dbs != null) {
-//                    s.setId(dbs.getId());
-//                    if (dbs.getLightImages() > 2) {
-//                        s.setId2(dbs.getId2());
-//                        s.setAddress2(dbs.getAddress2());
-//                    }
-//                    Logger.trace("Update " + s);
-//                } else {
-//                    Logger.trace("Add " + s);
-//                }
-//                this.signalDAO.persist(s);
-//            }
-//        }
     }
 
     @Override
@@ -905,14 +870,15 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void switchAccessory(AccessoryValue value, AccessoryBean accessoiry) {
-        switchAccessory(value, accessoiry, false);
+    public void switchAccessory(AccessoryValue value, AccessoryBean accessory) {
+        Logger.trace("Change accessory ID: "+accessory.getId()+", "+accessory.getName()+" to "+value.getValue());
+//        switchAccessory(value, accessoiry, false);
     }
 
-    @Override
-    public void switchAccessory(AccessoryValue value, AccessoryBean accessoiry, boolean useValue2) {
-        Logger.trace("Value: " + value + " Accessoiry: " + accessoiry.toLogString() + " useValue2: " + useValue2);
-
+//    @Override
+//    public void switchAccessory(AccessoryValue value, AccessoryBean accessoiry, boolean useValue2) {
+//        Logger.trace("Value: " + value + " Accessoiry: " + accessoiry.toLogString() + " useValue2: " + useValue2);
+//
 //        if (accessoiry.isSignal()) {
 //            //incase of a signal the SignalValue is set in the signal
 //            SignalBean s = (SignalBean) accessoiry;
@@ -949,7 +915,7 @@ public class H2TrackService implements TrackService {
 //                this.notifyAccessoiryListeners((SwitchBean) accessoiry);
 //            }
 //        }
-    }
+//    }
 
     private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
         if (value == null || address == null) {

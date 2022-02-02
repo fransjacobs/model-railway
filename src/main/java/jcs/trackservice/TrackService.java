@@ -53,9 +53,9 @@ public interface TrackService {
     public static final String SERVICE_TYPE = "TrackService";
 
     //Track power  
-    void powerOff();
+    //void powerOff();
 
-    void powerOn();
+    void switchPower(boolean on);
 
     boolean isPowerOn();
 
@@ -85,8 +85,7 @@ public interface TrackService {
 
     void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
-
-    
+    //Accessories
     List<AccessoryBean> getTurnouts();
 
     List<AccessoryBean> getSignals();
@@ -97,7 +96,7 @@ public interface TrackService {
 
     void switchAccessory(AccessoryValue value, AccessoryBean accessory);
 
-    void switchAccessory(AccessoryValue value, AccessoryBean accessory, boolean value2);
+    //void switchAccessory(AccessoryValue value, AccessoryBean accessory, boolean value2);
 
     void addAccessoiryListener(AccessoryListener listener);
 
@@ -107,6 +106,7 @@ public interface TrackService {
 
     void notifyAllAccessoiryListeners();
 
+    
     void addHeartBeatListener(HeartBeatListener listener);
 
     void removeHeartBeatListenerListener(HeartBeatListener listener);

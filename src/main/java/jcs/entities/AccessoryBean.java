@@ -20,6 +20,8 @@ package jcs.entities;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import jcs.entities.enums.AccessoryValue;
+import jcs.entities.enums.SignalValue;
 
 public class AccessoryBean implements JCSEntity {
 
@@ -33,6 +35,10 @@ public class AccessoryBean implements JCSEntity {
 
     public AccessoryBean() {
 
+    }
+
+    public AccessoryBean(Integer address,String name, AccessoryValue accessoryValue) {
+        this(new BigDecimal(address), name, null, accessoryValue.getCS3Value(), null, null, null);
     }
 
     public AccessoryBean(BigDecimal id, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
@@ -78,6 +84,22 @@ public class AccessoryBean implements JCSEntity {
         this.position = position;
     }
 
+    public AccessoryValue getAccessoryValue() {
+        return AccessoryValue.cs3Get(this.position);
+    }
+
+    public void setAccessoryValue(AccessoryValue accessoryValue) {
+        this.setPosition(accessoryValue.getCS3Value());
+    }
+
+    public SignalValue getSignalValue() {
+        return SignalValue.cs3Get(this.position);
+    }
+
+    public void setAccessoryValue(SignalValue signalValue) {
+        this.setPosition(signalValue.getCS3Value());
+    }
+
     public Integer getSwitchTime() {
         return switchTime;
     }
@@ -111,128 +133,6 @@ public class AccessoryBean implements JCSEntity {
     public String toLogString() {
         return toString();
     }
-
-    
-    
-    
-//    protected AccessoryValue value;
-//    protected AccessoryType accessoiryType;
-//    protected Integer lightImages;
-//    protected AccessoryBean(Integer address, String description, String catalogNumber, BigDecimal id, AccessoryType type, AccessoryValue value, BigDecimal soacId, Integer lightImages) {
-//        super(address, (type != null ? type.toString() : null), description, catalogNumber, id);
-//        this.accessoiryType = type;
-//        this.value = value;
-//        this.soacId = soacId;
-//        this.lightImages = lightImages;
-//    }
-//    @Override
-//    public String toString() {
-//        StringBuilder sb = new StringBuilder();
-//        if (this.name == null) {
-//            if (null == this.accessoiryType) {
-//                sb.append("[G]");
-//            } else {
-//                switch (this.accessoiryType) {
-//                    case SIGNAL:
-//                        sb.append("[S]");
-//                        break;
-//                    case TURNOUT:
-//                        sb.append("[T]");
-//                        break;
-//                    default:
-//                        sb.append("[G]");
-//                        break;
-//                }
-//            }
-//            sb.append(": ");
-//        } else {
-//            sb.append(this.name);
-//        }
-//        if (this.address != null && this.address > 0) {
-//            sb.append(" (");
-//            sb.append(this.address);
-//            sb.append(")");
-//        }
-//
-//        return sb.toString();
-//    }
-//    @Override
-//    public String toLogString() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("[");
-//        if (this.address != null && this.address > 0) {
-//            sb.append(this.address);
-//        }
-//        sb.append("] ");
-//        if (null == this.accessoiryType) {
-//            sb.append("G: ");
-//        } else {
-//            sb.append("");
-//            switch (this.accessoiryType) {
-//                case SIGNAL:
-//                    sb.append("S: ");
-//                    break;
-//                case TURNOUT:
-//                    sb.append("T: ");
-//                    break;
-//                default:
-//                    sb.append("G: ");
-//                    break;
-//            }
-//        }
-//        sb.append(this.description);
-//        sb.append(" {");
-//        sb.append(this.value);
-//        sb.append("}");
-//        return sb.toString();
-//    }
-//    public AccessoryType getAccessoiryType() {
-//        return accessoiryType;
-//    }
-//    public Integer getLightImages() {
-//        return lightImages;
-//    }
-//    public void setLightImages(Integer lightImages) {
-//        this.lightImages = lightImages;
-//    }
-//    public void setAccessoiryType(AccessoryType accessoiryType) {
-//        this.accessoiryType = accessoiryType;
-//    }
-//    public void setRed() {
-//        setValue(AccessoryValue.RED);
-//    }
-//    public boolean isRed() {
-//        return AccessoryValue.RED.equals(this.value);
-//    }
-//    public void setGreen() {
-//        setValue(AccessoryValue.GREEN);
-//    }
-//    public boolean isGreen() {
-//        return AccessoryValue.GREEN.equals(this.value);
-//    }
-//    public void setValue(String value) {
-//        this.value = AccessoryValue.get(value);
-//    }
-//    public void setValue(AccessoryValue value) {
-//        this.value = value;
-//    }
-//    public AccessoryValue getValue() {
-//        return value;
-//    }
-//    public AccessoryValue toggleValue() {
-//        if (AccessoryValue.GREEN.equals(this.value)) {
-//            this.value = AccessoryValue.RED;
-//        } else {
-//            this.value = AccessoryValue.GREEN;
-//        }
-//        return this.value;
-//    }
-//    public boolean isSignal() {
-//        return AccessoryType.SIGNAL.equals(this.accessoiryType);
-//    }
-//    public boolean isTurnout() {
-//        return AccessoryType.TURNOUT.equals(this.accessoiryType);
-//    }
 
     @Override
     public int hashCode() {

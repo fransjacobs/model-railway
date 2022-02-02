@@ -27,32 +27,70 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author frans
  */
 public enum SignalValue {
-  Hp0("Hp0"), Hp1("Hp1"), Hp2("Hp2"), Hp0Sh1("Hp0Sh1"), OFF("OFF");
+    Hp0("Hp0"), Hp1("Hp1"), Hp2("Hp2"), Hp0Sh1("Hp0Sh1"), OFF("OFF");
 
-  private final String signalValue;
-  private static final Map<String, SignalValue> ENUM_MAP;
+    private final String signalValue;
+    private static final Map<String, SignalValue> ENUM_MAP;
 
-  SignalValue(String signalValue) {
-    this.signalValue = signalValue;
-  }
-
-  public String getSignalValue() {
-    return this.signalValue;
-  }
-
-  static {
-    Map<String, SignalValue> map = new ConcurrentHashMap<>();
-    for (SignalValue instance : SignalValue.values()) {
-      map.put(instance.getSignalValue(), instance);
+    SignalValue(String signalValue) {
+        this.signalValue = signalValue;
     }
-    ENUM_MAP = Collections.unmodifiableMap(map);
-  }
 
-  public static SignalValue get(String signalValue) {
-    if (signalValue == null) {
-      return null;
+    public String getSignalValue() {
+        return this.signalValue;
     }
-    return ENUM_MAP.get(signalValue);
-  }
+
+    static {
+        Map<String, SignalValue> map = new ConcurrentHashMap<>();
+        for (SignalValue instance : SignalValue.values()) {
+            map.put(instance.getSignalValue(), instance);
+        }
+        ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static SignalValue get(String signalValue) {
+        if (signalValue == null) {
+            return null;
+        }
+        return ENUM_MAP.get(signalValue);
+    }
+
+    private static int translate2CS3Value(String value) {
+        switch (value) {
+            case "Hp0":
+                return 0;
+            case "Hp1":
+                return 1;
+            case "Hp0Sh1":
+                return 2;
+            case "Hp2":
+                return 3;
+            default:
+                return -1;
+        }
+    }
+
+    public int getCS3Value() {
+        return translate2CS3Value(this.signalValue);
+    }
+
+    private static String translateCS3Value(int value) {
+        switch (value) {
+            case 0:
+                return "Hp0";
+            case 1:
+                return "Hp1";
+            case 2:
+                return "Hp0Sh1";
+            case 3:
+                return "Hp2";
+            default:
+                return "Off";
+        }
+    }
+
+    public static SignalValue cs3Get(int cs2Value) {
+        return ENUM_MAP.get(translateCS3Value(cs2Value));
+    }
 
 }
