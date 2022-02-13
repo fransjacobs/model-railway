@@ -27,10 +27,8 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
 import javax.imageio.ImageIO;
-import jcs.controller.cs3.http.AccessoryBeanParser;
-import jcs.entities.AccessoryBean;
+import jcs.controller.cs3.http.DevicesParser;
 import org.tinylog.Logger;
 
 /**
@@ -50,9 +48,12 @@ public class HTTPConnection {
     //private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
     private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
     
-    //http://192.168.1.180/images/svgSprites/magicons.json
-    //http://192.168.1.180/app/api/loks
-    //http://192.168.1.180/app/api/mags
+    private final static String DEVICES = "/app/api/devs";
+    
+    //TODO: investigate the JSON which can be found on     
+    //  http://cs3host/images/svgSprites/magicons.json
+    //  http://cs3host/app/api/loks
+    //  http://cs3host/app/api/mags
 
     HTTPConnection(InetAddress cs3Address) {
         this.cs3Address = cs3Address;
@@ -175,6 +176,31 @@ public class HTTPConnection {
 //        return image;
 //    }
 
+    public String getDevicesJSON() {
+        StringBuilder device = new StringBuilder();
+        try {
+            URL url = new URL(HTTP + cs3Address.getHostAddress() + DEVICES);
+            URLConnection lc = url.openConnection();
+            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    device.append(inputLine.strip());
+                    device.append("\n");
+                }
+            }
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return device.toString();
+    }
+    
+    
+    
+    
+    
+    
     public static void main(String[] args) throws Exception {
         InetAddress inetAddr = InetAddress.getByName("192.168.1.180");
         HTTPConnection hc = new HTTPConnection(inetAddr);
@@ -195,6 +221,7 @@ public class HTTPConnection {
         }
          */
         
+        /*
         String accessories = hc.getAccessoriesFile();
         AccessoryBeanParser ap = new AccessoryBeanParser();
 
@@ -203,14 +230,15 @@ public class HTTPConnection {
         for (AccessoryBean sa : acList) {
             System.out.println(sa.toLogString());
         }
+        */
         
         /*
         String deviceFile = hc.getDeviceFile();
-        DeviceParser dp = new DeviceParser();
-        DeviceInfo di = dp.parseAccessoryFile(deviceFile);
+        CS3DeviceParser dp = new CS3DeviceParser();
+        CS3Device di = dp.parseAccessoryFile(deviceFile);
 
         System.out.println(di);
-         */
+        */
 //        String accessoryStatuses = hc.getAccessoryStatusesFile();
 //        List<AccessoryStatus> acsList = ap.parseAccessoryStatusFile(accessoryStatuses);
 //
@@ -222,5 +250,11 @@ public class HTTPConnection {
          SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
          svgp.convertAndCacheAllFunctionsSvgIcons(json);
          */
+
+         String json = hc.getDevicesJSON();
+         DevicesParser dp = new DevicesParser();
+         dp.parseDevices(json);
+
+
     }
 }

@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.DeviceInfo;
+import jcs.controller.cs3.devices.CS3Device;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.JCSEntity;
@@ -50,11 +50,9 @@ import jcs.trackservice.events.SensorListener;
  */
 public interface TrackService {
 
-    public static final String SERVICE_TYPE = "TrackService";
+    //public static final String SERVICE_TYPE = "TrackService";
 
     //Track power  
-    //void powerOff();
-
     void switchPower(boolean on);
 
     boolean isPowerOn();
@@ -77,8 +75,6 @@ public interface TrackService {
     
     Image getFunctionImage(String imageName); 
     
-    
-
     void changeDirection(Direction direction, LocomotiveBean locomotive);
 
     void changeVelocity(Integer speed, LocomotiveBean locomotive);
@@ -95,8 +91,6 @@ public interface TrackService {
     AccessoryBean persist(AccessoryBean accessory);
 
     void switchAccessory(AccessoryValue value, AccessoryBean accessory);
-
-    //void switchAccessory(AccessoryValue value, AccessoryBean accessory, boolean value2);
 
     void addAccessoiryListener(AccessoryListener listener);
 
@@ -138,7 +132,7 @@ public interface TrackService {
     //Generic remove for Loco/accessory/feedback
     void remove(JCSEntity entity);
 
-    DeviceInfo getControllerInfo();
+    CS3Device getControllerInfo();
 
     void addControllerListener(ControllerEventListener listener);
 

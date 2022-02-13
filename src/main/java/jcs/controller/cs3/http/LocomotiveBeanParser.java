@@ -34,6 +34,8 @@ import org.tinylog.Logger;
  */
 public class LocomotiveBeanParser {
 
+    public final static String LOCOMOTIVE_FILE = "lokomotive.cs2";
+
     private static final String LOCOMOTIVES_START = "[lokomotive]";
     private static final String VERSION = "version";
     private static final String MINOR = ".minor";
@@ -205,7 +207,7 @@ public class LocomotiveBeanParser {
                 velocity, direction, mfxType, blocks);
 
         //Ignore functions which have no functionType
-        Logger.trace("Loc: "+name+" has "+locoFunctions.size()+" functions");
+        Logger.trace("Loc: " + name + " has " + locoFunctions.size() + " functions");
         for (FunctionBean function : locoFunctions.values()) {
             if (function.getNumber() != null && function.getFunctionType() != null) {
                 if (function.getValue() == null) {

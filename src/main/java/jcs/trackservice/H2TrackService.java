@@ -41,8 +41,7 @@ import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.DeviceInfo;
-import jcs.controller.ControllerService;
+import jcs.controller.cs3.devices.CS3Device;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.ControllableDevice;
@@ -72,6 +71,7 @@ import jcs.trackservice.dao.FunctionBeanDAO;
 import jcs.trackservice.dao.LocomotiveBeanDAO;
 import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
+import jcs.controller.MarklinController;
 
 public class H2TrackService implements TrackService {
 
@@ -86,7 +86,7 @@ public class H2TrackService implements TrackService {
 
     private final TileBeanDAO tileDAO;
 
-    private ControllerService controllerService;
+    private MarklinController controllerService;
     int feedbackModules;
 
     private final ExecutorService executor;
@@ -104,7 +104,7 @@ public class H2TrackService implements TrackService {
 
     private final Properties jcsProperties;
 
-    private DeviceInfo controllerInfo;
+    private CS3Device controllerInfo;
     private final Timer timer;
 
     private HashMap<String, Image> imageCache;
@@ -187,7 +187,7 @@ public class H2TrackService implements TrackService {
         if ("false".equalsIgnoreCase(trackServiceAlwaysUseDemo)) {
             if (controllerService == null) {
                 try {
-                    this.controllerService = (ControllerService) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+                    this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
 
                     if (!this.controllerService.isConnected()) {
                         Logger.info("Not connected to Real CS3. Switch to demo...");
@@ -204,7 +204,7 @@ public class H2TrackService implements TrackService {
             //Use a demo...
             try {
                 controllerImpl = "jcs.controller.demo.DemoController";
-                this.controllerService = (ControllerService) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+                this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
                 Logger.info("Using a DEMO controller");
             } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException exd) {
                 Logger.error("Can't instantiate a '" + controllerImpl + "' " + exd.getMessage());
@@ -628,7 +628,7 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public DeviceInfo getControllerInfo() {
+    public CS3Device getControllerInfo() {
         if (this.controllerInfo == null) {
             controllerInfo = controllerService.getControllerInfo();
         }
@@ -721,7 +721,7 @@ public class H2TrackService implements TrackService {
     }
 
     private void notifyControllerListeners(ControllerEvent event) {
-//    ControllerEvent ce = new ControllerEvent((controllerService != null), this.controllerHost, this.name, isPowerOn(), isFeedbackSourceAvailable(), feedbackSourceName);
+//    ControllerEvent ce = new ControllerEvent((controllerService != null), this.controllerHost, this.name, isPower(), isFeedbackSourceAvailable(), feedbackSourceName);
 //    for (ControllerListener listener : this.controllerListeners) {
 //      listener.notify(ce);
 //    }

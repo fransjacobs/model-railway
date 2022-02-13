@@ -19,9 +19,9 @@
 package jcs.controller.demo;
 
 import java.awt.Image;
-import jcs.controller.cs3.DeviceInfo;
+import jcs.controller.cs3.devices.CS3Device;
 import jcs.controller.cs3.DirectionInfo;
-import jcs.controller.cs3.PowerStatus;
+import jcs.controller.cs3.ControllerStatus;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.ControllerService;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.controller.cs3.net.Connection;
@@ -46,14 +45,14 @@ import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
-import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
+import jcs.controller.MarklinController;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class DemoController implements ControllerService {
+public class DemoController implements MarklinController {
 
     private Connection connection;
     private boolean connected = false;
@@ -71,12 +70,12 @@ public class DemoController implements ControllerService {
     private int[] deviceUid;
     private int deviceUidNumber;
 
-    private DeviceInfo deviceInfo;
+    private CS3Device deviceInfo;
 
     private static final long DELAY = 0L;
 
     ///
-    private PowerStatus powerStatus;
+    private ControllerStatus powerStatus;
 
     private Map<Integer, DirectionInfo> locDirections;
 
@@ -97,30 +96,28 @@ public class DemoController implements ControllerService {
     }
 
     @Override
-    public PowerStatus powerOff() {
-        Logger.debug("PowerOff");
-        powerStatus = new PowerStatus(false, deviceUid, deviceUidNumber);
+    public ControllerStatus power(boolean on) {
+        Logger.debug("Power " + (on ? "On" : "Off"));
+        powerStatus = new ControllerStatus(true, on);
+        return powerStatus;
+    }
+
+    public ControllerStatus getPowerStatus() {
         return powerStatus;
     }
 
     @Override
-    public PowerStatus powerOn() {
-        Logger.debug("PowerOn");
-        powerStatus = new PowerStatus(true, deviceUid, deviceUidNumber);
-        return powerStatus;
-    }
-
-    public PowerStatus getPowerStatus() {
-        return powerStatus;
-    }
-
-    @Override
-    public boolean isPowerOn() {
+    public boolean isPower() {
         if (connected) {
-            return getPowerStatus().isPowerOn();
+            return getPowerStatus().isPower();
         } else {
             return false;
         }
+    }
+
+    @Override
+    public ControllerStatus getControllerStatus() {
+        return powerStatus;
     }
 
     @Override
@@ -134,13 +131,13 @@ public class DemoController implements ControllerService {
             deviceUid = new int[]{0x01, 0x02, 0x03, 0x04};
             deviceUidNumber = 16909060;
 
-            powerStatus = new PowerStatus(false, deviceUid, deviceUidNumber);
+            powerStatus = new ControllerStatus(true, false, deviceUid, deviceUidNumber);
 
-            Logger.trace("Track Power is " + (powerStatus.isPowerOn() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
+            Logger.trace("Track Power is " + (powerStatus.isPower() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
             deviceInfo = getControllerInfo();
-            Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (powerStatus.isPowerOn() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
+            Logger.info("Connected with " + deviceInfo.getProduct() + " " + deviceInfo.getArticleNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (powerStatus.isPower() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
             //Send powerstatus
-            executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(powerStatus.isPowerOn(), connected)));
+            executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(powerStatus.isPower(), connected)));
         }
 
         // Finally start the harbeat timer which will takes care of the feedback 
@@ -203,19 +200,6 @@ public class DemoController implements ControllerService {
         return locoAddress;
     }
 
-    /**
-     * Compatibility with 6050
-     *
-     * @param address the locomotive address
-     * @param protocol
-     * @param function the value of the function (F0)
-     */
-    @Override
-    public void toggleDirection(int address, DecoderType protocol, boolean function) {
-        toggleDirection(address, protocol);
-        setFunction(address, protocol, 0, function);
-    }
-
     @Override
     public void toggleDirection(int address, DecoderType decoderType) {
         int la = getLocoAddres(address, decoderType);
@@ -250,20 +234,6 @@ public class DemoController implements ControllerService {
         return di;
     }
 
-    /**
-     * Compatibility 6050
-     *
-     * @param address the locomotive address
-     * @param decoderType
-     * @param function the function 0 value
-     * @param speed the speed
-     */
-    @Override
-    public void setSpeedAndFunction(int address, DecoderType decoderType, boolean function, int speed) {
-        setSpeed(address, decoderType, speed);
-        setFunction(address, decoderType, 0, function);
-    }
-
     @Override
     public void setSpeed(int address, DecoderType decoderType, int speed) {
         int la = getLocoAddres(address, decoderType);
@@ -276,24 +246,6 @@ public class DemoController implements ControllerService {
         //int la = getLocoAddres(address, decoderType);
     }
 
-    /**
-     * Compatibility with 6050
-     *
-     * @param address address of the locomotive
-     * @param decoderType the locomotive decoder protocol
-     * @param f1 value function 1
-     * @param f2 value function 2
-     * @param f3 value function 3
-     * @param f4 value function 4
-     */
-    @Override
-    public void setFunctions(int address, DecoderType decoderType, boolean f1, boolean f2, boolean f3, boolean f4) {
-        setFunction(address, decoderType, 1, f1);
-        setFunction(address, decoderType, 2, f2);
-        setFunction(address, decoderType, 3, f3);
-        setFunction(address, decoderType, 4, f4);
-    }
-
     @Override
     public void switchAccessoiry(int address, AccessoryValue value) {
         executor.execute(() -> switchAccessoiryOnOff(address, value));
@@ -303,11 +255,9 @@ public class DemoController implements ControllerService {
     }
 
     @Override
-    public DeviceInfo getControllerInfo() {
+    public CS3Device getControllerInfo() {
         if (deviceInfo == null) {
-            deviceInfo = new DeviceInfo("123456", "JCS Demo", "Demo Controller", 32, true, true, true, true);
-            String deviceHostName = NetworkUtil.getMyAddress().getHostName();
-            deviceInfo.setDeviceHostName(deviceHostName);
+            deviceInfo = new CS3Device("123456", "1234", "16909060", "0.0", "00000", "Demo Controller", "JCS");
         }
         return deviceInfo;
     }
@@ -324,8 +274,8 @@ public class DemoController implements ControllerService {
 
     @Override
     public void notifyAllControllerEventListeners() {
-        Logger.info("Current Controller Power Status: " + (isPowerOn() ? "On" : "Off") + "...");
-        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPowerOn(), isConnected())));
+        Logger.info("Current Controller Power Status: " + (isPower() ? "On" : "Off") + "...");
+        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPower(), isConnected())));
     }
 
     @Override
@@ -438,7 +388,7 @@ public class DemoController implements ControllerService {
         public void run() {
             try {
                 if (toggle) {
-                    boolean power = this.controller.getPowerStatus().isPowerOn();
+                    boolean power = this.controller.getPowerStatus().isPower();
                     if (power != powerOn) {
                         powerOn = power;
                         //Logger.debug("Power Status changed to " + (powerOn ? "On" : "Off"));

@@ -18,11 +18,13 @@
  */
 package jcs.controller.cs3;
 
+import jcs.controller.cs3.devices.CS3Device;
 import java.awt.Image;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,7 +32,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.ControllerService;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.CanMessageFactory;
 import jcs.controller.cs3.can.MarklinCan;
@@ -41,24 +42,29 @@ import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.http.AccessoryBeanParser;
 import jcs.controller.cs3.http.LocomotiveBeanParser;
 import jcs.controller.cs3.net.Connection;
-import jcs.controller.cs3.net.CS3ConnectionFactory;
+import jcs.controller.cs3.net.ControllerConnectionFactory;
 import jcs.controller.cs3.net.HTTPConnection;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.HeartbeatListener;
 import jcs.controller.cs3.events.SensorMessageListener;
-import jcs.controller.cs3.http.DeviceParser;
+import jcs.controller.cs3.http.CS3DeviceParser;
 import jcs.controller.cs3.http.SvgIconToPngIconConverter;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
+import jcs.controller.MarklinController;
+import jcs.controller.cs3.devices.CS3;
+import jcs.controller.cs3.devices.GFP;
+import jcs.controller.cs3.devices.LinkSxx;
+import jcs.controller.cs3.http.DevicesParser;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class MarklinCS3 implements ControllerService {
+public class MarklinCS3 implements MarklinController {
 
     private Connection connection;
     private boolean connected = false;
@@ -72,7 +78,7 @@ public class MarklinCS3 implements ControllerService {
     private boolean startTimer;
 
     private final ExecutorService executor;
-    private DeviceInfo deviceInfo;
+    private CS3Device deviceInfo;
 
     private static final long DELAY = 0L;
 
@@ -80,6 +86,7 @@ public class MarklinCS3 implements ControllerService {
         this(true);
     }
 
+    //For testing
     MarklinCS3(boolean useTimer) {
         controllerEventListeners = new ArrayList<>();
         sensorMessageEventListeners = new ArrayList<>();
@@ -91,61 +98,81 @@ public class MarklinCS3 implements ControllerService {
     }
 
     @Override
-    public PowerStatus powerOff() {
-        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.stop()));
-        return ps;
-    }
-
-    @Override
-    public PowerStatus powerOn() {
-        PowerStatus ps = new PowerStatus(connection.sendCanMessage(CanMessageFactory.go()));
-        return ps;
-    }
-
-    public PowerStatus getPowerStatus() {
-        CanMessage m = connection.sendCanMessage(CanMessageFactory.powerStatus());
-        PowerStatus ps = new PowerStatus(m);
-        return ps;
-    }
-
-    @Override
-    public boolean isPowerOn() {
-        if (connected) {
-            return getPowerStatus().isPowerOn();
+    public ControllerStatus power(boolean on) {
+        ControllerStatus ps;
+        if (this.connected) {
+            CanMessage cm;
+            if (on) {
+                cm = CanMessageFactory.go();
+            } else {
+                cm = CanMessageFactory.stop();
+            }
+            ps = new ControllerStatus(connection.sendCanMessage(cm));
         } else {
-            return false;
+            ps = new ControllerStatus(false, false, new int[0], -1);
         }
+        return ps;
+    }
+
+    @Override
+    public ControllerStatus getControllerStatus() {
+        ControllerStatus ps;
+        if (this.connected) {
+            CanMessage m = connection.sendCanMessage(CanMessageFactory.powerStatus());
+            ps = new ControllerStatus(m);
+        } else {
+            ps = new ControllerStatus(false, false, new int[0], -1);
+
+        }
+        return ps;
+    }
+
+    @Override
+    public boolean isPower() {
+        return getControllerStatus().isPower();
     }
 
     @Override
     public final boolean connect() {
         if (!connected) {
             Logger.debug("Connecting to CS3...");
-            this.connection = CS3ConnectionFactory.getConnection();
+            this.connection = ControllerConnectionFactory.getConnection();
             this.connected = this.connection != null;
         }
 
         if (connected) {
-            Logger.debug("Obtaining controller device information...");
+            Logger.trace("Obtaining device information...");
             getControllerInfo();
-            //int gfpUid = Integer.getInteger(deviceInfo.getGfpUid());
+
+            getDeviceInfo();
+
+            Logger.trace("CS3 uid: "+ this.deviceInfo.getCs3().getUid());
+            Logger.trace("Article: "+ this.deviceInfo.getGfp().getArticleNumber());
+            Logger.trace("CS3: " + this.deviceInfo.getCs3().getName());
+            Logger.trace("GFP uid: "  + this.deviceInfo.getGfp().getUid());
+            Logger.trace("GFP version: "  + this.deviceInfo.getGfp().getVersion());
+            Logger.trace("GFP Serial: " + this.deviceInfo.getGfp().getSerial());
+            Logger.trace("LinkSxx uid: " + this.deviceInfo.getLinkSxx().getUid());
+            Logger.trace("LinkSxx id: " + this.deviceInfo.getLinkSxx().getIdentifier());
+            Logger.trace("LinkSxx serial: " + this.deviceInfo.getLinkSxx().getSerialNumber());
+            Logger.trace("LinkSxx version: " + this.deviceInfo.getLinkSxx().getVersion());
+            Logger.trace("LinkSxx sensors: "+this.deviceInfo.getLinkSxx().getTotalSensors());
+            
+            Logger.trace("Track Current "+ this.deviceInfo.getGfp().getTrackCurrent()+" A. Prog Track Current: "+this.deviceInfo.getGfp().getProgrammingTrackCurrent()+" A. Track Voltage: "+this.deviceInfo.getGfp().getTrackVoltage()+" V. Temperature: "+this.deviceInfo.getGfp().getCS3Temperature()+" C.");
+            
             long gfpUid = Long.parseLong(deviceInfo.getGfpUid(), 16);
-
-            int gfpUidInt = (int) gfpUid;
-
-            //int guiUid = Integer.getInteger(deviceInfo.getGuiUid());
-            long guiUid = Integer.getInteger(deviceInfo.getGuiUid(), 16);
+            long guiUid = Integer.getInteger(deviceInfo.getCs3Uid(), 16);
 
             CanMessageFactory.setGFPUid((int) gfpUid);
             CanMessageFactory.setGUIUid((int) guiUid);
-            PowerStatus ps = getPowerStatus();
+            ControllerStatus ps = getControllerStatus();
 
-            Logger.info("Connected with " + deviceInfo.getDescription() + " " + deviceInfo.getCatalogNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPowerOn() ? "On" : "Off") + ". GFPUID : " + deviceInfo.getGfpUid() + ". GUIUID : " + deviceInfo.getGuiUid());
-            Logger.trace("Track Power is " + (ps.isPowerOn() ? "On" : "Off"));
+            Logger.info("Connected with " + deviceInfo.getProduct() + " " + deviceInfo.getArticleNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (ps.isPower() ? "On" : "Off") + ". GFPUID : " + deviceInfo.getGfpUid() + ". GUIUID : " + deviceInfo.getCs3Uid());
+            Logger.trace("Track Power is " + (ps.isPower() ? "On" : "Off"));
 
             addCanMessageListener(new ExtraMessageListener(this));
 
-            executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(ps.isPowerOn(), connected)));
+            executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(ps.isPower(), connected)));
         }
 
         // Finally start the heartbeat timer which will takes care of the feedback 
@@ -216,19 +243,6 @@ public class MarklinCS3 implements ControllerService {
         return locoAddress;
     }
 
-    /**
-     * Compatibility with 6050
-     *
-     * @param address the locomotive address
-     * @param protocol
-     * @param function the value of the function (F0)
-     */
-    @Override
-    public void toggleDirection(int address, DecoderType protocol, boolean function) {
-        toggleDirection(address, protocol);
-        setFunction(address, protocol, 0, function);
-    }
-
     @Override
     public void toggleDirection(int address, DecoderType decoderType) {
         int la = getLocoAddres(address, decoderType);
@@ -255,20 +269,6 @@ public class MarklinCS3 implements ControllerService {
         return di;
     }
 
-    /**
-     * Compatibility 6050
-     *
-     * @param address the locomotive address
-     * @param decoderType
-     * @param function the function 0 value
-     * @param speed the speed
-     */
-    @Override
-    public void setSpeedAndFunction(int address, DecoderType decoderType, boolean function, int speed) {
-        setSpeed(address, decoderType, speed);
-        setFunction(address, decoderType, 0, function);
-    }
-
     @Override
     public void setSpeed(int address, DecoderType decoderType, int speed) {
         int la = getLocoAddres(address, decoderType);
@@ -283,24 +283,6 @@ public class MarklinCS3 implements ControllerService {
         int value = flag ? FUNCTION_ON : FUNCTION_OFF;
         int la = getLocoAddres(address, decoderType);
         this.connection.sendCanMessage(CanMessageFactory.setFunction(la, functionNumber, value));
-    }
-
-    /**
-     * Compatibility with 6050
-     *
-     * @param address address of the locomotive
-     * @param decoderType the locomotive decoder protocol
-     * @param f1 value function 1
-     * @param f2 value function 2
-     * @param f3 value function 3
-     * @param f4 value function 4
-     */
-    @Override
-    public void setFunctions(int address, DecoderType decoderType, boolean f1, boolean f2, boolean f3, boolean f4) {
-        setFunction(address, decoderType, 1, f1);
-        setFunction(address, decoderType, 2, f2);
-        setFunction(address, decoderType, 3, f3);
-        setFunction(address, decoderType, 4, f4);
     }
 
     @Override
@@ -341,7 +323,7 @@ public class MarklinCS3 implements ControllerService {
 
     @Override
     public List<LocomotiveBean> getLocomotives() {
-        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        HTTPConnection httpCon = ControllerConnectionFactory.getHTTPConnection();
         String lokomotiveCs2 = httpCon.getLocomotivesFile();
         LocomotiveBeanParser lp = new LocomotiveBeanParser();
         return lp.parseLocomotivesFile(lokomotiveCs2);
@@ -349,7 +331,7 @@ public class MarklinCS3 implements ControllerService {
 
     @Override
     public void getAllFunctionIcons() {
-        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        HTTPConnection httpCon = ControllerConnectionFactory.getHTTPConnection();
         String json = httpCon.getAllFunctionsSvgJSON();
         SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
         svgp.convertAndCacheAllFunctionsSvgIcons(json);
@@ -357,7 +339,7 @@ public class MarklinCS3 implements ControllerService {
 
     @Override
     public List<AccessoryBean> getAccessories() {
-        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        HTTPConnection httpCon = ControllerConnectionFactory.getHTTPConnection();
         String magnetartikelCs2 = httpCon.getAccessoriesFile();
         AccessoryBeanParser ap = new AccessoryBeanParser();
         return ap.parseAccessoryFile(magnetartikelCs2);
@@ -365,43 +347,37 @@ public class MarklinCS3 implements ControllerService {
 
     @Override
     public Image getLocomotiveImage(String icon) {
-        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        HTTPConnection httpCon = ControllerConnectionFactory.getHTTPConnection();
         Image locIcon = httpCon.getLocomotiveImage(icon);
         return locIcon;
     }
 
-//    @Override
-//    public List<AccessoryStatus> getAccessoryStatuses() {
-    //This piece does not seem to work with a CS3
-    //TO sort out how to get the statuses
-    //Update the file by sending a configRequest first
-//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
-//        //give it some time to process
-//        pause(100L);
-//        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
-//        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
-//        AccessoryBeanParser ap = new AccessoryBeanParser();
-//        return ap.parseAccessoryStatusFile(accessoryStatuses);
-    //STUB
-//        return Collections.EMPTY_LIST;
-//    }
-    @Override
-    public DeviceInfo getControllerInfo() {
+    public CS3Device getDeviceInfo() {
+        HTTPConnection httpCon = ControllerConnectionFactory.getHTTPConnection();
+        String deviceJSON = httpCon.getDevicesJSON();
+        DevicesParser dp = new DevicesParser();
+        dp.parseDevices(deviceJSON);
         if (deviceInfo == null) {
-            HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+            deviceInfo = new CS3Device(dp.getCs3(), dp.getGfp(), dp.getLinkSxx());
+        } else {
+            deviceInfo.setCs3(dp.getCs3());
+            deviceInfo.setGfp(dp.getGfp());
+            deviceInfo.setLinkSxx(dp.getLinkSxx());
+        }
+        return deviceInfo;
+    }
+
+    @Override
+    public CS3Device getControllerInfo() {
+        if (deviceInfo == null) {
+            HTTPConnection httpCon = ControllerConnectionFactory.getHTTPConnection();
             String deviceFile = httpCon.getDeviceFile();
-            DeviceParser dp = new DeviceParser();
+            CS3DeviceParser dp = new CS3DeviceParser();
             deviceInfo = dp.parseAccessoryFile(deviceFile);
             long gfpUid = Long.parseLong(deviceInfo.getGfpUid(), 16);
 
             deviceInfo.updateFromStatusMessageResponse(connection.sendCanMessage(CanMessageFactory.statusConfig((int) gfpUid)));
-            String deviceHostName = connection.getCs2Address().getHostName();
-            deviceInfo.setDeviceHostName(deviceHostName);
-            deviceInfo.setMaxFunctions(32);
-            deviceInfo.setSupportMM(true);
-            deviceInfo.setSupportMFX(true);
-            deviceInfo.setSupportDCC(true);
-            deviceInfo.setSupportSX1(true);
+            //String deviceHostName = connection.getControllerAddress().getHostName();
         }
         return deviceInfo;
     }
@@ -418,8 +394,8 @@ public class MarklinCS3 implements ControllerService {
 
     @Override
     public void notifyAllControllerEventListeners() {
-        Logger.info("Current Controller Power Status: " + (isPowerOn() ? "On" : "Off") + "...");
-        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPowerOn(), isConnected())));
+        Logger.info("Current Controller Power Status: " + (isPower() ? "On" : "Off") + "...");
+        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPower(), isConnected())));
     }
 
     @Override
@@ -468,7 +444,7 @@ public class MarklinCS3 implements ControllerService {
     }
 
     public String getDeviceIp() {
-        return CS3ConnectionFactory.getInstance().getDeviceIp();
+        return ControllerConnectionFactory.getControllerIp();
     }
 
     public SensorMessageEvent querySensor(int contactId) {
@@ -556,7 +532,7 @@ public class MarklinCS3 implements ControllerService {
                 controller.sendIdle();
 
 //                if (cnt % 4 == 0) {
-//                    boolean power = controller.getPowerStatus().isPowerOn();
+//                    boolean power = controller.getControllerStatus().isPower();
 //                    if (power != powerOn) {
 //                        powerOn = power;
 //                        //Logger.trace("Power Status changed to " + (powerOn ? "On" : "Off"));
@@ -614,56 +590,70 @@ public class MarklinCS3 implements ControllerService {
         }
     }
 
+    //Test
     public static void main(String[] a) {
-        //Configurator.
-        //        currentConfig().formatPattern("{date:yyyy-MM_DIL-dd HH:mm:ss.SSS} [{thread}] {class_name}.{method}() {level}: {message}").
-        //        activate();
 
-        MarklinCS3 cs2 = new MarklinCS3(false);
+        MarklinCS3 cs3 = new MarklinCS3(false);
 
-        if (cs2.isConnected()) {
-            //cs2.powerOn();
+        if (cs3.isConnected()) {
+            cs3.power(false);
 
-//            List<SensorMessageEvent> sml = cs2.querySensors(48);
+//            List<SensorMessageEvent> sml = cs3.querySensors(48);
 //            for (SensorMessageEvent sme : sml) {
 //                Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
 //                Logger.debug(s.toLogString());
 //            }
-            //List<AccessoryBean> asl = cs2.getAccessoryStatuses();
+            //List<AccessoryBean> asl = cs3.getAccessoryStatuses();
             //for (AccessoryStatus as : asl) {
             //    Logger.debug(as.toString());
             //}
 //            for (int i = 0; i < 30; i++) {
-//                cs2.sendIdle();
+//                cs3.sendIdle();
 //                pause(500);
 //            }
 //            Logger.debug("Sending  member ping\n");
-//            List<PingResponse> prl = cs2.membersPing();
+//            List<PingResponse> prl = cs3.membersPing();
 //            //Logger.info("Query direction of loc 12");
-//            //DirectionInfo info = cs2.getDirection(12, DecoderType.MM);
+//            //DirectionInfo info = cs3.getDirection(12, DecoderType.MM);
 //            Logger.debug("got " + prl.size() + " responses");
 //            for (PingResponse pr : prl) {
 //                Logger.debug(pr);
 //            }
-//            List<SensorMessageEvent> sel = cs2.querySensors(48);
+//            List<SensorMessageEvent> sel = cs3.querySensors(48);
 //
 //            for (SensorMessageEvent se : sel) {
 //                Logger.debug(se.toString());
 //            }
 //            FeedbackModule fm2 = new FeedbackModule(2);
-//            cs2.queryAllPorts(fm2);
+//            cs3.queryAllPorts(fm2);
 //            Logger.debug(fm2.toLogString());
             //cs2.querySensor(1);
         }
 
-        //PingResponse pr2 = cs2.memberPing();
+        //PingResponse pr2 = cs3.memberPing();
         //Logger.info("Query direction of loc 12");
-        //DirectionInfo info = cs2.getDirection(12, DecoderType.MM);
+        //DirectionInfo info = cs3.getDirection(12, DecoderType.MM);
         Logger.debug("DONE");
-        cs2.pause(5L);
+        cs3.pause(5L);
+        System.exit(0);
     }
     //for (int i = 0; i < 16; i++) {
-    //    cs2.requestFeedbackEvents(i + 1);
+    //    cs3.requestFeedbackEvents(i + 1);
     //}
 
 }
+//    @Override
+//    public List<AccessoryStatus> getAccessoryStatuses() {
+//This piece does not seem to work with a CS3
+//TO sort out how to get the statuses
+//Update the file by sending a configRequest first
+//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
+//        //give it some time to process
+//        pause(100L);
+//        HTTPConnection httpCon = ControllerConnectionFactory.getHTTPConnection();
+//        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
+//        AccessoryBeanParser ap = new AccessoryBeanParser();
+//        return ap.parseAccessoryStatusFile(accessoryStatuses);
+//STUB
+//        return Collections.EMPTY_LIST;
+//    }

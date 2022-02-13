@@ -30,9 +30,9 @@ public interface Connection extends AutoCloseable {
 
     static final int MAX_ERRORS = 15;
 
-    static final int CS2_TX_PORT = 15730;
+    static final int CS3_TX_PORT = 15730;
 
-    static final int CS2_RX_PORT = 15731;
+    static final int CS3_RX_PORT = 15731;
 
     CanMessage sendCanMessage(CanMessage message);
 
@@ -40,6 +40,6 @@ public interface Connection extends AutoCloseable {
 
     void removeCanMessageListener(CanMessageListener listener);
 
-    InetAddress getCs2Address();
+    InetAddress getControllerAddress();
 
 }

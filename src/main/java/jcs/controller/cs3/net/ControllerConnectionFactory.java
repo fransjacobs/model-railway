@@ -29,44 +29,44 @@ import jcs.controller.cs3.can.MarklinCan;
 import org.tinylog.Logger;
 
 /**
- * Try to connect with a CS2/3. A "ping" is send to the broadcast address like
- * the mobile app does. The CS2/3 will response reveals the IP address.
+ * Try to connect with a CS 3. A "ping" is send to the broadcast address like
+ * the mobile app does. The CS 3 will response reveals the IP address.
  *
  * @author Frans Jacobs <frans.jacobs@gmail.com>
  */
-public class CS3ConnectionFactory {
+public class ControllerConnectionFactory {
 
-    private static CS3ConnectionFactory instance;
+    private static ControllerConnectionFactory instance;
 
-    private Connection cs2Connection;
+    private Connection controllerConnection;
     private HTTPConnection httpConnection;
-    private InetAddress cs2Host;
+    private InetAddress controllerHost;
 
     private static final String BROADCAST_ADDRESS = "255.255.255.255";
 
-    private CS3ConnectionFactory() {
+    private ControllerConnectionFactory() {
     }
 
-    public static CS3ConnectionFactory getInstance() {
+    public static ControllerConnectionFactory getInstance() {
         if (instance == null) {
-            instance = new CS3ConnectionFactory();
+            instance = new ControllerConnectionFactory();
         }
         return instance;
     }
 
     Connection getConnectionImpl() {
-        if (cs2Connection == null) {
-            Logger.trace("Try to discover a CS2/3...");
-            sendMobileAppUDPReply();
+        if (controllerConnection == null) {
+            Logger.trace("Try to discover a Marklin CS3...");
+            sendMobileAppPing();
 
-            if (cs2Host != null) {
-                Logger.debug("CS2/3 ip: " + cs2Host.getHostName());
-                cs2Connection = new TCPConnection(cs2Host);
+            if (controllerHost != null) {
+                Logger.trace("CS3 ip: " + controllerHost.getHostName());
+                controllerConnection = new TCPConnection(controllerHost);
             } else {
-                Logger.warn("CS2/3 host not found!");
+                Logger.warn("Can't find a Marklin Controller host!");
             }
         }
-        return this.cs2Connection;
+        return this.controllerConnection;
     }
 
     public static Connection getConnection() {
@@ -74,11 +74,11 @@ public class CS3ConnectionFactory {
     }
 
     HTTPConnection getHTTPConnectionImpl() {
-        if (cs2Connection == null) {
+        if (controllerConnection == null) {
             getConnectionImpl();
         }
         if (httpConnection == null) {
-            httpConnection = new HTTPConnection(cs2Host);
+            httpConnection = new HTTPConnection(controllerHost);
         }
         return this.httpConnection;
     }
@@ -87,22 +87,22 @@ public class CS3ConnectionFactory {
         return getInstance().getHTTPConnectionImpl();
     }
 
-    private void sendMobileAppUDPReply() {
+    private void sendMobileAppPing() {
         try {
             InetAddress localAddress = InetAddress.getByName("0.0.0.0");
             InetAddress broadcastAddress = InetAddress.getByName(BROADCAST_ADDRESS);
 
             CanMessage ping = CanMessageFactory.getMobileAppPingRequest();
 
-            try (DatagramSocket requestSocket = new DatagramSocket()) {
-                Logger.trace("Send: " + ping);
-                DatagramPacket requestPacket = new DatagramPacket(ping.getBytes(), ping.getLength(), broadcastAddress, Connection.CS2_RX_PORT);
+            try ( DatagramSocket requestSocket = new DatagramSocket()) {
+                Logger.trace("Sending: " + ping);
+                DatagramPacket requestPacket = new DatagramPacket(ping.getBytes(), ping.getLength(), broadcastAddress, Connection.CS3_RX_PORT);
                 requestSocket.send(requestPacket);
             }
 
-            try (DatagramSocket responseSocket = new DatagramSocket(Connection.CS2_TX_PORT, localAddress)) {
+            try ( DatagramSocket responseSocket = new DatagramSocket(Connection.CS3_TX_PORT, localAddress)) {
                 responseSocket.setSoTimeout(3000);
-                DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, Connection.CS2_TX_PORT);
+                DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, Connection.CS3_TX_PORT);
                 responseSocket.receive(responsePacket);
 
                 InetAddress replyHost = InetAddress.getByName(responsePacket.getAddress().getHostAddress());
@@ -111,26 +111,30 @@ public class CS3ConnectionFactory {
                 Logger.trace("Received: " + response + " from: " + replyHost.getHostAddress());
 
                 if (response.getCommand() == MarklinCan.SW_STATUS_REQ) {
-                    if (this.cs2Host == null) {
-                        this.cs2Host = replyHost;
+                    if (this.controllerHost == null) {
+                        this.controllerHost = replyHost;
                     }
                 } else {
                     Logger.debug("Received wrong command: " + response.getCommand() + " != " + MarklinCan.SW_STATUS_REQ + "...");
                 }
             }
         } catch (SocketTimeoutException ste) {
-            Logger.debug("No reply. " + ste.getMessage());
+            Logger.trace("No reply. " + ste.getMessage());
         } catch (IOException ex) {
             Logger.error(ex);
         }
     }
 
-    public String getDeviceIp() {
-        if (this.cs2Host != null) {
-            return this.cs2Host.getHostAddress();
+    String getControllerIpImpl() {
+        if (this.controllerHost != null) {
+            return this.controllerHost.getHostAddress();
         } else {
             return "Unknown";
         }
+    }
+
+    public static String getControllerIp() {
+        return getInstance().getControllerIpImpl();
     }
 
 }

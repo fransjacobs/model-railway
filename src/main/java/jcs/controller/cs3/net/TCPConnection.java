@@ -56,7 +56,7 @@ class TCPConnection implements Connection {
     private void checkConnection() {
         try {
             if (socket == null || !socket.isConnected()) {
-                socket = new Socket(cs2Address, Connection.CS2_RX_PORT);
+                socket = new Socket(cs2Address, Connection.CS3_RX_PORT);
                 socket.setSoTimeout(5000);
                 dos = new DataOutputStream(socket.getOutputStream());
                 din = new DataInputStream(socket.getInputStream());
@@ -219,7 +219,7 @@ class TCPConnection implements Connection {
     }
 
     @Override
-    public InetAddress getCs2Address() {
+    public InetAddress getControllerAddress() {
         return cs2Address;
     }
 

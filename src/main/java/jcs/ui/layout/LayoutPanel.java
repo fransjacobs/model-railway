@@ -225,7 +225,6 @@ public class LayoutPanel extends JPanel {
         setMinimumSize(new Dimension(1000, 160));
         setOpaque(false);
         setPreferredSize(new Dimension(1000, 775));
-        setSize(new Dimension(1125, 775));
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
                 formComponentResized(evt);
@@ -240,20 +239,19 @@ public class LayoutPanel extends JPanel {
         flowLayout1.setAlignOnBaseline(true);
         topPanel.setLayout(flowLayout1);
 
-        toolBar.setRollover(true);
         toolBar.setDoubleBuffered(true);
         toolBar.setMargin(new Insets(1, 1, 1, 1));
-        toolBar.setMaximumSize(new Dimension(1050, 40));
-        toolBar.setMinimumSize(new Dimension(1000, 40));
-        toolBar.setPreferredSize(new Dimension(1000, 40));
+        toolBar.setMaximumSize(new Dimension(1050, 42));
+        toolBar.setMinimumSize(new Dimension(1000, 42));
+        toolBar.setPreferredSize(new Dimension(1000, 42));
 
         saveBtn.setIcon(new ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
         saveBtn.setToolTipText("Save");
         saveBtn.setFocusable(false);
         saveBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-        saveBtn.setMaximumSize(new Dimension(38, 38));
-        saveBtn.setMinimumSize(new Dimension(38, 38));
-        saveBtn.setPreferredSize(new Dimension(38, 38));
+        saveBtn.setMaximumSize(new Dimension(40, 40));
+        saveBtn.setMinimumSize(new Dimension(40, 40));
+        saveBtn.setPreferredSize(new Dimension(40, 40));
         saveBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -371,13 +369,11 @@ public class LayoutPanel extends JPanel {
         tileBtnGroup.add(straightBtn);
         straightBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-straight.png"))); // NOI18N
         straightBtn.setToolTipText("Straight Track");
-        straightBtn.setBorder(null);
         straightBtn.setDoubleBuffered(true);
         straightBtn.setHorizontalTextPosition(SwingConstants.CENTER);
         straightBtn.setMaximumSize(new Dimension(38, 38));
         straightBtn.setMinimumSize(new Dimension(38, 38));
         straightBtn.setPreferredSize(new Dimension(38, 38));
-        straightBtn.setRolloverEnabled(true);
         straightBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight_Y.png"))); // NOI18N
         straightBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         straightBtn.addActionListener(new ActionListener() {
@@ -395,7 +391,6 @@ public class LayoutPanel extends JPanel {
         curvedBtn.setMaximumSize(new Dimension(38, 38));
         curvedBtn.setMinimumSize(new Dimension(38, 38));
         curvedBtn.setPreferredSize(new Dimension(38, 38));
-        curvedBtn.setRolloverEnabled(true);
         curvedBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-diagonal_Y.png"))); // NOI18N
         curvedBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         curvedBtn.addActionListener(new ActionListener() {
@@ -413,7 +408,6 @@ public class LayoutPanel extends JPanel {
         blockBtn.setMaximumSize(new Dimension(38, 38));
         blockBtn.setMinimumSize(new Dimension(38, 38));
         blockBtn.setPreferredSize(new Dimension(38, 38));
-        blockBtn.setRolloverEnabled(true);
         blockBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-block_Y.png"))); // NOI18N
         blockBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         blockBtn.addActionListener(new ActionListener() {
@@ -431,7 +425,6 @@ public class LayoutPanel extends JPanel {
         sensorBtn.setMaximumSize(new Dimension(38, 38));
         sensorBtn.setMinimumSize(new Dimension(38, 38));
         sensorBtn.setPreferredSize(new Dimension(38, 38));
-        sensorBtn.setRolloverEnabled(true);
         sensorBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight-feedback_Y.png"))); // NOI18N
         sensorBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         sensorBtn.addActionListener(new ActionListener() {
@@ -448,7 +441,6 @@ public class LayoutPanel extends JPanel {
         signalBtn.setMaximumSize(new Dimension(38, 38));
         signalBtn.setMinimumSize(new Dimension(38, 38));
         signalBtn.setPreferredSize(new Dimension(38, 38));
-        signalBtn.setRolloverEnabled(true);
         signalBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight-signal_Y.png"))); // NOI18N
         signalBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         signalBtn.addActionListener(new ActionListener() {
@@ -465,7 +457,6 @@ public class LayoutPanel extends JPanel {
         leftSwitchBtn.setMaximumSize(new Dimension(38, 38));
         leftSwitchBtn.setMinimumSize(new Dimension(38, 38));
         leftSwitchBtn.setPreferredSize(new Dimension(38, 38));
-        leftSwitchBtn.setRolloverEnabled(true);
         leftSwitchBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-LY-turnout.png"))); // NOI18N
         leftSwitchBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         leftSwitchBtn.addActionListener(new ActionListener() {
@@ -483,7 +474,6 @@ public class LayoutPanel extends JPanel {
         rightSwitchBtn.setMaximumSize(new Dimension(38, 38));
         rightSwitchBtn.setMinimumSize(new Dimension(38, 38));
         rightSwitchBtn.setPreferredSize(new Dimension(38, 38));
-        rightSwitchBtn.setRolloverEnabled(true);
         rightSwitchBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-RY-turnout.png"))); // NOI18N
         rightSwitchBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         rightSwitchBtn.addActionListener(new ActionListener() {
@@ -501,7 +491,6 @@ public class LayoutPanel extends JPanel {
         crossLBtn.setMaximumSize(new Dimension(40, 40));
         crossLBtn.setMinimumSize(new Dimension(38, 38));
         crossLBtn.setPreferredSize(new Dimension(38, 38));
-        crossLBtn.setRolloverEnabled(true);
         crossLBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-cross-LY.png"))); // NOI18N
         crossLBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         crossLBtn.addActionListener(new ActionListener() {
@@ -519,7 +508,6 @@ public class LayoutPanel extends JPanel {
         crossRBtn.setMaximumSize(new Dimension(38, 38));
         crossRBtn.setMinimumSize(new Dimension(38, 38));
         crossRBtn.setPreferredSize(new Dimension(38, 38));
-        crossRBtn.setRolloverEnabled(true);
         crossRBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-cross-RY.png"))); // NOI18N
         crossRBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
         crossRBtn.addActionListener(new ActionListener() {

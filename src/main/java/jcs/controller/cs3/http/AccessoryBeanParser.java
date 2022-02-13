@@ -19,13 +19,11 @@
 package jcs.controller.cs3.http;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import jcs.controller.cs3.AccessoryStatus;
 import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
@@ -34,6 +32,8 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class AccessoryBeanParser {
+
+    public final static String MAGNETARTIKEL = "magnetartikel.cs2";
 
     private static final String ACCESSORY_START = "[magnetartikel]";
     private static final String VERSION = "version";

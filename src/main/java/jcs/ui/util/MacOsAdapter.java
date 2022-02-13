@@ -98,12 +98,12 @@ public class MacOsAdapter {
     }
 
     private void initTouchBar() {
-        try {
+//        try {
             touchBar = new JTouchBar();
             touchBar.setCustomizationIdentifier("JCSTouchBar");
 
             //Load the images
-            Image powerImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/power-red-24.png")));
+            //Image powerImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/power-red-24.png")));
             //Image displayLayoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/earth-yellow-24.png")));
             //Image locomotiveImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/electric-loc-yellow-24.png")));
             //Image turnoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/turnout-yellow-24.png")));
@@ -119,13 +119,13 @@ public class MacOsAdapter {
             //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFlexibleSpace));
             //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFixedSpaceSmall));
             //Buttons
-            TouchBarButton stopButton = new TouchBarButton();
-            stopButton.setImage(powerImage);
-            stopButton.setAction((TouchBarView view) -> {
-                Logger.trace("Touchbar Stop button clicked...");
-                JCS.getJCSFrame().stop();
-            });
-            touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
+            //TouchBarButton stopButton = new TouchBarButton();
+            //stopButton.setImage(powerImage);
+            //stopButton.setAction((TouchBarView view) -> {
+            //    Logger.trace("Touchbar Stop button clicked...");
+            //    JCS.getJCSFrame().stop();
+            //});
+            //touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
 
             //TouchBarButton overviewButton = new TouchBarButton();
             //overviewButton.setImage(displayLayoutImage);
@@ -175,9 +175,9 @@ public class MacOsAdapter {
 //        JCS.getJCSFrame().showDesignLayoutPanel();
 //      });
 //      touchBar.addItem(new TouchBarItem("designButton", designButton, true));
-        } catch (IOException e) {
-            Logger.error(e);
-        }
+//        } catch (IOException e) {
+//            Logger.error(e);
+//        }
     }
 
     public void showTouchbar(Component c) {

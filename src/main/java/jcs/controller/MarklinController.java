@@ -20,8 +20,8 @@ package jcs.controller;
 
 import java.awt.Image;
 import java.util.List;
-import jcs.controller.cs3.DeviceInfo;
-import jcs.controller.cs3.PowerStatus;
+import jcs.controller.cs3.devices.CS3Device;
+import jcs.controller.cs3.ControllerStatus;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.SensorMessageListener;
@@ -31,16 +31,16 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 
-public interface ControllerService {
+public interface MarklinController {
 
-    static final String SERVICE_TYPE = "ControllerService";
+    //static final String SERVICE_TYPE = "ControllerService";
 
-    PowerStatus powerOff();
-
-    PowerStatus powerOn();
-
-    boolean isPowerOn();
-
+    ControllerStatus power(boolean on);
+    
+    ControllerStatus getControllerStatus(); 
+    
+    boolean isPower();
+    
     boolean connect();
 
     boolean isConnected();
@@ -49,19 +49,15 @@ public interface ControllerService {
 
     String getName();
 
-    void toggleDirection(int address, DecoderType protocol, boolean function);
+    //void toggleDirection(int address, DecoderType protocol, boolean function);
 
     void toggleDirection(int address, DecoderType protocol);
 
     void setDirection(int address, DecoderType protocol, Direction direction);
 
-    void setSpeedAndFunction(int address, DecoderType protocol, boolean function, int speed);
-
     void setSpeed(int address, DecoderType protocol, int speed);
 
-    void setFunctions(int address, DecoderType protocol, boolean f1, boolean f2, boolean f3, boolean f4);
-
-    void setFunction(int address, DecoderType protocol, int functionNumber, boolean value);
+    void setFunction(int address, DecoderType protocol, int functionNumber, boolean flag);
 
     void switchAccessoiry(int address, AccessoryValue value);
 
@@ -71,7 +67,7 @@ public interface ControllerService {
 
     void notifyAllControllerEventListeners();
 
-    DeviceInfo getControllerInfo();
+    CS3Device getControllerInfo();
 
     void addCanMessageListener(CanMessageListener listener);
 

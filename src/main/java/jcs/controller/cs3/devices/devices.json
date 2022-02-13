@@ -1,0 +1,324 @@
+{
+    "gfp": [{
+            "_uid": "0x6373458c",
+            "_name": "GFP3-1",
+            "_typname": "Central Station 3",
+            "_kennung": "0xffff",
+            "_typ": "80",
+            "_artikelnr": "60226",
+            "_seriennr": "2374",
+            "_queryInterval": "5",
+            "_version": {
+                "major": "12",
+                "minor": "113"
+            },
+            "_kanal": [{
+                    "einheit": "A",
+                    "endWert": "5.50",
+                    "farbeGelb": "240",
+                    "farbeGruen": "48",
+                    "farbeMax": "192",
+                    "farbeRot": "224",
+                    "name": "MAIN",
+                    "nr": "1",
+                    "potenz": "253",
+                    "rangeGelb": "576",
+                    "rangeGruen": "552",
+                    "rangeMax": "660",
+                    "rangeRot": "600",
+                    "startWert": "0.00",
+                    "value": "0",
+                    "valueHuman": "0"
+                }, {
+                    "einheit": "A",
+                    "endWert": "2.30",
+                    "farbeGelb": "240",
+                    "farbeGruen": "48",
+                    "farbeMax": "192",
+                    "farbeRot": "224",
+                    "name": "PROG",
+                    "nr": "2",
+                    "potenz": "253",
+                    "rangeGelb": "363",
+                    "rangeGruen": "330",
+                    "rangeMax": "759",
+                    "rangeRot": "561",
+                    "startWert": "0.00",
+                    "value": "4",
+                    "valueHuman": "0.012"
+                }, {
+                    "einheit": "V",
+                    "endWert": "27.00",
+                    "farbeGelb": "12",
+                    "farbeGruen": "192",
+                    "farbeMax": "192",
+                    "farbeRot": "48",
+                    "name": "VOLT",
+                    "nr": "3",
+                    "potenz": "253",
+                    "rangeGelb": "252",
+                    "rangeGruen": "194",
+                    "rangeMax": "659",
+                    "rangeRot": "543",
+                    "startWert": "10.00",
+                    "value": "351",
+                    "valueHuman": "19.1"
+                }, {
+                    "einheit": "C",
+                    "endWert": "80.0",
+                    "farbeGelb": "8",
+                    "farbeGruen": "12",
+                    "farbeMax": "192",
+                    "farbeRot": "240",
+                    "name": "TEMP",
+                    "nr": "4",
+                    "rangeGelb": "145",
+                    "rangeGruen": "121",
+                    "rangeMax": "193",
+                    "rangeRot": "169",
+                    "startWert": "0.0",
+                    "value": "115",
+                    "valueHuman": "47.7"
+                }, {
+                    "auswahl": "60061:60101:L51095",
+                    "index": "1",
+                    "name": "Netzteil:",
+                    "nr": "1",
+                    "typ": "1"
+                }, {
+                    "auswahl": "norm:wide",
+                    "name": "6095 mix mode:",
+                    "nr": "2",
+                    "typ": "1"
+                }],
+            "isPresent": true
+        }],
+    "storage": [{
+            "_uid": "0x8",
+            "_name": "USB 0",
+            "_kennung": "0xffff",
+            "_typ": "65280",
+            "_queryInterval": "5",
+            "_version": {
+                "major": "16"
+            },
+            "_kanal": [],
+            "path": "/media/usb0",
+            "isPresent": true,
+            "isMounted": true
+        }, {
+            "_uid": "0x9",
+            "_name": "USB 1",
+            "_kennung": "0xffff",
+            "_typ": "65280",
+            "_queryInterval": "5",
+            "_version": {
+                "major": "77"
+            },
+            "_kanal": [],
+            "path": "/media/usb1",
+            "isPresent": true,
+            "isMounted": true
+        }],
+    "linkSxx": [{
+            "_uid": "0x53385c41",
+            "_name": "LinkS88-1",
+            "_typname": "Link S88",
+            "_kennung": "0x41",
+            "_typ": "64",
+            "_artikelnr": "60883",
+            "_seriennr": "9281",
+            "_queryInterval": "5",
+            "_version": {
+                "major": "1",
+                "minor": "1"
+            },
+            "_kanal": [{
+                    "endWert": "8",
+                    "max": "8",
+                    "name": "Spalten Tastatur",
+                    "nr": "11",
+                    "startWert": "0",
+                    "typ": "2"
+                }, {
+                    "endWert": "15",
+                    "max": "15",
+                    "name": "Zeilen Tastatur",
+                    "nr": "12",
+                    "startWert": "0",
+                    "typ": "2"
+                }, {
+                    "auswahl": "Einzeln:Tastaturmatrix",
+                    "name": "Auswertung 1 - 16",
+                    "nr": "1",
+                    "typ": "1"
+                }, {
+                    "endWert": "31",
+                    "max": "31",
+                    "name": "Länge Bus 1 (RJ45-1)",
+                    "nr": "2",
+                    "startWert": "0",
+                    "typ": "2",
+                    "wert": "1"
+                }, {
+                    "endWert": "31",
+                    "max": "31",
+                    "name": "Länge Bus 2 (RJ45-2)",
+                    "nr": "3",
+                    "startWert": "0",
+                    "typ": "2",
+                    "wert": "2"
+                }, {
+                    "endWert": "31",
+                    "max": "31",
+                    "name": "Länge Bus 3 (6-Polig)",
+                    "nr": "4",
+                    "startWert": "0",
+                    "typ": "2"
+                }, {
+                    "einheit": "ms",
+                    "endWert": "1000",
+                    "max": "1000",
+                    "min": "10",
+                    "name": "Zykluszeit Bus 1 (RJ45-1)",
+                    "nr": "5",
+                    "startWert": "10",
+                    "typ": "2",
+                    "wert": "100"
+                }, {
+                    "einheit": "ms",
+                    "endWert": "1000",
+                    "max": "1000",
+                    "min": "10",
+                    "name": "Zykluszeit Bus 2 (RJ45-2)",
+                    "nr": "6",
+                    "startWert": "10",
+                    "typ": "2",
+                    "wert": "100"
+                }, {
+                    "einheit": "ms",
+                    "endWert": "1000",
+                    "max": "1000",
+                    "min": "10",
+                    "name": "Zykluszeit Bus 3 (6-Polig)",
+                    "nr": "7",
+                    "startWert": "10",
+                    "typ": "2",
+                    "wert": "100"
+                }, {
+                    "einheit": "µs",
+                    "endWert": "1000",
+                    "max": "1000",
+                    "min": "100",
+                    "name": "Bitzeit S88",
+                    "nr": "8",
+                    "startWert": "100",
+                    "typ": "2",
+                    "wert": "167"
+                }, {
+                    "einheit": "ms",
+                    "endWert": "1000",
+                    "max": "1000",
+                    "min": "10",
+                    "name": "Zykluszeit 1 - 16",
+                    "nr": "9",
+                    "startWert": "10",
+                    "typ": "2",
+                    "wert": "100"
+                }, {
+                    "einheit": "ms",
+                    "endWert": "100",
+                    "max": "100",
+                    "min": "10",
+                    "name": "Zykluszeit Tastatur",
+                    "nr": "10",
+                    "startWert": "10",
+                    "typ": "2",
+                    "wert": "37"
+                }],
+            "isPresent": true
+        }],
+    "connect": [],
+    "booster": [],
+    "csOld": [],
+    "msX": [],
+    "ms1": [{
+            "_uid": "0x3b03d",
+            "_name": "MS1-1",
+            "_kennung": "0xffff",
+            "_typ": "65344",
+            "_queryInterval": "5",
+            "_version": {
+                "major": "56"
+            },
+            "_kanal": [],
+            "isPresent": true
+        }],
+    "mobileDevices": [{
+            "_uid": "0x4f5910df",
+            "_name": "MobileDevice-1",
+            "_typname": "Frans Jacobs’s iPhone",
+            "_kennung": "0xffff",
+            "_typ": "61166",
+            "_artikelnr": "Odonata",
+            "_queryInterval": "5",
+            "_version": {
+                "major": "1",
+                "minor": "4"
+            },
+            "_kanal": [{
+                    "einheit": "%",
+                    "endWert": "100.0",
+                    "farbeGelb": "240",
+                    "farbeGruen": "192",
+                    "farbeMax": "48",
+                    "farbeRot": "48",
+                    "name": "Battery Charge Level",
+                    "nr": "1",
+                    "rangeGelb": "500",
+                    "rangeGruen": "200",
+                    "rangeMax": "1000",
+                    "rangeRot": "900",
+                    "startWert": "0.0"
+                }],
+            "isPresent": false
+        }, {
+            "_uid": "0x818bfef5",
+            "_name": "MobileDevice-2",
+            "_typname": "Frans’s iPad",
+            "_kennung": "0xffff",
+            "_typ": "61166",
+            "_artikelnr": "Odonata",
+            "_queryInterval": "5",
+            "_version": {
+                "major": "1",
+                "minor": "4"
+            },
+            "_kanal": [{
+                    "einheit": "%",
+                    "endWert": "100.0",
+                    "farbeGelb": "240",
+                    "farbeGruen": "192",
+                    "farbeMax": "48",
+                    "farbeRot": "48",
+                    "name": "Battery Charge Level",
+                    "nr": "1",
+                    "rangeGelb": "500",
+                    "rangeGruen": "200",
+                    "rangeMax": "1000",
+                    "rangeRot": "900",
+                    "startWert": "0.0"
+                }]
+        }],
+    "csNew": [{
+            "_uid": "0x6373458d",
+            "_name": "CS3 2374",
+            "_typ": "65504",
+            "_kanal": [],
+            "ip": "127.0.0.1",
+            "isPresent": true
+        }],
+    "unknown": [],
+    "gb": [],
+    "_isUpdateDeviceActive": false
+}

@@ -62,7 +62,7 @@ import javax.swing.WindowConstants;
 import jcs.JCS;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.DeviceInfo;
+import jcs.controller.cs3.devices.CS3Device;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.HeartBeatListener;
 import jcs.ui.layout.DisplayLayoutPanel;
@@ -218,13 +218,13 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void setCS3Properties() {
         if (TrackServiceFactory.getTrackService() != null) {
-            DeviceInfo di = TrackServiceFactory.getTrackService().getControllerInfo();
+            CS3Device di = TrackServiceFactory.getTrackService().getControllerInfo();
 
             if (di != null) {
-                this.controllerDescriptionLbl.setText(di.getDescription());
-                this.controllerCatalogNumberLbl.setText(di.getCatalogNumber());
+                this.controllerDescriptionLbl.setText(di.getProduct());
+                this.controllerCatalogNumberLbl.setText(di.getArticleNumber());
                 this.controllerSerialNumberLbl.setText(di.getSerialNumber());
-                this.controllerHostNameLbl.setText(di.getDeviceHostName());
+                this.controllerHostNameLbl.setText("CS3-" + di.getSerialNumber());
             } else {
                 this.controllerHostNameLbl.setText("Not Connected");
             }
@@ -299,7 +299,6 @@ public class JCSFrame extends JFrame implements UICallback {
             }
         });
 
-        jcsToolBar.setBorder(null);
         jcsToolBar.setFloatable(false);
         jcsToolBar.setBorderPainted(false);
         jcsToolBar.setDoubleBuffered(true);
@@ -307,7 +306,7 @@ public class JCSFrame extends JFrame implements UICallback {
         jcsToolBar.setMinimumSize(new Dimension(1000, 42));
         jcsToolBar.setName("ToolBar"); // NOI18N
         jcsToolBar.setOpaque(false);
-        jcsToolBar.setPreferredSize(new Dimension(400, 42));
+        jcsToolBar.setPreferredSize(new Dimension(1000, 42));
 
         powerButton.setIcon(new ImageIcon(getClass().getResource("/media/power-red-24.png"))); // NOI18N
         powerButton.setToolTipText("Switch Track power On/Off");
@@ -315,8 +314,7 @@ public class JCSFrame extends JFrame implements UICallback {
         powerButton.setDoubleBuffered(true);
         powerButton.setFocusable(false);
         powerButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        powerButton.setLabel("");
-        powerButton.setMargin(new Insets(0, 2, 0, 2));
+        powerButton.setMargin(new Insets(0, 0, 0, 0));
         powerButton.setMaximumSize(new Dimension(40, 40));
         powerButton.setMinimumSize(new Dimension(40, 40));
         powerButton.setName("powerButton"); // NOI18N
@@ -340,6 +338,7 @@ public class JCSFrame extends JFrame implements UICallback {
         showOverviewBtn.setDoubleBuffered(true);
         showOverviewBtn.setFocusable(false);
         showOverviewBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showOverviewBtn.setMargin(new Insets(0, 0, 0, 0));
         showOverviewBtn.setMaximumSize(new Dimension(40, 40));
         showOverviewBtn.setMinimumSize(new Dimension(40, 40));
         showOverviewBtn.setName("showOverviewBtn"); // NOI18N
@@ -360,6 +359,7 @@ public class JCSFrame extends JFrame implements UICallback {
         showEditDesignBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
         showEditDesignBtn.setFocusable(false);
         showEditDesignBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showEditDesignBtn.setMargin(new Insets(0, 0, 0, 0));
         showEditDesignBtn.setMaximumSize(new Dimension(40, 40));
         showEditDesignBtn.setMinimumSize(new Dimension(40, 40));
         showEditDesignBtn.setName("showEditDesignBtn"); // NOI18N
@@ -379,8 +379,10 @@ public class JCSFrame extends JFrame implements UICallback {
         showDiagnosticsBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
         showDiagnosticsBtn.setToolTipText("Diagnostics");
         showDiagnosticsBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+        showDiagnosticsBtn.setDoubleBuffered(true);
         showDiagnosticsBtn.setFocusable(false);
         showDiagnosticsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showDiagnosticsBtn.setMargin(new Insets(0, 0, 0, 0));
         showDiagnosticsBtn.setMaximumSize(new Dimension(40, 40));
         showDiagnosticsBtn.setMinimumSize(new Dimension(40, 40));
         showDiagnosticsBtn.setName("showDiagnosticsBtn"); // NOI18N
@@ -414,6 +416,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
         statusPanel.add(statusPanelLeft);
 
+        statusPanelMiddle.setMinimumSize(new Dimension(80, 42));
         statusPanelMiddle.setName("statusPanelMiddle"); // NOI18N
         statusPanelMiddle.setPreferredSize(new Dimension(1000, 45));
         statusPanelMiddle.setLayout(new GridLayout(1, 1));
@@ -423,6 +426,8 @@ public class JCSFrame extends JFrame implements UICallback {
         stopBtn.setAlignmentY(0.0F);
         stopBtn.setFocusPainted(false);
         stopBtn.setFocusable(false);
+        stopBtn.setMargin(new Insets(0, 0, 0, 0));
+        stopBtn.setMaximumSize(new Dimension(80, 40));
         stopBtn.setMinimumSize(new Dimension(80, 40));
         stopBtn.setName("stopBtn"); // NOI18N
         stopBtn.setPreferredSize(new Dimension(120, 40));
@@ -778,7 +783,6 @@ public class JCSFrame extends JFrame implements UICallback {
 //            this.jcsFrame.toggle();
 //        }
 //    }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     JLabel blinkLbl;

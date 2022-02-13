@@ -22,14 +22,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import jcs.controller.cs3.DeviceInfo;
+import jcs.controller.cs3.devices.CS3Device;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class DeviceParser {
+public class CS3DeviceParser {
+
+    public final static String DEVICE_FILE = "geraet.vrs";
 
     private static final String DEVICE_START = "[geraet]";
     private static final String VERSION = "version";
@@ -39,9 +41,12 @@ public class DeviceParser {
     private static final String SERIAL = ".sernum";
     private static final String GFP_UID = ".gfpuid";
     private static final String GUI_UID = ".guiuid";
+    private static final String ARTICLE_NR = ".articleno";
+    private static final String PRODUCER = ".producer";
+    private static final String PRODUCT = ".produkt";
     private static final String HARDWARE_VERSION = ".hardvers";
 
-    public DeviceInfo parseAccessoryFile(String gafile) {
+    public CS3Device parseAccessoryFile(String gafile) {
         List<String> items = Arrays.asList(gafile.split("\n"));
         Map<String, String> keyPairs = new HashMap<>();
         for (String s : items) {
@@ -71,12 +76,15 @@ public class DeviceParser {
             }
         }
 
+        String serialNumber = keyPairs.get(SERIAL);
         String gfpUid = keyPairs.get(GFP_UID);
         String guiUid = keyPairs.get(GUI_UID);
         String hardwareVersion = keyPairs.get(HARDWARE_VERSION);
-        String serialNumber = keyPairs.get(SERIAL);
+        String articleNumber = keyPairs.get(ARTICLE_NR);
+        String product = keyPairs.get(PRODUCT);
+        String producer = keyPairs.get(PRODUCER);
 
-        DeviceInfo deviceInfo = new DeviceInfo(gfpUid, guiUid, hardwareVersion, serialNumber);
+        CS3Device deviceInfo = new CS3Device(serialNumber, gfpUid, guiUid, hardwareVersion, articleNumber, product, producer);
 
         return deviceInfo;
     }
