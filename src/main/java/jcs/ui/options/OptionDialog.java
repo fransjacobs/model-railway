@@ -75,6 +75,7 @@ public class OptionDialog extends javax.swing.JDialog {
         propertiesPanel = new PropertiesPanel();
         signalPanel = new SignalPreferencesPanel();
         turnoutPanel = new TurnoutPreferencesPanel();
+        controllerInfoPanel1 = new ControllerInfoPanel();
         southPanel = new JPanel();
         closeBtn = new JButton();
 
@@ -112,6 +113,9 @@ public class OptionDialog extends javax.swing.JDialog {
 
         turnoutPanel.setName("turnoutPanel"); // NOI18N
         prefsTP.addTab("Turnouts", turnoutPanel);
+
+        controllerInfoPanel1.setName("controllerInfoPanel1"); // NOI18N
+        prefsTP.addTab("Controller", controllerInfoPanel1);
 
         centerPanel.add(prefsTP, BorderLayout.CENTER);
         prefsTP.getAccessibleContext().setAccessibleName("Locomotives");
@@ -189,6 +193,7 @@ public class OptionDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPanel centerPanel;
     private JButton closeBtn;
+    private ControllerInfoPanel controllerInfoPanel1;
     private LocomotivePreferencesPanel locomotivePanel;
     private JTabbedPane prefsTP;
     private PropertiesPanel propertiesPanel;

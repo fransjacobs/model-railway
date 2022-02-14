@@ -24,7 +24,6 @@ import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -55,9 +54,6 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
-import jcs.controller.cs3.devices.CS3;
-import jcs.controller.cs3.devices.GFP;
-import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.http.DevicesParser;
 
 /**
