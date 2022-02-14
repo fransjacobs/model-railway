@@ -163,12 +163,6 @@ public class H2TrackService implements TrackService {
     private void aquireController() {
         String activeControllerService = System.getProperty("activeControllerService");
 
-        String moduleCount = System.getProperty("S88-module-count", "1");
-        feedbackModules = Integer.decode(moduleCount);
-
-        Logger.trace("There are " + feedbackModules + " FeedbackModules");
-        Logger.debug("ActiveControllerService: " + activeControllerService);
-
         String controllerImpl = null;
 
         String m6050Demo = System.getProperty("M6050-demo");
@@ -211,8 +205,13 @@ public class H2TrackService implements TrackService {
             }
         }
 
+        Logger.debug("ActiveControllerService: " + activeControllerService);
+
+        feedbackModules = controllerService.getControllerInfo().getLinkSxx().getModuleCount();
+        Logger.trace("There are " + feedbackModules + " FeedbackModules");
+
         //Configure the sensors
-        int sensorCount = feedbackModules * 16;
+        int sensorCount = controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
         List<SensorBean> allSensors = sensDAO.findAll();
 
         System.setProperty("sensorCount", "" + sensorCount);
@@ -526,7 +525,6 @@ public class H2TrackService implements TrackService {
 //            listener.changed(event);
 //        }
 //    }
-
     @Override
     public List<AccessoryBean> getTurnouts() {
         return this.acceDAO.findBy("%weiche");
@@ -681,11 +679,10 @@ public class H2TrackService implements TrackService {
 //            this.controllerService.powerOff();
 //        }
 //    }
-
     @Override
     public void switchPower(boolean on) {
-        Logger.trace("Switch Power "+(on?"On":"Off"));
-        
+        Logger.trace("Switch Power " + (on ? "On" : "Off"));
+
 //        if (this.controllerService != null) {
 //            if(on) {
 //              this.controllerService.powerOn();
@@ -815,7 +812,7 @@ public class H2TrackService implements TrackService {
 //    }
     @Override
     public void changeDirection(Direction direction, LocomotiveBean locomotive) {
-    Logger.debug("Changing direction to " + direction + " for: " + locomotive.toLogString());
+        Logger.debug("Changing direction to " + direction + " for: " + locomotive.toLogString());
 
         //Stub For now disable the link to CS 3 
         if (1 == 2) {
@@ -871,7 +868,7 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void switchAccessory(AccessoryValue value, AccessoryBean accessory) {
-        Logger.trace("Change accessory ID: "+accessory.getId()+", "+accessory.getName()+" to "+value.getValue());
+        Logger.trace("Change accessory ID: " + accessory.getId() + ", " + accessory.getName() + " to " + value.getValue());
 //        switchAccessory(value, accessoiry, false);
     }
 
@@ -916,7 +913,6 @@ public class H2TrackService implements TrackService {
 //            }
 //        }
 //    }
-
     private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
         if (value == null || address == null) {
             return;

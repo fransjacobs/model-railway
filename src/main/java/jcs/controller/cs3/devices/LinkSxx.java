@@ -161,12 +161,16 @@ public class LinkSxx {
     }
 
     //Convenience
-    public int getTotalSensors() {
+    public int getModuleCount() {
         int lengthBus0 = getBusLength(0);
         int lengthBus1 = getBusLength(1);
         int lengthBus2 = getBusLength(2);
         int lengthBus3 = getBusLength(3);
-        return (lengthBus0 + lengthBus1 + lengthBus2 + lengthBus3) * 16;
+        return (lengthBus0 + lengthBus1 + lengthBus2 + lengthBus3);
+    }
+
+    public int getTotalSensors() {
+        return getModuleCount() * 16;
     }
 
     public boolean isPresent() {

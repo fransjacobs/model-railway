@@ -139,7 +139,6 @@ public class MarklinCS3 implements MarklinController {
         if (connected) {
             Logger.trace("Obtaining device information...");
             getControllerInfo();
-
             getDeviceInfo();
 
             Logger.trace("CS3 uid: "+ this.deviceInfo.getCs3().getUid());

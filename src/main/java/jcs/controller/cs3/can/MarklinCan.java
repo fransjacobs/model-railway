@@ -19,7 +19,7 @@
 package jcs.controller.cs3.can;
 
 /**
- * Constants for CS 2 CAN communication
+ * Constants for CS 2/3 CAN communication
  *
  * @see http://medienpdb.maerklin.de/digital22008/files/cs2CAN-Protokoll-2_0.pdf
  *
@@ -27,6 +27,7 @@ package jcs.controller.cs3.can;
 public interface MarklinCan {
 
     public final static int JCS_UID = 0x1800;
+    
     public final static int PRIO_1 = 0x00;  // Priority 1: Stop / go / short message
     public final static int PRIO_2 = 0x01;  // Priority 2: feedback
     public final static int PRIO_3 = 0x02;  // Priority 3: Engine Stop
