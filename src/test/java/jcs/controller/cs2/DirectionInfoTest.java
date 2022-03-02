@@ -18,7 +18,7 @@
  */
 package jcs.controller.cs2;
 
-import jcs.controller.cs3.DirectionInfo;
+import jcs.controller.cs3.can.parser.DirectionInfo;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.entities.enums.Direction;
 import org.junit.After;

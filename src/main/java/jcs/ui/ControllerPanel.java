@@ -33,7 +33,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.BadLocationException;
-import jcs.controller.cs3.devices.CS3Device;
+import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
@@ -59,7 +59,7 @@ public class ControllerPanel extends JPanel {
 
     private void postInit() {
         if (TrackServiceFactory.getTrackService() != null) {
-            CS3Device di = TrackServiceFactory.getTrackService().getControllerInfo();
+            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
 
             TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
             TrackServiceFactory.getTrackService().addMessageListener(new LogTextAreaHandler(this.logArea));

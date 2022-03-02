@@ -34,9 +34,9 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author Frans Jacobs <frans.jacobs@gmail.com>
+ * @author Frans Jacobs
  */
-class UDPConnection implements Connection {
+class UDPConnection implements CS3Connection {
 
     private final InetAddress cs2Address;
 
@@ -51,21 +51,21 @@ class UDPConnection implements Connection {
 
     @Override
     public CanMessage sendCanMessage(CanMessage message) {
-        Logger.trace("Sending: " + message + " from: " + this.cs2Address.getHostAddress() + " port " + Connection.CS3_RX_PORT);
+        Logger.trace("Sending: " + message + " from: " + this.cs2Address.getHostAddress() + " port " + CS3Connection.CS3_RX_PORT);
         CanMessage response = null;
         try {
             InetAddress localAddress = InetAddress.getByName("0.0.0.0");
 
             try (DatagramSocket requestSocket = new DatagramSocket()) {
-                DatagramPacket requestPacket = new DatagramPacket(message.getBytes(), message.getLength(), cs2Address, Connection.CS3_RX_PORT);
+                DatagramPacket requestPacket = new DatagramPacket(message.getBytes(), message.getLength(), cs2Address, CS3Connection.CS3_RX_PORT);
                 requestSocket.send(requestPacket);
             }
 
-            try (DatagramSocket responseSocket = new DatagramSocket(Connection.CS3_TX_PORT, localAddress)) {
+            try (DatagramSocket responseSocket = new DatagramSocket(CS3Connection.CS3_TX_PORT, localAddress)) {
                 responseSocket.setSoTimeout(5000);
-                DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, Connection.CS3_TX_PORT);
+                DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, CS3Connection.CS3_TX_PORT);
 
-                Logger.trace("Listen on " + localAddress.getHostAddress() + " port " + Connection.CS3_TX_PORT);
+                Logger.trace("Listen on " + localAddress.getHostAddress() + " port " + CS3Connection.CS3_TX_PORT);
 
                 responseSocket.receive(responsePacket);
 

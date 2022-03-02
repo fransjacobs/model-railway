@@ -21,7 +21,7 @@ package jcs.controller.cs3.http;
 import jcs.controller.cs3.devices.CS3;
 import jcs.controller.cs3.devices.SxxBus;
 import jcs.controller.cs3.devices.GFP;
-import jcs.controller.cs3.devices.GFPChannel;
+import jcs.controller.cs3.GFPChannel;
 import jcs.controller.cs3.devices.LinkSxx;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,13 +31,13 @@ import org.tinylog.Logger;
  *
  * @author fransjacobs
  */
-public class DevicesParser {
+public class DeviceJSONParser {
 
     private CS3 cs3;
     private GFP gfp;
     private LinkSxx linkSxx;
 
-    public DevicesParser() {
+    public DeviceJSONParser() {
 
     }
 
@@ -79,7 +79,7 @@ public class DevicesParser {
                 c.setNumber(channelArray.getJSONObject(i).getInt("nr"));
             }
             if (channelArray.getJSONObject(i).has("potenz")) {
-                c.setVoltage(channelArray.getJSONObject(i).getInt("potenz"));
+                c.setScale(channelArray.getJSONObject(i).getInt("potenz"));
             }
 
             if (j != i) {

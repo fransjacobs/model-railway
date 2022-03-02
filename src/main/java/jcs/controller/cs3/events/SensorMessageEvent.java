@@ -20,6 +20,7 @@ package jcs.controller.cs3.events;
 
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.MarklinCan;
+import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
@@ -60,11 +61,11 @@ public class SensorMessageEvent {
             int nv = data[5];
             System.arraycopy(data, 6, time, 0, time.length);
 
-            deviceId = CanMessage.toInt(did);
-            contactId = CanMessage.toInt(cid);
+            deviceId = ByteUtil.toInt(did);
+            contactId = ByteUtil.toInt(cid);
             oldValue = ov == 1;
             newValue = nv == 1;
-            millis = CanMessage.toInt(time) * 10;
+            millis = ByteUtil.toInt(time) * 10;
         } else {
             Logger.warn("Can't parse message, not a Sensor Response! " + resp);
         }

@@ -216,14 +216,14 @@ public class LocomotiveBean implements JCSEntity, Serializable {
 
     public Direction getDirection() {
         if (this.richtung != null) {
-            return Direction.cs2Get(this.richtung);
+            return Direction.getDirection(this.richtung);
         } else {
             return Direction.FORWARDS;
         }
     }
 
     public void setDirection(Direction direction) {
-        this.richtung = direction.getCS2Value();
+        this.richtung = direction.getMarklinValue();
     }
 
     public String getMfxType() {

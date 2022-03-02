@@ -19,9 +19,9 @@
 package jcs.controller.demo;
 
 import java.awt.Image;
-import jcs.controller.cs3.devices.CS3Device;
-import jcs.controller.cs3.DirectionInfo;
-import jcs.controller.cs3.ControllerStatus;
+import jcs.controller.cs3.can.parser.StatusDataConfigParser;
+import jcs.controller.cs3.can.parser.DirectionInfo;
+import jcs.controller.cs3.can.parser.SystemStatusParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,7 +38,6 @@ import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.SensorMessageListener;
-import jcs.controller.cs3.net.Connection;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
@@ -47,6 +46,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
+import jcs.controller.cs3.net.CS3Connection;
 
 /**
  *
@@ -54,7 +54,7 @@ import jcs.controller.MarklinController;
  */
 public class DemoController implements MarklinController {
 
-    private Connection connection;
+    private CS3Connection connection;
     private boolean connected = false;
     private boolean running = false;
 
@@ -70,12 +70,12 @@ public class DemoController implements MarklinController {
     private int[] deviceUid;
     private int deviceUidNumber;
 
-    private CS3Device deviceInfo;
+    private StatusDataConfigParser deviceInfo;
 
     private static final long DELAY = 0L;
 
     ///
-    private ControllerStatus powerStatus;
+    private SystemStatusParser powerStatus;
 
     private Map<Integer, DirectionInfo> locDirections;
 
@@ -96,27 +96,22 @@ public class DemoController implements MarklinController {
     }
 
     @Override
-    public ControllerStatus power(boolean on) {
+    public boolean power(boolean on) {
         Logger.debug("Power " + (on ? "On" : "Off"));
-        powerStatus = new ControllerStatus(true, on);
-        return powerStatus;
-    }
-
-    public ControllerStatus getPowerStatus() {
-        return powerStatus;
+        return false;
     }
 
     @Override
     public boolean isPower() {
         if (connected) {
-            return getPowerStatus().isPower();
+            return true;
         } else {
             return false;
         }
     }
 
-    @Override
-    public ControllerStatus getControllerStatus() {
+    //@Override
+    public SystemStatusParser getSystemStatus() {
         return powerStatus;
     }
 
@@ -131,11 +126,11 @@ public class DemoController implements MarklinController {
             deviceUid = new int[]{0x01, 0x02, 0x03, 0x04};
             deviceUidNumber = 16909060;
 
-            powerStatus = new ControllerStatus(true, false, deviceUid, deviceUidNumber);
+            //powerStatus = new SystemStatusParser(false, deviceUid);
 
             Logger.trace("Track Power is " + (powerStatus.isPower() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
             deviceInfo = getControllerInfo();
-            Logger.info("Connected with " + deviceInfo.getProduct() + " " + deviceInfo.getArticleNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (powerStatus.isPower() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
+            Logger.info("Connected with " + deviceInfo.getDeviceName() + " " + deviceInfo.getArticleNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (powerStatus.isPower() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
             //Send powerstatus
             executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(powerStatus.isPower(), connected)));
         }
@@ -200,7 +195,7 @@ public class DemoController implements MarklinController {
         return locoAddress;
     }
 
-    @Override
+    //@Override
     public void toggleDirection(int address, DecoderType decoderType) {
         int la = getLocoAddres(address, decoderType);
 
@@ -212,11 +207,11 @@ public class DemoController implements MarklinController {
         DirectionInfo di = this.locDirections.get(la);
         Direction direction = di.getDirection();
         direction = direction.toggle();
-        setDirection(address, decoderType, direction);
+        changeDirection(address, decoderType, direction);
     }
 
     @Override
-    public void setDirection(int address, DecoderType decoderType, Direction direction) {
+    public void changeDirection(int address, DecoderType decoderType, Direction direction) {
         int la = getLocoAddres(address, decoderType);
         Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType);
         this.locDirections.put(la, new DirectionInfo(direction));
@@ -247,66 +242,64 @@ public class DemoController implements MarklinController {
     }
 
     @Override
-    public void switchAccessoiry(int address, AccessoryValue value) {
+    public void switchAccessory(int address, AccessoryValue value) {
         executor.execute(() -> switchAccessoiryOnOff(address, value));
     }
 
     private void switchAccessoiryOnOff(int address, AccessoryValue value) {
     }
 
-    @Override
-    public CS3Device getControllerInfo() {
-        if (deviceInfo == null) {
-            deviceInfo = new CS3Device("123456", "1234", "16909060", "0.0", "00000", "Demo Controller", "JCS");
-        }
-        return deviceInfo;
+    //@Override
+    public StatusDataConfigParser getControllerInfo() {
+        
+        return null;
     }
 
-    @Override
+    //@Override
     public void addControllerEventListener(ControllerEventListener listener) {
         this.controllerEventListeners.add(listener);
     }
 
-    @Override
+    //@Override
     public void removeControllerEventListener(ControllerEventListener listener) {
         this.controllerEventListeners.remove(listener);
     }
 
-    @Override
+    //@Override
     public void notifyAllControllerEventListeners() {
         Logger.info("Current Controller Power Status: " + (isPower() ? "On" : "Off") + "...");
         executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPower(), isConnected())));
     }
 
-    @Override
+    //@Override
     public void addHeartbeatListener(HeartbeatListener listener) {
         synchronized (heartbeatListeners) {
             this.heartbeatListeners.add(listener);
         }
     }
 
-    @Override
+    //@Override
     public void removeHeartbeatListener(HeartbeatListener listener) {
         synchronized (heartbeatListeners) {
             this.heartbeatListeners.remove(listener);
         }
     }
 
-    @Override
+    //@Override
     public void removeAllHeartbeatListeners() {
         synchronized (heartbeatListeners) {
             this.heartbeatListeners.clear();
         }
     }
 
-    @Override
+    //@Override
     public void addCanMessageListener(CanMessageListener listener) {
         if (this.connection != null) {
             this.connection.addCanMessageListener(listener);
         }
     }
 
-    @Override
+    //@Override
     public void removeCanMessageListener(CanMessageListener listener) {
         if (this.connection != null) {
             this.connection.addCanMessageListener(listener);
@@ -341,7 +334,7 @@ public class DemoController implements MarklinController {
     }
 
     @Override
-    public void getAllFunctionIcons() {
+    public void cacheAllFunctionIcons() {
     }
 
     private void notifyControllerEventListeners(ControllerEvent event) {
@@ -359,7 +352,7 @@ public class DemoController implements MarklinController {
         }
     }
 
-    @Override
+    //@Override
     public List<SensorMessageEvent> querySensors(int sensorCount) {
         return Collections.EMPTY_LIST;
     }
@@ -388,7 +381,7 @@ public class DemoController implements MarklinController {
         public void run() {
             try {
                 if (toggle) {
-                    boolean power = this.controller.getPowerStatus().isPower();
+                    boolean power = this.controller.isPower();
                     if (power != powerOn) {
                         powerOn = power;
                         //Logger.debug("Power Status changed to " + (powerOn ? "On" : "Off"));

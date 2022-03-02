@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +42,7 @@ import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.devices.CS3Device;
+import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.ControllableDevice;
@@ -104,7 +105,7 @@ public class H2TrackService implements TrackService {
 
     private final Properties jcsProperties;
 
-    private CS3Device controllerInfo;
+    private StatusDataConfigParser controllerInfo;
     private final Timer timer;
 
     private HashMap<String, Image> imageCache;
@@ -207,11 +208,11 @@ public class H2TrackService implements TrackService {
 
         Logger.debug("ActiveControllerService: " + activeControllerService);
 
-        feedbackModules = controllerService.getControllerInfo().getLinkSxx().getModuleCount();
+        //feedbackModules = controllerService.getControllerInfo().getLinkSxx().getModuleCount();
         Logger.trace("There are " + feedbackModules + " FeedbackModules");
 
         //Configure the sensors
-        int sensorCount = controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
+        int sensorCount = 0;//controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
         List<SensorBean> allSensors = sensDAO.findAll();
 
         System.setProperty("sensorCount", "" + sensorCount);
@@ -247,11 +248,11 @@ public class H2TrackService implements TrackService {
         //Update the sensors with the status od the Controller
         synchronizeSensors();
 
-        controllerInfo = controllerService.getControllerInfo();
+        //controllerInfo = controllerService.getControllerInfo();
 
         controllerService.addSensorMessageListener(new SensorMessageEventHandler(this));
-        controllerService.addHeartbeatListener(new ControllerWatchDogListener());
-        controllerService.addControllerEventListener(new ControllerServiceEventListener());
+//        controllerService.addHeartbeatListener(new ControllerWatchDogListener());
+//        controllerService.addControllerEventListener(new ControllerServiceEventListener());
 
         timer.scheduleAtFixedRate(new UpdateGuiStatusTask(this), 0, 1000);
     }
@@ -306,10 +307,11 @@ public class H2TrackService implements TrackService {
         }
     }
 
+    //TODO!
     public void synchronizeSensors() {
         int sensorCount = Integer.decode(System.getProperty("sensorCount", "16"));
         //obtain the current sensorstatus
-        List<SensorMessageEvent> sml = controllerService.querySensors(sensorCount);
+        List<SensorMessageEvent> sml = Collections.EMPTY_LIST; //controllerService.querySensors(sensorCount);
         for (SensorMessageEvent sme : sml) {
             SensorBean s = new SensorBean(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
             persist(s);
@@ -626,9 +628,9 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public CS3Device getControllerInfo() {
+    public StatusDataConfigParser getControllerInfo() {
         if (this.controllerInfo == null) {
-            controllerInfo = controllerService.getControllerInfo();
+            //controllerInfo = controllerService.getControllerInfo();
         }
         return controllerInfo;
     }
@@ -636,14 +638,14 @@ public class H2TrackService implements TrackService {
     @Override
     public void addControllerListener(ControllerEventListener listener) {
         if (controllerService != null) {
-            controllerService.addControllerEventListener(listener);
+            //controllerService.addControllerEventListener(listener);
         }
     }
 
     @Override
     public void removeControllerListener(ControllerEventListener listener) {
         if (controllerService != null) {
-            controllerService.removeControllerEventListener(listener);
+            //controllerService.removeControllerEventListener(listener);
         }
     }
 
@@ -761,7 +763,7 @@ public class H2TrackService implements TrackService {
             persist(loc, false);
         }
         //Also cache the function Icons
-        this.controllerService.getAllFunctionIcons();
+        this.controllerService.cacheAllFunctionIcons();
     }
 
     @Override
@@ -818,7 +820,8 @@ public class H2TrackService implements TrackService {
         if (1 == 2) {
             String cs = jcsProperties.getProperty("activeControllerService");
             if ("CS2".equals(cs)) {
-                controllerService.toggleDirection(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
+                //TODO!
+                //controllerService.toggleDirection(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
                 locomotive.setDirection(direction);
 
             }
@@ -905,7 +908,7 @@ public class H2TrackService implements TrackService {
 //            //turnout or else...
 //            //ensure the values is also set...
 //            accessoiry.setValue(value);
-//            controllerService.switchAccessoiry(accessoiry.getAddress(), accessoiry.getValue());
+//            controllerService.switchAccessory(accessoiry.getAddress(), accessoiry.getValue());
 //
 //            if (accessoiry.isTurnout()) {
 //                persist((SwitchBean) accessoiry);
@@ -919,24 +922,24 @@ public class H2TrackService implements TrackService {
         }
         if (repeat) {
             for (int i = 0; i < 3; i++) {
-                controllerService.switchAccessoiry(address, value);
+                controllerService.switchAccessory(address, value);
             }
         } else {
-            controllerService.switchAccessoiry(address, value);
+            controllerService.switchAccessory(address, value);
         }
     }
 
     @Override
     public void addMessageListener(CanMessageListener listener) {
         if (this.controllerService != null) {
-            this.controllerService.addCanMessageListener(listener);
+            //this.controllerService.addCanMessageListener(listener);
         }
     }
 
     @Override
     public void removeMessageListener(CanMessageListener listener) {
         if (this.controllerService != null) {
-            this.controllerService.removeCanMessageListener(listener);
+            //this.controllerService.removeCanMessageListener(listener);
         }
     }
 

@@ -22,14 +22,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import jcs.controller.cs3.devices.CS3Device;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class CS3DeviceParser {
+public class DeviceFileParser {
 
     public final static String DEVICE_FILE = "geraet.vrs";
 
@@ -46,7 +45,19 @@ public class CS3DeviceParser {
     private static final String PRODUCT = ".produkt";
     private static final String HARDWARE_VERSION = ".hardvers";
 
-    public CS3Device parseAccessoryFile(String gafile) {
+    private String serialNumber;
+    private String gfpUid;
+    private String guiUid;
+    private String hardwareVersion;
+    private String articleNumber;
+    private String producer;
+    private String product;
+
+    public DeviceFileParser(String deviceFile) {
+        parseDeviceFile(deviceFile);
+    }
+
+    private void parseDeviceFile(String gafile) {
         List<String> items = Arrays.asList(gafile.split("\n"));
         Map<String, String> keyPairs = new HashMap<>();
         for (String s : items) {
@@ -76,17 +87,41 @@ public class CS3DeviceParser {
             }
         }
 
-        String serialNumber = keyPairs.get(SERIAL);
-        String gfpUid = keyPairs.get(GFP_UID);
-        String guiUid = keyPairs.get(GUI_UID);
-        String hardwareVersion = keyPairs.get(HARDWARE_VERSION);
-        String articleNumber = keyPairs.get(ARTICLE_NR);
-        String product = keyPairs.get(PRODUCT);
-        String producer = keyPairs.get(PRODUCER);
+        serialNumber = keyPairs.get(SERIAL);
+        gfpUid = keyPairs.get(GFP_UID);
+        guiUid = keyPairs.get(GUI_UID);
+        hardwareVersion = keyPairs.get(HARDWARE_VERSION);
+        articleNumber = keyPairs.get(ARTICLE_NR);
+        product = keyPairs.get(PRODUCT);
+        producer = keyPairs.get(PRODUCER);
+    }
 
-        CS3Device deviceInfo = new CS3Device(serialNumber, gfpUid, guiUid, hardwareVersion, articleNumber, product, producer);
+    public String getSerialNumber() {
+        return serialNumber;
+    }
 
-        return deviceInfo;
+    public String getGfpUid() {
+        return gfpUid;
+    }
+
+    public String getGuiUid() {
+        return guiUid;
+    }
+
+    public String getHardwareVersion() {
+        return hardwareVersion;
+    }
+
+    public String getArticleNumber() {
+        return articleNumber;
+    }
+
+    public String getProducer() {
+        return producer;
+    }
+
+    public String getProduct() {
+        return product;
     }
 
 }

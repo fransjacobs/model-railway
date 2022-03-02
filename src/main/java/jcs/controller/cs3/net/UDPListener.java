@@ -35,7 +35,7 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author frans
+ * @author Frans Jacobs
  */
 public class UDPListener extends Thread {
 
@@ -70,12 +70,12 @@ public class UDPListener extends Thread {
     private boolean openUDPSocket() {
         try {
             InetAddress addr = InetAddress.getByName("0.0.0.0");
-            socket = new DatagramSocket(Connection.CS3_TX_PORT, addr);
+            socket = new DatagramSocket(CS3Connection.CS3_TX_PORT, addr);
             socket.setBroadcast(true);
             socket.setSoTimeout(TIMEOUT_MILLIS);
             return true;
         } catch (SocketException | UnknownHostException ex) {
-            Logger.error("Could not create UDP socket on port " + Connection.CS3_TX_PORT);
+            Logger.error("Could not create UDP socket on port " + CS3Connection.CS3_TX_PORT);
             return false;
         }
     }
@@ -86,9 +86,9 @@ public class UDPListener extends Thread {
 
         running = canOpenSocket;
         if (running) {
-            Logger.trace("UDPListener is listening on port " + Connection.CS3_TX_PORT);
+            Logger.trace("UDPListener is listening on port " + CS3Connection.CS3_TX_PORT);
         } else {
-            Logger.error("Can't Start UDPListener on port " + Connection.CS3_TX_PORT);
+            Logger.error("Can't Start UDPListener on port " + CS3Connection.CS3_TX_PORT);
         }
         while (running) {
             DatagramPacket rxPacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE);
@@ -108,8 +108,8 @@ public class UDPListener extends Thread {
             }
 
             CanMessage received = new CanMessage(rxPacket.getData());
-            
-            Logger.trace("Received: "+received);
+
+            Logger.trace("Received: " + received);
             CanMessageEvent cme = new CanMessageEvent(received, sourceAddress);
             executor.execute(() -> notifyCanMessageListeners(cme));
             errorCount = 0;

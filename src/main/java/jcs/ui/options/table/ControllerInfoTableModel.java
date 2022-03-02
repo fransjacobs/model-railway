@@ -20,7 +20,7 @@ package jcs.ui.options.table;
 
 import java.util.ArrayList;
 import java.util.List;
-import jcs.controller.cs3.devices.CS3Device;
+import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.entities.JCSProperty;
 import jcs.trackservice.TrackServiceFactory;
 
@@ -50,26 +50,26 @@ public class ControllerInfoTableModel extends DeviceTableModel<JCSProperty> {
         List<JCSProperty> props = new ArrayList<>();
         if (TrackServiceFactory.getTrackService() != null) {
             //Build a list with Controller properties
-            CS3Device cs3 = TrackServiceFactory.getTrackService().getControllerInfo();
+            StatusDataConfigParser cs3 = TrackServiceFactory.getTrackService().getControllerInfo();
 
-            props.add(new JCSProperty("Controller", cs3.getCs3().getName()));
-            props.add(new JCSProperty("Article", cs3.getGfp().getArticleNumber()));
-            props.add(new JCSProperty("CS 3 UID", cs3.getCs3().getUid()));
-            props.add(new JCSProperty("GFP UID", cs3.getGfp().getUid()));
-            props.add(new JCSProperty("GFP Serial", cs3.getGfp().getSerial()));
-            props.add(new JCSProperty("GFP Queryinterval", cs3.getGfp().getQueryInterval() + " S"));
-            props.add(new JCSProperty("GFP Version", cs3.getGfp().getVersion()));
-            props.add(new JCSProperty("LinkSxx UID", cs3.getLinkSxx().getUid()));
-            props.add(new JCSProperty("LinkSxx ID", cs3.getLinkSxx().getIdentifier()));
-            props.add(new JCSProperty("LinkSxx Serial", cs3.getLinkSxx().getSerialNumber()));
-            props.add(new JCSProperty("LinkSxx Name", cs3.getLinkSxx().getName()));
-            props.add(new JCSProperty("LinkSxx Version", cs3.getLinkSxx().getVersion()));
-            props.add(new JCSProperty("LinkSxx Total Sensors", cs3.getLinkSxx().getTotalSensors() + ""));
-
-            props.add(new JCSProperty("Track Current", cs3.getGfp().getTrackCurrent() + " A"));
-            props.add(new JCSProperty("Prog Track Current", cs3.getGfp().getProgrammingTrackCurrent() + " A"));
-            props.add(new JCSProperty("Track Voltage", cs3.getGfp().getTrackVoltage() + " V"));
-            props.add(new JCSProperty("CS 3 Temperature", cs3.getGfp().getCS3Temperature() + " C"));
+//            props.add(new JCSProperty("Controller", cs3.getCs3().getName()));
+//            props.add(new JCSProperty("Article", cs3.getGfp().getArticleNumber()));
+//            props.add(new JCSProperty("CS 3 UID", cs3.getCs3().getUid()));
+//            props.add(new JCSProperty("GFP UID", cs3.getGfp().getUid()));
+//            props.add(new JCSProperty("GFP Serial", cs3.getGfp().getSerial()));
+//            props.add(new JCSProperty("GFP Queryinterval", cs3.getGfp().getQueryInterval() + " S"));
+//            props.add(new JCSProperty("GFP Version", cs3.getGfp().getVersion()));
+//            props.add(new JCSProperty("LinkSxx UID", cs3.getLinkSxx().getUid()));
+//            props.add(new JCSProperty("LinkSxx ID", cs3.getLinkSxx().getIdentifier()));
+//            props.add(new JCSProperty("LinkSxx Serial", cs3.getLinkSxx().getSerialNumber()));
+//            props.add(new JCSProperty("LinkSxx Name", cs3.getLinkSxx().getName()));
+//            props.add(new JCSProperty("LinkSxx Version", cs3.getLinkSxx().getVersion()));
+//            props.add(new JCSProperty("LinkSxx Total Sensors", cs3.getLinkSxx().getTotalSensors() + ""));
+//
+//            props.add(new JCSProperty("Track Current", cs3.getGfp().getTrackCurrent() + " A"));
+//            props.add(new JCSProperty("Prog Track Current", cs3.getGfp().getProgrammingTrackCurrent() + " A"));
+//            props.add(new JCSProperty("Track Voltage", cs3.getGfp().getTrackVoltage() + " V"));
+//            props.add(new JCSProperty("CS 3 Temperature", cs3.getGfp().getCS3Temperature() + " C"));
 
             return props;
         } else {

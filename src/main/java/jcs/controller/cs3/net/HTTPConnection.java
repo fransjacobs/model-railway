@@ -28,12 +28,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.imageio.ImageIO;
-import jcs.controller.cs3.http.DevicesParser;
+import jcs.controller.cs3.http.DeviceJSONParser;
 import org.tinylog.Logger;
 
 /**
  *
- * @author fransjacobs
+ * @author Frans Jacobs
  */
 public class HTTPConnection {
 
@@ -47,14 +47,13 @@ public class HTTPConnection {
     private final static String IMAGE_FOLDER = "/app/assets/lok/";
     //private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
     private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
-    
+
     private final static String DEVICES = "/app/api/devs";
-    
+
     //TODO: investigate the JSON which can be found on     
     //  http://cs3host/images/svgSprites/magicons.json
     //  http://cs3host/app/api/loks
     //  http://cs3host/app/api/mags
-
     HTTPConnection(InetAddress cs3Address) {
         this.cs3Address = cs3Address;
     }
@@ -68,7 +67,7 @@ public class HTTPConnection {
         try {
             URL cs2 = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + LOCOMOTIVE);
             URLConnection lc = cs2.openConnection();
-            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     locs.append(inputLine.strip());
@@ -88,7 +87,7 @@ public class HTTPConnection {
         try {
             URL url = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + MAGNETARTIKEL);
             URLConnection lc = url.openConnection();
-            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     locs.append(inputLine.strip());
@@ -108,7 +107,7 @@ public class HTTPConnection {
         try {
             URL url = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + DEVICE);
             URLConnection lc = url.openConnection();
-            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     device.append(inputLine.strip());
@@ -129,7 +128,7 @@ public class HTTPConnection {
         try {
             URL url = new URL(HTTP + cs3Address.getHostAddress() + FUNCTION_SVG_URL);
             URLConnection lc = url.openConnection();
-            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     device.append(inputLine.strip());
@@ -175,13 +174,12 @@ public class HTTPConnection {
 //        }
 //        return image;
 //    }
-
     public String getDevicesJSON() {
         StringBuilder device = new StringBuilder();
         try {
             URL url = new URL(HTTP + cs3Address.getHostAddress() + DEVICES);
             URLConnection lc = url.openConnection();
-            try ( BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
                     device.append(inputLine.strip());
@@ -195,12 +193,7 @@ public class HTTPConnection {
         }
         return device.toString();
     }
-    
-    
-    
-    
-    
-    
+
     public static void main(String[] args) throws Exception {
         InetAddress inetAddr = InetAddress.getByName("192.168.1.180");
         HTTPConnection hc = new HTTPConnection(inetAddr);
@@ -220,8 +213,7 @@ public class HTTPConnection {
             }
         }
          */
-        
-        /*
+ /*
         String accessories = hc.getAccessoriesFile();
         AccessoryBeanParser ap = new AccessoryBeanParser();
 
@@ -230,31 +222,28 @@ public class HTTPConnection {
         for (AccessoryBean sa : acList) {
             System.out.println(sa.toLogString());
         }
-        */
-        
-        /*
+         */
+ /*
         String deviceFile = hc.getDeviceFile();
         CS3DeviceParser dp = new CS3DeviceParser();
         CS3Device di = dp.parseAccessoryFile(deviceFile);
 
         System.out.println(di);
-        */
+         */
 //        String accessoryStatuses = hc.getAccessoryStatusesFile();
 //        List<AccessoryStatus> acsList = ap.parseAccessoryStatusFile(accessoryStatuses);
 //
 //        for (AccessoryStatus as : acsList) {
 //            System.out.println(as.toString());
 //        }
-         /*
+        /*
          String json = hc.getAllFunctionsSvgJSON();
          SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
          svgp.convertAndCacheAllFunctionsSvgIcons(json);
          */
-
-         String json = hc.getDevicesJSON();
-         DevicesParser dp = new DevicesParser();
-         dp.parseDevices(json);
-
+        String json = hc.getDevicesJSON();
+        DeviceJSONParser dp = new DeviceJSONParser();
+        dp.parseDevices(json);
 
     }
 }

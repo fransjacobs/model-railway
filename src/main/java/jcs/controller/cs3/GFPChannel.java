@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs3.devices;
+package jcs.controller.cs3;
 
 import java.util.Objects;
 
@@ -34,7 +34,7 @@ public class GFPChannel {
     private Integer colorRed;
     private String name;
     private Integer number;
-    private Integer voltage;
+    private Integer scale;
     private Integer rangeYellow;
     private Integer rangeGreen;
     private Integer rangeMax;
@@ -110,12 +110,12 @@ public class GFPChannel {
         this.number = number;
     }
 
-    public Integer getVoltage() {
-        return voltage;
+    public Integer getScale() {
+        return scale;
     }
 
-    public void setVoltage(Integer voltage) {
-        this.voltage = voltage;
+    public void setScale(Integer scale) {
+        this.scale = scale;
     }
 
     public Integer getRangeYellow() {
@@ -185,7 +185,7 @@ public class GFPChannel {
         hash = 29 * hash + Objects.hashCode(this.colorRed);
         hash = 29 * hash + Objects.hashCode(this.name);
         hash = 29 * hash + Objects.hashCode(this.number);
-        hash = 29 * hash + Objects.hashCode(this.voltage);
+        hash = 29 * hash + Objects.hashCode(this.scale);
         hash = 29 * hash + Objects.hashCode(this.rangeYellow);
         hash = 29 * hash + Objects.hashCode(this.rangeGreen);
         hash = 29 * hash + Objects.hashCode(this.rangeMax);
@@ -232,7 +232,7 @@ public class GFPChannel {
         if (!Objects.equals(this.number, other.number)) {
             return false;
         }
-        if (!Objects.equals(this.voltage, other.voltage)) {
+        if (!Objects.equals(this.scale, other.scale)) {
             return false;
         }
         if (!Objects.equals(this.rangeYellow, other.rangeYellow)) {
@@ -258,7 +258,7 @@ public class GFPChannel {
 
     @Override
     public String toString() {
-        return "Channel{" + "name=" + name + ", number=" + number + ", humanValue=" + humanValue + ", unite=" + unit + '}';
+        return "Channel{" + "name=" + name + ", number=" + number + ", humanValue=" + humanValue + ", unit=" + unit + ", scale=" + scale + "}";
     }
 
 }

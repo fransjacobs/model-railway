@@ -53,7 +53,7 @@ public enum Direction {
     return ENUM_MAP.get(direction);
   }
 
-  private static int translate2CS2Value(String value) {
+  private static int translate2MarklinValue(String value) {
     switch (value) {
       case "Forwards":
         return 1;
@@ -66,11 +66,11 @@ public enum Direction {
     }
   }
 
-  public int getCS2Value() {
-    return translate2CS2Value(this.direction);
+  public int getMarklinValue() {
+    return translate2MarklinValue(this.direction);
   }
 
-  private static String translateCS2Value(int value) {
+  private static String translate2DirectionString(int value) {
     switch (value) {
       case 1:
         return "Forwards";
@@ -83,8 +83,8 @@ public enum Direction {
     }
   }
 
-  public static Direction cs2Get(int cs2Value) {
-    return ENUM_MAP.get(translateCS2Value(cs2Value));
+  public static Direction getDirection(int marklinValue) {
+    return ENUM_MAP.get(translate2DirectionString(marklinValue));
   }
 
   public Direction toggle() {

@@ -62,7 +62,7 @@ import javax.swing.WindowConstants;
 import jcs.JCS;
 import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.devices.CS3Device;
+import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.HeartBeatListener;
 import jcs.ui.layout.DisplayLayoutPanel;
@@ -218,10 +218,10 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void setCS3Properties() {
         if (TrackServiceFactory.getTrackService() != null) {
-            CS3Device di = TrackServiceFactory.getTrackService().getControllerInfo();
+            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
 
             if (di != null) {
-                this.controllerDescriptionLbl.setText(di.getProduct());
+                this.controllerDescriptionLbl.setText(di.getDeviceName());
                 this.controllerCatalogNumberLbl.setText(di.getArticleNumber());
                 this.controllerSerialNumberLbl.setText(di.getSerialNumber());
                 this.controllerHostNameLbl.setText("CS3-" + di.getSerialNumber());

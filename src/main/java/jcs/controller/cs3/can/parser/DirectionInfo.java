@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs3;
+package jcs.controller.cs3.can.parser;
 
 import java.io.Serializable;
 import jcs.controller.cs3.can.CanMessage;
@@ -44,7 +44,7 @@ public class DirectionInfo implements Serializable {
         int[] data = locDirection.getResponse(0).getData();
         int dir = data[4];
 
-        this.direction = Direction.cs2Get(dir);
+        this.direction = Direction.getDirection(dir);
     }
 
     @Override

@@ -16,23 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs3;
+package jcs.controller.cs3.can.parser;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.MarklinCan;
+import jcs.util.ByteUtil;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class PingResponse implements Serializable {
+public class PingResponseParser implements Serializable {
 
     private int[] swVersion;
     private int[] deviceId;
     private int[] senderDeviceUid;
 
-    public PingResponse(CanMessage message) {
+    public PingResponseParser(CanMessage message) {
         parseMessage(message);
     }
 
@@ -51,31 +53,31 @@ public class PingResponse implements Serializable {
 
     @Override
     public String toString() {
-        return "PingResponse{" + "senderDeviceUid: " + CanMessage.toHexString(senderDeviceUid) + " SW version: " + CanMessage.toHexString(swVersion) + " deviceId: " + CanMessage.toHexString(deviceId) + '}';
+        return "Device { " + "senderDeviceUid: " + ByteUtil.toHexString(senderDeviceUid) + " SW version: " + ByteUtil.toHexString(swVersion) + " deviceId: " + ByteUtil.toHexString(deviceId) + " }";
     }
 
-    public int[] getSwVersion() {
+    public int[] getSwVersionBytes() {
         return swVersion;
     }
 
-    public int getSwVersionInt() {
-        return CanMessage.toInt(swVersion);
+    public int getSwVersion() {
+        return ByteUtil.toInt(swVersion);
     }
 
-    public int[] getDeviceId() {
+    public int[] getDeviceIdBytes() {
         return deviceId;
     }
 
-    public int getDeviceIdint() {
-        return CanMessage.toInt(deviceId);
+    public int getDeviceId() {
+        return ByteUtil.toInt(deviceId);
     }
 
-    public int[] getSenderDeviceUid() {
+    public int[] getSenderDeviceUidBytes() {
         return senderDeviceUid;
     }
 
-    public int getSenderDeviceUidInt() {
-        return CanMessage.toInt(senderDeviceUid);
+    public int getSenderDeviceUid() {
+        return ByteUtil.toInt(senderDeviceUid);
     }
 
 }

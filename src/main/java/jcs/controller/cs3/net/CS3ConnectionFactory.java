@@ -32,29 +32,29 @@ import org.tinylog.Logger;
  * Try to connect with a CS 3. A "ping" is send to the broadcast address like
  * the mobile app does. The CS 3 will response reveals the IP address.
  *
- * @author Frans Jacobs <frans.jacobs@gmail.com>
+ * @author Frans Jacobs
  */
-public class ControllerConnectionFactory {
+public class CS3ConnectionFactory {
 
-    private static ControllerConnectionFactory instance;
+    private static CS3ConnectionFactory instance;
 
-    private Connection controllerConnection;
+    private CS3Connection controllerConnection;
     private HTTPConnection httpConnection;
     private InetAddress controllerHost;
 
     private static final String BROADCAST_ADDRESS = "255.255.255.255";
 
-    private ControllerConnectionFactory() {
+    private CS3ConnectionFactory() {
     }
 
-    public static ControllerConnectionFactory getInstance() {
+    public static CS3ConnectionFactory getInstance() {
         if (instance == null) {
-            instance = new ControllerConnectionFactory();
+            instance = new CS3ConnectionFactory();
         }
         return instance;
     }
 
-    Connection getConnectionImpl() {
+    CS3Connection getConnectionImpl() {
         if (controllerConnection == null) {
             Logger.trace("Try to discover a Marklin CS3...");
             sendMobileAppPing();
@@ -69,7 +69,7 @@ public class ControllerConnectionFactory {
         return this.controllerConnection;
     }
 
-    public static Connection getConnection() {
+    public static CS3Connection getConnection() {
         return getInstance().getConnectionImpl();
     }
 
@@ -94,15 +94,15 @@ public class ControllerConnectionFactory {
 
             CanMessage ping = CanMessageFactory.getMobileAppPingRequest();
 
-            try ( DatagramSocket requestSocket = new DatagramSocket()) {
+            try (DatagramSocket requestSocket = new DatagramSocket()) {
                 Logger.trace("Sending: " + ping);
-                DatagramPacket requestPacket = new DatagramPacket(ping.getBytes(), ping.getLength(), broadcastAddress, Connection.CS3_RX_PORT);
+                DatagramPacket requestPacket = new DatagramPacket(ping.getBytes(), ping.getLength(), broadcastAddress, CS3Connection.CS3_RX_PORT);
                 requestSocket.send(requestPacket);
             }
 
-            try ( DatagramSocket responseSocket = new DatagramSocket(Connection.CS3_TX_PORT, localAddress)) {
+            try (DatagramSocket responseSocket = new DatagramSocket(CS3Connection.CS3_TX_PORT, localAddress)) {
                 responseSocket.setSoTimeout(3000);
-                DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, Connection.CS3_TX_PORT);
+                DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, CS3Connection.CS3_TX_PORT);
                 responseSocket.receive(responsePacket);
 
                 InetAddress replyHost = InetAddress.getByName(responsePacket.getAddress().getHostAddress());

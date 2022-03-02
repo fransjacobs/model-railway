@@ -20,13 +20,17 @@ package jcs.controller.cs3.can;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import jcs.util.ByteUtil;
+import static jcs.util.ByteUtil.toInt;
 
 /**
  * CS 2 CAN message.
  */
-public class CanMessage implements Serializable {
+public class CanMessage implements MarklinCan, Serializable {
 
     public static final int MESSAGE_SIZE = 13;
 
@@ -40,22 +44,20 @@ public class CanMessage implements Serializable {
     private static final int DLC_IDX = 4;
     private static final int DATA_IDX = 5;
 
-    private final int deviceUidNumber;
-
     private final int[] message;
 
     private final List<CanMessage> responses;
 
+    private boolean expectResponse;
+
     public CanMessage() {
         this.message = getEmptyMessage();
-        this.responses = new ArrayList<>();
-        deviceUidNumber = -1;
+        this.responses = new LinkedList<>();
     }
 
     public CanMessage(byte[] message) {
         this.message = getEmptyMessage();
         this.responses = new ArrayList<>();
-        deviceUidNumber = -1;
         for (int i = 0; i < this.message.length; i++) {
             this.message[i] = message[i] & 0xFF;
         }
@@ -64,29 +66,28 @@ public class CanMessage implements Serializable {
     public CanMessage(int[] message) {
         this.message = getEmptyMessage();
         this.responses = new ArrayList<>();
-        deviceUidNumber = -1;
         System.arraycopy(message, 0, this.message, 0, message.length);
     }
 
-    public CanMessage(int priority, int command, int dlc, int[] data) {
-        this(priority, command, null, dlc, data, 0);
+    public static CanMessage get(int[] message) {
+        return new CanMessage(message);
     }
 
-    public CanMessage(int priority, int command, int dlc, int[] data, int deviceUidNumber) {
-        this(priority, command, null, dlc, data, deviceUidNumber);
+    public CanMessage(int priority, int command, int[] hash, int dlc, int[] data) {
+        this(priority, command, hash, dlc, data, true);
     }
 
-    public CanMessage(int priority, int command, int[] hash, int dlc, int[] data, int deviceUidNumber) {
+    public CanMessage(int priority, int command, int[] hash, int dlc, int[] data, boolean expectResponse) {
         this.message = getEmptyMessage();
         this.responses = new ArrayList<>();
-        this.deviceUidNumber = deviceUidNumber;
+        this.expectResponse = expectResponse;
         this.setPriority(priority);
         this.setCommand(command);
         this.setDlc(dlc);
         this.setData(data);
 
         if (hash == null) {
-            this.setHash(this.generateHash());
+            setHash(MarklinCan.MAGIC_HASH);
         } else {
             this.setHash(hash);
         }
@@ -120,7 +121,24 @@ public class CanMessage implements Serializable {
     }
 
     public CanMessage getResponse() {
-        return getResponse(0);
+        //Figure out the best response for the message as there could be multiple responses...
+        int txUid = this.getDeviceUidNumberFromMessage();
+        for (int i = 0; i < responses.size(); i++) {
+            CanMessage resp = responses.get(i);
+            int rxUid = resp.getDeviceUidNumberFromMessage();
+            if (txUid == rxUid) {
+                //found a response with same uid as sent
+                if (txUid == 0) {
+                    //lets continue
+                } else {
+                    return resp;
+                }
+            } else {
+                return resp;
+            }
+        }
+
+        return this.getResponse(0);
     }
 
     public byte[] getBytes() {
@@ -201,9 +219,23 @@ public class CanMessage implements Serializable {
     }
 
     public boolean isResponseFor(CanMessage other) {
-        int otherCmd = other.getCommand();
+        //Check who is the is the response message
         int cmd = this.getCommand();
-        return (cmd - 1) == otherCmd;
+        int ocmd = other.getCommand();
+
+        if ((cmd & 0x01) == 1) {
+            //this is the response so other must be the message
+            return (cmd - 1) == ocmd;
+        } else if ((ocmd & 0x01) == 1) {
+            //the other is a response
+            return (ocmd - 1) == cmd;
+        } else {
+            //no responses
+            return false;
+        }
+//        int otherCmd = other.getCommand();
+//        int cmd = this.getCommand();
+//        return (cmd - 1) == otherCmd;
     }
 
     public boolean isAcknowledgeFor(CanMessage other) {
@@ -218,6 +250,18 @@ public class CanMessage implements Serializable {
             return Objects.deepEquals(ackm, base);
         }
         return false;
+    }
+
+    public boolean expectsResponse() {
+        return this.expectResponse;
+    }
+
+    public boolean isStatusDataConfigMessage() {
+        return getCommand() == STATUS_CONFIG | getCommand() == STATUS_CONFIG + 1;
+    }
+
+    public boolean isEvent() {
+        return !(getPriority() == PRIO_IGNORE | getCommand() == BOOTLOADER_CAN_SERVICE);
     }
 
     public boolean expectsAcknowledge() {
@@ -273,7 +317,7 @@ public class CanMessage implements Serializable {
     }
 
     public int[] getDeviceUidFromMessage() {
-        int[] uid = new int[4]; //CS2 UID is 4 bytes long
+        int[] uid = new int[4]; //CS3 UID is 4 bytes long
         System.arraycopy(this.message, DATA_IDX, uid, 0, uid.length);
         return uid;
     }
@@ -282,14 +326,92 @@ public class CanMessage implements Serializable {
         return toInt(getDeviceUidFromMessage());
     }
 
-    public int getDeviceUidNumber() {
-        return deviceUidNumber;
-    }
-
     public String responseString() {
         return this.responses.get(0).toString();
     }
 
+    public boolean isResponseComplete() {
+        switch (getCommand()) {
+            //case SYSTEM_COMMAND:
+            //    return this.responses.size() > 0;
+            //case SYSTEM_COMMAND_RESPONSE:
+            //    return this.responses.size() > 0;
+            //case LOC_DISCOVERY_COMMAND:
+            //    return this.responses.size() > 0;
+            //case MFX_BIND_COMMAND:
+            //    return this.responses.size() > 0;
+            //case MFX_VERIFY_COMMAND:
+            //    return this.responses.size() > 0;
+            //case LOC_SPEED:
+            //    return this.responses.size() > 0;
+            //case LOC_DIRECTION:
+            //    return this.responses.size() > 0;
+            //case LOC_FUNCTION:
+            //    return this.responses.size() > 0;
+            //case READ_CONFIG:
+            //    //TODO check       
+            //    return this.responses.size() > 0;
+            //case WRITE_CONFIG:
+            //    //TODO check       
+            //    return this.responses.size() > 0;
+            //case ACCESSORY_SWITCHING:
+            //    return this.responses.size() > 0;
+            //case ACCESSORY_CONFIG:
+            //    //TODO check       
+            //    return this.responses.size() > 0;
+            //case S88_EVENT:
+            //    return this.responses.size() > 0;
+            //case S88_EVENT_RESPONSE:
+            //    return this.responses.size() > 0;
+            //case REQ_PING:
+            //    return this.responses.size() > 0;
+            //case UPDATE_OFFER:
+            //    //TODO check       
+            //    return this.responses.size() > 0;
+            //case READ_CONFIG_DATA:
+            // snd a last packge
+            //case BOOTLOADER_CAN_SERVICE:
+            //    return this.responses.size() > 0;
+            //case BOOTLOADER_TRACK_SERVICE:
+            //    return this.responses.size() > 0;
+            case STATUS_CONFIG:
+                if (!responses.isEmpty()) {
+                    int idx = this.responses.size() - 1;
+                    CanMessage m = this.responses.get(idx);
+                    return m.getDlc() == DLC_6;
+                } else {
+                    return false;
+                }
+            case REQUEST_CONFIG_DATA:
+                if (!responses.isEmpty()) {
+                    int idx = this.responses.size() - 1;
+                    CanMessage m = this.responses.get(idx);
+                    return m.getDlc() == DLC_6;
+                } else {
+                    return false;
+                }
+            //case CONFIG_DATA_STREAM:
+            //    //TODO check       
+            //    return this.responses.size() > 0;
+            //case CON_60128_DATA_STREAM:
+            //    //TODO check       
+            //    return this.responses.size() > 0;
+            default:
+                return !this.responses.isEmpty();
+        }
+    }
+
+    public String print() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getMessageName());
+        sb.append(", RB: ");
+        sb.append((this.isResponseMessage() ? "1" : "0"));
+        sb.append(": ");
+        sb.append(toString());
+        return sb.toString();
+    }
+
+    //TODO: NEEDS FIX
     public String getMessageName() {
         int cmd = getCommand();
         switch (cmd) {
@@ -298,8 +420,8 @@ public class CanMessage implements Serializable {
                 switch (subcmd) {
                     case MarklinCan.STOP_SUBCMD:
                         int dlc = this.getDlc();
-                        if (dlc == MarklinCan.STOP_AND_GO_QUERY_DLC) {
-                            return "Power Status";
+                        if (dlc == MarklinCan.DLC_4) {
+                            return "Query System";
                         } else {
                             return "Stop";
                         }
@@ -386,23 +508,7 @@ public class CanMessage implements Serializable {
 
     @Override
     public String toString() {
-        return toHexString(this.message);
-    }
-
-    public static String toHexString(int[] bytes) {
-        if (bytes == null) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < bytes.length; i++) {
-            sb.append("0x");
-            sb.append(CanMessage.toHexString(bytes[i]));
-            if (i + 1 < bytes.length) {
-                sb.append(" ");
-            }
-        }
-        return sb.toString();
+        return ByteUtil.toHexString(this.message);
     }
 
     public int getNumberOfMeasurementValues() {
@@ -416,79 +522,238 @@ public class CanMessage implements Serializable {
         return -1;
     }
 
-    public final int generateHashInt() {
-        int uid;
-        if (this.deviceUidNumber > 0) {
-            uid = this.deviceUidNumber;
-        } else {
-            uid = this.getUidInt();
-        }
+    /**
+     * The hash fulfills a double function: It primarily serves to resolve the
+     * collisions of the messages and to ensure that there are no collisions
+     * with the CS1 protocol. Secondarily, it can contain the sequence number of
+     * a data transmission. No collisions with the CS1 protocol: In the CAN
+     * protocol of the CS1, the value 6 for the "com area of ​​the ID", these
+     * are the bits 7..9, i.e. the highest bit in the lowest byte (0b0xxxxxxx)
+     * and the two bits above it (0bxxxxxx11), is not used.
+     *
+     * This bit combination is therefore used for differentiation in the hash.
+     * collision resolution: The hash is used to make the CAN messages
+     * collision-free with a high probability. This 16-bit value is formed from
+     * the UID hash. Calculation: 16-bit high UID XOR 16-bit low of the UID.
+     * Then the bits are set according to the CS1 distinction.
+     *
+     * Each participant on the bus has to check the hash of received CAN
+     * messages to ensure that they are free of collisions. If your own hash is
+     * received, a new one must be chosen. This must not match any other
+     * received. Sequence number of a data transfer: If the hash is used to
+     * identify the package number, these bits are hidden when the package
+     * number is calculated. i.e. With the 16-bit number, bits 7 to 9 are
+     * hidden, the top 3 bits are 0. The range of values ​​is reduced
+     * accordingly to 8192.
+     *
+     * @param uid the uid to calculate the hash over
+     * @return an integer representing the hash value
+     */
+    public static int calcHash(int uid) {
+        int calc = (uid >> 16) ^ (uid & 0xFFFF);
+        int hash = ((calc << 3) | 0x0300) & 0xFF00;
+        hash |= (calc & 0x007F);
+        return hash;
+    }
 
-        int msb = uid >> 16;
-        int lsb = uid & 0xffff;
+    /**
+     * Calculate the hash value
+     *
+     * @param uid the uid as an int array of 4 bytes
+     * @return an int array of 2 bytes
+     */
+    public static int[] calcHash(int[] uid) {
+        int hash = calcHash(ByteUtil.toInt(uid));
+        return ByteUtil.to2ByteArray(hash);
+    }
+
+//    public static final int generateHashInt(int[] gfpUid) {
+//        if (gfpUid.length == 4) {
+//            int[] h = new int[2];
+//            int[] l = new int[2];
+//            System.arraycopy(gfpUid, 0, h, 0, 2);
+//            System.arraycopy(gfpUid, 2, l, 0, 2);
+//
+//            int hint = ByteUtil.toInt(h);
+//            int lint = ByteUtil.toInt(l);
+//
+//            //Xor
+//            int xor = hint ^ lint;
+//
+//            int msb = xor >> 16;
+//            int lsb = xor & 0xffff;
+//            int hash = msb ^ lsb;
+//            hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);
+//            return hash;
+//        } else {
+//            int uid = ByteUtil.toInt(gfpUid);
+//            int msb = uid >> 16;
+//            int lsb = uid & 0xffff;
+//            int hash = msb ^ lsb;
+//            hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);
+//            return hash;
+//        }
+//
+//    }
+    public static void main(String[] a) {
+
+        int[] gfp = new int[]{0x63, 0x73, 0x45, 0x8c};
+        int uid = ByteUtil.toInt(gfp);
+        int[] gfpHash = new int[]{0x03, 0x26};
+
+        int[] gui = new int[]{0x63, 0x73, 0x45, 0x8d};
+        int[] guiHash = new int[]{0x37, 0x7e};
+
+        int highword = uid >> 16;
+        int lowword = uid & 0xFFFF;
+
+        System.out.println("gfp hash: " + ByteUtil.toInt(gfpHash) + " " + ByteUtil.toHexString(gfpHash));
+        //System.out.println("highword: " + highword + " lowword: " + lowword);
+
+        int hash = highword ^ lowword;
+        hash = hash & 0xFFFF;
+        hash = hash & 0x1f7f;
+        hash = hash >> 3;
+
+        hash = hash & 0x1f7f;
+        hash = hash | 0x0300;
+
+        System.out.println("S hash: " + hash + " " + ByteUtil.toHexString(ByteUtil.to2ByteArray(hash)));
+
+        hash = highword ^ lowword;
+        hash = hash & 0xFFFF;
+
+        System.out.println("^hash: " + hash + " " + ByteUtil.toHexString(ByteUtil.to2ByteArray(hash)));
+
+        int[] hh = ByteUtil.to2ByteArray(hash);
+        System.out.println("hh: " + hash + " " + ByteUtil.toHexString(hh));
+
+        //int msb = hh[0];
+        //int lsb = hh[1];
+        int msb = hash & 0xff00;
+        int lsb = hash & 0x00ff;
+
+        System.out.println("msb: " + ByteUtil.toHexString(msb) + " lsb: " + ByteUtil.toHexString(lsb));
+
+        msb = msb & 0x1f;
+        msb = msb >> 3;
+        msb = msb | 0x03;  //msb is ok
+
+        lsb = lsb & 0x7f;
+        lsb = lsb >> 1;
+        //lsb = lsb | 0x00;
+        lsb = lsb & 0x7f;
+
+        System.out.println("a msb: " + ByteUtil.toHexString(msb) + " lsb: " + ByteUtil.toHexString(lsb));
+
+        hash = hash & 0x1f7f;
+        hash = hash >> 3;
+        hash = hash & 0x1fff;
+        hash = hash | 0x0300; //msb is now ok lsb not
+
+        //int[] hh = ByteUtil.to2ByteArray(hash);
+        //System.out.println("hh: " + hash + " " + ByteUtil.toHexString(hh));
+        hash = hash & 0x1f7f;
+        hash = hash | 0x0300;
+
+    }
+
+//uint16_t generateHash(uint32_t uid) {
+//    uint16_t hash, highword, lowword;
+//
+//    highword = uid >> 16;
+//    lowword = uid & 0xFFFF;
+//    hash = highword ^ lowword;
+//    hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);
+//    return hash;    
+//    // Hash - third and fourth bytes
+//        this.hash = (message[2] << 8) | message[3];
+//    // Set third and fourth byte
+//        this.rawMessage[2] = (byte) (hash >> 8);
+//        this.rawMessage[3] = (byte) hash;
+//    
+    //The CS2 response in my case with: "00 01 CB 13 05 43 53 9A 40 01 00 00 00".
+//Notice the second byte should be 01 as a response and the first 4 data bytes hold the UID in my case "43 53 9A 40".
+//I store the UID as an int so in my case: 1129552448.
+//I calculate the hash as follows:
+//int msb = uid >> 16;
+//int lsb = uid & 0xffff;
+//int hash = msb ^ lsb;
+//hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);   
+    public static final int generateHashInt(int gfpUid) {
+        int msb = gfpUid >> 16;
+        int lsb = gfpUid & 0xffff;
         int hash = msb ^ lsb;
         hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);
         return hash;
     }
 
-    public final int[] generateHash() {
-        int gh = generateHashInt();
-        int[] hash = to2ByteArray(gh);
-        return hash;
+    public static final int[] generateHash(int gfpUid) {
+        int hash = generateHashInt(gfpUid);
+        return ByteUtil.to2ByteArray(hash);
     }
 
-    public final int getHashInt() {
-        int[] h = this.getHash();
-
-        return ((h[0] & 0xFF) << 8)
-                | ((h[1] & 0xFF));
-    }
-
-    public static int[] to2ByteArray(int value) {
-        int[] bts = new int[]{
-            (value >> 8) & 0xFF,
-            value & 0XFF};
-
-        return bts;
-    }
-
-    public static int toInt(int[] value) {
-        int val;
-        switch (value.length) {
-            case 2:
-                val = ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
-                break;
-            case 4:
-                val = ((value[0] & 0xFF) << 24)
-                        | ((value[1] & 0xFF) << 16)
-                        | ((value[2] & 0xFF) << 8)
-                        | (value[3] & 0xFF);
-                break;
-            default:
-                val = 0;
-                break;
-        }
-        return val;
-    }
-
-    public static int[] to4ByteArray(int value) {
-        int[] bts = new int[]{
-            (value >> 24) & 0xFF,
-            (value >> 16) & 0xFF,
-            (value >> 8) & 0xFF,
-            value & 0XFF};
-
-        return bts;
-    }
-
-    private static String toHexString(int b) {
-        String h = Integer.toHexString((b & 0xff));
-        if (h.length() == 1) {
-            h = "0" + h;
-        }
-        return h;
-    }
-
+//    public static int[] to2ByteArray(int value) {
+//        int[] bts = new int[]{
+//            (value >> 8) & 0xFF,
+//            value & 0XFF};
+//
+//        return bts;
+//    }
+//    public final int generateHashInt() {
+//        int uid;
+//        if (this.deviceUidNumber > 0) {
+//            uid = this.deviceUidNumber;
+//        } else {
+//            uid = this.getUidInt();
+//        }
+//        return generateHashInt(uid);
+//    }
+//    public final int[] generateHash() {
+//        int gh = generateHashInt();
+//        int[] hash = to2ByteArray(gh);
+//        return hash;
+//    }
+//    public final int getHashInt() {
+//        int[] h = this.getHash();
+//
+//        return ((h[0] & 0xFF) << 8)
+//                | ((h[1] & 0xFF));
+//    }
+//    public static int toInt(int[] value) {
+//        int val;
+//        switch (value.length) {
+//            case 2:
+//                val = ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
+//                break;
+//            case 4:
+//                val = ((value[0] & 0xFF) << 24)
+//                        | ((value[1] & 0xFF) << 16)
+//                        | ((value[2] & 0xFF) << 8)
+//                        | (value[3] & 0xFF);
+//                break;
+//            default:
+//                val = 0;
+//                break;
+//        }
+//        return val;
+//    }
+//    public static int[] to4ByteArray(int value) {
+//        int[] bts = new int[]{
+//            (value >> 24) & 0xFF,
+//            (value >> 16) & 0xFF,
+//            (value >> 8) & 0xFF,
+//            value & 0XFF};
+//
+//        return bts;
+//    }
+//    private static String toHexString(int b) {
+//        String h = Integer.toHexString((b & 0xff));
+//        if (h.length() == 1) {
+//            h = "0" + h;
+//        }
+//        return h;
+//    }
     private static int[] getEmptyMessage() {
         int[] msg = new int[MESSAGE_SIZE];
         //Enshure it is filled with 0x00
@@ -496,6 +761,28 @@ public class CanMessage implements Serializable {
             msg[i] = 0;
         }
         return msg;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + Arrays.hashCode(this.message);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CanMessage other = (CanMessage) obj;
+        return Arrays.equals(this.message, other.message);
     }
 
 }

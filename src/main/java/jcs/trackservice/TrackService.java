@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.devices.CS3Device;
+import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.JCSEntity;
@@ -132,7 +132,7 @@ public interface TrackService {
     //Generic remove for Loco/accessory/feedback
     void remove(JCSEntity entity);
 
-    CS3Device getControllerInfo();
+    StatusDataConfigParser getControllerInfo();
 
     void addControllerListener(ControllerEventListener listener);
 

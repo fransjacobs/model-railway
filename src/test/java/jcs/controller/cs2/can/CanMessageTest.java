@@ -19,6 +19,7 @@
 package jcs.controller.cs2.can;
 
 import jcs.controller.cs3.can.CanMessage;
+import jcs.util.ByteUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -323,21 +324,26 @@ public class CanMessageTest {
     
     
 
-    @Test
-    public void testGenerateHash() {
-        System.out.println("generateHash");
-        CanMessage instance = new CanMessage(new int[]{0x00, 0x01, 0xcb, 0x13, 0x05, 0x43, 0x53, 0x9a, 0x40, 0x01, 0x00, 0x00, 0x00});
+    //@Test
+    public void testGenerateHashInt() {
+        System.out.println("generateHashInt");
+        int [] gfpUid = new int[]{0x63, 0x73, 0x45, 0x8c};
+        
+//        hash: 0x03 0x26
+//        gfp: 0x63 0x73 0x45 0x8c
+//        
+//        of   0x37 0x7e 
+//        cs3  0x08 0x63 0x73 0x45 0x8d
+//        
 
-        int hash = instance.getHashInt();
-        int generatedHash = instance.generateHashInt();
+        //int hash = instance.getHashInt();
+        //int hash = CanMessage.generateHashInt(gfpUid);
 
-        int[] h = instance.generateHash();
+         //String hb = ByteUtil.toHexString(hash);
 
-        String hb = instance.toHexString(h);
+        //System.out.println("hash: " + hb);
 
-        System.out.println("generateHash-> hash: " + hash + " generatedHash: " + generatedHash + " Hash Bytes: " + hb);
-
-        assertEquals(hash, generatedHash);
+        //assertEquals(hash, generatedHash);
     }
 
 }

@@ -20,10 +20,8 @@ package jcs.controller;
 
 import java.awt.Image;
 import java.util.List;
-import jcs.controller.cs3.devices.CS3Device;
-import jcs.controller.cs3.ControllerStatus;
-import jcs.controller.cs3.events.SensorMessageEvent;
-import jcs.controller.cs3.events.CanMessageListener;
+import jcs.controller.cs3.can.parser.StatusDataConfigParser;
+import jcs.controller.cs3.can.parser.SystemStatusParser;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
@@ -33,14 +31,7 @@ import jcs.entities.enums.DecoderType;
 
 public interface MarklinController {
 
-    //static final String SERVICE_TYPE = "ControllerService";
 
-    ControllerStatus power(boolean on);
-    
-    ControllerStatus getControllerStatus(); 
-    
-    boolean isPower();
-    
     boolean connect();
 
     boolean isConnected();
@@ -49,49 +40,54 @@ public interface MarklinController {
 
     String getName();
 
+    boolean isPower();
+
+    boolean power(boolean on);
+    
+
     //void toggleDirection(int address, DecoderType protocol, boolean function);
 
-    void toggleDirection(int address, DecoderType protocol);
+    //void toggleDirection(int address, DecoderType protocol);
 
-    void setDirection(int address, DecoderType protocol, Direction direction);
+    void changeDirection(int address, DecoderType protocol, Direction direction);
 
     void setSpeed(int address, DecoderType protocol, int speed);
 
     void setFunction(int address, DecoderType protocol, int functionNumber, boolean flag);
 
-    void switchAccessoiry(int address, AccessoryValue value);
+    void switchAccessory(int address, AccessoryValue value);
 
-    void addControllerEventListener(ControllerEventListener listener);
+    //void addControllerEventListener(ControllerEventListener listener);
 
-    void removeControllerEventListener(ControllerEventListener listener);
+    //void removeControllerEventListener(ControllerEventListener listener);
 
-    void notifyAllControllerEventListeners();
+    //void notifyAllControllerEventListeners();
 
-    CS3Device getControllerInfo();
+    //StatusDataConfigParser getControllerInfo();
 
-    void addCanMessageListener(CanMessageListener listener);
+    //void addCanMessageListener(CanMessageListener listener);
 
-    void removeCanMessageListener(CanMessageListener listener);
+    //void removeCanMessageListener(CanMessageListener listener);
 
     void addSensorMessageListener(SensorMessageListener listener);
 
     void removeSensorMessageListener(SensorMessageListener listener);
 
-    void addHeartbeatListener(HeartbeatListener listener);
+    //void addHeartbeatListener(HeartbeatListener listener);
 
-    void removeHeartbeatListener(HeartbeatListener listener);
+    //void removeHeartbeatListener(HeartbeatListener listener);
 
-    void removeAllHeartbeatListeners();
+    //void removeAllHeartbeatListeners();
 
     List<LocomotiveBean> getLocomotives();
     
-    void getAllFunctionIcons();
+    void cacheAllFunctionIcons();
 
     Image getLocomotiveImage(String icon);
 
     List<AccessoryBean> getAccessories();
 
-    List<SensorMessageEvent> querySensors(int sensorCount);
+    //List<SensorMessageEvent> querySensors(int sensorCount);
 
     //List<AccessoryStatus> getAccessoryStatuses();
 }

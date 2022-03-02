@@ -18,6 +18,7 @@
  */
 package jcs.controller.cs3.devices;
 
+import jcs.controller.cs3.GFPChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
