@@ -325,7 +325,6 @@ public class MarklinCS3 implements MarklinController {
             message = sendMessage(CanMessageFactory.statusDataConfig(4, gfpUid));
             cdp = new ChannelDataParser(message);
             Logger.debug(cdp);
-
         }
     }
 

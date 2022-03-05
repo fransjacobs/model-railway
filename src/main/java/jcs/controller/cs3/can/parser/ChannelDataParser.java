@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.List;
 import jcs.controller.cs3.GFPChannel;
 import jcs.controller.cs3.can.CanMessage;
-import jcs.controller.cs3.can.MarklinCan;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
@@ -40,95 +39,155 @@ public class ChannelDataParser implements Serializable {
     public ChannelDataParser(CanMessage message) {
         channel = new GFPChannel();
         try {
-            parseMessageIndex(message);
+            parseMessage(message);
         } catch (Exception e) {
             Logger.warn("Config Data Invalid! " + e.getMessage());
         }
     }
 
-    
-    //Value for temp is not correct
-    //need to use the scale when -3 = 10 -3 so /1000...
-    private void parseMessageIndex(CanMessage statusRequest) {
-        List<CanMessage> responses = statusRequest.getResponses();
-        if (!responses.isEmpty()) {
-            CanMessage r0 = responses.get(0);
-            int[] data1 = r0.getData();
-            channel.setNumber(data1[0]);
-            int p = (byte) data1[1];
-            channel.setScale(p);
-            channel.setColorMax(data1[2]);
-            channel.setColorGreen(data1[3]);
-            channel.setColorYellow(data1[4]);
-            channel.setColorRed(data1[5]);
-            channel.setStartValue(((double) ByteUtil.toInt(new int[]{data1[6], data1[7]})));
-
-            if (responses.size() > 1) {
-                byte[] data2 = responses.get(1).getDataBytes();
-                channel.setRangeMax(ByteUtil.toInt(new int[]{data2[0], data1[1]}));
-                channel.setRangeGreen(ByteUtil.toInt(new int[]{data2[2], data1[3]}));
-                channel.setRangeGreen(ByteUtil.toInt(new int[]{data2[4], data1[5]}));
-                channel.setRangeYellow(ByteUtil.toInt(new int[]{data2[6], data1[7]}));
+    private int getStringLength(byte[] data) {
+        for (int i = 0; i < data.length; i++) {
+            if (data[i] == 0x00) {
+                return i;
             }
+        }
+        return data.length;
+    }
 
-            if (responses.size() > 2) {
-                byte[] data3 = responses.get(2).getDataBytes();
+    private int getNumberOfPackets(CanMessage message) {
+        int packets = -1;
+        List<CanMessage> responses = message.getResponses();
 
-                byte[] nba = new byte[4];
-                System.arraycopy(data3, 0, nba, 0, nba.length);
+        int lastIdx = responses.size();
+        if (lastIdx > 0) {
+            lastIdx = lastIdx - 1;
+        } else {
+            return -1;
+        }
+        CanMessage last = responses.get(lastIdx);
 
-                String name = ByteUtil.bytesToString(nba);
-                channel.setName(name);
+        if (last.getDlc() == CanMessage.DLC_6) {
+            packets = last.getData()[5];
+        }
+        Logger.trace("Responses: " + responses.size() + " lastIdx: " + lastIdx + " packets: " + packets);
 
-                byte[] sta = new byte[4];
-                System.arraycopy(data3, 4, sta, 0, sta.length);
-                String startVal = ByteUtil.bytesToString(sta);
+        return packets;
+    }
 
-                Logger.trace("Startval: " + startVal);
+    private void parseMessage(CanMessage message) {
+        List<CanMessage> responses = message.getResponses();
+        int packets = getNumberOfPackets(message);
+        Logger.trace("Response message count " + responses.size() + " packet size: " + packets);
 
-                double startValue = Double.parseDouble(startVal);
-                channel.setStartValue(startValue);
+        //Create one array with data
+        byte[] data = new byte[8 * packets];
+
+        if (packets > 0) {
+            for (int i = 0; i < packets; i++) {
+                byte[] d = responses.get(i).getDataBytes();
+                System.arraycopy(d, 0, data, (i * d.length), d.length);
             }
+            int number = data[0];
+            int scale = (byte) data[1];
+            double multiplier = Math.pow(10, scale);
 
-            if (responses.size() > 3) {
-                byte[] data4 = responses.get(3).getDataBytes();
+            int colorMax = Byte.toUnsignedInt(data[2]);
+            int colorGreen = Byte.toUnsignedInt(data[3]);
+            int colorYellow = Byte.toUnsignedInt(data[4]);
+            int colorRed = Byte.toUnsignedInt(data[5]);
+            double startValue = ((double) ByteUtil.toInt(new byte[]{data[6], data[7]}));
 
-                byte[] mva = new byte[6];
-                System.arraycopy(data4, 0, mva, 0, mva.length);
-                String humVal = ByteUtil.bytesToString(mva);
-                double humanValue = Double.parseDouble(humVal);
-                channel.setHumanValue(humanValue);
+            this.channel.setNumber(number);
+            this.channel.setScale(scale);
+            this.channel.setColorMax(colorMax);
+            this.channel.setColorGreen(colorGreen);
+            this.channel.setColorYellow(colorYellow);
+            this.channel.setColorRed(colorRed);
+            this.channel.setStartValue(startValue);
 
-                byte[] uomb = new byte[]{data4[6], data4[7]};
-                String uom = ByteUtil.bytesToString(uomb);
-                channel.setUnit(uom);
+            //1
+            int rangeMax = ByteUtil.toInt(new byte[]{data[8], data[9]});
+            int rangeGreen = ByteUtil.toInt(new byte[]{data[10], data[11]});
+            int rangeYellow = ByteUtil.toInt(new byte[]{data[12], data[13]});
+            int rangeRed = ByteUtil.toInt(new byte[]{data[14], data[15]});
+
+            this.channel.setRangeMax(rangeMax);
+            this.channel.setRangeGreen(rangeGreen);
+            this.channel.setRangeYellow(rangeYellow);
+            this.channel.setRangeRed(rangeRed);
+
+            //2,3,4
+            //parse the strings
+            int idx = 16; //we are now @ byte 16; get all remaining bytes from here
+            int fullLen = data.length - idx;
+            byte[] stringdata = new byte[fullLen];
+            System.arraycopy(data, idx, stringdata, 0, stringdata.length);
+            //get the lenght util \0
+            int len = this.getStringLength(stringdata);
+            byte[] strArr = new byte[len];
+            System.arraycopy(data, idx, strArr, 0, strArr.length);
+            String name = ByteUtil.bytesToString(strArr);
+            this.channel.setName(name);
+
+            //next string
+            idx = idx + len + 1;
+            fullLen = data.length - idx;
+            stringdata = new byte[fullLen];
+            System.arraycopy(data, idx, stringdata, 0, stringdata.length);
+            len = this.getStringLength(stringdata);
+            strArr = new byte[len];
+            System.arraycopy(data, idx, strArr, 0, strArr.length);
+            String startVal = ByteUtil.bytesToString(strArr);
+            double startValDouble = Double.parseDouble(startVal);
+            this.channel.setStartValue(startValDouble);
+
+            //next string
+            idx = idx + len + 1;
+            fullLen = data.length - idx;
+            stringdata = new byte[fullLen];
+            System.arraycopy(data, idx, stringdata, 0, stringdata.length);
+            len = this.getStringLength(stringdata);
+            strArr = new byte[len];
+            System.arraycopy(data, idx, strArr, 0, strArr.length);
+            String humVal = ByteUtil.bytesToString(strArr);
+
+            double humanValue = Double.parseDouble(humVal);
+
+            //TODO how does the scaling work?
+            //I now see different values as I see in the CS 2/3??
+//            if (number == 4) {
+//                //The TEMP is alway 80.0 while on the cs display it is 48.
+//                //Is there a muliplier used?
+//                humanValue = humanValue * 0.6;
+//            }
+//            humanValue = humanValue * multiplier;
+            this.channel.setHumanValue(humanValue);
+
+            //next string
+            idx = idx + len + 1;
+            fullLen = data.length - idx;
+            stringdata = new byte[fullLen];
+            System.arraycopy(data, idx, stringdata, 0, stringdata.length);
+            len = this.getStringLength(stringdata);
+            strArr = new byte[len];
+            System.arraycopy(data, idx, strArr, 0, strArr.length);
+            String uom = ByteUtil.bytesToString(strArr);
+            this.channel.setUnit(uom);
+
+            //last string??
+            idx = idx + len + 1;
+            fullLen = data.length - idx;
+            if (fullLen > 0) {
+                stringdata = new byte[fullLen];
+                System.arraycopy(data, idx, stringdata, 0, stringdata.length);
+                len = this.getStringLength(stringdata);
+                strArr = new byte[len];
+                System.arraycopy(data, idx, strArr, 0, strArr.length);
+                String xxx = ByteUtil.bytesToString(strArr);
+                Logger.trace("Found string part: " + xxx);
             }
-
-            if (responses.size() > 4) {
-                byte[] data5 = responses.get(4).getDataBytes();
-                //axes counter not used
-                //but can be the last packet
-
-                if (responses.get(4).getDlc() == MarklinCan.DLC_6) {
-                    //Have the last packet
-                    index = data5[MarklinCan.STATUS_CONFIG_INDEX];
-                    packetCount = data5[MarklinCan.STATUS_CONFIG_PACKET_COUNT];
-                }
-            }
-
-            if (responses.size() > 5) {
-                //Fifth is the confimation and channels
-                if (responses.get(5).getDlc() == MarklinCan.DLC_6) {
-                    //Have the last packet
-                    byte[] data6 = responses.get(5).getDataBytes();
-                    index = data6[MarklinCan.STATUS_CONFIG_INDEX];
-                    packetCount = data6[MarklinCan.STATUS_CONFIG_PACKET_COUNT];
-                }
-            }
-
-            if (responses.size() - 1 != packetCount) {
-                Logger.warn("Config Data Invalid");
-            }
+        } else {
+            Logger.warn("Config packet data Invalid");
         }
     }
 

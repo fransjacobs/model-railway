@@ -256,9 +256,14 @@ public class GFPChannel {
         return Objects.equals(this.humanValue, other.humanValue);
     }
 
+//    @Override
+//    public String toString() {
+//        return "Channel{" + "name=" + name + ", number=" + number + ", humanValue=" + humanValue + ", unit=" + unit + ", scale=" + scale + "}";
+//    }
+
     @Override
     public String toString() {
-        return "Channel{" + "name=" + name + ", number=" + number + ", humanValue=" + humanValue + ", unit=" + unit + ", scale=" + scale + "}";
+        return "GFPChannel{" + "unit=" + unit + ", endValue=" + endValue + ", colorYellow=" + colorYellow + ", colorGreen=" + colorGreen + ", colorMax=" + colorMax + ", colorRed=" + colorRed + ", name=" + name + ", number=" + number + ", scale=" + scale + ", rangeYellow=" + rangeYellow + ", rangeGreen=" + rangeGreen + ", rangeMax=" + rangeMax + ", rangeRed=" + rangeRed + ", startValue=" + startValue + ", value=" + value + ", humanValue=" + humanValue + '}';
     }
 
 }

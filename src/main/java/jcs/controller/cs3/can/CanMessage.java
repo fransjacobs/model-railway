@@ -233,9 +233,6 @@ public class CanMessage implements MarklinCan, Serializable {
             //no responses
             return false;
         }
-//        int otherCmd = other.getCommand();
-//        int cmd = this.getCommand();
-//        return (cmd - 1) == otherCmd;
     }
 
     public boolean isAcknowledgeFor(CanMessage other) {

@@ -16,10 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.controller.cs2.can;
+package jcs.controller.cs3.can;
 
-import jcs.controller.cs3.can.CanMessage;
-import jcs.util.ByteUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

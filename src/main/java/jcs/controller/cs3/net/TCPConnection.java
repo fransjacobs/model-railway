@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.controller.cs3.can.CanMessage;
@@ -110,7 +109,9 @@ class TCPConnection implements CS3Connection {
             //Wait for the response 
             boolean responseComplete = false;
             while ((now < timeout) && !responseComplete) {
-                responseComplete = message.isResponseComplete();
+                synchronized (message) {
+                    responseComplete = message.isResponseComplete();
+                }
                 now = System.currentTimeMillis();
                 pause(5);
             }
@@ -221,7 +222,9 @@ class TCPConnection implements CS3Connection {
                         if (size != -1) {
                             CanMessage resp = new CanMessage(buffer);
                             if (this.message != null && resp.isResponseFor(message)) {
-                                this.message.addResponse(resp);
+                                synchronized (message) {
+                                    this.message.addResponse(resp);
+                                }
                                 Logger.trace("RX: " + resp + " Response count " + this.message.getResponses().size());
                             } else {
                                 if (resp.isEvent()) {

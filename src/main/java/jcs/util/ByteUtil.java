@@ -27,6 +27,27 @@ import java.util.List;
  */
 public class ByteUtil {
 
+    public static int toInt(byte[] value) {
+        int val = -1;
+        if (value != null) {
+            switch (value.length) {
+                case 2:
+                    val = ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
+                    break;
+                case 4:
+                    val = ((value[0] & 0xFF) << 24)
+                            | ((value[1] & 0xFF) << 16)
+                            | ((value[2] & 0xFF) << 8)
+                            | (value[3] & 0xFF);
+                    break;
+                default:
+                    val = 0;
+                    break;
+            }
+        }
+        return val;
+    }
+
     public static int toInt(int[] value) {
         int val = -1;
         if (value != null) {
@@ -72,6 +93,22 @@ public class ByteUtil {
             h = "0" + h;
         }
         return h;
+    }
+
+    public static String toHexString(byte[] bytes) {
+        if (bytes == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < bytes.length; i++) {
+            sb.append("0x");
+            sb.append(toHexString(bytes[i]));
+            if (i + 1 < bytes.length) {
+                sb.append(" ");
+            }
+        }
+        return sb.toString();
     }
 
     public static String toHexString(int[] bytes) {
