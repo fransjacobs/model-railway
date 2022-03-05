@@ -18,7 +18,7 @@
  */
 package jcs.controller.cs3.devices;
 
-import jcs.controller.cs3.GFPChannel;
+import jcs.controller.cs3.MeasurementChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +39,7 @@ public class GFP {
     private Integer queryInterval;
     private String version;
 
-    private final Map<String, GFPChannel> channels;
+    private final Map<String, MeasurementChannel> channels;
 
     public static final String MAIN = "MAIN";
     public static final String PROG = "PROG";
@@ -122,15 +122,15 @@ public class GFP {
         this.version = version;
     }
 
-    public Map<String, GFPChannel> getChannels() {
+    public Map<String, MeasurementChannel> getChannels() {
         return channels;
     }
 
-    public GFPChannel getChannel(String channelKey) {
+    public MeasurementChannel getChannel(String channelKey) {
         return this.channels.get(channelKey);
     }
 
-    public void setChannel(GFPChannel channel) {
+    public void setChannel(MeasurementChannel channel) {
         if (channel == null) {
             return;
         }
@@ -154,7 +154,7 @@ public class GFP {
 
     //Convenience
     public Double getTrackCurrent() {
-        GFPChannel m = this.getChannel(MAIN);
+        MeasurementChannel m = this.getChannel(MAIN);
         if (m != null) {
             return m.getHumanValue();
         } else {
@@ -163,7 +163,7 @@ public class GFP {
     }
 
     public Double getProgrammingTrackCurrent() {
-        GFPChannel m = this.getChannel(PROG);
+        MeasurementChannel m = this.getChannel(PROG);
         if (m != null) {
             return m.getHumanValue();
         } else {
@@ -172,7 +172,7 @@ public class GFP {
     }
 
     public Double getTrackVoltage() {
-        GFPChannel m = this.getChannel(VOLT);
+        MeasurementChannel m = this.getChannel(VOLT);
         if (m != null) {
             return m.getHumanValue();
         } else {
@@ -181,7 +181,7 @@ public class GFP {
     }
 
     public Double getCS3Temperature() {
-        GFPChannel m = this.getChannel(TEMP);
+        MeasurementChannel m = this.getChannel(TEMP);
         if (m != null) {
             return m.getHumanValue();
         } else {

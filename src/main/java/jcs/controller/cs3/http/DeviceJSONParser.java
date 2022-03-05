@@ -21,7 +21,7 @@ package jcs.controller.cs3.http;
 import jcs.controller.cs3.devices.CS3;
 import jcs.controller.cs3.devices.SxxBus;
 import jcs.controller.cs3.devices.GFP;
-import jcs.controller.cs3.GFPChannel;
+import jcs.controller.cs3.MeasurementChannel;
 import jcs.controller.cs3.devices.LinkSxx;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -44,7 +44,7 @@ public class DeviceJSONParser {
     private void parseCannels(JSONArray channelArray) {
         int j = -1;
         for (int i = 0; i < channelArray.length(); i++) {
-            GFPChannel c = new GFPChannel();
+            MeasurementChannel c = new MeasurementChannel();
             if (channelArray.getJSONObject(i).has("einheit")) {
                 c.setUnit(channelArray.getJSONObject(i).getString("einheit"));
             }

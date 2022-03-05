@@ -20,7 +20,7 @@ package jcs.controller.cs3.can.parser;
 
 import java.io.Serializable;
 import java.util.List;
-import jcs.controller.cs3.GFPChannel;
+import jcs.controller.cs3.MeasurementChannel;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -31,13 +31,13 @@ import org.tinylog.Logger;
  */
 public class ChannelDataParser implements Serializable {
 
-    private final GFPChannel channel;
+    private final MeasurementChannel channel;
 
     private int index;
     private int packetCount;
 
     public ChannelDataParser(CanMessage message) {
-        channel = new GFPChannel();
+        channel = new MeasurementChannel();
         try {
             parseMessage(message);
         } catch (Exception e) {
@@ -191,7 +191,7 @@ public class ChannelDataParser implements Serializable {
         }
     }
 
-    public GFPChannel getChannel() {
+    public MeasurementChannel getChannel() {
         return channel;
     }
 

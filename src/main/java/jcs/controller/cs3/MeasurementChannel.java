@@ -24,7 +24,7 @@ import java.util.Objects;
  *
  * @author fransjacobs
  */
-public class GFPChannel {
+public class MeasurementChannel {
 
     private String unit;
     private Double endValue;
@@ -43,7 +43,7 @@ public class GFPChannel {
     private Integer value;
     private Double humanValue;
 
-    public GFPChannel() {
+    public MeasurementChannel() {
     }
 
     public String getUnit() {
@@ -207,7 +207,7 @@ public class GFPChannel {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final GFPChannel other = (GFPChannel) obj;
+        final MeasurementChannel other = (MeasurementChannel) obj;
         if (!Objects.equals(this.unit, other.unit)) {
             return false;
         }
