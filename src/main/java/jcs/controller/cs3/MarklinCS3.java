@@ -143,12 +143,21 @@ public class MarklinCS3 implements MarklinController {
             Logger.trace("Connecting to CS3...");
             //Obtain some info from the CS 3 connected to
             getAppDevices();
-            //Basically the same, less info via CAN
-            getMembers();
 
             CS3Connection cs3Connection = CS3ConnectionFactory.getConnection();
             this.connection = cs3Connection;
-            this.connected = cs3Connection != null;
+
+            //Wait, if needed untile the receiver thread has started
+            long now = System.currentTimeMillis();
+            long timeout = now + 1000L;
+
+            while (!connected && now < timeout) {
+                connected = cs3Connection.isConnected();
+                now = System.currentTimeMillis();
+            }
+
+            //Basically the same as above now via CAN
+            getMembers();
         }
 
         return connected;
@@ -341,6 +350,7 @@ public class MarklinCS3 implements MarklinController {
             this.connection.sendCanMessage(canMessage);
         } else {
             Logger.warn("NOT connected!");
+            Logger.trace("Message: " + canMessage + " NOT Send!");
         }
         return canMessage;
     }
@@ -622,19 +632,18 @@ public class MarklinCS3 implements MarklinController {
 
         if (cs3.isConnected()) {
             Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
-            
+
             cs3.power(false);
             cs3.pause(500);
             Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
             cs3.power(true);
             cs3.pause(500);
             Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
-            
+
             //SystemConfiguration data
             cs3.getStatusConfig(0);
 
 //Now get the systemstatus for all devices
-
 //First the status data config must be called to get the channels
             //cs3.getSystemStatus()
             //            SystemStatusParser ss = cs3.getSystemStatus();

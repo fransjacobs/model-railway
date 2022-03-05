@@ -41,5 +41,7 @@ public interface CS3Connection extends AutoCloseable {
     void removeCanMessageListener(CanMessageListener listener);
 
     InetAddress getControllerAddress();
+    
+    boolean isConnected();
 
 }

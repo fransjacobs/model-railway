@@ -159,6 +159,11 @@ class TCPConnection implements CS3Connection {
         }
     }
 
+    @Override
+    public boolean isConnected() {
+        return this.messageReceiver != null && this.messageReceiver.isRunning();
+    }
+
     private class ClientMessageReceiver extends Thread {
 
         Socket serverSocket;

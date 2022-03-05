@@ -114,4 +114,9 @@ class UDPConnection implements CS3Connection {
         return cs2Address;
     }
 
+    @Override
+    public boolean isConnected() {
+        return true;
+    }
+
 }
