@@ -433,9 +433,9 @@ public class SwitchPanel extends JPanel {
 
         Logger.trace("Address: " + address + " Value: " + value);
 
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().switchAccessory(value, new AccessoryBean(address, n, value));
-        }
+//        if (TrackServiceFactory.getTrackService() != null) {
+//            TrackServiceFactory.getTrackService().switchAccessory(value, new AccessoryBean(address, n, value));
+//        }
     }
 
   private void tb1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb1ActionPerformed

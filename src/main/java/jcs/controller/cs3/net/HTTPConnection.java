@@ -58,6 +58,10 @@ public class HTTPConnection {
         this.cs3Address = cs3Address;
     }
 
+    public boolean isConnected() {
+        return cs3Address != null && cs3Address.getHostAddress() != null;
+    }
+
     private static String fixURL(String url) {
         return url.replace(" ", "%20");
     }
@@ -176,20 +180,24 @@ public class HTTPConnection {
 //    }
     public String getDevicesJSON() {
         StringBuilder device = new StringBuilder();
-        try {
-            URL url = new URL(HTTP + cs3Address.getHostAddress() + DEVICES);
-            URLConnection lc = url.openConnection();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    device.append(inputLine.strip());
-                    device.append("\n");
+        if (this.cs3Address != null && cs3Address.getHostAddress() != null) {
+            try {
+                URL url = new URL(HTTP + cs3Address.getHostAddress() + DEVICES);
+                URLConnection lc = url.openConnection();
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        device.append(inputLine.strip());
+                        device.append("\n");
+                    }
                 }
+            } catch (MalformedURLException ex) {
+                Logger.error(ex);
+            } catch (IOException ex) {
+                Logger.error(ex);
             }
-        } catch (MalformedURLException ex) {
-            Logger.error(ex);
-        } catch (IOException ex) {
-            Logger.error(ex);
+        } else {
+            Logger.warn("Not Connected to CS3!");
         }
         return device.toString();
     }

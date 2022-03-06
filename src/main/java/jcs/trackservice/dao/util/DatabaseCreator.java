@@ -224,7 +224,7 @@ public class DatabaseCreator {
 
     private static void functions(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE functions ("
-                + "locoid           NUMBER NOT NULL, "
+                + "locoid           bigint NOT NULL, "
                 + "number           INTEGER NOT NULL, "
                 + "type             INTEGER NOT NULL, "
                 + "fvalue           INTEGER)");
@@ -235,7 +235,7 @@ public class DatabaseCreator {
 
     private static void solenoidaccessories(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE solenoidaccessories ("
-                + "id                    NUMBER NOT NULL,"
+                + "id                    IDENTITY NOT NULL,"
                 + "name                  VARCHAR(255) NOT NULL,"
                 + "type                  VARCHAR(255) NOT NULL,"
                 + "position              INTEGER,"
@@ -244,7 +244,7 @@ public class DatabaseCreator {
                 + "decoder               VARCHAR2(255))"
         );
 
-        stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id )");
+        //stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id )");
         Logger.trace("Table solenoidaccessories created...");
     }
 

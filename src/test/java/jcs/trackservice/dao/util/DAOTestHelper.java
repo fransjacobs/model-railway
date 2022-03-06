@@ -133,22 +133,22 @@ public class DAOTestHelper extends DatabaseCreator {
             try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (1,'W 1R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (2,'W 2L','linksweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (3,'W 3R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (4,'W 4R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (5,'W 5R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (6,'W 6R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (7,'W 7L','linksweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (8,'W 8L','linksweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (9,'W 9R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (1E+1,'W 10R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (11,'W 11L','linksweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (12,'W 12L','linksweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (13,'W 13L','linksweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (14,'W 14R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (17,'W 17R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (18,'W 18R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 1R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 2L','linksweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 3R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 4R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 5R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 6R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 7L','linksweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 8L','linksweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 9R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 10R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 11L','linksweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 12L','linksweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 13L','linksweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 14R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 17R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 18R','rechtsweiche',1,200,'mm2','ein_alt')");
 
                 c.commit();
             }
@@ -157,36 +157,36 @@ public class DAOTestHelper extends DatabaseCreator {
         }
     }
 
-    public static void insertSignalData() {
-        Logger.debug("Inserting Signals...");
-        try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
-                Statement stmt = c.createStatement();
-
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
-                        + "VALUES(soac_seq.nextval,3,'S 3','S 3','home made','S','G',null,2,200)");
-
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
-                        + "VALUES(soac_seq.nextval,4,'S 4','S 4','3942','S','R',null,2,200)");
-
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
-                        + "VALUES(soac_seq.nextval,5,'S 5','S 5','3943','S','G',null,4,200)");
-
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
-                        + "VALUES(soac_seq.nextval,6,'S 5','S 5','3943','S','R',(soac_seq.currval - 1),4,200)");
-
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE,SWITCH_TIME) "
-                        + "VALUES(soac_seq.nextval,7,'S 7','S 7','dual','S','G',null,4,'Hp2',200)");
-
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE,SWITCH_TIME) "
-                        + "VALUES(soac_seq.nextval,8,'S 7','S 7','dual','S','G',(soac_seq.currval - 1),4,'Hp2',200)");
-
-                c.commit();
-            }
-        } catch (SQLException ex) {
-            Logger.error(ex);
-        }
-    }
+//    public static void insertSignalData() {
+//        Logger.debug("Inserting Signals...");
+//        try {
+//            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+//                Statement stmt = c.createStatement();
+//
+//                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
+//                        + "VALUES(3,'S 3','S 3','home made','S','G',null,2,200)");
+//
+//                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
+//                        + "VALUES(soac_seq.nextval,4,'S 4','S 4','3942','S','R',null,2,200)");
+//
+//                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
+//                        + "VALUES(soac_seq.nextval,5,'S 5','S 5','3943','S','G',null,4,200)");
+//
+//                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
+//                        + "VALUES(soac_seq.nextval,6,'S 5','S 5','3943','S','R',(soac_seq.currval - 1),4,200)");
+//
+//                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE,SWITCH_TIME) "
+//                        + "VALUES(soac_seq.nextval,7,'S 7','S 7','dual','S','G',null,4,'Hp2',200)");
+//
+//                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE,SWITCH_TIME) "
+//                        + "VALUES(soac_seq.nextval,8,'S 7','S 7','dual','S','G',(soac_seq.currval - 1),4,'Hp2',200)");
+//
+//                c.commit();
+//            }
+//        } catch (SQLException ex) {
+//            Logger.error(ex);
+//        }
+//    }
 
     public static void insertSensorData() {
         Logger.debug("Inserting Sensors...");
@@ -220,14 +220,6 @@ public class DAOTestHelper extends DatabaseCreator {
                 stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
                         + "VALUES(lati_seq.nextval,'StraightTrack','West','Center', 50, 60)");
 
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (1,'StraightTrack','East','Center',200,140,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (2,'DiagonalTrack','North','Center',160,160,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (3,'DiagonalTrack','East','Center',240,160,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (4,'StraightTrack','North','Center',140,200,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (5,'StraightTrack','South','Center',260,200,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (6,'DiagonalTrack','West','Center',160,240,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (7,'DiagonalTrack','South','Center',240,240,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (8,'StraightTrack','West','Center',200,260,null,null);
                 c.commit();
             }
         } catch (SQLException ex) {
@@ -235,8 +227,6 @@ public class DAOTestHelper extends DatabaseCreator {
         }
     }
 
-//        private static final String INS_TILE_STMT = "insert into tiles(tileType,orientation,direction,x,y,signalType,id) values(?,?,?,?,?,?,?)";
-//    private static final String UPD_TILE_STMT = "update tiles set tileType = ?,orientation = ?,direction = ?,x = ?,y = ?, signalType =? where id = ?";
     public static void insertTileData() {
         Logger.debug("Inserting TileBeans...");
         try {
@@ -251,14 +241,6 @@ public class DAOTestHelper extends DatabaseCreator {
                 stmt.executeUpdate("INSERT INTO TILES(TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ID) "
                         + "VALUES('Straight','West','Center', 50, 60, null,'st-7')");
 
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (1,'StraightTrack','East','Center',200,140,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (2,'DiagonalTrack','North','Center',160,160,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (3,'DiagonalTrack','East','Center',240,160,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (4,'StraightTrack','North','Center',140,200,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (5,'StraightTrack','South','Center',260,200,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (6,'DiagonalTrack','West','Center',160,240,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (7,'DiagonalTrack','South','Center',240,240,null,null);
-//INSERT INTO "JCS"."LAYOUTTILES" (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SOAC_ID,SENS_ID) VALUES (8,'StraightTrack','West','Center',200,260,null,null);
                 c.commit();
             }
         } catch (SQLException ex) {

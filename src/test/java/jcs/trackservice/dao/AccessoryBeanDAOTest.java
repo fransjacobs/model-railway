@@ -74,9 +74,9 @@ public class AccessoryBeanDAOTest {
         turnouts.add(ab13);
         AccessoryBean ab14 = new AccessoryBean(new BigDecimal(14), "W 14R", "rechtsweiche", 1, 200, "mm2", "ein_alt");
         turnouts.add(ab14);
-        AccessoryBean ab17 = new AccessoryBean(new BigDecimal(17), "W 17R", "rechtsweiche", 1, 200, "mm2", "ein_alt");
+        AccessoryBean ab17 = new AccessoryBean(new BigDecimal(15), "W 17R", "rechtsweiche", 1, 200, "mm2", "ein_alt");
         turnouts.add(ab17);
-        AccessoryBean ab18 = new AccessoryBean(new BigDecimal(18), "W 18R", "rechtsweiche", 1, 200, "mm2", "ein_alt");
+        AccessoryBean ab18 = new AccessoryBean(new BigDecimal(16), "W 18R", "rechtsweiche", 1, 200, "mm2", "ein_alt");
         turnouts.add(ab18);
     }
 
@@ -134,20 +134,21 @@ public class AccessoryBeanDAOTest {
     @Test
     public void testPersist() {
         System.out.println("persist");
-        AccessoryBean accessoiry = new AccessoryBean(new BigDecimal(100), "W 100", "rechtsweiche", 0, 200, "mm2", "ein_alt");
+        AccessoryBean accessory = new AccessoryBean("W 100", "rechtsweiche", 0, 200, "mm2", "ein_alt");
+
         AccessoryBeanDAO instance = new AccessoryBeanDAO();
-        BigDecimal expResult = new BigDecimal(100);
-        BigDecimal result = instance.persist(accessoiry);
+        BigDecimal expResult = new BigDecimal(17);
+        BigDecimal result = instance.persist(accessory);
         assertEquals(expResult, result);
 
         AccessoryBean ab = instance.findById(expResult);
 
-        assertEquals(accessoiry, ab);
+        assertEquals(accessory, ab);
 
-        accessoiry.setName("WWWWW");
-        instance.persist(accessoiry);
+        accessory.setName("WWWWW");
+        instance.persist(accessory);
         ab = instance.findById(expResult);
-        assertEquals(accessoiry, ab);
+        assertEquals(accessory, ab);
     }
 
     /**
@@ -156,10 +157,10 @@ public class AccessoryBeanDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        AccessoryBean accessoiry = new AccessoryBean(new BigDecimal(101), "W 100", "rechtsweiche", 0, 200, "mm2", "ein_alt");
+        AccessoryBean accessoiry = new AccessoryBean("W 101", "rechtsweiche", 0, 200, "mm2", "ein_alt");
         AccessoryBeanDAO instance = new AccessoryBeanDAO();
 
-        BigDecimal expResult = new BigDecimal(101);
+        BigDecimal expResult = new BigDecimal(17);
         BigDecimal result = instance.persist(accessoiry);
         assertEquals(expResult, result);
 

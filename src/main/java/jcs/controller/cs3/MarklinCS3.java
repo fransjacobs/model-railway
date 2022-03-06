@@ -147,17 +147,24 @@ public class MarklinCS3 implements MarklinController {
             CS3Connection cs3Connection = CS3ConnectionFactory.getConnection();
             this.connection = cs3Connection;
 
-            //Wait, if needed untile the receiver thread has started
-            long now = System.currentTimeMillis();
-            long timeout = now + 1000L;
+            if (connection != null) {
 
-            while (!connected && now < timeout) {
-                connected = cs3Connection.isConnected();
-                now = System.currentTimeMillis();
+                //Wait, if needed until the receiver thread has started
+                long now = System.currentTimeMillis();
+                long timeout = now + 1000L;
+
+                while (!connected && now < timeout) {
+                    connected = cs3Connection.isConnected();
+                    now = System.currentTimeMillis();
+                }
+
+                if (connected) {
+                    //Basically the same as above now via CAN
+                    getMembers();
+                }
+            } else {
+                Logger.warn("Can't connect with CS 3!");
             }
-
-            //Basically the same as above now via CAN
-            getMembers();
         }
 
         return connected;
@@ -175,30 +182,36 @@ public class MarklinCS3 implements MarklinController {
      */
     void getAppDevices() {
         HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
-        String deviceJSON = httpCon.getDevicesJSON();
-        DeviceJSONParser dp = new DeviceJSONParser();
-        dp.parseDevices(deviceJSON);
+        if (httpCon.isConnected()) {
 
-        this.cs3Uid = Integer.parseInt(dp.getCs3().getUid().substring(2), 16);
-        this.cs3Name = dp.getCs3().getName();
-        this.gfp = dp.getGfp();
-        this.gfpUid = Integer.parseInt(this.gfp.getUid().substring(2), 16);
-        this.linkSxx = dp.getLinkSxx();
-        this.linkSxxUid = Integer.parseInt(this.linkSxx.getUid().substring(2), 16);
+            String deviceJSON = httpCon.getDevicesJSON();
+            DeviceJSONParser dp = new DeviceJSONParser();
+            dp.parseDevices(deviceJSON);
 
-        Logger.trace("CS3 uid: " + dp.getCs3().getUid());
-        Logger.trace("CS3: " + this.cs3Name);
-        Logger.trace("GFP uid: " + this.gfp.getUid());
-        Logger.trace("GFP Article: " + this.gfp.getArticleNumber());
-        Logger.trace("GFP version: " + this.gfp.getVersion());
-        Logger.trace("GFP Serial: " + this.gfp.getSerial());
-        Logger.trace("GFP id: " + this.gfp.getIdentifier());
+            this.cs3Uid = Integer.parseInt(dp.getCs3().getUid().substring(2), 16);
+            this.cs3Name = dp.getCs3().getName();
+            this.gfp = dp.getGfp();
+            this.gfpUid = Integer.parseInt(this.gfp.getUid().substring(2), 16);
+            this.linkSxx = dp.getLinkSxx();
+            this.linkSxxUid = Integer.parseInt(this.linkSxx.getUid().substring(2), 16);
 
-        Logger.trace("LinkSxx uid: " + this.linkSxx.getUid());
-        Logger.trace("LinkSxx id: " + this.linkSxx.getIdentifier());
-        Logger.trace("LinkSxx serial: " + this.linkSxx.getSerialNumber());
-        Logger.trace("LinkSxx version: " + this.linkSxx.getVersion());
-        Logger.trace("LinkSxx sensors: " + this.linkSxx.getTotalSensors());
+            Logger.trace("CS3 uid: " + dp.getCs3().getUid());
+            Logger.trace("CS3: " + this.cs3Name);
+            Logger.trace("GFP uid: " + this.gfp.getUid());
+            Logger.trace("GFP Article: " + this.gfp.getArticleNumber());
+            Logger.trace("GFP version: " + this.gfp.getVersion());
+            Logger.trace("GFP Serial: " + this.gfp.getSerial());
+            Logger.trace("GFP id: " + this.gfp.getIdentifier());
+
+            Logger.trace("LinkSxx uid: " + this.linkSxx.getUid());
+            Logger.trace("LinkSxx id: " + this.linkSxx.getIdentifier());
+            Logger.trace("LinkSxx serial: " + this.linkSxx.getSerialNumber());
+            Logger.trace("LinkSxx version: " + this.linkSxx.getVersion());
+            Logger.trace("LinkSxx sensors: " + this.linkSxx.getTotalSensors());
+        } else {
+            Logger.warn("Not Connected with CS 3!");
+        }
+
     }
 
     /**
@@ -336,17 +349,14 @@ public class MarklinCS3 implements MarklinController {
             Logger.debug(cdp);
         }
     }
-    
-    
+
     //Overload message:
     //0x00 0x01 0x03 0x26 0x06 0x63 0x73 0x45 0x8c 0x0a 0x01 0x00 0x00
-    
     //Event power on
     //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x01 0x00 0x00 0x00
     //
     //event power off
     //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x00 0x00 0x00 0x00
-    
     //feedback events:
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x00 0x01 0xff 0xff".
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x01 0x00 0x00 0x1e".
@@ -354,10 +364,8 @@ public class MarklinCS3 implements MarklinController {
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x01 0x00 0x00 0x1e".
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x00 0x01 0x00 0x28".
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x01 0x00 0x00 0x1e".
-
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xf0 0x01 0x00 0x00 0x28
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xea 0x00 0x01 0xff 0xff
-    
     /**
      * Blocking call to the message sender thread which send the message and
      * await the response. When there is no response within 1s the waiting is
@@ -713,9 +721,8 @@ public class MarklinCS3 implements MarklinController {
         //Logger.info("Query direction of loc 12");
         //DirectionInfo info = cs3.getDirection(12, DecoderType.MM);
 //        cs3.pause(5L);
-
         Logger.debug("Wait for 10m");
-        cs3.pause(1000*60*10);
+        cs3.pause(1000 * 60 * 10);
 
         cs3.disconnect();
         cs3.pause(100L);

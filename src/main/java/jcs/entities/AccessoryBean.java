@@ -34,11 +34,12 @@ public class AccessoryBean implements JCSEntity {
     private String decoder;
 
     public AccessoryBean() {
+        this(null, null, null, null, null, null, null);
 
     }
 
-    public AccessoryBean(Integer address,String name, AccessoryValue accessoryValue) {
-        this(new BigDecimal(address), name, null, accessoryValue.getCS3Value(), null, null, null);
+    public AccessoryBean(String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
+        this(null, name, type, position, switchTime, decoderType, decoder);
     }
 
     public AccessoryBean(BigDecimal id, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
@@ -62,7 +63,7 @@ public class AccessoryBean implements JCSEntity {
             this.id = (BigDecimal) id;
         }
     }
-    
+
     public void setId(BigDecimal id) {
         this.id = id;
     }

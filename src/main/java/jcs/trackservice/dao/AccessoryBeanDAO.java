@@ -74,7 +74,9 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
         ps.setString(5, sab.getDecoderType());
         ps.setString(6, sab.getDecoder());
 
-        ps.setBigDecimal(7, sab.getId());
+        if (!insert) {
+            ps.setBigDecimal(7, sab.getId());
+        }
     }
 
     @Override

@@ -93,6 +93,7 @@ public class MarklinCS3Test {
      */
     @Test
     public void testPower() {
+        if(!instance.isConnected()) return;
         System.out.println("isPower");
         //The gfpUid should not be 0 when connected to a real CS..
         int gfpuid = instance.getGfpUid();
@@ -129,6 +130,7 @@ public class MarklinCS3Test {
      */
     @Test
     public void testGetDeviceIp() {
+        if(!instance.isConnected()) return;
         System.out.println("getDeviceIp");
         String expResult = "192.168.1.180";
         String result = instance.getIp();
@@ -140,6 +142,7 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testDisconnect() {
+        if(!instance.isConnected()) return;
         System.out.println("disconnect");
         MarklinCS3 instance = new MarklinCS3();
         instance.disconnect();
@@ -152,6 +155,7 @@ public class MarklinCS3Test {
      */
     // @Test
     public void testGetName() {
+        if(!instance.isConnected()) return;
         System.out.println("getName");
         MarklinCS3 instance = new MarklinCS3();
         String expResult = "";
@@ -166,6 +170,7 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testToggleDirection() {
+        if(!instance.isConnected()) return;
         System.out.println("toggleDirection");
         int address = 0;
         DecoderType decoderType = null;
@@ -180,6 +185,7 @@ public class MarklinCS3Test {
      */
     // @Test
     public void testSetDirection() {
+        if(!instance.isConnected()) return;
         System.out.println("setDirection");
         int address = 0;
         DecoderType decoderType = null;
@@ -195,6 +201,7 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testGetDirection() {
+        if(!instance.isConnected()) return;
         System.out.println("getDirection");
         int address = 0;
         DecoderType decoderType = null;
@@ -211,6 +218,7 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testSetSpeed() {
+        if(!instance.isConnected()) return;
         System.out.println("setSpeed");
         int address = 0;
         DecoderType decoderType = null;
@@ -226,7 +234,8 @@ public class MarklinCS3Test {
      */
     // @Test
     public void testSetFunction() {
-        System.out.println("setFunction");
+         if(!instance.isConnected()) return;
+       System.out.println("setFunction");
         int address = 0;
         DecoderType decoderType = null;
         int functionNumber = 0;
@@ -242,7 +251,8 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testSwitchAccessoiry() {
-        System.out.println("switchAccessoiry");
+         if(!instance.isConnected()) return;
+       System.out.println("switchAccessoiry");
         int address = 0;
         AccessoryValue value = null;
         MarklinCS3 instance = new MarklinCS3();
@@ -256,6 +266,7 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testGetLocomotives() {
+        if(!instance.isConnected()) return;
         System.out.println("getLocomotives");
         MarklinCS3 instance = new MarklinCS3();
         List<LocomotiveBean> expResult = null;
@@ -270,6 +281,7 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testGetAllFunctionIcons() {
+        if(!instance.isConnected()) return;
         System.out.println("getAllFunctionIcons");
         MarklinCS3 instance = new MarklinCS3();
         instance.cacheAllFunctionIcons();
@@ -282,6 +294,7 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testGetAccessories() {
+        if(!instance.isConnected()) return;
         System.out.println("getAccessories");
         MarklinCS3 instance = new MarklinCS3();
         List<AccessoryBean> expResult = null;
