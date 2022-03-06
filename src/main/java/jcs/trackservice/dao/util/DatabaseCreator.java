@@ -96,7 +96,6 @@ public class DatabaseCreator {
                 if (!success) {
                     break;
                 }
-
             }
 
             success = true;
@@ -140,36 +139,14 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;");
         stmt.executeUpdate("DROP TABLE if exists sensors CASCADE CONSTRAINTS");
 
-        //stmt.executeUpdate("DROP TABLE if exists driveways CASCADE CONSTRAINTS");
-        //stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP SEQUENCE if exists femo_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists loco_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists func_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists soac_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists trpo_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists prop_seq");
         stmt.executeUpdate("DROP SEQUENCE if exists sens_seq");
-        //trackplan
-        //stmt.executeUpdate("DROP SEQUENCE if exists lati_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists drwa_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists rout_seq");
 
         Logger.trace("Existing schema objects dropped...");
     }
 
-    //private static void createSequences(Statement stmt) throws SQLException {
-    //stmt.executeUpdate("CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1");
-    //stmt.executeUpdate("CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1");
-    //stmt.executeUpdate("CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1");
-    //stmt.executeUpdate("CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1");
-    //stmt.executeUpdate("CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1");
-    //stmt.executeUpdate("CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1");
-    //trackplan
-    //stmt.executeUpdate("CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1");
-    //stmt.executeUpdate("CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1");
-    //stmt.executeUpdate("CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1");
-    //Logger.trace("Sequences created...");
-    //}
     private static void createTiles(Statement stmt) throws SQLException {
         stmt.executeUpdate("create table tiles ("
                 + "id           VARCHAR(255) not null,"
@@ -206,24 +183,21 @@ public class DatabaseCreator {
 
     private static void sensors(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE sensors ("
-                + "id                IDENTITY NOT NULL,"
-                + "address           INTEGER NOT NULL,"
-                + "device_id         INTEGER,"
+                + "id                IDENTITY not null,"
                 + "name              VARCHAR2(255) NOT NULL,"
-                + "DESCRIPTION       VARCHAR2(255),"
-                + "\"value\"         INTEGER,"
-                + "previous_value    INTEGER,"
+                + "deviceid          INTEGER,"
+                + "contactid         INTEGER,"
+                + "status            INTEGER,"
+                + "previousstatus    INTEGER,"
                 + "millis            INTEGER,"
                 + "lastupdated       DATE)");
-
-        stmt.executeUpdate("ALTER TABLE sensors ADD CONSTRAINT sens_address_un UNIQUE ( address )");
 
         Logger.trace("Table sensors created...");
     }
 
     private static void locomotives(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE locomotives ("
-                + "id                 NUMBER NOT NULL, "
+                + "id                 bigint NOT NULL, "
                 + "name               VARCHAR2(255) NOT NULL, "
                 + "previousname       VARCHAR2(255), "
                 + "uid                VARCHAR2(255), "
@@ -256,7 +230,6 @@ public class DatabaseCreator {
                 + "fvalue           INTEGER)");
 
         stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( locoid, number )");
-        //stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT function_loco_number_un UNIQUE ( locoid, number )");
         Logger.trace("Table functions created...");
     }
 
@@ -430,7 +403,7 @@ public class DatabaseCreator {
     private static void createSchema(boolean testMode) {
         Logger.trace(testMode ? "Test Mode: " : "" + "Creating JCS schema objects...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("set SCHEMA JCS");
@@ -471,7 +444,7 @@ public class DatabaseCreator {
         }
 
         try {
-            try ( Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
+            try (Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
                 if (c != null) {
                     Statement stmt = c.createStatement();
 

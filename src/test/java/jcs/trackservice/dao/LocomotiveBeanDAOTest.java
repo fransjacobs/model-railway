@@ -98,7 +98,7 @@ public class LocomotiveBeanDAOTest {
             LocomotiveBean lbr = result.get(i);
             LocomotiveBean lbe = expResult.get(i);
             Logger.trace(lbe.getName());
-            
+
             assertEquals(lbe.getId(), lbr.getId());
             assertEquals(lbe.getName(), lbr.getName());
             assertEquals(lbe.getPreviousName(), lbr.getPreviousName());
@@ -157,7 +157,7 @@ public class LocomotiveBeanDAOTest {
     @Test
     public void testPersist() {
         System.out.println("persist");
-        LocomotiveBean newLoco = new LocomotiveBean(new BigDecimal(80), "BR 81 002", "BR  81 002", 80L, null, 80, "DB BR 81 008", "mm_prg", null, 120, 1, 1, 2, 64, null, 600, 0, null, null);
+        LocomotiveBean newLoco = new LocomotiveBean(new BigDecimal(80L), "BR 81 002", "BR  81 002", 80L, 0L, 80, "DB BR 81 008", "mm_prg", null, 120, 1, 1, 2, 64, null, 600, 0, null, null);
 
         LocomotiveBeanDAO instance = new LocomotiveBeanDAO();
         BigDecimal result = instance.persist(newLoco);
@@ -178,40 +178,10 @@ public class LocomotiveBeanDAOTest {
         instance.remove(loco);
     }
 
-//    @Test
-//    public void testPersist2() {
-//        System.out.println("persist2");
-//        LocomotiveBean newLoco = new LocomotiveBean(66, "NS E186 2", "NS E186 2", "36629", DecoderType.MFX, Direction.FORWARDS, 0, 14, 0, 0, 0, 16, "1000000000000000", null, Direction.FORWARDS, null, null);
-////                LocomotiveBean loco2 = new LocomotiveBean(new BigDecimal(2), "BR 81 002", "BR  81 002", 2L, null, 2, "DB BR 81 008", "mm_prg", null, 120, 1, 1, 2, 64, null, 600, 0, null, null);
-//
-//        LocomotiveBeanDAO instance = new LocomotiveBeanDAO();
-//        BigDecimal result = instance.persist(newLoco);
-//
-//        LocomotiveBean loco = instance.findById(result);
-//
-//        assertEquals(newLoco, loco);
-//        LocomotiveBean locoA = instance.find(66, DecoderType.MFX);
-//        assertEquals(newLoco, locoA);
-//        assertEquals(loco.getId(), result);
-//
-//        newLoco.setF0(true);
-//        instance.persist(newLoco);
-//
-//        loco = instance.findById(result);
-//        assertEquals(newLoco, loco);
-//
-//        newLoco.setF1(true);
-//        instance.persist(newLoco);
-//
-//        loco = instance.findById(result);
-//        assertEquals(newLoco, loco);
-//
-//        instance.remove(loco);
-//    }
     @Test
     public void testRemove() {
         System.out.println("remove");
-        LocomotiveBean newLoco = new LocomotiveBean(new BigDecimal(70), "TEST Loco remove", null, 2L, null, 70, "TEST Loco remove", "mm_prg", null, 120, 1, 1, 2, 64, null, 600, 0, null, null);
+        LocomotiveBean newLoco = new LocomotiveBean(new BigDecimal(70L), "TEST Loco remove", "TEST Loco remove", 70L, 0L, 70, "TEST Loco remove", "mm_prg", null, 120, 1, 1, 2, 64, null, 600, 0, null, null);
 
         LocomotiveBeanDAO instance = new LocomotiveBeanDAO();
 

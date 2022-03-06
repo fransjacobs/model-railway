@@ -52,7 +52,7 @@ public class FunctionBeanDAO extends AbstractDAO<FunctionBean> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, FunctionBean function) throws SQLException {
+    protected void bind(PreparedStatement ps, FunctionBean function, boolean insert) throws SQLException {
         ps.setInt(1, function.getFunctionType());
 
         if (function.getValue() != null) {

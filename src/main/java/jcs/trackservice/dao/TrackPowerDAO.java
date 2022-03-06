@@ -55,7 +55,7 @@ public class TrackPowerDAO extends AbstractDAO<TrackPower> {
   }
 
   @Override
-  protected void bind(PreparedStatement ps, TrackPower trpo) throws SQLException {
+  protected void bind(PreparedStatement ps, TrackPower trpo, boolean insert) throws SQLException {
     ps.setString(1, trpo.getStatus().toString());
     ps.setString(2, trpo.getFeedbackSource().toString());
     if (trpo.getLastUpdated() != null) {

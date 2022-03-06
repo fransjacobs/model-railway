@@ -217,34 +217,34 @@ public class H2TrackService implements TrackService {
 
         System.setProperty("sensorCount", "" + sensorCount);
 
-        if (sensorCount != allSensors.size()) {
-            Logger.debug("The Sensor count has changed since last run from " + allSensors.size() + " to " + sensorCount + "...");
-            //remove sensors which are not in the system
-            if (allSensors.size() > sensorCount) {
-                for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
-                    SensorBean s = this.sensDAO.find(contactId);
-                    if (s == null) {
-                        //remove the sensor
-                        sensDAO.remove(s);
-                    }
-                }
-            }
-            for (int contactId = 1; contactId <= sensorCount; contactId++) {
-                //is there a sensor in the database?
-                SensorBean s = this.sensDAO.find(contactId);
-                if (s == null) {
-                    String name = "m" + SensorBean.calculateModuleNumber(contactId) + "p" + SensorBean.calculatePortNumber(contactId);
-                    String description = name;
-                    //create the sensor
-                    s = new SensorBean(contactId, name, description, 0, 0, 0, 0);
-                    if (s.getId() != null) {
-                        sensDAO.persist(s);
-                    }
-                }
-            }
-        } else {
-            Logger.trace("The Sensor count has not changed since last run...");
-        }
+//        if (sensorCount != allSensors.size()) {
+//            Logger.debug("The Sensor count has changed since last run from " + allSensors.size() + " to " + sensorCount + "...");
+//            //remove sensors which are not in the system
+//            if (allSensors.size() > sensorCount) {
+//                for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
+//                    SensorBean s = this.sensDAO.find(contactId);
+//                    if (s == null) {
+//                        //remove the sensor
+//                        sensDAO.remove(s);
+//                    }
+//                }
+//            }
+//            for (int contactId = 1; contactId <= sensorCount; contactId++) {
+//                //is there a sensor in the database?
+//                SensorBean s = this.sensDAO.find(contactId);
+//                if (s == null) {
+//                    String name = "m" + SensorBean.calculateModuleNumber(contactId) + "p" + SensorBean.calculatePortNumber(contactId);
+//                    String description = name;
+//                    //create the sensor
+//                    s = new SensorBean(contactId, name, description, 0, 0, 0, 0);
+//                    if (s.getId() != null) {
+//                        sensDAO.persist(s);
+//                    }
+//                }
+//            }
+//        } else {
+//            Logger.trace("The Sensor count has not changed since last run...");
+//        }
         //Update the sensors with the status od the Controller
         synchronizeSensors();
 
@@ -264,26 +264,26 @@ public class H2TrackService implements TrackService {
 
     @Override
     public SensorBean getSensor(Integer contactId) {
-        return sensDAO.find(contactId);
+        return null; //sensDAO.find(contactId);
     }
 
     @Override
     public SensorBean persist(SensorBean sensor) {
-        SensorBean prev = sensDAO.find(sensor.getContactId());
-        //make shure the name etc is kept
-        if (prev != null) {
-            sensor.setId(prev.getId());
-            sensor.setName(prev.getName());
-            sensor.setDescription(prev.getDescription());
-            sensDAO.persist(sensor);
-            firePersistEvent(sensor, prev);
-
-            //Logger.trace("Updated SensorBean: " + sensor.toLogString());
-            executor.execute(() -> broadcastSensorChanged(sensor));
-        } else {
-            //Sensor does not exit is database
-            Logger.warn("Skip persisting ghost sensor " + sensor.toLogString());
-        }
+//        SensorBean prev = sensDAO.find(sensor.getContactId());
+//        //make shure the name etc is kept
+//        if (prev != null) {
+//            sensor.setId(prev.getId());
+//            sensor.setName(prev.getName());
+//            sensor.setDescription(prev.getDescription());
+//            sensDAO.persist(sensor);
+//            firePersistEvent(sensor, prev);
+//
+//            //Logger.trace("Updated SensorBean: " + sensor.toLogString());
+//            executor.execute(() -> broadcastSensorChanged(sensor));
+//        } else {
+//            //Sensor does not exit is database
+//            Logger.warn("Skip persisting ghost sensor " + sensor.toLogString());
+//        }
 
         return sensor;
     }

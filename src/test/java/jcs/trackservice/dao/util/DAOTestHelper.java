@@ -33,7 +33,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertLocoData() {
         Logger.debug("Inserting Locomotives...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("INSERT INTO LOCOMOTIVES (ID,NAME,PREVIOUSNAME,UID,MFXUID,ADDRESS,ICON,DECODERTYPE,MFXSID,TACHOMAX,VMIN,ACCELERATIONDELAY,BRAKEDELAY,VOLUME,SPM,VELOCITY,DIRECTION,MFXTYPE,BLOCKS) "
@@ -97,7 +97,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertLocoFuncData() {
         Logger.debug("Inserting Locomotive Functions...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("INSERT INTO FUNCTIONS (LOCOID,NUMBER,TYPE,FVALUE) VALUES (2,0,1,1)");
@@ -130,7 +130,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertTurnoutData() {
         Logger.debug("Inserting Turnouts...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (1,'W 1R','rechtsweiche',1,200,'mm2','ein_alt')");
@@ -160,26 +160,9 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertSignalData() {
         Logger.debug("Inserting Signals...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
-                /*
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (15,'S 15','lichtsignal_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (16,'S 16','lichtsignal_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (19,'S 19','lichtsignal_HP01',1,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (21,'S 21','lichtsignal_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (22,'S 22','lichtsignal_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (23,'S 23','lichtsignal_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (24,'S 24','lichtsignal_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (25,'S 25/26','urc_lichtsignal_HP012_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (27,'S 27/28','urc_lichtsignal_HP012_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (29,'S 29/30','urc_lichtsignal_HP012_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (31,'S 31/32','urc_lichtsignal_HP012_SH01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (35,'S 35','lichtsignal_HP01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (41,'S  41','urc_lichtsignal_HP012',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (43,'S  43','lichtsignal_HP01',0,200,'mm2','ein_alt');
-INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (47,'S 20','lichtsignal_HP01',1,200,'mm2','ein_alt');                
-                 */
                 stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES(ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SWITCH_TIME) "
                         + "VALUES(soac_seq.nextval,3,'S 3','S 3','home made','S','G',null,2,200)");
 
@@ -208,13 +191,13 @@ INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODE
     public static void insertSensorData() {
         Logger.debug("Inserting Sensors...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
-                stmt.executeUpdate("INSERT INTO sensors (id,address,device_id,name,description,value,previous_value,millis,lastupdated) "
-                        + "VALUES(sens_seq.nextval,1,0,'M1P1','M1P1',0,1,0,null)");
+                stmt.executeUpdate("INSERT INTO sensors (name,deviceid,contactid,status,previousstatus,millis,lastupdated) "
+                        + "VALUES('M1P1',65,1,0,0,0,null)");
 
-                stmt.executeUpdate("INSERT INTO sensors (id,address,device_id,name,description,value,previous_value,millis,lastupdated) "
-                        + "VALUES(sens_seq.nextval,2,0,'M1P2','M1P2',1,0,10,null)");
+                stmt.executeUpdate("INSERT INTO sensors (name,deviceid,contactid,status,previousstatus,millis,lastupdated) "
+                        + "VALUES('M1P2',65,2,1,0,0,null)");
 
                 c.commit();
             }
@@ -226,7 +209,7 @@ INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODE
     public static void insertLayoutTileData() {
         Logger.debug("Inserting LayoutTiles...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
                         + "VALUES(lati_seq.nextval,'SwitchTile','East','Left', 30, 30)");
@@ -257,7 +240,7 @@ INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODE
     public static void insertTileData() {
         Logger.debug("Inserting TileBeans...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO TILES(TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ID) "
                         + "VALUES('Switch','East','Left', 30, 30,null,'sw-1')");
@@ -286,7 +269,7 @@ INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODE
     public static void insertDriveWayData() {
         Logger.debug("Inserting DriveWays...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO DRIVEWAYS (ID,ADDRESS,NAME,DESCRIPTION,FROM_LATI_ID,TO_LATI_ID,LOCO_ID,ACTIVE,RESERVED,OCCUPIED) "
                         + "VALUES (drwa_seq.nextval,1,'Blk 1','Block 1',null,null,null,1,0,0)");
@@ -301,7 +284,7 @@ INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODE
     public static void insertRouteData() {
         Logger.debug("Inserting Routes...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO ROUTES (ID,ADDRESS,NAME,DESCRIPTION,DRWA_ID,LATI_ID) "
                         + "VALUES (rout_seq.nextval,1,'Rt 1','Route 1',1,1)");
@@ -316,7 +299,7 @@ INSERT INTO "JCS"."SOLENOIDACCESSORIES" (ID,NAME,TYPE,POSITION,SWITCHTIME,DECODE
     public static void insertJCSPropertiesData() {
         Logger.debug("Inserting JCSProperties...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO JCSPROPERTIES (PKEY,PVALUE) VALUES ('k1','v1')");
 

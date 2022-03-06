@@ -57,7 +57,7 @@ public class DriveWayDAO extends AbstractDAO<DriveWay> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, DriveWay driveWay) throws SQLException {
+    protected void bind(PreparedStatement ps, DriveWay driveWay, boolean insert) throws SQLException {
         ps.setInt(1, driveWay.getAddress());
         ps.setString(2, driveWay.getName());
         ps.setString(3, driveWay.getDescription());

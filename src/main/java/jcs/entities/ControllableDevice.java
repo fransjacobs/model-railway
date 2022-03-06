@@ -110,6 +110,13 @@ public abstract class ControllableDevice implements JCSEntity, Serializable, Com
         return this.id.toString();
     }
 
+    @Override
+    public void setId(Object id) {
+        if (id instanceof BigDecimal) {
+            this.id = (BigDecimal) id;
+        }
+    }
+
     public void setId(BigDecimal id) {
         this.id = id;
     }

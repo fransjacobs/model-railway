@@ -18,92 +18,108 @@
  */
 package jcs.entities;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
-public class SensorBean extends ControllableDevice {
+public class SensorBean implements JCSEntity, Serializable {
 
-    private Integer value;
-    private Integer previousValue;
+    private BigDecimal id;
+    private String name;
+
     private Integer deviceId;
+    private Integer contactId;
+    private Integer status;
+    private Integer previousStatus;
     private Integer millis;
     private Date lastUpdated;
 
     public SensorBean() {
-        this(null, null, null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null);
     }
 
-    public SensorBean(Integer contactId, Integer value, Integer previousValue, Integer deviceId, Integer millis, Date lastUpdated) {
-        this(null, contactId, null, null, value, previousValue, deviceId, millis, lastUpdated);
+    public SensorBean(Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+        this(null, null, deviceId, contactId, status, previousStatus, millis, lastUpdated);
     }
 
-    public SensorBean(Integer contactId, String name, String description, Integer value, Integer previousValue, Integer deviceId, Integer millis) {
-        this(null, contactId, name, description, value, previousValue, deviceId, millis, null);
+    public SensorBean(String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+        this(null, name, deviceId, contactId, status, previousStatus, millis, lastUpdated);
     }
 
-    public SensorBean(Integer contactId, String name, String description, Integer value, Integer previousValue, Integer deviceId, Integer millis, Date lastUpdated) {
-        this(null, contactId, name, description, value, previousValue, deviceId, millis, lastUpdated);
-    }
+    public SensorBean(BigDecimal id, String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+        this.id = id;
+        this.name = name;
 
-    public SensorBean(BigDecimal id, Integer contactId, String name, String description, Integer value, Integer previousValue, Integer deviceId, Integer millis, Date lastUpdated) {
-        super(id, contactId, name, description);
-        this.value = value;
-        this.previousValue = previousValue;
+        this.status = status;
+        this.previousStatus = previousStatus;
         this.deviceId = deviceId;
+        this.contactId = contactId;
         this.millis = millis;
         this.lastUpdated = lastUpdated;
     }
 
-    public int getValue() {
-        return value;
+    @Override
+    public BigDecimal getId() {
+        return id;
     }
 
-    public void setValue(int value) {
-        this.value = value;
+    @Override
+    public void setId(Object id) {
+        if (id instanceof BigDecimal) {
+            this.id = (BigDecimal) id;
+        }
     }
 
-    public boolean isActive() {
-        return this.value > 0;
+    public void setId(BigDecimal id) {
+        this.id = id;
     }
 
-    public void setActive(boolean active) {
-        this.value = active ? 1 : 0;
+    public String getName() {
+        return name;
     }
 
-    public int getPreviousValue() {
-        return previousValue;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setPreviousActive(boolean active) {
-        this.previousValue = active ? 1 : 0;
-    }
-
-    public void setPreviousValue(int previousValue) {
-        this.previousValue = previousValue;
-    }
-
-    public int getContactId() {
-        return address;
-    }
-
-    public void setContactId(int contactId) {
-        this.address = deviceId;
-    }
-
-    public int getDeviceId() {
+    public Integer getDeviceId() {
         return deviceId;
     }
 
-    public void setDeviceId(int deviceId) {
+    public void setDeviceId(Integer deviceId) {
         this.deviceId = deviceId;
     }
 
-    public int getMillis() {
+    public Integer getContactId() {
+        return contactId;
+    }
+
+    public void setContactId(Integer contactId) {
+        this.contactId = contactId;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Integer getPreviousStatus() {
+        return previousStatus;
+    }
+
+    public void setPreviousStatus(Integer previousStatus) {
+        this.previousStatus = previousStatus;
+    }
+
+    public Integer getMillis() {
         return millis;
     }
 
-    public void setMillis(int millis) {
+    public void setMillis(Integer millis) {
         this.millis = millis;
     }
 
@@ -113,6 +129,22 @@ public class SensorBean extends ControllableDevice {
 
     public void setLastUpdated(Date lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    public boolean isActive() {
+        return this.status > 0;
+    }
+
+    public void setActive(boolean active) {
+        this.status = active ? 1 : 0;
+    }
+
+    public void setPreviousActive(boolean active) {
+        this.previousStatus = active ? 1 : 0;
+    }
+
+    public boolean isPreviousActive() {
+        return this.previousStatus > 0;
     }
 
     public static Integer calculateModuleNumber(int contactId) {
@@ -134,28 +166,16 @@ public class SensorBean extends ControllableDevice {
     }
 
     @Override
-    public String toString() {
-        if (address == null) {
-            return "-";
-        } else {
-            return address + ", M: " + calculateModuleNumber(address) + " P: " + calculatePortNumber(address);
-        }
-    }
-
-    @Override
-    public String toLogString() {
-        return "ContactId: " + address + ", deviceId: " + deviceId + ", value=" + value + ", previousValue=" + previousValue + ", millis=" + millis;
-    }
-
-    @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 41 * hash + this.value;
-        hash = 41 * hash + this.previousValue;
-        hash = 41 * hash + this.deviceId;
-        hash = 41 * hash + this.millis;
+        int hash = 3;
+        hash = 41 * hash + Objects.hashCode(this.id);
+        hash = 41 * hash + Objects.hashCode(this.name);
+        hash = 41 * hash + Objects.hashCode(this.deviceId);
+        hash = 41 * hash + Objects.hashCode(this.contactId);
+        hash = 41 * hash + Objects.hashCode(this.status);
+        hash = 41 * hash + Objects.hashCode(this.previousStatus);
+        hash = 41 * hash + Objects.hashCode(this.millis);
         hash = 41 * hash + Objects.hashCode(this.lastUpdated);
-        hash = 41 * hash + Objects.hashCode(super.hashCode());
         return hash;
     }
 
@@ -171,22 +191,46 @@ public class SensorBean extends ControllableDevice {
             return false;
         }
         final SensorBean other = (SensorBean) obj;
-        if (!Objects.equals(this.value, other.value)) {
+        if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (!Objects.equals(this.previousValue, other.previousValue)) {
+        if (!Objects.equals(this.id, other.id)) {
             return false;
         }
         if (!Objects.equals(this.deviceId, other.deviceId)) {
             return false;
         }
+        if (!Objects.equals(this.contactId, other.contactId)) {
+            return false;
+        }
+        if (!Objects.equals(this.status, other.status)) {
+            return false;
+        }
+        if (!Objects.equals(this.previousStatus, other.previousStatus)) {
+            return false;
+        }
         if (!Objects.equals(this.millis, other.millis)) {
             return false;
         }
-        if (!Objects.equals(this.lastUpdated, other.lastUpdated)) {
-            return false;
-        }
-        return super.equals(other);
+        return Objects.equals(this.lastUpdated, other.lastUpdated);
+    }
+
+//    @Override
+//    public String toString() {
+//        if (contactId == null) {
+//            return "-";
+//        } else {
+//            return contactId + ", M: " + calculateModuleNumber(contactId) + " P: " + calculatePortNumber(contactId);
+//        }
+//    }
+    @Override
+    public String toString() {
+        return "SensorBean{" + "id=" + id + ", name=" + name + ", deviceId=" + deviceId + ", contactId=" + contactId + ", status=" + status + ", previousStatus=" + previousStatus + ", millis=" + millis + ", lastUpdated=" + lastUpdated + '}';
+    }
+
+    @Override
+    public String toLogString() {
+        return toString();
     }
 
 }

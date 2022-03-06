@@ -105,12 +105,13 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         return exists;
     }
 
+    @Deprecated
     protected BigDecimal getNextId(String sequenceName) {
         String stmt = "select " + sequenceName + ".nextval as ID from dual";
 
         BigDecimal id = null;
 
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(stmt)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(stmt)) {
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {
@@ -146,13 +147,25 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         }
     }
 
-    protected int upsert(T jcsEntity, String statement) {
-        int rows = 0;
+    protected BigDecimal upsert(T jcsEntity, String statement) {
+        BigDecimal id = null;
+        boolean insert = statement.toLowerCase().startsWith("insert");
 
-        try ( PreparedStatement ps = connection.prepareStatement(statement)) {
-            bind(ps, jcsEntity);
+        try (PreparedStatement ps = connection.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
+            bind(ps, jcsEntity, insert);
 
-            rows = ps.executeUpdate();
+            int rows = ps.executeUpdate();
+
+            if (insert) {
+                try (ResultSet rs = ps.getGeneratedKeys();) {
+                    while (rs.next()) {
+                        id = rs.getBigDecimal(1);
+                        jcsEntity.setId(id);
+                    }
+                } catch (SQLException ex) {
+                    Logger.trace("Can't get the generated ID for " + statement);
+                }
+            }
 
             if (rows > 0) {
                 connection.commit();
@@ -163,14 +176,14 @@ public abstract class AbstractDAO<T extends JCSEntity> {
             Logger.error(jcsEntity.getClass().getSimpleName() + " " + statement);
             Logger.error(ex);
         }
-        return rows;
+        return id;
     }
 
     protected List<T> findAll(String statement) {
         List<T> devices = new LinkedList<>();
 
         if (connection != null) {
-            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 ResultSet rs = preparedStatement.executeQuery();
 
                 while (rs.next()) {
@@ -188,7 +201,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
     protected List<T> findBy(BigDecimal id, String statement) {
         List<T> devices = new LinkedList<>();
 
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, id);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -206,7 +219,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
     protected List<T> findBy(String key, String statement) {
         List<T> devices = new LinkedList<>();
 
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setString(1, key);
             ResultSet rs = preparedStatement.executeQuery();
 
@@ -221,17 +234,17 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         return devices;
     }
 
-    protected <T> T find(Integer address, String statement) {
+    protected <T> T find(Integer key, String statement) {
         T controllableDevice = null;
 
         if (connection != null) {
-            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.setInt(1, address);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.setInt(1, key);
 
-                ResultSet rs = preparedStatement.executeQuery();
-
-                while (rs.next()) {
-                    controllableDevice = map(rs);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    while (rs.next()) {
+                        controllableDevice = map(rs);
+                    }
                 }
             } catch (SQLException ex) {
                 Logger.error(ex);
@@ -241,18 +254,39 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         return controllableDevice;
     }
 
-    protected <T> T find(Integer address, String key, String statement) {
+    protected <T> T find(Integer key1, Integer key2, String statement) {
         T jcsEntity = null;
 
         if (connection != null) {
-            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
-                preparedStatement.setInt(1, address);
-                preparedStatement.setString(2, key);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.setInt(1, key1);
+                preparedStatement.setInt(2, key2);
 
-                ResultSet rs = preparedStatement.executeQuery();
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    while (rs.next()) {
+                        jcsEntity = map(rs);
+                    }
+                }
+            } catch (SQLException ex) {
+                Logger.error(ex);
+            }
+        }
 
-                while (rs.next()) {
-                    jcsEntity = map(rs);
+        return jcsEntity;
+    }
+
+    protected <T> T find(Integer key1, String key2, String statement) {
+        T jcsEntity = null;
+
+        if (connection != null) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+                preparedStatement.setInt(1, key1);
+                preparedStatement.setString(2, key2);
+
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    while (rs.next()) {
+                        jcsEntity = map(rs);
+                    }
                 }
             } catch (SQLException ex) {
                 Logger.error(ex);
@@ -266,13 +300,13 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         T jcsEntity = null;
 
         if (connection != null) {
-            try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
                 preparedStatement.setString(1, key);
 
-                ResultSet rs = preparedStatement.executeQuery();
-
-                while (rs.next()) {
-                    jcsEntity = map(rs);
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    while (rs.next()) {
+                        jcsEntity = map(rs);
+                    }
                 }
             } catch (SQLException ex) {
                 Logger.error(ex);
@@ -285,17 +319,17 @@ public abstract class AbstractDAO<T extends JCSEntity> {
     protected <T> T findById(Object id, String statement) {
         T jcsEntity = null;
 
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             if (id instanceof BigDecimal) {
                 preparedStatement.setBigDecimal(1, (BigDecimal) id);
             } else {
                 preparedStatement.setString(1, (String) id);
             }
 
-            ResultSet rs = preparedStatement.executeQuery();
-
-            while (rs.next()) {
-                jcsEntity = map(rs);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    jcsEntity = map(rs);
+                }
             }
         } catch (SQLException ex) {
             Logger.error(ex);
@@ -307,14 +341,14 @@ public abstract class AbstractDAO<T extends JCSEntity> {
     protected <T> T findById(BigDecimal otherId, Integer otherInt, String statement) {
         T controllableDevice = null;
 
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, otherId);
             preparedStatement.setInt(2, otherInt);
 
-            ResultSet rs = preparedStatement.executeQuery();
-
-            while (rs.next()) {
-                controllableDevice = map(rs);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    controllableDevice = map(rs);
+                }
             }
         } catch (SQLException ex) {
             Logger.error(ex);
@@ -325,7 +359,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
 
     protected int remove(JCSEntity jcsEntity, String statement) {
         int rows = 0;
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             if (jcsEntity != null && jcsEntity.getId() != null) {
                 if (jcsEntity.getId() instanceof BigDecimal) {
                     preparedStatement.setBigDecimal(1, (BigDecimal) jcsEntity.getId());
@@ -353,7 +387,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
 
     protected int remove(BigDecimal id, Integer otherId, String statement) {
         int rows = 0;
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, id);
             preparedStatement.setInt(2, otherId);
 
@@ -374,7 +408,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
 
     protected int remove(BigDecimal id, String statement) {
         int rows = 0;
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
             preparedStatement.setBigDecimal(1, id);
 
             rows = preparedStatement.executeUpdate();
@@ -408,13 +442,12 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         }
     }
 
-    protected abstract void bind(PreparedStatement ps, T jcsEntity) throws SQLException;
+    protected abstract void bind(PreparedStatement ps, T jcsEntity, boolean insert) throws SQLException;
 
     protected abstract <T> T map(ResultSet rs) throws SQLException;
 
     protected abstract List<T> findAll();
 
-    //protected abstract <T> T find(Integer address);
     protected abstract Object persist(T device);
 
     protected abstract void remove(T device);

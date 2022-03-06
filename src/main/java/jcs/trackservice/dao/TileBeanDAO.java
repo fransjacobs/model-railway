@@ -64,7 +64,7 @@ public class TileBeanDAO extends AbstractDAO<TileBean> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, TileBean tileBean) throws SQLException {
+    protected void bind(PreparedStatement ps, TileBean tileBean, boolean insert) throws SQLException {
         ps.setString(1, tileBean.getTileType().getTileType());
         ps.setString(2, tileBean.getOrientation().getOrientation());
         ps.setString(3, tileBean.getDirection().getDirection());

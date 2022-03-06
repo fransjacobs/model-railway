@@ -97,6 +97,13 @@ public class FunctionBean implements JCSEntity, Serializable {
         return this.id;
     }
 
+    @Override
+    public void setId(Object id) {
+        if (id instanceof BigDecimal) {
+            this.id = (BigDecimal) id;
+        }
+    }
+
     public void setId(BigDecimal id) {
         this.id = id;
     }

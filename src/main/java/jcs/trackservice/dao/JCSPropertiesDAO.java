@@ -43,7 +43,7 @@ public class JCSPropertiesDAO extends AbstractDAO<JCSProperty> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, JCSProperty property) throws SQLException {
+    protected void bind(PreparedStatement ps, JCSProperty property, boolean insert) throws SQLException {
         ps.setString(1, property.getValue());
         ps.setString(2, property.getKey());
         //ps.setBigDecimal(3, property.getId());

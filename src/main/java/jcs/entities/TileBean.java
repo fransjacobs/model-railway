@@ -111,8 +111,16 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         this.center = center;
     }
 
+    @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public void setId(Object id) {
+        if (id instanceof String) {
+            this.id = (String) id;
+        }
     }
 
     public void setId(String id) {

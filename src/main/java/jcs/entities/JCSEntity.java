@@ -26,5 +26,7 @@ public interface JCSEntity {
 
     Object getId();
 
+    void setId(Object id);
+
     String toLogString();
 }

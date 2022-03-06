@@ -32,7 +32,7 @@ import jcs.entities.AccessoryBean;
  */
 public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
-    private static final String INS_SA_STMT = "insert into solenoidaccessories (name,type,position,switchtime,decodertype,decoder,id) values(?,?,?,?,?,?,?)";
+    private static final String INS_SA_STMT = "insert into solenoidaccessories (name,type,position,switchtime,decodertype,decoder) values(?,?,?,?,?,?)";
     private static final String UPD_SA_STMT = "update solenoidaccessories set name = ?,type = ?,position = ?,switchtime = ?,decodertype = ?,decoder = ? where id = ?";
 
     public AccessoryBeanDAO() {
@@ -55,7 +55,7 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, AccessoryBean sab) throws SQLException {
+    protected void bind(PreparedStatement ps, AccessoryBean sab, boolean insert) throws SQLException {
         ps.setString(1, sab.getName());
         ps.setString(2, sab.getType());
 

@@ -53,7 +53,7 @@ public class RouteDAO extends AbstractDAO<Route> {
     }
 
     @Override
-    protected void bind(PreparedStatement ps, Route route) throws SQLException {
+    protected void bind(PreparedStatement ps, Route route, boolean insert) throws SQLException {
         ps.setInt(1, route.getAddress());
         ps.setString(2, route.getName());
         ps.setString(3, route.getDescription());

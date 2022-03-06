@@ -255,6 +255,13 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         return id;
     }
 
+    @Override
+    public void setId(Object id) {
+        if (id instanceof BigDecimal) {
+            this.id = (BigDecimal) id;
+        }
+    }
+
     public void setId(BigDecimal id) {
         this.id = id;
     }
@@ -270,48 +277,21 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         }
     }
 
+//    @Override
+//    public String toString() {
+//        return this.name;
+//    }
+
     @Override
     public String toString() {
-        return this.name;
+        return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderType + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + blocks + ", locIcon=" + locIcon + '}';
     }
+    
+    
 
     @Override
     public String toLogString() {
         return this.name;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + Objects.hashCode(this.id);
-        hash = 29 * hash + Objects.hashCode(this.name);
-        hash = 29 * hash + Objects.hashCode(this.uid);
-        hash = 29 * hash + Objects.hashCode(this.address);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final LocomotiveBean other = (LocomotiveBean) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.uid, other.uid)) {
-            return false;
-        }
-        return Objects.equals(this.address, other.address);
     }
 
     //Convenience
@@ -335,6 +315,105 @@ public class LocomotiveBean implements JCSEntity, Serializable {
             f.setValue(value ? 1 : 0);
         }
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.id);
+        hash = 53 * hash + Objects.hashCode(this.name);
+        hash = 53 * hash + Objects.hashCode(this.previousName);
+        hash = 53 * hash + Objects.hashCode(this.uid);
+        hash = 53 * hash + Objects.hashCode(this.mfxUid);
+        hash = 53 * hash + Objects.hashCode(this.address);
+        hash = 53 * hash + Objects.hashCode(this.icon);
+        hash = 53 * hash + Objects.hashCode(this.decoderType);
+        hash = 53 * hash + Objects.hashCode(this.mfxSid);
+        hash = 53 * hash + Objects.hashCode(this.tachoMax);
+        hash = 53 * hash + Objects.hashCode(this.vMin);
+        hash = 53 * hash + Objects.hashCode(this.accelerationDelay);
+        hash = 53 * hash + Objects.hashCode(this.brakeDelay);
+        hash = 53 * hash + Objects.hashCode(this.volume);
+        hash = 53 * hash + Objects.hashCode(this.spm);
+        hash = 53 * hash + Objects.hashCode(this.velocity);
+        hash = 53 * hash + Objects.hashCode(this.richtung);
+        hash = 53 * hash + Objects.hashCode(this.mfxType);
+        hash = 53 * hash + Objects.hashCode(this.blocks);
+        hash = 53 * hash + Objects.hashCode(this.locIcon);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final LocomotiveBean other = (LocomotiveBean) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.previousName, other.previousName)) {
+            return false;
+        }
+        if (!Objects.equals(this.icon, other.icon)) {
+            return false;
+        }
+        if (!Objects.equals(this.decoderType, other.decoderType)) {
+            return false;
+        }
+        if (!Objects.equals(this.mfxSid, other.mfxSid)) {
+            return false;
+        }
+        if (!Objects.equals(this.spm, other.spm)) {
+            return false;
+        }
+        if (!Objects.equals(this.mfxType, other.mfxType)) {
+            return false;
+        }
+        if (!Objects.equals(this.blocks, other.blocks)) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.uid, other.uid)) {
+            return false;
+        }
+        if (!Objects.equals(this.mfxUid, other.mfxUid)) {
+            return false;
+        }
+        if (!Objects.equals(this.address, other.address)) {
+            return false;
+        }
+        if (!Objects.equals(this.tachoMax, other.tachoMax)) {
+            return false;
+        }
+        if (!Objects.equals(this.vMin, other.vMin)) {
+            return false;
+        }
+        if (!Objects.equals(this.accelerationDelay, other.accelerationDelay)) {
+            return false;
+        }
+        if (!Objects.equals(this.brakeDelay, other.brakeDelay)) {
+            return false;
+        }
+        if (!Objects.equals(this.volume, other.volume)) {
+            return false;
+        }
+        if (!Objects.equals(this.velocity, other.velocity)) {
+            return false;
+        }
+        if (!Objects.equals(this.richtung, other.richtung)) {
+            return false;
+        }
+        return Objects.equals(this.locIcon, other.locIcon);
+    }
+    
+    
+    
 }
-
-

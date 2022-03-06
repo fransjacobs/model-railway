@@ -56,6 +56,13 @@ public class JCSProperty implements JCSEntity {
     }
 
     @Override
+    public void setId(Object id) {
+        if (id instanceof String) {
+            this.key = (String) id;
+        }
+    }
+
+    @Override
     public Object getId() {
         return this.key;
     }
