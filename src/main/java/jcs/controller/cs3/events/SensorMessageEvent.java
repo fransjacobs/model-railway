@@ -18,8 +18,10 @@
  */
 package jcs.controller.cs3.events;
 
+import java.util.Date;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.MarklinCan;
+import jcs.entities.SensorBean;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
@@ -29,19 +31,14 @@ import org.tinylog.Logger;
  */
 public class SensorMessageEvent {
 
-    private boolean newValue;
-    private boolean oldValue;
-    private int contactId;
-    private int deviceId;
-    private int millis;
+    private SensorBean sensor;
 
-    public SensorMessageEvent(CanMessage message) {
-        parseMessage(message);
+    public SensorMessageEvent(CanMessage message, Date eventDate) {
+        parseMessage(message, eventDate);
     }
 
-    private void parseMessage(CanMessage message) {
+    private void parseMessage(CanMessage message, Date eventDate) {
         CanMessage resp;
-
         if (!message.isResponseMessage()) {
             resp = message.getResponse();
         } else {
@@ -51,48 +48,22 @@ public class SensorMessageEvent {
         if (resp.isResponseMessage() && MarklinCan.S88_EVENT_RESPONSE == resp.getCommand()) {
             int[] data = resp.getData();
 
-            int[] did = new int[2];
-            int[] cid = new int[2];
-            int[] time = new int[2];
+            Integer deviceId = ByteUtil.toInt(new int[]{data[0], data[1]});
+            Integer contactId = ByteUtil.toInt(new int[]{data[2], data[3]});
 
-            System.arraycopy(data, 0, did, 0, did.length);
-            System.arraycopy(data, 2, cid, 0, cid.length);
-            int ov = data[4];
-            int nv = data[5];
-            System.arraycopy(data, 6, time, 0, time.length);
+            Integer previousStatus = data[4];
+            Integer status = data[5];
 
-            deviceId = ByteUtil.toInt(did);
-            contactId = ByteUtil.toInt(cid);
-            oldValue = ov == 1;
-            newValue = nv == 1;
-            millis = ByteUtil.toInt(time) * 10;
+            Integer millis = ByteUtil.toInt(new int[]{data[6], data[7]}) * 10;
+
+            this.sensor = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
         } else {
             Logger.warn("Can't parse message, not a Sensor Response! " + resp);
         }
     }
 
-    public boolean isNewValue() {
-        return newValue;
+    public SensorBean getSensorBean() {
+        return sensor;
     }
 
-    public boolean isOldValue() {
-        return oldValue;
-    }
-
-    public int getContactId() {
-        return contactId;
-    }
-
-    public int getDeviceId() {
-        return deviceId;
-    }
-
-    public int getMillis() {
-        return millis;
-    }
-
-    @Override
-    public String toString() {
-        return "SensorEvent{contactId: " + contactId + " deviceId: " + deviceId + " value: " + newValue + " prevValue: " + oldValue + "  millis: " + millis + '}';
-    }
 }

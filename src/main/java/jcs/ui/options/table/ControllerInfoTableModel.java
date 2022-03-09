@@ -28,7 +28,7 @@ import jcs.trackservice.TrackServiceFactory;
  *
  * @author frans
  */
-public class ControllerInfoTableModel extends DeviceTableModel<JCSProperty> {
+public class ControllerInfoTableModel extends EntityTableModel<JCSProperty> {
 
     public ControllerInfoTableModel() {
         super();
@@ -46,7 +46,7 @@ public class ControllerInfoTableModel extends DeviceTableModel<JCSProperty> {
     }
 
     @Override
-    protected List<JCSProperty> getDevices() {
+    protected List<JCSProperty> getEntityBeans() {
         List<JCSProperty> props = new ArrayList<>();
         if (TrackServiceFactory.getTrackService() != null) {
             //Build a list with Controller properties

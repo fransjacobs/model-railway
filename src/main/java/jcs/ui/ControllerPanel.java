@@ -21,12 +21,10 @@ package jcs.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -61,7 +59,7 @@ public class ControllerPanel extends JPanel {
         if (TrackServiceFactory.getTrackService() != null) {
             StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
 
-            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
+//            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
             TrackServiceFactory.getTrackService().addMessageListener(new LogTextAreaHandler(this.logArea));
         }
     }

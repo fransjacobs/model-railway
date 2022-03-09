@@ -140,11 +140,15 @@ public class FeedbackPanel extends JPanel {
         }
 
         @Override
+        public void onChange(SensorBean sensor) {
+        }
+        
+        
+
         public Integer getContactId() {
             return contactId;
         }
 
-        @Override
         public void setActive(boolean newValue) {
             value = newValue;
             label.setIcon(value ? ICON_ON : ICON_OFF);

@@ -18,10 +18,10 @@
  */
 package jcs.trackservice.events;
 
+import jcs.entities.SensorBean;
+
 public interface SensorListener {
 
-    void setActive(boolean active);
-    
-    Integer getContactId();
+    void onChange(SensorBean sensor);
 
 }

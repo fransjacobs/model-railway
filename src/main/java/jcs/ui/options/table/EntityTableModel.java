@@ -30,7 +30,7 @@ import org.tinylog.Logger;
  * @author Frans Jacobs
  * @param <T>
  */
-public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTableModel implements Serializable {
+public abstract class EntityTableModel<T extends JCSEntity> extends AbstractTableModel implements Serializable {
 
     protected List<T> devices;
 
@@ -39,18 +39,18 @@ public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTabl
     /**
      * Creates an empty table with zero rows and zero columns.
      */
-    public DeviceTableModel() {
+    public EntityTableModel() {
         init();
     }
 
     private void init() {
         columns = getColumns();
-        devices = getDevices();
+        devices = getEntityBeans();
     }
 
     protected abstract List<String> getColumns();
 
-    protected abstract List<T> getDevices();
+    protected abstract List<T> getEntityBeans();
 
     public void addRow(T row) {
         this.devices.add(row);
@@ -58,9 +58,9 @@ public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTabl
         fireTableRowsInserted(rowNumAdded, rowNumAdded);
     }
 
-    public void removeRow(T device) {
-        int row = this.findRowIndex(device);
-        devices.remove(device);
+    public void removeRow(T entity) {
+        int row = this.findRowIndex(entity);
+        devices.remove(entity);
         fireTableRowsDeleted(row, row);
     }
 
@@ -145,7 +145,7 @@ public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTabl
         return null;
     }
 
-    abstract void setColumnValue(T device, int column, Object value);
+    abstract void setColumnValue(T entity, int column, Object value);
 
     /**
      * Sets the value for the specified cell in the table and sends a
@@ -179,11 +179,11 @@ public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTabl
         return null;
     }
 
-    protected int findRowIndex(T device) {
+    protected int findRowIndex(T entity) {
         int row = -1;
 
-        if (device != null && device.getId() != null) {
-            Object id = device.getId();
+        if (entity != null && entity.getId() != null) {
+            Object id = entity.getId();
             int rowCount = this.devices.size();
 
             for (int i = 0; i < rowCount; i++) {
@@ -199,7 +199,7 @@ public abstract class DeviceTableModel<T extends JCSEntity> extends AbstractTabl
     }
 
     public void refresh() {
-        this.devices = this.getDevices();
+        this.devices = this.getEntityBeans();
         this.fireTableDataChanged();
     }
 

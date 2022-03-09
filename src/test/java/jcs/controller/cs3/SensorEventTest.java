@@ -49,73 +49,73 @@ public class SensorEventTest {
     /**
      * Test of isNewValue method, of class FeedbackEventStatus.
      */
-    @Test
-    public void testIsNewValue() {
-        System.out.println("isNewValue");
-        SensorMessageEvent instance = new SensorMessageEvent(message);
-        boolean expResult = true;
-        boolean result = instance.isNewValue();
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testIsNewValue() {
+//        System.out.println("isNewValue");
+//        SensorMessageEvent instance = new SensorMessageEvent(message);
+//        boolean expResult = true;
+//        boolean result = instance.isNewValue();
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of isOldValue method, of class FeedbackEventStatus.
      */
-    @Test
-    public void testIsOldValue() {
-        System.out.println("isOldValue");
-        SensorMessageEvent instance = new SensorMessageEvent(message);
-        boolean expResult = false;
-        boolean result = instance.isOldValue();
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testIsOldValue() {
+//        System.out.println("isOldValue");
+//        SensorMessageEvent instance = new SensorMessageEvent(message);
+//        boolean expResult = false;
+//        boolean result = instance.isOldValue();
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of getContactId method, of class FeedbackEventStatus.
      */
-    @Test
-    public void testGetContactId() {
-        System.out.println("getContactId");
-        SensorMessageEvent instance = new SensorMessageEvent(message);
-        int expResult = 48;
-        int result = instance.getContactId();
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testGetContactId() {
+//        System.out.println("getContactId");
+//        SensorMessageEvent instance = new SensorMessageEvent(message);
+//        int expResult = 48;
+//        int result = instance.getContactId();
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of getDeviceId method, of class FeedbackEventStatus.
      */
-    @Test
-    public void testGetDeviceId() {
-        System.out.println("getDeviceId");
-        SensorMessageEvent instance = new SensorMessageEvent(message);
-        int expResult = 0;
-        int result = instance.getDeviceId();
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testGetDeviceId() {
+//        System.out.println("getDeviceId");
+//        SensorMessageEvent instance = new SensorMessageEvent(message);
+//        int expResult = 0;
+//        int result = instance.getDeviceId();
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of getMillis method, of class FeedbackEventStatus.
      */
-    @Test
-    public void testGetMillis() {
-        System.out.println("getMillis");
-        SensorMessageEvent instance = new SensorMessageEvent(message);
-        int expResult = 39290;
-        int result = instance.getMillis();
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testGetMillis() {
+//        System.out.println("getMillis");
+//        SensorMessageEvent instance = new SensorMessageEvent(message);
+//        int expResult = 39290;
+//        int result = instance.getMillis();
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of toString method, of class FeedbackEventStatus.
      */
-    @Test
-    public void testToString() {
-        System.out.println("toString");
-        SensorMessageEvent instance = new SensorMessageEvent(message);
-        String expResult = "SensorEvent{contactId: 48 deviceId: 0 value: true prevValue: false  millis: 39290}";
-        String result = instance.toString();
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testToString() {
+//        System.out.println("toString");
+//        SensorMessageEvent instance = new SensorMessageEvent(message);
+//        String expResult = "SensorEvent{contactId: 48 deviceId: 0 value: true prevValue: false  millis: 39290}";
+//        String result = instance.toString();
+//        assertEquals(expResult, result);
+//    }
 
 }

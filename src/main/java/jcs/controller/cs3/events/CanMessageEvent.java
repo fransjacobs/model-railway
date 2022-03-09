@@ -29,6 +29,10 @@ public class CanMessageEvent implements Serializable {
     private final InetAddress sourceAddress;
     private final Date eventDate;
 
+    public CanMessageEvent(CanMessage canMessage) {
+        this(canMessage, null);
+    }
+
     public CanMessageEvent(CanMessage canMessage, InetAddress sourceAddress) {
         this(canMessage, sourceAddress, new Date());
     }

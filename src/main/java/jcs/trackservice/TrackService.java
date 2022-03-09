@@ -101,21 +101,21 @@ public interface TrackService {
     void notifyAllAccessoiryListeners();
 
     
-    void addHeartBeatListener(HeartBeatListener listener);
+    //void addHeartBeatListener(HeartBeatListener listener);
 
-    void removeHeartBeatListenerListener(HeartBeatListener listener);
+    //void removeHeartBeatListenerListener(HeartBeatListener listener);
 
     
     void addSensorListener(SensorListener listener);
 
-    void removeFeedbackPortListener(SensorListener listener);
+    void removeSensorListener(SensorListener listener);
 
     void notifyAllSensorListeners();
 
     //Sensors
     List<SensorBean> getSensors();
     
-    SensorBean getSensor(Integer contactId);
+    SensorBean getSensor(Integer deviceId, Integer contactId);
     
     SensorBean persist(SensorBean sensor);
     

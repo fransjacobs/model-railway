@@ -28,7 +28,7 @@ import jcs.trackservice.TrackServiceFactory;
  *
  * @author frans
  */
-public class PropertiesTableModel extends DeviceTableModel<JCSProperty> {
+public class PropertiesTableModel extends EntityTableModel<JCSProperty> {
 
     public PropertiesTableModel() {
         super();
@@ -46,7 +46,7 @@ public class PropertiesTableModel extends DeviceTableModel<JCSProperty> {
     }
 
     @Override
-    protected List<JCSProperty> getDevices() {
+    protected List<JCSProperty> getEntityBeans() {
         if (TrackServiceFactory.getTrackService() != null) {
             return TrackServiceFactory.getTrackService().getProperties();
         } else {

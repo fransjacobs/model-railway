@@ -87,7 +87,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
 
             String cat = conn.getCatalog();
 
-            Logger.debug("Connected to " + cat);
+            Logger.trace("Connected to " + cat);
         } catch (SQLException sqle) {
             Logger.error("Can't connect to: " + jdbcURL);
             Logger.error(sqle);

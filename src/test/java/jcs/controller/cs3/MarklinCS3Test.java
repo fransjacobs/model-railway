@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.util.List;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.HeartbeatListener;
-import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.SensorMessageListener;
@@ -374,65 +373,65 @@ public class MarklinCS3Test {
      * Test of addHeartbeatListener method, of class MarklinCS3.
      */
     //@Test
-    public void testAddHeartbeatListener() {
-        System.out.println("addHeartbeatListener");
-        HeartbeatListener listener = null;
-        MarklinCS3 instance = new MarklinCS3();
-        instance.addHeartbeatListener(listener);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testAddHeartbeatListener() {
+//        System.out.println("addHeartbeatListener");
+//        HeartbeatListener listener = null;
+//        MarklinCS3 instance = new MarklinCS3();
+//        instance.addHeartbeatListener(listener);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of removeHeartbeatListener method, of class MarklinCS3.
      */
     //@Test
-    public void testRemoveHeartbeatListener() {
-        System.out.println("removeHeartbeatListener");
-        HeartbeatListener listener = null;
-        MarklinCS3 instance = new MarklinCS3();
-        instance.removeHeartbeatListener(listener);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testRemoveHeartbeatListener() {
+//        System.out.println("removeHeartbeatListener");
+//        HeartbeatListener listener = null;
+//        MarklinCS3 instance = new MarklinCS3();
+//        instance.removeHeartbeatListener(listener);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of removeAllHeartbeatListeners method, of class MarklinCS3.
      */
     //@Test
-    public void testRemoveAllHeartbeatListeners() {
-        System.out.println("removeAllHeartbeatListeners");
-        MarklinCS3 instance = new MarklinCS3();
-        instance.removeAllHeartbeatListeners();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testRemoveAllHeartbeatListeners() {
+//        System.out.println("removeAllHeartbeatListeners");
+//        MarklinCS3 instance = new MarklinCS3();
+//        instance.removeAllHeartbeatListeners();
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of addCanMessageListener method, of class MarklinCS3.
      */
     //@Test
-    public void testAddCanMessageListener() {
-        System.out.println("addCanMessageListener");
-        CanMessageListener listener = null;
-        MarklinCS3 instance = new MarklinCS3();
-        instance.addCanMessageListener(listener);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testAddCanMessageListener() {
+//        System.out.println("addCanMessageListener");
+//        CanMessageListener listener = null;
+//        MarklinCS3 instance = new MarklinCS3();
+//        instance.addCanMessageListener(listener);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of removeCanMessageListener method, of class MarklinCS3.
      */
     //@Test
-    public void testRemoveCanMessageListener() {
-        System.out.println("removeCanMessageListener");
-        CanMessageListener listener = null;
-        MarklinCS3 instance = new MarklinCS3();
-        instance.removeCanMessageListener(listener);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testRemoveCanMessageListener() {
+//        System.out.println("removeCanMessageListener");
+//        CanMessageListener listener = null;
+//        MarklinCS3 instance = new MarklinCS3();
+//        instance.removeCanMessageListener(listener);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of addSensorMessageListener method, of class MarklinCS3.
@@ -464,16 +463,16 @@ public class MarklinCS3Test {
      * Test of querySensor method, of class MarklinCS3.
      */
     //@Test
-    public void testQuerySensor() {
-        System.out.println("querySensor");
-        int contactId = 0;
-        MarklinCS3 instance = new MarklinCS3();
-        SensorMessageEvent expResult = null;
-        SensorMessageEvent result = instance.querySensor(contactId);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testQuerySensor() {
+//        System.out.println("querySensor");
+//        int contactId = 0;
+//        MarklinCS3 instance = new MarklinCS3();
+//        SensorMessageEvent expResult = null;
+//        SensorMessageEvent result = instance.querySensor(contactId);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of querySensors method, of class MarklinCS3.

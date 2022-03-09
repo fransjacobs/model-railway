@@ -28,14 +28,14 @@ import jcs.trackservice.TrackServiceFactory;
  *
  * @author frans
  */
-public class LocomotiveTableModel extends DeviceTableModel<LocomotiveBean> {
+public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
 
     public LocomotiveTableModel() {
         super();
     }
 
     @Override
-    protected List<LocomotiveBean> getDevices() {
+    protected List<LocomotiveBean> getEntityBeans() {
         if (TrackServiceFactory.getTrackService() != null) {
             return TrackServiceFactory.getTrackService().getLocomotives();
         } else {

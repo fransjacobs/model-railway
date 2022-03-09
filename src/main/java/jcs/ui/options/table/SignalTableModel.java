@@ -29,7 +29,7 @@ import jcs.trackservice.TrackServiceFactory;
  *
  * @author frans
  */
-public class SignalTableModel extends DeviceTableModel<AccessoryBean> {
+public class SignalTableModel extends EntityTableModel<AccessoryBean> {
 
     public SignalTableModel() {
         super();
@@ -49,7 +49,7 @@ public class SignalTableModel extends DeviceTableModel<AccessoryBean> {
     }
 
     @Override
-    protected List<AccessoryBean> getDevices() {
+    protected List<AccessoryBean> getEntityBeans() {
         if (TrackServiceFactory.getTrackService() != null) {
             return TrackServiceFactory.getTrackService().getSignals();
         } else {

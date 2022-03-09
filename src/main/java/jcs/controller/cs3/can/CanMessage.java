@@ -258,7 +258,7 @@ public class CanMessage implements MarklinCan, Serializable {
     }
 
     public boolean isEvent() {
-        return !(getPriority() == PRIO_IGNORE | getCommand() == BOOTLOADER_CAN_SERVICE);
+        return !(getPriority() == PRIO_IGNORE | getCommand() == BOOTLOADER_CAN_SERVICE | getCommand() == SW_STATUS_REQ | getCommand() == REQ_PING);
     }
 
     public boolean expectsAcknowledge() {

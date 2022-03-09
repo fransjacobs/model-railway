@@ -39,8 +39,7 @@ public class RunUtil {
 
     private static int osType = -1;
 
-    private static Set<String> serialPorts = new HashSet<String>();
-
+    //private static Set<String> serialPorts = new HashSet<String>();
     static {
         String osName = System.getProperty("os.name");
         String architecture = System.getProperty("os.arch");
@@ -96,8 +95,7 @@ public class RunUtil {
 
         // Preference storage
         // Mac OS ~/Library/Preferences/com.apple.java.util.prefs.plist
-        Logger.info("Running on OS: " + osName + " architecture: " + architecture + ".");
-
+        //Logger.trace("Running on OS: " + osName + " architecture: " + architecture + ".");
     }
 
     /**
@@ -110,9 +108,9 @@ public class RunUtil {
         return osType;
     }
 
-    public static boolean hasSerialPort() {
-        return !serialPorts.isEmpty();
-    }
+//    public static boolean hasSerialPort() {
+//        return !serialPorts.isEmpty();
+//    }
 
     public static void loadProperties() {
         Properties prop = new Properties();

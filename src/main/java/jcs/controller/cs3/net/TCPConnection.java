@@ -68,6 +68,7 @@ class TCPConnection implements CS3Connection {
     }
 
     private void disconnect() {
+        this.messageReceiver.removeAllCanMessageListeners();
         this.messageReceiver.quit();
         if (dos != null) {
             try {
@@ -189,6 +190,10 @@ class TCPConnection implements CS3Connection {
             this.listeners.add(listener);
         }
 
+        void removeAllCanMessageListeners() {
+            this.listeners.clear();
+        }
+
         void removeCanMessageListener(CanMessageListener listener) {
             this.listeners.remove(listener);
         }
@@ -227,13 +232,12 @@ class TCPConnection implements CS3Connection {
                         if (size != -1) {
                             CanMessage resp = new CanMessage(buffer);
                             if (this.message != null && resp.isResponseFor(message)) {
-                                synchronized (message) {
-                                    this.message.addResponse(resp);
-                                }
+                                this.message.addResponse(resp);
                                 Logger.trace("RX: " + resp + " Response count " + this.message.getResponses().size());
                             } else {
+                                //Filter event messages
                                 if (resp.isEvent()) {
-                                    CanMessageEvent cme = new CanMessageEvent(resp, cs3Address);
+                                    CanMessageEvent cme = new CanMessageEvent(resp);
                                     Logger.trace((message == null ? "Idle" : "RX") + " Event: " + resp);
                                     for (CanMessageListener l : this.listeners) {
                                         l.onCanMessage(cme);

@@ -64,9 +64,9 @@ import jcs.controller.ControllerEvent;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.trackservice.TrackServiceFactory;
-import jcs.trackservice.events.HeartBeatListener;
 import jcs.ui.layout.DisplayLayoutPanel;
 import jcs.ui.layout.LayoutPanel;
+import jcs.ui.monitor.FeedbackMonitor;
 import jcs.ui.options.OptionDialog;
 import jcs.ui.util.UICallback;
 import org.tinylog.Logger;
@@ -88,6 +88,8 @@ public class JCSFrame extends JFrame implements UICallback {
     private long lastUpdatedMillis;
 
     private Timer checkTimer;
+
+    private FeedbackMonitor feedbackMonitor;
 
     /**
      * Creates new form JCSFrame
@@ -132,6 +134,9 @@ public class JCSFrame extends JFrame implements UICallback {
             setCS3Properties();
 
             boolean powerOn = TrackServiceFactory.getTrackService().isPowerOn();
+                    
+                    
+            feedbackMonitor = new FeedbackMonitor();
 
             //this.setPowerStatus(powerOn, true);
             checkTimer = new Timer(1000, new ActionListener() {
@@ -248,6 +253,8 @@ public class JCSFrame extends JFrame implements UICallback {
         showEditDesignBtn = new JButton();
         filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         showDiagnosticsBtn = new JButton();
+        filler5 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+        showFeedbackMonitor = new JButton();
         statusPanel = new JPanel();
         statusPanelLeft = new JPanel();
         filler4 = new Box.Filler(new Dimension(440, 0), new Dimension(140, 0), new Dimension(440, 32767));
@@ -395,6 +402,24 @@ public class JCSFrame extends JFrame implements UICallback {
         });
         jcsToolBar.add(showDiagnosticsBtn);
         showDiagnosticsBtn.getAccessibleContext().setAccessibleName("Switchboard");
+
+        filler5.setName("filler5"); // NOI18N
+        jcsToolBar.add(filler5);
+
+        showFeedbackMonitor.setIcon(new ImageIcon(getClass().getResource("/media/monitor-24.png"))); // NOI18N
+        showFeedbackMonitor.setFocusable(false);
+        showFeedbackMonitor.setHorizontalTextPosition(SwingConstants.CENTER);
+        showFeedbackMonitor.setMaximumSize(new Dimension(40, 40));
+        showFeedbackMonitor.setMinimumSize(new Dimension(40, 40));
+        showFeedbackMonitor.setName("showFeedbackMonitor"); // NOI18N
+        showFeedbackMonitor.setPreferredSize(new Dimension(40, 40));
+        showFeedbackMonitor.setVerticalTextPosition(SwingConstants.BOTTOM);
+        showFeedbackMonitor.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                showFeedbackMonitorActionPerformed(evt);
+            }
+        });
+        jcsToolBar.add(showFeedbackMonitor);
 
         getContentPane().add(jcsToolBar, BorderLayout.NORTH);
 
@@ -695,6 +720,10 @@ public class JCSFrame extends JFrame implements UICallback {
         TrackServiceFactory.getTrackService().switchPower(on);
     }//GEN-LAST:event_powerButtonActionPerformed
 
+    private void showFeedbackMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorActionPerformed
+        this.feedbackMonitor.showMonitor();
+    }//GEN-LAST:event_showFeedbackMonitorActionPerformed
+
     private String getTitleString() {
         String jcsVersion = JCS.getVersionInfo().getVersion();
         if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerInfo() != null) {
@@ -802,6 +831,7 @@ public class JCSFrame extends JFrame implements UICallback {
     Box.Filler filler2;
     Box.Filler filler3;
     Box.Filler filler4;
+    Box.Filler filler5;
     Box.Filler filler6;
     Box.Filler filler7;
     JLabel jLabel1;
@@ -823,6 +853,7 @@ public class JCSFrame extends JFrame implements UICallback {
     JPanel settingsPanel;
     JButton showDiagnosticsBtn;
     JButton showEditDesignBtn;
+    JButton showFeedbackMonitor;
     JMenuItem showLocosMI;
     JButton showOverviewBtn;
     JPanel statusPanel;

@@ -29,7 +29,7 @@ import jcs.trackservice.TrackServiceFactory;
  *
  * @author frans
  */
-public class TurnoutTableModel extends DeviceTableModel<AccessoryBean> {
+public class TurnoutTableModel extends EntityTableModel<AccessoryBean> {
 
     public TurnoutTableModel() {
         super();
@@ -49,7 +49,7 @@ public class TurnoutTableModel extends DeviceTableModel<AccessoryBean> {
     }
 
     @Override
-    protected List<AccessoryBean> getDevices() {
+    protected List<AccessoryBean> getEntityBeans() {
         if (TrackServiceFactory.getTrackService() != null) {
             return TrackServiceFactory.getTrackService().getTurnouts();
         } else {

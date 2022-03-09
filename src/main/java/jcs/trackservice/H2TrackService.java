@@ -25,18 +25,15 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
@@ -45,20 +42,16 @@ import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
-import jcs.entities.ControllableDevice;
 import jcs.entities.JCSProperty;
 import jcs.entities.SensorBean;
-import jcs.entities.TrackPower;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.dao.JCSPropertiesDAO;
 import jcs.trackservice.dao.TrackPowerDAO;
 import jcs.trackservice.events.AccessoryListener;
-import jcs.trackservice.events.HeartBeatListener;
 import jcs.trackservice.events.LocomotiveListener;
 import jcs.trackservice.events.PersistedEventListener;
-import jcs.controller.HeartbeatListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
@@ -76,37 +69,34 @@ import jcs.controller.MarklinController;
 
 public class H2TrackService implements TrackService {
 
-    private final SensorDAO sensDAO;
+    private final JCSPropertiesDAO propDao;
     private final LocomotiveBeanDAO locoDAO;
     private final FunctionBeanDAO funcDAO;
     private final AccessoryBeanDAO acceDAO;
+    private final SensorDAO sensDAO;
+    private final TileBeanDAO tileDAO;
 
     private final TrackPowerDAO trpoDAO;
 
-    private final JCSPropertiesDAO propDao;
-
-    private final TileBeanDAO tileDAO;
-
     private MarklinController controllerService;
-    int feedbackModules;
 
+    //int feedbackModules;
     private final ExecutorService executor;
 
-    private final List<AccessoryListener> accessoiryListeners;
-    private final List<LocomotiveListener> locomotiveListeners;
-    private final List<HeartBeatListener> heartBeatListeners;
-    private final List<PersistedEventListener> persistListeners;
-
-    private Map<Integer, List<SensorListener>> sensorListeners;
+    //private final List<AccessoryListener> accessoiryListeners;
+    //private final List<LocomotiveListener> locomotiveListeners;
+    //private final List<HeartBeatListener> heartBeatListeners;
+    //private final List<PersistedEventListener> persistListeners;
+    //private Map<Integer, List<SensorListener>> sensorListeners;
+    private final List<SensorListener> sensorListeners;
 
     private boolean fbToggle = false;
 
-    private TrackPower trpo;
-
+    //private TrackPower trpo;
     private final Properties jcsProperties;
 
     private StatusDataConfigParser controllerInfo;
-    private final Timer timer;
+    //private final Timer timer;
 
     private HashMap<String, Image> imageCache;
     private HashMap<String, Image> functionImageCache;
@@ -130,22 +120,21 @@ public class H2TrackService implements TrackService {
         trpoDAO = new TrackPowerDAO();
         tileDAO = new TileBeanDAO();
 
+        //sensorListeners = new HashMap<>();
+        sensorListeners = new LinkedList<>();
+
         executor = Executors.newCachedThreadPool();
 
-        accessoiryListeners = new ArrayList<>();
-        locomotiveListeners = new ArrayList<>();
-        heartBeatListeners = new ArrayList<>();
-
-        sensorListeners = new HashMap<>();
-
-        persistListeners = new ArrayList<>();
-        timer = new Timer("UpdateGui", true);
-
+        //accessoiryListeners = new ArrayList<>();
+        //locomotiveListeners = new ArrayList<>();
+        //heartBeatListeners = new ArrayList<>();
+        //persistListeners = new ArrayList<>();
+        //timer = new Timer("UpdateGui", true);
         retrieveJCSProperties();
-        trpo = trpoDAO.find(1);
+        //trpo = trpoDAO.find(1);
 
         if (aquireControllerService) {
-            aquireController();
+            connectController();
         }
 
         Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
@@ -161,34 +150,20 @@ public class H2TrackService implements TrackService {
         });
     }
 
-    private void aquireController() {
-        String activeControllerService = System.getProperty("activeControllerService");
-
-        String controllerImpl = null;
-
-        String m6050Demo = System.getProperty("M6050-demo");
-        String cs3 = System.getProperty("CS3");
-
-        switch (activeControllerService) {
-            case "CS3":
-                controllerImpl = cs3;
-                break;
-            default:
-                controllerImpl = m6050Demo;
-                break;
-        }
+    public final boolean connectController() {
+        //String activeControllerService = System.getProperty("activeControllerService");
+        String controllerImpl = System.getProperty("CS3");
 
         String trackServiceAlwaysUseDemo = System.getProperty("trackServiceAlwaysUseDemo", "false");
         if ("false".equalsIgnoreCase(trackServiceAlwaysUseDemo)) {
             if (controllerService == null) {
                 try {
                     this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
-
-                    if (!this.controllerService.isConnected()) {
-                        Logger.info("Not connected to Real CS3. Switch to demo...");
-                        this.controllerService.disconnect();
-                        this.controllerService = null;
-                    }
+//                    if (!this.controllerService.isConnected()) {
+//                        Logger.info("Not connected to Real CS3. Switch to demo...");
+//                        this.controllerService.disconnect();
+//                        this.controllerService = null;
+//                    }
                 } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
                     Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
                 }
@@ -198,7 +173,7 @@ public class H2TrackService implements TrackService {
         if (controllerService == null) {
             //Use a demo...
             try {
-                controllerImpl = "jcs.controller.demo.DemoController";
+                controllerImpl = System.getProperty("controller.demo", "jcs.controller.demo.DemoController");
                 this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
                 Logger.info("Using a DEMO controller");
             } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException exd) {
@@ -206,17 +181,9 @@ public class H2TrackService implements TrackService {
             }
         }
 
-        Logger.debug("ActiveControllerService: " + activeControllerService);
-
-        //feedbackModules = controllerService.getControllerInfo().getLinkSxx().getModuleCount();
-        Logger.trace("There are " + feedbackModules + " FeedbackModules");
-
         //Configure the sensors
-        int sensorCount = 0;//controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
-        List<SensorBean> allSensors = sensDAO.findAll();
-
-        System.setProperty("sensorCount", "" + sensorCount);
-
+//        int sensorCount = 0;//controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
+//        List<SensorBean> allSensors = sensDAO.findAll();
 //        if (sensorCount != allSensors.size()) {
 //            Logger.debug("The Sensor count has changed since last run from " + allSensors.size() + " to " + sensorCount + "...");
 //            //remove sensors which are not in the system
@@ -246,15 +213,17 @@ public class H2TrackService implements TrackService {
 //            Logger.trace("The Sensor count has not changed since last run...");
 //        }
         //Update the sensors with the status od the Controller
-        synchronizeSensors();
-
+//        synchronizeSensors();
         //controllerInfo = controllerService.getControllerInfo();
-
-        controllerService.addSensorMessageListener(new SensorMessageEventHandler(this));
 //        controllerService.addHeartbeatListener(new ControllerWatchDogListener());
 //        controllerService.addControllerEventListener(new ControllerServiceEventListener());
+        //timer.scheduleAtFixedRate(new UpdateGuiStatusTask(this), 0, 1000);
+        if (controllerService != null) {
+            this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
+        }
 
-        timer.scheduleAtFixedRate(new UpdateGuiStatusTask(this), 0, 1000);
+        return this.controllerService != null && this.controllerService.isConnected();
+
     }
 
     @Override
@@ -263,8 +232,8 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public SensorBean getSensor(Integer contactId) {
-        return null; //sensDAO.find(contactId);
+    public SensorBean getSensor(Integer deviceId, Integer contactId) {
+        return sensDAO.find(deviceId, contactId);
     }
 
     @Override
@@ -288,34 +257,32 @@ public class H2TrackService implements TrackService {
         return sensor;
     }
 
-    private void firePersistEvent(ControllableDevice current, ControllableDevice previous) {
-        if (!current.equals(previous)) {
-            for (PersistedEventListener listener : persistListeners) {
-                listener.persisted(current, previous);
-            }
-        }
-    }
-
-    private void broadcastSensorChanged(SensorBean sensor) {
-        List<SensorListener> sll = sensorListeners.get(sensor.getContactId());
-
-        if (sll != null) {
-            for (SensorListener listener : sll) {
-                listener.setActive(sensor.isActive());
-                //Logger.trace("Listener CID: " + listener.getContactId() + " Active: " + sensor.isActive());
-            }
-        }
-    }
-
+//    private void firePersistEvent(ControllableDevice current, ControllableDevice previous) {
+//        if (!current.equals(previous)) {
+//            for (PersistedEventListener listener : persistListeners) {
+//                listener.persisted(current, previous);
+//            }
+//        }
+//    }
+//    private void broadcastSensorChanged(SensorBean sensor) {
+//        List<SensorListener> sll = sensorListeners.get(sensor.getContactId());
+//
+//        if (sll != null) {
+//            for (SensorListener listener : sll) {
+//                listener.setActive(sensor.isActive());
+//                //Logger.trace("Listener CID: " + listener.getContactId() + " Active: " + sensor.isActive());
+//            }
+//        }
+//    }
     //TODO!
     public void synchronizeSensors() {
         int sensorCount = Integer.decode(System.getProperty("sensorCount", "16"));
         //obtain the current sensorstatus
         List<SensorMessageEvent> sml = Collections.EMPTY_LIST; //controllerService.querySensors(sensorCount);
-        for (SensorMessageEvent sme : sml) {
-            SensorBean s = new SensorBean(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
-            persist(s);
-        }
+        //for (SensorMessageEvent sme : sml) {
+        //    SensorBean s = new SensorBean(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
+        //    persist(s);
+        //}
         Logger.debug("Updated " + sml.size() + " Sensor statuses...");
     }
 
@@ -336,9 +303,9 @@ public class H2TrackService implements TrackService {
 //        }
 
 //        sl = this.sensDAO.findAll();
-        for (SensorBean s : sl) {
-            broadcastSensorChanged(s);
-        }
+//        for (SensorBean s : sl) {
+//            broadcastSensorChanged(s);
+//        }
 //        Logger.trace("Refreshed " + sl.size() + " Sensors...");
     }
 
@@ -644,37 +611,33 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void removeControllerListener(ControllerEventListener listener) {
-        if (controllerService != null) {
-            //controllerService.removeControllerEventListener(listener);
-        }
+//        if (controllerService != null) {
+//            //controllerService.removeControllerEventListener(listener);
+//        }
     }
 
-    private void broadcastHeartBeatToggle() {
-        Set<HeartBeatListener> snapshot;
-        synchronized (heartBeatListeners) {
-            snapshot = new HashSet<>(heartBeatListeners);
-        }
-
-        for (HeartBeatListener listener : snapshot) {
-            listener.toggle();
-        }
-    }
-
-    @Override
-    public void addHeartBeatListener(HeartBeatListener listener) {
-        this.heartBeatListeners.add(listener);
-    }
-
-    @Override
-    public void removeHeartBeatListenerListener(HeartBeatListener listener) {
-        this.heartBeatListeners.remove(listener);
-    }
-
-    public void feedbackModuleSampleToggle() {
-        this.fbToggle = !this.fbToggle;
-        executor.execute(() -> broadcastHeartBeatToggle());
-    }
-
+//    private void broadcastHeartBeatToggle() {
+//        Set<HeartBeatListener> snapshot;
+//        synchronized (heartBeatListeners) {
+//            snapshot = new HashSet<>(heartBeatListeners);
+//        }
+//
+//        for (HeartBeatListener listener : snapshot) {
+//            listener.toggle();
+//        }
+//    }
+//    @Override
+//    public void addHeartBeatListener(HeartBeatListener listener) {
+//        this.heartBeatListeners.add(listener);
+//    }
+//    @Override
+//    public void removeHeartBeatListenerListener(HeartBeatListener listener) {
+//        this.heartBeatListeners.remove(listener);
+//    }
+//    public void feedbackModuleSampleToggle() {
+//        this.fbToggle = !this.fbToggle;
+//        executor.execute(() -> broadcastHeartBeatToggle());
+//    }
 //    @Override
 //    public void powerOff() {
 //        if (this.controllerService != null) {
@@ -696,27 +659,27 @@ public class H2TrackService implements TrackService {
 
     @Override
     public boolean isPowerOn() {
-        if (trpo == null) {
-            trpo = this.trpoDAO.find(1);
-        }
+//        if (trpo == null) {
+//            trpo = this.trpoDAO.find(1);
+//        }
         boolean power = false;
         if (this.controllerService != null) {
-            power = trpo.isOn();
+            power = controllerService.isPower();
         }
 
         return power;
     }
 
     void handleControllerEvent(ControllerEvent event) {
-        Logger.debug(event);
-        if (event.isPowerOn()) {
-            this.trpo.On();
-        } else {
-            this.trpo.Off();
-        }
-
-        this.trpoDAO.persist(trpo);
-        notifyControllerListeners(event);
+//        Logger.debug(event);
+//        if (event.isPowerOn()) {
+//            this.trpo.On();
+//        } else {
+//            this.trpo.Off();
+//        }
+//
+//        this.trpoDAO.persist(trpo);
+//        notifyControllerListeners(event);
     }
 
     private void notifyControllerListeners(ControllerEvent event) {
@@ -728,10 +691,7 @@ public class H2TrackService implements TrackService {
 
     @Override
     public boolean connect() {
-        if (!this.controllerService.isConnected()) {
-            return this.controllerService.connect();
-        }
-        return this.controllerService.isConnected();
+        return this.controllerService.connect();
     }
 
     @Override
@@ -741,7 +701,7 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void disconnect() {
-        this.timer.cancel();
+//        this.timer.cancel();
         this.controllerService.disconnect();
     }
 
@@ -945,65 +905,54 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void addSensorListener(SensorListener listener) {
-        List<SensorListener> sll = this.sensorListeners.get(listener.getContactId());
-        if (sll == null) {
-            sll = new ArrayList<>();
-        }
-        sll.add(listener);
-        this.sensorListeners.put(listener.getContactId(), sll);
+        this.sensorListeners.add(listener);
     }
 
     @Override
-    public void removeFeedbackPortListener(SensorListener listener) {
-        List<SensorListener> sll = this.sensorListeners.get(listener.getContactId());
-        if (sll != null) {
-            sll.remove(listener);
-            if (sll.isEmpty()) {
-                sensorListeners.remove(listener.getContactId());
-            } else {
-                sensorListeners.put(listener.getContactId(), sll);
-            }
-        }
+    public void removeSensorListener(SensorListener listener) {
+        this.sensorListeners.remove(listener);
     }
+    
+    
 
     @Override
     public void addAccessoiryListener(AccessoryListener listener) {
-        this.accessoiryListeners.add(listener);
+//        this.accessoiryListeners.add(listener);
     }
 
     @Override
     public void removeAccessoiryListener(AccessoryListener listener) {
-        this.accessoiryListeners.remove(listener);
+//        this.accessoiryListeners.remove(listener);
     }
 
     @Override
     public void removeAllAccessoiryListeners() {
-        this.accessoiryListeners.clear();
+//        this.accessoiryListeners.clear();
     }
 
     @Override
     public void addPersistedEventListener(PersistedEventListener listener) {
-        this.persistListeners.add(listener);
+//        this.persistListeners.add(listener);
     }
 
     @Override
     public void removePersistedEventListener(PersistedEventListener listener) {
-        this.persistListeners.remove(listener);
+//        this.persistListeners.remove(listener);
     }
 
     @Override
     public void addLocomotiveListener(LocomotiveListener listener) {
-        this.locomotiveListeners.add(listener);
+//        this.locomotiveListeners.add(listener);
     }
 
     @Override
     public void removeLocomotiveListener(LocomotiveListener listener) {
-        this.locomotiveListeners.remove(listener);
+//        this.locomotiveListeners.remove(listener);
     }
 
     @Override
     public void removeAllLocomotiveListeners() {
-        this.locomotiveListeners.clear();
+//        this.locomotiveListeners.clear();
     }
 
     @Override
@@ -1020,72 +969,79 @@ public class H2TrackService implements TrackService {
 //        });
     }
 
-    private class SensorMessageEventHandler implements SensorMessageListener {
+    private class SensorMessageEventListener implements SensorMessageListener {
 
-        private final TrackService trackService;
+        private final H2TrackService trackService;
 
-        SensorMessageEventHandler(TrackService trackService) {
+        SensorMessageEventListener(H2TrackService trackService) {
             this.trackService = trackService;
         }
 
         @Override
         public void onSensorMessage(SensorMessageEvent event) {
-            SensorBean s = new SensorBean(event.getContactId(), event.isNewValue() ? 1 : 0, event.isOldValue() ? 1 : 0, event.getDeviceId(), event.getMillis(), new Date());
-            trackService.persist(s);
-        }
-    }
+            SensorBean sb = event.getSensorBean();
+            SensorBean dbsb = this.trackService.getSensor(sb.getDeviceId(), sb.getContactId());
+            if (dbsb != null) {
+                sb.setId(dbsb.getId());
+                sb.setName(dbsb.getName());
+                this.trackService.persist(sb);
+            }
 
-    private class ControllerWatchDogListener implements HeartbeatListener {
-
-        @Override
-        public void sample() {
-            try {
-                TrackService trackService = TrackServiceFactory.getTrackService();
-                if (trackService instanceof H2TrackService) {
-                    ((H2TrackService) trackService).feedbackModuleSampleToggle();
-                }
-            } catch (Exception e) {
-                Logger.error(e.getMessage());
+            for (SensorListener sl : this.trackService.sensorListeners) {
+                sl.onChange(sb);
             }
         }
     }
 
-    private class ControllerServiceEventListener implements ControllerEventListener {
-
-        @Override
-        public void notify(ControllerEvent event) {
-            try {
-                TrackService trackService = TrackServiceFactory.getTrackService();
-                if (trackService != null) {
-                    if (trackService instanceof H2TrackService) {
-                        Logger.info(event);
-                        ((H2TrackService) trackService).handleControllerEvent(event);
-                    }
-                }
-            } catch (Exception e) {
-                Logger.error(e.getMessage());
-                Logger.trace(e);
-            }
-        }
-    }
-
-    private class UpdateGuiStatusTask extends TimerTask {
-
-        private final TrackService trackService;
-
-        UpdateGuiStatusTask(TrackService trackService) {
-            this.trackService = trackService;
-        }
-
-        @Override
-        public void run() {
-            try {
-                trackService.updateGuiStatuses();
-//                trackService.notifyAllSensorListeners();
-            } catch (Exception e) {
-                Logger.error(e.getMessage());
-                Logger.trace(e);
-            }
-        }
-    }
+//    private class ControllerWatchDogListener implements HeartbeatListener {
+//
+//        @Override
+//        public void sample() {
+//            try {
+//                TrackService trackService = TrackServiceFactory.getTrackService();
+//                if (trackService instanceof H2TrackService) {
+//                    ((H2TrackService) trackService).feedbackModuleSampleToggle();
+//                }
+//            } catch (Exception e) {
+//                Logger.error(e.getMessage());
+//            }
+//        }
+//    }
+//    private class ControllerServiceEventListener implements ControllerEventListener {
+//
+//        @Override
+//        public void notify(ControllerEvent event) {
+//            try {
+//                TrackService trackService = TrackServiceFactory.getTrackService();
+//                if (trackService != null) {
+//                    if (trackService instanceof H2TrackService) {
+//                        Logger.info(event);
+//                        ((H2TrackService) trackService).handleControllerEvent(event);
+//                    }
+//                }
+//            } catch (Exception e) {
+//                Logger.error(e.getMessage());
+//                Logger.trace(e);
+//            }
+//        }
+//    }
+//    private class UpdateGuiStatusTask extends TimerTask {
+//
+//        private final TrackService trackService;
+//
+//        UpdateGuiStatusTask(TrackService trackService) {
+//            this.trackService = trackService;
+//        }
+//
+//        @Override
+//        public void run() {
+//            try {
+//                trackService.updateGuiStatuses();
+////                trackService.notifyAllSensorListeners();
+//            } catch (Exception e) {
+//                Logger.error(e.getMessage());
+//                Logger.trace(e);
+//            }
+//        }
+//    }
 }
