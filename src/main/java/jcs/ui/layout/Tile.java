@@ -121,5 +121,7 @@ public interface Tile extends Shape {
     void setDrawOutline(boolean drawOutline);
 
     TileType getTileType();
+    
+    void setRepaintListener(RepaintListener listener);
 
 }

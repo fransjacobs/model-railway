@@ -20,8 +20,6 @@ package jcs.controller;
 
 import java.awt.Image;
 import java.util.List;
-import jcs.controller.cs3.can.parser.StatusDataConfigParser;
-import jcs.controller.cs3.can.parser.SystemStatusParser;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
@@ -31,7 +29,6 @@ import jcs.entities.enums.DecoderType;
 
 public interface MarklinController {
 
-
     boolean connect();
 
     boolean isConnected();
@@ -40,15 +37,16 @@ public interface MarklinController {
 
     String getName();
 
+    String getSerialNumber();
+
+    String getArticleNumber();
+
     boolean isPower();
 
     boolean power(boolean on);
-    
 
     //void toggleDirection(int address, DecoderType protocol, boolean function);
-
     //void toggleDirection(int address, DecoderType protocol);
-
     void changeDirection(int address, DecoderType protocol, Direction direction);
 
     void setSpeed(int address, DecoderType protocol, int speed);
@@ -58,29 +56,20 @@ public interface MarklinController {
     void switchAccessory(int address, AccessoryValue value);
 
     //void addControllerEventListener(ControllerEventListener listener);
-
     //void removeControllerEventListener(ControllerEventListener listener);
-
     //void notifyAllControllerEventListeners();
-
     //StatusDataConfigParser getControllerInfo();
-
     //void addCanMessageListener(CanMessageListener listener);
-
     //void removeCanMessageListener(CanMessageListener listener);
-
     void addSensorMessageListener(SensorMessageListener listener);
 
     void removeSensorMessageListener(SensorMessageListener listener);
 
     //void addHeartbeatListener(HeartbeatListener listener);
-
     //void removeHeartbeatListener(HeartbeatListener listener);
-
     //void removeAllHeartbeatListeners();
-
     List<LocomotiveBean> getLocomotives();
-    
+
     void cacheAllFunctionIcons();
 
     Image getLocomotiveImage(String icon);
@@ -88,6 +77,5 @@ public interface MarklinController {
     List<AccessoryBean> getAccessories();
 
     //List<SensorMessageEvent> querySensors(int sensorCount);
-
     //List<AccessoryStatus> getAccessoryStatuses();
 }

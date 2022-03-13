@@ -127,7 +127,6 @@ public class DemoController implements MarklinController {
             deviceUidNumber = 16909060;
 
             //powerStatus = new SystemStatusParser(false, deviceUid);
-
             Logger.trace("Track Power is " + (powerStatus.isPower() ? "On" : "Off") + " DeviceId: " + deviceUidNumber);
             deviceInfo = getControllerInfo();
             Logger.info("Connected with " + deviceInfo.getDeviceName() + " " + deviceInfo.getArticleNumber() + " Serial# " + deviceInfo.getSerialNumber() + ". Track Power is " + (powerStatus.isPower() ? "On" : "Off") + ". DeviceId: " + deviceUidNumber);
@@ -170,6 +169,16 @@ public class DemoController implements MarklinController {
     @Override
     public String getName() {
         return this.getClass().getSimpleName();
+    }
+
+    @Override
+    public String getSerialNumber() {
+        return "0.0.0";
+    }
+
+    @Override
+    public String getArticleNumber() {
+        return "1234";
     }
 
     private int getLocoAddres(int address, DecoderType decoderType) {
@@ -251,7 +260,7 @@ public class DemoController implements MarklinController {
 
     //@Override
     public StatusDataConfigParser getControllerInfo() {
-        
+
         return null;
     }
 

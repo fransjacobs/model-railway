@@ -18,7 +18,7 @@
  */
 package jcs.trackservice.events;
 
-import jcs.trackservice.AccessoryEvent;
+import jcs.controller.cs3.events.AccessoryEvent;
 
 /**
  *

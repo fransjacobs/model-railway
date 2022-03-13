@@ -99,7 +99,7 @@ public class DisplayLayoutPanel extends JPanel {
     }//GEN-LAST:event_formComponentResized
 
     public static void main(String args[]) {
-        System.setProperty("trackServiceAlwaysUseDemo", "true");
+        //System.setProperty("trackServiceAlwaysUseDemo", "true");
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {

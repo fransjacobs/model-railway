@@ -50,7 +50,7 @@ public class ControllerInfoTableModel extends EntityTableModel<JCSProperty> {
         List<JCSProperty> props = new ArrayList<>();
         if (TrackServiceFactory.getTrackService() != null) {
             //Build a list with Controller properties
-            StatusDataConfigParser cs3 = TrackServiceFactory.getTrackService().getControllerInfo();
+            //StatusDataConfigParser cs3 = TrackServiceFactory.getTrackService().getControllerInfo();
 
 //            props.add(new JCSProperty("Controller", cs3.getCs3().getName()));
 //            props.add(new JCSProperty("Article", cs3.getGfp().getArticleNumber()));

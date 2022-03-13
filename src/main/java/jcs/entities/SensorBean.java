@@ -215,6 +215,23 @@ public class SensorBean implements JCSEntity, Serializable {
         return Objects.equals(this.lastUpdated, other.lastUpdated);
     }
 
+    public boolean equalsDeviceIdAndContactId(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SensorBean other = (SensorBean) obj;
+        if (!Objects.equals(this.deviceId, other.deviceId)) {
+            return false;
+        }
+        return Objects.equals(this.contactId, other.contactId);
+    }
+
 //    @Override
 //    public String toString() {
 //        if (contactId == null) {

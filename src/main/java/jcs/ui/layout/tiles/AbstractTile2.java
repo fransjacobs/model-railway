@@ -42,6 +42,7 @@ import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.LayoutUtil;
+import jcs.ui.layout.RepaintListener;
 import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
@@ -83,6 +84,8 @@ abstract class AbstractTile2 implements Shape, Tile {
     protected String id;
 
     protected boolean drawOutline = false;
+    
+    protected RepaintListener repaintListener;
 
     protected AbstractTile2(Point center) {
         this(Orientation.EAST, Direction.CENTER, center);
@@ -676,6 +679,21 @@ abstract class AbstractTile2 implements Shape, Tile {
     @Override
     public TileType getTileType() {
         return getTileBean().getTileType();
+    }
+
+    public RepaintListener getRepaintListener() {
+        return repaintListener;
+    }
+
+    @Override
+    public void setRepaintListener(RepaintListener repaintListener) {
+        this.repaintListener = repaintListener;
+    }
+    
+    protected void repaintTile() {
+        if(this.repaintListener != null) {
+            this.repaintListener.repaintTile(this);
+        }
     }
 
 }

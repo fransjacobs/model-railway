@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.JCSEntity;
@@ -35,7 +34,6 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.events.AccessoryListener;
-import jcs.trackservice.events.HeartBeatListener;
 import jcs.trackservice.events.LocomotiveListener;
 import jcs.trackservice.events.PersistedEventListener;
 import jcs.trackservice.events.SensorListener;
@@ -129,7 +127,12 @@ public interface TrackService {
     //Generic remove for Loco/accessory/feedback
     void remove(JCSEntity entity);
 
-    StatusDataConfigParser getControllerInfo();
+    //StatusDataConfigParser getControllerInfo();
+    String getControllerName();
+
+    String getControllerSerialNumber();
+
+    String getControllerArticleNumber();
 
     void addControllerListener(ControllerEventListener listener);
 

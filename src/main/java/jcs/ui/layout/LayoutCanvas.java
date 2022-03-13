@@ -60,7 +60,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LayoutCanvas extends JPanel {
+public class LayoutCanvas extends JPanel implements RepaintListener {
 
     private Mode mode;
     private boolean drawGrid = true;
@@ -125,7 +125,6 @@ public class LayoutCanvas extends JPanel {
         for (Tile tile : snapshot) {
             if (tile != null) {
                 tile.setDrawOutline(drawGrid);
-
                 if (selectedTiles.contains(tile.getCenter())) {
                     tile.setBackgroundColor(Color.yellow);
                 } else {
@@ -138,23 +137,12 @@ public class LayoutCanvas extends JPanel {
             }
         }
 
-//        for (AbstractTile tile : snapshot) {
-//            if (tile != null) {
-//                tile.drawName(g2);
-//            }
-//        }
-//        for (AbstractTile2 selectedTile : selectedSnapshot) {
-//            selectedTile.drawBounds(g2);
-//            selectedTile.drawCenterPoint(g2, Color.red, 4);
-//        }
-//        if (this.movingTile != null) {
-//            g2.setColor(Color.CYAN);
-//            g2.draw(this.movingTile.getBounds());
-//
-//            g.setColor(Color.BLUE);
-//            movingTile.drawCenterPoint(g2, Color.blue);
-//        }
         g2.dispose();
+    }
+
+    @Override
+    public void repaintTile(Tile tile) {
+        this.repaint(tile.getBounds());
     }
 
     private void paintNullGrid(Graphics g) {
@@ -314,7 +302,7 @@ public class LayoutCanvas extends JPanel {
     }
 
     private void loadTiles() {
-        Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid);
+        Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid, this);
         Set<Point> ps = tm.keySet();
         synchronized (tiles) {
             selectedTiles.clear();
@@ -567,8 +555,7 @@ public class LayoutCanvas extends JPanel {
 
   }//GEN-LAST:event_formMouseDragged
 
-  
-      private void editSelectedTileProperties() {
+    private void editSelectedTileProperties() {
         //the first tile should be the selected one
         boolean showProperties = false;
         boolean showFlip = false;
@@ -582,15 +569,15 @@ public class LayoutCanvas extends JPanel {
             Logger.trace("Selected Tile: " + tile);
             TileType tt = tile.getTileType();
             switch (tt) {
-            case STRAIGHT:
-                showRotate = true;
-                showDelete = true;
-                break;
-            case CURVED:
-                showRotate = true;
-                showDelete = true;
-                break;
-            case SENSOR:
+                case STRAIGHT:
+                    showRotate = true;
+                    showDelete = true;
+                    break;
+                case CURVED:
+                    showRotate = true;
+                    showDelete = true;
+                    break;
+                case SENSOR:
                     SensorDialog fbd = new SensorDialog(getParentFrame(), (Sensor) tile);
                     fbd.setVisible(true);
                     break;
@@ -615,9 +602,6 @@ public class LayoutCanvas extends JPanel {
 
     }
 
-  
-  
-  
     private void showOperationsPopupMenu(Tile tile, Point p) {
         //which items should be shown
         boolean showProperties = false;

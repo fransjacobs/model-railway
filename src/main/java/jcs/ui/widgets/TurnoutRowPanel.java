@@ -29,7 +29,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import static jcs.entities.enums.AccessoryValue.GREEN;
 import static jcs.entities.enums.AccessoryValue.RED;
-import jcs.trackservice.AccessoryEvent;
+import jcs.controller.cs3.events.AccessoryEvent;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;

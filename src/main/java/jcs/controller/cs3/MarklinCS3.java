@@ -81,13 +81,12 @@ public class MarklinCS3 implements MarklinController {
 
     private int cs3Uid;
     private String cs3Name;
-    private String cs3Version;
-    private int cs3DeviceId;
+    //private String cs3Version;
+    //private int cs3DeviceId;
 
-    private String serialNumber;
-    private String hardwareVersion;
-    private String articleNumber;
-
+    //private String serialNumber;
+    //private String hardwareVersion;
+    //private String articleNumber;
     private ChannelDataParser channelData1;
     private ChannelDataParser channelData2;
     private ChannelDataParser channelData3;
@@ -137,6 +136,24 @@ public class MarklinCS3 implements MarklinController {
     @Override
     public String getName() {
         return this.cs3Name;
+    }
+
+    @Override
+    public String getSerialNumber() {
+        if (this.gfp != null) {
+            return this.gfp.getSerial();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String getArticleNumber() {
+        if (this.gfp != null) {
+            return this.gfp.getArticleNumber();
+        } else {
+            return null;
+        }
     }
 
     public String getIp() {
@@ -621,6 +638,7 @@ public class MarklinCS3 implements MarklinController {
 
     private void notifySensorMessageEventListeners(final SensorMessageEvent sensorMessageEvent) {
         executor.execute(() -> fireAllSensorListeners(sensorMessageEvent));
+
     }
 
     private class CanMessageEventListener implements CanMessageListener {
@@ -649,7 +667,7 @@ public class MarklinCS3 implements MarklinController {
 
     }
 
-    //Test
+//Test
     public static void main(String[] a) {
 
         MarklinCS3 cs3 = new MarklinCS3(false);
@@ -667,10 +685,10 @@ public class MarklinCS3 implements MarklinController {
 
             //SystemConfiguration data
             cs3.getStatusDataConfig();
-            Logger.debug("Channel 1: "+cs3.channelData1.getChannel().getHumanValue()+" "+cs3.channelData1.getChannel().getUnit());
-            Logger.debug("Channel 2: "+cs3.channelData2.getChannel().getHumanValue()+" "+cs3.channelData2.getChannel().getUnit());
-            Logger.debug("Channel 3: "+cs3.channelData3.getChannel().getHumanValue()+" "+cs3.channelData3.getChannel().getUnit());
-            Logger.debug("Channel 4: "+cs3.channelData4.getChannel().getHumanValue()+" "+cs3.channelData4.getChannel().getUnit());
+            Logger.debug("Channel 1: " + cs3.channelData1.getChannel().getHumanValue() + " " + cs3.channelData1.getChannel().getUnit());
+            Logger.debug("Channel 2: " + cs3.channelData2.getChannel().getHumanValue() + " " + cs3.channelData2.getChannel().getUnit());
+            Logger.debug("Channel 3: " + cs3.channelData3.getChannel().getHumanValue() + " " + cs3.channelData3.getChannel().getUnit());
+            Logger.debug("Channel 4: " + cs3.channelData4.getChannel().getHumanValue() + " " + cs3.channelData4.getChannel().getUnit());
 //            cs3.getSystemStatus(1);
 //
 //            Logger.debug("Channel 4....");

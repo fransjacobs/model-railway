@@ -66,7 +66,6 @@ import jcs.trackservice.dao.LocomotiveBeanDAO;
 import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
-import static jcs.entities.enums.Direction.SWITCH;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
 import static jcs.entities.enums.TileType.CROSS;
@@ -74,13 +73,6 @@ import static jcs.entities.enums.TileType.CURVED;
 import static jcs.entities.enums.TileType.SENSOR;
 import static jcs.entities.enums.TileType.SIGNAL;
 import static jcs.entities.enums.TileType.STRAIGHT;
-import jcs.ui.layout.tiles.Block;
-import jcs.ui.layout.tiles.Cross;
-import jcs.ui.layout.tiles.Curved;
-import jcs.ui.layout.tiles.Sensor;
-import jcs.ui.layout.tiles.Signal;
-import jcs.ui.layout.tiles.Straight;
-import jcs.ui.layout.tiles.Switch;
 
 public class H2TrackService implements TrackService {
 
@@ -258,22 +250,12 @@ public class H2TrackService implements TrackService {
 
     @Override
     public SensorBean persist(SensorBean sensor) {
-//        SensorBean prev = sensDAO.find(sensor.getContactId());
-//        //make shure the name etc is kept
-//        if (prev != null) {
-//            sensor.setId(prev.getId());
-//            sensor.setName(prev.getName());
-//            sensor.setDescription(prev.getDescription());
-//            sensDAO.persist(sensor);
-//            firePersistEvent(sensor, prev);
-//
-//            //Logger.trace("Updated SensorBean: " + sensor.toLogString());
-//            executor.execute(() -> broadcastSensorChanged(sensor));
-//        } else {
-//            //Sensor does not exit is database
-//            Logger.warn("Skip persisting ghost sensor " + sensor.toLogString());
-//        }
-
+        SensorBean prev = sensDAO.find(sensor.getDeviceId(), sensor.getContactId());
+        if (prev != null) {
+            sensor.setId(prev.getId());
+            sensor.setName(prev.getName());
+            sensDAO.persist(sensor);
+        }
         return sensor;
     }
 
@@ -639,11 +621,30 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public StatusDataConfigParser getControllerInfo() {
-        if (this.controllerInfo == null) {
-            //controllerInfo = controllerService.getControllerInfo();
+    public String getControllerName() {
+        if (this.controllerService != null) {
+            return this.controllerService.getName();
+        } else {
+            return null;
         }
-        return controllerInfo;
+    }
+
+    @Override
+    public String getControllerSerialNumber() {
+        if (this.controllerService != null) {
+            return this.controllerService.getSerialNumber();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public String getControllerArticleNumber() {
+        if (this.controllerService != null) {
+            return this.controllerService.getArticleNumber();
+        } else {
+            return null;
+        }
     }
 
     @Override

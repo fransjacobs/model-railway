@@ -28,7 +28,7 @@ import javax.swing.JPanel;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
-import jcs.trackservice.AccessoryEvent;
+import jcs.controller.cs3.events.AccessoryEvent;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;

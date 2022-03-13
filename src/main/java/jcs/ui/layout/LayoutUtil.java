@@ -33,6 +33,7 @@ import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.events.SensorListener;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
@@ -102,13 +103,18 @@ public class LayoutUtil {
         }
     }
 
+    public static final Map<Point, Tile> loadLayout(boolean drawGridLines) {
+        return loadLayout(drawGridLines, null);
+    }
+
     /**
      * Load Tiles from the persistent store
      *
      * @param drawGridLines
+     * @param listener
      * @return A Map of tiles, key is the center point of the tile
      */
-    public static final Map<Point, Tile> loadLayout(boolean drawGridLines) {
+    public static final Map<Point, Tile> loadLayout(boolean drawGridLines, RepaintListener listener) {
         synchronized (LayoutUtil.tileIdLookup) {
             LayoutUtil.tileIdLookup.clear();
             LayoutUtil.tiles.clear();
@@ -120,6 +126,12 @@ public class LayoutUtil {
                 for (TileBean tb : beans) {
                     addRelatedBeans(tb);
                     Tile tile = TileFactory.createTile(tb, drawGridLines);
+
+                    if (listener != null) {
+                        tile.setRepaintListener(listener);
+                    }
+
+                    registerAsEventListener(tile);
 
                     LayoutUtil.tileIdLookup.put(tile.getId(), tile);
                     LayoutUtil.tiles.put(tile.getCenter(), tile);
@@ -134,6 +146,18 @@ public class LayoutUtil {
             }
         }
         return LayoutUtil.tiles;
+    }
+
+    private static void registerAsEventListener(Tile tile) {
+
+        switch (tile.getTileType()) {
+            case SENSOR:
+                TrackServiceFactory.getTrackService().addSensorListener((SensorListener) tile);
+            default:
+                //Do nothing
+                break;
+        }
+
     }
 
     private static boolean isNotLoaded() {

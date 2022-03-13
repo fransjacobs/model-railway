@@ -27,8 +27,8 @@ import jcs.ui.layout.tiles.Sensor;
  * @author fransjacobs
  */
 public class SensorDialog extends javax.swing.JDialog {
-
-    private Sensor sensor;
+    
+    private final Sensor sensor;
 
     /**
      * Creates new form SensorDialog
@@ -40,20 +40,25 @@ public class SensorDialog extends javax.swing.JDialog {
         super(parent, true);
         this.sensor = sensor;
         initComponents();
-
+        
         postInit();
     }
-
+    
     private void postInit() {
         setLocationRelativeTo(null);
-
+        
         if (this.sensor != null) {
             SensorBean sb = this.sensor.getSensorBean();
             if (sb == null) {
                 sb = new SensorBean();
                 this.sensor.setSensorBean(sb);
+            } else {
+                if (TrackServiceFactory.getTrackService() != null) {
+                    //Unregister is properties might change
+                    TrackServiceFactory.getTrackService().removeSensorListener(this.sensor);
+                }
             }
-
+            
             this.nameTF.setText(this.sensor.getSensorBean().getName());
             if (this.sensor.getSensorBean().getDeviceId() != null) {
                 this.deviceIdSpinner.setValue(this.sensor.getSensorBean().getDeviceId());
@@ -62,7 +67,6 @@ public class SensorDialog extends javax.swing.JDialog {
                 this.contactIdSpinner.setValue(this.sensor.getSensorBean().getContactId());
             }
         }
-
     }
 
     /**
@@ -170,62 +174,22 @@ public class SensorDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
-
+        
         if (this.sensor != null && this.sensor.getSensorBean() != null) {
             this.sensor.getSensorBean().setContactId((Integer) this.contactIdSpinner.getValue());
             this.sensor.getSensorBean().setDeviceId((Integer) this.deviceIdSpinner.getValue());
             this.sensor.getSensorBean().setName(this.nameTF.getText());
-
+            
             if (TrackServiceFactory.getTrackService() != null) {
                 TrackServiceFactory.getTrackService().persist((sensor.getTileBean()));
+                
+                TrackServiceFactory.getTrackService().addSensorListener(sensor);
             }
         }
         this.setVisible(false);
         this.dispose();
     }//GEN-LAST:event_saveExitBtnActionPerformed
 
-//    /**
-//     * @param args the command line arguments
-//     */
-//    public static void main(String args[]) {
-//        /* Set the Nimbus look and feel */
-////        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-//         */
-//        try {
-//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-//                if ("Nimbus".equals(info.getName())) {
-//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-//                    break;
-//                }
-//            }
-//        } catch (ClassNotFoundException ex) {
-//            java.util.logging.Logger.getLogger(SensorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (InstantiationException ex) {
-//            java.util.logging.Logger.getLogger(SensorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (IllegalAccessException ex) {
-//            java.util.logging.Logger.getLogger(SensorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-//            java.util.logging.Logger.getLogger(SensorDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-//        //</editor-fold>
-//
-//        /* Create and display the dialog */
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                SensorDialog dialog = new SensorDialog(new javax.swing.JFrame(), null);
-//                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-//                    @Override
-//                    public void windowClosing(java.awt.event.WindowEvent e) {
-//                        System.exit(0);
-//                    }
-//                });
-//                dialog.setVisible(true);
-//            }
-//        });
-//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel contactIdLbl;

@@ -57,7 +57,7 @@ public class ControllerPanel extends JPanel {
 
     private void postInit() {
         if (TrackServiceFactory.getTrackService() != null) {
-            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
+//            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
 
 //            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
             TrackServiceFactory.getTrackService().addMessageListener(new LogTextAreaHandler(this.logArea));

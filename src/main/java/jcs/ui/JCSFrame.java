@@ -134,8 +134,7 @@ public class JCSFrame extends JFrame implements UICallback {
             setCS3Properties();
 
             boolean powerOn = TrackServiceFactory.getTrackService().isPowerOn();
-                    
-                    
+
             feedbackMonitor = new FeedbackMonitor();
 
             //this.setPowerStatus(powerOn, true);
@@ -223,13 +222,11 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void setCS3Properties() {
         if (TrackServiceFactory.getTrackService() != null) {
-            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
-
-            if (di != null) {
-                this.controllerDescriptionLbl.setText(di.getDeviceName());
-                this.controllerCatalogNumberLbl.setText(di.getArticleNumber());
-                this.controllerSerialNumberLbl.setText(di.getSerialNumber());
-                this.controllerHostNameLbl.setText("CS3-" + di.getSerialNumber());
+            if (TrackServiceFactory.getTrackService().getControllerName() != null) {
+                this.controllerDescriptionLbl.setText(TrackServiceFactory.getTrackService().getControllerName());
+                this.controllerCatalogNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerArticleNumber());
+                this.controllerSerialNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerSerialNumber());
+                this.controllerHostNameLbl.setText("CS3-" + TrackServiceFactory.getTrackService().getControllerSerialNumber());
             } else {
                 this.controllerHostNameLbl.setText("Not Connected");
             }
@@ -726,8 +723,9 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private String getTitleString() {
         String jcsVersion = JCS.getVersionInfo().getVersion();
-        if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerInfo() != null) {
-            return "JCS " + jcsVersion;
+        if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerSerialNumber() != null) {
+            //return "JCS " + jcsVersion;
+            return "JCS " + "Connected to "+TrackServiceFactory.getTrackService().getControllerName();
         } else {
             return "JCS " + jcsVersion + " - NOT Connected!";
         }

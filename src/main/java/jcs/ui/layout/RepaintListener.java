@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright (C) 2022 fransjacobs.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,17 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.trackservice.events;
-
-import jcs.controller.cs3.events.LocomotiveEvent;
+package jcs.ui.layout;
 
 /**
  *
- * @author frans
+ * @author fransjacobs
  */
-public interface LocomotiveListener {
-  
-    void changed(LocomotiveEvent event);
+public interface RepaintListener {
 
-    
+    void repaintTile(Tile tile);
 }

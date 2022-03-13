@@ -28,12 +28,13 @@ import java.awt.geom.Ellipse2D;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
+import jcs.trackservice.events.SensorListener;
 
 /**
  *
  * @author fransjacobs
  */
-public class Sensor extends Straight implements Tile {
+public class Sensor extends Straight implements Tile, SensorListener {
 
     private static int idSeq;
     private boolean active;
@@ -62,14 +63,13 @@ public class Sensor extends Straight implements Tile {
 
     public void setActive(boolean active) {
         this.active = active;
-        if (active != this.active) {
-            this.active = active;
+        //if (active != this.active) {
+        //    this.active = active;
             this.image = null;
-        }
+        //}
     }
 
     private void renderSensor(Graphics2D g2) {
-
         int x, y; //, w, h;
         x = 13;
         y = 13;
@@ -120,6 +120,19 @@ public class Sensor extends Straight implements Tile {
             this.tileBean = this.getTileBean();
         }
         this.tileBean.setEntityBean(sensorBean);
+    }
+
+    @Override
+    public void onChange(SensorBean sensor) {
+        if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
+            this.setActive(sensor.isActive());
+            repaintTile();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + orientation + ", direction: " + direction + ", active: " + active + ", center: " + center + "}";
     }
 
 }

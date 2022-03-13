@@ -795,7 +795,7 @@ public class LayoutPanel extends JPanel {
     }
 
     public static void main(String args[]) {
-        System.setProperty("trackServiceAlwaysUseDemo", "true");
+        //System.setProperty("trackServiceAlwaysUseDemo", "true");
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
 

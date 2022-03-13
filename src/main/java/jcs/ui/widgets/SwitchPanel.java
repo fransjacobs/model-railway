@@ -29,7 +29,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.trackservice.AccessoryEvent;
+import jcs.controller.cs3.events.AccessoryEvent;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;

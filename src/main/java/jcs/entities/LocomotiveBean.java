@@ -277,21 +277,14 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         }
     }
 
-//    @Override
-//    public String toString() {
-//        return this.name;
-//    }
-
     @Override
     public String toString() {
-        return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderType + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + blocks + ", locIcon=" + locIcon + '}';
+        return this.name;
     }
-    
-    
 
     @Override
     public String toLogString() {
-        return this.name;
+        return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderType + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + blocks + ", locIcon=" + locIcon + '}';
     }
 
     //Convenience
@@ -413,7 +406,5 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         }
         return Objects.equals(this.locIcon, other.locIcon);
     }
-    
-    
-    
+
 }
