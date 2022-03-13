@@ -39,7 +39,7 @@ public class CanMessage implements MarklinCan, Serializable {
 
     private static final int PRIO_IDX = 0;
     private static final int CMD_IDX = 1;
-    private static final int SUB_CMD_IDX = 10;
+    private static final int SUB_CMD_IDX = 9;
     private static final int HASH_IDX = 2;
     private static final int DLC_IDX = 4;
     private static final int DATA_IDX = 5;

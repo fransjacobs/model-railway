@@ -82,7 +82,7 @@ public class CanMessageFactory implements MarklinCan {
      *
      * @param gfpUid UID of the GFP
      * @return CanMessage: [0x00 0x00 0x07 0x69 0x04 0x00 0x00 0x00 0x00 0x00
-     * 0x00 0x00 0x00] in case the GFP uid is 0
+     * 0x00 0x00 0x00] in case the GFP UID is 0
      */
     public static CanMessage querySystem(int gfpUid) {
         int[] data = getEmptyData();
@@ -125,17 +125,10 @@ public class CanMessageFactory implements MarklinCan {
         return m;
     }
 
-//    public static CanMessage getCanBootloader() {
-//        int[] data = getEmptyData();
-//
-//        CanMessage m = new CanMessage();
-//        m.setPriority(PRIO_1);
-//        m.setCommand(BOOTLOADER_CAN_SERVICE);
-//        m.setDlc(SW_STATUS_DLC);
-//        m.setData(data);
-//
-//        return m;
-//    }
+    /**
+     *
+     * @return
+     */
     public static CanMessage getMobileAppPingRequest() {
         int[] data = getEmptyData();
 
@@ -151,6 +144,30 @@ public class CanMessageFactory implements MarklinCan {
         m.setData(data);
 
         return m;
+    }
+
+    /**
+     *
+     * @param channel the number of the channel to get the measurement value for
+     * @param gfpUid the GFP UID
+     * @return
+     */
+    public static CanMessage systemStatus(int channel, int gfpUid) {
+        int[] data = getEmptyData();
+        int[] hash;
+        if (gfpUid > 0) {
+            int[] uid = ByteUtil.to4ByteArray(gfpUid);
+            System.arraycopy(uid, 0, data, 0, uid.length);
+            hash = CanMessage.generateHash(gfpUid);
+        } else {
+            hash = MAGIC_HASH;
+        }
+        data[SUBCMD_IDX] = SYSTEM_SUB_STATUS;
+
+        data[5] = channel & 0xff;
+
+        CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, hash, DLC_6, data);
+        return cm;
     }
 
     public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int gfpUid) {
@@ -196,7 +213,7 @@ public class CanMessageFactory implements MarklinCan {
         }
 
         data[STATUS_CONFIG_INDEX] = index & 0xFF;
-        
+
         CanMessage cm = new CanMessage(PRIO_1, STATUS_CONFIG, hash, DLC_5, data);
         return cm;
     }
@@ -343,12 +360,14 @@ public class CanMessageFactory implements MarklinCan {
 //    }
     //Mainly for testing....
     public static void main(String[] a) {
-        System.out.println("getMemberPing:    " + getMemberPing());
-        System.out.println("querySystem:      " + querySystem(1668498828));
-        System.out.println("stop:             " + systemStopGo(false, 1668498828));
-        System.out.println("go:               " + systemStopGo(true, 1668498828));
+        System.out.println("getMemberPing:     " + getMemberPing());
+        System.out.println("querySystem:       " + querySystem(1668498828));
+        System.out.println("stop:              " + systemStopGo(false, 1668498828));
+        System.out.println("go:                " + systemStopGo(true, 1668498828));
         System.out.println();
-        System.out.println("statusDataConfig: " + statusDataConfig(1,1668498828));
+        System.out.println("statusDataConfig:  " + statusDataConfig(1, 1668498828));
+        System.out.println("systemStatus ch 1: " + systemStatus(1, 1668498828));
+        System.out.println("systemStatus ch 4: " + systemStatus(4, 1668498828));
 
         //System.out.println("querySystem byte array : " + querySystem(new int[]{0x63, 0x73, 0x45, 0x8D}));
 //        System.out.println("ping : " + getMobileAppPingRequest());

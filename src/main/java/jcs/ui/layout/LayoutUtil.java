@@ -18,7 +18,6 @@
  */
 package jcs.ui.layout;
 
-import jcs.ui.layout.Tile;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +77,31 @@ public class LayoutUtil {
         return new Point(sx, sy);
     }
 
+    private static void addRelatedBeans(TileBean tileBean) {
+        TileType tileType = tileBean.getTileType();
+        switch (tileType) {
+            case STRAIGHT:
+                break;
+            case CURVED:
+                break;
+            case SWITCH:
+                break;
+            case CROSS:
+                break;
+            case SIGNAL:
+                break;
+            case SENSOR:
+                if (tileBean.getBeanId() != null) {
+                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getSensor(tileBean.getBeanId()));
+                }
+                break;
+            case BLOCK:
+                break;
+            default:
+                Logger.warn("Unknown Tile Type " + tileType);
+        }
+    }
+
     /**
      * Load Tiles from the persistent store
      *
@@ -94,7 +118,9 @@ public class LayoutUtil {
                 Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
 
                 for (TileBean tb : beans) {
+                    addRelatedBeans(tb);
                     Tile tile = TileFactory.createTile(tb, drawGridLines);
+
                     LayoutUtil.tileIdLookup.put(tile.getId(), tile);
                     LayoutUtil.tiles.put(tile.getCenter(), tile);
                     for (Point ap : tile.getAltPoints()) {
@@ -119,14 +145,14 @@ public class LayoutUtil {
             LayoutUtil.loadLayout(true);
         }
         Tile result = LayoutUtil.tileIdLookup.get(id);
-        if(result == null) {
+        if (result == null) {
             //check also with the original Id
             String orgId;
-            if(id.endsWith("-")||id.endsWith("+")) {
-                orgId = id.substring(0,id.length() -1);
+            if (id.endsWith("-") || id.endsWith("+")) {
+                orgId = id.substring(0, id.length() - 1);
             } else {
-               orgId = id.replaceAll("-G","").replaceAll("-R","");
-            }   
+                orgId = id.replaceAll("-G", "").replaceAll("-R", "");
+            }
             result = LayoutUtil.tileIdLookup.get(orgId);
         }
         return result;
@@ -195,7 +221,7 @@ public class LayoutUtil {
 
         return LayoutUtil.tiles;
     }
-    
+
     /**
      * Returns the euclidean distance of 2 Points
      *

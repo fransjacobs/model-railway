@@ -51,7 +51,6 @@ import jcs.trackservice.events.SensorListener;
 public interface TrackService {
 
     //public static final String SERVICE_TYPE = "TrackService";
-
     //Track power  
     void switchPower(boolean on);
 
@@ -72,9 +71,9 @@ public interface TrackService {
     LocomotiveBean getLocomotive(BigDecimal id);
 
     LocomotiveBean persist(LocomotiveBean locomotive);
-    
-    Image getFunctionImage(String imageName); 
-    
+
+    Image getFunctionImage(String imageName);
+
     void changeDirection(Direction direction, LocomotiveBean locomotive);
 
     void changeVelocity(Integer speed, LocomotiveBean locomotive);
@@ -95,17 +94,13 @@ public interface TrackService {
     void addAccessoiryListener(AccessoryListener listener);
 
     void removeAccessoiryListener(AccessoryListener listener);
-    
+
     void removeAllAccessoiryListeners();
 
     void notifyAllAccessoiryListeners();
 
-    
     //void addHeartBeatListener(HeartBeatListener listener);
-
     //void removeHeartBeatListenerListener(HeartBeatListener listener);
-
-    
     void addSensorListener(SensorListener listener);
 
     void removeSensorListener(SensorListener listener);
@@ -114,11 +109,13 @@ public interface TrackService {
 
     //Sensors
     List<SensorBean> getSensors();
-    
+
+    SensorBean getSensor(BigDecimal id);
+
     SensorBean getSensor(Integer deviceId, Integer contactId);
-    
+
     SensorBean persist(SensorBean sensor);
-    
+
     void addPersistedEventListener(PersistedEventListener listener);
 
     void removePersistedEventListener(PersistedEventListener listener);
@@ -126,9 +123,9 @@ public interface TrackService {
     void addLocomotiveListener(LocomotiveListener listener);
 
     void removeLocomotiveListener(LocomotiveListener listener);
-    
+
     void removeAllLocomotiveListeners();
-        
+
     //Generic remove for Loco/accessory/feedback
     void remove(JCSEntity entity);
 
@@ -143,7 +140,6 @@ public interface TrackService {
     JCSProperty getProperty(String key);
 
     JCSProperty persist(JCSProperty property);
-
 
     void addMessageListener(CanMessageListener listener);
 

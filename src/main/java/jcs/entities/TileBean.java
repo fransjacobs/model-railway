@@ -20,6 +20,7 @@ package jcs.entities;
 
 import java.awt.Point;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,32 +42,36 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
     private SignalType signalType;
     private Point center;
     private String id;
+    private BigDecimal beanId;
 
     private List<TileBean> neighbours;
+
+    private JCSEntity bean;
 
     //THe default width and height of a Tile is 40x40 px
     public static final int DEFAULT_WIDTH = 40;
     public static final int DEFAULT_HEIGHT = 40;
 
     public TileBean() {
-        this(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(0, 0), null, null);
+        this(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(0, 0), null, null, null);
     }
 
     public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id) {
-        this(tileType, orientation, direction, new Point(x, y), id, null);
+        this(tileType, orientation, direction, new Point(x, y), id, null, null);
     }
 
-    public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id, SignalType signalType) {
-        this(tileType, orientation, direction, new Point(x, y), id, signalType);
+    public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id, SignalType signalType, BigDecimal sensorBeanId) {
+        this(tileType, orientation, direction, new Point(x, y), id, signalType, sensorBeanId);
     }
 
-    public TileBean(TileType tileType, Orientation orientation, Direction direction, Point center, String id, SignalType signalType) {
+    public TileBean(TileType tileType, Orientation orientation, Direction direction, Point center, String id, SignalType signalType, BigDecimal sensorBeanId) {
         this.tileType = tileType;
         this.orientation = orientation;
         this.direction = direction;
         this.center = center;
         this.id = id;
         this.signalType = signalType;
+        this.beanId = sensorBeanId;
 
         neighbours = new ArrayList<>();
     }
@@ -153,6 +158,22 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         this.center = p;
     }
 
+    public BigDecimal getBeanId() {
+        return beanId;
+    }
+
+    public void setBeanId(BigDecimal beanId) {
+        this.beanId = beanId;
+    }
+
+    public JCSEntity getEntityBean() {
+        return bean;
+    }
+
+    public void setEntityBean(JCSEntity bean) {
+        this.bean = bean;
+    }
+
     @Override
     public int compareTo(Object other) {
         int resx = Integer.compare(this.getX(), ((TileBean) other).getX());
@@ -173,6 +194,7 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         hash = 11 * hash + Objects.hashCode(this.signalType);
         hash = 11 * hash + Objects.hashCode(this.center);
         hash = 11 * hash + Objects.hashCode(this.id);
+        hash = 11 * hash + Objects.hashCode(this.beanId);
         return hash;
     }
 
@@ -189,6 +211,9 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         }
         final TileBean other = (TileBean) obj;
         if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.beanId, other.beanId)) {
             return false;
         }
         if (this.tileType != other.tileType) {

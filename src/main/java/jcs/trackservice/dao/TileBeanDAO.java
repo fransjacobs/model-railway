@@ -18,6 +18,7 @@
  */
 package jcs.trackservice.dao;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,8 +39,8 @@ import org.tinylog.Logger;
  */
 public class TileBeanDAO extends AbstractDAO<TileBean> {
 
-    private static final String INS_TILE_STMT = "insert into tiles(tileType,orientation,direction,x,y,signalType,id) values(?,?,?,?,?,?,?)";
-    private static final String UPD_TILE_STMT = "update tiles set tileType = ?,orientation = ?,direction = ?,x = ?,y = ?, signalType =? where id = ?";
+    private static final String INS_TILE_STMT = "insert into tiles(tileType,orientation,direction,x,y,signalType,beanid,id) values(?,?,?,?,?,?,?,?)";
+    private static final String UPD_TILE_STMT = "update tiles set tileType = ?,orientation = ?,direction = ?,x = ?,y = ?, signalType = ?, beanid = ? where id = ?";
 
     public TileBeanDAO() {
         super();
@@ -57,9 +58,10 @@ public class TileBeanDAO extends AbstractDAO<TileBean> {
         Integer x = rs.getInt("X");
         Integer y = rs.getInt("Y");
         String st = rs.getString("SIGNALTYPE");
+        BigDecimal sensorId = rs.getBigDecimal("BEANID");
         SignalType signalType = SignalType.get(st);
 
-        TileBean tb = new TileBean(tileType, orientation, direction, x, y, id, signalType);
+        TileBean tb = new TileBean(tileType, orientation, direction, x, y, id, signalType, sensorId);
         return tb;
     }
 
@@ -75,8 +77,13 @@ public class TileBeanDAO extends AbstractDAO<TileBean> {
         } else {
             ps.setNull(6, Types.VARCHAR);
         }
+        if (tileBean.getBeanId() != null) {
+            ps.setBigDecimal(7, tileBean.getBeanId());
+        } else {
+            ps.setNull(7, Types.BIGINT);
+        }
 
-        ps.setString(7, tileBean.getId());
+        ps.setString(8, tileBean.getId());
     }
 
     @Override
@@ -86,7 +93,6 @@ public class TileBeanDAO extends AbstractDAO<TileBean> {
         return this.findAll(stmt);
     }
 
-    //@Override
     public TileBean findById(Object id) {
         String stmt = "select * from tiles where id = ?";
 
@@ -104,7 +110,7 @@ public class TileBeanDAO extends AbstractDAO<TileBean> {
 
         TileBean layoutTile = null;
 
-        try ( PreparedStatement preparedStatement = connection.prepareStatement(stmt)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(stmt)) {
             preparedStatement.setInt(1, x);
             preparedStatement.setInt(2, y);
 

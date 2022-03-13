@@ -47,9 +47,11 @@ import jcs.entities.TileBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
+import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.BreathFirst;
 import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
@@ -565,6 +567,57 @@ public class LayoutCanvas extends JPanel {
 
   }//GEN-LAST:event_formMouseDragged
 
+  
+      private void editSelectedTileProperties() {
+        //the first tile should be the selected one
+        boolean showProperties = false;
+        boolean showFlip = false;
+        boolean showRotate = false;
+        boolean showMove = false;
+        boolean showDelete = false;
+
+        if (!this.selectedTiles.isEmpty()) {
+            Point tcp = this.selectedTiles.iterator().next();
+            Tile tile = findTile(tcp);
+            Logger.trace("Selected Tile: " + tile);
+            TileType tt = tile.getTileType();
+            switch (tt) {
+            case STRAIGHT:
+                showRotate = true;
+                showDelete = true;
+                break;
+            case CURVED:
+                showRotate = true;
+                showDelete = true;
+                break;
+            case SENSOR:
+                    SensorDialog fbd = new SensorDialog(getParentFrame(), (Sensor) tile);
+                    fbd.setVisible(true);
+                    break;
+//                case BLOCK:
+//                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
+//                    osd.setVisible(true);
+//                    break;
+//                case SIGNAL:
+//                    SignalDialog sd = new SignalDialog(getParentFrame(), true, (SignalTile) tile);
+//                    sd.setVisible(true);
+//                    break;
+//                case SWITCH:
+//                    TurnoutDialog td = new TurnoutDialog(getParentFrame(), true, (SwitchTile) tile);
+//                    td.setVisible(true);
+//                    break;
+                default:
+                    break;
+            }
+        }
+        this.executor.execute(() -> repaint());
+        Logger.trace("Edit done");
+
+    }
+
+  
+  
+  
     private void showOperationsPopupMenu(Tile tile, Point p) {
         //which items should be shown
         boolean showProperties = false;
@@ -583,7 +636,7 @@ public class LayoutCanvas extends JPanel {
 //                showRotate = true;
 //                showDelete = true;
 //                break;
-            case "SensorTile":
+            case "Sensor":
                 showProperties = true;
                 showRotate = true;
                 showDelete = true;
@@ -899,46 +952,6 @@ public class LayoutCanvas extends JPanel {
             }
         }
         return frame;
-    }
-
-    private void editSelectedTileProperties() {
-        //the first tile should be the selected one
-//        if (this.selectedTiles.size() > 0) {
-//            AbstractTile2 tile = this.selectedTiles.iterator().next();
-//            Logger.trace("Selected Tile: " + tile);
-//            String tt = tile.getClass().getSimpleName();
-//            switch (tt) {
-//            case "StraightTrack":
-//                showRotate = true;
-//                showDelete = true;
-//                break;
-//            case "DiagonalTrack":
-//                showRotate = true;
-//                showDelete = true;
-//                break;
-//                case "FeedbackPort":
-//                    SensorDialog fbd = new SensorDialog(getParentFrame(), true, (SensorTile) tile);
-//                    fbd.setVisible(true);
-//                    break;
-//                case "OccupancyDetector":
-//                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
-//                    osd.setVisible(true);
-//                    break;
-//                case "SignalTile":
-//                    SignalDialog sd = new SignalDialog(getParentFrame(), true, (SignalTile) tile);
-//                    sd.setVisible(true);
-//                    break;
-//                case "TurnoutTile":
-//                    TurnoutDialog td = new TurnoutDialog(getParentFrame(), true, (SwitchTile) tile);
-//                    td.setVisible(true);
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
-        this.executor.execute(() -> repaint());
-        Logger.trace("Edit done");
-
     }
 
     public void rotateSelectedTile() {

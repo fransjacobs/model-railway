@@ -88,6 +88,11 @@ public class MarklinCS3 implements MarklinController {
     private String hardwareVersion;
     private String articleNumber;
 
+    private ChannelDataParser channelData1;
+    private ChannelDataParser channelData2;
+    private ChannelDataParser channelData3;
+    private ChannelDataParser channelData4;
+
     private final List<ControllerEventListener> controllerEventListeners;
 
     private final List<SensorMessageListener> sensorMessageEventListeners;
@@ -330,32 +335,48 @@ public class MarklinCS3 implements MarklinController {
         }
     }
 
-    void getStatusConfig(int index) {
+    void getStatusDataConfig() {
         if (this.connected) {
-            CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(index, gfpUid));
-
+            CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(0, gfpUid));
             StatusDataConfigParser sdcp = new StatusDataConfigParser(message);
 
             Logger.debug(sdcp);
 
             message = sendMessage(CanMessageFactory.statusDataConfig(1, gfpUid));
-            ChannelDataParser cdp = new ChannelDataParser(message);
-            Logger.debug(cdp);
+            channelData1 = new ChannelDataParser(message);
 
             message = sendMessage(CanMessageFactory.statusDataConfig(2, gfpUid));
-            cdp = new ChannelDataParser(message);
-            Logger.debug(cdp);
+            channelData2 = new ChannelDataParser(message);
 
             message = sendMessage(CanMessageFactory.statusDataConfig(3, gfpUid));
-            cdp = new ChannelDataParser(message);
-            Logger.debug(cdp);
+            channelData3 = new ChannelDataParser(message);
 
             message = sendMessage(CanMessageFactory.statusDataConfig(4, gfpUid));
-            cdp = new ChannelDataParser(message);
-            Logger.debug(cdp);
+            channelData4 = new ChannelDataParser(message);
+
+            updateChannelStatuses();
         }
     }
 
+    void updateChannelStatuses() {
+        if (this.connected) {
+            CanMessage message = sendMessage(CanMessageFactory.systemStatus(1, gfpUid));
+            channelData1.parseMessage(message);
+            Logger.trace(channelData1);
+
+            message = sendMessage(CanMessageFactory.systemStatus(2, gfpUid));
+            channelData2.parseMessage(message);
+            Logger.trace(channelData2);
+
+            message = sendMessage(CanMessageFactory.systemStatus(3, gfpUid));
+            channelData3.parseMessage(message);
+            Logger.trace(channelData3);
+
+            message = sendMessage(CanMessageFactory.systemStatus(4, gfpUid));
+            channelData4.parseMessage(message);
+            Logger.trace(channelData1);
+        }
+    }
     //Overload message:
     //0x00 0x01 0x03 0x26 0x06 0x63 0x73 0x45 0x8c 0x0a 0x01 0x00 0x00
     //Event power on
@@ -372,6 +393,7 @@ public class MarklinCS3 implements MarklinController {
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x01 0x00 0x00 0x1e".
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xf0 0x01 0x00 0x00 0x28
     //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xea 0x00 0x01 0xff 0xff
+
     /**
      * Blocking call to the message sender thread which send the message and
      * await the response. When there is no response within 1s the waiting is
@@ -636,15 +658,23 @@ public class MarklinCS3 implements MarklinController {
         if (cs3.isConnected()) {
             Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
 
-            cs3.power(false);
-            cs3.pause(500);
-            Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
-            cs3.power(true);
-            cs3.pause(500);
+            //cs3.power(false);
+            //cs3.pause(500);
+            //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+            //cs3.power(true);
+            //cs3.pause(500);
             Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
 
             //SystemConfiguration data
-            cs3.getStatusConfig(0);
+            cs3.getStatusDataConfig();
+            Logger.debug("Channel 1: "+cs3.channelData1.getChannel().getHumanValue()+" "+cs3.channelData1.getChannel().getUnit());
+            Logger.debug("Channel 2: "+cs3.channelData2.getChannel().getHumanValue()+" "+cs3.channelData2.getChannel().getUnit());
+            Logger.debug("Channel 3: "+cs3.channelData3.getChannel().getHumanValue()+" "+cs3.channelData3.getChannel().getUnit());
+            Logger.debug("Channel 4: "+cs3.channelData4.getChannel().getHumanValue()+" "+cs3.channelData4.getChannel().getUnit());
+//            cs3.getSystemStatus(1);
+//
+//            Logger.debug("Channel 4....");
+//            cs3.getSystemStatus(4);
 
 //Now get the systemstatus for all devices
 //First the status data config must be called to get the channels
@@ -694,9 +724,9 @@ public class MarklinCS3 implements MarklinController {
         //PingResponse pr2 = cs3.memberPing();
         //Logger.info("Query direction of loc 12");
         //DirectionInfo info = cs3.getDirection(12, DecoderType.MM);
-//        cs3.pause(5L);
-        Logger.debug("Wait for 10m");
-        cs3.pause(1000 * 60 * 10);
+        cs3.pause(500L);
+        //Logger.debug("Wait for 10m");
+        //cs3.pause(1000 * 60 * 10);
 
         cs3.disconnect();
         cs3.pause(100L);

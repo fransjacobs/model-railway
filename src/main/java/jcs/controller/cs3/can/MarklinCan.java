@@ -45,17 +45,13 @@ public interface MarklinCan {
 
     public final static int SYSTEM_COMMAND = 0x00;
     public final static int SYSTEM_COMMAND_RESPONSE = 0x01;
-    //public static final int STOP_AND_GO_QUERY_DLC = 0x04;
-    //public static final int STOP_AND_GO_DLC = 0x05;
-
+ 
     public static final int STOP_SUBCMD = 0x00;
     public static final int GO_SUBCMD = 0x01;
     public static final int SUBCMD_IDX = 4;
 
     public final static int LOC_DISCOVERY_COMMAND = 0x01;
-
     public final static int MFX_BIND_COMMAND = 0x04;
-
     public final static int MFX_VERIFY_COMMAND = 0x06;
 
     public final static int LOC_SPEED = 0x08;
@@ -111,11 +107,9 @@ public interface MarklinCan {
     public final static int SW_STATUS_DLC = 0x00;
     public final static int SW_STATUS_REQ = 0x30;
 
-    // after debugging using the Marklin phone app it appears that the command is 0x31...
     public final static int REQ_PING = 0x31;
 
-    public static final int REQ_PING_DLC_QUERY = 0x00;
-    //public static final int REQ_PING_DLC = 0x08;
+    //public static final int REQ_PING_DLC_QUERY = 0x00;
 
     public final static int UPDATE_OFFER = 0x32;
 
@@ -126,8 +120,11 @@ public interface MarklinCan {
     public final static int BOOTLOADER_TRACK_SERVICE = 0x38;
 
     public final static int STATUS_CONFIG = 0x3a;
-    //public final static int STATUS_CONFIG_DLC = 0x05;
+    
+//public final static int STATUS_CONFIG_DLC = 0x05;
+    
     public final static int STATUS_CONFIG_INDEX = 4;
+
     public final static int STATUS_CONFIG_PACKET_COUNT = 5;
 
     public final static int REQUEST_CONFIG_DATA = 0x40;
@@ -138,8 +135,6 @@ public interface MarklinCan {
     public final static int CON_60128_DATA_STREAM = 0x44;
 
     //System Sub commands
-    //public static final int SYSTEM_SUB_STOP = 0x00;
-    //public static final int SYSTEM_SUB_GO = 0x01;
     public static final int SYSTEM_SUB_HALT = 0x02;
 
     public static final int SYSTEM_SUB_LOC_EMERGENCY_STOP = 0x03;
@@ -158,13 +153,14 @@ public interface MarklinCan {
 
     public static final int SYSTEM_SUB_SYS_OVERLOAD = 0x0a;
 
+    public static final int SYSTEM_SUB_STATUS = 0x0b;
+
     public static final int SYSTEM_SUB_SYSTEM_ID = 0x0c;
 
     public static final int SYSTEM_SUB_MFX_SEEK = 0x30;
 
     public static final int SYSTEM_SUB_SYSTEM_RESET = (byte) 0x80;
 
-    public static final int SYSTEM_STOP_AND_GO_DLC = 0x05;
 
     public static final int SYSTEM_RAIL_UNLOCK_DLC = 0x06;
 

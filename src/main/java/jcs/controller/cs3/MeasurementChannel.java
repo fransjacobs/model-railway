@@ -18,6 +18,8 @@
  */
 package jcs.controller.cs3;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -164,6 +166,44 @@ public class MeasurementChannel {
 
     public void setValue(Integer value) {
         this.value = value;
+
+        int digits;
+        String n = this.name;
+        if (n == null) {
+            n = "";
+        }
+        switch (n) {
+            case "MAIN":
+                digits = 3;
+                break;
+            case "PROG":
+                digits = 3;
+                break;
+            case "VOLT":
+                digits = 1;
+                break;
+            case "TEMP":
+                digits = 1;
+                break;
+            default:
+                digits = 0;
+                break;
+        }
+
+        if (this.startValue != null && this.endValue != null && this.rangeRed != null) {
+            double hv = ((this.endValue - this.startValue) / this.rangeRed * this.value) + this.startValue;
+            this.humanValue = round(hv, digits);
+        }
+    }
+
+    private static double round(double value, int places) {
+        if (places < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        BigDecimal bd = new BigDecimal(Double.toString(value));
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 
     public Double getHumanValue() {
@@ -260,7 +300,6 @@ public class MeasurementChannel {
 //    public String toString() {
 //        return "Channel{" + "name=" + name + ", number=" + number + ", humanValue=" + humanValue + ", unit=" + unit + ", scale=" + scale + "}";
 //    }
-
     @Override
     public String toString() {
         return "GFPChannel{" + "unit=" + unit + ", endValue=" + endValue + ", colorYellow=" + colorYellow + ", colorGreen=" + colorGreen + ", colorMax=" + colorMax + ", colorRed=" + colorRed + ", name=" + name + ", number=" + number + ", scale=" + scale + ", rangeYellow=" + rangeYellow + ", rangeGreen=" + rangeGreen + ", rangeMax=" + rangeMax + ", rangeRed=" + rangeRed + ", startValue=" + startValue + ", value=" + value + ", humanValue=" + humanValue + '}';

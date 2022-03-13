@@ -66,6 +66,21 @@ import jcs.trackservice.dao.LocomotiveBeanDAO;
 import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
+import static jcs.entities.enums.Direction.SWITCH;
+import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
+import static jcs.entities.enums.TileType.CURVED;
+import static jcs.entities.enums.TileType.SENSOR;
+import static jcs.entities.enums.TileType.SIGNAL;
+import static jcs.entities.enums.TileType.STRAIGHT;
+import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.Cross;
+import jcs.ui.layout.tiles.Curved;
+import jcs.ui.layout.tiles.Sensor;
+import jcs.ui.layout.tiles.Signal;
+import jcs.ui.layout.tiles.Straight;
+import jcs.ui.layout.tiles.Switch;
 
 public class H2TrackService implements TrackService {
 
@@ -234,6 +249,11 @@ public class H2TrackService implements TrackService {
     @Override
     public SensorBean getSensor(Integer deviceId, Integer contactId) {
         return sensDAO.find(deviceId, contactId);
+    }
+
+    @Override
+    public SensorBean getSensor(BigDecimal id) {
+        return sensDAO.findById(id);
     }
 
     @Override
@@ -534,7 +554,6 @@ public class H2TrackService implements TrackService {
     @Override
     public Set<TileBean> getTiles() {
         Set<TileBean> beans = new HashSet<>();
-
         beans.addAll(this.tileDAO.findAll());
 
         return beans;
@@ -547,7 +566,32 @@ public class H2TrackService implements TrackService {
 
     @Override
     public TileBean persist(TileBean tile) {
+        if (tile.getEntityBean() != null) {
+            TileType tileType = tile.getTileType();
+
+            switch (tileType) {
+                case STRAIGHT:
+                    break;
+                case CURVED:
+                    break;
+                case SWITCH:
+                    break;
+                case CROSS:
+                    break;
+                case SIGNAL:
+                    break;
+                case SENSOR:
+                    SensorBean sensor = (SensorBean) tile.getEntityBean();
+                    tile.setBeanId(this.sensDAO.persist(sensor));
+                    break;
+                case BLOCK:
+                    break;
+                default:
+                    Logger.warn("Unknown Tile Type " + tileType);
+            }
+        }
         this.tileDAO.persist(tile);
+
         return tile;
     }
 
@@ -912,8 +956,6 @@ public class H2TrackService implements TrackService {
     public void removeSensorListener(SensorListener listener) {
         this.sensorListeners.remove(listener);
     }
-    
-    
 
     @Override
     public void addAccessoiryListener(AccessoryListener listener) {

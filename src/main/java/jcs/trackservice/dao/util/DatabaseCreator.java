@@ -155,7 +155,8 @@ public class DatabaseCreator {
                 + "direction    VARCHAR(255) not null,"
                 + "x            INTEGER NOT NULL,"
                 + "y            INTEGER NOT NULL,"
-                + "signalType   VARCHAR(255))");
+                + "signalType   VARCHAR(255),"
+                + "beanid       BIGINT)");
 
         stmt.executeUpdate("ALTER TABLE tiles ADD CONSTRAINT tile_pk PRIMARY KEY ( id )");
         stmt.executeUpdate("CREATE UNIQUE INDEX tiles_x_y_idx on tiles ( x, y )");

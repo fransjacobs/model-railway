@@ -25,6 +25,7 @@ import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.geom.Ellipse2D;
+import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 
@@ -105,4 +106,20 @@ public class Sensor extends Straight implements Tile {
     protected void setIdSeq(int id) {
         idSeq = id;
     }
+
+    public SensorBean getSensorBean() {
+        if (this.tileBean != null && this.tileBean.getEntityBean() != null) {
+            return (SensorBean) this.tileBean.getEntityBean();
+        } else {
+            return null;
+        }
+    }
+
+    public void setSensorBean(SensorBean sensorBean) {
+        if (this.tileBean == null) {
+            this.tileBean = this.getTileBean();
+        }
+        this.tileBean.setEntityBean(sensorBean);
+    }
+
 }
