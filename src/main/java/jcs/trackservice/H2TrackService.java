@@ -38,7 +38,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 import jcs.controller.ControllerEvent;
-import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
@@ -66,6 +65,8 @@ import jcs.trackservice.dao.LocomotiveBeanDAO;
 import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
+import jcs.controller.cs3.events.PowerEvent;
+import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
 import static jcs.entities.enums.TileType.CROSS;
@@ -648,17 +649,17 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void addControllerListener(ControllerEventListener listener) {
-        if (controllerService != null) {
-            //controllerService.addControllerEventListener(listener);
+    public void addPowerEventListener(PowerEventListener listener) {
+        if (this.controllerService != null) {
+            this.controllerService.addPowerEventListener(listener);
         }
     }
 
     @Override
-    public void removeControllerListener(ControllerEventListener listener) {
-//        if (controllerService != null) {
-//            //controllerService.removeControllerEventListener(listener);
-//        }
+    public void removePowerEventListener(PowerEventListener listener) {
+        if (this.controllerService != null) {
+            this.controllerService.removePowerEventListener(listener);
+        }
     }
 
 //    private void broadcastHeartBeatToggle() {
@@ -679,59 +680,22 @@ public class H2TrackService implements TrackService {
 //    public void removeHeartBeatListenerListener(HeartBeatListener listener) {
 //        this.heartBeatListeners.remove(listener);
 //    }
-//    public void feedbackModuleSampleToggle() {
-//        this.fbToggle = !this.fbToggle;
-//        executor.execute(() -> broadcastHeartBeatToggle());
-//    }
-//    @Override
-//    public void powerOff() {
-//        if (this.controllerService != null) {
-//            this.controllerService.powerOff();
-//        }
-//    }
     @Override
     public void switchPower(boolean on) {
         Logger.trace("Switch Power " + (on ? "On" : "Off"));
-
-//        if (this.controllerService != null) {
-//            if(on) {
-//              this.controllerService.powerOn();
-//            } else {
-//               this.controllerService.powerOff(); 
-//            }  
-//        }
+        if (this.controllerService != null) {
+            this.controllerService.power(on);
+        }
     }
 
     @Override
     public boolean isPowerOn() {
-//        if (trpo == null) {
-//            trpo = this.trpoDAO.find(1);
-//        }
         boolean power = false;
         if (this.controllerService != null) {
             power = controllerService.isPower();
         }
 
         return power;
-    }
-
-    void handleControllerEvent(ControllerEvent event) {
-//        Logger.debug(event);
-//        if (event.isPowerOn()) {
-//            this.trpo.On();
-//        } else {
-//            this.trpo.Off();
-//        }
-//
-//        this.trpoDAO.persist(trpo);
-//        notifyControllerListeners(event);
-    }
-
-    private void notifyControllerListeners(ControllerEvent event) {
-//    ControllerEvent ce = new ControllerEvent((controllerService != null), this.controllerHost, this.name, isPower(), isFeedbackSourceAvailable(), feedbackSourceName);
-//    for (ControllerListener listener : this.controllerListeners) {
-//      listener.notify(ce);
-//    }
     }
 
     @Override
@@ -1034,6 +998,21 @@ public class H2TrackService implements TrackService {
                 sl.onChange(sb);
             }
         }
+    }
+
+    private class Powerlistener implements PowerEventListener {
+
+        private final H2TrackService trackService;
+
+        Powerlistener(H2TrackService trackService) {
+            this.trackService = trackService;
+        }
+
+        @Override
+        public void onPowerChange(PowerEvent event) {
+
+        }
+
     }
 
 //    private class ControllerWatchDogListener implements HeartbeatListener {

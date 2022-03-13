@@ -47,7 +47,6 @@ import jcs.controller.cs3.net.HTTPConnection;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
-import jcs.controller.HeartbeatListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.controller.cs3.http.SvgIconToPngIconConverter;
 import jcs.entities.AccessoryBean;
@@ -59,6 +58,8 @@ import jcs.controller.cs3.can.parser.ChannelDataParser;
 import jcs.controller.cs3.devices.GFP;
 import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.CanMessageEvent;
+import jcs.controller.cs3.events.PowerEvent;
+import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.http.DeviceJSONParser;
 import jcs.controller.cs3.net.CS3Connection;
 
@@ -92,7 +93,7 @@ public class MarklinCS3 implements MarklinController {
     private ChannelDataParser channelData3;
     private ChannelDataParser channelData4;
 
-    private final List<ControllerEventListener> controllerEventListeners;
+    private final List<PowerEventListener> powerEventListeners;
 
     private final List<SensorMessageListener> sensorMessageEventListeners;
 
@@ -112,7 +113,7 @@ public class MarklinCS3 implements MarklinController {
         //messageQueue = new LinkedList<>();
         //devices = new HashMap<>();
 
-        controllerEventListeners = new LinkedList<>();
+        powerEventListeners = new LinkedList<>();
         sensorMessageEventListeners = new LinkedList<>();
         executor = Executors.newCachedThreadPool();
 
@@ -394,22 +395,6 @@ public class MarklinCS3 implements MarklinController {
             Logger.trace(channelData1);
         }
     }
-    //Overload message:
-    //0x00 0x01 0x03 0x26 0x06 0x63 0x73 0x45 0x8c 0x0a 0x01 0x00 0x00
-    //Event power on
-    //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x01 0x00 0x00 0x00
-    //
-    //event power off
-    //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x00 0x00 0x00 0x00
-    //feedback events:
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x00 0x01 0xff 0xff".
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x01 0x00 0x00 0x1e".
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x00 0x01 0x00 0x1e".
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x01 0x00 0x00 0x1e".
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x00 0x01 0x00 0x28".
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x00 0x01 0x01 0x00 0x00 0x1e".
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xf0 0x01 0x00 0x00 0x28
-    //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xea 0x00 0x01 0xff 0xff
 
     /**
      * Blocking call to the message sender thread which send the message and
@@ -560,21 +545,21 @@ public class MarklinCS3 implements MarklinController {
 //        }
 //        return cs3Device;
 //    }
-    //@Override
-    public void addControllerEventListener(ControllerEventListener listener) {
-        this.controllerEventListeners.add(listener);
+    @Override
+    public void addPowerEventListener(PowerEventListener listener) {
+        this.powerEventListeners.add(listener);
+    }
+
+    @Override
+    public void removePowerEventListener(PowerEventListener listener) {
+        this.powerEventListeners.remove(listener);
     }
 
     //@Override
-    public void removeControllerEventListener(ControllerEventListener listener) {
-        this.controllerEventListeners.remove(listener);
-    }
-
-    //@Override
-    public void notifyAllControllerEventListeners() {
-        Logger.info("Current Controller Power Status: " + (isPower() ? "On" : "Off") + "...");
-        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPower(), isConnected())));
-    }
+//    public void notifyAllControllerEventListeners() {
+//        Logger.info("Current Controller Power Status: " + (isPower() ? "On" : "Off") + "...");
+//        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPower(), isConnected())));
+//    }
 
     @Override
     public void addSensorMessageListener(SensorMessageListener listener) {
@@ -615,18 +600,13 @@ public class MarklinCS3 implements MarklinController {
         return sel;
     }
 
-    private void notifyControllerEventListeners(ControllerEvent event) {
-        Set<ControllerEventListener> snapshot;
-        synchronized (controllerEventListeners) {
-            if (controllerEventListeners.isEmpty()) {
-                snapshot = new HashSet<>();
-            } else {
-                snapshot = new HashSet<>(controllerEventListeners);
-            }
-        }
+    private void notifyPowerEventListeners(final PowerEvent powerEvent) {
+        executor.execute(() -> fireAllPowerEventListeners(powerEvent));
+    }
 
-        for (ControllerEventListener listener : snapshot) {
-            listener.notify(event);
+    private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
+        for (PowerEventListener listener : powerEventListeners) {
+            listener.onPowerChange(powerEvent);
         }
     }
 
@@ -638,9 +618,15 @@ public class MarklinCS3 implements MarklinController {
 
     private void notifySensorMessageEventListeners(final SensorMessageEvent sensorMessageEvent) {
         executor.execute(() -> fireAllSensorListeners(sensorMessageEvent));
-
     }
 
+    //Overload message:
+    //0x00 0x01 0x03 0x26 0x06 0x63 0x73 0x45 0x8c 0x0a 0x01 0x00 0x00
+    //Event power on
+    //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x01 0x00 0x00 0x00
+    //
+    //event power off
+    //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x00 0x00 0x00 0x00
     private class CanMessageEventListener implements CanMessageListener {
 
         private final MarklinCS3 controller;
@@ -659,12 +645,16 @@ public class MarklinCS3 implements MarklinController {
                     SensorMessageEvent sme = new SensorMessageEvent(msg, canEvent.getEventDate());
                     controller.notifySensorMessageEventListeners(sme);
                     break;
+                case MarklinCan.SYSTEM_COMMAND_RESPONSE:
+                    int subCmd = msg.getSubCommand();
+                    PowerEvent pe = new PowerEvent(msg);
+                    controller.notifyPowerEventListeners(pe);
+                    break;
                 default:
                     //Logger.trace("Message: " + msg);
                     break;
             }
         }
-
     }
 
 //Test

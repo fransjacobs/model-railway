@@ -46,6 +46,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
+import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.net.CS3Connection;
 
 /**
@@ -264,20 +265,12 @@ public class DemoController implements MarklinController {
         return null;
     }
 
-    //@Override
-    public void addControllerEventListener(ControllerEventListener listener) {
-        this.controllerEventListeners.add(listener);
+    @Override
+    public void addPowerEventListener(PowerEventListener listener) {
     }
 
-    //@Override
-    public void removeControllerEventListener(ControllerEventListener listener) {
-        this.controllerEventListeners.remove(listener);
-    }
-
-    //@Override
-    public void notifyAllControllerEventListeners() {
-        Logger.info("Current Controller Power Status: " + (isPower() ? "On" : "Off") + "...");
-        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPower(), isConnected())));
+    @Override
+    public void removePowerEventListener(PowerEventListener listener) {
     }
 
     //@Override

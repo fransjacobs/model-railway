@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.events.CanMessageListener;
+import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.JCSEntity;
 import jcs.entities.JCSProperty;
@@ -48,18 +49,19 @@ import jcs.trackservice.events.SensorListener;
  */
 public interface TrackService {
 
-    //public static final String SERVICE_TYPE = "TrackService";
-    //Track power  
     void switchPower(boolean on);
 
     boolean isPowerOn();
 
-    //Controller
     boolean connect();
 
     boolean isConnected();
 
     void disconnect();
+
+    void addPowerEventListener(PowerEventListener listener);
+
+    void removePowerEventListener(PowerEventListener listener);
 
     //Locomotive 
     List<LocomotiveBean> getLocomotives();
@@ -134,9 +136,9 @@ public interface TrackService {
 
     String getControllerArticleNumber();
 
-    void addControllerListener(ControllerEventListener listener);
-
-    void removeControllerListener(ControllerEventListener listener);
+//    void addControllerListener(ControllerEventListener listener);
+//
+//    void removeControllerListener(ControllerEventListener listener);
 
     List<JCSProperty> getProperties();
 

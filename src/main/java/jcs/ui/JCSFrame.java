@@ -60,9 +60,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import jcs.JCS;
-import jcs.controller.ControllerEvent;
-import jcs.controller.ControllerEventListener;
-import jcs.controller.cs3.can.parser.StatusDataConfigParser;
+import jcs.controller.cs3.events.PowerEvent;
+import jcs.controller.cs3.events.PowerEventListener;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.DisplayLayoutPanel;
 import jcs.ui.layout.LayoutPanel;
@@ -76,7 +75,7 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class JCSFrame extends JFrame implements UICallback {
-
+    
     private final Map<KeyStroke, Action> actionMap;
     //private boolean switchPower = true;
     private final ImageIcon blinkOnIcon;
@@ -84,11 +83,11 @@ public class JCSFrame extends JFrame implements UICallback {
     //private final ImageIcon blinkOffIcon;
     private final ImageIcon blinkErrorIcon;
     private boolean blinkToggle;
-
+    
     private long lastUpdatedMillis;
-
+    
     private Timer checkTimer;
-
+    
     private FeedbackMonitor feedbackMonitor;
 
     /**
@@ -96,29 +95,29 @@ public class JCSFrame extends JFrame implements UICallback {
      */
     public JCSFrame() {
         actionMap = new HashMap<>();
-
+        
         blinkErrorIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-red-24.png"));
         blinkOnIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-green-90-24.png"));
         blinkOnIcon2 = new ImageIcon(ControllerPanel.class.getResource("/media/sync-dark-green-24.png"));
         //blinkOffIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-black-24.png"));
 
         initComponents();
-
+        
         JCS.updateProgress();
-
+        
         if (JCS.isMacOS()) {
             this.quitMI.setVisible(false);
             this.optionsMI.setVisible(false);
             this.toolsMenu.setVisible(false);
         }
-
+        
         init();
         JCS.updateProgress();
-
+        
         initKeyStrokes();
         JCS.updateProgress();
     }
-
+    
     private void init() {
         if (TrackServiceFactory.getTrackService() != null) {
             this.setTitle(this.getTitleString());
@@ -128,48 +127,49 @@ public class JCSFrame extends JFrame implements UICallback {
             if (JCS.isMacOS()) {
                 JCS.showTouchbar(this);
             }
-
+            
             this.locomotivesPanel.loadLocomotives();
-
+            
             setCS3Properties();
-
-            boolean powerOn = TrackServiceFactory.getTrackService().isPowerOn();
-
+            
+            
             feedbackMonitor = new FeedbackMonitor();
 
-            //this.setPowerStatus(powerOn, true);
-            checkTimer = new Timer(1000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-
-                    long now = System.currentTimeMillis();
-                    if (now - lastUpdatedMillis > 2000) {
-                        blinkLbl.setIcon(blinkErrorIcon);
-                    }
-                }
-            });
-
-            checkTimer.setRepeats(true);
-            checkTimer.start();
+//            checkTimer = new Timer(1000, new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent evt) {
+//                    
+//                    long now = System.currentTimeMillis();
+//                    if (now - lastUpdatedMillis > 2000) {
+//                        blinkLbl.setIcon(blinkErrorIcon);
+//                    }
+//                }
+//            });
+//            
+//            checkTimer.setRepeats(true);
+//            checkTimer.start();
 
 //            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
-            TrackServiceFactory.getTrackService().addControllerListener(new ControllerListener(this));
+
+           this.powerButton.setSelected(TrackServiceFactory.getTrackService().isPowerOn());
+
+           TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
 
             //Show the default panel
             showOverviewPanel();
         }
     }
-
+    
     private void initKeyStrokes() {
         KeyStroke key0 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-
+        
         actionMap.put(key0, new AbstractAction("stopAction") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 stop();
             }
         });
-
+        
         KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         kfm.addKeyEventDispatcher((KeyEvent e) -> {
             KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
@@ -184,42 +184,42 @@ public class JCSFrame extends JFrame implements UICallback {
             return false;
         });
     }
-
+    
     public void showOverviewPanel() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "overviewPanel");
         this.overviewPanel.loadLayout();
     }
-
+    
     public void showLocomotives() {
         Logger.debug("Show Locomotives");
     }
-
+    
     public void showTurnouts() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "turnoutsPanel");
     }
-
+    
     public void showSignals() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "signalsPanel");
     }
-
+    
     public void showDiagnostics() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "diagnosticPanel");
     }
-
+    
     public void showDesignLayoutPanel() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "designPanel");
         //this.designPanel.loadLayout();
     }
-
+    
     public void stop() {
         TrackServiceFactory.getTrackService().switchPower(false);
     }
-
+    
     private void setCS3Properties() {
         if (TrackServiceFactory.getTrackService() != null) {
             if (TrackServiceFactory.getTrackService().getControllerName() != null) {
@@ -469,6 +469,7 @@ public class JCSFrame extends JFrame implements UICallback {
         statusPanelRight.setLayout(flowLayout1);
 
         blinkLbl.setIcon(new ImageIcon(getClass().getResource("/media/sync-black-24.png"))); // NOI18N
+        blinkLbl.setDoubleBuffered(true);
         blinkLbl.setName("blinkLbl"); // NOI18N
         statusPanelRight.add(blinkLbl);
 
@@ -720,81 +721,71 @@ public class JCSFrame extends JFrame implements UICallback {
     private void showFeedbackMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorActionPerformed
         this.feedbackMonitor.showMonitor();
     }//GEN-LAST:event_showFeedbackMonitorActionPerformed
-
+    
     private String getTitleString() {
         String jcsVersion = JCS.getVersionInfo().getVersion();
         if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerSerialNumber() != null) {
             //return "JCS " + jcsVersion;
-            return "JCS " + "Connected to "+TrackServiceFactory.getTrackService().getControllerName();
+            return "JCS " + "Connected to " + TrackServiceFactory.getTrackService().getControllerName();
         } else {
             return "JCS " + jcsVersion + " - NOT Connected!";
         }
     }
-
+    
     @Override
     public void openFiles(List<File> files) {
         Logger.trace("Open Files...");
     }
-
+    
     @Override
     public boolean handleQuitRequest() {
         int result = JOptionPane.showConfirmDialog(JCS.getJCSFrame(), "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
         return result == JOptionPane.YES_OPTION;
     }
-
+    
     @Override
     public void handleAbout() {
         ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
         JOptionPane.showMessageDialog(JCS.getJCSFrame(), "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
     }
-
+    
     @Override
     public void handlePreferences() {
         Logger.trace("handlePreferences");
-
+        
         OptionDialog preferencesDialog = new OptionDialog(this, false);
         preferencesDialog.setVisible(true);
-
+        
         Logger.debug("refresh data...");
         this.diagnosticPanel.refreshPanel();
         //this.overviewPanel.refreshPanel();
     }
-
-//    private void setPowerStatus(boolean powerOn, boolean controllerConnected) {
-//
-//        if (powerOn) {
-//            powerBtnOld.setIcon(new ImageIcon(getClass().getResource("/media/power-green-24.png")));
-//        } else {
-//            powerBtnOld.setIcon(new ImageIcon(getClass().getResource("/media/power-red-24.png")));
-//        }
-//
-//        powerBtnOld.setEnabled(controllerConnected);
-//        stopBtn.setEnabled(controllerConnected);
-//    }
+    
     private void toggle() {
         lastUpdatedMillis = System.currentTimeMillis();
         blinkToggle = !blinkToggle;
-
+        
         if (blinkToggle) {
             this.blinkLbl.setIcon(blinkOnIcon);
         } else {
             this.blinkLbl.setIcon(blinkOnIcon2);
         }
     }
-
-    private class ControllerListener implements ControllerEventListener {
-
+    
+    private class Powerlistener implements PowerEventListener {
+        
         private final JCSFrame jcsFrame;
-
-        ControllerListener(JCSFrame frame) {
-            jcsFrame = frame;
+        
+        Powerlistener(JCSFrame jcsFrame) {
+            this.jcsFrame = jcsFrame;
         }
-
+        
         @Override
-        public void notify(ControllerEvent event) {
-//            jcsFrame.setPowerStatus(event.isPowerOn(), event.isConnected());
-            Logger.trace(event);
+        public void onPowerChange(PowerEvent event) {
+            this.jcsFrame.powerButton.setSelected(event.isPower());
+            
         }
+        
     }
 
 //    private class HeartBeat implements HeartBeatListener {
