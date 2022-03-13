@@ -66,7 +66,7 @@ public class ChannelDataParserTest {
         this.channel1.setRangeYellow(600);
         this.channel1.setRangeRed(660);
         this.channel1.setName("MAIN");
-        this.channel1.setHumanValue(5.5);
+        this.channel1.setEndValue(5.5);
         this.channel1.setUnit("A");
 
         chan2 = new CanMessage(new int[]{0x00, 0x3a, 0x37, 0x7f, 0x05, 0x63, 0x73, 0x45, 0x8c, 0x02, 0x00, 0x00, 0x00});
@@ -90,7 +90,7 @@ public class ChannelDataParserTest {
         this.channel2.setRangeYellow(561);
         this.channel2.setRangeRed(759);
         this.channel2.setName("PROG");
-        this.channel2.setHumanValue(2.3);
+        this.channel2.setEndValue(2.3);
         this.channel2.setUnit("A");
 
         chan3 = new CanMessage(new int[]{0x00, 0x3a, 0x37, 0x7f, 0x05, 0x63, 0x73, 0x45, 0x8c, 0x03, 0x00, 0x00, 0x00});
@@ -114,7 +114,7 @@ public class ChannelDataParserTest {
         this.channel3.setRangeYellow(543);
         this.channel3.setRangeRed(659);
         this.channel3.setName("VOLT");
-        this.channel3.setHumanValue(27.0);
+        this.channel3.setEndValue(27.0);
         this.channel3.setUnit("V");
 
         chan4 = new CanMessage(new int[]{0x00, 0x3a, 0x37, 0x7f, 0x05, 0x63, 0x73, 0x45, 0x8c, 0x04, 0x00, 0x00, 0x00});
@@ -137,7 +137,7 @@ public class ChannelDataParserTest {
         this.channel4.setRangeYellow(169);
         this.channel4.setRangeRed(193);
         this.channel4.setName("TEMP");
-        this.channel4.setHumanValue(80.0);
+        this.channel4.setEndValue(80.0);
         this.channel4.setUnit("C");
     }
 
