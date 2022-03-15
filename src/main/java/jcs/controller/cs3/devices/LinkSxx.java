@@ -80,6 +80,14 @@ public class LinkSxx {
         this.identifier = identifier;
     }
 
+    public Integer getDeviceId() {
+        if (this.identifier != null) {
+            return Integer.parseInt(this.identifier.substring(2), 16);
+        } else {
+            return 0;
+        }
+    }
+
     public Integer getType() {
         return type;
     }
@@ -150,27 +158,30 @@ public class LinkSxx {
             return 1;
         } else if (this.sxxBusses.containsKey(busNr)) {
             SxxBus bus = sxxBusses.get(busNr);
-            if (bus.getValue() == null) {
+            if (bus.getLength() == null) {
                 return 0;
             } else {
-                return bus.getValue();
+                return bus.getLength();
             }
         } else {
             return 0;
         }
     }
 
-    //Convenience
-    public int getModuleCount() {
-        int lengthBus0 = getBusLength(0);
-        int lengthBus1 = getBusLength(1);
-        int lengthBus2 = getBusLength(2);
-        int lengthBus3 = getBusLength(3);
-        return (lengthBus0 + lengthBus1 + lengthBus2 + lengthBus3);
-    }
-
-    public int getTotalSensors() {
-        return getModuleCount() * 16;
+    public Integer getContactIdOffset(Integer busNr) {
+        if (busNr == 0) {
+            //the LinkSxx self is 0
+            return 0;
+        } else if (this.sxxBusses.containsKey(busNr)) {
+            SxxBus bus = sxxBusses.get(busNr);
+            if (bus.getLength() == null) {
+                return 0;
+            } else {
+                return bus.getContactIdOffset();
+            }
+        } else {
+            return 0;
+        }
     }
 
     public boolean isPresent() {

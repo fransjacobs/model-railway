@@ -20,6 +20,8 @@ package jcs.controller;
 
 import java.awt.Image;
 import java.util.List;
+import jcs.controller.cs3.devices.GFP;
+import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
@@ -69,5 +71,9 @@ public interface MarklinController {
     Image getLocomotiveImage(String icon);
 
     List<AccessoryBean> getAccessories();
+
+    GFP getGFP();
+
+    LinkSxx getLinkSxx();
 
 }

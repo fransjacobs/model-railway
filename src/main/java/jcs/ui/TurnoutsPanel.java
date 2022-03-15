@@ -70,7 +70,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
             }
 
             this.add(turnoutRowPanel);
-            TrackServiceFactory.getTrackService().addAccessoiryListener(turnoutRowPanel);
+            TrackServiceFactory.getTrackService().addAccessoryListener(turnoutRowPanel);
         }
         GridLayout gl = new GridLayout(rows, cols);
         this.setLayout(gl);

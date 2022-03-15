@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
-import jcs.controller.ControllerEvent;
 import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
@@ -65,7 +64,7 @@ import jcs.trackservice.dao.LocomotiveBeanDAO;
 import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
-import jcs.controller.cs3.events.PowerEvent;
+import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
@@ -289,7 +288,7 @@ public class H2TrackService implements TrackService {
         Logger.debug("Updated " + sml.size() + " Sensor statuses...");
     }
 
-    @Override
+    //@Override
     public void notifyAllSensorListeners() {
         List<SensorBean> sl = this.sensDAO.findAll();
         //Query all sensors
@@ -649,6 +648,15 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
+    public LinkSxx getLinkSxx() {
+        if (this.controllerService != null) {
+            return this.controllerService.getLinkSxx();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public void addPowerEventListener(PowerEventListener listener) {
         if (this.controllerService != null) {
             this.controllerService.addPowerEventListener(listener);
@@ -662,24 +670,6 @@ public class H2TrackService implements TrackService {
         }
     }
 
-//    private void broadcastHeartBeatToggle() {
-//        Set<HeartBeatListener> snapshot;
-//        synchronized (heartBeatListeners) {
-//            snapshot = new HashSet<>(heartBeatListeners);
-//        }
-//
-//        for (HeartBeatListener listener : snapshot) {
-//            listener.toggle();
-//        }
-//    }
-//    @Override
-//    public void addHeartBeatListener(HeartBeatListener listener) {
-//        this.heartBeatListeners.add(listener);
-//    }
-//    @Override
-//    public void removeHeartBeatListenerListener(HeartBeatListener listener) {
-//        this.heartBeatListeners.remove(listener);
-//    }
     @Override
     public void switchPower(boolean on) {
         Logger.trace("Switch Power " + (on ? "On" : "Off"));
@@ -923,26 +913,26 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public void addAccessoiryListener(AccessoryListener listener) {
+    public void addAccessoryListener(AccessoryListener listener) {
 //        this.accessoiryListeners.add(listener);
     }
 
     @Override
-    public void removeAccessoiryListener(AccessoryListener listener) {
+    public void removeAccessoryListener(AccessoryListener listener) {
 //        this.accessoiryListeners.remove(listener);
     }
 
     @Override
-    public void removeAllAccessoiryListeners() {
+    public void removeAllAccessoryListeners() {
 //        this.accessoiryListeners.clear();
     }
 
-    @Override
+    //@Override
     public void addPersistedEventListener(PersistedEventListener listener) {
 //        this.persistListeners.add(listener);
     }
 
-    @Override
+    //@Override
     public void removePersistedEventListener(PersistedEventListener listener) {
 //        this.persistListeners.remove(listener);
     }
@@ -957,13 +947,13 @@ public class H2TrackService implements TrackService {
 //        this.locomotiveListeners.remove(listener);
     }
 
-    @Override
+    //@Override
     public void removeAllLocomotiveListeners() {
 //        this.locomotiveListeners.clear();
     }
 
-    @Override
-    public void notifyAllAccessoiryListeners() {
+    //@Override
+    public void notifyAllAccessoryListeners() {
 
 //        List<SignalBean> signals = this.getSignals();
 //        List<SwitchBean> turnouts = this.getSwitches();
@@ -1000,21 +990,19 @@ public class H2TrackService implements TrackService {
         }
     }
 
-    private class Powerlistener implements PowerEventListener {
-
-        private final H2TrackService trackService;
-
-        Powerlistener(H2TrackService trackService) {
-            this.trackService = trackService;
-        }
-
-        @Override
-        public void onPowerChange(PowerEvent event) {
-
-        }
-
-    }
-
+//    private class Powerlistener implements PowerEventListener {
+//
+//        private final H2TrackService trackService;
+//
+//        Powerlistener(H2TrackService trackService) {
+//            this.trackService = trackService;
+//        }
+//
+//        @Override
+//        public void onPowerChange(PowerEvent event) {
+//
+//        }
+//    }
 //    private class ControllerWatchDogListener implements HeartbeatListener {
 //
 //        @Override

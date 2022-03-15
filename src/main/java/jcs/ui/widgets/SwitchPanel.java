@@ -130,7 +130,7 @@ public class SwitchPanel extends JPanel {
         }
 
         AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-        TrackServiceFactory.getTrackService().addAccessoiryListener(asl);
+        TrackServiceFactory.getTrackService().addAccessoryListener(asl);
     }
 
     /**

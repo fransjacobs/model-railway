@@ -26,15 +26,11 @@ import java.awt.Image;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import jcs.controller.ControllerEvent;
-import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.CanMessageFactory;
 import static jcs.controller.cs3.can.MarklinCan.FUNCTION_OFF;
@@ -57,6 +53,7 @@ import jcs.controller.cs3.can.MarklinCan;
 import jcs.controller.cs3.can.parser.ChannelDataParser;
 import jcs.controller.cs3.devices.GFP;
 import jcs.controller.cs3.devices.LinkSxx;
+import jcs.controller.cs3.devices.SxxBus;
 import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.PowerEvent;
 import jcs.controller.cs3.events.PowerEventListener;
@@ -165,7 +162,7 @@ public class MarklinCS3 implements MarklinController {
     public final boolean connect() {
         if (!connected) {
             Logger.trace("Connecting to CS3...");
-            //Obtain some info from the CS 3 connected to
+            //Obtain some info from the CS 3 connected to...
             getAppDevices();
 
             CS3Connection cs3Connection = CS3ConnectionFactory.getConnection();
@@ -233,14 +230,27 @@ public class MarklinCS3 implements MarklinController {
             Logger.trace("GFP id: " + this.gfp.getIdentifier());
 
             Logger.trace("LinkSxx uid: " + this.linkSxx.getUid());
-            Logger.trace("LinkSxx id: " + this.linkSxx.getIdentifier());
+            Logger.trace("LinkSxx id: " + this.linkSxx.getIdentifier()+" deviceId: "+this.linkSxx.getDeviceId());
             Logger.trace("LinkSxx serial: " + this.linkSxx.getSerialNumber());
             Logger.trace("LinkSxx version: " + this.linkSxx.getVersion());
-            Logger.trace("LinkSxx sensors: " + this.linkSxx.getTotalSensors());
+
+            for (SxxBus b : this.linkSxx.getSxxBusses().values()) {
+                Logger.trace(b);
+            }
+
         } else {
             Logger.warn("Not Connected with CS 3!");
         }
+    }
 
+    @Override
+    public GFP getGFP() {
+        return this.gfp;
+    }
+
+    @Override
+    public LinkSxx getLinkSxx() {
+        return this.linkSxx;
     }
 
     /**
@@ -555,12 +565,6 @@ public class MarklinCS3 implements MarklinController {
         this.powerEventListeners.remove(listener);
     }
 
-    //@Override
-//    public void notifyAllControllerEventListeners() {
-//        Logger.info("Current Controller Power Status: " + (isPower() ? "On" : "Off") + "...");
-//        executor.execute(() -> notifyControllerEventListeners(new ControllerEvent(isPower(), isConnected())));
-//    }
-
     @Override
     public void addSensorMessageListener(SensorMessageListener listener) {
         this.sensorMessageEventListeners.add(listener);
@@ -571,15 +575,6 @@ public class MarklinCS3 implements MarklinController {
         this.sensorMessageEventListeners.remove(listener);
     }
 
-//    public SensorMessageEvent querySensor(int contactId) {
-//        CanMessage msg = null;//sendMessage(CanMessageFactory.querySensor(contactId));
-//        CanMessage resp = msg.getResponse();
-//        if (resp.isResponseFor(msg)) {
-//            return new SensorMessageEvent(msg);
-//        } else {
-//            return null;
-//        }
-//    }
     //@Override
     public List<SensorMessageEvent> querySensors(int sensorCount) {
         Logger.trace("Query Contacts from 1 until: " + sensorCount);
@@ -646,7 +641,7 @@ public class MarklinCS3 implements MarklinController {
                     controller.notifySensorMessageEventListeners(sme);
                     break;
                 case MarklinCan.SYSTEM_COMMAND_RESPONSE:
-                    int subCmd = msg.getSubCommand();
+                    //int subCmd = msg.getSubCommand();
                     PowerEvent pe = new PowerEvent(msg);
                     controller.notifyPowerEventListeners(pe);
                     break;

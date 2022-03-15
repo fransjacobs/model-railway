@@ -112,7 +112,7 @@ public class DeviceJSONParser {
                 b.setType(bussesArray.getJSONObject(i).getInt("typ"));
             }
             if (bussesArray.getJSONObject(i).has("wert")) {
-                b.setValue(bussesArray.getJSONObject(i).getInt("wert"));
+                b.setLength(bussesArray.getJSONObject(i).getInt("wert"));
             }
 
             if (j != i) {

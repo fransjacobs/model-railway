@@ -46,6 +46,8 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
+import jcs.controller.cs3.devices.GFP;
+import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.net.CS3Connection;
 
@@ -352,6 +354,16 @@ public class DemoController implements MarklinController {
         for (ControllerEventListener listener : snapshot) {
             listener.notify(event);
         }
+    }
+
+    @Override
+    public GFP getGFP() {
+        return null;
+    }
+
+    @Override
+    public LinkSxx getLinkSxx() {
+        return null;
     }
 
     //@Override

@@ -71,7 +71,7 @@ public class SignalsPanel extends javax.swing.JPanel {
             }
 
             this.add(signalRowPanel);
-            TrackServiceFactory.getTrackService().addAccessoiryListener(signalRowPanel);
+            TrackServiceFactory.getTrackService().addAccessoryListener(signalRowPanel);
         }
         GridLayout gl = new GridLayout(rows, cols);
         this.setLayout(gl);

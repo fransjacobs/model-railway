@@ -22,7 +22,7 @@ import java.awt.Image;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
-import jcs.controller.ControllerEventListener;
+import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.AccessoryBean;
@@ -91,22 +91,18 @@ public interface TrackService {
 
     void switchAccessory(AccessoryValue value, AccessoryBean accessory);
 
-    void addAccessoiryListener(AccessoryListener listener);
+    void addAccessoryListener(AccessoryListener listener);
 
-    void removeAccessoiryListener(AccessoryListener listener);
+    void removeAccessoryListener(AccessoryListener listener);
 
-    void removeAllAccessoiryListeners();
+    void removeAllAccessoryListeners();
 
-    void notifyAllAccessoiryListeners();
-
-    //void addHeartBeatListener(HeartBeatListener listener);
-    //void removeHeartBeatListenerListener(HeartBeatListener listener);
+    //void notifyAllAccessoryListeners();
     void addSensorListener(SensorListener listener);
 
     void removeSensorListener(SensorListener listener);
 
-    void notifyAllSensorListeners();
-
+    //void notifyAllSensorListeners();
     //Sensors
     List<SensorBean> getSensors();
 
@@ -116,16 +112,13 @@ public interface TrackService {
 
     SensorBean persist(SensorBean sensor);
 
-    void addPersistedEventListener(PersistedEventListener listener);
-
-    void removePersistedEventListener(PersistedEventListener listener);
-
+    //void addPersistedEventListener(PersistedEventListener listener);
+    //void removePersistedEventListener(PersistedEventListener listener);
     void addLocomotiveListener(LocomotiveListener listener);
 
     void removeLocomotiveListener(LocomotiveListener listener);
 
-    void removeAllLocomotiveListeners();
-
+    //void removeAllLocomotiveListeners();
     //Generic remove for Loco/accessory/feedback
     void remove(JCSEntity entity);
 
@@ -136,9 +129,7 @@ public interface TrackService {
 
     String getControllerArticleNumber();
 
-//    void addControllerListener(ControllerEventListener listener);
-//
-//    void removeControllerListener(ControllerEventListener listener);
+    LinkSxx getLinkSxx();
 
     List<JCSProperty> getProperties();
 

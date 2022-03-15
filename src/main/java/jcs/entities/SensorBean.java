@@ -147,23 +147,23 @@ public class SensorBean implements JCSEntity, Serializable {
         return this.previousStatus > 0;
     }
 
-    public static Integer calculateModuleNumber(int contactId) {
-        int module = (contactId - 1) / 16 + 1;
-        return module;
-    }
+//    public static Integer calculateModuleNumber(int contactId) {
+//        int module = (contactId - 1) / 16 + 1;
+//        return module;
+//    }
 
-    public static int calculatePortNumber(int contactId) {
-        int module = (contactId - 1) / 16 + 1;
-        int mport = contactId - (module - 1) * 16;
-        return mport;
-    }
+//    public static int calculatePortNumber(int contactId) {
+//        int module = (contactId - 1) / 16 + 1;
+//        int mport = contactId - (module - 1) * 16;
+//        return mport;
+//    }
 
-    public static int calculateContactId(int module, int port) {
-        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
-        module = module - 1;
-        int contactId = module * 16;
-        return contactId + port;
-    }
+//    public static int calculateContactId(int module, int port) {
+//        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
+//        module = module - 1;
+//        int contactId = module * 16;
+//        return contactId + port;
+//    }
 
     @Override
     public int hashCode() {

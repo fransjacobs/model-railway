@@ -317,7 +317,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
             SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
             f.add(signalRowPanel);
 
-            TrackServiceFactory.getTrackService().addAccessoiryListener(signalRowPanel);
+            TrackServiceFactory.getTrackService().addAccessoryListener(signalRowPanel);
         }
 
         f.pack();

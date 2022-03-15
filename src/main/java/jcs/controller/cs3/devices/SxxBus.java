@@ -32,7 +32,7 @@ public class SxxBus {
     private Integer number;
     private Integer startValue;
     private Integer type;
-    private Integer value;
+    private Integer length;
 
     public Integer getEndValue() {
         return endValue;
@@ -82,12 +82,20 @@ public class SxxBus {
         this.type = type;
     }
 
-    public Integer getValue() {
-        return value;
+    public Integer getLength() {
+        return length;
     }
 
-    public void setValue(Integer value) {
-        this.value = value;
+    public void setLength(Integer length) {
+        this.length = length;
+    }
+
+    public Integer getContactIdOffset() {
+        if (this.number != null) {
+            return (this.number - 1) * 1000;
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -99,7 +107,7 @@ public class SxxBus {
         hash = 71 * hash + Objects.hashCode(this.number);
         hash = 71 * hash + Objects.hashCode(this.startValue);
         hash = 71 * hash + Objects.hashCode(this.type);
-        hash = 71 * hash + Objects.hashCode(this.value);
+        hash = 71 * hash + Objects.hashCode(this.length);
         return hash;
     }
 
@@ -133,12 +141,12 @@ public class SxxBus {
         if (!Objects.equals(this.type, other.type)) {
             return false;
         }
-        return Objects.equals(this.value, other.value);
+        return Objects.equals(this.length, other.length);
     }
 
     @Override
     public String toString() {
-        return "SxxBus{" + "name=" + name + ", value=" + value + '}';
+        return "SxxBus{" + "name: " + name + ", number: " + number +", length: " + length+ ", contactIdOffset: "+getContactIdOffset()+"}";
     }
 
 }

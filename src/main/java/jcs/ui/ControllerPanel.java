@@ -31,8 +31,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.BadLocationException;
-import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs3.devices.LinkSxx;
+import jcs.controller.cs3.devices.SxxBus;
 import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.trackservice.TrackServiceFactory;
@@ -47,7 +48,7 @@ import org.tinylog.Logger;
  */
 public class ControllerPanel extends JPanel {
 
-       /**
+    /**
      * Creates new form FeedbackMonitorPanel
      */
     public ControllerPanel() {
@@ -56,9 +57,123 @@ public class ControllerPanel extends JPanel {
     }
 
     private void postInit() {
-        if (TrackServiceFactory.getTrackService() != null) {
-//            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
+        if (1==2 && TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getLinkSxx() != null) {
 
+            //feedbackPanel1 - 8
+            //TODO CS3 plus has its own feedback port.
+            //Should do this dynamicly so remoe the curren feddbackpannels first
+            
+            //Inti code....
+            feedback0to3Panel = new JPanel();
+            feedbackPanel0 = new FeedbackPanel(1);
+            feedbackPanel1 = new FeedbackPanel(2);
+            feedbackPanel2 = new FeedbackPanel(3);
+            feedbackPanel3 = new FeedbackPanel(4);
+
+            feedback4to7Panel = new JPanel();
+            feedbackPanel4 = new FeedbackPanel(5);
+            feedbackPanel5 = new FeedbackPanel(6);
+            feedbackPanel6 = new FeedbackPanel(7);
+            feedbackPanel7 = new FeedbackPanel(8);
+            feedbackTPjTabbedPane2.setToolTipText("");
+            feedbackTPjTabbedPane2.setMinimumSize(new Dimension(885, 140));
+            feedbackTPjTabbedPane2.setName("feedbackTPjTabbedPane2"); // NOI18N
+            feedbackTPjTabbedPane2.setPreferredSize(new Dimension(885, 140));
+
+            feedback0to3Panel.setMinimumSize(new Dimension(885, 140));
+            feedback0to3Panel.setName("feedback0to3Panel"); // NOI18N
+            feedback0to3Panel.setPreferredSize(new Dimension(885, 140));
+            feedback0to3Panel.setLayout(new GridLayout(1, 4));
+
+            feedbackPanel0.setName("feedbackPanel0"); // NOI18N
+            feedbackPanel0.setTitle("Module - 1");
+            feedback0to3Panel.add(feedbackPanel0);
+
+            feedbackPanel1.setModuleNumber(2);
+            feedbackPanel1.setName("feedbackPanel1"); // NOI18N
+            feedbackPanel1.setTitle("Module - 2");
+            feedback0to3Panel.add(feedbackPanel1);
+
+            feedbackPanel2.setModuleNumber(3);
+            feedbackPanel2.setName("feedbackPanel2"); // NOI18N
+            feedbackPanel2.setTitle("Module - 3");
+            feedback0to3Panel.add(feedbackPanel2);
+
+            feedbackPanel3.setModuleNumber(4);
+            feedbackPanel3.setName("feedbackPanel3"); // NOI18N
+            feedbackPanel3.setTitle("Module - 4");
+            feedback0to3Panel.add(feedbackPanel3);
+
+            feedbackTPjTabbedPane2.addTab("1 - 4", feedback0to3Panel);
+
+            feedback4to7Panel.setMinimumSize(new Dimension(885, 140));
+            feedback4to7Panel.setName("feedback4to7Panel"); // NOI18N
+            feedback4to7Panel.setPreferredSize(new Dimension(885, 140));
+            feedback4to7Panel.setLayout(new GridLayout(1, 3));
+
+            feedbackPanel4.setModuleNumber(5);
+            feedbackPanel4.setName("feedbackPanel4"); // NOI18N
+            feedbackPanel4.setTitle("Module - 5");
+            feedback4to7Panel.add(feedbackPanel4);
+
+            feedbackPanel5.setModuleNumber(6);
+            feedbackPanel5.setName("feedbackPanel5"); // NOI18N
+            feedbackPanel5.setTitle("Module - 6");
+            feedback4to7Panel.add(feedbackPanel5);
+
+            feedbackPanel6.setModuleNumber(7);
+            feedbackPanel6.setName("feedbackPanel6"); // NOI18N
+            feedbackPanel6.setTitle("Module - 7");
+            feedback4to7Panel.add(feedbackPanel6);
+
+            feedbackPanel7.setModuleNumber(8);
+            feedbackPanel7.setName("feedbackPanel7"); // NOI18N
+            feedbackPanel7.setTitle("Module - 8");
+            feedback4to7Panel.add(feedbackPanel7);
+
+            feedbackTPjTabbedPane2.addTab("5 - 8", feedback4to7Panel);
+
+            topPanel.add(feedbackTPjTabbedPane2, BorderLayout.PAGE_START);
+
+            LinkSxx linkSxx = TrackServiceFactory.getTrackService().getLinkSxx();
+
+            this.feedbackPanel0.setContactIdOffset(0);
+            this.feedbackPanel0.setDeviceId(linkSxx.getDeviceId());
+            this.feedbackPanel0.setTitle("LinkSxx Bus 0 Module 1");
+
+            //LinkSxx has 3 busses
+            //Bus 1
+            int bus1Length = linkSxx.getBusLength(1);
+            int bus1Offset = linkSxx.getContactIdOffset(1);
+
+            int modcnt = 1;
+            int pancnt = 1;
+            if (modcnt < bus1Length) {
+                this.feedbackPanel1.setModuleNumber(modcnt);
+                this.feedbackPanel1.setContactIdOffset(bus1Offset);
+                this.feedbackPanel1.setDeviceId(linkSxx.getDeviceId());
+                this.feedbackPanel1.setTitle("LinkSxx Bus 1 Module " + modcnt);
+                modcnt++;
+                pancnt++;
+            }
+            //if(modcnt < bus1Length) {
+
+            int bus2Length = linkSxx.getBusLength(2);
+            int bus2Offset = linkSxx.getContactIdOffset(2);
+            int bus3Length = linkSxx.getBusLength(3);
+            int bus3Offset = linkSxx.getContactIdOffset(3);
+
+            //we have pannels 2 - 8
+            // allocate pannel2 to bus 2
+            for (SxxBus b : TrackServiceFactory.getTrackService().getLinkSxx().getSxxBusses().values()) {
+                Logger.trace("check " + b);
+                int lenght = b.getLength();
+                int offset = b.getContactIdOffset();
+                int number = b.getNumber();
+
+            }
+
+//            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
 //            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
             TrackServiceFactory.getTrackService().addMessageListener(new LogTextAreaHandler(this.logArea));
         }
@@ -186,16 +301,16 @@ public class ControllerPanel extends JPanel {
 
         topPanel = new JPanel();
         feedbackTPjTabbedPane2 = new JTabbedPane();
-        feedback1to3Panel = new JPanel();
-        feedbackPanel1 = new FeedbackPanel(1);
-        feedbackPanel2 = new FeedbackPanel(2);
-        feedbackPanel3 = new FeedbackPanel(3);
-        feedbackPanel4 = new FeedbackPanel(4);
-        feedback4to6Panel = new JPanel();
-        feedbackPanel5 = new FeedbackPanel(5);
-        feedbackPanel6 = new FeedbackPanel(6);
-        feedbackPanel7 = new FeedbackPanel(7);
-        feedbackPanel8 = new FeedbackPanel(8);
+        feedback0to3Panel = new JPanel();
+        feedbackPanel0 = new FeedbackPanel(1);
+        feedbackPanel1 = new FeedbackPanel(2);
+        feedbackPanel2 = new FeedbackPanel(3);
+        feedbackPanel3 = new FeedbackPanel(4);
+        feedback4to7Panel = new JPanel();
+        feedbackPanel4 = new FeedbackPanel(5);
+        feedbackPanel5 = new FeedbackPanel(6);
+        feedbackPanel6 = new FeedbackPanel(7);
+        feedbackPanel7 = new FeedbackPanel(8);
         centerPanel = new JPanel();
         keyboardTP = new JTabbedPane();
         keyboardsPanel = new JPanel();
@@ -237,58 +352,58 @@ public class ControllerPanel extends JPanel {
         feedbackTPjTabbedPane2.setName("feedbackTPjTabbedPane2"); // NOI18N
         feedbackTPjTabbedPane2.setPreferredSize(new Dimension(885, 140));
 
-        feedback1to3Panel.setMinimumSize(new Dimension(885, 140));
-        feedback1to3Panel.setName("feedback1to3Panel"); // NOI18N
-        feedback1to3Panel.setPreferredSize(new Dimension(885, 140));
-        feedback1to3Panel.setLayout(new GridLayout(1, 4));
+        feedback0to3Panel.setMinimumSize(new Dimension(885, 140));
+        feedback0to3Panel.setName("feedback0to3Panel"); // NOI18N
+        feedback0to3Panel.setPreferredSize(new Dimension(885, 140));
+        feedback0to3Panel.setLayout(new GridLayout(1, 4));
 
+        feedbackPanel0.setName("feedbackPanel0"); // NOI18N
+        feedbackPanel0.setTitle("Module - 1");
+        feedback0to3Panel.add(feedbackPanel0);
+
+        feedbackPanel1.setModuleNumber(2);
         feedbackPanel1.setName("feedbackPanel1"); // NOI18N
-        feedbackPanel1.setTitle("Module - 1");
-        feedback1to3Panel.add(feedbackPanel1);
+        feedbackPanel1.setTitle("Module - 2");
+        feedback0to3Panel.add(feedbackPanel1);
 
-        feedbackPanel2.setModuleNumber(2);
+        feedbackPanel2.setModuleNumber(3);
         feedbackPanel2.setName("feedbackPanel2"); // NOI18N
-        feedbackPanel2.setTitle("Module - 2");
-        feedback1to3Panel.add(feedbackPanel2);
+        feedbackPanel2.setTitle("Module - 3");
+        feedback0to3Panel.add(feedbackPanel2);
 
-        feedbackPanel3.setModuleNumber(3);
+        feedbackPanel3.setModuleNumber(4);
         feedbackPanel3.setName("feedbackPanel3"); // NOI18N
-        feedbackPanel3.setTitle("Module - 3");
-        feedback1to3Panel.add(feedbackPanel3);
+        feedbackPanel3.setTitle("Module - 4");
+        feedback0to3Panel.add(feedbackPanel3);
 
-        feedbackPanel4.setModuleNumber(4);
+        feedbackTPjTabbedPane2.addTab("1 - 4", feedback0to3Panel);
+
+        feedback4to7Panel.setMinimumSize(new Dimension(885, 140));
+        feedback4to7Panel.setName("feedback4to7Panel"); // NOI18N
+        feedback4to7Panel.setPreferredSize(new Dimension(885, 140));
+        feedback4to7Panel.setLayout(new GridLayout(1, 3));
+
+        feedbackPanel4.setModuleNumber(5);
         feedbackPanel4.setName("feedbackPanel4"); // NOI18N
-        feedbackPanel4.setTitle("Module - 4");
-        feedback1to3Panel.add(feedbackPanel4);
+        feedbackPanel4.setTitle("Module - 5");
+        feedback4to7Panel.add(feedbackPanel4);
 
-        feedbackTPjTabbedPane2.addTab("1 - 4", feedback1to3Panel);
-
-        feedback4to6Panel.setMinimumSize(new Dimension(885, 140));
-        feedback4to6Panel.setName("feedback4to6Panel"); // NOI18N
-        feedback4to6Panel.setPreferredSize(new Dimension(885, 140));
-        feedback4to6Panel.setLayout(new GridLayout(1, 3));
-
-        feedbackPanel5.setModuleNumber(5);
+        feedbackPanel5.setModuleNumber(6);
         feedbackPanel5.setName("feedbackPanel5"); // NOI18N
-        feedbackPanel5.setTitle("Module - 5");
-        feedback4to6Panel.add(feedbackPanel5);
+        feedbackPanel5.setTitle("Module - 6");
+        feedback4to7Panel.add(feedbackPanel5);
 
-        feedbackPanel6.setModuleNumber(6);
+        feedbackPanel6.setModuleNumber(7);
         feedbackPanel6.setName("feedbackPanel6"); // NOI18N
-        feedbackPanel6.setTitle("Module - 6");
-        feedback4to6Panel.add(feedbackPanel6);
+        feedbackPanel6.setTitle("Module - 7");
+        feedback4to7Panel.add(feedbackPanel6);
 
-        feedbackPanel7.setModuleNumber(7);
+        feedbackPanel7.setModuleNumber(8);
         feedbackPanel7.setName("feedbackPanel7"); // NOI18N
-        feedbackPanel7.setTitle("Module - 7");
-        feedback4to6Panel.add(feedbackPanel7);
+        feedbackPanel7.setTitle("Module - 8");
+        feedback4to7Panel.add(feedbackPanel7);
 
-        feedbackPanel8.setModuleNumber(8);
-        feedbackPanel8.setName("feedbackPanel8"); // NOI18N
-        feedbackPanel8.setTitle("Module - 8");
-        feedback4to6Panel.add(feedbackPanel8);
-
-        feedbackTPjTabbedPane2.addTab("5 - 8", feedback4to6Panel);
+        feedbackTPjTabbedPane2.addTab("5 - 8", feedback4to7Panel);
 
         topPanel.add(feedbackTPjTabbedPane2, BorderLayout.PAGE_START);
 
@@ -416,8 +531,9 @@ public class ControllerPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPanel centerPanel;
-    private JPanel feedback1to3Panel;
-    private JPanel feedback4to6Panel;
+    private JPanel feedback0to3Panel;
+    private JPanel feedback4to7Panel;
+    private FeedbackPanel feedbackPanel0;
     private FeedbackPanel feedbackPanel1;
     private FeedbackPanel feedbackPanel2;
     private FeedbackPanel feedbackPanel3;
@@ -425,7 +541,6 @@ public class ControllerPanel extends JPanel {
     private FeedbackPanel feedbackPanel5;
     private FeedbackPanel feedbackPanel6;
     private FeedbackPanel feedbackPanel7;
-    private FeedbackPanel feedbackPanel8;
     private JTabbedPane feedbackTPjTabbedPane2;
     private JTabbedPane keyboardTP;
     private JPanel keyboardsPanel;
