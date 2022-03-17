@@ -135,22 +135,6 @@ public class JCSFrame extends JFrame implements UICallback {
             
             feedbackMonitor = new FeedbackMonitor();
 
-//            checkTimer = new Timer(1000, new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent evt) {
-//                    
-//                    long now = System.currentTimeMillis();
-//                    if (now - lastUpdatedMillis > 2000) {
-//                        blinkLbl.setIcon(blinkErrorIcon);
-//                    }
-//                }
-//            });
-//            
-//            checkTimer.setRepeats(true);
-//            checkTimer.start();
-
-//            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
-
            this.powerButton.setSelected(TrackServiceFactory.getTrackService().isPowerOn());
 
            TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
@@ -208,12 +192,13 @@ public class JCSFrame extends JFrame implements UICallback {
     public void showDiagnostics() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "diagnosticPanel");
+        
     }
     
     public void showDesignLayoutPanel() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "designPanel");
-        //this.designPanel.loadLayout();
+        this.layoutPanel.loadLayout();
     }
     
     public void stop() {
@@ -293,10 +278,11 @@ public class JCSFrame extends JFrame implements UICallback {
         optionsMI = new JMenuItem();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        setBounds(new Rectangle(0, 0, 1200, 900));
-        setMinimumSize(new Dimension(1200, 900));
+        setBounds(new Rectangle(0, 0, 1400, 900));
+        setMinimumSize(new Dimension(1250, 900));
         setName("JCSFrame"); // NOI18N
-        setSize(new Dimension(1200, 900));
+        setPreferredSize(new Dimension(1250, 950));
+        setSize(new Dimension(1250, 950));
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent evt) {
                 formWindowClosing(evt);
@@ -479,7 +465,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
         mainPanel.setMinimumSize(new Dimension(1050, 900));
         mainPanel.setName("mainPanel"); // NOI18N
-        mainPanel.setPreferredSize(new Dimension(1050, 850));
+        mainPanel.setPreferredSize(new Dimension(1250, 850));
         mainPanel.setLayout(new BorderLayout());
 
         locoDisplaySP.setDividerLocation(230);
@@ -489,7 +475,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
         centerPanel.setMinimumSize(new Dimension(1000, 900));
         centerPanel.setName("centerPanel"); // NOI18N
-        centerPanel.setPreferredSize(new Dimension(885, 900));
+        centerPanel.setPreferredSize(new Dimension(1010, 900));
         centerPanel.setLayout(new CardLayout());
 
         settingsPanel.setMinimumSize(new Dimension(1000, 750));
@@ -757,7 +743,7 @@ public class JCSFrame extends JFrame implements UICallback {
         preferencesDialog.setVisible(true);
         
         Logger.debug("refresh data...");
-        this.diagnosticPanel.refreshPanel();
+        //this.diagnosticPanel.refreshPanel();
         //this.overviewPanel.refreshPanel();
     }
     

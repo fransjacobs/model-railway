@@ -21,7 +21,9 @@ package jcs.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -33,11 +35,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.text.BadLocationException;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.devices.LinkSxx;
-import jcs.controller.cs3.devices.SxxBus;
 import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.trackservice.TrackServiceFactory;
-import jcs.trackservice.events.HeartBeatListener;
 import jcs.ui.widgets.FeedbackPanel;
 import jcs.ui.widgets.SwitchPanel;
 import org.tinylog.Logger;
@@ -56,131 +56,107 @@ public class ControllerPanel extends JPanel {
         postInit();
     }
 
-    private void postInit() {
-        if (1==2 && TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getLinkSxx() != null) {
-
-            //feedbackPanel1 - 8
-            //TODO CS3 plus has its own feedback port.
-            //Should do this dynamicly so remoe the curren feddbackpannels first
-            
-            //Inti code....
-            feedback0to3Panel = new JPanel();
-            feedbackPanel0 = new FeedbackPanel(1);
-            feedbackPanel1 = new FeedbackPanel(2);
-            feedbackPanel2 = new FeedbackPanel(3);
-            feedbackPanel3 = new FeedbackPanel(4);
-
-            feedback4to7Panel = new JPanel();
-            feedbackPanel4 = new FeedbackPanel(5);
-            feedbackPanel5 = new FeedbackPanel(6);
-            feedbackPanel6 = new FeedbackPanel(7);
-            feedbackPanel7 = new FeedbackPanel(8);
-            feedbackTPjTabbedPane2.setToolTipText("");
-            feedbackTPjTabbedPane2.setMinimumSize(new Dimension(885, 140));
-            feedbackTPjTabbedPane2.setName("feedbackTPjTabbedPane2"); // NOI18N
-            feedbackTPjTabbedPane2.setPreferredSize(new Dimension(885, 140));
-
-            feedback0to3Panel.setMinimumSize(new Dimension(885, 140));
-            feedback0to3Panel.setName("feedback0to3Panel"); // NOI18N
-            feedback0to3Panel.setPreferredSize(new Dimension(885, 140));
-            feedback0to3Panel.setLayout(new GridLayout(1, 4));
-
-            feedbackPanel0.setName("feedbackPanel0"); // NOI18N
-            feedbackPanel0.setTitle("Module - 1");
-            feedback0to3Panel.add(feedbackPanel0);
-
-            feedbackPanel1.setModuleNumber(2);
-            feedbackPanel1.setName("feedbackPanel1"); // NOI18N
-            feedbackPanel1.setTitle("Module - 2");
-            feedback0to3Panel.add(feedbackPanel1);
-
-            feedbackPanel2.setModuleNumber(3);
-            feedbackPanel2.setName("feedbackPanel2"); // NOI18N
-            feedbackPanel2.setTitle("Module - 3");
-            feedback0to3Panel.add(feedbackPanel2);
-
-            feedbackPanel3.setModuleNumber(4);
-            feedbackPanel3.setName("feedbackPanel3"); // NOI18N
-            feedbackPanel3.setTitle("Module - 4");
-            feedback0to3Panel.add(feedbackPanel3);
-
-            feedbackTPjTabbedPane2.addTab("1 - 4", feedback0to3Panel);
-
-            feedback4to7Panel.setMinimumSize(new Dimension(885, 140));
-            feedback4to7Panel.setName("feedback4to7Panel"); // NOI18N
-            feedback4to7Panel.setPreferredSize(new Dimension(885, 140));
-            feedback4to7Panel.setLayout(new GridLayout(1, 3));
-
-            feedbackPanel4.setModuleNumber(5);
-            feedbackPanel4.setName("feedbackPanel4"); // NOI18N
-            feedbackPanel4.setTitle("Module - 5");
-            feedback4to7Panel.add(feedbackPanel4);
-
-            feedbackPanel5.setModuleNumber(6);
-            feedbackPanel5.setName("feedbackPanel5"); // NOI18N
-            feedbackPanel5.setTitle("Module - 6");
-            feedback4to7Panel.add(feedbackPanel5);
-
-            feedbackPanel6.setModuleNumber(7);
-            feedbackPanel6.setName("feedbackPanel6"); // NOI18N
-            feedbackPanel6.setTitle("Module - 7");
-            feedback4to7Panel.add(feedbackPanel6);
-
-            feedbackPanel7.setModuleNumber(8);
-            feedbackPanel7.setName("feedbackPanel7"); // NOI18N
-            feedbackPanel7.setTitle("Module - 8");
-            feedback4to7Panel.add(feedbackPanel7);
-
-            feedbackTPjTabbedPane2.addTab("5 - 8", feedback4to7Panel);
-
-            topPanel.add(feedbackTPjTabbedPane2, BorderLayout.PAGE_START);
-
-            LinkSxx linkSxx = TrackServiceFactory.getTrackService().getLinkSxx();
-
-            this.feedbackPanel0.setContactIdOffset(0);
-            this.feedbackPanel0.setDeviceId(linkSxx.getDeviceId());
-            this.feedbackPanel0.setTitle("LinkSxx Bus 0 Module 1");
-
-            //LinkSxx has 3 busses
-            //Bus 1
-            int bus1Length = linkSxx.getBusLength(1);
-            int bus1Offset = linkSxx.getContactIdOffset(1);
-
-            int modcnt = 1;
-            int pancnt = 1;
-            if (modcnt < bus1Length) {
-                this.feedbackPanel1.setModuleNumber(modcnt);
-                this.feedbackPanel1.setContactIdOffset(bus1Offset);
-                this.feedbackPanel1.setDeviceId(linkSxx.getDeviceId());
-                this.feedbackPanel1.setTitle("LinkSxx Bus 1 Module " + modcnt);
-                modcnt++;
-                pancnt++;
-            }
-            //if(modcnt < bus1Length) {
-
-            int bus2Length = linkSxx.getBusLength(2);
-            int bus2Offset = linkSxx.getContactIdOffset(2);
-            int bus3Length = linkSxx.getBusLength(3);
-            int bus3Offset = linkSxx.getContactIdOffset(3);
-
-            //we have pannels 2 - 8
-            // allocate pannel2 to bus 2
-            for (SxxBus b : TrackServiceFactory.getTrackService().getLinkSxx().getSxxBusses().values()) {
-                Logger.trace("check " + b);
-                int lenght = b.getLength();
-                int offset = b.getContactIdOffset();
-                int number = b.getNumber();
-
-            }
-
-//            StatusDataConfigParser di = TrackServiceFactory.getTrackService().getControllerInfo();
-//            TrackServiceFactory.getTrackService().addHeartBeatListener(new HeartBeat(this));
-            TrackServiceFactory.getTrackService().addMessageListener(new LogTextAreaHandler(this.logArea));
-        }
+    void registerListeners() {
+        this.csModule1Panel.registerSensorListeners();
+        this.csModule2Panel.registerSensorListeners();
+        this.csModule3Panel.registerSensorListeners();
+        this.csModule4Panel.registerSensorListeners();
+        this.bus1Module1Panel.registerSensorListeners();
+        this.bus1Module2Panel.registerSensorListeners();
+        this.bus1Module3Panel.registerSensorListeners();
+        this.bus1Module4Panel.registerSensorListeners();
+        this.bus2Module1Panel.registerSensorListeners();
+        this.bus2Module2Panel.registerSensorListeners();
+        this.bus2Module3Panel.registerSensorListeners();
+        this.bus2Module4Panel.registerSensorListeners();
+        this.bus3Module1Panel.registerSensorListeners();
+        this.bus3Module2Panel.registerSensorListeners();
+        this.bus3Module3Panel.registerSensorListeners();
+        this.bus3Module4Panel.registerSensorListeners();
+        Logger.trace("Added Sensor Listeners...");
     }
 
-    public void refreshPanel() {
+    void removeListeners() {
+        this.csModule1Panel.removeSensorListeners();
+        this.csModule2Panel.removeSensorListeners();
+        this.csModule3Panel.removeSensorListeners();
+        this.csModule4Panel.removeSensorListeners();
+        this.bus1Module1Panel.removeSensorListeners();
+        this.bus1Module2Panel.removeSensorListeners();
+        this.bus1Module3Panel.removeSensorListeners();
+        this.bus1Module4Panel.removeSensorListeners();
+        this.bus2Module1Panel.removeSensorListeners();
+        this.bus2Module2Panel.removeSensorListeners();
+        this.bus2Module3Panel.removeSensorListeners();
+        this.bus2Module4Panel.removeSensorListeners();
+        this.bus3Module1Panel.removeSensorListeners();
+        this.bus3Module2Panel.removeSensorListeners();
+        this.bus3Module3Panel.removeSensorListeners();
+        this.bus3Module4Panel.removeSensorListeners();
+        Logger.trace("Removed Sensor Listeners...");
+    }
 
+    private void postInit() {
+        //Find the number of feedback modules from the Controller LinkS88 busses
+        if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getLinkSxx() != null) {
+
+            LinkSxx linkSxx = TrackServiceFactory.getTrackService().getLinkSxx();
+            int deviceId = linkSxx.getDeviceId();
+            //CS is bus 0
+            //For now support only a max of 4 modules per bus, which
+            //should be sufficient for most tracks, certenly mine ;)
+            this.csModule1Panel.setContactIdOffset(0);
+            this.csModule1Panel.setDeviceId(0);
+
+            this.csModule2Panel.setContactIdOffset(0);
+            this.csModule2Panel.setDeviceId(0);
+
+            this.csModule3Panel.setContactIdOffset(0);
+            this.csModule3Panel.setDeviceId(0);
+
+            this.csModule4Panel.setContactIdOffset(0);
+            this.csModule4Panel.setDeviceId(0);
+
+            int bus1Offset = linkSxx.getContactIdOffset(1);
+            this.bus1Module1Panel.setContactIdOffset(bus1Offset);
+            this.bus1Module1Panel.setDeviceId(deviceId);
+
+            this.bus1Module2Panel.setContactIdOffset(bus1Offset);
+            this.bus1Module2Panel.setDeviceId(deviceId);
+
+            this.bus1Module3Panel.setContactIdOffset(bus1Offset);
+            this.bus1Module3Panel.setDeviceId(deviceId);
+
+            this.bus1Module4Panel.setContactIdOffset(bus1Offset);
+            this.bus1Module4Panel.setDeviceId(deviceId);
+
+            int bus2Offset = linkSxx.getContactIdOffset(2);
+            this.bus2Module1Panel.setContactIdOffset(bus2Offset);
+            this.bus2Module1Panel.setDeviceId(deviceId);
+
+            this.bus2Module2Panel.setContactIdOffset(bus2Offset);
+            this.bus2Module2Panel.setDeviceId(deviceId);
+            this.bus2Module2Panel.registerSensorListeners();
+
+            this.bus2Module3Panel.setContactIdOffset(bus2Offset);
+            this.bus2Module3Panel.setDeviceId(deviceId);
+
+            this.bus2Module4Panel.setContactIdOffset(bus2Offset);
+            this.bus2Module4Panel.setDeviceId(deviceId);
+
+            int bus3Offset = linkSxx.getContactIdOffset(3);
+            this.bus3Module1Panel.setContactIdOffset(bus3Offset);
+            this.bus3Module1Panel.setDeviceId(deviceId);
+
+            this.bus3Module2Panel.setContactIdOffset(bus3Offset);
+            this.bus3Module2Panel.setDeviceId(deviceId);
+
+            this.bus3Module3Panel.setContactIdOffset(bus3Offset);
+            this.bus3Module3Panel.setDeviceId(deviceId);
+
+            this.bus3Module4Panel.setContactIdOffset(bus3Offset);
+            this.bus3Module4Panel.setDeviceId(deviceId);
+        }
     }
 
     private class MessageListener implements CanMessageListener {
@@ -258,37 +234,30 @@ public class ControllerPanel extends JPanel {
     }
 
 //    public static void main(String args[]) {
-//        Configurator.defaultConfig().level(org.pmw.tinylog.Level.DEBUG).activate();
-//
 //        try {
 //            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 //        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-//            Logger.error(ex);
+//            Logger.error("Can't set the LookAndFeel: " + ex);
 //        }
-//
 //        java.awt.EventQueue.invokeLater(() -> {
-//            JFrame f = new JFrame("Diagnostics Panel Tester");
-//            ControllerPanel diagnosticPanel = new ControllerPanel();
-//            f.add(diagnosticPanel);
 //
-//            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            f.pack();
-//            f.setVisible(true);
+//            ControllerPanel testPanel = new ControllerPanel();
+//            JFrame testFrame = new JFrame("ControllerPanel Tester");
+//
+//            testFrame.add(testPanel);
+//            testPanel.registerListeners();
+//
+//            testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+//                @Override
+//                public void windowClosing(java.awt.event.WindowEvent e) {
+//                    System.exit(0);
+//                }
+//            });
+//            testFrame.pack();
+//            testFrame.setLocationRelativeTo(null);
+//            testFrame.setVisible(true);
 //        });
 //    }
-    private class HeartBeat implements HeartBeatListener {
-
-        private final ControllerPanel diagnosticPanel;
-
-        HeartBeat(ControllerPanel panel) {
-            diagnosticPanel = panel;
-        }
-
-        @Override
-        public void toggle() {
-            //this.diagnosticPanel.toggle();
-        }
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -300,17 +269,31 @@ public class ControllerPanel extends JPanel {
     private void initComponents() {
 
         topPanel = new JPanel();
-        feedbackTPjTabbedPane2 = new JTabbedPane();
-        feedback0to3Panel = new JPanel();
-        feedbackPanel0 = new FeedbackPanel(1);
-        feedbackPanel1 = new FeedbackPanel(2);
-        feedbackPanel2 = new FeedbackPanel(3);
-        feedbackPanel3 = new FeedbackPanel(4);
-        feedback4to7Panel = new JPanel();
-        feedbackPanel4 = new FeedbackPanel(5);
-        feedbackPanel5 = new FeedbackPanel(6);
-        feedbackPanel6 = new FeedbackPanel(7);
-        feedbackPanel7 = new FeedbackPanel(8);
+        feedbackSensorTP = new JTabbedPane();
+        csSP = new JScrollPane();
+        csPanel = new JPanel();
+        csModule1Panel = new FeedbackPanel(1);
+        csModule2Panel = new FeedbackPanel(2);
+        csModule3Panel = new FeedbackPanel(3);
+        csModule4Panel = new FeedbackPanel(4);
+        bus1SP = new JScrollPane();
+        bus1Panel = new JPanel();
+        bus1Module1Panel = new FeedbackPanel(5);
+        bus1Module2Panel = new FeedbackPanel(6);
+        bus1Module3Panel = new FeedbackPanel(7);
+        bus1Module4Panel = new FeedbackPanel(8);
+        bus2SP = new JScrollPane();
+        bus2Panel = new JPanel();
+        bus2Module1Panel = new FeedbackPanel(5);
+        bus2Module2Panel = new FeedbackPanel(6);
+        bus2Module3Panel = new FeedbackPanel(7);
+        bus2Module4Panel = new FeedbackPanel(8);
+        bus3SP = new JScrollPane();
+        bus3Panel = new JPanel();
+        bus3Module1Panel = new FeedbackPanel(5);
+        bus3Module2Panel = new FeedbackPanel(6);
+        bus3Module3Panel = new FeedbackPanel(7);
+        bus3Module4Panel = new FeedbackPanel(8);
         centerPanel = new JPanel();
         keyboardTP = new JTabbedPane();
         keyboardsPanel = new JPanel();
@@ -337,75 +320,167 @@ public class ControllerPanel extends JPanel {
         logSP = new JScrollPane();
         logArea = new JTextArea();
 
-        setMinimumSize(new Dimension(885, 820));
+        setMinimumSize(new Dimension(1010, 850));
         setName("Form"); // NOI18N
-        setPreferredSize(new Dimension(885, 820));
+        setPreferredSize(new Dimension(1010, 850));
+        addComponentListener(new ComponentAdapter() {
+            public void componentHidden(ComponentEvent evt) {
+                formComponentHidden(evt);
+            }
+            public void componentShown(ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
         setLayout(new BorderLayout());
 
-        topPanel.setMinimumSize(new Dimension(885, 140));
+        topPanel.setMinimumSize(new Dimension(1000, 160));
         topPanel.setName("topPanel"); // NOI18N
-        topPanel.setPreferredSize(new Dimension(885, 140));
-        topPanel.setLayout(new BorderLayout());
+        topPanel.setPreferredSize(new Dimension(1010, 160));
+        topPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
-        feedbackTPjTabbedPane2.setToolTipText("");
-        feedbackTPjTabbedPane2.setMinimumSize(new Dimension(885, 140));
-        feedbackTPjTabbedPane2.setName("feedbackTPjTabbedPane2"); // NOI18N
-        feedbackTPjTabbedPane2.setPreferredSize(new Dimension(885, 140));
+        feedbackSensorTP.setToolTipText("");
+        feedbackSensorTP.setDoubleBuffered(true);
+        feedbackSensorTP.setMinimumSize(new Dimension(1010, 160));
+        feedbackSensorTP.setName("feedbackSensorTP"); // NOI18N
+        feedbackSensorTP.setPreferredSize(new Dimension(1030, 160));
 
-        feedback0to3Panel.setMinimumSize(new Dimension(885, 140));
-        feedback0to3Panel.setName("feedback0to3Panel"); // NOI18N
-        feedback0to3Panel.setPreferredSize(new Dimension(885, 140));
-        feedback0to3Panel.setLayout(new GridLayout(1, 4));
+        csSP.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        csSP.setMinimumSize(new Dimension(1000, 100));
+        csSP.setName("csSP"); // NOI18N
+        csSP.setPreferredSize(new Dimension(1000, 120));
+        csSP.setViewportView(csPanel);
 
-        feedbackPanel0.setName("feedbackPanel0"); // NOI18N
-        feedbackPanel0.setTitle("Module - 1");
-        feedback0to3Panel.add(feedbackPanel0);
+        csPanel.setMinimumSize(new Dimension(1000, 100));
+        csPanel.setName("csPanel"); // NOI18N
+        csPanel.setPreferredSize(new Dimension(1000, 100));
+        FlowLayout flowLayout1 = new FlowLayout(FlowLayout.CENTER, 0, 0);
+        flowLayout1.setAlignOnBaseline(true);
+        csPanel.setLayout(flowLayout1);
 
-        feedbackPanel1.setModuleNumber(2);
-        feedbackPanel1.setName("feedbackPanel1"); // NOI18N
-        feedbackPanel1.setTitle("Module - 2");
-        feedback0to3Panel.add(feedbackPanel1);
+        csModule1Panel.setName("csModule1Panel"); // NOI18N
+        csModule1Panel.setTitle("Module 1");
+        csPanel.add(csModule1Panel);
 
-        feedbackPanel2.setModuleNumber(3);
-        feedbackPanel2.setName("feedbackPanel2"); // NOI18N
-        feedbackPanel2.setTitle("Module - 3");
-        feedback0to3Panel.add(feedbackPanel2);
+        csModule2Panel.setModuleNumber(2);
+        csModule2Panel.setName("csModule2Panel"); // NOI18N
+        csModule2Panel.setTitle("Module 2");
+        csPanel.add(csModule2Panel);
 
-        feedbackPanel3.setModuleNumber(4);
-        feedbackPanel3.setName("feedbackPanel3"); // NOI18N
-        feedbackPanel3.setTitle("Module - 4");
-        feedback0to3Panel.add(feedbackPanel3);
+        csModule3Panel.setModuleNumber(3);
+        csModule3Panel.setName("csModule3Panel"); // NOI18N
+        csModule3Panel.setTitle("Module 3");
+        csPanel.add(csModule3Panel);
 
-        feedbackTPjTabbedPane2.addTab("1 - 4", feedback0to3Panel);
+        csModule4Panel.setModuleNumber(4);
+        csModule4Panel.setName("csModule4Panel"); // NOI18N
+        csModule4Panel.setTitle("Module 4");
+        csPanel.add(csModule4Panel);
 
-        feedback4to7Panel.setMinimumSize(new Dimension(885, 140));
-        feedback4to7Panel.setName("feedback4to7Panel"); // NOI18N
-        feedback4to7Panel.setPreferredSize(new Dimension(885, 140));
-        feedback4to7Panel.setLayout(new GridLayout(1, 3));
+        csSP.setViewportView(csPanel);
 
-        feedbackPanel4.setModuleNumber(5);
-        feedbackPanel4.setName("feedbackPanel4"); // NOI18N
-        feedbackPanel4.setTitle("Module - 5");
-        feedback4to7Panel.add(feedbackPanel4);
+        feedbackSensorTP.addTab("CS", csSP);
 
-        feedbackPanel5.setModuleNumber(6);
-        feedbackPanel5.setName("feedbackPanel5"); // NOI18N
-        feedbackPanel5.setTitle("Module - 6");
-        feedback4to7Panel.add(feedbackPanel5);
+        bus1SP.setMinimumSize(new Dimension(1000, 100));
+        bus1SP.setName("bus1SP"); // NOI18N
+        bus1SP.setPreferredSize(new Dimension(1000, 120));
 
-        feedbackPanel6.setModuleNumber(7);
-        feedbackPanel6.setName("feedbackPanel6"); // NOI18N
-        feedbackPanel6.setTitle("Module - 7");
-        feedback4to7Panel.add(feedbackPanel6);
+        bus1Panel.setMinimumSize(new Dimension(885, 140));
+        bus1Panel.setName("bus1Panel"); // NOI18N
+        bus1Panel.setPreferredSize(new Dimension(1000, 100));
+        FlowLayout flowLayout2 = new FlowLayout(FlowLayout.CENTER, 0, 0);
+        flowLayout2.setAlignOnBaseline(true);
+        bus1Panel.setLayout(flowLayout2);
 
-        feedbackPanel7.setModuleNumber(8);
-        feedbackPanel7.setName("feedbackPanel7"); // NOI18N
-        feedbackPanel7.setTitle("Module - 8");
-        feedback4to7Panel.add(feedbackPanel7);
+        bus1Module1Panel.setName("bus1Module1Panel"); // NOI18N
+        bus1Module1Panel.setTitle("Module 1");
+        bus1Panel.add(bus1Module1Panel);
 
-        feedbackTPjTabbedPane2.addTab("5 - 8", feedback4to7Panel);
+        bus1Module2Panel.setModuleNumber(2);
+        bus1Module2Panel.setName("bus1Module2Panel"); // NOI18N
+        bus1Module2Panel.setTitle("Module 2");
+        bus1Panel.add(bus1Module2Panel);
 
-        topPanel.add(feedbackTPjTabbedPane2, BorderLayout.PAGE_START);
+        bus1Module3Panel.setModuleNumber(3);
+        bus1Module3Panel.setName("bus1Module3Panel"); // NOI18N
+        bus1Module3Panel.setTitle("Module 3");
+        bus1Panel.add(bus1Module3Panel);
+
+        bus1Module4Panel.setModuleNumber(4);
+        bus1Module4Panel.setName("bus1Module4Panel"); // NOI18N
+        bus1Module4Panel.setTitle("Module 4");
+        bus1Panel.add(bus1Module4Panel);
+
+        bus1SP.setViewportView(bus1Panel);
+
+        feedbackSensorTP.addTab("Bus 1", bus1SP);
+
+        bus2SP.setName("bus2SP"); // NOI18N
+
+        bus2Panel.setMinimumSize(new Dimension(885, 140));
+        bus2Panel.setName("bus2Panel"); // NOI18N
+        bus2Panel.setPreferredSize(new Dimension(1000, 100));
+        FlowLayout flowLayout3 = new FlowLayout(FlowLayout.CENTER, 0, 0);
+        flowLayout3.setAlignOnBaseline(true);
+        bus2Panel.setLayout(flowLayout3);
+
+        bus2Module1Panel.setName("bus2Module1Panel"); // NOI18N
+        bus2Module1Panel.setTitle("Module 1");
+        bus2Panel.add(bus2Module1Panel);
+
+        bus2Module2Panel.setModuleNumber(2);
+        bus2Module2Panel.setName("bus2Module2Panel"); // NOI18N
+        bus2Module2Panel.setTitle("Module 2");
+        bus2Panel.add(bus2Module2Panel);
+
+        bus2Module3Panel.setModuleNumber(3);
+        bus2Module3Panel.setName("bus2Module3Panel"); // NOI18N
+        bus2Module3Panel.setTitle("Module 3");
+        bus2Panel.add(bus2Module3Panel);
+
+        bus2Module4Panel.setModuleNumber(4);
+        bus2Module4Panel.setName("bus2Module4Panel"); // NOI18N
+        bus2Module4Panel.setTitle("Module 4");
+        bus2Panel.add(bus2Module4Panel);
+
+        bus2SP.setViewportView(bus2Panel);
+
+        feedbackSensorTP.addTab("Bus 2", bus2SP);
+
+        bus3SP.setName("bus3SP"); // NOI18N
+
+        bus3Panel.setMinimumSize(new Dimension(885, 140));
+        bus3Panel.setName("bus3Panel"); // NOI18N
+        bus3Panel.setPreferredSize(new Dimension(1000, 100));
+        FlowLayout flowLayout5 = new FlowLayout(FlowLayout.CENTER, 0, 0);
+        flowLayout5.setAlignOnBaseline(true);
+        bus3Panel.setLayout(flowLayout5);
+
+        bus3Module1Panel.setName("bus3Module1Panel"); // NOI18N
+        bus3Module1Panel.setTitle("Module 1");
+        bus3Panel.add(bus3Module1Panel);
+
+        bus3Module2Panel.setModuleNumber(2);
+        bus3Module2Panel.setName("bus3Module2Panel"); // NOI18N
+        bus3Module2Panel.setTitle("Module 2");
+        bus3Panel.add(bus3Module2Panel);
+
+        bus3Module3Panel.setModuleNumber(3);
+        bus3Module3Panel.setName("bus3Module3Panel"); // NOI18N
+        bus3Module3Panel.setTitle("Module 3");
+        bus3Panel.add(bus3Module3Panel);
+
+        bus3Module4Panel.setModuleNumber(4);
+        bus3Module4Panel.setName("bus3Module4Panel"); // NOI18N
+        bus3Module4Panel.setTitle("Module 4");
+        bus3Panel.add(bus3Module4Panel);
+
+        bus3SP.setViewportView(bus3Panel);
+
+        feedbackSensorTP.addTab("Bus 3", bus3SP);
+
+        feedbackSensorTP.setSelectedIndex(1);
+
+        topPanel.add(feedbackSensorTP);
 
         add(topPanel, BorderLayout.NORTH);
 
@@ -529,19 +604,41 @@ public class ControllerPanel extends JPanel {
         add(logPanel, BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        registerListeners();
+    }//GEN-LAST:event_formComponentShown
+
+    private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
+        removeListeners();
+    }//GEN-LAST:event_formComponentHidden
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private FeedbackPanel bus1Module1Panel;
+    private FeedbackPanel bus1Module2Panel;
+    private FeedbackPanel bus1Module3Panel;
+    private FeedbackPanel bus1Module4Panel;
+    private JPanel bus1Panel;
+    private JScrollPane bus1SP;
+    private FeedbackPanel bus2Module1Panel;
+    private FeedbackPanel bus2Module2Panel;
+    private FeedbackPanel bus2Module3Panel;
+    private FeedbackPanel bus2Module4Panel;
+    private JPanel bus2Panel;
+    private JScrollPane bus2SP;
+    private FeedbackPanel bus3Module1Panel;
+    private FeedbackPanel bus3Module2Panel;
+    private FeedbackPanel bus3Module3Panel;
+    private FeedbackPanel bus3Module4Panel;
+    private JPanel bus3Panel;
+    private JScrollPane bus3SP;
     private JPanel centerPanel;
-    private JPanel feedback0to3Panel;
-    private JPanel feedback4to7Panel;
-    private FeedbackPanel feedbackPanel0;
-    private FeedbackPanel feedbackPanel1;
-    private FeedbackPanel feedbackPanel2;
-    private FeedbackPanel feedbackPanel3;
-    private FeedbackPanel feedbackPanel4;
-    private FeedbackPanel feedbackPanel5;
-    private FeedbackPanel feedbackPanel6;
-    private FeedbackPanel feedbackPanel7;
-    private JTabbedPane feedbackTPjTabbedPane2;
+    private FeedbackPanel csModule1Panel;
+    private FeedbackPanel csModule2Panel;
+    private FeedbackPanel csModule3Panel;
+    private FeedbackPanel csModule4Panel;
+    private JPanel csPanel;
+    private JScrollPane csSP;
+    private JTabbedPane feedbackSensorTP;
     private JTabbedPane keyboardTP;
     private JPanel keyboardsPanel;
     private JPanel keyboardsPanel1;

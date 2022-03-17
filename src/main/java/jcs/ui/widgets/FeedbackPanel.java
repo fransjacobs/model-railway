@@ -23,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -50,6 +49,23 @@ public class FeedbackPanel extends JPanel {
     private Integer contactIdOffset;
     private Integer startContactId;
 
+    private FeedbackPort p1;
+    private FeedbackPort p2;
+    private FeedbackPort p3;
+    private FeedbackPort p4;
+    private FeedbackPort p5;
+    private FeedbackPort p6;
+    private FeedbackPort p7;
+    private FeedbackPort p8;
+    private FeedbackPort p9;
+    private FeedbackPort p10;
+    private FeedbackPort p11;
+    private FeedbackPort p12;
+    private FeedbackPort p13;
+    private FeedbackPort p14;
+    private FeedbackPort p15;
+    private FeedbackPort p16;
+
     /**
      * Create default FeedbackPanel for module number 1
      */
@@ -74,51 +90,74 @@ public class FeedbackPanel extends JPanel {
         this.contactIdOffset = contactIdOffset;
 
         initComponents();
-
-        if (TrackServiceFactory.getTrackService() != null) {
-            initSensorListeners();
-        }
+        intitSensorListeners();
     }
 
-    private void initSensorListeners() {
+    private void intitSensorListeners() {
         if (this.contactIdOffset == null) {
             this.contactIdOffset = 0;
         }
 
         int port = 1;
 
-        FeedbackPort p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p1);
-        FeedbackPort p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p2);
-        FeedbackPort p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p3);
-        FeedbackPort p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p4);
-        FeedbackPort p5 = new FeedbackPort(this.lbl5, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p5);
-        FeedbackPort p6 = new FeedbackPort(this.lbl6, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p6);
-        FeedbackPort p7 = new FeedbackPort(this.lbl7, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p7);
-        FeedbackPort p8 = new FeedbackPort(this.lbl8, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p8);
-        FeedbackPort p9 = new FeedbackPort(this.lbl9, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p9);
-        FeedbackPort p10 = new FeedbackPort(this.lbl10, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p10);
-        FeedbackPort p11 = new FeedbackPort(this.lbl11, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p11);
-        FeedbackPort p12 = new FeedbackPort(this.lbl12, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p12);
-        FeedbackPort p13 = new FeedbackPort(this.lbl13, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p13);
-        FeedbackPort p14 = new FeedbackPort(this.lbl14, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p14);
-        FeedbackPort p15 = new FeedbackPort(this.lbl15, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p15);
-        FeedbackPort p16 = new FeedbackPort(this.lbl16, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        TrackServiceFactory.getTrackService().addSensorListener(p16);
+        p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p5 = new FeedbackPort(this.lbl5, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p6 = new FeedbackPort(this.lbl6, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p7 = new FeedbackPort(this.lbl7, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p8 = new FeedbackPort(this.lbl8, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p9 = new FeedbackPort(this.lbl9, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p10 = new FeedbackPort(this.lbl10, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p11 = new FeedbackPort(this.lbl11, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p12 = new FeedbackPort(this.lbl12, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p13 = new FeedbackPort(this.lbl13, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p14 = new FeedbackPort(this.lbl14, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p15 = new FeedbackPort(this.lbl15, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+        p16 = new FeedbackPort(this.lbl16, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    }
+
+    public void registerSensorListeners() {
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().addSensorListener(p1);
+            TrackServiceFactory.getTrackService().addSensorListener(p2);
+            TrackServiceFactory.getTrackService().addSensorListener(p3);
+            TrackServiceFactory.getTrackService().addSensorListener(p4);
+            TrackServiceFactory.getTrackService().addSensorListener(p5);
+            TrackServiceFactory.getTrackService().addSensorListener(p6);
+            TrackServiceFactory.getTrackService().addSensorListener(p7);
+            TrackServiceFactory.getTrackService().addSensorListener(p8);
+            TrackServiceFactory.getTrackService().addSensorListener(p9);
+            TrackServiceFactory.getTrackService().addSensorListener(p10);
+            TrackServiceFactory.getTrackService().addSensorListener(p11);
+            TrackServiceFactory.getTrackService().addSensorListener(p12);
+            TrackServiceFactory.getTrackService().addSensorListener(p13);
+            TrackServiceFactory.getTrackService().addSensorListener(p14);
+            TrackServiceFactory.getTrackService().addSensorListener(p15);
+            TrackServiceFactory.getTrackService().addSensorListener(p16);
+        }
+    }
+
+    public void removeSensorListeners() {
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().removeSensorListener(p1);
+            TrackServiceFactory.getTrackService().removeSensorListener(p2);
+            TrackServiceFactory.getTrackService().removeSensorListener(p3);
+            TrackServiceFactory.getTrackService().removeSensorListener(p4);
+            TrackServiceFactory.getTrackService().removeSensorListener(p5);
+            TrackServiceFactory.getTrackService().removeSensorListener(p6);
+            TrackServiceFactory.getTrackService().removeSensorListener(p7);
+            TrackServiceFactory.getTrackService().removeSensorListener(p8);
+            TrackServiceFactory.getTrackService().removeSensorListener(p9);
+            TrackServiceFactory.getTrackService().removeSensorListener(p10);
+            TrackServiceFactory.getTrackService().removeSensorListener(p11);
+            TrackServiceFactory.getTrackService().removeSensorListener(p12);
+            TrackServiceFactory.getTrackService().removeSensorListener(p13);
+            TrackServiceFactory.getTrackService().removeSensorListener(p14);
+            TrackServiceFactory.getTrackService().removeSensorListener(p15);
+            TrackServiceFactory.getTrackService().removeSensorListener(p16);
+        }
     }
 
     private static int calculateContactId(int module, int offset, int port) {
@@ -198,18 +237,19 @@ public class FeedbackPanel extends JPanel {
         }
     }
 
-    public static void main(String args[]) {
-        JFrame f = new JFrame("FeedbackPanel Tester");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        FeedbackPanel feedbackPanel = new FeedbackPanel(1, 65, 0);
-
-        f.add(feedbackPanel);
-
-        f.pack();
-        f.setLocationRelativeTo(null);
-        f.setVisible(true);
-    }
+//    public static void main(String args[]) {
+//        JFrame f = new JFrame("FeedbackPanel Tester");
+//        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//
+//        FeedbackPanel feedbackPanel = new FeedbackPanel(1, 65, 0);
+//        feedbackPanel.registerSensorListeners();
+//
+//        f.add(feedbackPanel);
+//
+//        f.pack();
+//        f.setLocationRelativeTo(null);
+//        f.setVisible(true);
+//    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -238,6 +278,7 @@ public class FeedbackPanel extends JPanel {
         lbl16 = new JLabel();
 
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)), "S88 - Bus 0 Module 1"));
+        setMaximumSize(new Dimension(250, 95));
         setMinimumSize(new Dimension(250, 95));
         setName("Form"); // NOI18N
         setPreferredSize(new Dimension(250, 95));
