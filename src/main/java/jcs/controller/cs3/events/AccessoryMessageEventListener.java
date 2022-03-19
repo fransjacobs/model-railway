@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright (C) 2020 Frans Jacobs.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,16 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.trackservice.events;
+package jcs.controller.cs3.events;
 
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+public interface AccessoryMessageEventListener {
 
-/**
- *
- * @author frans
- */
-public interface AccessoryListener {
-
-    void onChange(AccessoryMessageEvent event);
+    void onAccessoryMessage(AccessoryMessageEvent accessoryEvent);
 
 }

@@ -48,6 +48,7 @@ import org.tinylog.Logger;
 import jcs.controller.MarklinController;
 import jcs.controller.cs3.devices.GFP;
 import jcs.controller.cs3.devices.LinkSxx;
+import jcs.controller.cs3.events.AccessoryMessageEventListener;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.net.CS3Connection;
 
@@ -275,6 +276,17 @@ public class DemoController implements MarklinController {
     public void removePowerEventListener(PowerEventListener listener) {
     }
 
+    @Override
+    public void addAccessoryEventListener(AccessoryMessageEventListener listener) {
+    }
+
+    @Override
+    public void removeAccessoryEventListener(AccessoryMessageEventListener listener) {
+    }
+
+    
+    
+    
     //@Override
     public void addHeartbeatListener(HeartbeatListener listener) {
         synchronized (heartbeatListeners) {

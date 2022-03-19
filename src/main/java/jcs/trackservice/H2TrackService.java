@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -65,6 +64,8 @@ import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
 import jcs.controller.cs3.devices.LinkSxx;
+import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.cs3.events.AccessoryMessageEventListener;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
@@ -90,15 +91,14 @@ public class H2TrackService implements TrackService {
     //int feedbackModules;
     private final ExecutorService executor;
 
-    //private final List<AccessoryListener> accessoiryListeners;
+    private final List<SensorListener> sensorListeners;
+    private final List<AccessoryListener> accessoryListeners;
+
     //private final List<LocomotiveListener> locomotiveListeners;
     //private final List<HeartBeatListener> heartBeatListeners;
     //private final List<PersistedEventListener> persistListeners;
     //private Map<Integer, List<SensorListener>> sensorListeners;
-    private final List<SensorListener> sensorListeners;
-
-    private boolean fbToggle = false;
-
+    //private boolean fbToggle = false;
     //private TrackPower trpo;
     private final Properties jcsProperties;
 
@@ -127,18 +127,14 @@ public class H2TrackService implements TrackService {
         trpoDAO = new TrackPowerDAO();
         tileDAO = new TileBeanDAO();
 
-        //sensorListeners = new HashMap<>();
         sensorListeners = new LinkedList<>();
+        accessoryListeners = new LinkedList<>();
 
         executor = Executors.newCachedThreadPool();
 
-        //accessoiryListeners = new ArrayList<>();
         //locomotiveListeners = new ArrayList<>();
-        //heartBeatListeners = new ArrayList<>();
         //persistListeners = new ArrayList<>();
-        //timer = new Timer("UpdateGui", true);
         retrieveJCSProperties();
-        //trpo = trpoDAO.find(1);
 
         if (aquireControllerService) {
             connectController();
@@ -227,6 +223,8 @@ public class H2TrackService implements TrackService {
         //timer.scheduleAtFixedRate(new UpdateGuiStatusTask(this), 0, 1000);
         if (controllerService != null) {
             this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
+            this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
+            
         }
 
         return this.controllerService != null && this.controllerService.isConnected();
@@ -276,22 +274,21 @@ public class H2TrackService implements TrackService {
 //            }
 //        }
 //    }
-    //TODO!
-    public void synchronizeSensors() {
-        int sensorCount = Integer.decode(System.getProperty("sensorCount", "16"));
-        //obtain the current sensorstatus
-        List<SensorMessageEvent> sml = Collections.EMPTY_LIST; //controllerService.querySensors(sensorCount);
-        //for (SensorMessageEvent sme : sml) {
-        //    SensorBean s = new SensorBean(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
-        //    persist(s);
-        //}
-        Logger.debug("Updated " + sml.size() + " Sensor statuses...");
-    }
-
+//    //TODO!
+//    public void synchronizeSensors() {
+//        int sensorCount = Integer.decode(System.getProperty("sensorCount", "16"));
+//        //obtain the current sensorstatus
+//        List<SensorMessageEvent> sml = Collections.EMPTY_LIST; //controllerService.querySensors(sensorCount);
+//        //for (SensorMessageEvent sme : sml) {
+//        //    SensorBean s = new SensorBean(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
+//        //    persist(s);
+//        //}
+//        Logger.debug("Updated " + sml.size() + " Sensor statuses...");
+//    }
     //@Override
-    public void notifyAllSensorListeners() {
-        List<SensorBean> sl = this.sensDAO.findAll();
-        //Query all sensors
+//    public void notifyAllSensorListeners() {
+//        List<SensorBean> sl = this.sensDAO.findAll();
+    //Query all sensors
 //        List<SensorMessageEvent> sel = this.controllerService.querySensors(sl.size());
 //        for (SensorMessageEvent se : sel) {
 //            
@@ -303,14 +300,12 @@ public class H2TrackService implements TrackService {
 //            s.setLastUpdated(new Date());
 //            sensDAO.persist(s);
 //        }
-
 //        sl = this.sensDAO.findAll();
 //        for (SensorBean s : sl) {
 //            broadcastSensorChanged(s);
 //        }
 //        Logger.trace("Refreshed " + sl.size() + " Sensors...");
-    }
-
+//    }
     private void notifyAccessoiryListeners(AccessoryBean accessoiry) {
 //        AccessoryEvent ae = new AccessoryEvent(accessoiry);
 //        for (AccessoryListener listener : accessoiryListeners) {
@@ -831,7 +826,7 @@ public class H2TrackService implements TrackService {
     @Override
     public void switchAccessory(AccessoryValue value, AccessoryBean accessory) {
         Logger.trace("Change accessory ID: " + accessory.getId() + ", " + accessory.getName() + " to " + value.getValue());
-//        switchAccessory(value, accessoiry, false);
+        controllerService.switchAccessory(accessory.getId().intValue(), value);
     }
 
 //    @Override
@@ -875,19 +870,18 @@ public class H2TrackService implements TrackService {
 //            }
 //        }
 //    }
-    private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
-        if (value == null || address == null) {
-            return;
-        }
-        if (repeat) {
-            for (int i = 0; i < 3; i++) {
-                controllerService.switchAccessory(address, value);
-            }
-        } else {
-            controllerService.switchAccessory(address, value);
-        }
-    }
-
+//    private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
+//        if (value == null || address == null) {
+//            return;
+//        }
+//        if (repeat) {
+//            for (int i = 0; i < 3; i++) {
+//                controllerService.switchAccessory(address, value);
+//            }
+//        } else {
+//            controllerService.switchAccessory(address, value);
+//        }
+//    }
     @Override
     public void addMessageListener(CanMessageListener listener) {
         if (this.controllerService != null) {
@@ -914,12 +908,12 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void addAccessoryListener(AccessoryListener listener) {
-//        this.accessoiryListeners.add(listener);
+        this.accessoryListeners.add(listener);
     }
 
     @Override
     public void removeAccessoryListener(AccessoryListener listener) {
-//        this.accessoiryListeners.remove(listener);
+        this.accessoryListeners.remove(listener);
     }
 
     @Override
@@ -947,24 +941,10 @@ public class H2TrackService implements TrackService {
 //        this.locomotiveListeners.remove(listener);
     }
 
-    //@Override
-    public void removeAllLocomotiveListeners() {
-//        this.locomotiveListeners.clear();
-    }
 
     //@Override
     public void notifyAllAccessoryListeners() {
-
-//        List<SignalBean> signals = this.getSignals();
-//        List<SwitchBean> turnouts = this.getSwitches();
-//        List<SolenoidAccessory> accessoiries = new ArrayList<>();
-//        accessoiries.addAll(signals);
-//        accessoiries.addAll(turnouts);
-//
-//        accessoiries.forEach((accessoiry) -> {
-//            this.notifyAccessoiryListeners(accessoiry);
-//        });
-    }
+   }
 
     private class SensorMessageEventListener implements SensorMessageListener {
 
@@ -986,6 +966,37 @@ public class H2TrackService implements TrackService {
 
             for (SensorListener sl : this.trackService.sensorListeners) {
                 sl.onChange(sb);
+            }
+        }
+    }
+
+    private class AccessoryMessageListener implements AccessoryMessageEventListener {
+
+        private final H2TrackService trackService;
+
+        AccessoryMessageListener(H2TrackService trackService) {
+            this.trackService = trackService;
+        }
+
+        @Override
+        public void onAccessoryMessage(AccessoryMessageEvent event) {
+
+            AccessoryBean ab = event.getAccessoryBean();
+
+            AccessoryBean dbab = this.trackService.getAccessory(ab.getId());
+            if (dbab != null) {
+                ab.setDecoder(dbab.getDecoder());
+                ab.setDecoderType(dbab.getDecoderType());
+                ab.setName(dbab.getName());
+                ab.setType(dbab.getType());
+                if (ab.getSwitchTime() == null) {
+                    ab.setSwitchTime(dbab.getSwitchTime());
+                }
+                this.trackService.persist(ab);
+            }
+
+            for (AccessoryListener al : this.trackService.accessoryListeners) {
+                al.onChange(event);
             }
         }
     }

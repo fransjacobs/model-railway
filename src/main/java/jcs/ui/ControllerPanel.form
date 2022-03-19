@@ -52,7 +52,6 @@
       <SubComponents>
         <Container class="javax.swing.JTabbedPane" name="feedbackSensorTP">
           <Properties>
-            <Property name="selectedIndex" type="int" value="1"/>
             <Property name="toolTipText" type="java.lang.String" value=""/>
             <Property name="doubleBuffered" type="boolean" value="true"/>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -82,8 +81,8 @@
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="CS">
-                    <Property name="tabTitle" type="java.lang.String" value="CS"/>
+                  <JTabbedPaneConstraints tabName="Bus 0">
+                    <Property name="tabTitle" type="java.lang.String" value="Bus 0"/>
                   </JTabbedPaneConstraints>
                 </Constraint>
               </Constraints>

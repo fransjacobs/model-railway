@@ -18,18 +18,14 @@
  */
 package jcs.ui.widgets;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.math.BigDecimal;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.TitledBorder;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.controller.cs3.events.AccessoryEvent;
+import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;
@@ -115,21 +111,21 @@ public class SwitchPanel extends JPanel {
 
     private void presetButtonboolean(JToggleButton button) {
         button.setActionCommand((button.getText()));
-        Integer address = Integer.parseInt(button.getActionCommand());
-        if (TrackServiceFactory.getTrackService() == null) {
-            return;
+        BigDecimal id = new BigDecimal(button.getActionCommand());
+
+        if (TrackServiceFactory.getTrackService() != null) {
+
+            AccessoryBean ab = TrackServiceFactory.getTrackService().getAccessory(id);
+            if (ab != null) {
+                button.setForeground(new Color(0, 153, 0));
+                button.setSelected(AccessoryValue.RED.equals(ab.getAccessoryValue()));
+                button.setToolTipText(ab.getName());
+            } else {
+                button.setForeground(new Color(0, 0, 0));
+            }
         }
 
-        AccessoryBean ab = TrackServiceFactory.getTrackService().getAccessory(new BigDecimal(address));
-        if (ab != null) {
-            button.setForeground(new Color(0, 153, 0));
-            button.setSelected(AccessoryValue.RED.equals(ab.getAccessoryValue()));
-            button.setToolTipText(ab.getName());
-        } else {
-            button.setForeground(new Color(0, 0, 0));
-        }
-
-        AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
+        AccessoryStatusListener asl = new AccessoryStatusListener(button, id);
         TrackServiceFactory.getTrackService().addAccessoryListener(asl);
     }
 
@@ -161,8 +157,8 @@ public class SwitchPanel extends JPanel {
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "1 - 16"));
         setMinimumSize(new java.awt.Dimension(845, 75));
-        setPreferredSize(new java.awt.Dimension(845, 75));
-        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 3, 1);
+        setPreferredSize(new java.awt.Dimension(1000, 75));
+        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 1);
         flowLayout1.setAlignOnBaseline(true);
         setLayout(flowLayout1);
 
@@ -424,18 +420,14 @@ public class SwitchPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sendCommand(String actionCommand, String name, boolean selected) {
-        int address = Integer.parseInt(actionCommand);
+        BigDecimal id = new BigDecimal(actionCommand);
         AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
-        String n = name;
-        if(n == null) {
-            n = "Not Assigned";
+        Logger.trace("ID: " + id + " Value: " + value);
+
+        if (TrackServiceFactory.getTrackService() != null) {
+            AccessoryBean a = new AccessoryBean(id, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
+            TrackServiceFactory.getTrackService().switchAccessory(value, a);
         }
-
-        Logger.trace("Address: " + address + " Value: " + value);
-
-//        if (TrackServiceFactory.getTrackService() != null) {
-//            TrackServiceFactory.getTrackService().switchAccessory(value, new AccessoryBean(address, n, value));
-//        }
     }
 
   private void tb1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tb1ActionPerformed
@@ -509,24 +501,6 @@ public class SwitchPanel extends JPanel {
         ((TitledBorder) this.getBorder()).setTitle(first + " - " + last);
     }
 
-    public static void main(String[] a) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.warn("Can't set the LookAndFeel: " + ex);
-        }
-
-        java.awt.EventQueue.invokeLater(() -> {
-            JFrame f = new JFrame("SwitchPanel Tester");
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            SwitchPanel sp = new SwitchPanel(1);
-            f.getContentPane().add(sp, BorderLayout.CENTER);
-            f.pack();
-            f.setVisible(true);
-        });
-    }
-
     public int getPanelNumber() {
         return panelNumber;
     }
@@ -534,17 +508,17 @@ public class SwitchPanel extends JPanel {
     private class AccessoryStatusListener implements AccessoryListener {
 
         private final JToggleButton button;
-        private final Integer address;
+        private final BigDecimal id;
 
-        AccessoryStatusListener(JToggleButton button, Integer address) {
+        AccessoryStatusListener(JToggleButton button, BigDecimal id) {
             this.button = button;
-            this.address = address;
+            this.id = id;
         }
 
         @Override
-        public void switched(AccessoryEvent event) {
-            if (event.getAddress().equals(address)) {
-                this.button.setSelected(AccessoryValue.RED.equals(event.getValue()));
+        public void onChange(AccessoryMessageEvent event) {
+            if (event.getAccessoryBean().getId().equals(id)) {
+                this.button.setSelected(AccessoryValue.RED.equals(event.getAccessoryBean().getAccessoryValue()));
             }
         }
     }

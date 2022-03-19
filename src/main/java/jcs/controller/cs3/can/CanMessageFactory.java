@@ -179,7 +179,7 @@ public class CanMessageFactory implements MarklinCan {
         if (gfpUid > 0) {
 //            int[] uid = ByteUtil.to4ByteArray(gfpUid);
 //            System.arraycopy(uid, 0, data, 0, uid.length);
-            hash = CanMessage.generateHash(gfpUid);
+             hash = CanMessage.generateHash(gfpUid);
         } else {
             hash = MAGIC_HASH;
         }
@@ -189,7 +189,7 @@ public class CanMessageFactory implements MarklinCan {
         data[ACCESSORY_VALUE_IDX] = AccessoryValue.GREEN.equals(value) ? 1 : 0;
         data[ACCESSORY_ACTIVE_IDX] = on ? 1 : 0;
 
-        CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, hash, ACCESSORY_SWITCHING_DLC, data);
+        CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, hash, DLC_6, data);
         return cm;
     }
 
@@ -360,14 +360,20 @@ public class CanMessageFactory implements MarklinCan {
 //    }
     //Mainly for testing....
     public static void main(String[] a) {
-        System.out.println("getMemberPing:     " + getMemberPing());
-        System.out.println("querySystem:       " + querySystem(1668498828));
-        System.out.println("stop:              " + systemStopGo(false, 1668498828));
-        System.out.println("go:                " + systemStopGo(true, 1668498828));
+        System.out.println("getMemberPing:      " + getMemberPing());
+        System.out.println("querySystem:        " + querySystem(1668498828));
+        System.out.println("stop:               " + systemStopGo(false, 1668498828));
+        System.out.println("go:                 " + systemStopGo(true, 1668498828));
         System.out.println();
-        System.out.println("statusDataConfig:  " + statusDataConfig(1, 1668498828));
-        System.out.println("systemStatus ch 1: " + systemStatus(1, 1668498828));
-        System.out.println("systemStatus ch 4: " + systemStatus(4, 1668498828));
+        System.out.println("statusDataConfig:   " + statusDataConfig(1, 1668498828));
+        System.out.println("systemStatus ch 1:  " + systemStatus(1, 1668498828));
+        System.out.println("systemStatus ch 4:  " + systemStatus(4, 1668498828));
+        
+        System.out.println("switchAccessory 1g: " + switchAccessory(1,AccessoryValue.GREEN,true, 1668498828));
+        System.out.println("switchAccessory 1g: " + switchAccessory(1,AccessoryValue.GREEN,false, 1668498828));
+        
+        System.out.println("switchAccessory 1g: " + switchAccessory(1,AccessoryValue.RED,true, 1668498828));
+        System.out.println("switchAccessory 1g: " + switchAccessory(1,AccessoryValue.RED,false, 1668498828));
 
         //System.out.println("querySystem byte array : " + querySystem(new int[]{0x63, 0x73, 0x45, 0x8D}));
 //        System.out.println("ping : " + getMobileAppPingRequest());

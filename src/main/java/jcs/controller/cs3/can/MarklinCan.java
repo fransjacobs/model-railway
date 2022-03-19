@@ -76,7 +76,8 @@ public interface MarklinCan {
     public final static int WRITE_CONFIG = 0x10;
 
     public final static int ACCESSORY_SWITCHING = 0x16;
-    public final static int ACCESSORY_SWITCHING_DLC = 0x06;
+    public final static int ACCESSORY_SWITCHING_RESP = 0x17;
+    //public final static int ACCESSORY_SWITCHING_DLC = 0x06;
     public final static int ACCESSORY_CAN_ADDRESS = 0x30;
     public final static int ACCESSORY_CAN_ADDRESS_IDX = 2;
     public final static int ACCESSORY_ADDRESS_IDX = 3;

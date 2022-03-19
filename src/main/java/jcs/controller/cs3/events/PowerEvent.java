@@ -20,8 +20,6 @@ package jcs.controller.cs3.events;
 
 import jcs.controller.cs3.can.CanMessage;
 import static jcs.controller.cs3.can.MarklinCan.SYSTEM_COMMAND_RESPONSE;
-import jcs.entities.SensorBean;
-import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**

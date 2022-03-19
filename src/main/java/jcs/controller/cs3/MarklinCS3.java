@@ -54,11 +54,13 @@ import jcs.controller.cs3.can.parser.ChannelDataParser;
 import jcs.controller.cs3.devices.GFP;
 import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.devices.SxxBus;
+import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.PowerEvent;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.http.DeviceJSONParser;
 import jcs.controller.cs3.net.CS3Connection;
+import jcs.controller.cs3.events.AccessoryMessageEventListener;
 
 /**
  *
@@ -93,6 +95,7 @@ public class MarklinCS3 implements MarklinController {
     private final List<PowerEventListener> powerEventListeners;
 
     private final List<SensorMessageListener> sensorMessageEventListeners;
+    private final List<AccessoryMessageEventListener> accessoryMessageEventListeners;
 
     private final ExecutorService executor;
 
@@ -105,13 +108,11 @@ public class MarklinCS3 implements MarklinController {
         this(true);
     }
 
-    //For testing
     MarklinCS3(boolean connect) {
-        //messageQueue = new LinkedList<>();
-        //devices = new HashMap<>();
 
         powerEventListeners = new LinkedList<>();
         sensorMessageEventListeners = new LinkedList<>();
+        accessoryMessageEventListeners = new LinkedList<>();
         executor = Executors.newCachedThreadPool();
 
         if (connect) {
@@ -230,7 +231,7 @@ public class MarklinCS3 implements MarklinController {
             Logger.trace("GFP id: " + this.gfp.getIdentifier());
 
             Logger.trace("LinkSxx uid: " + this.linkSxx.getUid());
-            Logger.trace("LinkSxx id: " + this.linkSxx.getIdentifier()+" deviceId: "+this.linkSxx.getDeviceId());
+            Logger.trace("LinkSxx id: " + this.linkSxx.getIdentifier() + " deviceId: " + this.linkSxx.getDeviceId());
             Logger.trace("LinkSxx serial: " + this.linkSxx.getSerialNumber());
             Logger.trace("LinkSxx version: " + this.linkSxx.getVersion());
 
@@ -489,11 +490,6 @@ public class MarklinCS3 implements MarklinController {
         sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.gfpUid));
     }
 
-    @Override
-    public void switchAccessory(int address, AccessoryValue value) {
-        executor.execute(() -> switchAccessoryOnOff(address, value));
-    }
-
     // Use for Accessories
     private void wait200ms() {
         pause(200L);
@@ -507,11 +503,19 @@ public class MarklinCS3 implements MarklinController {
         }
     }
 
+    @Override
+    public void switchAccessory(int address, AccessoryValue value) {
+        executor.execute(() -> switchAccessoryOnOff(address, value));
+    }
+
     private void switchAccessoryOnOff(int address, AccessoryValue value) {
         sendMessage(CanMessageFactory.switchAccessory(address, value, true, this.gfpUid));
         //TODO: dynamic setting of time or messageQueue it
         wait200ms();
-        sendMessage(CanMessageFactory.switchAccessory(address, value, false, this.gfpUid));
+        CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, false, this.gfpUid));
+        //Notify listeners
+        AccessoryMessageEvent ae = new AccessoryMessageEvent(message);
+        notifyAccessoryEventListeners(ae);
     }
 
     @Override
@@ -575,26 +579,35 @@ public class MarklinCS3 implements MarklinController {
         this.sensorMessageEventListeners.remove(listener);
     }
 
-    //@Override
-    public List<SensorMessageEvent> querySensors(int sensorCount) {
-        Logger.trace("Query Contacts from 1 until: " + sensorCount);
-
-        List<SensorMessageEvent> sel = new ArrayList<>(sensorCount);
-
-        int fromContactId = 1;
-        int toContactId = sensorCount;
-        CanMessage msg = null; //sendMessage(CanMessageFactory.querySensors(fromContactId, toContactId));
-
-        List<CanMessage> responses = msg.getResponses();
-        Logger.trace("Got " + responses.size() + " responses...");
-
-//        for (CanMessage rm : responses) {
-//            SensorMessageEvent se = new SensorMessageEvent(rm);
-//            sel.add(se);
-//        }
-        return sel;
+    @Override
+    public void addAccessoryEventListener(AccessoryMessageEventListener listener) {
+        this.accessoryMessageEventListeners.add(listener);
     }
 
+    @Override
+    public void removeAccessoryEventListener(AccessoryMessageEventListener listener) {
+        this.accessoryMessageEventListeners.remove(listener);
+    }
+
+    //@Override
+//    public List<SensorMessageEvent> querySensors(int sensorCount) {
+//        Logger.trace("Query Contacts from 1 until: " + sensorCount);
+//
+//        List<SensorMessageEvent> sel = new ArrayList<>(sensorCount);
+//
+//        int fromContactId = 1;
+//        int toContactId = sensorCount;
+//        CanMessage msg = null; //sendMessage(CanMessageFactory.querySensors(fromContactId, toContactId));
+//
+//        List<CanMessage> responses = msg.getResponses();
+//        Logger.trace("Got " + responses.size() + " responses...");
+//
+////        for (CanMessage rm : responses) {
+////            SensorMessageEvent se = new SensorMessageEvent(rm);
+////            sel.add(se);
+////        }
+//        return sel;
+//    }
     private void notifyPowerEventListeners(final PowerEvent powerEvent) {
         executor.execute(() -> fireAllPowerEventListeners(powerEvent));
     }
@@ -613,6 +626,16 @@ public class MarklinCS3 implements MarklinController {
 
     private void notifySensorMessageEventListeners(final SensorMessageEvent sensorMessageEvent) {
         executor.execute(() -> fireAllSensorListeners(sensorMessageEvent));
+    }
+
+    private void fireAllAccessoryEventListeners(final AccessoryMessageEvent accessoryEvent) {
+        for (AccessoryMessageEventListener listener : this.accessoryMessageEventListeners) {
+            listener.onAccessoryMessage(accessoryEvent);
+        }
+    }
+
+    private void notifyAccessoryEventListeners(final AccessoryMessageEvent accessoryEvent) {
+        executor.execute(() -> fireAllAccessoryEventListeners(accessoryEvent));
     }
 
     //Overload message:
@@ -641,9 +664,12 @@ public class MarklinCS3 implements MarklinController {
                     controller.notifySensorMessageEventListeners(sme);
                     break;
                 case MarklinCan.SYSTEM_COMMAND_RESPONSE:
-                    //int subCmd = msg.getSubCommand();
                     PowerEvent pe = new PowerEvent(msg);
                     controller.notifyPowerEventListeners(pe);
+                    break;
+                case MarklinCan.ACCESSORY_SWITCHING_RESP:
+                    AccessoryMessageEvent ae = new AccessoryMessageEvent(msg);
+                    controller.notifyAccessoryEventListeners(ae);
                     break;
                 default:
                     //Logger.trace("Message: " + msg);
@@ -652,6 +678,8 @@ public class MarklinCS3 implements MarklinController {
         }
     }
 
+//    0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x30 0x00 0x01 0x00 0x00 0x00
+//    0x00 0x17 0x03 0x26 0x06 0x00 0x00 0x30 0x00 0x01 0x00 0x00 0x00
 //Test
     public static void main(String[] a) {
 

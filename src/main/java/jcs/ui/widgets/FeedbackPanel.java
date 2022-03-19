@@ -90,16 +90,14 @@ public class FeedbackPanel extends JPanel {
         this.contactIdOffset = contactIdOffset;
 
         initComponents();
-        intitSensorListeners();
     }
 
-    private void intitSensorListeners() {
+    private void initSensorListeners() {
         if (this.contactIdOffset == null) {
             this.contactIdOffset = 0;
         }
 
         int port = 1;
-
         p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
         p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
         p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
@@ -120,6 +118,8 @@ public class FeedbackPanel extends JPanel {
 
     public void registerSensorListeners() {
         if (TrackServiceFactory.getTrackService() != null) {
+            initSensorListeners();
+
             TrackServiceFactory.getTrackService().addSensorListener(p1);
             TrackServiceFactory.getTrackService().addSensorListener(p2);
             TrackServiceFactory.getTrackService().addSensorListener(p3);
@@ -157,6 +157,23 @@ public class FeedbackPanel extends JPanel {
             TrackServiceFactory.getTrackService().removeSensorListener(p14);
             TrackServiceFactory.getTrackService().removeSensorListener(p15);
             TrackServiceFactory.getTrackService().removeSensorListener(p16);
+
+            this.p1 = null;
+            this.p2 = null;
+            this.p3 = null;
+            this.p4 = null;
+            this.p5 = null;
+            this.p6 = null;
+            this.p7 = null;
+            this.p8 = null;
+            this.p9 = null;
+            this.p10 = null;
+            this.p11 = null;
+            this.p12 = null;
+            this.p13 = null;
+            this.p14 = null;
+            this.p15 = null;
+            this.p16 = null;
         }
     }
 
@@ -236,20 +253,6 @@ public class FeedbackPanel extends JPanel {
             }
         }
     }
-
-//    public static void main(String args[]) {
-//        JFrame f = new JFrame("FeedbackPanel Tester");
-//        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//
-//        FeedbackPanel feedbackPanel = new FeedbackPanel(1, 65, 0);
-//        feedbackPanel.registerSensorListeners();
-//
-//        f.add(feedbackPanel);
-//
-//        f.pack();
-//        f.setLocationRelativeTo(null);
-//        f.setVisible(true);
-//    }
 
     /**
      * This method is called from within the constructor to initialize the form.

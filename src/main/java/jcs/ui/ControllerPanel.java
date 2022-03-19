@@ -27,11 +27,14 @@ import java.awt.event.ComponentEvent;
 import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.devices.LinkSxx;
@@ -61,14 +64,17 @@ public class ControllerPanel extends JPanel {
         this.csModule2Panel.registerSensorListeners();
         this.csModule3Panel.registerSensorListeners();
         this.csModule4Panel.registerSensorListeners();
+
         this.bus1Module1Panel.registerSensorListeners();
         this.bus1Module2Panel.registerSensorListeners();
         this.bus1Module3Panel.registerSensorListeners();
         this.bus1Module4Panel.registerSensorListeners();
+
         this.bus2Module1Panel.registerSensorListeners();
         this.bus2Module2Panel.registerSensorListeners();
         this.bus2Module3Panel.registerSensorListeners();
         this.bus2Module4Panel.registerSensorListeners();
+
         this.bus3Module1Panel.registerSensorListeners();
         this.bus3Module2Panel.registerSensorListeners();
         this.bus3Module3Panel.registerSensorListeners();
@@ -81,14 +87,17 @@ public class ControllerPanel extends JPanel {
         this.csModule2Panel.removeSensorListeners();
         this.csModule3Panel.removeSensorListeners();
         this.csModule4Panel.removeSensorListeners();
+
         this.bus1Module1Panel.removeSensorListeners();
         this.bus1Module2Panel.removeSensorListeners();
         this.bus1Module3Panel.removeSensorListeners();
         this.bus1Module4Panel.removeSensorListeners();
+
         this.bus2Module1Panel.removeSensorListeners();
         this.bus2Module2Panel.removeSensorListeners();
         this.bus2Module3Panel.removeSensorListeners();
         this.bus2Module4Panel.removeSensorListeners();
+
         this.bus3Module1Panel.removeSensorListeners();
         this.bus3Module2Panel.removeSensorListeners();
         this.bus3Module3Panel.removeSensorListeners();
@@ -102,20 +111,19 @@ public class ControllerPanel extends JPanel {
 
             LinkSxx linkSxx = TrackServiceFactory.getTrackService().getLinkSxx();
             int deviceId = linkSxx.getDeviceId();
-            //CS is bus 0
             //For now support only a max of 4 modules per bus, which
-            //should be sufficient for most tracks, certenly mine ;)
+            //should be sufficient for most tracks ;)
             this.csModule1Panel.setContactIdOffset(0);
-            this.csModule1Panel.setDeviceId(0);
+            this.csModule1Panel.setDeviceId(deviceId);
 
             this.csModule2Panel.setContactIdOffset(0);
-            this.csModule2Panel.setDeviceId(0);
+            this.csModule2Panel.setDeviceId(deviceId);
 
             this.csModule3Panel.setContactIdOffset(0);
-            this.csModule3Panel.setDeviceId(0);
+            this.csModule3Panel.setDeviceId(deviceId);
 
             this.csModule4Panel.setContactIdOffset(0);
-            this.csModule4Panel.setDeviceId(0);
+            this.csModule4Panel.setDeviceId(deviceId);
 
             int bus1Offset = linkSxx.getContactIdOffset(1);
             this.bus1Module1Panel.setContactIdOffset(bus1Offset);
@@ -233,31 +241,30 @@ public class ControllerPanel extends JPanel {
         }
     }
 
-//    public static void main(String args[]) {
-//        try {
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-//            Logger.error("Can't set the LookAndFeel: " + ex);
-//        }
-//        java.awt.EventQueue.invokeLater(() -> {
-//
-//            ControllerPanel testPanel = new ControllerPanel();
-//            JFrame testFrame = new JFrame("ControllerPanel Tester");
-//
-//            testFrame.add(testPanel);
-//            testPanel.registerListeners();
-//
-//            testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-//                @Override
-//                public void windowClosing(java.awt.event.WindowEvent e) {
-//                    System.exit(0);
-//                }
-//            });
-//            testFrame.pack();
-//            testFrame.setLocationRelativeTo(null);
-//            testFrame.setVisible(true);
-//        });
-//    }
+    public static void main(String args[]) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            Logger.error("Can't set the LookAndFeel: " + ex);
+        }
+        java.awt.EventQueue.invokeLater(() -> {
+
+            ControllerPanel testPanel = new ControllerPanel();
+            JFrame testFrame = new JFrame("ControllerPanel Tester");
+
+            testFrame.add(testPanel);
+
+            testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    System.exit(0);
+                }
+            });
+            testFrame.pack();
+            testFrame.setLocationRelativeTo(null);
+            testFrame.setVisible(true);
+        });
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -378,7 +385,7 @@ public class ControllerPanel extends JPanel {
 
         csSP.setViewportView(csPanel);
 
-        feedbackSensorTP.addTab("CS", csSP);
+        feedbackSensorTP.addTab("Bus 0", csSP);
 
         bus1SP.setMinimumSize(new Dimension(1000, 100));
         bus1SP.setName("bus1SP"); // NOI18N
@@ -477,8 +484,6 @@ public class ControllerPanel extends JPanel {
         bus3SP.setViewportView(bus3Panel);
 
         feedbackSensorTP.addTab("Bus 3", bus3SP);
-
-        feedbackSensorTP.setSelectedIndex(1);
 
         topPanel.add(feedbackSensorTP);
 

@@ -29,6 +29,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
+import jcs.controller.cs3.events.AccessoryMessageEventListener;
 
 public interface MarklinController {
 
@@ -63,6 +64,10 @@ public interface MarklinController {
     void addSensorMessageListener(SensorMessageListener listener);
 
     void removeSensorMessageListener(SensorMessageListener listener);
+
+    void addAccessoryEventListener(AccessoryMessageEventListener listener);
+
+    void removeAccessoryEventListener(AccessoryMessageEventListener listener);
 
     List<LocomotiveBean> getLocomotives();
 
