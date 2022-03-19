@@ -21,9 +21,7 @@ package jcs.controller.cs3;
 import jcs.controller.cs3.can.parser.DirectionInfo;
 import java.awt.Image;
 import java.util.List;
-import jcs.controller.ControllerEventListener;
 import jcs.controller.cs3.events.SensorMessageEvent;
-import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
@@ -331,20 +329,5 @@ public class MarklinCS3Test {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-
-    /**
-     * Test of querySensors method, of class MarklinCS3.
-     */
-    //@Test
-    public void testQuerySensors() {
-        System.out.println("querySensors");
-        int sensorCount = 0;
-        MarklinCS3 instance = new MarklinCS3();
-        List<SensorMessageEvent> expResult = null;
-        List<SensorMessageEvent> result = instance.querySensors(sensorCount);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
 }
