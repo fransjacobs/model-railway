@@ -26,6 +26,7 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.SignalType;
@@ -109,24 +110,30 @@ public class TileTester extends JFrame {
 
         tileEast4 = new Switch(Orientation.EAST, Direction.RIGHT, 70, 330);
         tileSouth4 = new Switch(Orientation.SOUTH, Direction.RIGHT, 160, 330);
+        ((Switch)tileSouth4).setValue(AccessoryValue.RED);
         tileWest4 = new Switch(Orientation.WEST, Direction.RIGHT, 250, 330);
         tileNorth4 = new Switch(Orientation.NORTH, Direction.RIGHT, 340, 330);
+        ((Switch)tileNorth4).setValue(AccessoryValue.GREEN);
 
         tileEast5 = new Switch(Orientation.EAST, Direction.LEFT, 70, 380);
+        ((Switch)tileEast5).setValue(AccessoryValue.GREEN);
         tileSouth5 = new Switch(Orientation.SOUTH, Direction.LEFT, 160, 380);
         tileWest5 = new Switch(Orientation.WEST, Direction.LEFT, 250, 380);
+        ((Switch)tileWest5).setValue(AccessoryValue.RED);
         tileNorth5 = new Switch(Orientation.NORTH, Direction.LEFT, 340, 380);
 
         tileEast6 = new Cross(Orientation.EAST, Direction.RIGHT, 50, 470);
         tileSouth6 = new Cross(Orientation.SOUTH, Direction.RIGHT, 160, 470);
+        ((Cross)tileSouth6).setValue(AccessoryValue.RED);
         tileWest6 = new Cross(Orientation.WEST, Direction.RIGHT, 270, 470);
         tileNorth6 = new Cross(Orientation.NORTH, Direction.RIGHT, 340, 470);
-//        ((SwitchTile) tileSouth).setAccessoryValue(AccessoryValue.RED);
-//        ((SwitchTile) tileWest).setAccessoryValue(AccessoryValue.GREEN);
+        ((Switch)tileNorth6).setValue(AccessoryValue.GREEN);
 
         tileEast7 = new Cross(Orientation.EAST, Direction.LEFT, 50, 560);
+        ((Cross)tileEast7).setValue(AccessoryValue.RED);
         tileSouth7 = new Cross(Orientation.SOUTH, Direction.LEFT, 160, 560);
         tileWest7 = new Cross(Orientation.WEST, Direction.LEFT, 270, 560);
+        ((Switch)tileWest7).setValue(AccessoryValue.GREEN);
         tileNorth7 = new Cross(Orientation.NORTH, Direction.LEFT, 340, 560);
 
         tileEast8 = new Signal(Orientation.EAST, 70, 650, SignalType.HP01);

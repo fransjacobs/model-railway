@@ -26,11 +26,10 @@ import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 import jcs.entities.TileBean;
-import static jcs.entities.TileBean.DEFAULT_WIDTH;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.ui.layout.LayoutUtil;
-import static jcs.ui.layout.LayoutUtil.DEFAULT_HEIGHT;
 
 /**
  *
@@ -165,7 +164,19 @@ public class Cross extends Switch implements Tile {
         int x, y, w, h;
         x = 0;
         y = 17;
-        w = DEFAULT_WIDTH * 2;
+        w = DEFAULT_WIDTH;
+        h = 6;
+
+        g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+        g2.setPaint(trackColor);
+        g2.fillRect(x, y, w, h);
+    }
+
+    protected void renderStraight2(Graphics2D g2, Color trackColor, Color backgroundColor) {
+        int x, y, w, h;
+        x = DEFAULT_WIDTH;
+        y = 17;
+        w = DEFAULT_WIDTH;
         h = 6;
 
         g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
@@ -186,7 +197,6 @@ public class Cross extends Switch implements Tile {
 
         g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.setPaint(trackColor);
-
         g2.fillPolygon(xPoints, yPoints, xPoints.length);
     }
 
@@ -202,16 +212,36 @@ public class Cross extends Switch implements Tile {
 
         g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.setPaint(trackColor);
-        //g2.setPaint(Color.BLUE);
-
         g2.fillPolygon(xPoints, yPoints, xPoints.length);
     }
 
     @Override
     public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        renderStraight(g2, trackColor, backgroundColor);
-        renderDiagonal(g2, trackColor, backgroundColor);
-        renderDiagonal2(g2, trackColor, backgroundColor);
+        if (value == null) {
+            this.value = AccessoryValue.OFF;
+        }
+
+        switch (this.value) {
+            case RED:
+                renderStraight2(g2, trackColor, backgroundColor);
+                renderDiagonal(g2, trackColor, backgroundColor);
+
+                renderStraight(g2, Color.red, backgroundColor);
+                renderDiagonal2(g2, Color.red, backgroundColor);
+                break;
+            case GREEN:
+                renderDiagonal(g2, trackColor, backgroundColor);
+                renderDiagonal2(g2, trackColor, backgroundColor);
+                renderStraight(g2, Color.green, backgroundColor);
+                renderStraight2(g2, Color.green, backgroundColor);
+                break;
+            default:
+                renderStraight(g2, trackColor, backgroundColor);
+                renderStraight2(g2, trackColor, backgroundColor);
+                renderDiagonal(g2, trackColor, backgroundColor);
+                renderDiagonal2(g2, trackColor, backgroundColor);
+                break;
+        }
     }
 
     @Override

@@ -61,7 +61,7 @@ import org.tinylog.Logger;
  * A Tile is rendered to a Buffered Image to speed up the display
  *
  */
-abstract class AbstractTile2 implements Shape, Tile {
+abstract class AbstractTile implements Shape, Tile {
 
     protected Orientation orientation;
     protected Direction direction;
@@ -87,19 +87,19 @@ abstract class AbstractTile2 implements Shape, Tile {
     
     protected RepaintListener repaintListener;
 
-    protected AbstractTile2(Point center) {
+    protected AbstractTile(Point center) {
         this(Orientation.EAST, Direction.CENTER, center);
     }
 
-    protected AbstractTile2(Orientation orientation, Point center) {
+    protected AbstractTile(Orientation orientation, Point center) {
         this(orientation, Direction.CENTER, center);
     }
 
-    protected AbstractTile2(Orientation orientation, Direction direction, Point center) {
+    protected AbstractTile(Orientation orientation, Direction direction, Point center) {
         this(orientation, direction, center, null);
     }
 
-    protected AbstractTile2(Orientation orientation, Direction direction, Point center, Color backgroundColor) {
+    protected AbstractTile(Orientation orientation, Direction direction, Point center, Color backgroundColor) {
         this.orientation = orientation;
         this.direction = direction;
         this.center = center;
@@ -115,7 +115,7 @@ abstract class AbstractTile2 implements Shape, Tile {
         this.id = getNewId();
     }
 
-    protected AbstractTile2(TileBean tileBean) {
+    protected AbstractTile(TileBean tileBean) {
         setTileBean(tileBean);
         this.trackColor = DEFAULT_TRACK_COLOR;
         this.backgroundColor = Color.white;
@@ -567,7 +567,7 @@ abstract class AbstractTile2 implements Shape, Tile {
         if (!Objects.equals(getClass(), obj.getClass())) {
             return false;
         }
-        final AbstractTile2 other = (AbstractTile2) obj;
+        final AbstractTile other = (AbstractTile) obj;
         if (this.orientation != other.orientation) {
             return false;
         }

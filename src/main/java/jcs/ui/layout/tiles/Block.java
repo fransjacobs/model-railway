@@ -35,7 +35,7 @@ import jcs.ui.layout.LayoutUtil;
  *
  * @author frans
  */
-public class Block extends AbstractTile2 implements Tile {
+public class Block extends AbstractTile implements Tile {
 
     private static int idSeq;
 

@@ -67,7 +67,7 @@ public class TileFactory {
         }
 
         TileType tileType = tileBean.getTileType();
-        AbstractTile2 tile = null;
+        AbstractTile tile = null;
         switch (tileType) {
             case STRAIGHT:
                 tile = new Straight(tileBean);
@@ -115,7 +115,7 @@ public class TileFactory {
     }
 
     public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, Point center, boolean drawOutline) {
-        AbstractTile2 tile = null;
+        AbstractTile tile = null;
         switch (tileType) {
             case STRAIGHT:
                 tile = new Straight(orientation, center);

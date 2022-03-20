@@ -33,6 +33,7 @@ import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.events.AccessoryListener;
 import jcs.trackservice.events.SensorListener;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.ui.layout.tiles.TileFactory;
@@ -86,8 +87,14 @@ public class LayoutUtil {
             case CURVED:
                 break;
             case SWITCH:
+                if (tileBean.getBeanId() != null) {
+                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getBeanId()));
+                }
                 break;
             case CROSS:
+                if (tileBean.getBeanId() != null) {
+                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getBeanId()));
+                }
                 break;
             case SIGNAL:
                 break;
@@ -153,6 +160,10 @@ public class LayoutUtil {
         switch (tile.getTileType()) {
             case SENSOR:
                 TrackServiceFactory.getTrackService().addSensorListener((SensorListener) tile);
+                break;
+            case SWITCH:
+                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
+                break;
             default:
                 //Do nothing
                 break;

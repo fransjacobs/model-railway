@@ -31,7 +31,7 @@ import jcs.ui.layout.LayoutUtil;
  * Draw a Straight Track
  *
  */
-public class Straight extends AbstractTile2 implements Tile {
+public class Straight extends AbstractTile implements Tile {
 
     private static int idSeq;
 

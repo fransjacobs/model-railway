@@ -23,20 +23,23 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.HashSet;
-import java.util.Set;
+import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.entities.AccessoryBean;
+import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
+import jcs.trackservice.events.AccessoryListener;
 import jcs.ui.layout.tiles.enums.Direction;
-import static jcs.ui.layout.LayoutUtil.DEFAULT_HEIGHT;
-import static jcs.ui.layout.LayoutUtil.DEFAULT_WIDTH;
 
 /**
  * Draw a Railway Switch Depending on the Direction it is a Left or Right switch
  */
-public class Switch extends AbstractTile2 implements Tile {
+public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
     private static int idSeq;
+
+    protected AccessoryValue value;
 
     public Switch(TileBean tileBean) {
         super(tileBean);
@@ -58,6 +61,11 @@ public class Switch extends AbstractTile2 implements Tile {
     protected String getNewId() {
         idSeq++;
         return "sw-" + idSeq;
+    }
+
+    public void setValue(AccessoryValue value) {
+        this.value = value;
+        this.image = null;
     }
 
     protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
@@ -84,18 +92,56 @@ public class Switch extends AbstractTile2 implements Tile {
 
         g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.setPaint(trackColor);
-
         g2.fillPolygon(xPoints, yPoints, xPoints.length);
     }
 
     @Override
     public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        renderStraight(g2, trackColor, backgroundColor);
-        renderDiagonal(g2, trackColor, backgroundColor);
+        if (value == null) {
+            this.value = AccessoryValue.OFF;
+        }
+
+        switch (this.value) {
+            case RED:
+                renderStraight(g2, trackColor, backgroundColor);
+                renderDiagonal(g2, Color.red, backgroundColor);
+                break;
+            case GREEN:
+                renderDiagonal(g2, trackColor, backgroundColor);
+                renderStraight(g2, Color.green, backgroundColor);
+                break;
+            default:
+                renderStraight(g2, trackColor, backgroundColor);
+                renderDiagonal(g2, trackColor, backgroundColor);
+                break;
+        }
     }
 
     @Override
     protected void setIdSeq(int id) {
         idSeq = id;
     }
+
+    public AccessoryBean getAccessoryBean() {
+        if (this.tileBean != null && this.tileBean.getEntityBean() != null) {
+            return (AccessoryBean) this.tileBean.getEntityBean();
+        } else {
+            return null;
+        }
+    }
+
+    public void setAccessoryBean(AccessoryBean sensorBean) {
+        if (this.tileBean == null) {
+            this.tileBean = this.getTileBean();
+        }
+        this.tileBean.setEntityBean(sensorBean);
+    }
+
+    @Override
+    public void onChange(AccessoryMessageEvent event) {
+        if (this.getTileBean().getBeanId() != null && this.getTileBean().getBeanId().equals(event.getAccessoryBean().getId())) {
+            this.value = event.getAccessoryBean().getAccessoryValue();
+        }
+    }
+
 }

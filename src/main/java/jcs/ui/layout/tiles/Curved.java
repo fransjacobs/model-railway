@@ -35,7 +35,7 @@ import static jcs.ui.layout.LayoutUtil.DEFAULT_HEIGHT;
  * Draw a Curved Track
  *
  */
-public class Curved extends AbstractTile2 implements Tile {
+public class Curved extends AbstractTile implements Tile {
 
     private static int idSeq;
 

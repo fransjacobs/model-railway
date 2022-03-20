@@ -63,10 +63,7 @@ public class Sensor extends Straight implements Tile, SensorListener {
 
     public void setActive(boolean active) {
         this.active = active;
-        //if (active != this.active) {
-        //    this.active = active;
-            this.image = null;
-        //}
+        this.image = null;
     }
 
     private void renderSensor(Graphics2D g2) {
