@@ -18,10 +18,13 @@
  */
 package jcs.ui.layout.dialogs;
 
+import java.util.List;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
-import jcs.entities.SensorBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.Switch;
+import org.tinylog.Logger;
 
 /**
  *
@@ -30,6 +33,7 @@ import jcs.ui.layout.tiles.Switch;
 public class SwitchDialog extends javax.swing.JDialog {
 
     private final Switch turnout;
+    private ComboBoxModel<AccessoryBean> accessoryComboBoxModel;
 
     /**
      * Creates new form SensorDialog
@@ -47,20 +51,26 @@ public class SwitchDialog extends javax.swing.JDialog {
 
     private void postInit() {
         setLocationRelativeTo(null);
+        String text = this.headingLbl.getText() + " " + this.turnout.getId();
+        this.headingLbl.setText(text);
 
         if (this.turnout != null) {
+            List<AccessoryBean> turnouts = TrackServiceFactory.getTrackService().getTurnouts();
+            AccessoryBean emptyBean = new AccessoryBean();
+            turnouts.add(emptyBean);
+
+            accessoryComboBoxModel = new DefaultComboBoxModel(turnouts.toArray());
+            this.accessoryCB.setModel(accessoryComboBoxModel);
+
             AccessoryBean ab = this.turnout.getAccessoryBean();
             if (ab == null) {
-                ab = new AccessoryBean();
-                this.turnout.setAccessoryBean(ab);
-            } else {
-                if (TrackServiceFactory.getTrackService() != null) {
-                    //Unregister is properties might change
-                    TrackServiceFactory.getTrackService().removeAccessoryListener(turnout);
-                }
+                ab = emptyBean;
             }
+            this.turnout.setAccessoryBean(ab);
 
-            this.nameTF.setText(this.turnout.getAccessoryBean().getName());
+            this.accessoryComboBoxModel.setSelectedItem(ab);
+            //Unregister is properties might change
+            TrackServiceFactory.getTrackService().removeAccessoryListener(turnout);
         }
     }
 
@@ -76,14 +86,10 @@ public class SwitchDialog extends javax.swing.JDialog {
         headingPanel = new javax.swing.JPanel();
         headingLbl = new javax.swing.JLabel();
         namePanel = new javax.swing.JPanel();
-        nameLbl = new javax.swing.JLabel();
-        nameTF = new javax.swing.JTextField();
         deviceIdPanel = new javax.swing.JPanel();
-        deviceIdLbl = new javax.swing.JLabel();
-        switchCB = new javax.swing.JComboBox<>();
+        turnoutLbl = new javax.swing.JLabel();
+        accessoryCB = new javax.swing.JComboBox<>();
         contactIdPanel = new javax.swing.JPanel();
-        contactIdLbl = new javax.swing.JLabel();
-        contactIdSpinner = new javax.swing.JSpinner();
         saveExitPanel = new javax.swing.JPanel();
         saveExitBtn = new javax.swing.JButton();
 
@@ -95,8 +101,8 @@ public class SwitchDialog extends javax.swing.JDialog {
         headingPanel.setPreferredSize(new java.awt.Dimension(290, 40));
         headingPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        headingLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straight-feedback.png"))); // NOI18N
-        headingLbl.setText("Sensor");
+        headingLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-R-turnout.png"))); // NOI18N
+        headingLbl.setText("Turnout");
         headingPanel.add(headingLbl);
 
         getContentPane().add(headingPanel);
@@ -106,15 +112,6 @@ public class SwitchDialog extends javax.swing.JDialog {
         java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
         flowLayout1.setAlignOnBaseline(true);
         namePanel.setLayout(flowLayout1);
-
-        nameLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        nameLbl.setText("Name:");
-        nameLbl.setPreferredSize(new java.awt.Dimension(100, 16));
-        namePanel.add(nameLbl);
-
-        nameTF.setPreferredSize(new java.awt.Dimension(150, 26));
-        namePanel.add(nameTF);
-
         getContentPane().add(namePanel);
 
         deviceIdPanel.setPreferredSize(new java.awt.Dimension(290, 40));
@@ -122,13 +119,18 @@ public class SwitchDialog extends javax.swing.JDialog {
         flowLayout2.setAlignOnBaseline(true);
         deviceIdPanel.setLayout(flowLayout2);
 
-        deviceIdLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        deviceIdLbl.setText("Device ID:");
-        deviceIdLbl.setPreferredSize(new java.awt.Dimension(100, 16));
-        deviceIdPanel.add(deviceIdLbl);
+        turnoutLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        turnoutLbl.setText("Turnout:");
+        turnoutLbl.setPreferredSize(new java.awt.Dimension(100, 16));
+        deviceIdPanel.add(turnoutLbl);
 
-        switchCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        deviceIdPanel.add(switchCB);
+        accessoryCB.setPreferredSize(new java.awt.Dimension(150, 27));
+        accessoryCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                accessoryCBActionPerformed(evt);
+            }
+        });
+        deviceIdPanel.add(accessoryCB);
 
         getContentPane().add(deviceIdPanel);
 
@@ -136,16 +138,6 @@ public class SwitchDialog extends javax.swing.JDialog {
         java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
         flowLayout3.setAlignOnBaseline(true);
         contactIdPanel.setLayout(flowLayout3);
-
-        contactIdLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        contactIdLbl.setText("Contact ID:");
-        contactIdLbl.setPreferredSize(new java.awt.Dimension(100, 16));
-        contactIdPanel.add(contactIdLbl);
-
-        contactIdSpinner.setModel(new javax.swing.SpinnerNumberModel());
-        contactIdSpinner.setPreferredSize(new java.awt.Dimension(80, 26));
-        contactIdPanel.add(contactIdSpinner);
-
         getContentPane().add(contactIdPanel);
 
         saveExitPanel.setPreferredSize(new java.awt.Dimension(290, 50));
@@ -168,34 +160,34 @@ public class SwitchDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
-
         if (this.turnout != null && this.turnout.getAccessoryBean() != null) {
-            this.turnout.getAccessoryBean().setName(this.nameTF.getText());
-
-            if (TrackServiceFactory.getTrackService() != null) {
+            if(this.turnout.getAccessoryBean().getName() != null) {
                 TrackServiceFactory.getTrackService().persist((turnout.getTileBean()));
-
                 TrackServiceFactory.getTrackService().addAccessoryListener(turnout);
+            } else {
+                this.turnout.setAccessoryBean(null);
+                TrackServiceFactory.getTrackService().persist((turnout.getTileBean()));
             }
         }
         this.setVisible(false);
         this.dispose();
     }//GEN-LAST:event_saveExitBtnActionPerformed
 
+    private void accessoryCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accessoryCBActionPerformed
+        AccessoryBean selected = (AccessoryBean) this.accessoryComboBoxModel.getSelectedItem();
+        Logger.trace("Selected: " + selected.toLogString());
+        this.turnout.setAccessoryBean(selected);
+    }//GEN-LAST:event_accessoryCBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel contactIdLbl;
+    private javax.swing.JComboBox<AccessoryBean> accessoryCB;
     private javax.swing.JPanel contactIdPanel;
-    private javax.swing.JSpinner contactIdSpinner;
-    private javax.swing.JLabel deviceIdLbl;
     private javax.swing.JPanel deviceIdPanel;
     private javax.swing.JLabel headingLbl;
     private javax.swing.JPanel headingPanel;
-    private javax.swing.JLabel nameLbl;
     private javax.swing.JPanel namePanel;
-    private javax.swing.JTextField nameTF;
     private javax.swing.JButton saveExitBtn;
     private javax.swing.JPanel saveExitPanel;
-    private javax.swing.JComboBox<String> switchCB;
+    private javax.swing.JLabel turnoutLbl;
     // End of variables declaration//GEN-END:variables
 }

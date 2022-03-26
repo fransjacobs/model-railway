@@ -92,6 +92,14 @@ public class AccessoryBean implements JCSEntity {
         this.position = position;
     }
 
+    public void toggle() {
+        if (position == 1) {
+            this.position = 0;
+        } else {
+            this.position = 1;
+        }
+    }
+
     public AccessoryValue getAccessoryValue() {
         return AccessoryValue.cs3Get(this.position);
     }
@@ -134,12 +142,12 @@ public class AccessoryBean implements JCSEntity {
 
     @Override
     public String toString() {
-        return "AccessoryBean{" + "id=" + id + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + '}';
+        return name;
     }
 
     @Override
     public String toLogString() {
-        return toString();
+        return "AccessoryBean{" + "id=" + id + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + '}';
     }
 
     @Override

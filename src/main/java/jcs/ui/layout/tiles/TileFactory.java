@@ -19,6 +19,8 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Point;
+import jcs.entities.AccessoryBean;
+import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
@@ -61,7 +63,7 @@ public class TileFactory {
         }
     }
 
-    public static Tile createTile(TileBean tileBean, boolean drawOutline) {
+    public static Tile createTile(TileBean tileBean, boolean drawOutline, boolean showValues) {
         if (tileBean == null) {
             return null;
         }
@@ -83,6 +85,9 @@ public class TileFactory {
                 tile = new Switch(tileBean);
                 switchIdSeq = getHeighestIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(switchIdSeq);
+                if (showValues) {
+                    ((Switch) tile).setValue(((AccessoryBean) tileBean.getEntityBean()).getAccessoryValue());
+                }
                 break;
             case CROSS:
                 tile = new Cross(tileBean);
@@ -98,6 +103,9 @@ public class TileFactory {
                 tile = new Sensor(tileBean);
                 sensorIdSeq = getHeighestIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(sensorIdSeq);
+                if (showValues) {
+                    ((Sensor) tile).setActive(((SensorBean) tileBean.getEntityBean()).isActive());
+                }
                 break;
             case BLOCK:
                 tile = new Block(tileBean);

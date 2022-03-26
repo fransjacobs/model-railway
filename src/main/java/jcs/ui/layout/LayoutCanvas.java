@@ -43,15 +43,19 @@ import java.util.concurrent.Executors;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
+import jcs.entities.enums.AccessoryValue;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout.dialogs.SensorDialog;
+import jcs.ui.layout.dialogs.SwitchDialog;
 import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.BreathFirst;
 import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
+import jcs.ui.layout.tiles.Switch;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
@@ -302,7 +306,9 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     private void loadTiles() {
-        Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid, this);
+        boolean showValues = Mode.CONTROL.equals(this.mode);
+
+        Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid, this, showValues);
         Set<Point> ps = tm.keySet();
         synchronized (tiles) {
             selectedTiles.clear();
@@ -493,7 +499,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
   private void formMouseClicked(MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
       Logger.trace("Click Mouse @ X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
       Point p = LayoutUtil.snapToGrid(evt.getPoint());
-      Logger.trace("Snap Tile X: " + p.getX() + " Y:" + p.getY());
+      Logger.trace("Snap Tile X: " + p.getX() + " Y:" + p.getY() + " Mode: " + this.mode);
 
       //cross tile selectie gaat fout
       Tile tile = this.findTile(p);
@@ -524,22 +530,17 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
               Set<Point> toRemove = new HashSet<>(selectedTiles);
               this.removeTiles(toRemove);
               break;
-
+          case CONTROL:
+              if (tile != null) {
+                  executeControlActionForTile(tile, p);
+              }
+              break;
           default:
-
               if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
                   showOperationsPopupMenu(tile, p);
               }
-
               break;
       }
-
-//      this.executor.execute(() -> repaint());
-      //this.executor.execute(() -> setDependentComponents());
-      //notifySelectionListeners();
-//      this.executor.execute(() -> notifySelectionListeners());
-      /////////////////////
-      //this.repaint();
       this.repaint();
 
   }//GEN-LAST:event_formMouseClicked
@@ -551,9 +552,36 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 //      if (!this.selectedTiles.isEmpty()) {
 //
 //      }
-
-
   }//GEN-LAST:event_formMouseDragged
+
+    private void executeControlActionForTile(Tile tile, Point p) {
+        TileType tt = tile.getTileType();
+        switch (tt) {
+            case STRAIGHT:
+                break;
+            case CURVED:
+                break;
+            case SENSOR:
+                break;
+            case BLOCK:
+                break;
+            case SIGNAL:
+                break;
+            case SWITCH:
+                toggleSwitch((Switch) tile);
+                break;
+            case CROSS:
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void toggleSwitch(Switch turnout) {
+        AccessoryBean ab = turnout.getAccessoryBean();
+        ab.toggle();
+        TrackServiceFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+    }
 
     private void editSelectedTileProperties() {
         //the first tile should be the selected one
@@ -566,7 +594,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         if (!this.selectedTiles.isEmpty()) {
             Point tcp = this.selectedTiles.iterator().next();
             Tile tile = findTile(tcp);
-            Logger.trace("Selected Tile: " + tile);
             TileType tt = tile.getTileType();
             switch (tt) {
                 case STRAIGHT:
@@ -589,17 +616,16 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 //                    SignalDialog sd = new SignalDialog(getParentFrame(), true, (SignalTile) tile);
 //                    sd.setVisible(true);
 //                    break;
-//                case SWITCH:
-//                    TurnoutDialog td = new TurnoutDialog(getParentFrame(), true, (SwitchTile) tile);
-//                    td.setVisible(true);
-//                    break;
+                case SWITCH:
+                    SwitchDialog sd = new SwitchDialog(getParentFrame(), (Switch) tile);
+                    sd.setVisible(true);
+                    break;
                 default:
                     break;
             }
         }
         this.executor.execute(() -> repaint());
         Logger.trace("Edit done");
-
     }
 
     private void showOperationsPopupMenu(Tile tile, Point p) {
@@ -610,7 +636,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         boolean showMove = false;
         boolean showDelete = false;
 
-        String tt = tile.getClass().getSimpleName();
+        TileType tt = tile.getTileType();
         switch (tt) {
 //            case "StraightTrack":
 //                showRotate = true;
@@ -620,28 +646,28 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 //                showRotate = true;
 //                showDelete = true;
 //                break;
-            case "Sensor":
+            case SENSOR:
                 showProperties = true;
                 showRotate = true;
                 showDelete = true;
                 break;
-            case "Block":
+            case BLOCK:
                 showProperties = true;
                 showRotate = true;
                 showDelete = true;
                 break;
-            case "SignalTile":
+            case SIGNAL:
                 showProperties = true;
                 showRotate = true;
                 showDelete = true;
                 break;
-            case "SwitchTile":
+            case SWITCH:
                 showProperties = true;
                 showFlip = true;
                 showRotate = true;
                 showDelete = true;
                 break;
-            case "CrossTile":
+            case CROSS:
                 showProperties = true;
                 showFlip = true;
                 showRotate = true;
@@ -797,9 +823,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
       } else {
           setCursor(Cursor.getDefaultCursor());
       }
-
-      //int x = evt.getX();
-      //int y = evt.getY();
   }//GEN-LAST:event_formMouseMoved
 
     private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed
@@ -1035,15 +1058,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         //this.executor.execute(() -> notifySelectionModeChange());
         //notifySelectionModeChange();
         this.executor.execute(() -> repaint());
-    }
-
-    public void moveSelectedTile() {
-//        if (!this.selectedTiles.isEmpty()) {
-//            AbstractTile selectedTile = selectedTiles.iterator().next();
-//            this.movingTile = selectedTile;
-//            selectedTiles.clear();
-//            this.repaint();
-//        }
     }
 
     void routeLayout() {

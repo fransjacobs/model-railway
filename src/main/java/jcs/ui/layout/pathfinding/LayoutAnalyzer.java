@@ -351,7 +351,7 @@ public class LayoutAnalyzer {
         graph.clear();
 
         //Iterate through all the Tiles from the layout
-        Collection<Tile> tiles = LayoutUtil.loadLayout(true).values();
+        Collection<Tile> tiles = LayoutUtil.loadLayout(true,false).values();
         for (Tile tile : tiles) {
             Logger.trace("Evaluating tile: " + tile.getTileType() + ": " + tile.getId()); // + " @ (" + tile.getCenterX() + "," + tile.getCenterY() + ")...");
             //A Tile can result in one or more nodes

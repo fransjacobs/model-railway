@@ -25,7 +25,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.entities.AccessoryBean;
-import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
@@ -130,17 +129,18 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
         }
     }
 
-    public void setAccessoryBean(AccessoryBean sensorBean) {
+    public void setAccessoryBean(AccessoryBean accessoryBean) {
         if (this.tileBean == null) {
             this.tileBean = this.getTileBean();
         }
-        this.tileBean.setEntityBean(sensorBean);
+        this.tileBean.setEntityBean(accessoryBean);
     }
 
     @Override
     public void onChange(AccessoryMessageEvent event) {
         if (this.getTileBean().getBeanId() != null && this.getTileBean().getBeanId().equals(event.getAccessoryBean().getId())) {
-            this.value = event.getAccessoryBean().getAccessoryValue();
+            setValue(event.getAccessoryBean().getAccessoryValue());
+            repaintTile();
         }
     }
 

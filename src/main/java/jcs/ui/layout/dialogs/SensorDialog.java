@@ -27,7 +27,7 @@ import jcs.ui.layout.tiles.Sensor;
  * @author fransjacobs
  */
 public class SensorDialog extends javax.swing.JDialog {
-    
+
     private final Sensor sensor;
 
     /**
@@ -40,13 +40,15 @@ public class SensorDialog extends javax.swing.JDialog {
         super(parent, true);
         this.sensor = sensor;
         initComponents();
-        
+
         postInit();
     }
-    
+
     private void postInit() {
         setLocationRelativeTo(null);
-        
+        String text = this.headingLbl.getText() + " " + this.sensor.getId();
+        this.headingLbl.setText(text);
+
         if (this.sensor != null) {
             SensorBean sb = this.sensor.getSensorBean();
             if (sb == null) {
@@ -58,7 +60,7 @@ public class SensorDialog extends javax.swing.JDialog {
                     TrackServiceFactory.getTrackService().removeSensorListener(this.sensor);
                 }
             }
-            
+
             this.nameTF.setText(this.sensor.getSensorBean().getName());
             if (this.sensor.getSensorBean().getDeviceId() != null) {
                 this.deviceIdSpinner.setValue(this.sensor.getSensorBean().getDeviceId());
@@ -174,15 +176,15 @@ public class SensorDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
-        
+
         if (this.sensor != null && this.sensor.getSensorBean() != null) {
             this.sensor.getSensorBean().setContactId((Integer) this.contactIdSpinner.getValue());
             this.sensor.getSensorBean().setDeviceId((Integer) this.deviceIdSpinner.getValue());
             this.sensor.getSensorBean().setName(this.nameTF.getText());
-            
+
             if (TrackServiceFactory.getTrackService() != null) {
                 TrackServiceFactory.getTrackService().persist((sensor.getTileBean()));
-                
+
                 TrackServiceFactory.getTrackService().addSensorListener(sensor);
             }
         }

@@ -224,7 +224,7 @@ public class H2TrackService implements TrackService {
         if (controllerService != null) {
             this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
             this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
-            
+
         }
 
         return this.controllerService != null && this.controllerService.isConnected();
@@ -256,11 +256,6 @@ public class H2TrackService implements TrackService {
         }
         return sensor;
     }
-    
-    
-    
-    
-    
 
 //    private void firePersistEvent(ControllableDevice current, ControllableDevice previous) {
 //        if (!current.equals(previous)) {
@@ -557,6 +552,8 @@ public class H2TrackService implements TrackService {
                 case CURVED:
                     break;
                 case SWITCH:
+                    AccessoryBean turnout = (AccessoryBean) tile.getEntityBean();
+                    tile.setBeanId(this.acceDAO.persist(turnout));
                     break;
                 case CROSS:
                     break;
@@ -737,40 +734,8 @@ public class H2TrackService implements TrackService {
     @Override
     public void updateGuiStatuses() {
         //updateAccessoryStatuses();
-
     }
 
-//    private void updateAccessoryStatuses() {
-//        List<AccessoryStatus> asl = controllerService.getAccessoryStatuses();
-//        List<SolenoidAccessory> accessoiries = new ArrayList<>();
-//
-//        for (AccessoryStatus as : asl) {
-//            Integer a = as.getAddress();
-//            SwitchBean t = turnoutDAO.find(a);
-//            if (t != null) {
-//                AccessoryValue av = as.getAccessoryValue();
-//                if (!av.equals(t.getValue())) {
-//                    t.setValue(av);
-//                    turnoutDAO.persist(t);
-//                    accessoiries.add(t);
-//                }
-//            } else {
-//                SignalBean s = signalDAO.find(a);
-//                if (s != null) {
-//                    SignalValue sv = as.getSignalValue();
-//                    if (!sv.equals(s.getSignalValue())) {
-//                        s.setSignalValue(sv);
-//                        signalDAO.persist(s);
-//                        accessoiries.add(s);
-//                    }
-//                }
-//            }
-//        }
-//        //notify the changed listeners
-//        accessoiries.forEach((accessoiry) -> {
-//            notifyAccessoiryListeners(accessoiry);
-//        });
-//    }
     @Override
     public void changeDirection(Direction direction, LocomotiveBean locomotive) {
         Logger.debug("Changing direction to " + direction + " for: " + locomotive.toLogString());
@@ -946,10 +911,9 @@ public class H2TrackService implements TrackService {
 //        this.locomotiveListeners.remove(listener);
     }
 
-
     //@Override
     public void notifyAllAccessoryListeners() {
-   }
+    }
 
     private class SensorMessageEventListener implements SensorMessageListener {
 
@@ -1006,68 +970,4 @@ public class H2TrackService implements TrackService {
         }
     }
 
-//    private class Powerlistener implements PowerEventListener {
-//
-//        private final H2TrackService trackService;
-//
-//        Powerlistener(H2TrackService trackService) {
-//            this.trackService = trackService;
-//        }
-//
-//        @Override
-//        public void onPowerChange(PowerEvent event) {
-//
-//        }
-//    }
-//    private class ControllerWatchDogListener implements HeartbeatListener {
-//
-//        @Override
-//        public void sample() {
-//            try {
-//                TrackService trackService = TrackServiceFactory.getTrackService();
-//                if (trackService instanceof H2TrackService) {
-//                    ((H2TrackService) trackService).feedbackModuleSampleToggle();
-//                }
-//            } catch (Exception e) {
-//                Logger.error(e.getMessage());
-//            }
-//        }
-//    }
-//    private class ControllerServiceEventListener implements ControllerEventListener {
-//
-//        @Override
-//        public void notify(ControllerEvent event) {
-//            try {
-//                TrackService trackService = TrackServiceFactory.getTrackService();
-//                if (trackService != null) {
-//                    if (trackService instanceof H2TrackService) {
-//                        Logger.info(event);
-//                        ((H2TrackService) trackService).handleControllerEvent(event);
-//                    }
-//                }
-//            } catch (Exception e) {
-//                Logger.error(e.getMessage());
-//                Logger.trace(e);
-//            }
-//        }
-//    }
-//    private class UpdateGuiStatusTask extends TimerTask {
-//
-//        private final TrackService trackService;
-//
-//        UpdateGuiStatusTask(TrackService trackService) {
-//            this.trackService = trackService;
-//        }
-//
-//        @Override
-//        public void run() {
-//            try {
-//                trackService.updateGuiStatuses();
-////                trackService.notifyAllSensorListeners();
-//            } catch (Exception e) {
-//                Logger.error(e.getMessage());
-//                Logger.trace(e);
-//            }
-//        }
-//    }
 }

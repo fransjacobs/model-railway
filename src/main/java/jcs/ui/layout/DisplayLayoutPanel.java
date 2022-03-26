@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.ui.layout.enums.Mode;
 import org.tinylog.Logger;
 
 /**
@@ -39,7 +40,6 @@ public class DisplayLayoutPanel extends JPanel {
 
     public static final int GRID_SIZE = Tile.GRID;
 
-    //private final ExecutorService executor;
     /**
      * Creates new form GridsCanvas
      */
@@ -51,6 +51,7 @@ public class DisplayLayoutPanel extends JPanel {
 
     private void postInit() {
         this.canvas.setDrawGrid(false);
+        this.canvas.setMode(Mode.CONTROL);
     }
 
     public void loadLayout() {

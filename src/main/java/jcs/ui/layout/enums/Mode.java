@@ -23,5 +23,6 @@ public enum Mode {
   ADD,
   EDIT,
   MOVE,
-  DELETE
+  DELETE,
+  CONTROL
 }	

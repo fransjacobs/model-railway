@@ -110,8 +110,8 @@ public class LayoutUtil {
         }
     }
 
-    public static final Map<Point, Tile> loadLayout(boolean drawGridLines) {
-        return loadLayout(drawGridLines, null);
+    public static final Map<Point, Tile> loadLayout(boolean drawGridLines,boolean showValues) {
+        return loadLayout(drawGridLines, null, showValues);
     }
 
     /**
@@ -119,9 +119,10 @@ public class LayoutUtil {
      *
      * @param drawGridLines
      * @param listener
+     * @param showValues
      * @return A Map of tiles, key is the center point of the tile
      */
-    public static final Map<Point, Tile> loadLayout(boolean drawGridLines, RepaintListener listener) {
+    public static final Map<Point, Tile> loadLayout(boolean drawGridLines, RepaintListener listener,boolean showValues) {
         synchronized (LayoutUtil.tileIdLookup) {
             LayoutUtil.tileIdLookup.clear();
             LayoutUtil.tiles.clear();
@@ -132,7 +133,7 @@ public class LayoutUtil {
 
                 for (TileBean tb : beans) {
                     addRelatedBeans(tb);
-                    Tile tile = TileFactory.createTile(tb, drawGridLines);
+                    Tile tile = TileFactory.createTile(tb, drawGridLines,showValues);
 
                     if (listener != null) {
                         tile.setRepaintListener(listener);
@@ -177,7 +178,7 @@ public class LayoutUtil {
 
     public static Tile findTile(String id) {
         if (isNotLoaded()) {
-            LayoutUtil.loadLayout(true);
+            LayoutUtil.loadLayout(true,false);
         }
         Tile result = LayoutUtil.tileIdLookup.get(id);
         if (result == null) {
@@ -195,7 +196,7 @@ public class LayoutUtil {
 
     public static Tile findTile(Point cp) {
         if (isNotLoaded()) {
-            LayoutUtil.loadLayout(true);
+            LayoutUtil.loadLayout(true,false);
         }
         Tile result = LayoutUtil.tiles.get(cp);
 
@@ -251,7 +252,7 @@ public class LayoutUtil {
 
     public static final Map<Point, Tile> getTiles() {
         if (isNotLoaded()) {
-            LayoutUtil.loadLayout(true);
+            LayoutUtil.loadLayout(true,false);
         }
 
         return LayoutUtil.tiles;
