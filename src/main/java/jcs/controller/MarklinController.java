@@ -30,6 +30,9 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.http.AccessoryJSONParser;
+import jcs.controller.cs3.net.CS3ConnectionFactory;
+import jcs.controller.cs3.net.HTTPConnection;
 
 public interface MarklinController {
 
@@ -75,7 +78,10 @@ public interface MarklinController {
 
     Image getLocomotiveImage(String icon);
 
-    List<AccessoryBean> getAccessories();
+    //List<AccessoryBean> getAccessories();
+    List<AccessoryBean> getSwitches();
+
+    List<AccessoryBean> getSignals();
 
     GFP getGFP();
 

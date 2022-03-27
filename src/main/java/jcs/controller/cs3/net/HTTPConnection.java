@@ -28,7 +28,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.imageio.ImageIO;
-import jcs.controller.cs3.http.DeviceJSONParser;
+import jcs.controller.cs3.http.AccessoryJSONParser;
+import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
 /**
@@ -273,11 +274,16 @@ public class HTTPConnection {
         /*
         String json = hc.getDevicesJSON();
         DeviceJSONParser dp = new DeviceJSONParser();
-        dp.parseDevices(json);
+        dp.parseAccessories(json);
         */
         
         String json = hc.getAccessoriesJSON();
-        System.out.println(json);
+        //System.out.println(json);
+        AccessoryJSONParser ap = new AccessoryJSONParser();
+        ap.parseAccessories(json);
+        for(AccessoryBean ab : ap.getSignals()) {
+            Logger.trace(ab.toLogString());
+        }
 
     }
 }

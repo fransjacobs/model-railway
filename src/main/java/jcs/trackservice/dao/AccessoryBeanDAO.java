@@ -32,8 +32,8 @@ import jcs.entities.AccessoryBean;
  */
 public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
-    private static final String INS_SA_STMT = "insert into accessories (address,name,type,position,switchtime,decodertype,decoder,agroup,icon,iconfile) values(?,?,?,?,?,?,?,?,?,?)";
-    private static final String UPD_SA_STMT = "update accessories set address = ?,name = ?,type = ?,position = ?,switchtime = ?,decodertype = ?,decoder = ?, agroup = ?,icon = ?,iconfile = ? where id = ?";
+    private static final String INS_SA_STMT = "insert into accessories (address,name,type,position,states,switchtime,decodertype,decoder,agroup,icon,iconfile,id) values(?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String UPD_SA_STMT = "update accessories set address = ?,name = ?,type = ?,position = ?,states = ?, switchtime = ?,decodertype = ?,decoder = ?, agroup = ?,icon = ?,iconfile = ? where id = ?";
 
     public AccessoryBeanDAO() {
         super();
@@ -45,6 +45,13 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
         String name = rs.getString("NAME");
         String type = rs.getString("TYPE");
         Integer position = rs.getInt("POSITION");
+
+        BigDecimal st = rs.getBigDecimal("STATES");
+        Integer states = null;
+        if (st != null) {
+            states = st.intValue();
+        }
+
         Integer switchTime = rs.getInt("SWITCHTIME");
         String decoderType = rs.getString("DECODERTYPE");
         String decoder = rs.getString("DECODER");
@@ -54,7 +61,7 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
         BigDecimal id = rs.getBigDecimal("ID");
 
-        AccessoryBean sa = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder, group, icon, iconFile);
+        AccessoryBean sa = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder, group, icon, iconFile, states);
 
         return sa;
     }
@@ -71,22 +78,26 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
             ps.setNull(4, Types.INTEGER);
         }
 
-        if (sab.getSwitchTime() != null) {
-            ps.setInt(5, sab.getSwitchTime());
+        if (sab.getStates() != null) {
+            ps.setInt(5, sab.getStates());
         } else {
             ps.setNull(5, Types.INTEGER);
         }
 
-        ps.setString(6, sab.getDecoderType());
-        ps.setString(7, sab.getDecoder());
-
-        ps.setString(8, sab.getGroup());
-        ps.setString(9, sab.getIcon());
-        ps.setString(10, sab.getIconFile());
-
-        if (!insert) {
-            ps.setBigDecimal(11, sab.getId());
+        if (sab.getSwitchTime() != null) {
+            ps.setInt(6, sab.getSwitchTime());
+        } else {
+            ps.setNull(6, Types.INTEGER);
         }
+
+        ps.setString(7, sab.getDecoderType());
+        ps.setString(8, sab.getDecoder());
+
+        ps.setString(9, sab.getGroup());
+        ps.setString(10, sab.getIcon());
+        ps.setString(11, sab.getIconFile());
+
+        ps.setBigDecimal(12, sab.getId());
     }
 
     @Override
@@ -121,6 +132,7 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
             statement = INS_SA_STMT;
         } else {
             statement = UPD_SA_STMT;
+
         }
 
         super.upsert(accessoiry, statement);

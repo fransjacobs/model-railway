@@ -507,7 +507,7 @@ public class SignalPreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackServiceFactory.getTrackService().synchronizeAccessoriesWithController();
+        TrackServiceFactory.getTrackService().synchronizeSignals();
         refresh();
     }
 

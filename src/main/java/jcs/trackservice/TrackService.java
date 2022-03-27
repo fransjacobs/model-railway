@@ -36,7 +36,6 @@ import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.trackservice.events.LocomotiveListener;
-import jcs.trackservice.events.PersistedEventListener;
 import jcs.trackservice.events.SensorListener;
 
 /**
@@ -86,6 +85,8 @@ public interface TrackService {
     List<AccessoryBean> getSignals();
 
     AccessoryBean getAccessory(BigDecimal id);
+
+    AccessoryBean getAccessory(Integer address);
 
     AccessoryBean persist(AccessoryBean accessory);
 
@@ -153,7 +154,10 @@ public interface TrackService {
 
     void synchronizeLocomotivesWithController();
 
-    void synchronizeAccessoriesWithController();
+    //void synchronizeAccessoriesWithController();
+    void synchronizeTurnouts();
+
+    void synchronizeSignals();
 
     void updateGuiStatuses();
 }

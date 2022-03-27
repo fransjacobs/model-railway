@@ -236,11 +236,12 @@ public class DatabaseCreator {
 
     private static void accessories(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE accessories ("
-                + "id                    IDENTITY NOT NULL,"
+                + "id                    bigint NOT NULL,"
                 + "address               INTEGER NOT NULL,"
                 + "name                  VARCHAR(255) NOT NULL,"
                 + "type                  VARCHAR(255) NOT NULL,"
                 + "position              INTEGER,"
+                + "states                INTEGER,"
                 + "switchtime            INTEGER,"
                 + "decodertype           VARCHAR(255),"
                 + "decoder               VARCHAR(255),"

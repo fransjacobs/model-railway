@@ -94,6 +94,7 @@ public class AccessoryBeanDAOTest {
         List<AccessoryBean> expResult = this.turnouts;
         List<AccessoryBean> result = instance.findAll();
         assertEquals(expResult, result);
+
     }
 
     /**
@@ -134,7 +135,7 @@ public class AccessoryBeanDAOTest {
     @Test
     public void testPersist() {
         System.out.println("persist");
-        AccessoryBean accessory = new AccessoryBean(100, "W 100", "rechtsweiche", 0, 200, "mm2", "ein_alt");
+        AccessoryBean accessory = new AccessoryBean(new BigDecimal(17),100, "W 100", "rechtsweiche", 0, 200, "mm2", "ein_alt");
 
         AccessoryBeanDAO instance = new AccessoryBeanDAO();
         BigDecimal expResult = new BigDecimal(17);
@@ -157,7 +158,7 @@ public class AccessoryBeanDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        AccessoryBean accessoiry = new AccessoryBean(101, "W 101", "rechtsweiche", 0, 200, "mm2", "ein_alt");
+        AccessoryBean accessoiry = new AccessoryBean(new BigDecimal(17),101, "W 101", "rechtsweiche", 0, 200, "mm2", "ein_alt");
         AccessoryBeanDAO instance = new AccessoryBeanDAO();
 
         BigDecimal expResult = new BigDecimal(17);

@@ -284,9 +284,6 @@ public class DemoController implements MarklinController {
     public void removeAccessoryEventListener(AccessoryMessageEventListener listener) {
     }
 
-    
-    
-    
     //@Override
     public void addHeartbeatListener(HeartbeatListener listener) {
         synchronized (heartbeatListeners) {
@@ -339,8 +336,17 @@ public class DemoController implements MarklinController {
         return Collections.EMPTY_LIST;
     }
 
+//    @Override
+//    public List<AccessoryBean> getAccessories() {
+//        return Collections.EMPTY_LIST;
+//    }
     @Override
-    public List<AccessoryBean> getAccessories() {
+    public List<AccessoryBean> getSwitches() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<AccessoryBean> getSignals() {
         return Collections.EMPTY_LIST;
     }
 

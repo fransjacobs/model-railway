@@ -60,7 +60,6 @@ public class LocomotiveBeanDAO extends AbstractDAO<LocomotiveBean> {
         String mfxType = rs.getString("MFXTYPE");
         String blocks = rs.getString("BLOCKS");
 
-        //BigDecimal id = new BigDecimal(rs.getLong("ID"));
         BigDecimal id = rs.getBigDecimal("ID");
 
         return new LocomotiveBean(id, name, previousName, uid, mfxUid, address, icon, decoderType,
@@ -125,7 +124,6 @@ public class LocomotiveBeanDAO extends AbstractDAO<LocomotiveBean> {
         ps.setString(18, loc.getBlocks());
         
         ps.setBigDecimal(19, loc.getId());
-        //ps.setBigDecimal(19, new BigDecimal(loc.getId().longValue()));
     }
 
     @Override

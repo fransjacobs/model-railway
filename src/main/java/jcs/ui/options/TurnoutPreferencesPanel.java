@@ -508,7 +508,7 @@ public class TurnoutPreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackServiceFactory.getTrackService().synchronizeAccessoriesWithController();
+        TrackServiceFactory.getTrackService().synchronizeTurnouts();
         refresh();
     }
 

@@ -507,6 +507,11 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
+    public AccessoryBean getAccessory(Integer address) {
+        return this.acceDAO.find(address);
+    }
+
+    @Override
     public AccessoryBean persist(AccessoryBean accessory) {
         this.acceDAO.persist(accessory);
         return accessory;
@@ -722,9 +727,28 @@ public class H2TrackService implements TrackService {
         this.controllerService.cacheAllFunctionIcons();
     }
 
+    //@Override
+//    public void synchronizeAccessoriesWithController() {
+//        List<AccessoryBean> ma = this.controllerService.getAccessories();
+//
+//        for (AccessoryBean ab : ma) {
+//            Logger.trace(ab.toLogString());
+//            this.acceDAO.persist(ab);
+//        }
+//    }
     @Override
-    public void synchronizeAccessoriesWithController() {
-        List<AccessoryBean> ma = this.controllerService.getAccessories();
+    public void synchronizeTurnouts() {
+        List<AccessoryBean> ma = this.controllerService.getSwitches();
+
+        for (AccessoryBean ab : ma) {
+            Logger.trace(ab.toLogString());
+            this.acceDAO.persist(ab);
+        }
+    }
+
+    @Override
+    public void synchronizeSignals() {
+        List<AccessoryBean> ma = this.controllerService.getSignals();
 
         for (AccessoryBean ab : ma) {
             Logger.trace(ab.toLogString());
@@ -796,8 +820,8 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void switchAccessory(AccessoryValue value, AccessoryBean accessory) {
-        Logger.trace("Change accessory ID: " + accessory.getId() + ", " + accessory.getName() + " to " + value.getValue());
-        controllerService.switchAccessory(accessory.getId().intValue(), value);
+        Logger.trace("Change accessory Address: " + accessory.getAddress() + ", " + accessory.getName() + " to " + value.getValue());
+        controllerService.switchAccessory(accessory.getAddress(), value);
     }
 
 //    @Override
@@ -953,8 +977,9 @@ public class H2TrackService implements TrackService {
 
             AccessoryBean ab = event.getAccessoryBean();
 
-            AccessoryBean dbab = this.trackService.getAccessory(ab.getId());
+            AccessoryBean dbab = this.trackService.getAccessory(ab.getAddress());
             if (dbab != null) {
+                ab.setId(dbab.getId());
                 ab.setDecoder(dbab.getDecoder());
                 ab.setDecoderType(dbab.getDecoderType());
                 ab.setName(dbab.getName());

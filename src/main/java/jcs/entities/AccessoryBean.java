@@ -30,10 +30,10 @@ public class AccessoryBean implements JCSEntity {
     private String name;
     private String type;
     private Integer position;
+    private Integer states;
     private Integer switchTime;
     private String decoderType;
     private String decoder;
-
     private String group;
     private String icon;
     private String iconFile;
@@ -47,10 +47,10 @@ public class AccessoryBean implements JCSEntity {
     }
 
     public AccessoryBean(BigDecimal id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
-        this(id, address, name, type, position, switchTime, decoderType, decoder, null, null, null);
+        this(id, address, name, type, position, switchTime, decoderType, decoder, null, null, null, null);
     }
 
-    public AccessoryBean(BigDecimal id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder, String group, String icon, String iconFile) {
+    public AccessoryBean(BigDecimal id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder, String group, String icon, String iconFile, Integer states) {
         this.id = id;
         this.address = address;
         this.name = name;
@@ -62,6 +62,7 @@ public class AccessoryBean implements JCSEntity {
         this.group = group;
         this.icon = icon;
         this.iconFile = iconFile;
+        this.states = states;
     }
 
     @Override
@@ -110,6 +111,14 @@ public class AccessoryBean implements JCSEntity {
 
     public void setPosition(Integer position) {
         this.position = position;
+    }
+
+    public Integer getStates() {
+        return states;
+    }
+
+    public void setStates(Integer states) {
+        this.states = states;
     }
 
     public void toggle() {
@@ -191,7 +200,7 @@ public class AccessoryBean implements JCSEntity {
 
     @Override
     public String toLogString() {
-        return "AccessoryBean{" + "id=" + id + ", address=" + address + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + ", group=" + group + "}";
+        return "AccessoryBean{" + "id=" + id + ", address=" + address + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + ", group=" + group + ", states=" + states + "}";
     }
 
     @Override
@@ -202,6 +211,7 @@ public class AccessoryBean implements JCSEntity {
         hash = 53 * hash + Objects.hashCode(this.name);
         hash = 53 * hash + Objects.hashCode(this.type);
         hash = 53 * hash + Objects.hashCode(this.position);
+        hash = 53 * hash + Objects.hashCode(this.states);
         hash = 53 * hash + Objects.hashCode(this.switchTime);
         hash = 53 * hash + Objects.hashCode(this.decoderType);
         hash = 53 * hash + Objects.hashCode(this.decoder);
@@ -251,6 +261,9 @@ public class AccessoryBean implements JCSEntity {
             return false;
         }
         if (!Objects.equals(this.position, other.position)) {
+            return false;
+        }
+        if (!Objects.equals(this.states, other.states)) {
             return false;
         }
         return Objects.equals(this.switchTime, other.switchTime);

@@ -61,6 +61,7 @@ import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.http.DeviceJSONParser;
 import jcs.controller.cs3.net.CS3Connection;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.http.AccessoryJSONParser;
 
 /**
  *
@@ -91,6 +92,7 @@ public class MarklinCS3 implements MarklinController {
     private ChannelDataParser channelData2;
     private ChannelDataParser channelData3;
     private ChannelDataParser channelData4;
+    private AccessoryJSONParser accessoryParser;
 
     private final List<PowerEventListener> powerEventListeners;
 
@@ -109,7 +111,6 @@ public class MarklinCS3 implements MarklinController {
     }
 
     MarklinCS3(boolean connect) {
-
         powerEventListeners = new LinkedList<>();
         sensorMessageEventListeners = new LinkedList<>();
         accessoryMessageEventListeners = new LinkedList<>();
@@ -534,12 +535,34 @@ public class MarklinCS3 implements MarklinController {
         svgp.convertAndCacheAllFunctionsSvgIcons(json);
     }
 
-    @Override
+    //@Override
     public List<AccessoryBean> getAccessories() {
         HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
         String magnetartikelCs2 = httpCon.getAccessoriesFile();
         AccessoryBeanParser ap = new AccessoryBeanParser();
         return ap.parseAccessoryFile(magnetartikelCs2);
+    }
+
+    @Override
+    public List<AccessoryBean> getSwitches() {
+        if (this.accessoryParser == null) {
+            this.accessoryParser = new AccessoryJSONParser();
+        }
+        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        String json = httpCon.getAccessoriesJSON();
+        accessoryParser.parseAccessories(json);
+        return accessoryParser.getTurnouts();
+    }
+
+    @Override
+    public List<AccessoryBean> getSignals() {
+        if (this.accessoryParser == null) {
+            this.accessoryParser = new AccessoryJSONParser();
+        }
+        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+        String json = httpCon.getAccessoriesJSON();
+        accessoryParser.parseAccessories(json);
+        return accessoryParser.getSignals();
     }
 
     @Override
