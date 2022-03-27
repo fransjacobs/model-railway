@@ -523,6 +523,7 @@ public class TurnoutPreferencesPanel extends JPanel {
     //Create Turnout from fields  
     protected AccessoryBean setTurnoutValues() {
         BigDecimal id = (BigDecimal) this.idSpinner.getValue();
+        Integer address = id.intValue();
         String name = nameTF.getText();
         String type = typeTF.getText();
         Integer switchTime = (Integer) this.switchTimeSpinner.getValue();
@@ -530,7 +531,7 @@ public class TurnoutPreferencesPanel extends JPanel {
         String decoder = this.decoderTF.getText();
         Integer position = (Integer) this.positionSpinner.getValue();
 
-        AccessoryBean turnout = new AccessoryBean(id, name, type, position, switchTime, decoderType, decoder);
+        AccessoryBean turnout = new AccessoryBean(id, address,name, type, position, switchTime, decoderType, decoder);
 
         return turnout;
     }

@@ -727,6 +727,7 @@ public class H2TrackService implements TrackService {
         List<AccessoryBean> ma = this.controllerService.getAccessories();
 
         for (AccessoryBean ab : ma) {
+            Logger.trace(ab.toLogString());
             this.acceDAO.persist(ab);
         }
     }

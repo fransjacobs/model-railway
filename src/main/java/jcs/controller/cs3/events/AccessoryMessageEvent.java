@@ -56,7 +56,7 @@ public class AccessoryMessageEvent implements Serializable {
             Integer position = data[4] & 0xff;
             //CS is zero based
             address = address + 1;
-            this.accessoryBean = new AccessoryBean(new BigDecimal(address), null, null, position, null, null, null);
+            this.accessoryBean = new AccessoryBean(new BigDecimal(address),address, null, null, position, null, null, null);
             if (resp.getDlc() == MarklinCan.DLC_8) {
                 Integer switchTime = ByteUtil.toInt(new int[]{data[6], data[7]});
                 this.accessoryBean.setSwitchTime(switchTime);

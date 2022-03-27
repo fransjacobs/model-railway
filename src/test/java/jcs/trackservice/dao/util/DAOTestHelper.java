@@ -133,22 +133,22 @@ public class DAOTestHelper extends DatabaseCreator {
             try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 1R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 2L','linksweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 3R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 4R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 5R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 6R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 7L','linksweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 8L','linksweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 9R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 10R','rechtsweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 11L','linksweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 12L','linksweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 13L','linksweiche',0,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 14R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 17R','rechtsweiche',1,200,'mm2','ein_alt')");
-                stmt.executeUpdate("INSERT INTO SOLENOIDACCESSORIES (NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES ('W 18R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (1,'W 1R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (2,'W 2L','linksweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (3,'W 3R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (4,'W 4R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (5,'W 5R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (6,'W 6R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (7,'W 7L','linksweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (8,'W 8L','linksweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (9,'W 9R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (10,'W 10R','rechtsweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (11,'W 11L','linksweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (12,'W 12L','linksweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (13,'W 13L','linksweiche',0,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (14,'W 14R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (15,'W 17R','rechtsweiche',1,200,'mm2','ein_alt')");
+                stmt.executeUpdate("INSERT INTO ACCESSORIES (ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (16,'W 18R','rechtsweiche',1,200,'mm2','ein_alt')");
 
                 c.commit();
             }

@@ -159,6 +159,7 @@ public class SignalPreferencesPanel extends JPanel {
         topPanel.setLayout(flowLayout1);
 
         synchronizeBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
+        synchronizeBtn.setToolTipText("Synchronize with CS3");
         synchronizeBtn.setMaximumSize(new Dimension(40, 40));
         synchronizeBtn.setMinimumSize(new Dimension(40, 40));
         synchronizeBtn.setPreferredSize(new Dimension(40, 40));
@@ -170,6 +171,7 @@ public class SignalPreferencesPanel extends JPanel {
         topPanel.add(synchronizeBtn);
 
         refreshBtn.setIcon(new ImageIcon(getClass().getResource("/media/refresh-24.png"))); // NOI18N
+        refreshBtn.setToolTipText("Refresh");
         refreshBtn.setMargin(new Insets(2, 2, 2, 2));
         refreshBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -179,7 +181,7 @@ public class SignalPreferencesPanel extends JPanel {
         topPanel.add(refreshBtn);
 
         newBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
-        newBtn.setToolTipText("Create new Locomotive");
+        newBtn.setToolTipText("Add");
         newBtn.setMaximumSize(new Dimension(40, 40));
         newBtn.setMinimumSize(new Dimension(40, 40));
         newBtn.setPreferredSize(new Dimension(40, 40));
@@ -220,7 +222,7 @@ public class SignalPreferencesPanel extends JPanel {
 
         centerSplitPane.setLeftComponent(signalTableScrollPane);
 
-        signalDetailPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(), "Edit Signal"));
+        signalDetailPanel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
         signalDetailPanel.setMinimumSize(new Dimension(490, 500));
         signalDetailPanel.setPreferredSize(new Dimension(390, 540));
         signalDetailPanel.setLayout(new BoxLayout(signalDetailPanel, BoxLayout.Y_AXIS));
@@ -520,6 +522,7 @@ public class SignalPreferencesPanel extends JPanel {
     //Create Signal from fields  
     protected AccessoryBean setSignalValues() {
         BigDecimal id = (BigDecimal) this.idSpinner.getValue();
+        Integer address = id.intValue();
         String name = nameTF.getText();
         String type = typeTF.getText();
         Integer switchTime = (Integer) this.switchTimeSpinner.getValue();
@@ -527,7 +530,7 @@ public class SignalPreferencesPanel extends JPanel {
         String decoder = this.decoderTF.getText();
         Integer position = (Integer) this.positionSpinner.getValue();
 
-        AccessoryBean signal = new AccessoryBean(id, name, type, position, switchTime, decoderType, decoder);
+        AccessoryBean signal = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
 
         return signal;
     }

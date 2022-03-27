@@ -23,6 +23,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalValue;
@@ -31,12 +33,13 @@ import static jcs.entities.enums.SignalValue.Hp0Sh1;
 import static jcs.entities.enums.SignalValue.Hp1;
 import static jcs.entities.enums.SignalValue.Hp2;
 import jcs.entities.enums.SignalType;
+import jcs.trackservice.events.AccessoryListener;
 
 /**
  *
  * @author frans
  */
-public class Signal extends Straight implements Tile {
+public class Signal extends Straight implements Tile, AccessoryListener {
 
     private static int idSeq;
 
@@ -292,6 +295,29 @@ public class Signal extends Straight implements Tile {
         }
 
         g2d.dispose();
+    }
+
+    public AccessoryBean getAccessoryBean() {
+        if (this.tileBean != null && this.tileBean.getEntityBean() != null) {
+            return (AccessoryBean) this.tileBean.getEntityBean();
+        } else {
+            return null;
+        }
+    }
+
+    public void setAccessoryBean(AccessoryBean accessoryBean) {
+        if (this.tileBean == null) {
+            this.tileBean = this.getTileBean();
+        }
+        this.tileBean.setEntityBean(accessoryBean);
+    }
+
+    @Override
+    public void onChange(AccessoryMessageEvent event) {
+        if (this.getTileBean().getBeanId() != null && this.getTileBean().getBeanId().equals(event.getAccessoryBean().getId())) {
+            //setValue(event.getAccessoryBean().getAccessoryValue());
+            repaintTile();
+        }
     }
 
 }

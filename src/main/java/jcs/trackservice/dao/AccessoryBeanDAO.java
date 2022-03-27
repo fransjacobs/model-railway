@@ -32,8 +32,8 @@ import jcs.entities.AccessoryBean;
  */
 public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
-    private static final String INS_SA_STMT = "insert into solenoidaccessories (name,type,position,switchtime,decodertype,decoder) values(?,?,?,?,?,?)";
-    private static final String UPD_SA_STMT = "update solenoidaccessories set name = ?,type = ?,position = ?,switchtime = ?,decodertype = ?,decoder = ? where id = ?";
+    private static final String INS_SA_STMT = "insert into accessories (address,name,type,position,switchtime,decodertype,decoder,agroup,icon,iconfile) values(?,?,?,?,?,?,?,?,?,?)";
+    private static final String UPD_SA_STMT = "update accessories set address = ?,name = ?,type = ?,position = ?,switchtime = ?,decodertype = ?,decoder = ?, agroup = ?,icon = ?,iconfile = ? where id = ?";
 
     public AccessoryBeanDAO() {
         super();
@@ -41,57 +41,72 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
     @Override
     protected AccessoryBean map(ResultSet rs) throws SQLException {
-        BigDecimal id = new BigDecimal(rs.getLong("ID"));
+        Integer address = rs.getInt("ADDRESS");
         String name = rs.getString("NAME");
         String type = rs.getString("TYPE");
         Integer position = rs.getInt("POSITION");
         Integer switchTime = rs.getInt("SWITCHTIME");
         String decoderType = rs.getString("DECODERTYPE");
         String decoder = rs.getString("DECODER");
+        String group = rs.getString("AGROUP");
+        String icon = rs.getString("ICON");
+        String iconFile = rs.getString("ICONFILE");
 
-        AccessoryBean sa = new AccessoryBean(id, name, type, position, switchTime, decoderType, decoder);
+        BigDecimal id = rs.getBigDecimal("ID");
+
+        AccessoryBean sa = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder, group, icon, iconFile);
 
         return sa;
     }
 
     @Override
     protected void bind(PreparedStatement ps, AccessoryBean sab, boolean insert) throws SQLException {
-        ps.setString(1, sab.getName());
-        ps.setString(2, sab.getType());
+        ps.setInt(1, sab.getAddress());
+        ps.setString(2, sab.getName());
+        ps.setString(3, sab.getType());
 
         if (sab.getPosition() != null) {
-            ps.setInt(3, sab.getPosition());
-        } else {
-            ps.setNull(3, Types.INTEGER);
-        }
-
-        if (sab.getSwitchTime() != null) {
-            ps.setInt(4, sab.getSwitchTime());
+            ps.setInt(4, sab.getPosition());
         } else {
             ps.setNull(4, Types.INTEGER);
         }
 
-        ps.setString(5, sab.getDecoderType());
-        ps.setString(6, sab.getDecoder());
+        if (sab.getSwitchTime() != null) {
+            ps.setInt(5, sab.getSwitchTime());
+        } else {
+            ps.setNull(5, Types.INTEGER);
+        }
+
+        ps.setString(6, sab.getDecoderType());
+        ps.setString(7, sab.getDecoder());
+
+        ps.setString(8, sab.getGroup());
+        ps.setString(9, sab.getIcon());
+        ps.setString(10, sab.getIconFile());
 
         if (!insert) {
-            ps.setBigDecimal(7, sab.getId());
+            ps.setBigDecimal(11, sab.getId());
         }
     }
 
     @Override
     public List<AccessoryBean> findAll() {
-        String stmt = "select * from solenoidaccessories order by id asc";
+        String stmt = "select * from accessories order by id asc";
         return super.findAll(stmt);
     }
 
+    public AccessoryBean find(Integer address) {
+        String stmt = "select * from accessories where address = ?";
+        return super.find(address, stmt);
+    }
+
     public List<AccessoryBean> findBy(String key) {
-        String stmt = "select * from solenoidaccessories where type like ?";
+        String stmt = "select * from accessories where type like ?";
         return super.findBy(key, stmt);
     }
 
     public AccessoryBean findById(BigDecimal id) {
-        String stmt = "select * from solenoidaccessories where id = ?";
+        String stmt = "select * from accessories where id = ?";
 
         return super.findById(id, stmt);
     }
@@ -115,7 +130,7 @@ public class AccessoryBeanDAO extends AbstractDAO<AccessoryBean> {
 
     @Override
     public void remove(AccessoryBean accessoiry) {
-        String stmt = "delete from solenoidaccessories where id = ?";
+        String stmt = "delete from accessories where id = ?";
         super.remove(accessoiry, stmt);
     }
 }

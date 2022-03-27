@@ -421,11 +421,12 @@ public class SwitchPanel extends JPanel {
 
     private void sendCommand(String actionCommand, String name, boolean selected) {
         BigDecimal id = new BigDecimal(actionCommand);
+        Integer address = id.intValue();
         AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
         Logger.trace("ID: " + id + " Value: " + value);
 
         if (TrackServiceFactory.getTrackService() != null) {
-            AccessoryBean a = new AccessoryBean(id, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
+            AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
             TrackServiceFactory.getTrackService().switchAccessory(value, a);
         }
     }

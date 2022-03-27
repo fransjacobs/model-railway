@@ -26,6 +26,7 @@ import jcs.entities.enums.SignalValue;
 public class AccessoryBean implements JCSEntity {
 
     private BigDecimal id;
+    private Integer address;
     private String name;
     private String type;
     private Integer position;
@@ -33,23 +34,34 @@ public class AccessoryBean implements JCSEntity {
     private String decoderType;
     private String decoder;
 
+    private String group;
+    private String icon;
+    private String iconFile;
+
     public AccessoryBean() {
-        this(null, null, null, null, null, null, null);
-
+        this(null, null, null, null, null, null, null, null);
     }
 
-    public AccessoryBean(String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
-        this(null, name, type, position, switchTime, decoderType, decoder);
+    public AccessoryBean(Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
+        this(null, address, name, type, position, switchTime, decoderType, decoder);
     }
 
-    public AccessoryBean(BigDecimal id, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
+    public AccessoryBean(BigDecimal id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
+        this(id, address, name, type, position, switchTime, decoderType, decoder, null, null, null);
+    }
+
+    public AccessoryBean(BigDecimal id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder, String group, String icon, String iconFile) {
         this.id = id;
+        this.address = address;
         this.name = name;
         this.type = type;
         this.position = position;
         this.switchTime = switchTime;
         this.decoderType = decoderType;
         this.decoder = decoder;
+        this.group = group;
+        this.icon = icon;
+        this.iconFile = iconFile;
     }
 
     @Override
@@ -66,6 +78,14 @@ public class AccessoryBean implements JCSEntity {
 
     public void setId(BigDecimal id) {
         this.id = id;
+    }
+
+    public Integer getAddress() {
+        return address;
+    }
+
+    public void setAddress(Integer address) {
+        this.address = address;
     }
 
     public String getName() {
@@ -140,6 +160,30 @@ public class AccessoryBean implements JCSEntity {
         this.decoder = decoder;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public String getIconFile() {
+        return iconFile;
+    }
+
+    public void setIconFile(String iconFile) {
+        this.iconFile = iconFile;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -147,19 +191,23 @@ public class AccessoryBean implements JCSEntity {
 
     @Override
     public String toLogString() {
-        return "AccessoryBean{" + "id=" + id + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + '}';
+        return "AccessoryBean{" + "id=" + id + ", address=" + address + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + ", group=" + group + "}";
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 53 * hash + Objects.hashCode(this.id);
+        hash = 53 * hash + Objects.hashCode(this.address);
         hash = 53 * hash + Objects.hashCode(this.name);
         hash = 53 * hash + Objects.hashCode(this.type);
         hash = 53 * hash + Objects.hashCode(this.position);
         hash = 53 * hash + Objects.hashCode(this.switchTime);
         hash = 53 * hash + Objects.hashCode(this.decoderType);
         hash = 53 * hash + Objects.hashCode(this.decoder);
+        hash = 53 * hash + Objects.hashCode(this.group);
+        hash = 53 * hash + Objects.hashCode(this.icon);
+        hash = 53 * hash + Objects.hashCode(this.iconFile);
         return hash;
     }
 
@@ -185,6 +233,18 @@ public class AccessoryBean implements JCSEntity {
             return false;
         }
         if (!Objects.equals(this.decoder, other.decoder)) {
+            return false;
+        }
+        if (!Objects.equals(this.group, other.group)) {
+            return false;
+        }
+        if (!Objects.equals(this.icon, other.icon)) {
+            return false;
+        }
+        if (!Objects.equals(this.iconFile, other.iconFile)) {
+            return false;
+        }
+        if (!Objects.equals(this.address, other.address)) {
             return false;
         }
         if (!Objects.equals(this.id, other.id)) {

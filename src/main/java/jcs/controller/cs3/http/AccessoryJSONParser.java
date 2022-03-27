@@ -31,7 +31,7 @@ import org.tinylog.Logger;
  *
  * @author fransjacobs
  */
-public class AccessoryBeanParser {
+public class AccessoryJSONParser {
 
     public final static String MAGNETARTIKEL = "magnetartikel.cs2";
 
@@ -77,6 +77,10 @@ public class AccessoryBeanParser {
     private static final String URC_SIGNAL_HP012 = "urc_lichtsignal_HP012";
     private static final String URC_SIGNAL_HP012_SH01 = "urc_lichtsignal_HP012_SH01";
     private static final String URC_SIGNAL_SH01 = "urc_lichtsignal_SH01";
+
+    public void parseDevices(String json) {
+
+    }
 
     public List<AccessoryBean> parseAccessoryFile(String gafile) {
         List<AccessoryBean> accessories = new LinkedList<>();
@@ -165,7 +169,8 @@ public class AccessoryBeanParser {
 
         String ids = ma.get(ID);
         BigDecimal id = new BigDecimal(ids);
-        Integer address = Integer.parseInt(ma.get(ID));
+
+        Integer adress = Integer.parseInt(ma.get(ID));
 
         String name = ma.get(NAME);
         String type = ma.get(TYPE);
@@ -183,7 +188,7 @@ public class AccessoryBeanParser {
         String decoderType = ma.get(DECTYP);
         String decoder = ma.get(DECODER);
 
-        AccessoryBean ab = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
+        AccessoryBean ab = new AccessoryBean(id, adress, name, type, position, switchTime, decoderType, decoder);
 
         return ab;
     }

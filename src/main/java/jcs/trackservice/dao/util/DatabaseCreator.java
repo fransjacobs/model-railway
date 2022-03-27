@@ -129,7 +129,7 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists locomotives CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists functions CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;");
-        stmt.executeUpdate("DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists accessories CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
 
@@ -199,24 +199,24 @@ public class DatabaseCreator {
     private static void locomotives(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE locomotives ("
                 + "id                 bigint NOT NULL, "
-                + "name               VARCHAR2(255) NOT NULL, "
-                + "previousname       VARCHAR2(255), "
-                + "uid                VARCHAR2(255), "
-                + "mfxuid             VARCHAR2(255), "
+                + "name               VARCHAR(255) NOT NULL, "
+                + "previousname       VARCHAR(255), "
+                + "uid                VARCHAR(255), "
+                + "mfxuid             VARCHAR(255), "
                 + "address            INTEGER NOT NULL, "
-                + "icon               VARCHAR2(255), "
-                + "decodertype        VARCHAR2(255), "
-                + "mfxsid             VARCHAR2(255), "
+                + "icon               VARCHAR(255), "
+                + "decodertype        VARCHAR(255), "
+                + "mfxsid             VARCHAR(255), "
                 + "tachomax           INTEGER, "
                 + "vmin               INTEGER, "
                 + "accelerationDelay  INTEGER, "
                 + "brakeDelay         INTEGER, "
                 + "volume             INTEGER, "
-                + "spm                VARCHAR2(255), "
+                + "spm                VARCHAR(255), "
                 + "velocity           INTEGER, "
                 + "direction          INTEGER, "
-                + "mfxtype            VARCHAR2(255), "
-                + "blocks             VARCHAR2(255))");
+                + "mfxtype            VARCHAR(255), "
+                + "blocks             VARCHAR(255))");
 
         stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_pk PRIMARY KEY ( id )");
         stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype )");
@@ -234,25 +234,29 @@ public class DatabaseCreator {
         Logger.trace("Table functions created...");
     }
 
-    private static void solenoidaccessories(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE TABLE solenoidaccessories ("
+    private static void accessories(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE accessories ("
                 + "id                    IDENTITY NOT NULL,"
+                + "address               INTEGER NOT NULL,"
                 + "name                  VARCHAR(255) NOT NULL,"
                 + "type                  VARCHAR(255) NOT NULL,"
                 + "position              INTEGER,"
                 + "switchtime            INTEGER,"
-                + "decodertype           VARCHAR2(255),"
-                + "decoder               VARCHAR2(255))"
-        );
+                + "decodertype           VARCHAR(255),"
+                + "decoder               VARCHAR(255),"
+                + "agroup                VARCHAR(255),"
+                + "icon                  VARCHAR(255),"
+                + "iconfile              VARCHAR(255))");
 
-        //stmt.executeUpdate("ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id )");
+        //stmt.executeUpdate("ALTER TABLE accessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id )");
+        stmt.executeUpdate("ALTER TABLE accessories ADD CONSTRAINT asse_address_un UNIQUE ( address );");
         Logger.trace("Table solenoidaccessories created...");
     }
 
     private static void statustypes(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE statustypes ("
-                + "status_type    VARCHAR2(255) NOT NULL,"
-                + "description   VARCHAR2(255))");
+                + "status_type    VARCHAR(255) NOT NULL,"
+                + "description    VARCHAR(255))");
 
         stmt.executeUpdate("ALTER TABLE statustypes ADD CONSTRAINT stty_pk PRIMARY KEY ( status_type )");
 
@@ -261,8 +265,8 @@ public class DatabaseCreator {
 
     private static void signalvalues(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE signalvalues ("
-                + "signal_value    VARCHAR2(255) NOT NULL,"
-                + "description   VARCHAR2(255))");
+                + "signal_value    VARCHAR(255) NOT NULL,"
+                + "description     VARCHAR(255))");
 
         stmt.executeUpdate("ALTER TABLE signalvalues ADD CONSTRAINT siva_pk PRIMARY KEY ( signal_value )");
 
@@ -272,8 +276,8 @@ public class DatabaseCreator {
     private static void jcsproperties(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE jcsproperties ("
                 //+ "id         IDENTITY,"
-                + "pkey    VARCHAR2(255) NOT NULL,"
-                + "pvalue  VARCHAR2(255) )");
+                + "pkey    VARCHAR(255) NOT NULL,"
+                + "pvalue  VARCHAR(255) )");
 
         stmt.executeUpdate("ALTER TABLE jcsproperties ADD CONSTRAINT prop_pk PRIMARY KEY ( pkey )");
         //stmt.executeUpdate("ALTER TABLE jcsproperties ADD CONSTRAINT prop_key_un UNIQUE ( \"key\" );");
@@ -321,25 +325,25 @@ public class DatabaseCreator {
                 + " REFERENCES locomotives ( id )"
                 + " NOT DEFERRABLE");
 
-//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//        stmt.executeUpdate("ALTER TABLE accessories"
 //                + " ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )"
 //                + " REFERENCES accessorytypes ( accessory_type )"
 //                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//        stmt.executeUpdate("ALTER TABLE accessories"
 //                + " ADD CONSTRAINT soac_stty_fk FOREIGN KEY ( current_status_type )"
 //                + " REFERENCES statustypes ( status_type )"
 //                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//        stmt.executeUpdate("ALTER TABLE accessories"
 //                + " ADD CONSTRAINT soac_soac_fk FOREIGN KEY ( soac_id )"
-//                + " REFERENCES solenoidaccessories ( id )"
+//                + " REFERENCES accessories ( id )"
 //                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE solenoidaccessories"
+//        stmt.executeUpdate("ALTER TABLE accessories"
 //                + " ADD CONSTRAINT soac_siva_fk FOREIGN KEY ( signal_value )"
 //                + " REFERENCES signalvalues ( signal_value )"
 //                + " NOT DEFERRABLE");
 //        stmt.executeUpdate("ALTER TABLE layouttiles"
 //                + " ADD CONSTRAINT lati_soac_fk FOREIGN KEY ( soac_id )"
-//                + " REFERENCES solenoidaccessories ( id )"
+//                + " REFERENCES accessories ( id )"
 //                + " NOT DEFERRABLE");
 //        stmt.executeUpdate("ALTER TABLE layouttiles"
 //                + " ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )"
@@ -417,7 +421,7 @@ public class DatabaseCreator {
                 sensors(stmt);
                 locomotives(stmt);
                 functions(stmt);
-                solenoidaccessories(stmt);
+                accessories(stmt);
                 statustypes(stmt);
                 signalvalues(stmt);
                 jcsproperties(stmt);

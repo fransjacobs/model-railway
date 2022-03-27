@@ -45,16 +45,17 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.AccessoryValue;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout.dialogs.SensorDialog;
+import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
 import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.BreathFirst;
 import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
+import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
@@ -612,13 +613,13 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 //                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
 //                    osd.setVisible(true);
 //                    break;
-//                case SIGNAL:
-//                    SignalDialog sd = new SignalDialog(getParentFrame(), true, (SignalTile) tile);
-//                    sd.setVisible(true);
-//                    break;
-                case SWITCH:
-                    SwitchDialog sd = new SwitchDialog(getParentFrame(), (Switch) tile);
+                case SIGNAL:
+                    SignalDialog sd = new SignalDialog(getParentFrame(), (Signal) tile);
                     sd.setVisible(true);
+                    break;
+                case SWITCH:
+                    SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
+                    td.setVisible(true);
                     break;
                 default:
                     break;

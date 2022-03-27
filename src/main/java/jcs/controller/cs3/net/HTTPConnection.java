@@ -43,6 +43,7 @@ public class HTTPConnection {
     private final static String CONFIG = "/config/";
     private final static String LOCOMOTIVE = "lokomotive.cs2";
     private final static String MAGNETARTIKEL = "magnetartikel.cs2";
+    private final static String ACCESSORIES_URL = "/app/api/mags";
     private final static String DEVICE = "geraet.vrs";
     private final static String IMAGE_FOLDER = "/app/assets/lok/";
     //private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
@@ -147,6 +148,26 @@ public class HTTPConnection {
         return device.toString();
     }
 
+    public String getAccessoriesJSON() {
+        StringBuilder mags = new StringBuilder();
+        try {
+            URL url = new URL(HTTP + cs3Address.getHostAddress() + ACCESSORIES_URL);
+            URLConnection lc = url.openConnection();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    mags.append(inputLine.strip());
+                    mags.append("\n");
+                }
+            }
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return mags.toString();
+    }
+
     public Image getLocomotiveImage(String imageName) {
         BufferedImage image = null;
         try {
@@ -249,9 +270,14 @@ public class HTTPConnection {
          SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
          svgp.convertAndCacheAllFunctionsSvgIcons(json);
          */
+        /*
         String json = hc.getDevicesJSON();
         DeviceJSONParser dp = new DeviceJSONParser();
         dp.parseDevices(json);
+        */
+        
+        String json = hc.getAccessoriesJSON();
+        System.out.println(json);
 
     }
 }
