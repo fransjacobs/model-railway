@@ -563,6 +563,8 @@ public class H2TrackService implements TrackService {
                 case CROSS:
                     break;
                 case SIGNAL:
+                    AccessoryBean signal = (AccessoryBean) tile.getEntityBean();
+                    tile.setBeanId(this.acceDAO.persist(signal));
                     break;
                 case SENSOR:
                     SensorBean sensor = (SensorBean) tile.getEntityBean();
@@ -820,63 +822,19 @@ public class H2TrackService implements TrackService {
 
     @Override
     public void switchAccessory(AccessoryValue value, AccessoryBean accessory) {
-        Logger.trace("Change accessory Address: " + accessory.getAddress() + ", " + accessory.getName() + " to " + value.getValue());
-        controllerService.switchAccessory(accessory.getAddress(), value);
+        int address = accessory.getAddress();
+        AccessoryValue val = value;
+        if (accessory.isSignal() && accessory.getStates() > 2) {
+            if (accessory.getPosition() > 1) {
+                address = address + 1;
+                val = AccessoryValue.cs3Get(accessory.getPosition() - 2);
+            }
+        }
+
+        Logger.trace("Change accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
+        controllerService.switchAccessory(address, val);
     }
 
-//    @Override
-//    public void switchAccessory(AccessoryValue value, AccessoryBean accessoiry, boolean useValue2) {
-//        Logger.trace("Value: " + value + " Accessoiry: " + accessoiry.toLogString() + " useValue2: " + useValue2);
-//
-//        if (accessoiry.isSignal()) {
-//            //incase of a signal the SignalValue is set in the signal
-//            SignalBean s = (SignalBean) accessoiry;
-//
-//            switch (s.getSignalValue()) {
-//                case Hp0:
-//                    sendSignalCommand(s.getAddress(), s.getValue(), s.getLightImages() > 2);
-//                    break;
-//                case Hp1:
-//                    sendSignalCommand(s.getAddress(), s.getValue(), s.getLightImages() > 2);
-//                    break;
-//                case Hp2:
-//                    sendSignalCommand(s.getAddress2(), s.getValue2(), s.getLightImages() > 2);
-//                    break;
-//                case Hp0Sh1:
-//                    sendSignalCommand(s.getAddress2(), s.getValue2(), s.getLightImages() > 2);
-//                    break;
-//                default:
-//                    Logger.warn("No command send for " + s.toLogString());
-//                    break;
-//            }
-//
-//            persist(s);
-//
-//            this.notifyAccessoiryListeners(s);
-//        } else {
-//            //turnout or else...
-//            //ensure the values is also set...
-//            accessoiry.setValue(value);
-//            controllerService.switchAccessory(accessoiry.getAddress(), accessoiry.getValue());
-//
-//            if (accessoiry.isTurnout()) {
-//                persist((SwitchBean) accessoiry);
-//                this.notifyAccessoiryListeners((SwitchBean) accessoiry);
-//            }
-//        }
-//    }
-//    private void sendSignalCommand(Integer address, AccessoryValue value, boolean repeat) {
-//        if (value == null || address == null) {
-//            return;
-//        }
-//        if (repeat) {
-//            for (int i = 0; i < 3; i++) {
-//                controllerService.switchAccessory(address, value);
-//            }
-//        } else {
-//            controllerService.switchAccessory(address, value);
-//        }
-//    }
     @Override
     public void addMessageListener(CanMessageListener listener) {
         if (this.controllerService != null) {
@@ -974,16 +932,37 @@ public class H2TrackService implements TrackService {
 
         @Override
         public void onAccessoryMessage(AccessoryMessageEvent event) {
-
             AccessoryBean ab = event.getAccessoryBean();
 
+            int address = ab.getAddress();
             AccessoryBean dbab = this.trackService.getAccessory(ab.getAddress());
+            if (dbab == null) {
+                //check if address is even, might be the second address of a signal
+                if (address % 2 == 0) {
+                    address = address - 1;
+                    dbab = this.trackService.getAccessory(address);
+                    if (dbab != null && dbab.isSignal() && dbab.getStates() > 2) {
+                        ab.setAddress(address);
+                        int p = ab.getPosition() + 2;
+                        ab.setPosition(p);
+                    } else {
+                        dbab = null;
+                    }
+                }
+            }
+
             if (dbab != null) {
+                //set all properties
                 ab.setId(dbab.getId());
                 ab.setDecoder(dbab.getDecoder());
                 ab.setDecoderType(dbab.getDecoderType());
                 ab.setName(dbab.getName());
                 ab.setType(dbab.getType());
+                ab.setGroup(dbab.getGroup());
+                ab.setIcon(dbab.getIcon());
+                ab.setIconFile(dbab.getIconFile());
+                ab.setStates(dbab.getStates());
+                //might be set by the event
                 if (ab.getSwitchTime() == null) {
                     ab.setSwitchTime(dbab.getSwitchTime());
                 }

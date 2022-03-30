@@ -26,6 +26,7 @@ import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
+import jcs.entities.enums.SignalValue;
 import org.tinylog.Logger;
 import static jcs.entities.enums.TileType.CURVED;
 import jcs.ui.layout.Tile;
@@ -85,7 +86,7 @@ public class TileFactory {
                 tile = new Switch(tileBean);
                 switchIdSeq = getHeighestIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(switchIdSeq);
-                if (showValues) {
+                if (showValues && tileBean.getEntityBean() != null) {
                     ((Switch) tile).setValue(((AccessoryBean) tileBean.getEntityBean()).getAccessoryValue());
                 }
                 break;
@@ -98,12 +99,15 @@ public class TileFactory {
                 tile = new Signal(tileBean);
                 signalIdSeq = getHeighestIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(signalIdSeq);
+                if (showValues && tileBean.getEntityBean() != null) {
+                    ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getEntityBean()).getSignalValue());
+                }
                 break;
             case SENSOR:
                 tile = new Sensor(tileBean);
                 sensorIdSeq = getHeighestIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
                 tile.setIdSeq(sensorIdSeq);
-                if (showValues) {
+                if (showValues && tileBean.getEntityBean() != null) {
                     ((Sensor) tile).setActive(((SensorBean) tileBean.getEntityBean()).isActive());
                 }
                 break;

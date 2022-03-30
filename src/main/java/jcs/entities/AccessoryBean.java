@@ -122,10 +122,17 @@ public class AccessoryBean implements JCSEntity {
     }
 
     public void toggle() {
-        if (position == 1) {
-            this.position = 0;
-        } else {
-            this.position = 1;
+        //based on number of states
+        int s = this.states;
+        if (s == 0) {
+            s = 2;
+        }
+
+        s = s - 1;
+        position = position + 1;
+
+        if (position > s) {
+            position = 0;
         }
     }
 
@@ -191,6 +198,10 @@ public class AccessoryBean implements JCSEntity {
 
     public void setIconFile(String iconFile) {
         this.iconFile = iconFile;
+    }
+
+    public boolean isSignal() {
+        return "lichtsignale".equals(this.group);
     }
 
     @Override

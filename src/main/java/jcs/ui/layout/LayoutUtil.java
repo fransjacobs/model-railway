@@ -97,6 +97,9 @@ public class LayoutUtil {
                 }
                 break;
             case SIGNAL:
+                if (tileBean.getBeanId() != null) {
+                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getBeanId()));
+                }
                 break;
             case SENSOR:
                 if (tileBean.getBeanId() != null) {
@@ -110,7 +113,7 @@ public class LayoutUtil {
         }
     }
 
-    public static final Map<Point, Tile> loadLayout(boolean drawGridLines,boolean showValues) {
+    public static final Map<Point, Tile> loadLayout(boolean drawGridLines, boolean showValues) {
         return loadLayout(drawGridLines, null, showValues);
     }
 
@@ -122,7 +125,7 @@ public class LayoutUtil {
      * @param showValues
      * @return A Map of tiles, key is the center point of the tile
      */
-    public static final Map<Point, Tile> loadLayout(boolean drawGridLines, RepaintListener listener,boolean showValues) {
+    public static final Map<Point, Tile> loadLayout(boolean drawGridLines, RepaintListener listener, boolean showValues) {
         synchronized (LayoutUtil.tileIdLookup) {
             LayoutUtil.tileIdLookup.clear();
             LayoutUtil.tiles.clear();
@@ -133,7 +136,7 @@ public class LayoutUtil {
 
                 for (TileBean tb : beans) {
                     addRelatedBeans(tb);
-                    Tile tile = TileFactory.createTile(tb, drawGridLines,showValues);
+                    Tile tile = TileFactory.createTile(tb, drawGridLines, showValues);
 
                     if (listener != null) {
                         tile.setRepaintListener(listener);
@@ -165,6 +168,10 @@ public class LayoutUtil {
             case SWITCH:
                 TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
                 break;
+            case SIGNAL:
+                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
+                break;
+
             default:
                 //Do nothing
                 break;
@@ -178,7 +185,7 @@ public class LayoutUtil {
 
     public static Tile findTile(String id) {
         if (isNotLoaded()) {
-            LayoutUtil.loadLayout(true,false);
+            LayoutUtil.loadLayout(true, false);
         }
         Tile result = LayoutUtil.tileIdLookup.get(id);
         if (result == null) {
@@ -196,7 +203,7 @@ public class LayoutUtil {
 
     public static Tile findTile(Point cp) {
         if (isNotLoaded()) {
-            LayoutUtil.loadLayout(true,false);
+            LayoutUtil.loadLayout(true, false);
         }
         Tile result = LayoutUtil.tiles.get(cp);
 
@@ -252,7 +259,7 @@ public class LayoutUtil {
 
     public static final Map<Point, Tile> getTiles() {
         if (isNotLoaded()) {
-            LayoutUtil.loadLayout(true,false);
+            LayoutUtil.loadLayout(true, false);
         }
 
         return LayoutUtil.tiles;

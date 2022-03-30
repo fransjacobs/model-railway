@@ -48,6 +48,10 @@ public class Signal extends Straight implements Tile, AccessoryListener {
 
     public Signal(TileBean tileBean) {
         super(tileBean);
+        if (tileBean.getEntityBean() != null) {
+            AccessoryBean ab = (AccessoryBean) tileBean.getEntityBean();
+            this.signalType = SignalType.getSignalType(ab.getType());
+        }
     }
 
     public Signal(Orientation orientation, int x, int y) {
@@ -80,6 +84,7 @@ public class Signal extends Straight implements Tile, AccessoryListener {
 
     public void setSignalValue(SignalValue signalValue) {
         this.signalValue = signalValue;
+        this.image = null;
     }
 
     public SignalType getSignalType() {
@@ -315,9 +320,9 @@ public class Signal extends Straight implements Tile, AccessoryListener {
     @Override
     public void onChange(AccessoryMessageEvent event) {
         if (this.getTileBean().getBeanId() != null && this.getTileBean().getBeanId().equals(event.getAccessoryBean().getId())) {
-            //setValue(event.getAccessoryBean().getAccessoryValue());
+            this.setSignalValue(event.getAccessoryBean().getSignalValue());
             repaintTile();
-        }
+        } 
     }
 
 }

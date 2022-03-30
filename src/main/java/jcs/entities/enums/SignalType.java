@@ -51,4 +51,45 @@ public enum SignalType {
             return null;
         }
     }
+
+    public static SignalType getSignalType(String marklinType) {
+        return ENUM_MAP.get(translateSignalString(marklinType));
+    }
+
+    private static String translateSignalString(String marklinType) {
+        switch (marklinType) {
+            case "lichtsignal_HP01":
+                return "HP01";
+            case "lichtsignal_HP02":
+                return "HP012";
+            case "lichtsignal_HP012":
+                return "HP012";
+            case "lichtsignal_HP012_SH01":
+                return "HP012SH1";
+            case "lichtsignal_SH01":
+                return "HP0SH1";
+            case "formsignal_HP01":
+                return "HP01";
+            case "formsignal_HP02":
+                return "HP012";
+            case "formsignal_HP012":
+                return "HP012";
+            case "formsignal_HP012_SH01":
+                return "HP012SH1";
+            case "formsignal_SH01":
+                return "HP0SH1";
+            case "urc_lichtsignal_HP01":
+                return "HP01";
+            case "urc_lichtsignal_HP012":
+                return "HP012";
+            case "urc_lichtsignal_HP012_SH01":
+                return "HP012SH1";
+            case "urc_lichtsignal_SH01":
+                return "HP0SH1";
+            default:
+                return "NONE";
+        }
+    }
+
+
 }

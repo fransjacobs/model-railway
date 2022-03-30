@@ -567,6 +567,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
             case BLOCK:
                 break;
             case SIGNAL:
+                toggleSignal((Signal) tile);
                 break;
             case SWITCH:
                 toggleSwitch((Switch) tile);
@@ -579,9 +580,25 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     private void toggleSwitch(Switch turnout) {
-        AccessoryBean ab = turnout.getAccessoryBean();
-        ab.toggle();
-        TrackServiceFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+        if (turnout.getAccessoryBean() != null) {
+            AccessoryBean ab = turnout.getAccessoryBean();
+            ab.toggle();
+            TrackServiceFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+        } else {
+            Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
+        }
+    }
+
+    private void toggleSignal(Signal signal) {
+        if (signal.getAccessoryBean() != null) {
+            AccessoryBean ab = signal.getAccessoryBean();
+            ab.toggle();
+            Logger.trace("A: "+ab.getAddress()+" S: "+ab.getStates()+" P: "+ab.getPosition());
+            
+            TrackServiceFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+        } else {
+            Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
+        }
     }
 
     private void editSelectedTileProperties() {
