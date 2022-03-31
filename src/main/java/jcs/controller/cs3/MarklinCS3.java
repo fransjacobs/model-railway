@@ -345,7 +345,8 @@ public class MarklinCS3 implements MarklinController {
     public boolean power(boolean on) {
         if (this.connected) {
             SystemStatusParser ss = new SystemStatusParser(sendMessage(CanMessageFactory.systemStopGo(on, gfpUid)));
-            return ss.isPower();
+            this.power = ss.isPower();
+            return power;
         } else {
             return false;
         }

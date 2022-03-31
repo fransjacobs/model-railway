@@ -30,9 +30,6 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
-import jcs.controller.cs3.http.AccessoryJSONParser;
-import jcs.controller.cs3.net.CS3ConnectionFactory;
-import jcs.controller.cs3.net.HTTPConnection;
 
 public interface MarklinController {
 
