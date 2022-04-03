@@ -232,7 +232,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] locid = ByteUtil.to4ByteArray(address);
         System.arraycopy(locid, 0, data, 0, locid.length);
         data[4] = functionNumber & 0xff;
-        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, LOC_FUNCTION_QUERY_DLC, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, DLC_5, data);
         return cm;
     }
 
@@ -251,7 +251,7 @@ public class CanMessageFactory implements MarklinCan {
         System.arraycopy(locid, 0, data, 0, locid.length);
         data[4] = functionNumber & 0xff;
         data[5] = value & 0xff;
-        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, LOC_FUNCTION_SET_DLC, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, DLC_6, data);
         return cm;
     }
 
@@ -284,7 +284,7 @@ public class CanMessageFactory implements MarklinCan {
         System.arraycopy(locid, 0, data, 0, locid.length);
         data[LOC_DIRECTION_VALUE_IDX] = cs2direction & 0xff;
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, LOC_DIRECTION_SET_DLC, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, DLC_6, data);
         return cm;
     }
 
@@ -299,7 +299,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] locid = ByteUtil.to4ByteArray(address);
         System.arraycopy(locid, 0, data, 0, locid.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, hash, LOC_SPEED_QUERY_DLC, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, hash, DLC_4, data);
         return cm;
     }
 
@@ -316,7 +316,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] sb = ByteUtil.to2ByteArray(speed);
         System.arraycopy(sb, 0, data, 4, sb.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, hash, LOC_SPEED_SET_DLC, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, hash, DLC_6, data);
         return cm;
     }
 
@@ -374,6 +374,15 @@ public class CanMessageFactory implements MarklinCan {
         
         System.out.println("switchAccessory 1g: " + switchAccessory(1,AccessoryValue.RED,true, 1668498828));
         System.out.println("switchAccessory 1g: " + switchAccessory(1,AccessoryValue.RED,false, 1668498828));
+        
+        //locfunction
+        
+        //0x00 0x0c 0x37 0x7e 0x06 0x00 0x00 0x40 0x07 0x00 0x01 0x00 0x00
+        //0x00 0x0d 0x03 0x26 0x06 0x00 0x00 0x40 0x07 0x00 0x01 0x00 0x00
+
+        //0x00 0x0c 0x37 0x7e 0x06 0x00 0x00 0x40 0x07 0x00 0x00 0x00 0x00
+        // 0x00 0x0d 0x03 0x26 0x06 0x00 0x00 0x40 0x07 0x00 0x00 0x00 0x00
+        
 
         //System.out.println("querySystem byte array : " + querySystem(new int[]{0x63, 0x73, 0x45, 0x8D}));
 //        System.out.println("ping : " + getMobileAppPingRequest());

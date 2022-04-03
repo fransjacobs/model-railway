@@ -55,19 +55,21 @@ public interface MarklinCan {
     public final static int MFX_VERIFY_COMMAND = 0x06;
 
     public final static int LOC_SPEED = 0x08;
-    public final static int LOC_SPEED_QUERY_DLC = 0x04;
-    public final static int LOC_SPEED_SET_DLC = 0x06;
+    //public final static int LOC_SPEED_QUERY_DLC = 0x04;
+    //public final static int LOC_SPEED_SET_DLC = 0x06;
 
     public final static int LOC_DIRECTION = 0x0a;
     public final static int LOC_DIRECTION_RESPONSE = 0x0b;
 
     public static final int LOC_DIRECTION_QUERY_DLC = 0x04;
-    public static final int LOC_DIRECTION_SET_DLC = 0x05;
+    //public static final int LOC_DIRECTION_SET_DLC = 0x05;
     public final static int LOC_DIRECTION_VALUE_IDX = 4;
 
     public final static int LOC_FUNCTION = 0x0c;
-    public static final int LOC_FUNCTION_QUERY_DLC = 0x05;
-    public static final int LOC_FUNCTION_SET_DLC = 0x06;
+    public final static int LOC_FUNCTION_RESP = 0x0d;
+    
+    //public static final int LOC_FUNCTION_QUERY_DLC = 0x05;
+    //public static final int LOC_FUNCTION_SET_DLC = 0x06;
     public static final int FUNCTION_OFF = 0x00;
     public static final int FUNCTION_ON = 0x01;
 

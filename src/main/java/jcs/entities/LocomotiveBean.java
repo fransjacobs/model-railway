@@ -270,11 +270,18 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         return functions;
     }
 
-    public void addAllFunctions(List<FunctionBean> functions) {
+    public void addFunctions(FunctionBean function) {
+        this.functions.put(function.getNumber(), function);
+    }
 
+    public void addAllFunctions(List<FunctionBean> functions) {
         for (FunctionBean function : functions) {
             this.functions.put(function.getNumber(), function);
         }
+    }
+
+    public FunctionBean getFunctionBean(Integer functionNumber) {
+        return this.functions.get(functionNumber);
     }
 
     @Override
@@ -306,6 +313,13 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         if (this.functions.containsKey(number)) {
             FunctionBean f = this.functions.get(number);
             f.setValue(value ? 1 : 0);
+        }
+    }
+
+    public void setFunctionValue(Integer number, Integer value) {
+        if (this.functions.containsKey(number)) {
+            FunctionBean f = this.functions.get(number);
+            f.setValue(value);
         }
     }
 

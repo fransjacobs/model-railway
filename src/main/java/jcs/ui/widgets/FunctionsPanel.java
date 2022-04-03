@@ -28,20 +28,22 @@ import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.controller.cs3.events.FunctionMessageEvent;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.events.FunctionListener;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class FunctionsPanel extends javax.swing.JPanel {
-    
+public class FunctionsPanel extends javax.swing.JPanel implements FunctionListener {
+
     private final Map<Integer, JToggleButton> buttons;
     private LocomotiveBean locomotive;
-    
+
     private final String IMG_PREFIX = "fkticon_";
     private final String IMG_A = "a_";
     private final String IMG_YELLOW = "ge_";
@@ -56,7 +58,7 @@ public class FunctionsPanel extends javax.swing.JPanel {
         initComponents();
         mapButtons();
     }
-    
+
     private void mapButtons() {
         buttons.put(0, f0TB);
         buttons.put(1, f1TB);
@@ -74,7 +76,7 @@ public class FunctionsPanel extends javax.swing.JPanel {
         buttons.put(13, f13TB);
         buttons.put(14, f14TB);
         buttons.put(15, f15TB);
-        
+
         buttons.put(16, f16TB);
         buttons.put(17, f17TB);
         buttons.put(18, f18TB);
@@ -91,10 +93,14 @@ public class FunctionsPanel extends javax.swing.JPanel {
         buttons.put(29, f29TB);
         buttons.put(30, f30TB);
         buttons.put(31, f31TB);
-        
+
         setEnabled(false);
+
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().addFunctionListener(this);
+        }
     }
-    
+
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
@@ -104,42 +110,56 @@ public class FunctionsPanel extends javax.swing.JPanel {
         }
         this.buttonsTP.setEnabled(enabled);
     }
-    
+
+    @Override
+    public void onChange(FunctionMessageEvent event) {
+        if (this.locomotive != null && this.locomotive.getId().equals(event.getLocomotiveBean().getId())) {
+            Logger.trace("Event for "+this.locomotive+" ch function: "+event.getUpdatedFunctionNumber());
+            Integer updatedFunction = event.getUpdatedFunctionNumber();
+            FunctionBean fb = event.getLocomotiveBean().getFunctionBean(updatedFunction);
+            if (fb != null) {
+                this.buttons.get(updatedFunction).setSelected(fb.isOn());
+            } else {
+                Logger.trace("Function for number "+updatedFunction+" not found");
+            }
+        }
+    }
+
     public void setLocomotive(LocomotiveBean locomotive) {
         if (TrackServiceFactory.getTrackService() != null && locomotive != null) {
             this.locomotive = locomotive;
             Map<Integer, FunctionBean> functions = locomotive.getFunctions();
-            
+
             for (int i = 0; i < 32; i++) {
                 JToggleButton button = this.buttons.get(i);
-                
+
                 if (functions.containsKey(i)) {
                     //Logger.trace("Button " + i);
                     FunctionBean fb = functions.get(i);
-                    
+
                     int type = fb.getFunctionType();
                     boolean val = fb.getValue() == 1;
-                    
+
                     String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
                     String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
-                    
+
                     Image iconOff = TrackServiceFactory.getTrackService().getFunctionImage(functionOff);
                     if (iconOff == null) {
                         button.setText("F" + i);
                         Logger.trace("Missing icon " + functionOff);
-                        
+
                     } else {
                         button.setText("");
                         button.setIcon(new ImageIcon(iconOff));
                     }
-                    
+
                     Image iconOn = TrackServiceFactory.getTrackService().getFunctionImage(functionOn);
                     if (iconOn == null) {
                     } else {
                         button.setText("");
                         button.setSelectedIcon(new ImageIcon(iconOn));
                     }
-                    
+
                     button.setSelected(val);
                     button.setActionCommand("F" + i);
                     button.setEnabled(true);
@@ -151,11 +171,11 @@ public class FunctionsPanel extends javax.swing.JPanel {
             }
         }
     }
-    
+
     public LocomotiveBean getLocomotive() {
         return locomotive;
     }
-    
+
     private void buttonActionPerformed(ActionEvent evt) {
         JToggleButton src = (JToggleButton) evt.getSource();
         boolean value = src.isSelected();
@@ -640,7 +660,7 @@ public class FunctionsPanel extends javax.swing.JPanel {
     private void f15TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f15TBActionPerformed
         buttonActionPerformed(evt);
     }//GEN-LAST:event_f15TBActionPerformed
-    
+
     public static void main(String args[]) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -648,12 +668,12 @@ public class FunctionsPanel extends javax.swing.JPanel {
             Logger.error("Can't set the LookAndFeel: " + ex);
         }
         java.awt.EventQueue.invokeLater(() -> {
-            
+
             FunctionsPanel testPanel = new FunctionsPanel();
             JFrame testFrame = new JFrame("FunctionsPanel Tester");
-            
+
             testFrame.add(testPanel);
-            
+
             testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
                 @Override
                 public void windowClosing(java.awt.event.WindowEvent e) {
@@ -662,16 +682,17 @@ public class FunctionsPanel extends javax.swing.JPanel {
             });
             testFrame.pack();
             testFrame.setLocationRelativeTo(null);
-            
+
             if (TrackServiceFactory.getTrackService() != null) {
 
                 //LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16390));
-                LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16394));
-                
+                //LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16394));
+                LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16391));
+
                 testPanel.setLocomotive(loc);
-                
+
             }
-            
+
             testFrame.setVisible(true);
         });
     }

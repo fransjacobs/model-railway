@@ -35,6 +35,7 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.events.AccessoryListener;
+import jcs.trackservice.events.FunctionListener;
 import jcs.trackservice.events.LocomotiveListener;
 import jcs.trackservice.events.SensorListener;
 
@@ -96,8 +97,7 @@ public interface TrackService {
 
     void removeAccessoryListener(AccessoryListener listener);
 
-    void removeAllAccessoryListeners();
-
+    //void removeAllAccessoryListeners();
     //void notifyAllAccessoryListeners();
     void addSensorListener(SensorListener listener);
 
@@ -115,6 +115,10 @@ public interface TrackService {
 
     //void addPersistedEventListener(PersistedEventListener listener);
     //void removePersistedEventListener(PersistedEventListener listener);
+    void addFunctionListener(FunctionListener listener);
+
+    void removeFunctionListener(FunctionListener listener);
+
     void addLocomotiveListener(LocomotiveListener listener);
 
     void removeLocomotiveListener(LocomotiveListener listener);

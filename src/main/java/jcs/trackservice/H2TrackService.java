@@ -48,7 +48,6 @@ import jcs.trackservice.dao.JCSPropertiesDAO;
 import jcs.trackservice.dao.TrackPowerDAO;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.trackservice.events.LocomotiveListener;
-import jcs.trackservice.events.PersistedEventListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
@@ -66,6 +65,7 @@ import jcs.controller.MarklinController;
 import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.events.FunctionMessageEvent;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
@@ -74,25 +74,28 @@ import static jcs.entities.enums.TileType.CURVED;
 import static jcs.entities.enums.TileType.SENSOR;
 import static jcs.entities.enums.TileType.SIGNAL;
 import static jcs.entities.enums.TileType.STRAIGHT;
+import jcs.controller.cs3.events.FunctionMessageEventListener;
+import jcs.trackservice.events.FunctionListener;
 
 public class H2TrackService implements TrackService {
-
+    
     private final JCSPropertiesDAO propDao;
     private final LocomotiveBeanDAO locoDAO;
     private final FunctionBeanDAO funcDAO;
     private final AccessoryBeanDAO acceDAO;
     private final SensorDAO sensDAO;
     private final TileBeanDAO tileDAO;
-
+    
     private final TrackPowerDAO trpoDAO;
-
+    
     private MarklinController controllerService;
 
     //int feedbackModules;
     private final ExecutorService executor;
-
+    
     private final List<SensorListener> sensorListeners;
     private final List<AccessoryListener> accessoryListeners;
+    private final List<FunctionListener> functionListeners;
 
     //private final List<LocomotiveListener> locomotiveListeners;
     //private final List<HeartBeatListener> heartBeatListeners;
@@ -101,62 +104,63 @@ public class H2TrackService implements TrackService {
     //private boolean fbToggle = false;
     //private TrackPower trpo;
     private final Properties jcsProperties;
-
+    
     private StatusDataConfigParser controllerInfo;
     //private final Timer timer;
 
     private HashMap<String, Image> imageCache;
     private HashMap<String, Image> functionImageCache;
-
+    
     public H2TrackService() {
         this(true);
     }
-
+    
     private H2TrackService(boolean aquireControllerService) {
         propDao = new JCSPropertiesDAO();
         jcsProperties = new Properties();
-
+        
         imageCache = new HashMap<>();
         functionImageCache = new HashMap<>();
-
+        
         sensDAO = new SensorDAO();
         locoDAO = new LocomotiveBeanDAO();
         funcDAO = new FunctionBeanDAO();
         acceDAO = new AccessoryBeanDAO();
-
+        
         trpoDAO = new TrackPowerDAO();
         tileDAO = new TileBeanDAO();
-
+        
         sensorListeners = new LinkedList<>();
         accessoryListeners = new LinkedList<>();
-
+        functionListeners = new LinkedList<>();
+        
         executor = Executors.newCachedThreadPool();
 
         //locomotiveListeners = new ArrayList<>();
-        //persistListeners = new ArrayList<>();
         retrieveJCSProperties();
-
+        
         if (aquireControllerService) {
             connectController();
         }
-
+        
         Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
-
+        
     }
-
+    
     private void retrieveJCSProperties() {
         List<JCSProperty> props = this.propDao.findAll();
-
+        
         props.forEach(p -> {
             jcsProperties.setProperty(p.getKey(), p.getValue());
             System.setProperty(p.getKey(), p.getValue());
         });
     }
 
+    //TODO more interactive way of connecting and feedback from UI
     public final boolean connectController() {
         //String activeControllerService = System.getProperty("activeControllerService");
         String controllerImpl = System.getProperty("CS3");
-
+        
         String trackServiceAlwaysUseDemo = System.getProperty("trackServiceAlwaysUseDemo", "false");
         if ("false".equalsIgnoreCase(trackServiceAlwaysUseDemo)) {
             if (controllerService == null) {
@@ -172,7 +176,7 @@ public class H2TrackService implements TrackService {
                 }
             }
         }
-
+        
         if (controllerService == null) {
             //Use a demo...
             try {
@@ -224,28 +228,28 @@ public class H2TrackService implements TrackService {
         if (controllerService != null) {
             this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
             this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
-
+            this.controllerService.addFunctionMessageEventListener(new FunctionMessageListener(this));
         }
-
+        
         return this.controllerService != null && this.controllerService.isConnected();
-
+        
     }
-
+    
     @Override
     public List<SensorBean> getSensors() {
         return sensDAO.findAll();
     }
-
+    
     @Override
     public SensorBean getSensor(Integer deviceId, Integer contactId) {
         return sensDAO.find(deviceId, contactId);
     }
-
+    
     @Override
     public SensorBean getSensor(BigDecimal id) {
         return sensDAO.findById(id);
     }
-
+    
     @Override
     public SensorBean persist(SensorBean sensor) {
         SensorBean prev = sensDAO.find(sensor.getDeviceId(), sensor.getContactId());
@@ -257,34 +261,6 @@ public class H2TrackService implements TrackService {
         return sensor;
     }
 
-//    private void firePersistEvent(ControllableDevice current, ControllableDevice previous) {
-//        if (!current.equals(previous)) {
-//            for (PersistedEventListener listener : persistListeners) {
-//                listener.persisted(current, previous);
-//            }
-//        }
-//    }
-//    private void broadcastSensorChanged(SensorBean sensor) {
-//        List<SensorListener> sll = sensorListeners.get(sensor.getContactId());
-//
-//        if (sll != null) {
-//            for (SensorListener listener : sll) {
-//                listener.setActive(sensor.isActive());
-//                //Logger.trace("Listener CID: " + listener.getContactId() + " Active: " + sensor.isActive());
-//            }
-//        }
-//    }
-//    //TODO!
-//    public void synchronizeSensors() {
-//        int sensorCount = Integer.decode(System.getProperty("sensorCount", "16"));
-//        //obtain the current sensorstatus
-//        List<SensorMessageEvent> sml = Collections.EMPTY_LIST; //controllerService.querySensors(sensorCount);
-//        //for (SensorMessageEvent sme : sml) {
-//        //    SensorBean s = new SensorBean(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceId(), sme.getMillis(), new Date());
-//        //    persist(s);
-//        //}
-//        Logger.debug("Updated " + sml.size() + " Sensor statuses...");
-//    }
     //@Override
 //    public void notifyAllSensorListeners() {
 //        List<SensorBean> sl = this.sensDAO.findAll();
@@ -306,13 +282,6 @@ public class H2TrackService implements TrackService {
 //        }
 //        Logger.trace("Refreshed " + sl.size() + " Sensors...");
 //    }
-    private void notifyAccessoiryListeners(AccessoryBean accessoiry) {
-//        AccessoryEvent ae = new AccessoryEvent(accessoiry);
-//        for (AccessoryListener listener : accessoiryListeners) {
-//            listener.switched(ae);
-//        }
-    }
-
     @Override
     public void remove(JCSEntity entity) {
         if (entity instanceof SensorBean) {
@@ -331,23 +300,7 @@ public class H2TrackService implements TrackService {
             this.propDao.remove((JCSProperty) entity);
         }
     }
-
-//    @Override
-//    public List<SignalBean> getSignals() {
-//        return this.signalDAO.findAll();
-//    }
-//    @Override
-//    public List<SwitchBean> getSwitches() {
-//        return this.turnoutDAO.findAll();
-//    }
-//    @Override
-//    public SignalBean getSignal(Integer address) {
-//        return this.signalDAO.find(address);
-//    }
-//    @Override
-//    public SwitchBean getSwitchTurnout(Integer address) {
-//        return this.turnoutDAO.find(address);
-//    }
+    
     @Override
     public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
         LocomotiveBean loco = locoDAO.find(address, decoderType.getDecoderType());
@@ -358,7 +311,7 @@ public class H2TrackService implements TrackService {
         }
         return loco;
     }
-
+    
     @Override
     public LocomotiveBean getLocomotive(BigDecimal id) {
         LocomotiveBean loco = locoDAO.findById(id);
@@ -369,21 +322,20 @@ public class H2TrackService implements TrackService {
         }
         return loco;
     }
-
+    
     @Override
     public List<LocomotiveBean> getLocomotives() {
         List<LocomotiveBean> locos = locoDAO.findAll();
-
+        
         for (LocomotiveBean loco : locos) {
             List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
             loco.addAllFunctions(functions);
-
             loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
         }
-
+        
         return locos;
     }
-
+    
     public Image getLocomotiveImage(String imageName) {
         if (!imageCache.containsKey(imageName)) {
             //Try to load the image from the file cache
@@ -404,7 +356,7 @@ public class H2TrackService implements TrackService {
         }
         return this.imageCache.get(imageName);
     }
-
+    
     @Override
     public Image getFunctionImage(String imageName) {
         if (!functionImageCache.containsKey(imageName)) {
@@ -418,7 +370,7 @@ public class H2TrackService implements TrackService {
         }
         return this.functionImageCache.get(imageName);
     }
-
+    
     private void storeImage(Image image, String imageName) {
         String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache";
         File cachePath = new File(path);
@@ -432,11 +384,11 @@ public class H2TrackService implements TrackService {
         }
         Logger.trace("Stored image " + imageName + ".png in the cache");
     }
-
+    
     private Image readImage(String imageName) {
         String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
         Image image = null;
-
+        
         File imgFile = new File(path + imageName + ".png");
         if (imgFile.exists()) {
             try {
@@ -447,11 +399,11 @@ public class H2TrackService implements TrackService {
         }
         return image;
     }
-
+    
     private Image readFunctionImage(String imageName) {
         String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions" + File.separator;
         Image image = null;
-
+        
         File imgFile = new File(path + imageName + ".png");
         if (imgFile.exists()) {
             try {
@@ -462,95 +414,75 @@ public class H2TrackService implements TrackService {
         }
         return image;
     }
-
+    
     @Override
     public LocomotiveBean persist(LocomotiveBean locomotive) {
-        return persist(locomotive, true);
-    }
-
-    private LocomotiveBean persist(LocomotiveBean locomotive, boolean fireEvent) {
-        LocomotiveBean cl = locoDAO.findById(locomotive.getId());
         locoDAO.persist(locomotive);
         funcDAO.persist(locomotive.getFunctions().values());
-
-//        if (cl != null && cl.isChanged(locomotive)) {
-//            LocomotiveEvent event = new LocomotiveEvent(locomotive);
-//            Logger.debug("Changed loco-> " + event);
-//            broadcastLocomotiveEvent(event);
-//        }
+        
         return locomotive;
     }
-
-//    private void broadcastLocomotiveEvent(final LocomotiveEvent event) {
-//        Set<LocomotiveListener> snapshot;
-//        synchronized (this.locomotiveListeners) {
-//            snapshot = new HashSet<>(locomotiveListeners);
-//        }
-//
-//        for (LocomotiveListener listener : snapshot) {
-//            listener.changed(event);
-//        }
-//    }
+    
     @Override
     public List<AccessoryBean> getTurnouts() {
         return this.acceDAO.findBy("%weiche");
     }
-
+    
     @Override
     public List<AccessoryBean> getSignals() {
         return this.acceDAO.findBy("%signal%");
     }
-
+    
     @Override
     public AccessoryBean getAccessory(BigDecimal id) {
         return this.acceDAO.findById(id);
     }
-
+    
     @Override
     public AccessoryBean getAccessory(Integer address) {
         return this.acceDAO.find(address);
     }
-
+    
     @Override
     public AccessoryBean persist(AccessoryBean accessory) {
         this.acceDAO.persist(accessory);
         return accessory;
     }
-
+    
     @Override
     public List<JCSProperty> getProperties() {
         return this.propDao.findAll();
     }
-
+    
     @Override
     public JCSProperty getProperty(String key) {
         return this.propDao.find(key);
     }
-
+    
     @Override
     public JCSProperty persist(JCSProperty property) {
         this.propDao.persist(property);
         return property;
     }
-
+    
     @Override
     public Set<TileBean> getTiles() {
         Set<TileBean> beans = new HashSet<>();
         beans.addAll(this.tileDAO.findAll());
-
+        
         return beans;
     }
-
+    
     @Override
     public TileBean getTile(Integer x, Integer y) {
         return this.tileDAO.findByXY(x, y);
     }
-
+    
     @Override
     public TileBean persist(TileBean tile) {
         if (tile.getEntityBean() != null) {
             TileType tileType = tile.getTileType();
-
+            
             switch (tileType) {
                 case STRAIGHT:
                     break;
@@ -577,22 +509,22 @@ public class H2TrackService implements TrackService {
             }
         }
         this.tileDAO.persist(tile);
-
+        
         return tile;
     }
-
+    
     @Override
     public void persist(Set<TileBean> tiles) {
         //get all existing tiles from database
         List<TileBean> existing = tileDAO.findAll();
-
+        
         Map<Point, TileBean> currentTP = new HashMap<>();
         Map<Point, TileBean> updatedTP = new HashMap<>();
-
+        
         for (TileBean tb : existing) {
             currentTP.put(tb.getCenter(), tb);
         }
-
+        
         for (TileBean tb : tiles) {
             updatedTP.put(tb.getCenter(), tb);
         }
@@ -600,13 +532,13 @@ public class H2TrackService implements TrackService {
         //remove the ones which do no longer exists
         Set<Point> currentPoints = currentTP.keySet();
         Set<Point> updatedPoints = updatedTP.keySet();
-
+        
         for (Point p : currentPoints) {
             if (!updatedPoints.contains(p)) {
                 tileDAO.remove(p.x, p.y);
             }
         }
-
+        
         for (TileBean tb : tiles) {
             if (tb.getId() == null) {
                 //store the layouttile but incase check if it exist based on x and y
@@ -618,12 +550,12 @@ public class H2TrackService implements TrackService {
             persist(tb);
         }
     }
-
+    
     @Override
     public void remove(TileBean tile) {
         this.tileDAO.remove(tile);
     }
-
+    
     @Override
     public String getControllerName() {
         if (this.controllerService != null) {
@@ -632,7 +564,7 @@ public class H2TrackService implements TrackService {
             return null;
         }
     }
-
+    
     @Override
     public String getControllerSerialNumber() {
         if (this.controllerService != null) {
@@ -641,7 +573,7 @@ public class H2TrackService implements TrackService {
             return null;
         }
     }
-
+    
     @Override
     public String getControllerArticleNumber() {
         if (this.controllerService != null) {
@@ -650,7 +582,7 @@ public class H2TrackService implements TrackService {
             return null;
         }
     }
-
+    
     @Override
     public LinkSxx getLinkSxx() {
         if (this.controllerService != null) {
@@ -659,21 +591,21 @@ public class H2TrackService implements TrackService {
             return null;
         }
     }
-
+    
     @Override
     public void addPowerEventListener(PowerEventListener listener) {
         if (this.controllerService != null) {
             this.controllerService.addPowerEventListener(listener);
         }
     }
-
+    
     @Override
     public void removePowerEventListener(PowerEventListener listener) {
         if (this.controllerService != null) {
             this.controllerService.removePowerEventListener(listener);
         }
     }
-
+    
     @Override
     public void switchPower(boolean on) {
         Logger.trace("Switch Power " + (on ? "On" : "Off"));
@@ -681,37 +613,37 @@ public class H2TrackService implements TrackService {
             this.controllerService.power(on);
         }
     }
-
+    
     @Override
     public boolean isPowerOn() {
         boolean power = false;
         if (this.controllerService != null) {
             power = controllerService.isPower();
         }
-
+        
         return power;
     }
-
+    
     @Override
     public boolean connect() {
         return this.controllerService.connect();
     }
-
+    
     @Override
     public boolean isConnected() {
         return this.controllerService.isConnected();
     }
-
+    
     @Override
     public void disconnect() {
 //        this.timer.cancel();
         this.controllerService.disconnect();
     }
-
+    
     @Override
     public void synchronizeLocomotivesWithController() {
         List<LocomotiveBean> fromCs2 = this.controllerService.getLocomotives();
-
+        
         for (LocomotiveBean loc : fromCs2) {
             Integer addr = loc.getAddress();
             String dt = loc.getDecoderType();
@@ -722,47 +654,38 @@ public class H2TrackService implements TrackService {
             } else {
                 Logger.trace("Add " + loc.toLogString());
             }
-
-            persist(loc, false);
+            
+            persist(loc);
         }
         //Also cache the function Icons
         this.controllerService.cacheAllFunctionIcons();
     }
-
-    //@Override
-//    public void synchronizeAccessoriesWithController() {
-//        List<AccessoryBean> ma = this.controllerService.getAccessories();
-//
-//        for (AccessoryBean ab : ma) {
-//            Logger.trace(ab.toLogString());
-//            this.acceDAO.persist(ab);
-//        }
-//    }
+    
     @Override
     public void synchronizeTurnouts() {
         List<AccessoryBean> ma = this.controllerService.getSwitches();
-
+        
         for (AccessoryBean ab : ma) {
             Logger.trace(ab.toLogString());
             this.acceDAO.persist(ab);
         }
     }
-
+    
     @Override
     public void synchronizeSignals() {
         List<AccessoryBean> ma = this.controllerService.getSignals();
-
+        
         for (AccessoryBean ab : ma) {
             Logger.trace(ab.toLogString());
             this.acceDAO.persist(ab);
         }
     }
-
+    
     @Override
     public void updateGuiStatuses() {
         //updateAccessoryStatuses();
     }
-
+    
     @Override
     public void changeDirection(Direction direction, LocomotiveBean locomotive) {
         Logger.debug("Changing direction to " + direction + " for: " + locomotive.toLogString());
@@ -774,14 +697,14 @@ public class H2TrackService implements TrackService {
                 //TODO!
                 //controllerService.toggleDirection(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
                 locomotive.setDirection(direction);
-
+                
             }
             if (locoDAO.findById(locomotive.getId()) != null) {
                 persist(locomotive);
             }
         }
     }
-
+    
     @Override
     public void changeVelocity(Integer velocity, LocomotiveBean locomotive) {
         Logger.trace("Changing velocity to " + velocity + " for " + locomotive.getName());
@@ -790,7 +713,7 @@ public class H2TrackService implements TrackService {
         if (1 == 2) {
             String cs = jcsProperties.getProperty("activeControllerService");
             locomotive.setVelocity(velocity);
-
+            
             if ("CS2".equals(cs)) {
                 controllerService.setSpeed(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), locomotive.getVelocity());
             }
@@ -799,10 +722,15 @@ public class H2TrackService implements TrackService {
             }
         }
     }
-
+    
     @Override
     public void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive) {
         Logger.trace("Changing Function " + functionNumber + " to " + (value ? "on" : "off") + " on " + locomotive.getName());
+        
+        int id = locomotive.getId().intValue();
+
+        //locomotive.getDecoderType();
+        controllerService.setFunction(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), functionNumber, value);
 
         //Stub For now disable the link to CS 3 
         if (1 == 2) {
@@ -819,7 +747,7 @@ public class H2TrackService implements TrackService {
             }
         }
     }
-
+    
     @Override
     public void switchAccessory(AccessoryValue value, AccessoryBean accessory) {
         int address = accessory.getAddress();
@@ -830,82 +758,77 @@ public class H2TrackService implements TrackService {
                 val = AccessoryValue.cs3Get(accessory.getPosition() - 2);
             }
         }
-
+        
         Logger.trace("Change accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
         controllerService.switchAccessory(address, val);
     }
-
+    
     @Override
     public void addMessageListener(CanMessageListener listener) {
         if (this.controllerService != null) {
             //this.controllerService.addCanMessageListener(listener);
         }
     }
-
+    
     @Override
     public void removeMessageListener(CanMessageListener listener) {
         if (this.controllerService != null) {
             //this.controllerService.removeCanMessageListener(listener);
         }
     }
-
+    
     @Override
     public void addSensorListener(SensorListener listener) {
         this.sensorListeners.add(listener);
     }
-
+    
     @Override
     public void removeSensorListener(SensorListener listener) {
         this.sensorListeners.remove(listener);
     }
-
+    
     @Override
     public void addAccessoryListener(AccessoryListener listener) {
         this.accessoryListeners.add(listener);
     }
-
+    
     @Override
     public void removeAccessoryListener(AccessoryListener listener) {
         this.accessoryListeners.remove(listener);
     }
 
-    @Override
-    public void removeAllAccessoryListeners() {
+//    @Override
+//    public void removeAllAccessoryListeners() {
 //        this.accessoiryListeners.clear();
+//    }
+    @Override
+    public void addFunctionListener(FunctionListener listener) {
+        this.functionListeners.add(listener);
     }
-
-    //@Override
-    public void addPersistedEventListener(PersistedEventListener listener) {
-//        this.persistListeners.add(listener);
+    
+    @Override
+    public void removeFunctionListener(FunctionListener listener) {
+        this.functionListeners.remove(listener);
     }
-
-    //@Override
-    public void removePersistedEventListener(PersistedEventListener listener) {
-//        this.persistListeners.remove(listener);
-    }
-
+    
     @Override
     public void addLocomotiveListener(LocomotiveListener listener) {
 //        this.locomotiveListeners.add(listener);
     }
-
+    
     @Override
     public void removeLocomotiveListener(LocomotiveListener listener) {
 //        this.locomotiveListeners.remove(listener);
     }
-
-    //@Override
-    public void notifyAllAccessoryListeners() {
-    }
-
+    
     private class SensorMessageEventListener implements SensorMessageListener {
-
+        
         private final H2TrackService trackService;
-
+        
         SensorMessageEventListener(H2TrackService trackService) {
             this.trackService = trackService;
         }
-
+        
         @Override
         public void onSensorMessage(SensorMessageEvent event) {
             SensorBean sb = event.getSensorBean();
@@ -915,25 +838,25 @@ public class H2TrackService implements TrackService {
                 sb.setName(dbsb.getName());
                 this.trackService.persist(sb);
             }
-
+            
             for (SensorListener sl : this.trackService.sensorListeners) {
                 sl.onChange(sb);
             }
         }
     }
-
+    
     private class AccessoryMessageListener implements AccessoryMessageEventListener {
-
+        
         private final H2TrackService trackService;
-
+        
         AccessoryMessageListener(H2TrackService trackService) {
             this.trackService = trackService;
         }
-
+        
         @Override
         public void onAccessoryMessage(AccessoryMessageEvent event) {
             AccessoryBean ab = event.getAccessoryBean();
-
+            
             int address = ab.getAddress();
             AccessoryBean dbab = this.trackService.getAccessory(ab.getAddress());
             if (dbab == null) {
@@ -950,7 +873,7 @@ public class H2TrackService implements TrackService {
                     }
                 }
             }
-
+            
             if (dbab != null) {
                 //set all properties
                 ab.setId(dbab.getId());
@@ -968,11 +891,43 @@ public class H2TrackService implements TrackService {
                 }
                 this.trackService.persist(ab);
             }
-
+            
             for (AccessoryListener al : this.trackService.accessoryListeners) {
                 al.onChange(event);
             }
         }
     }
-
+    
+    private class FunctionMessageListener implements FunctionMessageEventListener {
+        
+        private final H2TrackService trackService;
+        
+        FunctionMessageListener(H2TrackService trackService) {
+            this.trackService = trackService;
+        }
+        
+        @Override
+        public void onFunctionMessage(FunctionMessageEvent functionEvent) {
+            LocomotiveBean lb = functionEvent.getLocomotiveBean();
+            
+            BigDecimal id = lb.getId();
+            LocomotiveBean dblb = this.trackService.getLocomotive(id);
+            
+            if (dblb != null) {
+                FunctionBean fb = lb.getFunctionBean(functionEvent.getUpdatedFunctionNumber());
+                Logger.trace("Found " + dblb + " Function: " + fb);
+                if (fb != null) {
+                    dblb.setFunctionValue(fb.getNumber(), fb.getValue());
+                    this.trackService.persist(dblb);
+                    functionEvent.setLocomotiveBean(dblb);
+                }
+            }
+            
+            for (FunctionListener fl : this.trackService.functionListeners) {
+                fl.onChange(functionEvent);
+            }
+        }
+        
+    }
+    
 }

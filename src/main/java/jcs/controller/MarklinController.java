@@ -30,6 +30,7 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.events.FunctionMessageEventListener;
 
 public interface MarklinController {
 
@@ -68,6 +69,10 @@ public interface MarklinController {
     void addAccessoryEventListener(AccessoryMessageEventListener listener);
 
     void removeAccessoryEventListener(AccessoryMessageEventListener listener);
+
+    void addFunctionMessageEventListener(FunctionMessageEventListener listener);
+
+    void removeFunctionMessageEventListener(FunctionMessageEventListener listener);
 
     List<LocomotiveBean> getLocomotives();
 

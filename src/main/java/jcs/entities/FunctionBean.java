@@ -76,6 +76,10 @@ public class FunctionBean implements JCSEntity, Serializable {
         return value;
     }
 
+    public boolean isOn() {
+        return this.value >= 1;
+    }
+
     public void setValue(Integer value) {
         this.value = value;
     }
