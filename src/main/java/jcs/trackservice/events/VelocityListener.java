@@ -18,15 +18,14 @@
  */
 package jcs.trackservice.events;
 
-import jcs.controller.cs3.events.LocomotiveEvent;
+import jcs.controller.cs3.events.VelocityMessageEvent;
 
 /**
  *
  * @author frans
  */
-public interface LocomotiveListener {
-  
-    void changed(LocomotiveEvent event);
+public interface VelocityListener {
 
-    
+    void onChange(VelocityMessageEvent event);
+
 }

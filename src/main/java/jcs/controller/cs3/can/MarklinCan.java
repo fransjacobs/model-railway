@@ -44,24 +44,23 @@ public interface MarklinCan {
     public final static int DLC_8 = 0x08;
 
     public final static int SYSTEM_COMMAND = 0x00;
-    public final static int SYSTEM_COMMAND_RESPONSE = 0x01;
+    public final static int SYSTEM_COMMAND_RESP = 0x01;
  
-    public static final int STOP_SUBCMD = 0x00;
-    public static final int GO_SUBCMD = 0x01;
     public static final int SUBCMD_IDX = 4;
 
     public final static int LOC_DISCOVERY_COMMAND = 0x01;
     public final static int MFX_BIND_COMMAND = 0x04;
     public final static int MFX_VERIFY_COMMAND = 0x06;
 
-    public final static int LOC_SPEED = 0x08;
+    public final static int LOC_VELOCITY = 0x08;
+    public final static int LOC_VELOCITY_RESP = 0x09;
     //public final static int LOC_SPEED_QUERY_DLC = 0x04;
     //public final static int LOC_SPEED_SET_DLC = 0x06;
 
     public final static int LOC_DIRECTION = 0x0a;
-    public final static int LOC_DIRECTION_RESPONSE = 0x0b;
+    public final static int LOC_DIRECTION_RESP = 0x0b;
 
-    public static final int LOC_DIRECTION_QUERY_DLC = 0x04;
+    //public static final int LOC_DIRECTION_QUERY_DLC = 0x04;
     //public static final int LOC_DIRECTION_SET_DLC = 0x05;
     public final static int LOC_DIRECTION_VALUE_IDX = 4;
 
@@ -138,9 +137,10 @@ public interface MarklinCan {
     public final static int CON_60128_DATA_STREAM = 0x44;
 
     //System Sub commands
-    public static final int SYSTEM_SUB_HALT = 0x02;
-
-    public static final int SYSTEM_SUB_LOC_EMERGENCY_STOP = 0x03;
+    public static final int STOP_SUB_CMD = 0x00;
+    public static final int GO_SUB_CMD = 0x01;
+    public static final int HALT_SUB_CMD = 0x02;
+    public static final int LOC_STOP_SUB_CMD = 0x03;
 
     public static final int SYSTEM_SUB_LOC_CYCLE_STOP = 0x04;
 
@@ -154,7 +154,7 @@ public interface MarklinCan {
 
     public static final int SYSTEM_SUB_MFX_REG_CNT = 0x09;
 
-    public static final int SYSTEM_SUB_SYS_OVERLOAD = 0x0a;
+    public static final int OVERLOAD_SUB_CMD = 0x0a;
 
     public static final int SYSTEM_SUB_STATUS = 0x0b;
 
@@ -165,7 +165,7 @@ public interface MarklinCan {
     public static final int SYSTEM_SUB_SYSTEM_RESET = (byte) 0x80;
 
 
-    public static final int SYSTEM_RAIL_UNLOCK_DLC = 0x06;
+    //public static final int SYSTEM_RAIL_UNLOCK_DLC = 0x06;
 
     //The UID of the phone app for disovery
     public static final int[] MOBILE_APP_UID = new int[]{0x4f, 0x59, 0x10, 0xdf};

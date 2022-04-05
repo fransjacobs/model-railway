@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.imageio.ImageIO;
 import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
@@ -47,7 +45,6 @@ import jcs.entities.enums.Direction;
 import jcs.trackservice.dao.JCSPropertiesDAO;
 import jcs.trackservice.dao.TrackPowerDAO;
 import jcs.trackservice.events.AccessoryListener;
-import jcs.trackservice.events.LocomotiveListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
@@ -65,6 +62,8 @@ import jcs.controller.MarklinController;
 import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.events.DirectionMessageEvent;
+import jcs.controller.cs3.events.DirectionMessageEventListener;
 import jcs.controller.cs3.events.FunctionMessageEvent;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.enums.TileType;
@@ -75,7 +74,11 @@ import static jcs.entities.enums.TileType.SENSOR;
 import static jcs.entities.enums.TileType.SIGNAL;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
+import jcs.controller.cs3.events.VelocityMessageEvent;
+import jcs.controller.cs3.events.VelocityMessageEventListener;
+import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
+import jcs.trackservice.events.VelocityListener;
 
 public class H2TrackService implements TrackService {
     
@@ -91,23 +94,18 @@ public class H2TrackService implements TrackService {
     private MarklinController controllerService;
 
     //int feedbackModules;
-    private final ExecutorService executor;
-    
+    //private final ExecutorService executor;
     private final List<SensorListener> sensorListeners;
     private final List<AccessoryListener> accessoryListeners;
     private final List<FunctionListener> functionListeners;
-
-    //private final List<LocomotiveListener> locomotiveListeners;
-    //private final List<HeartBeatListener> heartBeatListeners;
-    //private final List<PersistedEventListener> persistListeners;
-    //private Map<Integer, List<SensorListener>> sensorListeners;
-    //private boolean fbToggle = false;
-    //private TrackPower trpo;
+    
+    private final List<DirectionListener> directionListeners;
+    private final List<VelocityListener> velocityListeners;
+    
     private final Properties jcsProperties;
     
     private StatusDataConfigParser controllerInfo;
-    //private final Timer timer;
-
+    
     private HashMap<String, Image> imageCache;
     private HashMap<String, Image> functionImageCache;
     
@@ -133,10 +131,9 @@ public class H2TrackService implements TrackService {
         sensorListeners = new LinkedList<>();
         accessoryListeners = new LinkedList<>();
         functionListeners = new LinkedList<>();
+        directionListeners = new LinkedList<>();
+        velocityListeners = new LinkedList<>();
         
-        executor = Executors.newCachedThreadPool();
-
-        //locomotiveListeners = new ArrayList<>();
         retrieveJCSProperties();
         
         if (aquireControllerService) {
@@ -157,6 +154,7 @@ public class H2TrackService implements TrackService {
     }
 
     //TODO more interactive way of connecting and feedback from UI
+    //TODO clean this up!
     public final boolean connectController() {
         //String activeControllerService = System.getProperty("activeControllerService");
         String controllerImpl = System.getProperty("CS3");
@@ -176,7 +174,8 @@ public class H2TrackService implements TrackService {
                 }
             }
         }
-        
+
+        //TODO Remove the DEMO....
         if (controllerService == null) {
             //Use a demo...
             try {
@@ -219,16 +218,12 @@ public class H2TrackService implements TrackService {
 //        } else {
 //            Logger.trace("The Sensor count has not changed since last run...");
 //        }
-        //Update the sensors with the status od the Controller
-//        synchronizeSensors();
-        //controllerInfo = controllerService.getControllerInfo();
-//        controllerService.addHeartbeatListener(new ControllerWatchDogListener());
-//        controllerService.addControllerEventListener(new ControllerServiceEventListener());
-        //timer.scheduleAtFixedRate(new UpdateGuiStatusTask(this), 0, 1000);
         if (controllerService != null) {
             this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
             this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
             this.controllerService.addFunctionMessageEventListener(new FunctionMessageListener(this));
+            this.controllerService.addDirectionMessageEventListener(new DirectionMessageListener(this));
+            this.controllerService.addVelocityMessageEventListener(new VelocityMessageListener(this));
         }
         
         return this.controllerService != null && this.controllerService.isConnected();
@@ -260,28 +255,7 @@ public class H2TrackService implements TrackService {
         }
         return sensor;
     }
-
-    //@Override
-//    public void notifyAllSensorListeners() {
-//        List<SensorBean> sl = this.sensDAO.findAll();
-    //Query all sensors
-//        List<SensorMessageEvent> sel = this.controllerService.querySensors(sl.size());
-//        for (SensorMessageEvent se : sel) {
-//            
-//            SensorBean s = sensDAO.find(se.getContactId());
-//            s.setDeviceId(se.getDeviceId());
-//            s.setActive(se.isNewValue());
-//            s.setPreviousActive(se.isOldValue());
-//            s.setMillis(se.getMillis());
-//            s.setLastUpdated(new Date());
-//            sensDAO.persist(s);
-//        }
-//        sl = this.sensDAO.findAll();
-//        for (SensorBean s : sl) {
-//            broadcastSensorChanged(s);
-//        }
-//        Logger.trace("Refreshed " + sl.size() + " Sensors...");
-//    }
+    
     @Override
     public void remove(JCSEntity entity) {
         if (entity instanceof SensorBean) {
@@ -646,7 +620,7 @@ public class H2TrackService implements TrackService {
         
         for (LocomotiveBean loc : fromCs2) {
             Integer addr = loc.getAddress();
-            String dt = loc.getDecoderType();
+            String dt = loc.getDecoderTypeString();
             LocomotiveBean dbLoc = this.locoDAO.find(addr, dt);
             if (dbLoc != null) {
                 loc.setId(dbLoc.getId());
@@ -690,19 +664,10 @@ public class H2TrackService implements TrackService {
     public void changeDirection(Direction direction, LocomotiveBean locomotive) {
         Logger.debug("Changing direction to " + direction + " for: " + locomotive.toLogString());
 
-        //Stub For now disable the link to CS 3 
-        if (1 == 2) {
-            String cs = jcsProperties.getProperty("activeControllerService");
-            if ("CS2".equals(cs)) {
-                //TODO!
-                //controllerService.toggleDirection(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
-                locomotive.setDirection(direction);
-                
-            }
-            if (locoDAO.findById(locomotive.getId()) != null) {
-                persist(locomotive);
-            }
-        }
+        //The GFP will issue a loc halt command automatically
+        Integer address = locomotive.getAddress();
+        DecoderType decoderType = locomotive.getDecoderType();
+        controllerService.changeDirection(address, decoderType, direction);
     }
     
     @Override
@@ -715,7 +680,7 @@ public class H2TrackService implements TrackService {
             locomotive.setVelocity(velocity);
             
             if ("CS2".equals(cs)) {
-                controllerService.setSpeed(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), locomotive.getVelocity());
+                controllerService.setSpeed(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), locomotive.getVelocity());
             }
             if (locoDAO.findById(locomotive.getId()) != null) {
                 persist(locomotive);
@@ -726,26 +691,7 @@ public class H2TrackService implements TrackService {
     @Override
     public void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive) {
         Logger.trace("Changing Function " + functionNumber + " to " + (value ? "on" : "off") + " on " + locomotive.getName());
-        
-        int id = locomotive.getId().intValue();
-
-        //locomotive.getDecoderType();
-        controllerService.setFunction(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), functionNumber, value);
-
-        //Stub For now disable the link to CS 3 
-        if (1 == 2) {
-            String cs = jcsProperties.getProperty("activeControllerService");
-            if (locomotive.getFunctions().containsKey(functionNumber)) {
-                FunctionBean function = locomotive.getFunctions().get(functionNumber);
-                function.setValue(value ? 1 : 0);
-            }
-            if ("CS2".equals(cs)) {
-                controllerService.setFunction(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()), functionNumber, value);
-            }
-            if (locoDAO.findById(locomotive.getId()) != null) {
-                persist(locomotive);
-            }
-        }
+        controllerService.setFunction(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), functionNumber, value);
     }
     
     @Override
@@ -796,11 +742,7 @@ public class H2TrackService implements TrackService {
     public void removeAccessoryListener(AccessoryListener listener) {
         this.accessoryListeners.remove(listener);
     }
-
-//    @Override
-//    public void removeAllAccessoryListeners() {
-//        this.accessoiryListeners.clear();
-//    }
+    
     @Override
     public void addFunctionListener(FunctionListener listener) {
         this.functionListeners.add(listener);
@@ -812,13 +754,23 @@ public class H2TrackService implements TrackService {
     }
     
     @Override
-    public void addLocomotiveListener(LocomotiveListener listener) {
-//        this.locomotiveListeners.add(listener);
+    public void addDirectionListener(DirectionListener listener) {
+        this.directionListeners.add(listener);
     }
     
     @Override
-    public void removeLocomotiveListener(LocomotiveListener listener) {
-//        this.locomotiveListeners.remove(listener);
+    public void removeDirectionListener(DirectionListener listener) {
+        this.directionListeners.remove(listener);
+    }
+    
+    @Override
+    public void addVelocityListener(VelocityListener listener) {
+        this.velocityListeners.add(listener);
+    }
+    
+    @Override
+    public void removeVelocityListener(VelocityListener listener) {
+        this.velocityListeners.remove(listener);
     }
     
     private class SensorMessageEventListener implements SensorMessageListener {
@@ -890,10 +842,10 @@ public class H2TrackService implements TrackService {
                     ab.setSwitchTime(dbab.getSwitchTime());
                 }
                 this.trackService.persist(ab);
-            }
-            
-            for (AccessoryListener al : this.trackService.accessoryListeners) {
-                al.onChange(event);
+                
+                for (AccessoryListener al : this.trackService.accessoryListeners) {
+                    al.onChange(event);
+                }
             }
         }
     }
@@ -915,19 +867,75 @@ public class H2TrackService implements TrackService {
             
             if (dblb != null) {
                 FunctionBean fb = lb.getFunctionBean(functionEvent.getUpdatedFunctionNumber());
-                Logger.trace("Found " + dblb + " Function: " + fb);
                 if (fb != null) {
                     dblb.setFunctionValue(fb.getNumber(), fb.getValue());
                     this.trackService.persist(dblb);
                     functionEvent.setLocomotiveBean(dblb);
                 }
+                for (FunctionListener fl : this.trackService.functionListeners) {
+                    fl.onChange(functionEvent);
+                }
             }
+        }
+    }
+    
+    private class DirectionMessageListener implements DirectionMessageEventListener {
+        
+        private final H2TrackService trackService;
+        
+        DirectionMessageListener(H2TrackService trackService) {
+            this.trackService = trackService;
+        }
+        
+        @Override
+        public void onDirectionMessage(DirectionMessageEvent directionEvent) {
+            LocomotiveBean lb = directionEvent.getLocomotiveBean();
             
-            for (FunctionListener fl : this.trackService.functionListeners) {
-                fl.onChange(functionEvent);
+            BigDecimal id = lb.getId();
+            LocomotiveBean dblb = this.trackService.getLocomotive(id);
+            
+            if (dblb != null) {
+                Integer richtung = lb.getRichtung();
+                Logger.trace("Found " + dblb + " Richtung: " + richtung);
+                dblb.setRichtung(richtung);
+                this.trackService.persist(dblb);
+                directionEvent.setLocomotiveBean(dblb);
+                
+                for (DirectionListener dl : this.trackService.directionListeners) {
+                    dl.onChange(directionEvent);
+                }
             }
         }
         
+    }
+    
+    private class VelocityMessageListener implements VelocityMessageEventListener {
+        
+        private final H2TrackService trackService;
+        
+        VelocityMessageListener(H2TrackService trackService) {
+            this.trackService = trackService;
+        }
+        
+        @Override
+        public void onVelocityMessage(VelocityMessageEvent velocityEvent) {
+            LocomotiveBean lb = velocityEvent.getLocomotiveBean();
+            
+            BigDecimal id = lb.getId();
+            LocomotiveBean dblb = this.trackService.getLocomotive(id);
+            
+            if (dblb != null) {
+                Integer velocity = lb.getVelocity();
+                Logger.trace("Found " + dblb + " Velocity: " + velocity);
+                dblb.setVelocity(velocity);
+                this.trackService.persist(dblb);
+                velocityEvent.setLocomotiveBean(dblb);
+                
+                for (VelocityListener dl : this.trackService.velocityListeners) {
+                    dl.onChange(velocityEvent);
+                }
+            }
+        }
     }
     
 }

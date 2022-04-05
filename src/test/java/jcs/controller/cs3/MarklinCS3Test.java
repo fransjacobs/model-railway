@@ -164,16 +164,16 @@ public class MarklinCS3Test {
      * Test of toggleDirection method, of class MarklinCS3.
      */
     //@Test
-    public void testToggleDirection() {
-        if(!instance.isConnected()) return;
-        System.out.println("toggleDirection");
-        int address = 0;
-        DecoderType decoderType = null;
-        MarklinCS3 instance = new MarklinCS3();
-        instance.toggleDirection(address, decoderType);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testToggleDirection() {
+//        if(!instance.isConnected()) return;
+//        System.out.println("toggleDirection");
+//        int address = 0;
+//        DecoderType decoderType = null;
+//        MarklinCS3 instance = new MarklinCS3();
+//        instance.toggleDirection(address, decoderType);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of changeDirection method, of class MarklinCS3.
@@ -195,18 +195,18 @@ public class MarklinCS3Test {
      * Test of getDirection method, of class MarklinCS3.
      */
     //@Test
-    public void testGetDirection() {
-        if(!instance.isConnected()) return;
-        System.out.println("getDirection");
-        int address = 0;
-        DecoderType decoderType = null;
-        MarklinCS3 instance = new MarklinCS3();
-        DirectionInfo expResult = null;
-        DirectionInfo result = instance.getDirection(address, decoderType);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    public void testGetDirection() {
+//        if(!instance.isConnected()) return;
+//        System.out.println("getDirection");
+//        int address = 0;
+//        DecoderType decoderType = null;
+//        MarklinCS3 instance = new MarklinCS3();
+//        DirectionInfo expResult = null;
+//        DirectionInfo result = instance.getDirection(address, decoderType);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
     /**
      * Test of setSpeed method, of class MarklinCS3.

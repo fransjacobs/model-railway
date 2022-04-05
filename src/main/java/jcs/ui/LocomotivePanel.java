@@ -19,6 +19,8 @@
 package jcs.ui;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -26,24 +28,34 @@ import javax.swing.JSlider;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.controller.cs3.events.DirectionMessageEvent;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.events.DirectionListener;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class LocomotivePanel extends javax.swing.JPanel {
+public class LocomotivePanel extends javax.swing.JPanel implements DirectionListener {
+
+    private final ExecutorService executor;
 
     public LocomotivePanel() {
         initComponents();
+        executor = Executors.newCachedThreadPool();
+
         postInit();
     }
-    
+
     private void postInit() {
         setEnabled(false);
+
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().addDirectionListener(this);
+        }
     }
 
     public void loadLocomotives() {
@@ -297,7 +309,6 @@ public class LocomotivePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void locoListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_locoListValueChanged
-
         if (!evt.getValueIsAdjusting()) {
             if (this.locoList.getSelectedIndex() != -1) {
                 LocomotiveBean selected = this.locoList.getSelectedValue();
@@ -334,12 +345,16 @@ public class LocomotivePanel extends javax.swing.JPanel {
                 this.velocityLbl.setText(velocity + "%");
                 Logger.trace("Slider value: " + value + " velocity: " + velocity);
 
-                if (TrackServiceFactory.getTrackService() != null) {
-                    TrackServiceFactory.getTrackService().changeVelocity(velocity, selected);
-                }
+                executor.execute(() -> changeVelocity(velocity, selected));
             }
         }
     }//GEN-LAST:event_velocitySliderStateChanged
+
+    private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().changeVelocity(newVelocity, locomotiveBean);
+        }
+    }
 
     private void speedBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedBtn1ActionPerformed
         LocomotiveBean selected = this.locoList.getSelectedValue();
@@ -371,11 +386,15 @@ public class LocomotivePanel extends javax.swing.JPanel {
 
     private void changeDirection(Direction direction) {
         LocomotiveBean locomotive = this.locoList.getSelectedValue();
-        if (TrackServiceFactory.getTrackService() != null && locomotive != null) {
-            TrackServiceFactory.getTrackService().changeDirection(direction, locomotive);
+        executor.execute(() -> changeDirection(direction, locomotive));
+    }
+
+    private void changeDirection(Direction newDirection, LocomotiveBean locomotiveBean) {
+        if (TrackServiceFactory.getTrackService() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+            TrackServiceFactory.getTrackService().changeDirection(newDirection, locomotiveBean);
         }
     }
-    
+
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
@@ -396,6 +415,20 @@ public class LocomotivePanel extends javax.swing.JPanel {
     private void backwardsBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsBtnActionPerformed
         changeDirection(Direction.get(evt.getActionCommand()));
     }//GEN-LAST:event_backwardsBtnActionPerformed
+
+    @Override
+    public void onChange(DirectionMessageEvent event) {
+        LocomotiveBean lb = event.getLocomotiveBean();
+        if (lb.getId().equals(this.locoList.getSelectedValue().getId())) {
+            this.locoList.getSelectedValue().setRichtung(lb.getRichtung());
+
+            if (Direction.BACKWARDS.equals(lb.getDirection())) {
+                this.backwardsBtn.setSelected(true);
+            } else {
+                this.forwardsBtn.setSelected(true);
+            }
+        }
+    }
 
     public static void main(String args[]) {
         try {

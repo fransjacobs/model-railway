@@ -49,8 +49,10 @@ import jcs.controller.MarklinController;
 import jcs.controller.cs3.devices.GFP;
 import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.events.DirectionMessageEventListener;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.PowerEventListener;
+import jcs.controller.cs3.events.VelocityMessageEventListener;
 import jcs.controller.cs3.net.CS3Connection;
 
 /**
@@ -292,19 +294,6 @@ public class DemoController implements MarklinController {
         }
     }
 
-    //@Override
-    public void removeHeartbeatListener(HeartbeatListener listener) {
-        synchronized (heartbeatListeners) {
-            this.heartbeatListeners.remove(listener);
-        }
-    }
-
-    //@Override
-    public void removeAllHeartbeatListeners() {
-        synchronized (heartbeatListeners) {
-            this.heartbeatListeners.clear();
-        }
-    }
 
     //@Override
     public void addCanMessageListener(CanMessageListener listener) {
@@ -410,6 +399,28 @@ public class DemoController implements MarklinController {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    @Override
+    public void addDirectionMessageEventListener(DirectionMessageEventListener listener) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void removeDirectionMessageEventListener(DirectionMessageEventListener listener) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void addVelocityMessageEventListener(VelocityMessageEventListener listener) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void removeVelocityMessageEventListener(VelocityMessageEventListener listener) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    
+    
     private class HeartbeatTask extends TimerTask {
 
         private final DemoController controller;

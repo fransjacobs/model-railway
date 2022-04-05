@@ -19,8 +19,8 @@
 package jcs.controller.cs3.events;
 
 import jcs.controller.cs3.can.CanMessage;
-import static jcs.controller.cs3.can.MarklinCan.SYSTEM_COMMAND_RESPONSE;
 import org.tinylog.Logger;
+import static jcs.controller.cs3.can.MarklinCan.SYSTEM_COMMAND_RESP;
 
 /**
  *
@@ -45,7 +45,7 @@ public class PowerEvent {
         int cmd = message.getCommand();
         int subCmd = message.getSubCommand();
 
-        if (resp.isResponseMessage() && SYSTEM_COMMAND_RESPONSE == cmd && (subCmd == 0 | subCmd == 1)) {
+        if (resp.isResponseMessage() && SYSTEM_COMMAND_RESP == cmd && (subCmd == 0 | subCmd == 1)) {
 
             this.power = subCmd == 1;
         } else {

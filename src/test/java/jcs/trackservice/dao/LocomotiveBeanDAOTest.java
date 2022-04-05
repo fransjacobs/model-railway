@@ -106,7 +106,7 @@ public class LocomotiveBeanDAOTest {
             assertEquals(lbe.getMfxUid(), lbr.getMfxUid());
             assertEquals(lbe.getAddress(), lbr.getAddress());
             assertEquals(lbe.getIcon(), lbr.getIcon());
-            assertEquals(lbe.getDecoderType(), lbr.getDecoderType());
+            assertEquals(lbe.getDecoderTypeString(), lbr.getDecoderTypeString());
             assertEquals(lbe.getMfxSid(), lbr.getMfxSid());
             assertEquals(lbe.getTachoMax(), lbr.getTachoMax());
             assertEquals(lbe.getvMin(), lbr.getvMin());
@@ -138,7 +138,7 @@ public class LocomotiveBeanDAOTest {
         assertEquals(expResult.getMfxUid(), result.getMfxUid());
         assertEquals(expResult.getAddress(), result.getAddress());
         assertEquals(expResult.getIcon(), result.getIcon());
-        assertEquals(expResult.getDecoderType(), result.getDecoderType());
+        assertEquals(expResult.getDecoderTypeString(), result.getDecoderTypeString());
         assertEquals(expResult.getMfxSid(), result.getMfxSid());
         assertEquals(expResult.getTachoMax(), result.getTachoMax());
         assertEquals(expResult.getvMin(), result.getvMin());

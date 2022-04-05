@@ -18,7 +18,6 @@
  */
 package jcs.controller.cs3;
 
-import jcs.controller.cs3.can.parser.DirectionInfo;
 import jcs.controller.cs3.can.parser.PingResponseParser;
 import jcs.controller.cs3.can.parser.SystemStatusParser;
 import jcs.controller.cs3.can.parser.StatusDataConfigParser;
@@ -61,9 +60,13 @@ import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.http.DeviceJSONParser;
 import jcs.controller.cs3.net.CS3Connection;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.events.DirectionMessageEvent;
+import jcs.controller.cs3.events.DirectionMessageEventListener;
 import jcs.controller.cs3.events.FunctionMessageEvent;
 import jcs.controller.cs3.http.AccessoryJSONParser;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
+import jcs.controller.cs3.events.VelocityMessageEvent;
+import jcs.controller.cs3.events.VelocityMessageEventListener;
 
 /**
  *
@@ -99,7 +102,9 @@ public class MarklinCS3 implements MarklinController {
 
     private final List<SensorMessageListener> sensorMessageEventListeners;
     private final List<AccessoryMessageEventListener> accessoryMessageEventListeners;
-    private final List<FunctionMessageEventListener> locomotiveFunctionMessageEventListeners;
+    private final List<FunctionMessageEventListener> functionMessageEventListeners;
+    private final List<DirectionMessageEventListener> directionMessageEventListeners;
+    private final List<VelocityMessageEventListener> velocityMessageEventListeners;
 
     private final ExecutorService executor;
 
@@ -118,7 +123,9 @@ public class MarklinCS3 implements MarklinController {
         powerEventListeners = new LinkedList<>();
         sensorMessageEventListeners = new LinkedList<>();
         accessoryMessageEventListeners = new LinkedList<>();
-        locomotiveFunctionMessageEventListeners = new LinkedList<>();
+        functionMessageEventListeners = new LinkedList<>();
+        directionMessageEventListeners = new LinkedList<>();
+        velocityMessageEventListeners = new LinkedList<>();
 
         executor = Executors.newCachedThreadPool();
 
@@ -457,46 +464,43 @@ public class MarklinCS3 implements MarklinController {
         return locoAddress;
     }
 
-    //@Override
-    public void toggleDirection(int address, DecoderType decoderType) {
-        int la = getLocoAddres(address, decoderType);
-        CanMessage msg = sendMessage(CanMessageFactory.queryDirection(la, this.gfpUid));
-        DirectionInfo di = new DirectionInfo(msg);
-        Logger.trace(di);
-        Direction direction = di.getDirection();
-        direction = direction.toggle();
-
-        changeDirection(address, decoderType, direction);
-    }
-
     @Override
     public void changeDirection(int address, DecoderType decoderType, Direction direction) {
-        int la = getLocoAddres(address, decoderType);
-        Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType);
-        sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.gfpUid));
+        if (this.power) {
+            int la = getLocoAddres(address, decoderType);
+            Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType + " Dir Mar: " + direction.getMarklinValue());
+            CanMessage message = sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.gfpUid));
+            DirectionMessageEvent dme = new DirectionMessageEvent(message);
+            this.notifyDirectionEventListeners(dme);
+        }
     }
 
-    public DirectionInfo getDirection(int address, DecoderType decoderType) {
-        int la = getLocoAddres(address, decoderType);
-        DirectionInfo di = new DirectionInfo(sendMessage(CanMessageFactory.queryDirection(la, this.gfpUid)));
-        Logger.trace(di);
-        return di;
-    }
-
+//    public DirectionInfo getDirection(int address, DecoderType decoderType) {
+//        int la = getLocoAddres(address, decoderType);
+//        DirectionInfo di = new DirectionInfo(sendMessage(CanMessageFactory.queryDirection(la, this.gfpUid)));
+//        Logger.trace(di);
+//        return di;
+//    }
     @Override
     public void setSpeed(int address, DecoderType decoderType, int speed) {
-        int la = getLocoAddres(address, decoderType);
-        Logger.trace("Setting speed to: " + speed + " for loc address: " + la + " Decoder: " + decoderType);
+        if (this.power) {
+            int la = getLocoAddres(address, decoderType);
+            Logger.trace("Setting speed to: " + speed + " for loc address: " + la + " Decoder: " + decoderType);
 
-        //Calculate the speed??
-        sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.gfpUid));
+            //Calculate the speed??
+            CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.gfpUid));
+        }
     }
 
     @Override
     public void setFunction(int address, DecoderType decoderType, int functionNumber, boolean flag) {
-        int value = flag ? FUNCTION_ON : FUNCTION_OFF;
-        int la = getLocoAddres(address, decoderType);
-        sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.gfpUid));
+        if (this.power) {
+            int value = flag ? FUNCTION_ON : FUNCTION_OFF;
+            int la = getLocoAddres(address, decoderType);
+            CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.gfpUid));
+
+            this.notifyFunctionEventListeners(new FunctionMessageEvent(message));
+        }
     }
 
     // Use for Accessories
@@ -584,16 +588,6 @@ public class MarklinCS3 implements MarklinController {
         return locIcon;
     }
 
-//    @Override
-//    public StatusDataConfigParser getControllerInfo() {
-//        if (cs3Device == null) {
-//            HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
-//            String deviceFile = httpCon.getDeviceFile();
-//            DeviceFileParser dp = new DeviceFileParser();
-//            cs3Device = dp.parseAccessoryFile(deviceFile);
-//        }
-//        return cs3Device;
-//    }
     @Override
     public void addPowerEventListener(PowerEventListener listener) {
         this.powerEventListeners.add(listener);
@@ -626,12 +620,32 @@ public class MarklinCS3 implements MarklinController {
 
     @Override
     public void addFunctionMessageEventListener(FunctionMessageEventListener listener) {
-        this.locomotiveFunctionMessageEventListeners.add(listener);
+        this.functionMessageEventListeners.add(listener);
     }
 
     @Override
     public void removeFunctionMessageEventListener(FunctionMessageEventListener listener) {
-        this.locomotiveFunctionMessageEventListeners.remove(listener);
+        this.functionMessageEventListeners.remove(listener);
+    }
+
+    @Override
+    public void addDirectionMessageEventListener(DirectionMessageEventListener listener) {
+        this.directionMessageEventListeners.add(listener);
+    }
+
+    @Override
+    public void removeDirectionMessageEventListener(DirectionMessageEventListener listener) {
+        this.directionMessageEventListeners.remove(listener);
+    }
+
+    @Override
+    public void addVelocityMessageEventListener(VelocityMessageEventListener listener) {
+        this.velocityMessageEventListeners.add(listener);
+    }
+
+    @Override
+    public void removeVelocityMessageEventListener(VelocityMessageEventListener listener) {
+        this.velocityMessageEventListeners.remove(listener);
     }
 
     private void notifyPowerEventListeners(final PowerEvent powerEvent) {
@@ -665,23 +679,36 @@ public class MarklinCS3 implements MarklinController {
         executor.execute(() -> fireAllAccessoryEventListeners(accessoryEvent));
     }
 
-    private void fireAllLocomotiveFunctionEventListeners(final FunctionMessageEvent functionEvent) {
-        for (FunctionMessageEventListener listener : this.locomotiveFunctionMessageEventListeners) {
+    private void fireAllFunctionEventListeners(final FunctionMessageEvent functionEvent) {
+        for (FunctionMessageEventListener listener : this.functionMessageEventListeners) {
             listener.onFunctionMessage(functionEvent);
         }
     }
 
     private void notifyFunctionEventListeners(final FunctionMessageEvent functionEvent) {
-        executor.execute(() -> fireAllLocomotiveFunctionEventListeners(functionEvent));
+        executor.execute(() -> fireAllFunctionEventListeners(functionEvent));
     }
 
-    //Overload message:
-    //0x00 0x01 0x03 0x26 0x06 0x63 0x73 0x45 0x8c 0x0a 0x01 0x00 0x00
-    //Event power on
-    //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x01 0x00 0x00 0x00
-    //
-    //event power off
-    //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x00 0x00 0x00 0x00
+    private void fireAllDirectionEventListeners(final DirectionMessageEvent directionEvent) {
+        for (DirectionMessageEventListener listener : this.directionMessageEventListeners) {
+            listener.onDirectionMessage(directionEvent);
+        }
+    }
+
+    private void notifyDirectionEventListeners(final DirectionMessageEvent directionEvent) {
+        executor.execute(() -> fireAllDirectionEventListeners(directionEvent));
+    }
+
+    private void fireAllVelocityEventListeners(final VelocityMessageEvent velocityEvent) {
+        for (VelocityMessageEventListener listener : this.velocityMessageEventListeners) {
+            listener.onVelocityMessage(velocityEvent);
+        }
+    }
+
+    private void notifyVelocityEventListeners(final VelocityMessageEvent velocityEvent) {
+        executor.execute(() -> fireAllVelocityEventListeners(velocityEvent));
+    }
+
     private class CanMessageEventListener implements CanMessageListener {
 
         private final MarklinCS3 controller;
@@ -694,6 +721,7 @@ public class MarklinCS3 implements MarklinController {
         public void onCanMessage(CanMessageEvent canEvent) {
             CanMessage msg = canEvent.getCanMessage();
             int cmd = msg.getCommand();
+            int subcmd = msg.getSubCommand();
 
             switch (cmd) {
                 case MarklinCan.S88_EVENT_RESPONSE:
@@ -701,10 +729,6 @@ public class MarklinCS3 implements MarklinController {
                     if (sme.getSensorBean() != null) {
                         controller.notifySensorMessageEventListeners(sme);
                     }
-                    break;
-                case MarklinCan.SYSTEM_COMMAND_RESPONSE:
-                    PowerEvent pe = new PowerEvent(msg);
-                    controller.notifyPowerEventListeners(pe);
                     break;
                 case MarklinCan.ACCESSORY_SWITCHING_RESP:
                     AccessoryMessageEvent ae = new AccessoryMessageEvent(msg);
@@ -718,6 +742,45 @@ public class MarklinCS3 implements MarklinController {
                         controller.notifyFunctionEventListeners(lfe);
                     }
                     break;
+                case MarklinCan.LOC_DIRECTION_RESP:
+                    DirectionMessageEvent dme = new DirectionMessageEvent(msg);
+                    if (dme.getLocomotiveBean() != null && dme.getLocomotiveBean().getId() != null) {
+                        controller.notifyDirectionEventListeners(dme);
+                    }
+                    break;
+                case MarklinCan.LOC_VELOCITY_RESP:
+                    VelocityMessageEvent vme = new VelocityMessageEvent(msg);
+                    controller.notifyVelocityEventListeners(vme);
+                    break;
+                case MarklinCan.SYSTEM_COMMAND_RESP:
+                    switch (subcmd) {
+                        case MarklinCan.STOP_SUB_CMD:
+                            PowerEvent spe = new PowerEvent(msg);
+                            controller.notifyPowerEventListeners(spe);
+                            break;
+                        case MarklinCan.GO_SUB_CMD:
+                            PowerEvent gpe = new PowerEvent(msg);
+                            controller.notifyPowerEventListeners(gpe);
+                            break;
+                        case MarklinCan.LOC_STOP_SUB_CMD:
+                            VelocityMessageEvent vmeh = new VelocityMessageEvent(msg);
+                            controller.notifyVelocityEventListeners(vmeh);
+                            break;
+                        default:
+                            //Overload message:
+                            //0x00 0x01 0x03 0x26 0x06 0x63 0x73 0x45 0x8c 0x0a 0x01 0x00 0x00
+                            //Event power on
+                            //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x01 0x00 0x00 0x00
+                            //
+                            //event power off
+                            //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x00 0x00 0x00 0x00
+                            //lok stop
+                            //0x00 0x01 0x03 0x26 0x05 0x00 0x00 0x40 0x07 0x03 0x00 0x00 0x00
+                            break;
+                    }
+
+                    break;
+
                 default:
                     //Logger.trace("Message: " + msg);
                     break;
@@ -816,18 +879,14 @@ public class MarklinCS3 implements MarklinController {
     //}
 
 }
+
 //    @Override
-//    public List<AccessoryStatus> getAccessoryStatuses() {
-//This piece does not seem to work with a CS3
-//TO sort out how to get the statuses
-//Update the file by sending a configRequest first
-//        CanMessage msg = connection.sendCanMessage(CanMessageFactory.requestConfig("magstat"));
-//        //give it some time to process
-//        pause(100L);
-//        HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
-//        String accessoryStatuses = httpCon.getAccessoryStatusesFile();
-//        AccessoryBeanParser ap = new AccessoryBeanParser();
-//        return ap.parseAccessoryStatusFile(accessoryStatuses);
-//STUB
-//        return Collections.EMPTY_LIST;
+//    public StatusDataConfigParser getControllerInfo() {
+//        if (cs3Device == null) {
+//            HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
+//            String deviceFile = httpCon.getDeviceFile();
+//            DeviceFileParser dp = new DeviceFileParser();
+//            cs3Device = dp.parseAccessoryFile(deviceFile);
+//        }
+//        return cs3Device;
 //    }

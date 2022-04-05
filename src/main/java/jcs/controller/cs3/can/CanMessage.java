@@ -219,7 +219,7 @@ public class CanMessage implements MarklinCan, Serializable {
     }
 
     public boolean isResponseFor(CanMessage other) {
-        //Check who is the is the response message
+        //Check what is the is the response message
         int cmd = this.getCommand();
         int ocmd = other.getCommand();
 
@@ -333,48 +333,6 @@ public class CanMessage implements MarklinCan, Serializable {
 
     public boolean isResponseComplete() {
         switch (getCommand()) {
-            //case SYSTEM_COMMAND:
-            //    return this.responses.size() > 0;
-            //case SYSTEM_COMMAND_RESPONSE:
-            //    return this.responses.size() > 0;
-            //case LOC_DISCOVERY_COMMAND:
-            //    return this.responses.size() > 0;
-            //case MFX_BIND_COMMAND:
-            //    return this.responses.size() > 0;
-            //case MFX_VERIFY_COMMAND:
-            //    return this.responses.size() > 0;
-            //case LOC_SPEED:
-            //    return this.responses.size() > 0;
-            //case LOC_DIRECTION:
-            //    return this.responses.size() > 0;
-            //case LOC_FUNCTION:
-            //    return this.responses.size() > 0;
-            //case READ_CONFIG:
-            //    //TODO check       
-            //    return this.responses.size() > 0;
-            //case WRITE_CONFIG:
-            //    //TODO check       
-            //    return this.responses.size() > 0;
-            //case ACCESSORY_SWITCHING:
-            //    return this.responses.size() > 0;
-            //case ACCESSORY_CONFIG:
-            //    //TODO check       
-            //    return this.responses.size() > 0;
-            //case S88_EVENT:
-            //    return this.responses.size() > 0;
-            //case S88_EVENT_RESPONSE:
-            //    return this.responses.size() > 0;
-            //case REQ_PING:
-            //    return this.responses.size() > 0;
-            //case UPDATE_OFFER:
-            //    //TODO check       
-            //    return this.responses.size() > 0;
-            //case READ_CONFIG_DATA:
-            // snd a last packge
-            //case BOOTLOADER_CAN_SERVICE:
-            //    return this.responses.size() > 0;
-            //case BOOTLOADER_TRACK_SERVICE:
-            //    return this.responses.size() > 0;
             case STATUS_CONFIG:
                 if (!responses.isEmpty()) {
                     int idx = this.responses.size() - 1;
@@ -412,25 +370,25 @@ public class CanMessage implements MarklinCan, Serializable {
         return sb.toString();
     }
 
-    //TODO: NEEDS FIX
+    //TODO: NEEDS FIXING
     public String getMessageName() {
         int cmd = getCommand();
         switch (cmd) {
             case MarklinCan.SYSTEM_COMMAND:
                 int subcmd = this.getSubCommand();
                 switch (subcmd) {
-                    case MarklinCan.STOP_SUBCMD:
+                    case MarklinCan.STOP_SUB_CMD:
                         int dlc = this.getDlc();
                         if (dlc == MarklinCan.DLC_4) {
                             return "Query System";
                         } else {
                             return "Stop";
                         }
-                    case MarklinCan.GO_SUBCMD:
+                    case MarklinCan.GO_SUB_CMD:
                         return "Go";
-                    case MarklinCan.SYSTEM_SUB_HALT:
+                    case MarklinCan.HALT_SUB_CMD:
                         return "Halt";
-                    case MarklinCan.SYSTEM_SUB_LOC_EMERGENCY_STOP:
+                    case MarklinCan.LOC_STOP_SUB_CMD:
                         return "loc emergency stop";
                     case MarklinCan.SYSTEM_SUB_LOC_CYCLE_STOP:
                         return "loc cycle stop";
@@ -444,7 +402,7 @@ public class CanMessage implements MarklinCan, Serializable {
                         return "Unlock Track Protocol";
                     case MarklinCan.SYSTEM_SUB_MFX_REG_CNT:
                         return "MFX Reg count";
-                    case MarklinCan.SYSTEM_SUB_SYS_OVERLOAD:
+                    case MarklinCan.OVERLOAD_SUB_CMD:
                         return "System overload";
                     case MarklinCan.SYSTEM_SUB_SYSTEM_ID:
                         return "System ID";
@@ -461,7 +419,7 @@ public class CanMessage implements MarklinCan, Serializable {
                 return "Loc Discovery";
             case MarklinCan.MFX_VERIFY_COMMAND:
                 return "MFX Verify";
-            case MarklinCan.LOC_SPEED:
+            case MarklinCan.LOC_VELOCITY:
                 return "Loc Velocity";
             case MarklinCan.LOC_DIRECTION:
                 return "Loc Direction";

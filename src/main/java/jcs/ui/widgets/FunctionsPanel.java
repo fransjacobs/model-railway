@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JToggleButton;
@@ -43,6 +45,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
 
     private final Map<Integer, JToggleButton> buttons;
     private LocomotiveBean locomotive;
+    private final ExecutorService executor;
 
     private final String IMG_PREFIX = "fkticon_";
     private final String IMG_A = "a_";
@@ -55,6 +58,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
      */
     public FunctionsPanel() {
         buttons = new HashMap<>();
+        executor = Executors.newCachedThreadPool();
+
         initComponents();
         mapButtons();
     }
@@ -114,13 +119,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     @Override
     public void onChange(FunctionMessageEvent event) {
         if (this.locomotive != null && this.locomotive.getId().equals(event.getLocomotiveBean().getId())) {
-            Logger.trace("Event for "+this.locomotive+" ch function: "+event.getUpdatedFunctionNumber());
+            Logger.trace("Event for " + this.locomotive + " ch function: " + event.getUpdatedFunctionNumber());
             Integer updatedFunction = event.getUpdatedFunctionNumber();
             FunctionBean fb = event.getLocomotiveBean().getFunctionBean(updatedFunction);
             if (fb != null) {
                 this.buttons.get(updatedFunction).setSelected(fb.isOn());
             } else {
-                Logger.trace("Function for number "+updatedFunction+" not found");
+                Logger.trace("Function for number " + updatedFunction + " not found");
             }
         }
     }
@@ -181,8 +186,12 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
         boolean value = src.isSelected();
         Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
         Integer functionNumber = Integer.parseInt(evt.getActionCommand().replace("F", ""));
+        executor.execute(() -> changeFunction(value, functionNumber, locomotive));
+    }
+
+    private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
         if (TrackServiceFactory.getTrackService() != null && this.locomotive != null) {
-            TrackServiceFactory.getTrackService().changeFunction(value, functionNumber, locomotive);
+            TrackServiceFactory.getTrackService().changeFunction(newValue, functionNumber, locomotiveBean);
         }
     }
 

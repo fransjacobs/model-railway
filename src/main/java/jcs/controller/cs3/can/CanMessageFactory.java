@@ -66,9 +66,9 @@ public class CanMessageFactory implements MarklinCan {
             hash = MAGIC_HASH;
         }
         if (go) {
-            data[SUBCMD_IDX] = GO_SUBCMD;
+            data[SUBCMD_IDX] = GO_SUB_CMD;
         } else {
-            data[SUBCMD_IDX] = STOP_SUBCMD;
+            data[SUBCMD_IDX] = STOP_SUB_CMD;
         }
 
         CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, hash, DLC_5, data);
@@ -95,7 +95,7 @@ public class CanMessageFactory implements MarklinCan {
             hash = MAGIC_HASH;
         }
 
-        data[SUBCMD_IDX] = STOP_SUBCMD;
+        data[SUBCMD_IDX] = STOP_SUB_CMD;
 
         CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, hash, DLC_4, data, true);
         return cm;
@@ -222,8 +222,6 @@ public class CanMessageFactory implements MarklinCan {
         int[] data = getEmptyData();
         int[] hash;
         if (gfpUid > 0) {
-//            int[] uid = ByteUtil.to4ByteArray(gfpUid);
-//            System.arraycopy(uid, 0, data, 0, uid.length);
             hash = CanMessage.generateHash(gfpUid);
         } else {
             hash = MAGIC_HASH;
@@ -240,8 +238,6 @@ public class CanMessageFactory implements MarklinCan {
         int[] data = getEmptyData();
         int[] hash;
         if (gfpUid > 0) {
-//            int[] uid = ByteUtil.to4ByteArray(gfpUid);
-//            System.arraycopy(uid, 0, data, 0, uid.length);
             hash = CanMessage.generateHash(gfpUid);
         } else {
             hash = MAGIC_HASH;
@@ -267,7 +263,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] locid = ByteUtil.to4ByteArray(address);
         System.arraycopy(locid, 0, data, 0, locid.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, LOC_DIRECTION_QUERY_DLC, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, DLC_4, data);
         return cm;
     }
 
@@ -284,7 +280,7 @@ public class CanMessageFactory implements MarklinCan {
         System.arraycopy(locid, 0, data, 0, locid.length);
         data[LOC_DIRECTION_VALUE_IDX] = cs2direction & 0xff;
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, DLC_6, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, DLC_5, data);
         return cm;
     }
 
@@ -299,7 +295,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] locid = ByteUtil.to4ByteArray(address);
         System.arraycopy(locid, 0, data, 0, locid.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, hash, DLC_4, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_VELOCITY, hash, DLC_4, data);
         return cm;
     }
 
@@ -316,7 +312,7 @@ public class CanMessageFactory implements MarklinCan {
         int[] sb = ByteUtil.to2ByteArray(speed);
         System.arraycopy(sb, 0, data, 4, sb.length);
 
-        CanMessage cm = new CanMessage(PRIO_1, LOC_SPEED, hash, DLC_6, data);
+        CanMessage cm = new CanMessage(PRIO_1, LOC_VELOCITY, hash, DLC_6, data);
         return cm;
     }
 

@@ -16,16 +16,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package jcs.trackservice.events;
+package jcs.controller.cs3.events;
 
-import jcs.entities.ControllableDevice;
+public interface DirectionMessageEventListener {
 
-/**
- *
- * @author Frans Jacobs
- */
-public interface PersistedEventListener {
-
-  void persisted(ControllableDevice current,ControllableDevice previous);
+    void onDirectionMessage(DirectionMessageEvent directionMessageEvent);
 
 }

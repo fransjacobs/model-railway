@@ -446,7 +446,7 @@ public class LocomotivePreferencesPanel extends JPanel {
         if (locomotive.getId() != null) {
             loco = TrackServiceFactory.getTrackService().getLocomotive(locomotive.getId());
         } else {
-            loco = TrackServiceFactory.getTrackService().getLocomotive(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderType()));
+            loco = TrackServiceFactory.getTrackService().getLocomotive(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()));
         }
         return loco;
     }
@@ -538,7 +538,7 @@ public class LocomotivePreferencesPanel extends JPanel {
         }
 
         loc.setAddress(address);
-        loc.setDecoderType(decoder);
+        loc.setDecoderTypeString(decoder);
         loc.setName(name);
         loc.setvMin(minSpeed);
         loc.setTachoMax(tachoMax);
@@ -559,7 +559,7 @@ public class LocomotivePreferencesPanel extends JPanel {
             }
 
             this.addressSpinner.setValue(loco.getAddress());
-            this.decoderCB.setSelectedItem(loco.getDecoderType());
+            this.decoderCB.setSelectedItem(loco.getDecoderTypeString());
             this.nameTF.setText(loco.getName());
 
             this.minSpeedSpinner.setValue(loco.getvMin());

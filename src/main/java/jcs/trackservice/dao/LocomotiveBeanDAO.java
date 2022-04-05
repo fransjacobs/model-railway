@@ -79,7 +79,7 @@ public class LocomotiveBeanDAO extends AbstractDAO<LocomotiveBean> {
         }
         ps.setInt(5, loc.getAddress());
         ps.setString(6, loc.getIcon());
-        ps.setString(7, loc.getDecoderType());
+        ps.setString(7, loc.getDecoderTypeString());
         ps.setString(8, loc.getMfxSid());
         ps.setInt(9, loc.getTachoMax());
         if (loc.getvMin() != null) {

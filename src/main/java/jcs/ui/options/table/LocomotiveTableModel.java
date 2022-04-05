@@ -65,7 +65,7 @@ public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
             case 1:
                 return device.getAddress();
             case 2:
-                return device.getDecoderType();
+                return device.getDecoderTypeString();
             case 3:
                 return device.getIcon();
             //case 4:
@@ -103,7 +103,7 @@ public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
                 device.setAddress((Integer) value);
                 break;
             case 2:
-                device.setDecoderType((String) value);
+                device.setDecoderTypeString((String) value);
                 break;
             case 3:
                 device.setIcon((String) value);

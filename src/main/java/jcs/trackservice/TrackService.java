@@ -35,9 +35,10 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.events.AccessoryListener;
+import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
-import jcs.trackservice.events.LocomotiveListener;
 import jcs.trackservice.events.SensorListener;
+import jcs.trackservice.events.VelocityListener;
 
 /**
  * The Track repository contain all track item which are used on the Track This
@@ -113,17 +114,18 @@ public interface TrackService {
 
     SensorBean persist(SensorBean sensor);
 
-    //void addPersistedEventListener(PersistedEventListener listener);
-    //void removePersistedEventListener(PersistedEventListener listener);
     void addFunctionListener(FunctionListener listener);
 
     void removeFunctionListener(FunctionListener listener);
 
-    void addLocomotiveListener(LocomotiveListener listener);
+    void addDirectionListener(DirectionListener listener);
 
-    void removeLocomotiveListener(LocomotiveListener listener);
+    void removeDirectionListener(DirectionListener listener);
 
-    //void removeAllLocomotiveListeners();
+    void addVelocityListener(VelocityListener listener);
+
+    public void removeVelocityListener(VelocityListener listener);
+
     //Generic remove for Loco/accessory/feedback
     void remove(JCSEntity entity);
 

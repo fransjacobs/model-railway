@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 
 public class LocomotiveBean implements JCSEntity, Serializable {
@@ -36,7 +37,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     private Long mfxUid;
     private Integer address;
     private String icon;
-    private String decoderType;
+    private String decoderTypeString;
     private String mfxSid;
     private Integer tachoMax;
     private Integer vMin;
@@ -58,7 +59,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     }
 
     public LocomotiveBean(BigDecimal id, String name, String previousName, Long uid,
-            Long mfxUid, Integer address, String icon, String decoderType,
+            Long mfxUid, Integer address, String icon, String decoderTypeString,
             String mfxSid, Integer tachoMax, Integer vMin, Integer accelerationDelay,
             Integer brakeDelay, Integer volume, String spm, Integer velocity,
             Integer direction, String mfxType, String blocks) {
@@ -70,7 +71,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.mfxUid = mfxUid;
         this.address = address;
         this.icon = icon;
-        this.decoderType = decoderType;
+        this.decoderTypeString = decoderTypeString;
         this.mfxSid = mfxSid;
         this.tachoMax = tachoMax;
         this.vMin = vMin;
@@ -134,14 +135,19 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.icon = icon;
     }
 
-    public String getDecoderType() {
-        return decoderType;
+    public String getDecoderTypeString() {
+        return decoderTypeString;
     }
 
-    public void setDecoderType(String decoderType) {
-        this.decoderType = decoderType;
+    public void setDecoderTypeString(String decoderTypeString) {
+        this.decoderTypeString = decoderTypeString;
     }
 
+    public DecoderType getDecoderType() {
+        return DecoderType.get(this.decoderTypeString);
+    }
+    
+    
     public String getMfxSid() {
         return mfxSid;
     }
@@ -291,7 +297,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
 
     @Override
     public String toLogString() {
-        return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderType + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + blocks + ", locIcon=" + locIcon + '}';
+        return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + blocks + ", locIcon=" + locIcon + '}';
     }
 
     //Convenience
@@ -333,7 +339,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         hash = 53 * hash + Objects.hashCode(this.mfxUid);
         hash = 53 * hash + Objects.hashCode(this.address);
         hash = 53 * hash + Objects.hashCode(this.icon);
-        hash = 53 * hash + Objects.hashCode(this.decoderType);
+        hash = 53 * hash + Objects.hashCode(this.decoderTypeString);
         hash = 53 * hash + Objects.hashCode(this.mfxSid);
         hash = 53 * hash + Objects.hashCode(this.tachoMax);
         hash = 53 * hash + Objects.hashCode(this.vMin);
@@ -370,7 +376,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         if (!Objects.equals(this.icon, other.icon)) {
             return false;
         }
-        if (!Objects.equals(this.decoderType, other.decoderType)) {
+        if (!Objects.equals(this.decoderTypeString, other.decoderTypeString)) {
             return false;
         }
         if (!Objects.equals(this.mfxSid, other.mfxSid)) {

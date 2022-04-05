@@ -60,7 +60,7 @@ public class SystemStatusParser implements Serializable {
                     resp = message;
                 }
 
-                if (MarklinCan.SYSTEM_COMMAND_RESPONSE == resp.getCommand() && resp.isDeviceUidValid()) {
+                if (MarklinCan.SYSTEM_COMMAND_RESP == resp.getCommand() && resp.isDeviceUidValid()) {
                     int[] data = resp.getData();
                     gfpUid = resp.getDeviceUidFromMessage();
                     int status = data[4];
