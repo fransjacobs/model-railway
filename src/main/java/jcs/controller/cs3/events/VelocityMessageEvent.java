@@ -52,7 +52,7 @@ public class VelocityMessageEvent implements Serializable {
             resp = message;
         }
 
-        if (resp.isResponseMessage() && MarklinCan.SYSTEM_COMMAND == resp.getCommand() && MarklinCan.LOC_STOP_SUB_CMD == resp.getSubCommand()) {
+        if (resp.isResponseMessage() && MarklinCan.SYSTEM_COMMAND == resp.getCommand() && MarklinCan.LOC_STOP_SUB_CMD == resp.getSubCommand() && MarklinCan.DLC_5 == resp.getDlc()) {
             //Loc halt command could be issued due to a direction change.
             int[] data = resp.getData();
             Integer locId = ByteUtil.toInt(new int[]{data[0], data[1], data[2], data[3]});

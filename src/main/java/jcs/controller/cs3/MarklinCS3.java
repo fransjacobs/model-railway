@@ -475,25 +475,18 @@ public class MarklinCS3 implements MarklinController {
         }
     }
 
-//    public DirectionInfo getDirection(int address, DecoderType decoderType) {
-//        int la = getLocoAddres(address, decoderType);
-//        DirectionInfo di = new DirectionInfo(sendMessage(CanMessageFactory.queryDirection(la, this.gfpUid)));
-//        Logger.trace(di);
-//        return di;
-//    }
     @Override
-    public void setSpeed(int address, DecoderType decoderType, int speed) {
+    public void changeVelocity(int address, DecoderType decoderType, int speed) {
         if (this.power) {
             int la = getLocoAddres(address, decoderType);
-            Logger.trace("Setting speed to: " + speed + " for loc address: " + la + " Decoder: " + decoderType);
-
-            //Calculate the speed??
             CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.gfpUid));
+            VelocityMessageEvent vme = new VelocityMessageEvent(message);
+            this.notifyVelocityEventListeners(vme);
         }
     }
 
     @Override
-    public void setFunction(int address, DecoderType decoderType, int functionNumber, boolean flag) {
+    public void changeFunctionValue(int address, DecoderType decoderType, int functionNumber, boolean flag) {
         if (this.power) {
             int value = flag ? FUNCTION_ON : FUNCTION_OFF;
             int la = getLocoAddres(address, decoderType);
@@ -889,4 +882,12 @@ public class MarklinCS3 implements MarklinController {
 //            cs3Device = dp.parseAccessoryFile(deviceFile);
 //        }
 //        return cs3Device;
+//    }
+
+
+//    public DirectionInfo getDirection(int address, DecoderType decoderType) {
+//        int la = getLocoAddres(address, decoderType);
+//        DirectionInfo di = new DirectionInfo(sendMessage(CanMessageFactory.queryDirection(la, this.gfpUid)));
+//        Logger.trace(di);
+//        return di;
 //    }

@@ -28,18 +28,22 @@ import javax.swing.JSlider;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import jcs.controller.cs3.events.DirectionMessageEvent;
+import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.trackservice.events.DirectionListener;
+import jcs.trackservice.events.VelocityListener;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class LocomotivePanel extends javax.swing.JPanel implements DirectionListener {
+public class LocomotivePanel extends javax.swing.JPanel implements DirectionListener, VelocityListener {
 
     private final ExecutorService executor;
 
@@ -55,6 +59,7 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
 
         if (TrackServiceFactory.getTrackService() != null) {
             TrackServiceFactory.getTrackService().addDirectionListener(this);
+            TrackServiceFactory.getTrackService().addVelocityListener(this);
         }
     }
 
@@ -341,10 +346,9 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
             if (selected != null) {
                 int max = selected.getTachoMax();
                 double value = slider.getValue();
-                int velocity = (int) Math.round(value / max * 100);
-                this.velocityLbl.setText(velocity + "%");
-                Logger.trace("Slider value: " + value + " velocity: " + velocity);
-
+                //Velocity is always between 0 and 1000
+                int velocity = (int) Math.round(value / max * 1000);
+                this.velocityLbl.setText(velocity / 10 + "%");
                 executor.execute(() -> changeVelocity(velocity, selected));
             }
         }
@@ -353,6 +357,34 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
         if (TrackServiceFactory.getTrackService() != null) {
             TrackServiceFactory.getTrackService().changeVelocity(newVelocity, locomotiveBean);
+        }
+    }
+
+    @Override
+    public void onVelocityChange(VelocityMessageEvent event) {
+        LocomotiveBean lb = event.getLocomotiveBean();
+        LocomotiveBean selected = this.locoList.getSelectedValue();
+
+        if (lb != null && selected != null && lb.getId().equals(this.locoList.getSelectedValue().getId())) {
+            LocomotiveBean locomotiveBean = this.locoList.getSelectedValue();
+            locomotiveBean.setVelocity(lb.getVelocity());
+
+            int velocity = locomotiveBean.getVelocity();
+            double max = locomotiveBean.getTachoMax();
+            int sliderValue = (int) Math.round(max / 1000 * velocity);
+
+            //set the slider value without triggering a change event
+            ChangeListener[] changeListeners = this.velocitySlider.getChangeListeners();
+            for (ChangeListener changeListener : changeListeners) {
+                this.velocitySlider.removeChangeListener(changeListener);
+            }
+
+            this.velocitySlider.setValue(sliderValue);
+
+            for (ChangeListener changeListener : changeListeners) {
+                this.velocitySlider.addChangeListener(changeListener);
+            }
+
         }
     }
 
@@ -417,7 +449,7 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }//GEN-LAST:event_backwardsBtnActionPerformed
 
     @Override
-    public void onChange(DirectionMessageEvent event) {
+    public void onDirectionChange(DirectionMessageEvent event) {
         LocomotiveBean lb = event.getLocomotiveBean();
         if (lb.getId().equals(this.locoList.getSelectedValue().getId())) {
             this.locoList.getSelectedValue().setRichtung(lb.getRichtung());

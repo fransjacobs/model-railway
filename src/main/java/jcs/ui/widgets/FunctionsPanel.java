@@ -117,9 +117,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     }
 
     @Override
-    public void onChange(FunctionMessageEvent event) {
+    public void onFunctionChange(FunctionMessageEvent event) {
         if (this.locomotive != null && this.locomotive.getId().equals(event.getLocomotiveBean().getId())) {
-            Logger.trace("Event for " + this.locomotive + " ch function: " + event.getUpdatedFunctionNumber());
             Integer updatedFunction = event.getUpdatedFunctionNumber();
             FunctionBean fb = event.getLocomotiveBean().getFunctionBean(updatedFunction);
             if (fb != null) {

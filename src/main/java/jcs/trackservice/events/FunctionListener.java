@@ -26,6 +26,6 @@ import jcs.controller.cs3.events.FunctionMessageEvent;
  */
 public interface FunctionListener {
 
-    void onChange(FunctionMessageEvent event);
+    void onFunctionChange(FunctionMessageEvent event);
 
 }

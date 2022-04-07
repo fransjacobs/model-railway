@@ -54,9 +54,9 @@ public interface MarklinController {
 
     void changeDirection(int address, DecoderType protocol, Direction direction);
 
-    void setSpeed(int address, DecoderType protocol, int speed);
+    void changeVelocity(int address, DecoderType protocol, int speed);
 
-    void setFunction(int address, DecoderType protocol, int functionNumber, boolean flag);
+    void changeFunctionValue(int address, DecoderType protocol, int functionNumber, boolean flag);
 
     void switchAccessory(int address, AccessoryValue value);
 

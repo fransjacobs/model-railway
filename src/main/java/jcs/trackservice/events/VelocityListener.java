@@ -26,6 +26,6 @@ import jcs.controller.cs3.events.VelocityMessageEvent;
  */
 public interface VelocityListener {
 
-    void onChange(VelocityMessageEvent event);
+    void onVelocityChange(VelocityMessageEvent event);
 
 }

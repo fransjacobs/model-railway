@@ -246,13 +246,13 @@ public class DemoController implements MarklinController {
     }
 
     @Override
-    public void setSpeed(int address, DecoderType decoderType, int speed) {
+    public void changeVelocity(int address, DecoderType decoderType, int speed) {
         int la = getLocoAddres(address, decoderType);
         Logger.trace("Setting speed to: " + speed + " for loc address: " + la + " Decoder: " + decoderType);
     }
 
     @Override
-    public void setFunction(int address, DecoderType decoderType, int functionNumber, boolean flag) {
+    public void changeFunctionValue(int address, DecoderType decoderType, int functionNumber, boolean flag) {
         //int value = flag ? FUNCTION_ON : FUNCTION_OFF;
         //int la = getLocoAddres(address, decoderType);
     }

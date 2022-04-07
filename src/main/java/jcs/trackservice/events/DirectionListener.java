@@ -26,6 +26,6 @@ import jcs.controller.cs3.events.DirectionMessageEvent;
  */
 public interface DirectionListener {
 
-    void onChange(DirectionMessageEvent event);
+    void onDirectionChange(DirectionMessageEvent event);
 
 }

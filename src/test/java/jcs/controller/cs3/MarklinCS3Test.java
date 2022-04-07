@@ -209,7 +209,7 @@ public class MarklinCS3Test {
 //    }
 
     /**
-     * Test of setSpeed method, of class MarklinCS3.
+     * Test of changeVelocity method, of class MarklinCS3.
      */
     //@Test
     public void testSetSpeed() {
@@ -219,13 +219,13 @@ public class MarklinCS3Test {
         DecoderType decoderType = null;
         int speed = 0;
         MarklinCS3 instance = new MarklinCS3();
-        instance.setSpeed(address, decoderType, speed);
+        instance.changeVelocity(address, decoderType, speed);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of setFunction method, of class MarklinCS3.
+     * Test of changeFunctionValue method, of class MarklinCS3.
      */
     // @Test
     public void testSetFunction() {
@@ -236,7 +236,7 @@ public class MarklinCS3Test {
         int functionNumber = 0;
         boolean flag = false;
         MarklinCS3 instance = new MarklinCS3();
-        instance.setFunction(address, decoderType, functionNumber, flag);
+        instance.changeFunctionValue(address, decoderType, functionNumber, flag);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
