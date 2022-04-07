@@ -320,9 +320,26 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
                 this.functionsPanel.setLocomotive(selected);
                 this.nameLbL.setText(selected.getName());
                 this.iconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
-                this.velocitySlider.setMaximum(selected.getTachoMax());
                 this.maxTachoLbl.setText(selected.getTachoMax() + "");
-                this.velocitySlider.setValue(selected.getVelocity());
+
+                int velocity = selected.getVelocity();
+                double max = selected.getTachoMax();
+                int sliderValue = (int) Math.round(max / 1000 * velocity);
+                
+                Logger.trace("Change to "+selected+" sliderValue: "+sliderValue);
+
+                //set the new slider properties without triggering a change event
+                ChangeListener[] changeListeners = this.velocitySlider.getChangeListeners();
+                for (ChangeListener changeListener : changeListeners) {
+                    this.velocitySlider.removeChangeListener(changeListener);
+                }
+
+                this.velocitySlider.setMaximum(selected.getTachoMax());
+                this.velocitySlider.setValue(sliderValue);
+
+                for (ChangeListener changeListener : changeListeners) {
+                    this.velocitySlider.addChangeListener(changeListener);
+                }
 
                 Direction d = selected.getDirection();
                 if (Direction.BACKWARDS.equals(d)) {
