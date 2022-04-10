@@ -20,18 +20,12 @@ package jcs;
 
 import jcs.ui.util.ProcessFactory;
 import java.awt.GraphicsEnvironment;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.trackservice.TrackService;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.JCSFrame;
-import jcs.ui.Refreshable;
-import jcs.ui.splash.JCSSplashScreen;
+import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.MacOsAdapter;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
@@ -48,35 +42,42 @@ import org.tinylog.Logger;
  */
 public class JCS extends Thread {
 
-    private static boolean headless;
-    private static JCSSplashScreen splashScreen;
-
-    private static TrackService trackService;
-
     private static JCS instance = null;
+    private static JCSSplash splashScreen;
+    private static TrackService trackService;
 
     private static MacOsAdapter osAdapter;
     private static JCSFrame jcsFrame;
-
     private static VersionInfo versionInfo;
 
-    private final List<Refreshable> refreshables;
-
     private JCS() {
-        refreshables = new ArrayList<>();
-        headless = GraphicsEnvironment.isHeadless();
-        versionInfo = new VersionInfo(JCS.class, "lan.wervel.jcs", "gui");
-
-        updateProgress();
+        versionInfo = new VersionInfo(JCS.class, "jcs", "ui");
     }
 
-    public static void main(String[] args) {
-        if (headless) {
-            Logger.error("This JDK environment is headless, can't start a GUI!");
-            //Quit....
-            System.exit(1);
+    public static void logProgress(String message) {
+        if (splashScreen != null) {
+            splashScreen.logProgress(message);
+        } else {
+            Logger.info(message);
         }
-        RunUtil.loadProperties();
+    }
+
+    public static void showTouchbar(JCSFrame frame) {
+        if (SystemUtils.IS_OS_MAC_OSX) {
+            osAdapter.showTouchbar(frame);
+        }
+    }
+
+    public static VersionInfo getVersionInfo() {
+        return versionInfo;
+    }
+
+    public static JCSFrame getJCSFrame() {
+        return jcsFrame;
+    }
+
+    private void initGui() {
+        JCS.logProgress("Starting GUI...");
 
         try {
             if (SystemUtils.IS_OS_MAC) {
@@ -94,65 +95,8 @@ public class JCS extends Thread {
             Logger.error(ex);
         }
 
-        splashScreen = new JCSSplashScreen();
-        splashScreen.showSplash();
-        splashScreen.setProgressMax(10);
-        trackService = TrackServiceFactory.getTrackService();
-        if (trackService != null) {
-            JCS jcs = JCS.getInstance();
-            jcs.init();
-        } else {
-            Logger.error("Could not obtain a TrackService. Quitting....");
-            splashScreen.hideSplash();
-            splashScreen.close();
-            System.exit(0);
-        }
-    }
-
-    public static void updateProgress() {
-        if (splashScreen != null) {
-            splashScreen.updateProgress();
-        }
-    }
-
-    public static boolean isMacOS() {
-        return SystemUtils.IS_OS_MAC_OSX;
-    }
-
-    public static void showTouchbar(JCSFrame frame) {
-        if (SystemUtils.IS_OS_MAC_OSX) {
-            osAdapter.showTouchbar(frame);
-        }
-    }
-
-    public static boolean isHeadless() {
-        return headless;
-    }
-
-    public static VersionInfo getVersionInfo() {
-        return versionInfo;
-    }
-
-    public static JCSFrame getJCSFrame() {
-        return jcsFrame;
-    }
-
-    public static void addRefreshable(Refreshable refreshable) {
-        if (instance != null) {
-            instance.refreshables.add(refreshable);
-        }
-    }
-
-    public static List<Refreshable> getRefreshables() {
-        return instance.refreshables;
-    }
-
-    private void init() {
-        updateProgress();
-
         java.awt.EventQueue.invokeLater(() -> {
             jcsFrame = new JCSFrame();
-            updateProgress();
 
             if (SystemUtils.IS_OS_MAC_OSX) {
                 osAdapter.setUiCallback(jcsFrame);
@@ -163,8 +107,7 @@ public class JCS extends Thread {
             jcsFrame.setVisible(true);
         });
 
-        Logger.info("JCSGUI started...");
-        splashScreen.hideSplash();
+        JCS.logProgress("JCS started...");
 
         int mb = 1024 * 1024;
         Runtime runtime = Runtime.getRuntime();
@@ -181,6 +124,9 @@ public class JCS extends Thread {
         sb.append(" [MB].");
 
         Logger.info(sb);
+        splashScreen.hideSplash();
+        splashScreen.close();
+
     }
 
     /**
@@ -189,17 +135,11 @@ public class JCS extends Thread {
     @Override
     public void run() {
         // Perform shutdown methods.
-        Logger.debug("Shutting Down...");
+        Logger.trace("Shutting Down...");
         ProcessFactory.getInstance().shutdown();
-        //ServicePublisher.stopPublisher();
         Logger.info("Finished...");
     }
 
-    /**
-     * Gets us in the singleton pattern.
-     *
-     * @return Us
-     */
     public static JCS getInstance() {
         if (instance == null) {
             instance = new JCS();
@@ -208,4 +148,34 @@ public class JCS extends Thread {
         }
         return instance;
     }
+
+    public static void main(String[] args) {
+        if (GraphicsEnvironment.isHeadless()) {
+            Logger.error("This JDK environment is headless, can't start a GUI!");
+            //Quit....
+            System.exit(1);
+        }
+        splashScreen = new JCSSplash();
+        splashScreen.showSplash();
+        splashScreen.setProgressMax(10);
+
+        RunUtil.loadProperties();
+
+        logProgress("Starting...");
+        trackService = TrackServiceFactory.getTrackService();
+
+        if (trackService != null) {
+            JCS jcs = JCS.getInstance();
+            jcs.initGui();
+        } else {
+            Logger.error("Could not obtain a TrackService. Quitting....");
+            logProgress("Error. Can't Obtain a Track Service!");
+
+            splashScreen.hideSplash();
+            splashScreen.close();
+            System.exit(0);
+        }
+
+    }
+
 }

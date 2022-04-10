@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import jcs.JCS;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.CanMessageFactory;
 import static jcs.controller.cs3.can.MarklinCan.FUNCTION_OFF;
@@ -106,7 +107,7 @@ public class MarklinCS3 implements MarklinController {
     private final List<DirectionMessageEventListener> directionMessageEventListeners;
     private final List<VelocityMessageEventListener> velocityMessageEventListeners;
 
-    private final ExecutorService executor;
+    private ExecutorService executor;
 
     private static final long DELAY = 0L;
 
@@ -177,14 +178,18 @@ public class MarklinCS3 implements MarklinController {
     public final boolean connect() {
         if (!connected) {
             Logger.trace("Connecting to CS3...");
-            //Obtain some info from the CS 3 connected to...
-            getAppDevices();
+            if (executor == null || executor.isShutdown()) {
+                executor = Executors.newCachedThreadPool();
+            }
 
             CS3Connection cs3Connection = CS3ConnectionFactory.getConnection();
             this.connection = cs3Connection;
 
-            if (connection != null) {
+            //Obtain some info from the CS 3 connected to...
+            JCS.logProgress("Obtaining Device information...");
+            getAppDevices();
 
+            if (connection != null) {
                 //Wait, if needed until the receiver thread has started
                 long now = System.currentTimeMillis();
                 long timeout = now + 1000L;
@@ -200,13 +205,16 @@ public class MarklinCS3 implements MarklinController {
                     //Basically the same as above now via CAN
                     getMembers();
                     Logger.debug("Connected with " + this.cs3Name);
-
+                    JCS.logProgress("Connected with " + this.cs3Name);
                     this.power = this.isPower();
+                    JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
                 }
             } else {
                 Logger.warn("Can't connect with CS 3!");
+                JCS.logProgress("Can't connect with Central Station!");
             }
         }
+            Logger.trace("Connected: "+connected);
 
         return connected;
     }
@@ -224,7 +232,6 @@ public class MarklinCS3 implements MarklinController {
     void getAppDevices() {
         HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
         if (httpCon.isConnected()) {
-
             String deviceJSON = httpCon.getDevicesJSON();
             DeviceJSONParser dp = new DeviceJSONParser();
             dp.parseDevices(deviceJSON);
@@ -372,12 +379,17 @@ public class MarklinCS3 implements MarklinController {
     @Override
     public void disconnect() {
         try {
-            this.connection.close();
+            connection.close();
             connected = false;
             executor.shutdown();
+            executor = null;
+            connection = null;
+            
+            CS3ConnectionFactory.disconnectAll();
         } catch (Exception ex) {
             Logger.error(ex);
         }
+        Logger.trace("Disconnected");
     }
 
     void getStatusDataConfig() {
@@ -883,8 +895,6 @@ public class MarklinCS3 implements MarklinController {
 //        }
 //        return cs3Device;
 //    }
-
-
 //    public DirectionInfo getDirection(int address, DecoderType decoderType) {
 //        int la = getLocoAddres(address, decoderType);
 //        DirectionInfo di = new DirectionInfo(sendMessage(CanMessageFactory.queryDirection(la, this.gfpUid)));

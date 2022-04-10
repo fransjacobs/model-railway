@@ -28,7 +28,6 @@ import javax.swing.JSlider;
 import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import jcs.controller.cs3.events.DirectionMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEvent;
@@ -56,7 +55,6 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
 
     private void postInit() {
         setEnabled(false);
-
         if (TrackServiceFactory.getTrackService() != null) {
             TrackServiceFactory.getTrackService().addDirectionListener(this);
             TrackServiceFactory.getTrackService().addVelocityListener(this);

@@ -23,6 +23,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.logging.Level;
+import jcs.JCS;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.CanMessageFactory;
 import jcs.controller.cs3.can.MarklinCan;
@@ -57,6 +59,7 @@ public class CS3ConnectionFactory {
     CS3Connection getConnectionImpl() {
         if (controllerConnection == null) {
             Logger.trace("Try to discover a Marklin CS3...");
+            JCS.logProgress("Discovering a Marklin Central Station...");
             sendMobileAppPing();
 
             if (controllerHost != null) {
@@ -64,6 +67,7 @@ public class CS3ConnectionFactory {
                 controllerConnection = new TCPConnection(controllerHost);
             } else {
                 Logger.warn("Can't find a Marklin Controller host!");
+                JCS.logProgress("Can't find a Marklin Central Station on the Network");
             }
         }
         return this.controllerConnection;
@@ -71,6 +75,16 @@ public class CS3ConnectionFactory {
 
     public static CS3Connection getConnection() {
         return getInstance().getConnectionImpl();
+    }
+
+    public static void disconnectAll() {
+        try {
+            instance.controllerConnection.close();
+        } catch (Exception ex) {
+            Logger.trace("Error during disconnect " + ex);
+        }
+        instance.controllerConnection = null;
+        instance.httpConnection = null;
     }
 
     HTTPConnection getHTTPConnectionImpl() {
@@ -114,6 +128,7 @@ public class CS3ConnectionFactory {
                     if (this.controllerHost == null) {
                         this.controllerHost = replyHost;
                     }
+                    JCS.logProgress("Found a Central Station n the network with IP: " + replyHost.getHostAddress());
                 } else {
                     Logger.debug("Received wrong command: " + response.getCommand() + " != " + MarklinCan.SW_STATUS_REQ + "...");
                 }

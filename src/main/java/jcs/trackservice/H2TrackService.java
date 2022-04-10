@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import jcs.JCS;
 import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
@@ -93,8 +94,6 @@ public class H2TrackService implements TrackService {
 
     private MarklinController controllerService;
 
-    //int feedbackModules;
-    //private final ExecutorService executor;
     private final List<SensorListener> sensorListeners;
     private final List<AccessoryListener> accessoryListeners;
     private final List<FunctionListener> functionListeners;
@@ -137,14 +136,14 @@ public class H2TrackService implements TrackService {
         retrieveJCSProperties();
 
         if (aquireControllerService) {
-            connectController();
+            connect();
         }
 
-        Logger.debug(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
-
+        Logger.trace(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
     }
 
     private void retrieveJCSProperties() {
+        JCS.logProgress("Connect to Database");
         List<JCSProperty> props = this.propDao.findAll();
 
         props.forEach(p -> {
@@ -153,41 +152,22 @@ public class H2TrackService implements TrackService {
         });
     }
 
-    //TODO more interactive way of connecting and feedback from UI
     //TODO clean this up!
-    public final boolean connectController() {
-        //String activeControllerService = System.getProperty("activeControllerService");
-        String controllerImpl = System.getProperty("CS3");
-
-        String trackServiceAlwaysUseDemo = System.getProperty("trackServiceAlwaysUseDemo", "false");
-        if ("false".equalsIgnoreCase(trackServiceAlwaysUseDemo)) {
-            if (controllerService == null) {
-                try {
-                    this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
-//                    if (!this.controllerService.isConnected()) {
-//                        Logger.info("Not connected to Real CS3. Switch to demo...");
-//                        this.controllerService.disconnect();
-//                        this.controllerService = null;
-//                    }
-                } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-                    Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
-                }
-            }
-        }
-
-        //TODO Remove the DEMO....
-        if (controllerService == null) {
-            //Use a demo...
-            try {
-                controllerImpl = System.getProperty("controller.demo", "jcs.controller.demo.DemoController");
-                this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
-                Logger.info("Using a DEMO controller");
-            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException exd) {
-                Logger.error("Can't instantiate a '" + controllerImpl + "' " + exd.getMessage());
-            }
-        }
-
-        //Configure the sensors
+//    private boolean connectController() {
+//
+//        JCS.logProgress("Connecting to Central Station");
+//        String controllerImpl = System.getProperty("CS3");
+//        if (controllerService == null) {
+//            try {
+//                this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+//            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+//                Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
+//            }
+//        }
+//
+//        JCS.logProgress("Obtaining the last state of all items...");
+//
+//        //Configure the sensors
 //        int sensorCount = 0;//controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
 //        List<SensorBean> allSensors = sensDAO.findAll();
 //        if (sensorCount != allSensors.size()) {
@@ -218,6 +198,30 @@ public class H2TrackService implements TrackService {
 //        } else {
 //            Logger.trace("The Sensor count has not changed since last run...");
 //        }
+//        if (controllerService != null) {
+//            this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
+//            this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
+//            this.controllerService.addFunctionMessageEventListener(new FunctionMessageListener(this));
+//            this.controllerService.addDirectionMessageEventListener(new DirectionMessageListener(this));
+//            this.controllerService.addVelocityMessageEventListener(new VelocityMessageListener(this));
+//        }
+//
+//        return this.controllerService != null && this.controllerService.isConnected();
+//
+//    }
+
+    @Override
+    public boolean connect() {
+        JCS.logProgress("Connecting to Central Station");
+        String controllerImpl = System.getProperty("CS3");
+        if (controllerService == null) {
+            try {
+                this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+                Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
+            }
+        }
+
         if (controllerService != null) {
             this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
             this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
@@ -226,8 +230,20 @@ public class H2TrackService implements TrackService {
             this.controllerService.addVelocityMessageEventListener(new VelocityMessageListener(this));
         }
 
-        return this.controllerService != null && this.controllerService.isConnected();
+        JCS.logProgress("Obtaining the last state of all items...");
 
+        return this.controllerService != null && this.controllerService.isConnected();
+    }
+
+    @Override
+    public boolean isConnected() {
+        return this.controllerService.isConnected();
+    }
+
+    @Override
+    public void disconnect() {
+        this.controllerService.disconnect();
+        this.controllerService = null;
     }
 
     @Override
@@ -599,22 +615,6 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public boolean connect() {
-        return this.controllerService.connect();
-    }
-
-    @Override
-    public boolean isConnected() {
-        return this.controllerService.isConnected();
-    }
-
-    @Override
-    public void disconnect() {
-//        this.timer.cancel();
-        this.controllerService.disconnect();
-    }
-
-    @Override
     public void synchronizeLocomotivesWithController() {
         List<LocomotiveBean> fromCs2 = this.controllerService.getLocomotives();
 
@@ -675,7 +675,7 @@ public class H2TrackService implements TrackService {
     public void changeVelocity(Integer newVelocity, LocomotiveBean locomotive) {
         Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
         controllerService.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), newVelocity);
-  }
+    }
 
     @Override
     public void changeFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
@@ -761,7 +761,8 @@ public class H2TrackService implements TrackService {
     public void removeVelocityListener(VelocityListener listener) {
         this.velocityListeners.remove(listener);
     }
-
+    
+    
     private class SensorMessageEventListener implements SensorMessageListener {
 
         private final H2TrackService trackService;

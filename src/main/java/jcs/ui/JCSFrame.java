@@ -68,6 +68,7 @@ import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
 import jcs.ui.options.OptionDialog;
 import jcs.ui.util.UICallback;
+import org.apache.commons.lang3.SystemUtils;
 import org.tinylog.Logger;
 
 /**
@@ -75,19 +76,8 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class JCSFrame extends JFrame implements UICallback {
-    
+
     private final Map<KeyStroke, Action> actionMap;
-    //private boolean switchPower = true;
-    private final ImageIcon blinkOnIcon;
-    private final ImageIcon blinkOnIcon2;
-    //private final ImageIcon blinkOffIcon;
-    private final ImageIcon blinkErrorIcon;
-    private boolean blinkToggle;
-    
-    private long lastUpdatedMillis;
-    
-    private Timer checkTimer;
-    
     private FeedbackMonitor feedbackMonitor;
 
     /**
@@ -95,65 +85,52 @@ public class JCSFrame extends JFrame implements UICallback {
      */
     public JCSFrame() {
         actionMap = new HashMap<>();
-        
-        blinkErrorIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-red-24.png"));
-        blinkOnIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-green-90-24.png"));
-        blinkOnIcon2 = new ImageIcon(ControllerPanel.class.getResource("/media/sync-dark-green-24.png"));
-        //blinkOffIcon = new ImageIcon(ControllerPanel.class.getResource("/media/sync-black-24.png"));
-
         initComponents();
-        
-        JCS.updateProgress();
-        
-        if (JCS.isMacOS()) {
+        if (SystemUtils.IS_OS_MAC_OSX) {
             this.quitMI.setVisible(false);
             this.optionsMI.setVisible(false);
             this.toolsMenu.setVisible(false);
         }
-        
+
         init();
-        JCS.updateProgress();
-        
         initKeyStrokes();
-        JCS.updateProgress();
     }
-    
+
     private void init() {
         if (TrackServiceFactory.getTrackService() != null) {
             this.setTitle(this.getTitleString());
             this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
 
             //Initialize the Touchbar for MacOS
-            if (JCS.isMacOS()) {
+            if (SystemUtils.IS_OS_MAC_OSX) {
                 JCS.showTouchbar(this);
             }
-            
+
             this.locomotivesPanel.loadLocomotives();
-            
+
             setCS3Properties();
-            
-            
+
             feedbackMonitor = new FeedbackMonitor();
 
-           this.powerButton.setSelected(TrackServiceFactory.getTrackService().isPowerOn());
+            this.powerButton.setSelected(TrackServiceFactory.getTrackService().isPowerOn());
 
-           TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
+            TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
 
             //Show the default panel
             showOverviewPanel();
         }
     }
-    
+
     private void initKeyStrokes() {
         KeyStroke key0 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-        
+
         actionMap.put(key0, new AbstractAction("stopAction") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 stop();
             }
         });
-        
+
         KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         kfm.addKeyEventDispatcher((KeyEvent e) -> {
             KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
@@ -168,51 +145,55 @@ public class JCSFrame extends JFrame implements UICallback {
             return false;
         });
     }
-    
+
     public void showOverviewPanel() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "overviewPanel");
         this.overviewPanel.loadLayout();
     }
-    
+
     public void showLocomotives() {
         Logger.debug("Show Locomotives");
     }
-    
+
     public void showTurnouts() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "turnoutsPanel");
     }
-    
+
     public void showSignals() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "signalsPanel");
     }
-    
+
     public void showDiagnostics() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "diagnosticPanel");
-        
+
     }
-    
+
     public void showDesignLayoutPanel() {
         CardLayout card = (CardLayout) this.centerPanel.getLayout();
         card.show(this.centerPanel, "designPanel");
         this.layoutPanel.loadLayout();
     }
-    
+
     public void stop() {
-        TrackServiceFactory.getTrackService().switchPower(false);
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().switchPower(false);
+        }
     }
-    
+
     private void setCS3Properties() {
         if (TrackServiceFactory.getTrackService() != null) {
             if (TrackServiceFactory.getTrackService().getControllerName() != null) {
+                this.connectButton.setSelected(true);
                 this.controllerDescriptionLbl.setText(TrackServiceFactory.getTrackService().getControllerName());
                 this.controllerCatalogNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerArticleNumber());
                 this.controllerSerialNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerSerialNumber());
                 this.controllerHostNameLbl.setText("CS3-" + TrackServiceFactory.getTrackService().getControllerSerialNumber());
             } else {
+                this.connectButton.setSelected(false);
                 this.controllerHostNameLbl.setText("Not Connected");
             }
         }
@@ -228,22 +209,22 @@ public class JCSFrame extends JFrame implements UICallback {
     private void initComponents() {
 
         jcsToolBar = new JToolBar();
-        powerButton = new JToggleButton();
+        connectButton = new JToggleButton();
         filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-        showOverviewBtn = new JButton();
+        powerButton = new JToggleButton();
         filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+        showOverviewBtn = new JButton();
         showEditDesignBtn = new JButton();
         filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         showDiagnosticsBtn = new JButton();
         filler5 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-        showFeedbackMonitor = new JButton();
+        showFeedbackMonitorBtn = new JButton();
         statusPanel = new JPanel();
         statusPanelLeft = new JPanel();
         filler4 = new Box.Filler(new Dimension(440, 0), new Dimension(140, 0), new Dimension(440, 32767));
         statusPanelMiddle = new JPanel();
         stopBtn = new JButton();
         statusPanelRight = new JPanel();
-        blinkLbl = new JLabel();
         mainPanel = new JPanel();
         locoDisplaySP = new JSplitPane();
         centerPanel = new JPanel();
@@ -281,7 +262,6 @@ public class JCSFrame extends JFrame implements UICallback {
         setBounds(new Rectangle(0, 0, 1400, 900));
         setMinimumSize(new Dimension(1250, 900));
         setName("JCSFrame"); // NOI18N
-        setPreferredSize(new Dimension(1250, 950));
         setSize(new Dimension(1250, 950));
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent evt) {
@@ -297,6 +277,29 @@ public class JCSFrame extends JFrame implements UICallback {
         jcsToolBar.setName("ToolBar"); // NOI18N
         jcsToolBar.setOpaque(false);
         jcsToolBar.setPreferredSize(new Dimension(1000, 42));
+
+        connectButton.setIcon(new ImageIcon(getClass().getResource("/media/monitor-off-24.png"))); // NOI18N
+        connectButton.setToolTipText("Connect/Disconnect with Central Station");
+        connectButton.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+        connectButton.setDoubleBuffered(true);
+        connectButton.setFocusable(false);
+        connectButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        connectButton.setMargin(new Insets(0, 0, 0, 0));
+        connectButton.setMaximumSize(new Dimension(40, 40));
+        connectButton.setMinimumSize(new Dimension(40, 40));
+        connectButton.setName("connectButton"); // NOI18N
+        connectButton.setPreferredSize(new Dimension(40, 40));
+        connectButton.setSelectedIcon(new ImageIcon(getClass().getResource("/media/monitor-on-24.png"))); // NOI18N
+        connectButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        connectButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                connectButtonActionPerformed(evt);
+            }
+        });
+        jcsToolBar.add(connectButton);
+
+        filler1.setName("filler1"); // NOI18N
+        jcsToolBar.add(filler1);
 
         powerButton.setIcon(new ImageIcon(getClass().getResource("/media/power-red-24.png"))); // NOI18N
         powerButton.setToolTipText("Switch Track power On/Off");
@@ -319,8 +322,8 @@ public class JCSFrame extends JFrame implements UICallback {
         jcsToolBar.add(powerButton);
         powerButton.getAccessibleContext().setAccessibleName("Power");
 
-        filler1.setName("filler1"); // NOI18N
-        jcsToolBar.add(filler1);
+        filler2.setName("filler2"); // NOI18N
+        jcsToolBar.add(filler2);
 
         showOverviewBtn.setIcon(new ImageIcon(getClass().getResource("/media/home-24.png"))); // NOI18N
         showOverviewBtn.setToolTipText("Overview");
@@ -340,9 +343,6 @@ public class JCSFrame extends JFrame implements UICallback {
         });
         jcsToolBar.add(showOverviewBtn);
         showOverviewBtn.getAccessibleContext().setAccessibleName("Home");
-
-        filler2.setName("filler2"); // NOI18N
-        jcsToolBar.add(filler2);
 
         showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/paintbrush-24.png"))); // NOI18N
         showEditDesignBtn.setToolTipText("Design Layout");
@@ -389,20 +389,20 @@ public class JCSFrame extends JFrame implements UICallback {
         filler5.setName("filler5"); // NOI18N
         jcsToolBar.add(filler5);
 
-        showFeedbackMonitor.setIcon(new ImageIcon(getClass().getResource("/media/monitor-24.png"))); // NOI18N
-        showFeedbackMonitor.setFocusable(false);
-        showFeedbackMonitor.setHorizontalTextPosition(SwingConstants.CENTER);
-        showFeedbackMonitor.setMaximumSize(new Dimension(40, 40));
-        showFeedbackMonitor.setMinimumSize(new Dimension(40, 40));
-        showFeedbackMonitor.setName("showFeedbackMonitor"); // NOI18N
-        showFeedbackMonitor.setPreferredSize(new Dimension(40, 40));
-        showFeedbackMonitor.setVerticalTextPosition(SwingConstants.BOTTOM);
-        showFeedbackMonitor.addActionListener(new ActionListener() {
+        showFeedbackMonitorBtn.setIcon(new ImageIcon(getClass().getResource("/media/monitor-24.png"))); // NOI18N
+        showFeedbackMonitorBtn.setFocusable(false);
+        showFeedbackMonitorBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        showFeedbackMonitorBtn.setMaximumSize(new Dimension(40, 40));
+        showFeedbackMonitorBtn.setMinimumSize(new Dimension(40, 40));
+        showFeedbackMonitorBtn.setName("showFeedbackMonitorBtn"); // NOI18N
+        showFeedbackMonitorBtn.setPreferredSize(new Dimension(40, 40));
+        showFeedbackMonitorBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        showFeedbackMonitorBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                showFeedbackMonitorActionPerformed(evt);
+                showFeedbackMonitorBtnActionPerformed(evt);
             }
         });
-        jcsToolBar.add(showFeedbackMonitor);
+        jcsToolBar.add(showFeedbackMonitorBtn);
 
         getContentPane().add(jcsToolBar, BorderLayout.NORTH);
 
@@ -453,12 +453,6 @@ public class JCSFrame extends JFrame implements UICallback {
         FlowLayout flowLayout1 = new FlowLayout(FlowLayout.RIGHT, 0, 6);
         flowLayout1.setAlignOnBaseline(true);
         statusPanelRight.setLayout(flowLayout1);
-
-        blinkLbl.setIcon(new ImageIcon(getClass().getResource("/media/sync-black-24.png"))); // NOI18N
-        blinkLbl.setDoubleBuffered(true);
-        blinkLbl.setName("blinkLbl"); // NOI18N
-        statusPanelRight.add(blinkLbl);
-
         statusPanel.add(statusPanelRight);
 
         getContentPane().add(statusPanel, BorderLayout.SOUTH);
@@ -701,97 +695,96 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
         boolean on = ((JToggleButton) evt.getSource()).isSelected();
-        TrackServiceFactory.getTrackService().switchPower(on);
+        if (TrackServiceFactory.getTrackService() != null) {
+            TrackServiceFactory.getTrackService().switchPower(on);
+        }
     }//GEN-LAST:event_powerButtonActionPerformed
 
-    private void showFeedbackMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorActionPerformed
+    private void showFeedbackMonitorBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorBtnActionPerformed
         this.feedbackMonitor.showMonitor();
-    }//GEN-LAST:event_showFeedbackMonitorActionPerformed
-    
+    }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
+
+    private void connectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
+        boolean connect = ((JToggleButton) evt.getSource()).isSelected();
+        if (TrackServiceFactory.getTrackService() != null) {
+            if (connect) {
+                TrackServiceFactory.getTrackService().connect();
+                this.controllerDescriptionLbl.setText(TrackServiceFactory.getTrackService().getControllerName());
+                this.controllerCatalogNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerArticleNumber());
+                this.controllerSerialNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerSerialNumber());
+                this.controllerHostNameLbl.setText("CS3-" + TrackServiceFactory.getTrackService().getControllerSerialNumber());
+
+                TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
+
+            } else {
+                TrackServiceFactory.getTrackService().disconnect();
+                this.controllerDescriptionLbl.setText("-");
+                this.controllerCatalogNumberLbl.setText("-");
+                this.controllerSerialNumberLbl.setText("-");
+                this.controllerHostNameLbl.setText("Disconnected");
+            }
+        }
+        this.powerButton.setEnabled(connect);
+        this.showFeedbackMonitorBtn.setEnabled(connect);
+    }//GEN-LAST:event_connectButtonActionPerformed
+
     private String getTitleString() {
         String jcsVersion = JCS.getVersionInfo().getVersion();
         if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerSerialNumber() != null) {
-            //return "JCS " + jcsVersion;
             return "JCS " + "Connected to " + TrackServiceFactory.getTrackService().getControllerName();
         } else {
             return "JCS " + jcsVersion + " - NOT Connected!";
         }
     }
-    
+
     @Override
     public void openFiles(List<File> files) {
         Logger.trace("Open Files...");
     }
-    
+
     @Override
     public boolean handleQuitRequest() {
         int result = JOptionPane.showConfirmDialog(JCS.getJCSFrame(), "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
         return result == JOptionPane.YES_OPTION;
     }
-    
+
     @Override
     public void handleAbout() {
         ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
         JOptionPane.showMessageDialog(JCS.getJCSFrame(), "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
     }
-    
+
     @Override
     public void handlePreferences() {
         Logger.trace("handlePreferences");
-        
+
         OptionDialog preferencesDialog = new OptionDialog(this, false);
         preferencesDialog.setVisible(true);
-        
+
         Logger.debug("refresh data...");
         //this.diagnosticPanel.refreshPanel();
         //this.overviewPanel.refreshPanel();
     }
-    
-    private void toggle() {
-        lastUpdatedMillis = System.currentTimeMillis();
-        blinkToggle = !blinkToggle;
-        
-        if (blinkToggle) {
-            this.blinkLbl.setIcon(blinkOnIcon);
-        } else {
-            this.blinkLbl.setIcon(blinkOnIcon2);
-        }
-    }
-    
+
     private class Powerlistener implements PowerEventListener {
-        
+
         private final JCSFrame jcsFrame;
-        
+
         Powerlistener(JCSFrame jcsFrame) {
             this.jcsFrame = jcsFrame;
         }
-        
+
         @Override
         public void onPowerChange(PowerEvent event) {
             this.jcsFrame.powerButton.setSelected(event.isPower());
-            
+
         }
-        
     }
 
-//    private class HeartBeat implements HeartBeatListener {
-//
-//        private final JCSFrame jcsFrame;
-//
-//        HeartBeat(JCSFrame frame) {
-//            jcsFrame = frame;
-//        }
-//
-//        @Override
-//        public void toggle() {
-//            this.jcsFrame.toggle();
-//        }
-//    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    JLabel blinkLbl;
     JPanel bottomLeftPanel;
     JPanel centerPanel;
+    JToggleButton connectButton;
     JLabel controllerCatalogLbl;
     JLabel controllerCatalogNumberLbl;
     JLabel controllerDescriptionLbl;
@@ -828,7 +821,7 @@ public class JCSFrame extends JFrame implements UICallback {
     JPanel settingsPanel;
     JButton showDiagnosticsBtn;
     JButton showEditDesignBtn;
-    JButton showFeedbackMonitor;
+    JButton showFeedbackMonitorBtn;
     JMenuItem showLocosMI;
     JButton showOverviewBtn;
     JPanel statusPanel;

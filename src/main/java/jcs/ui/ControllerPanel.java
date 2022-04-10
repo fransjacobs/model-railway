@@ -60,49 +60,53 @@ public class ControllerPanel extends JPanel {
     }
 
     void registerListeners() {
-        this.csModule1Panel.registerSensorListeners();
-        this.csModule2Panel.registerSensorListeners();
-        this.csModule3Panel.registerSensorListeners();
-        this.csModule4Panel.registerSensorListeners();
+        if (TrackServiceFactory.getTrackService() != null) {
+            this.csModule1Panel.registerSensorListeners();
+            this.csModule2Panel.registerSensorListeners();
+            this.csModule3Panel.registerSensorListeners();
+            this.csModule4Panel.registerSensorListeners();
 
-        this.bus1Module1Panel.registerSensorListeners();
-        this.bus1Module2Panel.registerSensorListeners();
-        this.bus1Module3Panel.registerSensorListeners();
-        this.bus1Module4Panel.registerSensorListeners();
+            this.bus1Module1Panel.registerSensorListeners();
+            this.bus1Module2Panel.registerSensorListeners();
+            this.bus1Module3Panel.registerSensorListeners();
+            this.bus1Module4Panel.registerSensorListeners();
 
-        this.bus2Module1Panel.registerSensorListeners();
-        this.bus2Module2Panel.registerSensorListeners();
-        this.bus2Module3Panel.registerSensorListeners();
-        this.bus2Module4Panel.registerSensorListeners();
+            this.bus2Module1Panel.registerSensorListeners();
+            this.bus2Module2Panel.registerSensorListeners();
+            this.bus2Module3Panel.registerSensorListeners();
+            this.bus2Module4Panel.registerSensorListeners();
 
-        this.bus3Module1Panel.registerSensorListeners();
-        this.bus3Module2Panel.registerSensorListeners();
-        this.bus3Module3Panel.registerSensorListeners();
-        this.bus3Module4Panel.registerSensorListeners();
-        Logger.trace("Added Sensor Listeners...");
+            this.bus3Module1Panel.registerSensorListeners();
+            this.bus3Module2Panel.registerSensorListeners();
+            this.bus3Module3Panel.registerSensorListeners();
+            this.bus3Module4Panel.registerSensorListeners();
+            Logger.trace("Added Sensor Listeners...");
+        }
     }
 
     void removeListeners() {
-        this.csModule1Panel.removeSensorListeners();
-        this.csModule2Panel.removeSensorListeners();
-        this.csModule3Panel.removeSensorListeners();
-        this.csModule4Panel.removeSensorListeners();
+        if (TrackServiceFactory.getTrackService() != null) {
+            this.csModule1Panel.removeSensorListeners();
+            this.csModule2Panel.removeSensorListeners();
+            this.csModule3Panel.removeSensorListeners();
+            this.csModule4Panel.removeSensorListeners();
 
-        this.bus1Module1Panel.removeSensorListeners();
-        this.bus1Module2Panel.removeSensorListeners();
-        this.bus1Module3Panel.removeSensorListeners();
-        this.bus1Module4Panel.removeSensorListeners();
+            this.bus1Module1Panel.removeSensorListeners();
+            this.bus1Module2Panel.removeSensorListeners();
+            this.bus1Module3Panel.removeSensorListeners();
+            this.bus1Module4Panel.removeSensorListeners();
 
-        this.bus2Module1Panel.removeSensorListeners();
-        this.bus2Module2Panel.removeSensorListeners();
-        this.bus2Module3Panel.removeSensorListeners();
-        this.bus2Module4Panel.removeSensorListeners();
+            this.bus2Module1Panel.removeSensorListeners();
+            this.bus2Module2Panel.removeSensorListeners();
+            this.bus2Module3Panel.removeSensorListeners();
+            this.bus2Module4Panel.removeSensorListeners();
 
-        this.bus3Module1Panel.removeSensorListeners();
-        this.bus3Module2Panel.removeSensorListeners();
-        this.bus3Module3Panel.removeSensorListeners();
-        this.bus3Module4Panel.removeSensorListeners();
-        Logger.trace("Removed Sensor Listeners...");
+            this.bus3Module1Panel.removeSensorListeners();
+            this.bus3Module2Panel.removeSensorListeners();
+            this.bus3Module3Panel.removeSensorListeners();
+            this.bus3Module4Panel.removeSensorListeners();
+            Logger.trace("Removed Sensor Listeners...");
+        }
     }
 
     private void postInit() {

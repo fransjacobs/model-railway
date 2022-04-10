@@ -114,7 +114,6 @@ public class SwitchPanel extends JPanel {
         BigDecimal id = new BigDecimal(button.getActionCommand());
 
         if (TrackServiceFactory.getTrackService() != null) {
-
             AccessoryBean ab = TrackServiceFactory.getTrackService().getAccessory(id);
             if (ab != null) {
                 button.setForeground(new Color(0, 153, 0));
@@ -123,10 +122,9 @@ public class SwitchPanel extends JPanel {
             } else {
                 button.setForeground(new Color(0, 0, 0));
             }
+            AccessoryStatusListener asl = new AccessoryStatusListener(button, id);
+            TrackServiceFactory.getTrackService().addAccessoryListener(asl);
         }
-
-        AccessoryStatusListener asl = new AccessoryStatusListener(button, id);
-        TrackServiceFactory.getTrackService().addAccessoryListener(asl);
     }
 
     /**
