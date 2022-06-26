@@ -41,7 +41,7 @@ public class RouteDAOTest {
         DAOTestHelper.setConnectProperties();
         DAOTestHelper.createNewDatabase();
         DAOTestHelper.insertLocoData();
-        DAOTestHelper.insertLayoutTileData();
+        //DAOTestHelper.insertLayoutTileData();
         DAOTestHelper.insertDriveWayData();
         DAOTestHelper.insertRouteData();
     }

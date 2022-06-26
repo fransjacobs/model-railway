@@ -500,7 +500,7 @@ abstract class AbstractTile implements Shape, Tile {
                 signalType = ((Signal) this).getSignalType();
             }
 
-            tileBean = new TileBean(tileType, orientation, direction, center, id, signalType,null);
+            tileBean = new TileBean(tileType, orientation, direction, center, id, signalType,null, null);
         } else {
             //Synchronize the bean
             this.tileBean.setOrientation(orientation);

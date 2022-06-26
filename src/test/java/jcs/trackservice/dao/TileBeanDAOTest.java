@@ -48,13 +48,13 @@ public class TileBeanDAOTest {
 
     @Before
     public void setUp() {
-        TileBean tb1 = new TileBean(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 30, 30, "sw-1", null, null);
+        TileBean tb1 = new TileBean(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 30, 30, "sw-1", null, null, null);
         tiles.add(tb1);
 
-        TileBean tb2 = new TileBean(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 40, 50, "ct-5", null, null);
+        TileBean tb2 = new TileBean(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 40, 50, "ct-5", null, null, null);
         tiles.add(tb2);
 
-        TileBean tb3 = new TileBean(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 50, 60, "st-7", null, null);
+        TileBean tb3 = new TileBean(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 50, 60, "st-7", null, null, null);
         tiles.add(tb3);
     }
 
@@ -115,7 +115,7 @@ public class TileBeanDAOTest {
     @Test
     public void testPersist() {
         System.out.println("persist");
-        TileBean tile = new TileBean(TileType.SENSOR, Orientation.NORTH, Direction.CENTER, 80, 90, "se-3", null, null);
+        TileBean tile = new TileBean(TileType.SENSOR, Orientation.NORTH, Direction.CENTER, 80, 90, "se-3", null, null, null);
         TileBeanDAO instance = new TileBeanDAO();
         String expResult = "se-3";
         Object result = instance.persist(tile);
@@ -150,7 +150,7 @@ public class TileBeanDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        TileBean tile = new TileBean(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 110, 240, "ct-9", null, null);
+        TileBean tile = new TileBean(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 110, 240, "ct-9", null, null, null);
         TileBeanDAO instance = new TileBeanDAO();
         instance.persist(tile);
         TileBean tb = instance.findByXY(110, 240);

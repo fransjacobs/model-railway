@@ -1,96 +1,588 @@
-DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS;
-DROP TABLE if exists drivewaytypes CASCADE CONSTRAINTS;  --
-DROP TABLE if exists driveways CASCADE CONSTRAINTS;
-DROP TABLE if exists drivewayactivationlogs CASCADE CONSTRAINTS; ---
+/*
+ * JCS Database
+ * JCS uses an embedded Java database (H2) to persist
+ * properties, Locomotives, Accessories etc.
+ *
+*/ 
+
+/*
+ * The properties table is used to store system properties.
+ */
+DROP TABLE if exists JCSPROPERTIES;
+
+CREATE TABLE JCSPROPERTIES (
+PKEY    VARCHAR(255) NOT NULL,
+PVALUE  VARCHAR(255)
+);
+
+ALTER TABLE JCSPROPERTIES ADD CONSTRAINT PROP_PK PRIMARY KEY ( PKEY );
+
+-- JCS has currently 1 implementation of a controller
+INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('CS3','jcs.controller.cs3.MarklinCS3');
+
+/*
+ * Power status of the System.
+*/
+DROP TABLE IF EXISTS TRACKPOWER;
+
+CREATE TABLE TRACKPOWER (
+ID             IDENTITY NOT NULL,
+STATUS         VARCHAR2(255) NOT NULL,
+FEEDBACKSOURCE VARCHAR2(255) NOT NULL,
+LASTUPDATED    DATE
+);
+
+INSERT INTO TRACKPOWER (STATUS,FEEDBACKSOURCE,LASTUPDATED) VALUES ('OFF','OTHER',NULL);
+
+
+/*
+ * The Locomotives
+*/
+DROP TABLE IF EXISTS LOCOMOTIVES CASCADE CONSTRAINTS;
+
+CREATE TABLE LOCOMOTIVES (
+ID                 BIGINT NOT NULL,
+NAME               VARCHAR(255) NOT NULL,
+PREVIOUSNAME       VARCHAR(255),
+UID                VARCHAR(255),
+MFXUID             VARCHAR(255),
+ADDRESS            INTEGER NOT NULL,
+ICON               VARCHAR(255),
+DECODERTYPE        VARCHAR(255),
+MFXSID             VARCHAR(255),
+TACHOMAX           INTEGER,
+VMIN               INTEGER,
+ACCELERATIONDELAY  INTEGER,
+BRAKEDELAY         INTEGER,
+VOLUME             INTEGER,
+SPM                VARCHAR(255),
+VELOCITY           INTEGER,
+DIRECTION          INTEGER,
+MFXTYPE            VARCHAR(255),
+BLOCKS             VARCHAR(255)
+);
+
+ALTER TABLE LOCOMOTIVES ADD CONSTRAINT LOCO_PK PRIMARY KEY ( ID );
+ALTER TABLE LOCOMOTIVES ADD CONSTRAINT LOCO_ADDRESS_UN UNIQUE ( ADDRESS, DECODERTYPE );
+
+/*
+ * The Function(s) of a Locomotive
+*/
+DROP TABLE IF EXISTS FUNCTIONS CASCADE CONSTRAINTS;
+
+CREATE TABLE FUNCTIONS (
+LOCOID BIGINT NOT NULL,
+NUMBER INTEGER NOT NULL,
+TYPE INTEGER NOT NULL,
+FVALUE INTEGER
+);
+
+ALTER TABLE FUNCTIONS ADD CONSTRAINT FUNC_PK PRIMARY KEY ( LOCOID, NUMBER );
+
+ALTER TABLE FUNCTIONS ADD CONSTRAINT FUNC_LOCO_FK FOREIGN KEY ( LOCOID ) REFERENCES LOCOMOTIVES ( ID );
+
+/*
+ * Accessories are Siganls, Turnouts, etc
+*/
+DROP TABLE IF EXISTS ACCESSORIES CASCADE CONSTRAINTS;
+
+CREATE TABLE ACCESSORIES (
+ID IDENTITY NOT NULL,
+ADDRESS INTEGER NOT NULL,
+NAME VARCHAR(255) NOT NULL,
+"TYPE" VARCHAR(255) NOT NULL,
+"POSITION" INTEGER,
+STATES INTEGER,
+SWITCHTIME INTEGER,
+DECODERTYPE VARCHAR(255),
+DECODER VARCHAR(255),
+AGROUP VARCHAR(255),
+ICON VARCHAR(255),
+ICONFILE CHARACTER VARYING(255)
+);
+
+ALTER TABLE ACCESSORIES ADD CONSTRAINT ASSE_ADDRESS_UN UNIQUE (ADDRESS,DECODERTYPE);
+CREATE UNIQUE INDEX ASSE_ADDRESS_UN_IDX ON ACCESSORIES (ADDRESS, DECODERTYPE);
+
+/*
+ * The Sensor table stores the properties and status of (feedback) Sensors.
+*/
+DROP TABLE IF EXISTS SENSORS CASCADE CONSTRAINTS;
+
+CREATE TABLE SENSORS (
+ID                IDENTITY NOT NULL,
+NAME              VARCHAR(255) NOT NULL,
+DEVICEID          INTEGER,
+CONTACTID         INTEGER,
+STATUS            INTEGER,
+PREVIOUSSTATUS    INTEGER,
+MILLIS            INTEGER,
+LASTUPDATED       DATE
+);
+
+/*
+ * Tiles are used to store the symbolic layout, which is shown.
+ * A Tile has a location on the screen (grid) and a Type (Turnout, Signal, Straight, Curved etc).
+ * A Tike can be linked to an Accessory or a Sensor
+*/
+DROP TABLE IF EXISTS TILES CASCADE CONSTRAINTS;
+
+CREATE TABLE TILES (
+ID  VARCHAR(255) NOT NULL,
+TILETYPE     VARCHAR(255) NOT NULL,
+ORIENTATION  VARCHAR(255) NOT NULL,
+DIRECTION    VARCHAR(255) NOT NULL,
+X            INTEGER NOT NULL,
+Y            INTEGER NOT NULL,
+SIGNALTYPE   VARCHAR(255),
+ACCESSORYID  BIGINT,
+SENSORID     BIGINT
+);
+
+ALTER TABLE TILES ADD CONSTRAINT TILE_PK PRIMARY KEY ( ID );
+CREATE UNIQUE INDEX TILES_X_Y_IDX ON TILES ( X, Y );
+
+ALTER TABLE TILES ADD CONSTRAINT TILE_ASSE_SENS_CK CHECK (
+  (ACCESSORYID IS NULL AND SENSORID IS NULL) OR
+  (ACCESSORYID IS NOT NULL AND SENSORID IS NULL) OR 
+  (ACCESSORYID IS NULL AND SENSORID IS NOT NULL)
+);
+
+ALTER TABLE TILES ADD CONSTRAINT TILE_ASSE_FK FOREIGN KEY (ACCESSORYID) REFERENCES ACCESSORIES(ID);
+ALTER TABLE TILES ADD CONSTRAINT TILE_SENS_FK FOREIGN KEY (SENSORID) REFERENCES SENSORS(ID);
+
+/*
+ * Blocks, a Block is a part where a Train can stop
+ */
+DROP TABLE IF EXISTS BLOCKS CASCADE CONSTRAINTS;
+
+CREATE TABLE BLOCKS (
+TILEID VARCHAR(255) NOT NULL,
+DESCRIPTION VARCHAR(255),
+PLUSSENSORID BIGINT,
+MINSENSORID BIGINT,
+PLUSSIGNALID BIGINT,
+MINSIGNALID BIGINT,
+LOCOID BIGINT
+);
+
+ALTER TABLE BLOCKS ADD CONSTRAINT BLCK_PK PRIMARY KEY ( TILEID );
+
+ALTER TABLE BLOCKS ADD CONSTRAINT BLCK_TILE_FK FOREIGN KEY (TILEID) REFERENCES TILES(ID);
+ALTER TABLE BLOCKS ADD CONSTRAINT BLCK_SENS_PLS_FK FOREIGN KEY (PLUSSENSORID) REFERENCES SENSORS(ID);
+ALTER TABLE BLOCKS ADD CONSTRAINT BLCK_SENS_MIN_FK FOREIGN KEY (MINSENSORID) REFERENCES SENSORS(ID);
+ALTER TABLE BLOCKS ADD CONSTRAINT BLCK_ASSE_SIG_PLS_FK FOREIGN KEY (PLUSSIGNALID) REFERENCES ACCESSORIES(ID);
+ALTER TABLE BLOCKS ADD CONSTRAINT BLCK_ASSE_SIG_MIN_FK FOREIGN KEY (MINSIGNALID) REFERENCES ACCESSORIES(ID);
+ALTER TABLE BLOCKS ADD CONSTRAINT BLCK_LOCO_FK FOREIGN KEY ( LOCOID ) REFERENCES LOCOMOTIVES ( ID );
+
+/*
+ * Routes, a route is from a block( tile) to an other block (tile).
+ * The tiles which are on the route are put in the ROUTETILES table 
+ */
+CREATE TABLE ROUTES (
+ID IDENTITY NOT NULL,
+FROMTILEID VARCHAR(255) NOT NULL,
+TOTILEID VARCHAR(255) NOT NULL,
+LOCKED INTEGER DEFAULT 0 NOT NULL,
+COLOR VARCHAR(255),
+BLOCKED INTEGER DEFAULT 0 NOT NULL
+);
+
+ALTER TABLE ROUTES ADD CONSTRAINT ROUT_FROM_TO_UN UNIQUE (FROMTILEID,TOTILEID);
+CREATE UNIQUE INDEX ROUT_FROM_TO_UN_IDX ON ROUTES (FROMTILEID, TOTILEID);
+
+ALTER TABLE ROUTES ADD CONSTRAINT ROUT_FROM_TILE_FK FOREIGN KEY (FROMTILEID) REFERENCES TILES(ID);
+ALTER TABLE ROUTES ADD CONSTRAINT ROUT_TO_TILE_FK FOREIGN KEY (TOTILEID) REFERENCES TILES(ID);
+
+/*
+ * Route elements the elements (and the direction etc) of al tile between 2 blocks
+*/
+create table routeelements (
+id identity not null,
+routeid bigint not null,
+tileid varchar(255) not null,
+TILETYPE     VARCHAR(255) NOT NULL,
+ORIENTATION  VARCHAR(255) NOT NULL,
+DIRECTION    VARCHAR(255) NOT NULL,
+
+)
 
 
 
+/*
+ * Routes
+*/
 
 
-DROP TABLE if exists accessorysettings CASCADE CONSTRAINTS;
-DROP TABLE if exists statustypes CASCADE CONSTRAINTS;
-DROP TABLE if exists trackpower CASCADE CONSTRAINTS;
-DROP TABLE if exists feedbacksource CASCADE CONSTRAINTS;
 
-DROP TABLE if exists layouttilegroups CASCADE CONSTRAINTS; ---
-DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;
-DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;
-DROP TABLE if exists sensors CASCADE CONSTRAINTS;
+/*
+ * =================================================================================================================================
+ * Demo Values
+ */
+INSERT INTO LOCOMOTIVES (ID,NAME,PREVIOUSNAME,UID,MFXUID,ADDRESS,ICON,DECODERTYPE,MFXSID,TACHOMAX,VMIN,ACCELERATIONDELAY,BRAKEDELAY,VOLUME,SPM,VELOCITY,DIRECTION,MFXTYPE,BLOCKS) VALUES
+	 (2,'BR 81 002','BR  81 002','2','0',2,'DB BR 81 008','mm_prg',NULL,120,1,1,2,64,NULL,0,0,NULL,NULL),
+	 (8,'NS  6505','MM Lok 8','8',NULL,8,'NS DHG 6505','mm_prg',NULL,120,NULL,0,0,64,NULL,0,0,NULL,NULL),
+	 (12,'BR 141 015-08','BR 141 015-08','12',NULL,12,'DB BR 141 136-2','mm_prg',NULL,120,NULL,0,0,64,NULL,0,1,NULL,NULL),
+	 (23,'BR 101 003-2','BR 101 003-2','23',NULL,23,'DB BR 101 109-7','mm_prg',NULL,200,NULL,0,0,64,NULL,0,1,NULL,NULL),
+	 (37,'NS 1720','S. 1700','37',NULL,37,'NS 1773','mm_prg',NULL,120,NULL,0,0,64,NULL,0,0,NULL,NULL),
+	 (61,'BR 610',NULL,'61',NULL,61,'DB BR 610 015-0','mm_prg',NULL,120,NULL,0,0,64,NULL,0,1,NULL,NULL),
+	 (63,'NS 6513','NS  6513','63',NULL,63,'NS 6513','mm_prg',NULL,120,NULL,0,0,64,NULL,0,0,NULL,NULL),
+	 (16389,'193 304-3 DB AG',NULL,'16389','1945312555',5,'DB BR 193 304-3','mfx','0x5',160,5,15,15,255,NULL,0,0,NULL,NULL),
+	 (16390,'152 119-4 DBAG',NULL,'16390','2113628077',6,'DB BR 152 119-4','mfx','0x6',140,4,28,15,255,'0',0,0,NULL,NULL),
+	 (16391,'DB 640 017-9','DB 640 017-9','16391','2097006535',7,'DB BR 640 017-9','mfx','0x7',100,8,15,15,64,NULL,0,0,NULL,NULL);
+	
+INSERT INTO LOCOMOTIVES (ID,NAME,PREVIOUSNAME,UID,MFXUID,ADDRESS,ICON,DECODERTYPE,MFXSID,TACHOMAX,VMIN,ACCELERATIONDELAY,BRAKEDELAY,VOLUME,SPM,VELOCITY,DIRECTION,MFXTYPE,BLOCKS) VALUES
+	 (16392,'BR 44 690','BR 44 690','16392','1945180592',8,'DB BR 44 100','mfx','0x8',80,5,21,12,233,NULL,0,0,NULL,NULL),
+	 (16393,'Rheingold 1','Rheingold 1','16393','1945195567',9,'DB BR 18 537','mfx','0x9',81,4,12,8,255,NULL,0,0,NULL,NULL),
+	 (16394,'561-05 RRF','561-05 RRF','16394','1945385732',10,'56-05 RRF','mfx','0xa',120,5,31,31,220,'0',0,0,NULL,NULL),
+	 (16395,'E 186 007-8 NS',NULL,'16395','1945441079',11,'NS 186 012-8','mfx','0xb',140,5,16,16,255,NULL,0,0,NULL,NULL),
+	 (16396,'BR 216 059-6',NULL,'16396','1945302187',12,'DB BR 216 059-6','mfx','0xc',120,5,13,13,64,NULL,0,0,NULL,NULL),
+	 (16397,'NS 1139','NS 1139','16397','4193976353',13,'NS 1136','mfx','0xd',140,6,16,4,64,NULL,0,0,NULL,NULL),
+	 (16398,'Rheingold 2','Rheingold 2','16398','1945186577',14,'DB BR 18 473','mfx','0xe',81,4,12,8,255,NULL,0,0,NULL,NULL),
+	 (16399,'Bpmbdzf 107-5','Bpmbdzf 107-5','16399','1945177866',15,'DB Bpmbdzf 296.1','mfx','0xf',121,4,12,12,64,NULL,0,0,NULL,NULL),
+	 (16400,'SVT 137','SVT 137','16400','4294861587',16,'DRG SVT 137 150','mfx','0x10',10,3,28,10,255,NULL,0,0,NULL,NULL),
+	 (49156,'NS Plan Y','DCC Lok 4','49156',NULL,4,'NS Plan Y','dcc',NULL,120,NULL,0,0,64,NULL,0,0,NULL,NULL);
+
+INSERT INTO LOCOMOTIVES (ID,NAME,PREVIOUSNAME,UID,MFXUID,ADDRESS,ICON,DECODERTYPE,MFXSID,TACHOMAX,VMIN,ACCELERATIONDELAY,BRAKEDELAY,VOLUME,SPM,VELOCITY,DIRECTION,MFXTYPE,BLOCKS) VALUES
+	 (49159,'NS Plan V','NS Plan V','49159',NULL,7,'NS Plan V','dcc',NULL,120,NULL,0,0,64,NULL,0,1,NULL,NULL),
+	 (49163,'NS 1205','NS 1205','49163',NULL,11,'NS 1211','dcc',NULL,120,NULL,0,0,64,NULL,0,0,NULL,NULL);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16390,0,1,1),
+	 (16390,1,4,0),
+	 (16390,2,23,0),
+	 (16390,3,10,0),
+	 (16390,4,18,0),
+	 (16390,5,20,0),
+	 (16390,6,41,0),
+	 (16390,7,10,0),
+	 (16390,8,42,0),
+	 (16390,9,116,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16390,10,220,0),
+	 (16390,11,153,0),
+	 (16390,12,11,0),
+	 (16390,13,153,0),
+	 (16390,14,112,1),
+	 (16389,0,1,1),
+	 (16389,1,172,0),
+	 (16389,2,23,0),
+	 (16389,3,10,0),
+	 (16389,4,18,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16389,5,20,0),
+	 (16389,6,41,0),
+	 (16389,7,10,0),
+	 (16389,8,42,0),
+	 (16389,9,171,0),
+	 (16389,10,171,0),
+	 (16389,11,29,0),
+	 (16389,12,11,0),
+	 (16389,13,116,0),
+	 (16389,14,220,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16389,15,138,0),
+	 (16394,0,1,1),
+	 (16394,1,7,0),
+	 (16394,2,23,0),
+	 (16394,3,10,0),
+	 (16394,4,18,0),
+	 (16394,5,20,0),
+	 (16394,6,41,0),
+	 (16394,7,138,0),
+	 (16394,8,42,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16394,9,48,0),
+	 (16394,10,29,0),
+	 (16394,11,117,0),
+	 (16394,12,116,0),
+	 (16394,13,118,0),
+	 (16394,14,118,0),
+	 (16394,15,112,0),
+	 (16394,16,10,0),
+	 (16394,17,138,0),
+	 (16394,18,8,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16394,19,220,0),
+	 (16394,20,236,0),
+	 (16394,21,171,0),
+	 (16394,22,5,0),
+	 (16394,23,171,0),
+	 (16394,24,45,0),
+	 (16394,25,45,0),
+	 (16394,26,28,0),
+	 (23,0,1,1),
+	 (23,2,4,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (23,4,18,0),
+	 (12,0,1,1),
+	 (12,3,8,0),
+	 (12,4,18,0),
+	 (16396,0,1,1),
+	 (16396,4,18,0),
+	 (16392,0,1,1),
+	 (16392,1,7,0),
+	 (16392,2,23,0),
+	 (16392,3,12,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16392,4,18,0),
+	 (16392,5,20,0),
+	 (16392,6,82,0),
+	 (16392,7,140,0),
+	 (16392,8,31,0),
+	 (16392,9,106,0),
+	 (16392,10,219,0),
+	 (16392,11,26,0),
+	 (16392,12,36,0),
+	 (16392,13,111,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16392,14,49,0),
+	 (16392,16,5,0),
+	 (16392,17,5,0),
+	 (16392,18,5,0),
+	 (16392,19,236,0),
+	 (16392,20,43,0),
+	 (16392,21,8,0),
+	 (16392,22,22,0),
+	 (16392,24,31,0),
+	 (16392,25,37,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16392,26,133,0),
+	 (2,0,1,1),
+	 (2,4,18,0),
+	 (16399,0,1,1),
+	 (16399,1,4,0),
+	 (16399,2,32,1),
+	 (16399,3,48,0),
+	 (16399,4,32,1),
+	 (16391,0,1,1),
+	 (16391,2,23,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16391,3,138,0),
+	 (16391,4,18,0),
+	 (16395,0,1,1),
+	 (16395,1,172,0),
+	 (16395,2,23,0),
+	 (16395,3,10,0),
+	 (16395,4,18,0),
+	 (16395,5,20,0),
+	 (16395,6,41,0),
+	 (16395,7,138,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16395,8,42,0),
+	 (16395,9,171,0),
+	 (16395,10,171,0),
+	 (16395,11,220,0),
+	 (16395,12,29,0),
+	 (16395,13,11,0),
+	 (16395,14,37,0),
+	 (8,0,1,1),
+	 (16397,0,1,1),
+	 (16397,1,48,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16397,2,48,0),
+	 (16397,3,8,0),
+	 (16397,4,18,0),
+	 (16397,5,42,0),
+	 (16397,6,41,0),
+	 (16397,7,118,0),
+	 (37,0,1,1),
+	 (37,2,10,0),
+	 (37,3,10,0),
+	 (37,4,18,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (63,0,1,1),
+	 (63,4,18,0),
+	 (49156,0,1,1),
+	 (49156,1,2,1),
+	 (49156,2,2,1),
+	 (49156,3,8,0),
+	 (49156,4,18,0),
+	 (16393,0,1,1),
+	 (16393,1,7,0),
+	 (16393,2,23,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16393,3,8,0),
+	 (16393,4,18,0),
+	 (16393,5,140,0),
+	 (16393,6,12,0),
+	 (16393,7,26,0),
+	 (16393,8,5,0),
+	 (16393,9,13,0),
+	 (16393,10,111,0),
+	 (16393,11,36,0),
+	 (16393,12,173,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16393,13,173,0),
+	 (16393,14,173,0),
+	 (16393,15,37,0),
+	 (16398,0,1,1),
+	 (16398,1,7,0),
+	 (16398,2,23,0),
+	 (16398,3,8,0),
+	 (16398,4,18,0),
+	 (16398,5,140,0),
+	 (16398,6,12,0);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (16398,7,26,0),
+	 (16398,8,5,0),
+	 (16398,9,13,0),
+	 (16398,10,111,0),
+	 (16398,11,36,0),
+	 (16398,12,173,0),
+	 (16398,13,173,0),
+	 (16398,14,173,0),
+	 (16398,15,37,0),
+	 (61,0,1,1);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (49163,0,1,1),
+	 (49163,1,118,0),
+	 (49163,2,47,0),
+	 (49163,3,8,0),
+	 (49163,4,18,0),
+	 (49163,5,41,0),
+	 (49163,6,42,0),
+	 (49159,0,1,1),
+	 (49159,1,48,1),
+	 (49159,2,48,1);
+
+INSERT INTO FUNCTIONS (LOCOID,"NUMBER","TYPE",FVALUE) VALUES
+	 (49159,3,18,0),
+	 (16400,2,138,0),
+	 (16400,4,156,0),
+	 (16400,7,139,0),
+	 (16400,8,153,0),
+	 (16400,9,5,0),
+	 (16400,10,133,0),
+	 (16400,13,138,0),
+	 (16400,14,133,0);
+
+INSERT INTO ACCESSORIES (ADDRESS,NAME,"TYPE","POSITION",STATES,SWITCHTIME,DECODERTYPE,DECODER,AGROUP,ICON,ICONFILE) VALUES
+	 (1,'W 1R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg'),
+	 (2,'W 2L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg'),
+	 (3,'W 3R','rechtsweiche',0,2,200,'mm','ein_alt','weichen','005','magicon_a_005_00.svg'),
+	 (4,'W 4R','rechtsweiche',0,2,200,'mm','ein_alt','weichen','005','magicon_a_005_00.svg'),
+	 (5,'W 5R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg'),
+	 (6,'W 6R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg'),
+	 (7,'W 7L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg'),
+	 (8,'W 8L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg'),
+	 (9,'W 9R','rechtsweiche',0,2,200,'mm','ein_alt','weichen','005','magicon_a_005_00.svg'),
+	 (10,'W 10R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg');
+
+INSERT INTO ACCESSORIES (ADDRESS,NAME,"TYPE","POSITION",STATES,SWITCHTIME,DECODERTYPE,DECODER,AGROUP,ICON,ICONFILE) VALUES
+	 (11,'W 11L','linksweiche',0,2,200,'mm','ein_alt','weichen','006','magicon_a_006_00.svg'),
+	 (12,'W 12L','linksweiche',0,2,200,'mm','ein_alt','weichen','006','magicon_a_006_00.svg'),
+	 (13,'W 13L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg'),
+	 (14,'W 14R','rechtsweiche',0,2,200,'mm','ein_alt','weichen','005','magicon_a_005_00.svg'),
+	 (15,'S 15','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg'),
+	 (16,'S 16','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg'),
+	 (17,'W 17R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg'),
+	 (18,'W 18R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg'),
+	 (19,'S 19','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg'),
+	 (20,'S  20','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg');
+
+INSERT INTO ACCESSORIES (ADDRESS,NAME,"TYPE","POSITION",STATES,SWITCHTIME,DECODERTYPE,DECODER,AGROUP,ICON,ICONFILE) VALUES
+	 (21,'S 21','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg'),
+	 (22,'S 22','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg'),
+	 (23,'S 23','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg'),
+	 (24,'S 24','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg'),
+	 (25,'S 25/26','urc_lichtsignal_HP012_SH01',0,4,200,'mm','ein_alt','lichtsignale','027','magicon_a_027_00.svg'),
+	 (27,'S 27/28','urc_lichtsignal_HP012_SH01',0,4,200,'mm','ein_alt','lichtsignale','027','magicon_a_027_00.svg'),
+	 (29,'S 29/30','urc_lichtsignal_HP012_SH01',0,4,200,'mm','ein_alt','lichtsignale','027','magicon_a_027_00.svg'),
+	 (31,'S 31/32','urc_lichtsignal_HP012_SH01',0,4,200,'mm','ein_alt','lichtsignale','027','magicon_a_027_00.svg'),
+	 (33,'S 33','lichtsignal_HP01',1,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_01.svg'),
+	 (34,'W 34','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg');
+
+INSERT INTO ACCESSORIES (ADDRESS,NAME,"TYPE","POSITION",STATES,SWITCHTIME,DECODERTYPE,DECODER,AGROUP,ICON,ICONFILE) VALUES
+	 (35,'S 35','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg'),
+	 (36,'S 36','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg'),
+	 (41,'S 41','urc_lichtsignal_HP012',0,3,200,'mm','ein_alt','lichtsignale','026','magicon_a_026_00.svg'),
+	 (43,'S 43','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg'),
+	 (47,'S 20','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg');
+
+
+INSERT INTO SENSORS (NAME,DEVICEID,CONTACTID,STATUS,PREVIOUSSTATUS,MILLIS,LASTUPDATED) VALUES
+	 ('M1',65,1,NULL,NULL,NULL,NULL),
+	 ('M2',65,2,NULL,NULL,NULL,NULL);
+	
+
+INSERT INTO TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES
+	 ('bk-2','Block','East','Center',420,140,NULL,NULL,NULL),
+	 ('st-1','Straight','East','Center',300,180,NULL,NULL,NULL),
+	 ('ct-2','Curved','East','Center',260,140,NULL,NULL,NULL),
+	 ('se-6','Sensor','West','Center',500,380,NULL,NULL,NULL),
+	 ('st-3','Straight','East','Center',300,140,NULL,NULL,NULL),
+	 ('st-4','Straight','East','Center',540,140,NULL,NULL,NULL),
+	 ('st-7','Straight','South','Center',180,220,NULL,NULL,NULL),
+	 ('se-1','Sensor','East','Center',340,180,NULL,NULL,NULL),
+	 ('st-20','Straight','West','Center',620,380,NULL,NULL,NULL),
+	 ('se-4','Sensor','East','Center',340,140,NULL,NULL,1);
+
+INSERT INTO TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES
+	 ('st-19','Straight','West','Center',580,380,NULL,NULL,NULL),
+	 ('sw-1','Switch','West','Left',260,180,NULL,null,NULL),
+	 ('se-5','Sensor','West','Center',340,380,NULL,NULL,NULL),
+	 ('ct-5','Curved','North','Center',180,380,NULL,NULL,NULL),
+	 ('st-18','Straight','West','Center',540,380,NULL,NULL,NULL),
+	 ('st-2','Straight','East','Center',540,180,NULL,NULL,NULL),
+	 ('ct-3','Curved','East','Center',180,180,NULL,NULL,NULL),
+	 ('st-10','Straight','South','Center',180,340,NULL,NULL,NULL),
+	 ('st-15','Straight','West','Center',220,380,NULL,NULL,NULL),
+	 ('st-12','Straight','South','Center',660,260,NULL,NULL,NULL);
+
+INSERT INTO TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES
+	 ('st-16','Straight','West','Center',260,380,NULL,NULL,NULL),
+	 ('st-9','Straight','South','Center',180,300,NULL,NULL,NULL),
+	 ('bk-3','Block','West','Center',420,380,NULL,NULL,NULL),
+	 ('st-6','Straight','East','Center',220,180,NULL,NULL,NULL),
+	 ('se-3','Sensor','East','Center',500,140,NULL,NULL,null),
+	 ('st-8','Straight','South','Center',180,260,NULL,NULL,NULL),
+	 ('st-11','Straight','South','Center',660,220,NULL,NULL,NULL),
+	 ('bk-1','Block','East','Center',420,180,NULL,NULL,NULL),
+	 ('st-13','Straight','South','Center',660,300,NULL,NULL,NULL),
+	 ('se-2','Sensor','East','Center',500,180,NULL,NULL,NULL);
+
+INSERT INTO TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES
+	 ('ct-6','Curved','West','Center',660,380,NULL,NULL,NULL),
+	 ('st-14','Straight','South','Center',660,340,NULL,NULL,NULL),
+	 ('ct-4','Curved','South','Center',660,180,NULL,NULL,NULL),
+	 ('sw-2','Switch','East','Right',580,180,NULL,null,NULL),
+	 ('st-5','Straight','East','Center',620,180,NULL,NULL,NULL),
+	 ('st-17','Straight','West','Center',300,380,NULL,NULL,NULL),
+	 ('ct-1','Curved','South','Center',580,140,NULL,NULL,NULL);
+
+COMMIT;	
+	
+
+/*
+ * Old stuff here for reference only
+ * remove when no longer needed... 
+
 DROP TABLE if exists routes CASCADE CONSTRAINTS;
 
 DROP SEQUENCE if exists drwa_seq;
-DROP SEQUENCE if exists dwal_seq; ---
-
-DROP SEQUENCE if exists loco_seq;
-DROP SEQUENCE if exists func_seq;
-
-DROP SEQUENCE if exists soac_seq;
-DROP SEQUENCE if exists acse_seq;
-DROP SEQUENCE if exists trpo_seq;
-DROP SEQUENCE if exists feso_seq;
-DROP SEQUENCE if exists lati_seq;
-DROP SEQUENCE if exists ltgr_seq; ---
-DROP SEQUENCE if exists prop_seq;
-DROP SEQUENCE if exists sens_seq;
 DROP SEQUENCE if exists rout_seq;
 
 CREATE SEQUENCE drwa_seq START WITH 1 INCREMENT BY 1;
---CREATE SEQUENCE loco_seq START WITH 1 INCREMENT BY 1;
---CREATE SEQUENCE func_seq START WITH 1 INCREMENT BY 1;
---CREATE SEQUENCE soac_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE acse_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE trpo_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE feso_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE lati_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE prop_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE sens_seq START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE rout_seq START WITH 1 INCREMENT BY 1;
 
-/*
- * JCS Database creation script
- */
-
-drop table if exists tiles cascade constraints;
-
-create table tiles (
-   id          VARCHAR(255) not null
-  ,tileType    VARCHAR(255) not null
-  ,orientation VARCHAR(255) not null
-  ,direction   VARCHAR(255) not null
-  ,x           INTEGER NOT NULL
-  ,y           INTEGER NOT NULL
-  ,signalType  VARCHAR(255) 
-);
-
-alter table tiles add constraint tile_pk primary key ( id );
-
-DROP TABLE if exists locomotives CASCADE CONSTRAINTS;
-
-CREATE TABLE locomotives (
-  id                 NUMBER NOT NULL,
-  name               VARCHAR(255) NOT NULL,
-  previousname       VARCHAR(255),
-  uid                VARCHAR(255),
-  mfxuid             VARCHAR(255),
-  address            INTEGER NOT NULL,
-  icon               VARCHAR(255),
-  decodertype        VARCHAR(255),
-  mfxsid             VARCHAR(255),
-  tachomax           INTEGER,
-  vmin               INTEGER,
-  accelerationDelay  INTEGER,
-  brakeDelay         INTEGER,
-  volume             INTEGER,
-  spm                VARCHAR(255),
-  velocity           INTEGER,
-  direction          INTEGER,
-  mfxtype            VARCHAR(255),
-  blocks             VARCHAR(255)
-);
-
-ALTER TABLE locomotives ADD CONSTRAINT locomotive_pk PRIMARY KEY ( id );
-
-DROP TABLE if exists functions CASCADE CONSTRAINTS;
 
 CREATE TABLE functions (
   locoid             NUMBER NOT NULL,
@@ -103,822 +595,5 @@ ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( locoid, number );
 
 ALTER TABLE functions ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid ) REFERENCES locomotives ( id ) NOT DEFERRABLE;  
 
-
-DROP TABLE if exists solenoidaccessories CASCADE CONSTRAINTS;
-
-CREATE TABLE solenoidaccessories (
-  id                    NUMBER NOT NULL,
-  name                  VARCHAR(255) NOT NULL,
-  type                  INTEGER NOT NULL,
-  position              INTEGER,
-  switchtime            INTEGER,
-  decodertype           VARCHAR(255),
-  decoder               VARCHAR(255)
-);
-
-ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id );
-
-
---============
--- OLD
-
-CREATE TABLE trackpower (
-  id             NUMBER NOT NULL,
-  status         VARCHAR2(255) NOT NULL,
-  feedbacksource VARCHAR2(255) NOT NULL,
-  lastupdated    DATE
-);
-
-ALTER TABLE trackpower ADD CONSTRAINT trpo_pk PRIMARY KEY ( id );
-
-CREATE TABLE accessorytypes (
-  accessory_type   VARCHAR2(255 CHAR) NOT NULL,
-  description      VARCHAR2(255)
-);
-
-ALTER TABLE accessorytypes ADD CONSTRAINT acty_pk PRIMARY KEY ( accessory_type );
-
-
-CREATE TABLE sensors (
-  id              NUMBER NOT NULL,
-  address         INTEGER NOT NULL,
-  device_id       INTEGER,
-  NAME            VARCHAR2(255 CHAR) NOT NULL,
-  DESCRIPTION     VARCHAR2(255 CHAR),
-  value           INTEGER,
-  previous_value  INTEGER,
-  millis          INTEGER,
-  lastupdated     DATE
-);
-
-ALTER TABLE sensors ADD CONSTRAINT sens_pk PRIMARY KEY ( id );
-
-ALTER TABLE sensors ADD CONSTRAINT sens_address_un UNIQUE ( address );
-
-/*
-CREATE TABLE locomotives (
-  id                 NUMBER NOT NULL,
-  address            INTEGER NOT NULL,
-  name               VARCHAR2(255 CHAR) NOT NULL,
-  description        VARCHAR2(255 CHAR),
-  catalognumber      VARCHAR2(255 CHAR),
-  decodertype        VARCHAR2(255 CHAR),
-  direction          VARCHAR2(255) NOT NULL,
-  speed              INTEGER,
-  tachomax           INTEGER,
-  speedsteps         INTEGER NOT NULL,
-  vmin               INTEGER,
-  vmax               INTEGER,
-  functioncount      INTEGER NOT NULL,
-  functionvalues     VARCHAR2(255),
-  functiontypes      VARCHAR2(255),
-  default_direction  VARCHAR2(255) NOT NULL,
-  iconname           VARCHAR2(255 CHAR)
-);
-
-ALTER TABLE locomotives ADD CONSTRAINT loco_pk PRIMARY KEY ( id );
-
-ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype );
 */
 
-/*
-CREATE TABLE solenoidaccessories (
-  id                    NUMBER NOT NULL,
-  address               INTEGER NOT NULL,
-  name                  VARCHAR2(255 CHAR) NOT NULL,
-  description           VARCHAR2(255 CHAR),
-  catalog_number        VARCHAR2(255 CHAR),
-  accessory_type        VARCHAR2(255 CHAR) NOT NULL,
-  current_status_type   VARCHAR2(255 CHAR) NOT NULL,
-  soac_id               NUMBER,
-  light_images          INTEGER NOT NULL DEFAULT 2,
-  signal_value          VARCHAR2(255),
-  switch_time           INTEGER
-);
-
-ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_pk PRIMARY KEY ( id );
-
-ALTER TABLE solenoidaccessories ADD CONSTRAINT soac_address_un UNIQUE ( address );
-
-ALTER TABLE solenoidaccessories
-  ADD CONSTRAINT soac_soac_fk FOREIGN KEY ( soac_id )
-    REFERENCES solenoidaccessories ( id )
-  NOT DEFERRABLE;
-*/
-/*
-CREATE TABLE accessorysettings (
-  id                    NUMBER NOT NULL,
-  drwa_id               NUMBER NOT NULL,
-  accessory_type        VARCHAR2(255 CHAR) NOT NULL,
-  soac_id               NUMBER NOT NULL,
-  default_status_type   VARCHAR2(255 CHAR),
-  default_signal_value  VARCHAR2(255 CHAR),
-  femo_id               NUMBER,
-  port                  INTEGER,
-  port_value            NUMBER 
-);
-
-ALTER TABLE accessorysettings ADD CONSTRAINT soas_pk PRIMARY KEY ( id );
-
-ALTER TABLE accessorysettings ADD CONSTRAINT soas_un UNIQUE ( drwa_id, soac_id );
-
-ALTER TABLE accessorysettings ADD CONSTRAINT stty_or_siva_nn check ( (default_status_type is not null and default_signal_value is null) or (default_status_type is null and default_signal_value is not null) );
-*/
-
-CREATE TABLE statustypes (
-  status_type   VARCHAR2(255 CHAR) NOT NULL,
-  description   VARCHAR2(255 CHAR)
-);
-
-ALTER TABLE statustypes ADD CONSTRAINT stty_pk PRIMARY KEY ( status_type );
-
-CREATE TABLE signalvalues (
-  signal_value    VARCHAR2(255 CHAR) NOT NULL,
-  description   VARCHAR2(255 CHAR)
-);
-
-ALTER TABLE signalvalues ADD CONSTRAINT siva_pk PRIMARY KEY ( signal_value );
-
-CREATE TABLE jcsproperties (
-  id                    NUMBER NOT NULL,
-  key        VARCHAR2(255 CHAR) NOT NULL,
-  value      VARCHAR2(255 CHAR)
-);
-
-ALTER TABLE jcsproperties ADD CONSTRAINT prop_pk PRIMARY KEY ( id );
-
-ALTER TABLE jcsproperties ADD CONSTRAINT prop_key_un UNIQUE ( key );
-
--- FK's
-ALTER TABLE solenoidaccessories
-  ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )
-    REFERENCES accessorytypes ( accessory_type )
-  NOT DEFERRABLE;
-
-ALTER TABLE solenoidaccessories
-  ADD CONSTRAINT soac_stty_fk FOREIGN KEY ( current_status_type )
-    REFERENCES statustypes ( status_type )
-  NOT DEFERRABLE;
-
-ALTER TABLE solenoidaccessories
-  ADD CONSTRAINT soac_siva_fk FOREIGN KEY ( signal_value )
-    REFERENCES signalvalues ( signal_value )
-  NOT DEFERRABLE;
-
-ALTER TABLE accessorysettings
-  ADD CONSTRAINT acse_drwa_fk FOREIGN KEY ( drwa_id )
-    REFERENCES driveways ( id )
-  NOT DEFERRABLE;
-
-/*
-ALTER TABLE accessorysettings
-  ADD CONSTRAINT acse_soac_fk FOREIGN KEY ( soac_id )
-    REFERENCES solenoidaccessories ( id )
-  NOT DEFERRABLE;
-
-ALTER TABLE accessorysettings
-  ADD CONSTRAINT acse_stty_fk FOREIGN KEY ( default_status_type )
-    REFERENCES statustypes ( status_type )
-  NOT DEFERRABLE;
-
-ALTER TABLE accessorysettings
-  ADD CONSTRAINT acse_femo_fk FOREIGN KEY ( femo_id )
-    REFERENCES feedbackmodules ( id )
-  NOT DEFERRABLE;
-
-ALTER TABLE accessorysettings
-  ADD CONSTRAINT acse_siva_fk FOREIGN KEY ( default_signal_value )
-    REFERENCES signalvalues ( signal_value )
-  NOT DEFERRABLE;
-
-ALTER TABLE accessorysettings
-  ADD CONSTRAINT acse_acty_fk FOREIGN KEY ( accessory_type )
-    REFERENCES accessorytypes ( accessory_type )
-  NOT DEFERRABLE;
-*/
-
-/*
--- Layout
-CREATE TABLE layouttiles (
-  id                    NUMBER NOT NULL,
-  tiletype              VARCHAR2(255 CHAR) NOT NULL,
-  orientation           VARCHAR2(255 CHAR) NOT NULL,
-  rotation              VARCHAR2(255 CHAR) NOT NULL,
-  direction             VARCHAR2(255 CHAR) NOT NULL,
-  x                     INTEGER NOT NULL,
-  y                     INTEGER NOT NULL,
-  soac_id               NUMBER NULL,
-  sens_id               NUMBER NULL,
-);
-
-ALTER TABLE layouttiles ADD CONSTRAINT lati_pk PRIMARY KEY ( id );
-
-ALTER TABLE layouttiles ADD CONSTRAINT lati_x_y_un UNIQUE ( x,y );
-
-ALTER TABLE layouttiles
-  ADD CONSTRAINT lati_soac_fk FOREIGN KEY ( soac_id )
-    REFERENCES solenoidaccessories ( id )
-  NOT DEFERRABLE;
-
-ALTER TABLE layouttiles
-  ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )
-    REFERENCES sensors ( id )
-  NOT DEFERRABLE;  
-*/
-
-CREATE TABLE driveways (
-  id             NUMBER NOT NULL,
-  address        INTEGER NOT NULL,
-  name           VARCHAR2(255 CHAR),
-  description    VARCHAR2(255 CHAR),
-  from_lati_id   NUMBER,
-  to_lati_id     NUMBER,
-  loco_id        NUMBER,
-  active         INTEGER NOT NULL,
-  reserved       INTEGER NOT NULL,
-  occupied       INTEGER NOT NULL
-);
-
-ALTER TABLE driveways ADD CONSTRAINT drwa_pk PRIMARY KEY ( id );
-
-ALTER TABLE driveways ADD CONSTRAINT drwa_address_un UNIQUE ( address );
-
-ALTER TABLE driveways
-  ADD CONSTRAINT from_lati_fk FOREIGN KEY ( from_lati_id )
-    REFERENCES layouttiles ( id )
-  NOT DEFERRABLE;  
-
-ALTER TABLE driveways
-  ADD CONSTRAINT to_lati_fk FOREIGN KEY ( to_lati_id )
-    REFERENCES layouttiles ( id )
-  NOT DEFERRABLE;  
-
-ALTER TABLE driveways
-  ADD CONSTRAINT loco_drwa_fk FOREIGN KEY ( loco_id )
-    REFERENCES locomotives ( id )
-  NOT DEFERRABLE;  
-
-
-
-CREATE TABLE routes (
-  id             NUMBER NOT NULL,
-  address        INTEGER NOT NULL,
-  name           VARCHAR2(255 CHAR),
-  description    VARCHAR2(255 CHAR),
-  drwa_id        NUMBER NOT NULL,
-  lati_id        NUMBER NOT NULL
-);
-
-ALTER TABLE routes ADD CONSTRAINT rout_pk PRIMARY KEY ( id );
-
-ALTER TABLE routes ADD CONSTRAINT rout_address_un UNIQUE ( address );
-
-ALTER TABLE routes
-  ADD CONSTRAINT drwa_rout_fk FOREIGN KEY ( drwa_id )
-    REFERENCES driveways ( id )
-  NOT DEFERRABLE;  
-
-ALTER TABLE routes
-  ADD CONSTRAINT lati_rout_fk FOREIGN KEY ( lati_id )
-    REFERENCES layouttiles ( id )
-  NOT DEFERRABLE;  
-
-
-
-
-
-/*
-CREATE TABLE layouttilegroups (
-  id                  NUMBER NOT NULL,
-  name                VARCHAR2(255 CHAR),
-  start_lati_id       NUMBER,
-  end_lati_id         NUMBER,
-  color               VARCHAR2(255 CHAR),
-  direction           VARCHAR2(255 CHAR),
-  groupnumber         INTEGER not NULL
-);
-
-ALTER TABLE layouttilegroups ADD CONSTRAINT ltgr_pk PRIMARY KEY ( id );
-
-ALTER TABLE layouttilegroups ADD CONSTRAINT ltgr_groupnumber_un UNIQUE ( groupnumber );
-
-ALTER TABLE layouttiles
-  ADD CONSTRAINT lati_ltgr_fk FOREIGN KEY ( ltgr_id )
-    REFERENCES layouttilegroups ( id )
-  NOT DEFERRABLE;
-
-ALTER TABLE layouttilegroups
-  ADD CONSTRAINT ltgr_lati_start_fk FOREIGN KEY ( start_lati_id )
-    REFERENCES layouttiles ( id )
-  NOT DEFERRABLE;
-
-ALTER TABLE layouttilegroups
-  ADD CONSTRAINT ltgr_lati_ends_fk FOREIGN KEY ( end_lati_id )
-    REFERENCES layouttiles ( id )
-  NOT DEFERRABLE;
-*/
-
--- Trackpower
-INSERT INTO TRACKPOWER(ID,STATUS,FEEDBACKSOURCE,LASTUPDATED)
-VALUES(trpo_seq.nextval,'OFF','OTHER',null);
-
--- Insert the Solenoid Types
-INSERT INTO accessorytypes (accessory_type,description) values ('S','Signal');     
-INSERT INTO accessorytypes (accessory_type,description) values ('T','Turnout');     
-INSERT INTO accessorytypes (accessory_type,description) values ('G','General');     
-
--- Insert the Statuses
-INSERT INTO statustypes (status_type,description) values('G','Green'); 
-INSERT INTO statustypes (status_type,description) values('R','Red'); 
-INSERT INTO statustypes (status_type,description) values('O','Off'); 
-
--- Insert the status types
-INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0','Hp0');
-INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp1','Hp1');
-INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp2','Hp2');
-INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0Sh1','Hp0Sh1');
-INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('OFF','OFF');
-
--- Insert the Driveway types
-INSERT INTO drivewaytypes (driveway_type,description) values('Manual','Manual'); 
-INSERT INTO drivewaytypes (driveway_type,description) values('FeedbackPort','Feedback port'); 
-INSERT INTO drivewaytypes (driveway_type,description) values('Timed','Timed'); 
-
-
--- Insert the Locomotives
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,1,'V200 027','V200','3021','mm2_prg','Forwards',0,null,14,0,null,5,'10000',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,2,'BR81 002','BR 81 002','30321','mm2_dil8','Forwards',0,null,14,0,null,1,'1',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,3,'BR 1022','BR1022','3795.10','mm2_prg','Forwards',0,null,14,0,null,5,'101-0',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,6,'BR 44 690','BR 44 690','3047','mm2_prg','Forwards',0,null,14,0,null,5,'10000',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,8,'NS 6502','DHG 700C NS 6502','29159.1','mm2_dil8','Forwards',0,null,14,0,null,1,'1',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,11,'NS 1205','NS 1205','3055','mm2_prg','Forwards',0,null,14,0,null,5,'100000',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,12,'BR141 015','E 141 015-8','3034.10','mm2_prg','Forwards',0,null,14,0,null,5,'100000',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,14,'V36','V36/BR236','3142','mm2_prg','Forwards',0,null,14,0,null,5,'100000',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,17,'1855','NS 1855','37263','mm2_prg','Forwards',0,null,14,0,null,5,'10000',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,6,'NS E186','NS E186','36629','mfx','Forwards',0,null,14,0,null,16,'1000000000000000',null,'Forwards',null);
---VALUES (loco_seq.nextval,24,'NS E186','NS E186','36629','mfx','Forwards',0,null,14,0,null,16,'1000000000000000',null,'Forwards',null); -- MM2 only
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,25,'ER 20','Hercules Police','36793','mm2_prg','Forwards',0,null,14,0,null,5,'100000',null,'Forwards',null);
-
-INSERT INTO LOCOMOTIVES (ID,ADDRESS,NAME,DESCRIPTION,CATALOGNUMBER,DECODERTYPE,DIRECTION,SPEED,TACHOMAX,SPEEDSTEPS,VMIN,VMAX,FUNCTIONCOUNT,FUNCTIONVALUES,FUNCTIONTYPES,DEFAULT_DIRECTION,ICONNAME)
-VALUES (loco_seq.nextval,5,'BR 152','BR 152','39850','mfx','Forwards',0,null,14,0,null,16,'1000000000000000',null,'Forwards',null);
---VALUES (loco_seq.nextval,52,'BR 152','BR 152','39850','mfx','Forwards',0,null,14,0,null,16,'1000000000000000',null,'Forwards',null); -- MM2 only
-
--- Crane...
---INSERT INTO LOCOMOTIVES (ID,ADDRESS,TYPE,NAME,DESCRIPTION,CATALOGNUMBER,SPECIALFUNCTIONS,DEFAULT_DIRECTION,DIRECTION,SPEED,THROTTLE,MINSPEED,SPEEDSTEPS,LOCOTYPE,F0,F1,F2,F3,F4,F0TYPE,F1TYPE,F2TYPE,F3TYPE,F4TYPE)
---VALUES (loco_seq.nextval,30,'C','7051','Marklin 7051 with 7651','7051',1,'F','N',0,0,10,14,'crane',0,0,0,0,0,'magnet','turn','lift',null,null);
-
-
--- Accessories
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,1,'W 1','R','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,2,'W 2','R','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,3,'W 3','R','','T','R',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,4,'W 4','R','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,5,'W 5','R','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,6,'W 6','R','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,7,'W 7','L','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,8,'W 8','L','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,9,'W 9','L','','T','R',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,10,'W 10','L','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,11,'W 11','L','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,12,'W 12','L','','T','G',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,13,'W 13','L','','T','R',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,14,'W 14','L','','T','R',null,2,null);
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,16,'S 16','Midget','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,21,'S 21','Midget','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,22,'S 22','Midget','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,23,'S 23','Midget','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,24,'S 24','Midget','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,25,'S 25/26','Leave','viessmann','S','G',null,4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,26,'S 25/26','Leave','viessmann','S','R', (soac_seq.currval -1),4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,27,'S 27/28','Leave','viessmann','S','G',null,4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,28,'S 27/28','Leave','viessmann','S','G',(soac_seq.currval -1),4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,29,'S 29/30','Leave','viessmann','S','G',null,4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,30,'S 29/30','Leave','viessmann','S','R',(soac_seq.currval -1),4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,31,'S 31/32','Leave','viessmann','S','G',null,4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,32,'S 31/32','Leave','viessmann','S','G',(soac_seq.currval -1),4,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,33,'S 33','Entry','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,34,'S 34','Entry','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,35,'S 35','Entry','','S','G',null,2,'Hp1');
-
-INSERT INTO SOLENOIDACCESSORIES (ID,ADDRESS,NAME,DESCRIPTION,CATALOG_NUMBER,ACCESSORY_TYPE,CURRENT_STATUS_TYPE,SOAC_ID,LIGHT_IMAGES,SIGNAL_VALUE)
- VALUES (soac_seq.nextval,36,'S 36','Entry','','S','G',null,2,'Hp1');
-
--- Insert the Feedback modules
-INSERT INTO feedbackmodules (id,address,name,description,catalognumber,ports,msb,lsb,lastupdated,port1,port2,port3,port4,port5,port6,port7,port8,port9,port10,port11,port12,port13,port14,port15,port16)
-VALUES (femo_seq.nextval,1,'S88_1','S88 1-16','S88',16,0,0,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-
-INSERT INTO feedbackmodules (id,address,name,description,catalognumber,ports,msb,lsb,lastupdated,port1,port2,port3,port4,port5,port6,port7,port8,port9,port10,port11,port12,port13,port14,port15,port16)
-VALUES (femo_seq.nextval,2,'S88_2','S88 17-32','S88',16,0,0,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-
-INSERT INTO feedbackmodules (id,address,name,description,catalognumber,ports,msb,lsb,lastupdated,port1,port2,port3,port4,port5,port6,port7,port8,port9,port10,port11,port12,port13,port14,port15,port16)
-VALUES (femo_seq.nextval,3,'S88_3','S88 33-48','S88',16,0,0,null,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-
--- Properties
-INSERT INTO jcsproperties (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-module-count','3');
-
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-demo','lan.wervel.jcs.feedback.DemoFeedbackService');
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-remote','FeedbackService');
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'S88-CS2','lan.wervel.jcs.feedback.cs2.CS2FeedbackService');
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeFeedbackService','S88-CS2');
-
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-local','lan.wervel.jcs.controller.m6050.M6050Controller');
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-remote','ControllerService');
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'M6050-demo','lan.wervel.jcs.controller.m6050.M6050DemoController');
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'CS2','lan.wervel.jcs.controller.cs2.CS2Controller');
-INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeControllerService','CS2');
-
-
---INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'remoteControllerService','ControllerService');
---INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'useRemoteControllerService','false');
---INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'demoControllerServiceImpl','lan.wervel.jcs.controller.m6050.M6050DemoController');
---INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'serialControllerServiceImpl','lan.wervel.jcs.controller.m6050.M6050Controller');
---INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'cs2ControllerServiceImpl','lan.wervel.jcs.controller.cs2.CS2Controller');
---INSERT INTO JCSPROPERTIES (ID,KEY,VALUE) VALUES (prop_seq.nextval, 'activeControllerService','cs2ControllerServiceImpl');
-
---
---INSERT INTO driveways (id,address,name,description,port,type,femo_id) values(drwa_seq.nextval,1,'INIT','Initial track settings',-1,'init',femo_seq.currval);
-
-commit;
-
---Layout tiles layaout of "Zolderhoek"
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',40,280,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',40,320,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',40,360,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',40,400,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R270','CENTER',60,120,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R180','CENTER',60,440,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',100,100,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',100,460,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R270','CENTER',140,240,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R180','CENTER',140,360,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',180,20,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',180,100,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',180,380,0,0,null,(select id from feedbackmodules where address = 3),9,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID)
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',220,20,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R0','LEFT',240,80,0,0,(select id from solenoidaccessories where address = 9),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',260,20,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R0','CENTER',260,220,0,0,(select id from solenoidaccessories where address = 33),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R0','CENTER',260,460,0,0,(select id from solenoidaccessories where address = 35),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',300,20,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',300,60,0,0,null,(select id from feedbackmodules where address = 2),16,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',300,100,0,0,null,(select id from feedbackmodules where address = 2),14,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',300,220,0,0,null,(select id from feedbackmodules where address = 3),4,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R180','CENTER',300,460,0,0,null,(select id from feedbackmodules where address = 1),10,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R180','CENTER',340,60,0,0,(select id from solenoidaccessories where address = 31),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R180','CENTER',340,100,0,0,(select id from solenoidaccessories where address = 29),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',340,420,0,0,null,(select id from feedbackmodules where address = 1),15,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R0','LEFT',360,200,0,0,(select id from solenoidaccessories where address = 10),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R0','RIGHT',360,480,0,0,(select id from solenoidaccessories where address = 5),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R180','CENTER',380,380,0,0,(select id from solenoidaccessories where address = 22),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',400,60,0,0,null,(select id from feedbackmodules where address = 2),15,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',400,100,0,0,null,(select id from feedbackmodules where address = 2),13,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R90','CENTER',420,160,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',420,220,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',420,460,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',420,500,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',440,20,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',440,420,0,0,null,(select id from feedbackmodules where address = 1),13,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',460,100,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R180','CENTER',460,460,0,0,null,(select id from feedbackmodules where address = 1),9,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R0','CENTER',500,20,0,0,(select id from solenoidaccessories where address = 16),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',500,60,0,0,null,(select id from feedbackmodules where address = 2),8,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',500,100,0,0,null,(select id from feedbackmodules where address = 2),6,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',500,140,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',500,380,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',500,420,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',500,460,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',500,500,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',540,20,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',540,60,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R180','CENTER',540,180,0,0,null,(select id from feedbackmodules where address = 2),1,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R0','CENTER',540,240,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',540,380,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',540,420,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',540,500,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',580,20,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',580,60,0,0,null,(select id from feedbackmodules where address = 2),7,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',580,100,0,0,null,(select id from feedbackmodules where address = 2),5,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',580,180,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',580,380,0,0,null,(select id from feedbackmodules where address = 1),7,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',600,460,0,0,null,(select id from feedbackmodules where address = 1),4,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',620,100,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R180','CENTER',620,260,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',620,380,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',620,420,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R180','LEFT',640,40,0,0,(select id from solenoidaccessories where address = 13),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',660,100,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',660,140,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',660,180,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R0','CENTER',660,460,0,0,(select id from solenoidaccessories where address = 23),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R0','CENTER',660,500,0,0,(select id from solenoidaccessories where address = 21),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',680,260,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R90','CENTER',700,80,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',720,180,0,0,null,(select id from feedbackmodules where address = 2),9,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',740,260,null,null,null,null,null,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R180','LEFT',760,40,0,0,(select id from solenoidaccessories where address = 11),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R180','RIGHT',760,480,0,0,(select id from solenoidaccessories where address = 3),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R0','CENTER',780,140,0,0,(select id from solenoidaccessories where address = 27),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R0','CENTER',780,180,0,0,(select id from solenoidaccessories where address = 25),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',780,260,null,null,null,null,null,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.SignalTile','R180','CENTER',780,420,0,0,(select id from solenoidaccessories where address = 36),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R0','CENTER',820,20,0,0,null,(select id from feedbackmodules where address = 3),5,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R180','CENTER',820,140,0,0,null,(select id from feedbackmodules where address = 2),12,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R180','CENTER',820,180,0,0,null,(select id from feedbackmodules where address = 2),10,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',820,260,null,null,null,null,null,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',840,420,0,0,null,(select id from feedbackmodules where address = 1),2,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',860,500,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R180','LEFT',880,160,0,0,(select id from solenoidaccessories where address = 12),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',900,420,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',900,500,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.OccupancyDetectorTile','R0','CENTER',920,20,0,0,null,(select id from feedbackmodules where address = 3),6,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R0','CENTER',940,160,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R90','CENTER',940,400,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.FeedbackPort','R90','CENTER',960,200,0,0,null,(select id from feedbackmodules where address = 1),1,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',960,360,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.TurnoutTile','R270','RIGHT',980,260,0,0,(select id from solenoidaccessories where address = 2),null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R0','CENTER',980,500,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.DiagonalTrack','R90','CENTER',1020,480,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',1040,240,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',1040,360,0,0,null,null,0,null);
-
-INSERT INTO LAYOUTTILES (ID,TILETYPE,ROTATION,DIRECTION,X,Y,OFFSETX,OFFSETY,SOAC_ID,FEMO_ID,PORT,LTGR_ID) 
-VALUES (lati_seq.nextval,'lan.wervel.jcs.ui.layout.tiles.StraightTrack','R90','CENTER',1040,400,0,0,null,null,0,null);
-
-Commit;

@@ -42,36 +42,41 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
     private SignalType signalType;
     private Point center;
     private String id;
-    private BigDecimal beanId;
+
+    private BigDecimal accessoryBeanId;
+    private BigDecimal sensorBeanId;
 
     private List<TileBean> neighbours;
 
-    private JCSEntity bean;
+    //private JCSEntity bean;
+    private AccessoryBean accessoryBean;
+    private SensorBean sensorBean;
 
     //THe default width and height of a Tile is 40x40 px
     public static final int DEFAULT_WIDTH = 40;
     public static final int DEFAULT_HEIGHT = 40;
 
     public TileBean() {
-        this(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(0, 0), null, null, null);
+        this(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(0, 0), null, null, null, null);
     }
 
     public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id) {
-        this(tileType, orientation, direction, new Point(x, y), id, null, null);
+        this(tileType, orientation, direction, new Point(x, y), id, null, null, null);
     }
 
-    public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id, SignalType signalType, BigDecimal sensorBeanId) {
-        this(tileType, orientation, direction, new Point(x, y), id, signalType, sensorBeanId);
+    public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id, SignalType signalType, BigDecimal accessoryBeanId, BigDecimal sensorBeanId) {
+        this(tileType, orientation, direction, new Point(x, y), id, signalType, null, sensorBeanId);
     }
 
-    public TileBean(TileType tileType, Orientation orientation, Direction direction, Point center, String id, SignalType signalType, BigDecimal sensorBeanId) {
+    public TileBean(TileType tileType, Orientation orientation, Direction direction, Point center, String id, SignalType signalType, BigDecimal accessoryBeanId, BigDecimal sensorBeanId) {
         this.tileType = tileType;
         this.orientation = orientation;
         this.direction = direction;
         this.center = center;
         this.id = id;
         this.signalType = signalType;
-        this.beanId = sensorBeanId;
+        this.accessoryBeanId = accessoryBeanId;
+        this.sensorBeanId = sensorBeanId;
 
         neighbours = new ArrayList<>();
     }
@@ -158,20 +163,52 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         this.center = p;
     }
 
-    public BigDecimal getBeanId() {
-        return beanId;
-    }
-
-    public void setBeanId(BigDecimal beanId) {
-        this.beanId = beanId;
-    }
-
     public JCSEntity getEntityBean() {
-        return bean;
+        switch (this.tileType) {
+            case SENSOR:
+                return this.sensorBean;
+            case SIGNAL:
+                return this.accessoryBean;
+            case SWITCH:
+                return this.accessoryBean;
+            case CROSS:
+                return this.accessoryBean;
+
+            default:
+                return null;
+        }
     }
 
-    public void setEntityBean(JCSEntity bean) {
-        this.bean = bean;
+    public BigDecimal getAccessoryBeanId() {
+        return accessoryBeanId;
+    }
+
+    public void setAccessoryBeanId(BigDecimal accessoryBeanId) {
+        this.accessoryBeanId = accessoryBeanId;
+    }
+
+    public BigDecimal getSensorBeanId() {
+        return sensorBeanId;
+    }
+
+    public void setSensorBeanId(BigDecimal sensorBeanId) {
+        this.sensorBeanId = sensorBeanId;
+    }
+
+    public AccessoryBean getAccessoryBean() {
+        return accessoryBean;
+    }
+
+    public void setAccessoryBean(AccessoryBean accessoryBean) {
+        this.accessoryBean = accessoryBean;
+    }
+
+    public SensorBean getSensorBean() {
+        return sensorBean;
+    }
+
+    public void setSensorBean(SensorBean sensorBean) {
+        this.sensorBean = sensorBean;
     }
 
     @Override
@@ -194,7 +231,8 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         hash = 11 * hash + Objects.hashCode(this.signalType);
         hash = 11 * hash + Objects.hashCode(this.center);
         hash = 11 * hash + Objects.hashCode(this.id);
-        hash = 11 * hash + Objects.hashCode(this.beanId);
+        hash = 11 * hash + Objects.hashCode(this.accessoryBeanId);
+        hash = 11 * hash + Objects.hashCode(this.sensorBeanId);
         return hash;
     }
 
@@ -213,7 +251,10 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        if (!Objects.equals(this.beanId, other.beanId)) {
+        if (!Objects.equals(this.accessoryBeanId, other.accessoryBeanId)) {
+            return false;
+        }
+        if (!Objects.equals(this.sensorBeanId, other.sensorBeanId)) {
             return false;
         }
         if (this.tileType != other.tileType) {

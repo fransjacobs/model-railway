@@ -209,9 +209,8 @@ public class H2TrackService implements TrackService {
 //        return this.controllerService != null && this.controllerService.isConnected();
 //
 //    }
-
     @Override
-    public boolean connect() {
+    public final boolean connect() {
         JCS.logProgress("Connecting to Central Station");
         String controllerImpl = System.getProperty("CS3");
         if (controllerService == null) {
@@ -470,6 +469,7 @@ public class H2TrackService implements TrackService {
 
     @Override
     public TileBean persist(TileBean tile) {
+
         if (tile.getEntityBean() != null) {
             TileType tileType = tile.getTileType();
 
@@ -479,18 +479,20 @@ public class H2TrackService implements TrackService {
                 case CURVED:
                     break;
                 case SWITCH:
-                    AccessoryBean turnout = (AccessoryBean) tile.getEntityBean();
-                    tile.setBeanId(this.acceDAO.persist(turnout));
+                    AccessoryBean turnout = (AccessoryBean) tile.getAccessoryBean();
+                    tile.setAccessoryBeanId(this.acceDAO.persist(turnout));
                     break;
                 case CROSS:
+                    AccessoryBean cross = (AccessoryBean) tile.getAccessoryBean();
+                    tile.setAccessoryBeanId(this.acceDAO.persist(cross));
                     break;
                 case SIGNAL:
-                    AccessoryBean signal = (AccessoryBean) tile.getEntityBean();
-                    tile.setBeanId(this.acceDAO.persist(signal));
+                    AccessoryBean signal = (AccessoryBean) tile.getAccessoryBean();
+                    tile.setAccessoryBeanId(this.acceDAO.persist(signal));
                     break;
                 case SENSOR:
-                    SensorBean sensor = (SensorBean) tile.getEntityBean();
-                    tile.setBeanId(this.sensDAO.persist(sensor));
+                    SensorBean sensor = (SensorBean) tile.getSensorBean();
+                    tile.setSensorBeanId(this.sensDAO.persist(sensor));
                     break;
                 case BLOCK:
                     break;
@@ -761,8 +763,7 @@ public class H2TrackService implements TrackService {
     public void removeVelocityListener(VelocityListener listener) {
         this.velocityListeners.remove(listener);
     }
-    
-    
+
     private class SensorMessageEventListener implements SensorMessageListener {
 
         private final H2TrackService trackService;

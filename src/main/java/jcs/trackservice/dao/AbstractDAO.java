@@ -128,12 +128,12 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         switch (cd.getClass().getSimpleName()) {
             //case "Locomotive":
             //    return "loco_seq";
-            case "Sensor":
-                return "sens_seq";
-            case "Switch":
-                return "soac_seq";
-            case "Signal":
-                return "soac_seq";
+            //case "Sensor":
+            //    return "sens_seq";
+            //case "Switch":
+            //    return "soac_seq";
+            //case "Signal":
+            //    return "soac_seq";
             //case "JCSProperty":
             //    return "prop_seq";
             case "LayoutTile":

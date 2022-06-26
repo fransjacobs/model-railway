@@ -133,12 +133,12 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
         if (this.tileBean == null) {
             this.tileBean = this.getTileBean();
         }
-        this.tileBean.setEntityBean(accessoryBean);
+        this.tileBean.setAccessoryBean(accessoryBean);
     }
 
     @Override
     public void onChange(AccessoryMessageEvent event) {
-        if (this.getTileBean().getBeanId() != null && this.getTileBean().getBeanId().equals(event.getAccessoryBean().getId())) {
+        if (this.getTileBean().getAccessoryBeanId() != null && this.getTileBean().getAccessoryBeanId().equals(event.getAccessoryBean().getId())) {
             setValue(event.getAccessoryBean().getAccessoryValue());
             repaintTile();
         }

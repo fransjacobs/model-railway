@@ -46,28 +46,10 @@ public class JCSPropertiesDAOTest {
     public void setUp() {
 
         JCSProperty p0 = new JCSProperty("CS3", "jcs.controller.cs3.MarklinCS3");
-        JCSProperty p1 = new JCSProperty("M6050-demo", "jcs.controller.m6050.M6050DemoController");
-        JCSProperty p2 = new JCSProperty("M6050-local", "jcs.controller.m6050.M6050Controller");
-        JCSProperty p3 = new JCSProperty("M6050-remote", "ControllerService");
-        JCSProperty p4 = new JCSProperty("S88-CS3", "jcs.controller.cs3.MarklinCS3");
-        JCSProperty p5 = new JCSProperty("S88-demo", "jcs.feedback.DemoFeedbackService");
-        JCSProperty p6 = new JCSProperty("S88-module-count", "3");
-        JCSProperty p7 = new JCSProperty("S88-remote", "FeedbackService");
-        JCSProperty p8 = new JCSProperty("activeControllerService", "CS3");
-        JCSProperty p9 = new JCSProperty("activeFeedbackService", "CS3FeedbackService");
         JCSProperty p10 = new JCSProperty("k1", "v1");
         JCSProperty p11 = new JCSProperty("k2", "v2");
 
         jcsPropertyList.add(p0);
-        jcsPropertyList.add(p1);
-        jcsPropertyList.add(p2);
-        jcsPropertyList.add(p3);
-        jcsPropertyList.add(p4);
-        jcsPropertyList.add(p5);
-        jcsPropertyList.add(p6);
-        jcsPropertyList.add(p7);
-        jcsPropertyList.add(p8);
-        jcsPropertyList.add(p9);
         jcsPropertyList.add(p10);
         jcsPropertyList.add(p11);
     }
@@ -86,7 +68,7 @@ public class JCSPropertiesDAOTest {
         System.out.println("find");
         String key = "k2";
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
-        JCSProperty expResult = jcsPropertyList.get(11);
+        JCSProperty expResult = jcsPropertyList.get(2);
         JCSProperty result = instance.find(key);
         assertEquals(expResult, result);
     }

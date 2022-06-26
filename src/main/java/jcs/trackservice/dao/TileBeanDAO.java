@@ -39,8 +39,8 @@ import org.tinylog.Logger;
  */
 public class TileBeanDAO extends AbstractDAO<TileBean> {
 
-    private static final String INS_TILE_STMT = "insert into tiles(tileType,orientation,direction,x,y,signalType,beanid,id) values(?,?,?,?,?,?,?,?)";
-    private static final String UPD_TILE_STMT = "update tiles set tileType = ?,orientation = ?,direction = ?,x = ?,y = ?, signalType = ?, beanid = ? where id = ?";
+    private static final String INS_TILE_STMT = "insert into tiles(tileType,orientation,direction,x,y,signalType,accessoryid,sensorid,id) values(?,?,?,?,?,?,?,?,?)";
+    private static final String UPD_TILE_STMT = "update tiles set tileType = ?,orientation = ?,direction = ?,x = ?,y = ?, signalType = ?, accessoryid = ?, sensorid = ? where id = ?";
 
     public TileBeanDAO() {
         super();
@@ -58,10 +58,12 @@ public class TileBeanDAO extends AbstractDAO<TileBean> {
         Integer x = rs.getInt("X");
         Integer y = rs.getInt("Y");
         String st = rs.getString("SIGNALTYPE");
-        BigDecimal sensorId = rs.getBigDecimal("BEANID");
+        BigDecimal sensorId = rs.getBigDecimal("SENSORID");
+        BigDecimal accessoryId = rs.getBigDecimal("ACCESSORYID");
+        
         SignalType signalType = SignalType.get(st);
 
-        TileBean tb = new TileBean(tileType, orientation, direction, x, y, id, signalType, sensorId);
+        TileBean tb = new TileBean(tileType, orientation, direction, x, y, id, signalType, accessoryId, sensorId);
         return tb;
     }
 
@@ -77,13 +79,18 @@ public class TileBeanDAO extends AbstractDAO<TileBean> {
         } else {
             ps.setNull(6, Types.VARCHAR);
         }
-        if (tileBean.getBeanId() != null) {
-            ps.setBigDecimal(7, tileBean.getBeanId());
+        if (tileBean.getAccessoryBeanId() != null) {
+            ps.setBigDecimal(7, tileBean.getAccessoryBeanId());
         } else {
             ps.setNull(7, Types.BIGINT);
         }
+        if (tileBean.getSensorBeanId() != null) {
+            ps.setBigDecimal(8, tileBean.getSensorBeanId());
+        } else {
+            ps.setNull(8, Types.BIGINT);
+        }
 
-        ps.setString(8, tileBean.getId());
+        ps.setString(9, tileBean.getId());
     }
 
     @Override

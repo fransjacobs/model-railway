@@ -87,23 +87,23 @@ public class LayoutUtil {
             case CURVED:
                 break;
             case SWITCH:
-                if (tileBean.getBeanId() != null) {
-                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getBeanId()));
+                if (tileBean.getAccessoryBeanId() != null) {
+                    tileBean.setAccessoryBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getAccessoryBeanId()));
                 }
                 break;
             case CROSS:
-                if (tileBean.getBeanId() != null) {
-                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getBeanId()));
+                if (tileBean.getAccessoryBeanId() != null) {
+                    tileBean.setAccessoryBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getAccessoryBeanId()));
                 }
                 break;
             case SIGNAL:
-                if (tileBean.getBeanId() != null) {
-                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getBeanId()));
+                if (tileBean.getAccessoryBeanId() != null) {
+                    tileBean.setAccessoryBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getAccessoryBeanId()));
                 }
                 break;
             case SENSOR:
-                if (tileBean.getBeanId() != null) {
-                    tileBean.setEntityBean(TrackServiceFactory.getTrackService().getSensor(tileBean.getBeanId()));
+                if (tileBean.getSensorBeanId() != null) {
+                    tileBean.setSensorBean(TrackServiceFactory.getTrackService().getSensor(tileBean.getSensorBeanId()));
                 }
                 break;
             case BLOCK:

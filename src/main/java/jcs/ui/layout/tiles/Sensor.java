@@ -116,7 +116,7 @@ public class Sensor extends Straight implements Tile, SensorListener {
         if (this.tileBean == null) {
             this.tileBean = this.getTileBean();
         }
-        this.tileBean.setEntityBean(sensorBean);
+        this.tileBean.setSensorBean(sensorBean);
     }
 
     @Override
