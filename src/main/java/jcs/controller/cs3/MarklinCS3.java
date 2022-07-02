@@ -214,7 +214,7 @@ public class MarklinCS3 implements MarklinController {
                 JCS.logProgress("Can't connect with Central Station!");
             }
         }
-            Logger.trace("Connected: "+connected);
+        Logger.trace("Connected: " + connected);
 
         return connected;
     }
@@ -379,12 +379,15 @@ public class MarklinCS3 implements MarklinController {
     @Override
     public void disconnect() {
         try {
-            connection.close();
-            connected = false;
+            if (connection != null) {
+                connection.close();
+                connected = false;
+            }
+
             executor.shutdown();
             executor = null;
             connection = null;
-            
+
             CS3ConnectionFactory.disconnectAll();
         } catch (Exception ex) {
             Logger.error(ex);

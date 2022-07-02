@@ -73,7 +73,6 @@ public class DisplayLayoutPanel extends JPanel {
         setMinimumSize(new Dimension(1000, 160));
         setOpaque(false);
         setPreferredSize(new Dimension(1000, 775));
-        setSize(new Dimension(1125, 775));
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
                 formComponentResized(evt);

@@ -42,6 +42,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.JCS;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.ui.layout.enums.Mode;
 import org.tinylog.Logger;
@@ -114,14 +115,14 @@ public class LayoutPanel extends JPanel {
         saveBtn = new JButton();
         loadBtn = new JButton();
         routeBtn = new JButton();
-        filler1 = new Box.Filler(new Dimension(76, 0), new Dimension(76, 0), new Dimension(76, 32767));
+        filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         selectBtn = new JButton();
         addBtn = new JButton();
         deleteBtn = new JButton();
         repaintBtn = new JButton();
-        filler3 = new Box.Filler(new Dimension(19, 0), new Dimension(19, 0), new Dimension(19, 32767));
+        filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         gridBtn = new JToggleButton();
-        filler2 = new Box.Filler(new Dimension(38, 0), new Dimension(38, 0), new Dimension(38, 32767));
+        filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         straightBtn = new JToggleButton();
         curvedBtn = new JToggleButton();
         blockBtn = new JToggleButton();
@@ -131,7 +132,7 @@ public class LayoutPanel extends JPanel {
         rightSwitchBtn = new JToggleButton();
         crossLBtn = new JToggleButton();
         crossRBtn = new JToggleButton();
-        filler4 = new Box.Filler(new Dimension(38, 0), new Dimension(38, 0), new Dimension(38, 32767));
+        filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         moveBtn = new JButton();
         flipVerticalBtn = new JButton();
         flipHorizontalBtn = new JButton();
@@ -226,8 +227,14 @@ public class LayoutPanel extends JPanel {
         setOpaque(false);
         setPreferredSize(new Dimension(1000, 775));
         addComponentListener(new ComponentAdapter() {
+            public void componentHidden(ComponentEvent evt) {
+                formComponentHidden(evt);
+            }
             public void componentResized(ComponentEvent evt) {
                 formComponentResized(evt);
+            }
+            public void componentShown(ComponentEvent evt) {
+                formComponentShown(evt);
             }
         });
         setLayout(new BorderLayout());
@@ -749,10 +756,26 @@ public class LayoutPanel extends JPanel {
 
     private void routeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
         Logger.debug("Start Routing...");
-
         this.canvas.routeLayout();
-
     }//GEN-LAST:event_routeBtnActionPerformed
+
+    private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
+        Logger.trace("HIDDEN");
+        if (JCS.getJCSFrame() != null) {
+            JCS.getJCSFrame().hideExtraToolbar(this.toolBar);
+        }
+    }//GEN-LAST:event_formComponentHidden
+
+
+    private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        Logger.trace("SHOWN");
+        if (JCS.getJCSFrame() != null) {
+            topPanel.remove(this.toolBar);
+            this.remove(topPanel);
+            this.doLayout();
+            JCS.getJCSFrame().showExtraToolbar(this.toolBar);
+        }
+    }//GEN-LAST:event_formComponentShown
 
     private void setTileType(TileType tileType) {
         this.tileType = tileType;

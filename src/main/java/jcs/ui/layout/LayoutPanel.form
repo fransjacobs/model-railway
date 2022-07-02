@@ -124,7 +124,9 @@
     </Property>
   </Properties>
   <Events>
+    <EventHandler event="componentHidden" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="formComponentHidden"/>
     <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="formComponentResized"/>
+    <EventHandler event="componentShown" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="formComponentShown"/>
   </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -250,13 +252,13 @@
             <Component class="javax.swing.Box$Filler" name="filler1">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[76, 32767]"/>
+                  <Dimension value="[20, 32767]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[76, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[76, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -358,13 +360,13 @@
             <Component class="javax.swing.Box$Filler" name="filler3">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[19, 32767]"/>
+                  <Dimension value="[20, 32767]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[19, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[19, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -391,13 +393,13 @@
             <Component class="javax.swing.Box$Filler" name="filler2">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[38, 32767]"/>
+                  <Dimension value="[20, 32767]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[38, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[38, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -666,13 +668,13 @@
             <Component class="javax.swing.Box$Filler" name="filler4">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[38, 32767]"/>
+                  <Dimension value="[20, 32767]"/>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[38, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[38, 0]"/>
+                  <Dimension value="[20, 0]"/>
                 </Property>
               </Properties>
               <AuxValues>
