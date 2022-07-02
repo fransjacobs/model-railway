@@ -33,7 +33,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertLocoData() {
         Logger.debug("Inserting Locomotives...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("INSERT INTO LOCOMOTIVES (ID,NAME,PREVIOUSNAME,UID,MFXUID,ADDRESS,ICON,DECODERTYPE,MFXSID,TACHOMAX,VMIN,ACCELERATIONDELAY,BRAKEDELAY,VOLUME,SPM,VELOCITY,DIRECTION,MFXTYPE,BLOCKS) "
@@ -97,7 +97,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertLocoFuncData() {
         Logger.debug("Inserting Locomotive Functions...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("INSERT INTO FUNCTIONS (LOCOID,NUMBER,TYPE,FVALUE) VALUES (2,0,1,1)");
@@ -130,7 +130,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertTurnoutData() {
         Logger.debug("Inserting Turnouts...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("INSERT INTO ACCESSORIES (ID,ADDRESS,NAME,TYPE,POSITION,SWITCHTIME,DECODERTYPE,DECODER) VALUES (1,1,'W 1R','rechtsweiche',1,200,'mm2','ein_alt')");
@@ -187,11 +187,10 @@ public class DAOTestHelper extends DatabaseCreator {
 //            Logger.error(ex);
 //        }
 //    }
-
     public static void insertSensorData() {
         Logger.debug("Inserting Sensors...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO sensors (name,deviceid,contactid,status,previousstatus,millis,lastupdated) "
                         + "VALUES('M1P1',65,1,0,0,0,null)");
@@ -226,11 +225,10 @@ public class DAOTestHelper extends DatabaseCreator {
 //            Logger.error(ex);
 //        }
 //    }
-
     public static void insertTileData() {
         Logger.debug("Inserting TileBeans...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO TILES(TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ID) "
                         + "VALUES('Switch','East','Left', 30, 30,null,'sw-1')");
@@ -248,10 +246,68 @@ public class DAOTestHelper extends DatabaseCreator {
         }
     }
 
+    public static void insertTileLayoutData() {
+        Logger.debug("Inserting Layout TileBeans...");
+        try {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+                Statement stmt = c.createStatement();
+                stmt.executeUpdate("INSERT INTO TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES "
+                        + "('bk-2','Block','East','Center',420,140,NULL,NULL,NULL),"
+                        + "('st-1','Straight','East','Center',300,180,NULL,NULL,NULL),"
+                        + "('ct-2','Curved','East','Center',260,140,NULL,NULL,NULL),"
+                        + "('se-6','Sensor','West','Center',500,380,NULL,NULL,NULL),"
+                        + "('st-3','Straight','East','Center',300,140,NULL,NULL,NULL),"
+                        + "('st-4','Straight','East','Center',540,140,NULL,NULL,NULL),"
+                        + "('st-7','Straight','South','Center',180,220,NULL,NULL,NULL),"
+                        + "('se-1','Sensor','East','Center',340,180,NULL,NULL,NULL),"
+                        + "('st-20','Straight','West','Center',620,380,NULL,NULL,NULL),"
+                        + "('se-4','Sensor','East','Center',340,140,NULL,NULL,NULL) ");
+
+                stmt.executeUpdate("INSERT INTO JCS.TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES "
+                        + "('st-19','Straight','West','Center',580,380,NULL,NULL,NULL),"
+                        + "('sw-1','Switch','West','Left',260,180,NULL,NULL,NULL),"
+                        + "('se-5','Sensor','West','Center',340,380,NULL,NULL,NULL),"
+                        + "('ct-5','Curved','North','Center',180,380,NULL,NULL,NULL),"
+                        + "('st-18','Straight','West','Center',540,380,NULL,NULL,NULL),"
+                        + "('st-2','Straight','East','Center',540,180,NULL,NULL,NULL),"
+                        + "('ct-3','Curved','East','Center',180,180,NULL,NULL,NULL),"
+                        + "('st-10','Straight','South','Center',180,340,NULL,NULL,NULL),"
+                        + "('st-15','Straight','West','Center',220,380,NULL,NULL,NULL),"
+                        + "('st-12','Straight','South','Center',660,260,NULL,NULL,NULL)");
+
+                stmt.executeUpdate("INSERT INTO JCS.TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES "
+                        + "('st-16','Straight','West','Center',260,380,NULL,NULL,NULL),"
+                        + "('st-9','Straight','South','Center',180,300,NULL,NULL,NULL),"
+                        + "('bk-3','Block','West','Center',420,380,NULL,NULL,NULL),"
+                        + "('st-6','Straight','East','Center',220,180,NULL,NULL,NULL),"
+                        + "('se-3','Sensor','East','Center',500,140,NULL,NULL,NULL),"
+                        + "('st-8','Straight','South','Center',180,260,NULL,NULL,NULL),"
+                        + "('st-11','Straight','South','Center',660,220,NULL,NULL,NULL),"
+                        + "('bk-1','Block','East','Center',420,180,NULL,NULL,NULL),"
+                        + "('st-13','Straight','South','Center',660,300,NULL,NULL,NULL),"
+                        + "('se-2','Sensor','East','Center',500,180,NULL,NULL,NULL)");
+
+                stmt.executeUpdate("INSERT INTO JCS.TILES (ID,TILETYPE,ORIENTATION,DIRECTION,X,Y,SIGNALTYPE,ACCESSORYID,SENSORID) VALUES "
+                        + "('ct-6','Curved','West','Center',660,380,NULL,NULL,NULL),"
+                        + "('st-14','Straight','South','Center',660,340,NULL,NULL,NULL),"
+                        + "('ct-4','Curved','South','Center',660,180,NULL,NULL,NULL),"
+                        + "('sw-2','Switch','East','Right',580,180,NULL,NULL,NULL),"
+                        + "('st-5','Straight','East','Center',620,180,NULL,NULL,NULL),"
+                        + "('st-17','Straight','West','Center',300,380,NULL,NULL,NULL),"
+                        + "('ct-1','Curved','South','Center',580,140,NULL,NULL,NULL)");
+                
+                c.commit();
+            }
+        } catch (SQLException ex) {
+            Logger.error(ex);
+        }
+
+    }
+
     public static void insertDriveWayData() {
         Logger.debug("Inserting DriveWays...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO DRIVEWAYS (ID,ADDRESS,NAME,DESCRIPTION,FROM_LATI_ID,TO_LATI_ID,LOCO_ID,ACTIVE,RESERVED,OCCUPIED) "
                         + "VALUES (drwa_seq.nextval,1,'Blk 1','Block 1',null,null,null,1,0,0)");
@@ -266,7 +322,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertRouteData() {
         Logger.debug("Inserting Routes...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO ROUTES (ID,ADDRESS,NAME,DESCRIPTION,DRWA_ID,LATI_ID) "
                         + "VALUES (rout_seq.nextval,1,'Rt 1','Route 1',1,1)");
@@ -281,7 +337,7 @@ public class DAOTestHelper extends DatabaseCreator {
     public static void insertJCSPropertiesData() {
         Logger.debug("Inserting JCSProperties...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
                 stmt.executeUpdate("INSERT INTO JCSPROPERTIES (PKEY,PVALUE) VALUES ('k1','v1')");
 

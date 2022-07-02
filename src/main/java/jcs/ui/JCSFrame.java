@@ -18,6 +18,7 @@
  */
 package jcs.ui;
 
+import com.formdev.flatlaf.util.SystemInfo;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -57,7 +58,6 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import jcs.JCS;
 import jcs.controller.cs3.events.PowerEvent;
@@ -90,10 +90,23 @@ public class JCSFrame extends JFrame implements UICallback {
             this.quitMI.setVisible(false);
             this.optionsMI.setVisible(false);
             this.toolsMenu.setVisible(false);
-        }
 
-        init();
-        initKeyStrokes();
+            if (SystemInfo.isMacFullWindowContentSupported) {
+                this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+                this.getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
+                this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+                //this.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
+            }
+
+            init();
+
+            if (SystemInfo.isMacFullWindowContentSupported) {
+                //avoid overlap of the red/orange/green buttons and the window title
+                this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
+            }
+
+            initKeyStrokes();
+        }
     }
 
     private void init() {
@@ -750,7 +763,8 @@ public class JCSFrame extends JFrame implements UICallback {
 
     @Override
     public void handleAbout() {
-        ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
+        ImageIcon jcsIcon = new ImageIcon(JCSFrame.class
+                .getResource("/media/jcs-train-64.png"));
         JOptionPane.showMessageDialog(JCS.getJCSFrame(), "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
     }
 
@@ -764,6 +778,7 @@ public class JCSFrame extends JFrame implements UICallback {
         Logger.debug("refresh data...");
         //this.diagnosticPanel.refreshPanel();
         //this.overviewPanel.refreshPanel();
+
     }
 
     private class Powerlistener implements PowerEventListener {

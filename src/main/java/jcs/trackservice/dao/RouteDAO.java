@@ -48,28 +48,28 @@ public class RouteDAO extends AbstractDAO<Route> {
         BigDecimal latiId = rs.getBigDecimal("LATI_ID");
         BigDecimal id = rs.getBigDecimal("ID");
 
-        Route r = new Route(id, address, name, description, drwaId, latiId);
+        Route r = null;//new Route(id, address, name, description, drwaId, latiId);
         return r;
     }
 
     @Override
     protected void bind(PreparedStatement ps, Route route, boolean insert) throws SQLException {
-        ps.setInt(1, route.getAddress());
-        ps.setString(2, route.getName());
-        ps.setString(3, route.getDescription());
-
-        if (route.getDrwaId() == null) {
-            ps.setNull(4, Types.BIGINT);
-        } else {
-            ps.setBigDecimal(4, route.getDrwaId());
-        }
-        if (route.getLatiId() == null) {
-            ps.setNull(5, Types.BIGINT);
-        } else {
-            ps.setBigDecimal(5, route.getLatiId());
-        }
-
-        ps.setBigDecimal(6, route.getId());
+//        ps.setInt(1, route.getAddress());
+//        ps.setString(2, route.getName());
+//        ps.setString(3, route.getDescription());
+//
+//        if (route.getDrwaId() == null) {
+//            ps.setNull(4, Types.BIGINT);
+//        } else {
+//            ps.setBigDecimal(4, route.getDrwaId());
+//        }
+//        if (route.getLatiId() == null) {
+//            ps.setNull(5, Types.BIGINT);
+//        } else {
+//            ps.setBigDecimal(5, route.getLatiId());
+//        }
+//
+//        ps.setBigDecimal(6, route.getId());
     }
 
     @Override
@@ -102,8 +102,8 @@ public class RouteDAO extends AbstractDAO<Route> {
     }
 
     @Override
-    public BigDecimal persist(Route route) {
-        Route dw = this.find(route.getAddress());
+    public String persist(Route route) {
+        Route dw = null; //this.find(route.getAddress());
 
         String statement;
         if (dw == null) {

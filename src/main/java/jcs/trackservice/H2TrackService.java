@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.JCS;
-import jcs.controller.cs3.can.parser.StatusDataConfigParser;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.JCSProperty;
@@ -44,7 +43,6 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.dao.JCSPropertiesDAO;
-import jcs.trackservice.dao.TrackPowerDAO;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
@@ -90,8 +88,6 @@ public class H2TrackService implements TrackService {
     private final SensorDAO sensDAO;
     private final TileBeanDAO tileDAO;
 
-    private final TrackPowerDAO trpoDAO;
-
     private MarklinController controllerService;
 
     private final List<SensorListener> sensorListeners;
@@ -103,7 +99,7 @@ public class H2TrackService implements TrackService {
 
     private final Properties jcsProperties;
 
-    private StatusDataConfigParser controllerInfo;
+    //private StatusDataConfigParser controllerInfo;
 
     private HashMap<String, Image> imageCache;
     private HashMap<String, Image> functionImageCache;
@@ -123,8 +119,6 @@ public class H2TrackService implements TrackService {
         locoDAO = new LocomotiveBeanDAO();
         funcDAO = new FunctionBeanDAO();
         acceDAO = new AccessoryBeanDAO();
-
-        trpoDAO = new TrackPowerDAO();
         tileDAO = new TileBeanDAO();
 
         sensorListeners = new LinkedList<>();
@@ -136,10 +130,13 @@ public class H2TrackService implements TrackService {
         retrieveJCSProperties();
 
         if (aquireControllerService) {
-            connect();
+            if (System.getProperty("trackServiceSkipControllerInit", "false").equals("true")) {
+                Logger.info("Skipping controller initialization...");
+            } else {
+                connect();
+                Logger.trace(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
+            }
         }
-
-        Logger.trace(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
     }
 
     private void retrieveJCSProperties() {
@@ -213,6 +210,7 @@ public class H2TrackService implements TrackService {
     public final boolean connect() {
         JCS.logProgress("Connecting to Central Station");
         String controllerImpl = System.getProperty("CS3");
+
         if (controllerService == null) {
             try {
                 this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();

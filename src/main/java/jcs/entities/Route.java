@@ -18,59 +18,121 @@
  */
 package jcs.entities;
 
+import java.awt.Color;
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
-public class Route extends ControllableDevice {
+public class Route implements JCSEntity, Serializable {
 
-    BigDecimal drwaId;
-    BigDecimal latiId;
+    private String id;
+    private String fromId;
+    private String toId;
+    private boolean locked;
+    private boolean blocked;
+    private Color color;
+    private BigDecimal locoId;
+
+    private List<String> elementIds;
+
+    private List<RouteElement> elements;
 
     public Route() {
-        this(null, null, null, null, null, null);
     }
 
-    public Route(BigDecimal id, Integer address, BigDecimal drwaId, BigDecimal latiId) {
-        this(id, address, null, null, drwaId, latiId);
+    public Route(String fromId, String toId, List<String> elementIds) {
+        this.fromId = fromId;
+        this.toId = toId;
+        this.id = fromId + "|" + toId;
+
+        this.elementIds = elementIds;
     }
 
-    public Route(Integer address, BigDecimal drwaId, BigDecimal latiId) {
-        this(null, address, null, null, drwaId, latiId);
+    @Override
+    public String getId() {
+        return this.id;
     }
 
-    public Route(Integer address, String name, String description, BigDecimal drwaId, BigDecimal latiId) {
-        this(null, address, name, description, drwaId, latiId);
+    @Override
+    public void setId(Object id) {
+        this.id = (String) id;
     }
 
-    public Route(BigDecimal id, Integer address, String name, String description, BigDecimal drwaId, BigDecimal latiId) {
-        super(id, address, name, description);
-        this.drwaId = drwaId;
-        this.latiId = latiId;
-
+    public String getFromId() {
+        return fromId;
     }
 
-    public BigDecimal getDrwaId() {
-        return drwaId;
+    public void setFromId(String fromId) {
+        this.fromId = fromId;
     }
 
-    public void setDrwaId(BigDecimal drwaId) {
-        this.drwaId = drwaId;
+    public String getToId() {
+        return toId;
     }
 
-    public BigDecimal getLatiId() {
-        return latiId;
+    public void setToId(String toId) {
+        this.toId = toId;
     }
 
-    public void setLatiId(BigDecimal latiId) {
-        this.latiId = latiId;
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public BigDecimal getLocoId() {
+        return locoId;
+    }
+
+    public void setLocoId(BigDecimal locoId) {
+        this.locoId = locoId;
+    }
+
+    public List<String> getElementIds() {
+        return elementIds;
+    }
+
+    public void setElementIds(List<String> elementIds) {
+        this.elementIds = elementIds;
+    }
+
+    public List<RouteElement> getElements() {
+        return elements;
+    }
+
+    public void setElements(List<RouteElement> elements) {
+        this.elements = elements;
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 17 * hash + Objects.hashCode(super.hashCode());
-        hash = 17 * hash + Objects.hashCode(this.drwaId);
-        hash = 17 * hash + Objects.hashCode(this.latiId);
+        hash = 79 * hash + Objects.hashCode(this.id);
+        hash = 79 * hash + Objects.hashCode(this.fromId);
+        hash = 79 * hash + Objects.hashCode(this.toId);
+        hash = 79 * hash + (this.locked ? 1 : 0);
+        hash = 79 * hash + (this.blocked ? 1 : 0);
+        hash = 79 * hash + Objects.hashCode(this.color);
+        hash = 79 * hash + Objects.hashCode(this.locoId);
         return hash;
     }
 
@@ -86,23 +148,47 @@ public class Route extends ControllableDevice {
             return false;
         }
         final Route other = (Route) obj;
-        if (!super.equals(other)) {
+        if (this.locked != other.locked) {
             return false;
         }
-        if (!Objects.equals(this.drwaId, other.drwaId)) {
+        if (this.blocked != other.blocked) {
             return false;
         }
-        return Objects.equals(this.latiId, other.latiId);
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.fromId, other.fromId)) {
+            return false;
+        }
+        if (!Objects.equals(this.toId, other.toId)) {
+            return false;
+        }
+        if (!Objects.equals(this.color, other.color)) {
+            return false;
+        }
+        return Objects.equals(this.locoId, other.locoId);
     }
 
     @Override
     public String toString() {
-        return "Route{" + "drwaId=" + drwaId + ", latiId=" + latiId + '}';
+        return "Route{" + "id=" + id + ", fromTileId=" + fromId + ", toTileId=" + toId + '}';
     }
 
     @Override
     public String toLogString() {
-        return toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Path: ");
+        sb.append(this.id);
+        sb.append(": ");
+        if (this.elementIds != null && !this.elementIds.isEmpty()) {
+            for (String e : this.elementIds) {
+                sb.append(e);
+                if(!e.equals(this.toId)) {
+                  sb.append(" -> ");
+                }
+            }
+        }
+        return sb.toString();
     }
 
 }

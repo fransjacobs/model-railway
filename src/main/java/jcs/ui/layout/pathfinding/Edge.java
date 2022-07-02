@@ -48,7 +48,7 @@ public class Edge {
 
     @Override
     public String toString() {
-        return "Edge (" + sourceId + "," + targetId + ") cost=" + cost;
+        return "Edge (" + sourceId + " -> " + targetId + ") distance: " + cost;
     }
 
 }

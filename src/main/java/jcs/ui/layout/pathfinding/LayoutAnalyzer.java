@@ -40,13 +40,58 @@ import org.tinylog.Logger;
  */
 public class LayoutAnalyzer {
 
+    private final Map<Point, Tile> tiles;
+    private final Map<Point, Tile> altTilesLookup;
+
+    private final Map<String, Tile> tileIdLookup;
     private final Map<String, Node> graph;
 
     public LayoutAnalyzer() {
+        this.tiles = new HashMap<>();
+        this.altTilesLookup = new HashMap<>();
+        this.tileIdLookup = new HashMap<>();
         this.graph = new HashMap<>();
     }
 
-    public String nodeIdForAdjacentSwitch(Tile tile, Tile adjacentSwitch) {
+    Tile findTile(String id) {
+        Tile result = this.tileIdLookup.get(id);
+        if (result == null) {
+            //check also with the original Id
+            String orgId;
+            if (id.endsWith("-") || id.endsWith("+")) {
+                orgId = id.substring(0, id.length() - 1);
+            } else {
+                orgId = id.replace("-G", "").replace("-R", "");
+            }
+            result = this.tileIdLookup.get(orgId);
+        }
+        return result;
+    }
+
+    Tile findTile(Point cp) {
+        Tile result = this.tiles.get(cp);
+
+        if (result == null) {
+            result = this.altTilesLookup.get(cp);
+            if (result != null) {
+            }
+        }
+        return result;
+    }
+
+    boolean isTile(Point cp) {
+        return findTile(cp) != null;
+    }
+
+    boolean isBlock(String id) {
+        Tile t = findTile(id);
+        if (t == null) {
+            return false;
+        }
+        return TileType.BLOCK.equals(t.getTileType());
+    }
+
+    String getNodeIdForAdjacentSwitch(Tile tile, Tile adjacentSwitch) {
         Orientation o = adjacentSwitch.getOrientation();
         int tileX = tile.getCenterX();
         int tileY = tile.getCenterY();
@@ -114,7 +159,7 @@ public class LayoutAnalyzer {
         }
     }
 
-    private void createSwitchNodes(Tile zwitch) {
+    private void addSwitchNodes(Tile zwitch) {
         List<String> nodeIds = new ArrayList<>();
         nodeIds.add(zwitch.getId());
         nodeIds.add(zwitch.getId() + "-G");
@@ -135,13 +180,13 @@ public class LayoutAnalyzer {
             if (this.graph.containsKey(id)) {
                 node = this.graph.get(id);
             } else {
-                node = new Node(id,true);
+                node = new Node(id, zwitch);
             }
 
             for (Point adj : adjacentPoints) {
                 //Check whether adjacent is tile
-                if (LayoutUtil.isTile(adj)) {
-                    Tile t = LayoutUtil.findTile(adj);
+                if (isTile(adj)) {
+                    Tile t = findTile(adj);
                     Point cp = t.getCenter();
                     //Determine the nodeids of the adjacent nodes
                     String nodeId;
@@ -158,7 +203,7 @@ public class LayoutAnalyzer {
                             break;
                         case SWITCH:
                             // As switch has 3 adjacent nodes, depending on the direction
-                            nodeId = nodeIdForAdjacentSwitch(zwitch, t);
+                            nodeId = getNodeIdForAdjacentSwitch(zwitch, t);
                             break;
                         default:
                             nodeId = t.getId();
@@ -169,17 +214,15 @@ public class LayoutAnalyzer {
                     node.addEdge(e1);
                     Logger.trace(e1);
 
-                    if(node.getId().endsWith("-G")) {
-                        Edge ec = new Edge(node.getId(), node.getId().replaceAll("-G",""), 0);
+                    if (node.getId().endsWith("-G")) {
+                        Edge ec = new Edge(node.getId(), node.getId().replaceAll("-G", ""), 0);
                         node.addEdge(ec);
                         Logger.trace(ec);
-                    } 
-                    else if(node.getId().endsWith("-R")) {
-                        Edge ec = new Edge(node.getId(), node.getId().replaceAll("-R",""), 0);
+                    } else if (node.getId().endsWith("-R")) {
+                        Edge ec = new Edge(node.getId(), node.getId().replaceAll("-R", ""), 0);
                         node.addEdge(ec);
                         Logger.trace(ec);
-                    } 
-                    else  {
+                    } else {
                         //Common! add the G and R
                         Edge eg = new Edge(node.getId(), node.getId() + "-G", 0);
                         node.addEdge(eg);
@@ -188,8 +231,6 @@ public class LayoutAnalyzer {
                         node.addEdge(er);
                         Logger.trace(er);
                     }
-
-                    //Common of a Switch has 3 edges.. sw-n -> adjent tile and sw-n -> sw-n-G and sw-n-R 
                 }
             }
             this.graph.put(id, node);
@@ -197,7 +238,7 @@ public class LayoutAnalyzer {
         }
     }
 
-    private void createBlockNodes(Tile block) {
+    private void addBlockNodes(Tile block) {
         //A block has 2 sides, a plus (+) and a minus (-) so 2 nodes
         List<String> nodeIds = new ArrayList<>();
         nodeIds.add(block.getId() + "+");
@@ -221,8 +262,8 @@ public class LayoutAnalyzer {
             }
 
             //Check whether adjacent is tile
-            if (LayoutUtil.isTile(adj)) {
-                Tile t = LayoutUtil.findTile(adj);
+            if (isTile(adj)) {
+                Tile t = findTile(adj);
                 Point cp = t.getCenter();
                 //Determine the nodeids of the adjacent nodes
                 String nodeId;
@@ -239,7 +280,7 @@ public class LayoutAnalyzer {
                         break;
                     case SWITCH:
                         // As switch has 3 adjacent nodes, depending on the direction
-                        nodeId = nodeIdForAdjacentSwitch(block, t);
+                        nodeId = getNodeIdForAdjacentSwitch(block, t);
                         break;
                     default:
                         nodeId = t.getId();
@@ -255,15 +296,15 @@ public class LayoutAnalyzer {
         }
     }
 
-    private void findEdgesFor(Node node) {
-        Tile tile = LayoutUtil.findTile(node.getId());
+    void findEdgesFor(Node node) {
+        Tile tile = findTile(node.getId());
         Point tcp = tile.getCenter();
         Set<Point> adjacentPoints = LayoutUtil.adjacentPointsFor(tile);
 
         //filter the points which do have a tile
         for (Point adj : adjacentPoints) {
-            if (LayoutUtil.isTile(adj)) {
-                Tile t = LayoutUtil.findTile(adj);
+            if (isTile(adj)) {
+                Tile t = findTile(adj);
                 Point cp = t.getCenter();
 
                 //Determine the nodeid of the adjacent node
@@ -281,7 +322,7 @@ public class LayoutAnalyzer {
                         break;
                     case SWITCH:
                         // As switch has 3 adjacent nodes, depending on the direction
-                        nodeId = nodeIdForAdjacentSwitch(tile, t);
+                        nodeId = getNodeIdForAdjacentSwitch(tile, t);
                         break;
                     default:
                         nodeId = t.getId();
@@ -294,15 +335,15 @@ public class LayoutAnalyzer {
         }
     }
 
-    private void createNode(Tile tile) {
+    private void addNode(Tile tile) {
         if (tile != null && tile.getTileType() != null) {
             TileType tt = tile.getTileType();
             switch (tt) {
                 case BLOCK:
-                    createBlockNodes(tile);
+                    addBlockNodes(tile);
                     break;
                 case SWITCH:
-                    createSwitchNodes(tile);
+                    addSwitchNodes(tile);
                     break;
                 default:
                     //Straight, Sensor, Signal, Curved
@@ -322,20 +363,22 @@ public class LayoutAnalyzer {
         }
     }
 
-    public List<List<Node>> getBlockToBlockNodes() {
+    public List<List<Node>> getAllBlockToBlockNodes() {
         List<List<Node>> fromToList = new ArrayList<>();
 
         Collection<Node> fromNodes = this.graph.values();
         Collection<Node> toNodes = this.graph.values();
 
         for (Node from : fromNodes) {
-            Tile fromTile = LayoutUtil.findTile(from.getId());
-            boolean fromBlock = LayoutUtil.isBlock(from.getId());
+            Tile fromTile = findTile(from.getId());
+            boolean fromBlock = isBlock(from.getId());
             String fromTileId = fromTile.getId();
+
             for (Node to : toNodes) {
-                Tile toTile = LayoutUtil.findTile(to.getId());
-                boolean toBlock = LayoutUtil.isBlock(to.getId());
+                Tile toTile = findTile(to.getId());
+                boolean toBlock = isBlock(to.getId());
                 String toTileId = toTile.getId();
+
                 if (fromBlock && toBlock && !from.getId().equals(to.getId()) && !fromTileId.equals(toTileId)) {
                     List<Node> fromTo = new ArrayList<>();
                     fromTo.add(from);
@@ -347,28 +390,42 @@ public class LayoutAnalyzer {
         return fromToList;
     }
 
-    public void buildGraph() {
-        graph.clear();
+    public Map<String, Node> buildGraph(Map<Point, Tile> tiles) {
+        this.tiles.clear();
+        this.altTilesLookup.clear();
+        this.tileIdLookup.clear();
+        this.graph.clear();
 
-        //Iterate through all the Tiles from the layout
-        Collection<Tile> tiles = LayoutUtil.loadLayout(true,false).values();
-        for (Tile tile : tiles) {
-            Logger.trace("Evaluating tile: " + tile.getTileType() + ": " + tile.getId()); // + " @ (" + tile.getCenterX() + "," + tile.getCenterY() + ")...");
+        this.tiles.putAll(tiles);
+        //Build Tile id lookup
+        for (Tile tile : this.tiles.values()) {
+            //To find tiles on point which are not the center
+            for (Point ap : tile.getAltPoints()) {
+                this.altTilesLookup.put(ap, tile);
+            }
+            this.tileIdLookup.put(tile.getId(), tile);
+        }
+
+        //Iterate through the tiles        
+        for (Tile tile : this.tiles.values()) {
+            Logger.trace("Evaluating tile: " + tile.getTileType() + ": " + tile.getId());
+            // + " @ (" + tile.getCenterX() + "," + tile.getCenterY() + ")...");
             //A Tile can result in one or more nodes
-            createNode(tile);
+            addNode(tile);
         }
         Logger.trace("Graph has " + graph.size() + " nodes...");
+        return graph;
     }
 
-    public Map<String, Node> getGraph() {
+    Map<String, Node> getGraph() {
         return graph;
     }
 
     public static void main(String[] a) {
-        System.setProperty("trackServiceAlwaysUseDemo", "true");
+        System.setProperty("trackServiceSkipControllerInit", "true");
 
         LayoutAnalyzer la = new LayoutAnalyzer();
-        la.buildGraph();
+        la.buildGraph(LayoutUtil.loadLayout(true, false));
 
         System.exit(0);
     }

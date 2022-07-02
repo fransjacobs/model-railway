@@ -66,7 +66,6 @@
                 <Property name="name" type="java.lang.String" value="" noResource="true"/>
                 <Property name="rowHeight" type="int" value="18"/>
                 <Property name="showGrid" type="boolean" value="true"/>
-                <Property name="showHorizontalLines" type="boolean" value="true"/>
               </Properties>
             </Component>
           </SubComponents>

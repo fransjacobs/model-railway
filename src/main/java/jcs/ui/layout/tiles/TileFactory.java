@@ -26,7 +26,6 @@ import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
-import jcs.entities.enums.SignalValue;
 import org.tinylog.Logger;
 import static jcs.entities.enums.TileType.CURVED;
 import jcs.ui.layout.Tile;

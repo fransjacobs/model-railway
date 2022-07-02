@@ -18,10 +18,8 @@
  */
 package jcs.controller.cs3;
 
-import jcs.controller.cs3.can.parser.DirectionInfo;
 import java.awt.Image;
 import java.util.List;
-import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
@@ -39,10 +37,17 @@ import static org.junit.Assert.*;
 public class MarklinCS3Test {
 
     private static MarklinCS3 instance;
+    private static boolean cs3Available = false;
 
     public MarklinCS3Test() {
         if (instance == null) {
             instance = new MarklinCS3();
+            pause(500);
+            cs3Available = instance.connect();
+
+            if (cs3Available) {
+                instance.disconnect();
+            }
         }
     }
 
@@ -61,18 +66,20 @@ public class MarklinCS3Test {
      */
     @Test
     public void testConnect() {
-        System.out.println("connect");
-        boolean expResult = true;
-        boolean result = instance.connect();
-        assertEquals(expResult, result);
-        result = instance.isConnected();
-        assertEquals(expResult, result);
+        if (cs3Available) {
+            System.out.println("connect");
+            boolean expResult = true;
+            boolean result = instance.connect();
+            assertEquals(expResult, result);
+            result = instance.isConnected();
+            assertEquals(expResult, result);
 
-        // When really connected the UID of devices should not be 0
-        assertTrue(instance.getCs3Uid() != 0);
-        assertTrue(instance.getGfpUid() != 0);
-        //Be sure it is connected and powered on
-        assertTrue(instance.getLinkSxxUid() != 0);
+            // When really connected the UID of devices should not be 0
+            assertTrue(instance.getCs3Uid() != 0);
+            assertTrue(instance.getGfpUid() != 0);
+            //Be sure it is connected and powered on
+            assertTrue(instance.getLinkSxxUid() != 0);
+        }
     }
 
     private void pause(long millis) {
@@ -88,48 +95,43 @@ public class MarklinCS3Test {
      */
     @Test
     public void testPower() {
-        if(!instance.isConnected()) return;
-        System.out.println("isPower");
-        //The gfpUid should not be 0 when connected to a real CS..
-        int gfpuid = instance.getGfpUid();
-        assertTrue(gfpuid != 0);
+        if (cs3Available) {
 
-        boolean expResult = instance.power(true);
-        pause(500);
-        boolean result = instance.isPower();
-        assertEquals(expResult, result);
+            if (!instance.isConnected()) {
+                return;
+            }
+            System.out.println("isPower");
+            //The gfpUid should not be 0 when connected to a real CS..
+            int gfpuid = instance.getGfpUid();
+            assertTrue(gfpuid != 0);
 
-        pause(500);
-        expResult = instance.power(false);
-        pause(500);
-        result = instance.isPower();
-        assertEquals(expResult, result);
+            boolean expResult = instance.power(true);
+            pause(500);
+            boolean result = instance.isPower();
+            assertEquals(expResult, result);
 
+            pause(500);
+            expResult = instance.power(false);
+            pause(500);
+            result = instance.isPower();
+            assertEquals(expResult, result);
+        }
     }
-
-    /**
-     * Test of getControllerInfo method, of class MarklinCS3.
-     */
-    //@Test
-//    public void testGetControllerInfo() {
-//        System.out.println("getControllerInfo");
-//        StatusDataConfigParser expResult = null;
-//        StatusDataConfigParser result = instance.getControllerInfo();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
 
     /**
      * Test of getDeviceIp method, of class MarklinCS3.
      */
     @Test
     public void testGetDeviceIp() {
-        if(!instance.isConnected()) return;
-        System.out.println("getDeviceIp");
-        String expResult = "192.168.1.180";
-        String result = instance.getIp();
-        assertEquals(expResult, result);
+        if (cs3Available) {
+            if (!instance.isConnected()) {
+                return;
+            }
+            System.out.println("getDeviceIp");
+            String expResult = "192.168.1.180";
+            String result = instance.getIp();
+            assertEquals(expResult, result);
+        }
     }
 
     /**
@@ -137,12 +139,17 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testDisconnect() {
-        if(!instance.isConnected()) return;
-        System.out.println("disconnect");
-        MarklinCS3 instance = new MarklinCS3();
-        instance.disconnect();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        if (cs3Available) {
+
+            if (!instance.isConnected()) {
+                return;
+            }
+            System.out.println("disconnect");
+            MarklinCS3 instance = new MarklinCS3();
+            instance.disconnect();
+            // TODO review the generated test code and remove the default call to fail.
+            fail("The test case is a prototype.");
+        }
     }
 
     /**
@@ -150,7 +157,9 @@ public class MarklinCS3Test {
      */
     // @Test
     public void testGetName() {
-        if(!instance.isConnected()) return;
+        if (!instance.isConnected()) {
+            return;
+        }
         System.out.println("getName");
         MarklinCS3 instance = new MarklinCS3();
         String expResult = "";
@@ -174,13 +183,14 @@ public class MarklinCS3Test {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-
     /**
      * Test of changeDirection method, of class MarklinCS3.
      */
     // @Test
     public void testSetDirection() {
-        if(!instance.isConnected()) return;
+        if (!instance.isConnected()) {
+            return;
+        }
         System.out.println("setDirection");
         int address = 0;
         DecoderType decoderType = null;
@@ -207,13 +217,14 @@ public class MarklinCS3Test {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-
     /**
      * Test of changeVelocity method, of class MarklinCS3.
      */
     //@Test
     public void testSetSpeed() {
-        if(!instance.isConnected()) return;
+        if (!instance.isConnected()) {
+            return;
+        }
         System.out.println("setSpeed");
         int address = 0;
         DecoderType decoderType = null;
@@ -229,8 +240,10 @@ public class MarklinCS3Test {
      */
     // @Test
     public void testSetFunction() {
-         if(!instance.isConnected()) return;
-       System.out.println("setFunction");
+        if (!instance.isConnected()) {
+            return;
+        }
+        System.out.println("setFunction");
         int address = 0;
         DecoderType decoderType = null;
         int functionNumber = 0;
@@ -246,8 +259,10 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testSwitchAccessoiry() {
-         if(!instance.isConnected()) return;
-       System.out.println("switchAccessoiry");
+        if (!instance.isConnected()) {
+            return;
+        }
+        System.out.println("switchAccessoiry");
         int address = 0;
         AccessoryValue value = null;
         MarklinCS3 instance = new MarklinCS3();
@@ -261,7 +276,9 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testGetLocomotives() {
-        if(!instance.isConnected()) return;
+        if (!instance.isConnected()) {
+            return;
+        }
         System.out.println("getLocomotives");
         MarklinCS3 instance = new MarklinCS3();
         List<LocomotiveBean> expResult = null;
@@ -276,7 +293,9 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testGetAllFunctionIcons() {
-        if(!instance.isConnected()) return;
+        if (!instance.isConnected()) {
+            return;
+        }
         System.out.println("getAllFunctionIcons");
         MarklinCS3 instance = new MarklinCS3();
         instance.cacheAllFunctionIcons();
@@ -289,7 +308,9 @@ public class MarklinCS3Test {
      */
     //@Test
     public void testGetAccessories() {
-        if(!instance.isConnected()) return;
+        if (!instance.isConnected()) {
+            return;
+        }
         System.out.println("getAccessories");
         MarklinCS3 instance = new MarklinCS3();
         List<AccessoryBean> expResult = null;
@@ -314,7 +335,6 @@ public class MarklinCS3Test {
         fail("The test case is a prototype.");
     }
 
-
     /**
      * Test of querySensor method, of class MarklinCS3.
      */
@@ -329,5 +349,4 @@ public class MarklinCS3Test {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-
 }

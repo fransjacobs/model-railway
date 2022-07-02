@@ -49,7 +49,7 @@ public class LayoutUtil {
     public static final int DEFAULT_WIDTH = GRID * 2;
     public static final int DEFAULT_HEIGHT = GRID * 2;
 
-    private final static Map<String, Tile> tileIdLookup = new HashMap<>();
+    //private final static Map<String, Tile> tileIdLookup = new HashMap<>();
     private final static Map<Point, Tile> tiles = new HashMap<>();
     private final static Map<Point, Tile> altTilesLookup = new HashMap<>();
 
@@ -126,8 +126,8 @@ public class LayoutUtil {
      * @return A Map of tiles, key is the center point of the tile
      */
     public static final Map<Point, Tile> loadLayout(boolean drawGridLines, RepaintListener listener, boolean showValues) {
-        synchronized (LayoutUtil.tileIdLookup) {
-            LayoutUtil.tileIdLookup.clear();
+        synchronized (LayoutUtil.tiles) {
+            //LayoutUtil.tileIdLookup.clear();
             LayoutUtil.tiles.clear();
             LayoutUtil.altTilesLookup.clear();
 
@@ -144,14 +144,14 @@ public class LayoutUtil {
 
                     registerAsEventListener(tile);
 
-                    LayoutUtil.tileIdLookup.put(tile.getId(), tile);
+                    //LayoutUtil.tileIdLookup.put(tile.getId(), tile);
                     LayoutUtil.tiles.put(tile.getCenter(), tile);
                     for (Point ap : tile.getAltPoints()) {
                         LayoutUtil.altTilesLookup.put(ap, tile);
                     }
                 }
 
-                Logger.debug("Loaded " + tileIdLookup.size() + " Tiles...");
+                Logger.debug("Loaded " + tiles.size() + " Tiles...");
             } else {
                 Logger.error("Can't load tiles, no Trackservice available");
             }
@@ -176,31 +176,29 @@ public class LayoutUtil {
                 //Do nothing
                 break;
         }
-
     }
 
     private static boolean isNotLoaded() {
-        return LayoutUtil.tileIdLookup == null || LayoutUtil.tileIdLookup.isEmpty();
+        return LayoutUtil.tiles == null || LayoutUtil.tiles.isEmpty();
     }
 
-    public static Tile findTile(String id) {
-        if (isNotLoaded()) {
-            LayoutUtil.loadLayout(true, false);
-        }
-        Tile result = LayoutUtil.tileIdLookup.get(id);
-        if (result == null) {
-            //check also with the original Id
-            String orgId;
-            if (id.endsWith("-") || id.endsWith("+")) {
-                orgId = id.substring(0, id.length() - 1);
-            } else {
-                orgId = id.replaceAll("-G", "").replaceAll("-R", "");
-            }
-            result = LayoutUtil.tileIdLookup.get(orgId);
-        }
-        return result;
-    }
-
+//    static Tile findTile(String id) {
+//        if (isNotLoaded()) {
+//            LayoutUtil.loadLayout(true, false);
+//        }
+//        Tile result = LayoutUtil.tileIdLookup.get(id);
+//        if (result == null) {
+//            //check also with the original Id
+//            String orgId;
+//            if (id.endsWith("-") || id.endsWith("+")) {
+//                orgId = id.substring(0, id.length() - 1);
+//            } else {
+//                orgId = id.replaceAll("-G", "").replaceAll("-R", "");
+//            }
+//            result = LayoutUtil.tileIdLookup.get(orgId);
+//        }
+//        return result;
+//    }
     public static Tile findTile(Point cp) {
         if (isNotLoaded()) {
             LayoutUtil.loadLayout(true, false);
@@ -219,10 +217,9 @@ public class LayoutUtil {
         return findTile(cp) != null;
     }
 
-    public static boolean isTile(String id) {
-        return findTile(id) != null;
-    }
-
+//    public static boolean isTile(String id) {
+//        return findTile(id) != null;
+//    }
     public static boolean isBlock(Point cp) {
         Tile t = findTile(cp);
         if (t == null) {
@@ -231,14 +228,13 @@ public class LayoutUtil {
         return TileType.BLOCK.equals(t.getTileType());
     }
 
-    public static boolean isBlock(String id) {
-        Tile t = findTile(id);
-        if (t == null) {
-            return false;
-        }
-        return TileType.BLOCK.equals(t.getTileType());
-    }
-
+//    static boolean isBlock(String id) {
+//        Tile t = findTile(id);
+//        if (t == null) {
+//            return false;
+//        }
+//        return TileType.BLOCK.equals(t.getTileType());
+//    }
     public static boolean isTrack(Point cp) {
         Tile t = findTile(cp);
         if (t == null) {
@@ -248,15 +244,14 @@ public class LayoutUtil {
         return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
     }
 
-    public static boolean isTrack(String id) {
-        Tile t = findTile(id);
-        if (t == null) {
-            return false;
-        }
-        TileType tt = t.getTileType();
-        return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
-    }
-
+//    static boolean isTrack(String id) {
+//        Tile t = findTile(id);
+//        if (t == null) {
+//            return false;
+//        }
+//        TileType tt = t.getTileType();
+//        return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
+//    }
     public static final Map<Point, Tile> getTiles() {
         if (isNotLoaded()) {
             LayoutUtil.loadLayout(true, false);
@@ -360,6 +355,7 @@ public class LayoutUtil {
                                 adjacent.add(new Point(x - oX, y));
                                 break;
                         }
+                        break;
                     case NORTH:
                         switch (accessoryValue) {
                             case GREEN:
@@ -376,6 +372,7 @@ public class LayoutUtil {
                                 adjacent.add(new Point(x, y - oY));
                                 break;
                         }
+                        break;
                     default:
                         //EAST
                         switch (accessoryValue) {
@@ -419,21 +416,21 @@ public class LayoutUtil {
         Point neighborPlus, neighborMin;
         switch (o) {
             case SOUTH:
-                neighborPlus = new Point(x, y + h / 3 + Tile.GRID);
-                neighborMin = new Point(x, y - h / 3 - Tile.GRID);
+                neighborPlus = new Point(x, y + h / 3 + Tile.GRID * 2);
+                neighborMin = new Point(x, y - h / 3 - Tile.GRID * 2);
                 break;
             case WEST:
-                neighborPlus = new Point(x - w / 3 - Tile.GRID, y);
-                neighborMin = new Point(x + w / 3 + Tile.GRID, y);
+                neighborPlus = new Point(x - w / 3 - Tile.GRID * 2, y);
+                neighborMin = new Point(x + w / 3 + Tile.GRID * 2, y);
                 break;
             case NORTH:
-                neighborPlus = new Point(x, y - h / 3 - Tile.GRID);
-                neighborMin = new Point(x, y + h / 3 + Tile.GRID);
+                neighborPlus = new Point(x, y - h / 3 - Tile.GRID * 2);
+                neighborMin = new Point(x, y + h / 3 + Tile.GRID * 2);
                 break;
             default:
                 //East 
-                neighborPlus = new Point(x + w / 3 + 40, y);
-                neighborMin = new Point(x - w / 3 - 40, y);
+                neighborPlus = new Point(x + w / 3 + Tile.GRID * 2, y);
+                neighborMin = new Point(x - w / 3 - Tile.GRID * 2, y);
                 break;
         }
         if ("+".equals(plusMinus)) {
@@ -540,7 +537,7 @@ public class LayoutUtil {
      * @param switchTile the "target"
      * @return a List with the nodeIds which are adjacent nodes
      */
-    public static List<String> nodeIdsForAdjacentSwitch(Tile tile, Tile switchTile) {
+    public static List<String> getNodeIdsForAdjacentSwitch(Tile tile, Tile switchTile) {
         List<String> nodeIds = new ArrayList<>();
         Orientation o = switchTile.getOrientation();
         int tileX = tile.getCenterX();

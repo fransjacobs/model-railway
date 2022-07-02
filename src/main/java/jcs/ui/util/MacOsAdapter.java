@@ -19,11 +19,8 @@
 package jcs.ui.util;
 
 import com.thizzer.jtouchbar.JTouchBar;
-import com.thizzer.jtouchbar.common.Image;
 import com.thizzer.jtouchbar.item.TouchBarItem;
-import com.thizzer.jtouchbar.item.view.TouchBarButton;
 import com.thizzer.jtouchbar.item.view.TouchBarTextField;
-import com.thizzer.jtouchbar.item.view.TouchBarView;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Taskbar;
@@ -37,7 +34,6 @@ import java.awt.desktop.QuitEvent;
 import java.awt.desktop.QuitHandler;
 import java.awt.desktop.QuitResponse;
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.UIManager;
@@ -61,7 +57,7 @@ public class MacOsAdapter {
     public static void setMacOsProperties() {
         System.setProperty("apple.awt.application.name", "JCS");
         System.setProperty("apple.laf.useScreenMenuBar", "true");
-        //System.setProperty("java.net.preferIPv4Stack", "true");
+        System.setProperty("apple.awt.application.appearance", "system");
     }
 
     public void setUiCallback(UICallback uiCallback) {
@@ -70,8 +66,11 @@ public class MacOsAdapter {
 
     private void init() {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            //UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+            //UIManager.setLookAndFeel( new FlatLightLaf() );
+            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+            //FlatLightLaf.setup();
+            
+            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.warn("Can't set the LookAndFeel: " + ex);
         }
@@ -99,74 +98,68 @@ public class MacOsAdapter {
 
     private void initTouchBar() {
 //        try {
-            touchBar = new JTouchBar();
-            touchBar.setCustomizationIdentifier("JCSTouchBar");
+        touchBar = new JTouchBar();
+        touchBar.setCustomizationIdentifier("JCSTouchBar");
 
-            //Load the images
-            //Image powerImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/power-red-24.png")));
-            //Image displayLayoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/earth-yellow-24.png")));
-            //Image locomotiveImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/electric-loc-yellow-24.png")));
-            //Image turnoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/turnout-yellow-24.png")));
-            //Image signalImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/signal-yellow-24.png")));
-            //Image diagnosticsImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/stethoscope-yellow-24.png")));
-            //Image designImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/layout-yellow-24.png")));
+        //Load the images
+        //Image powerImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/power-red-24.png")));
+        //Image displayLayoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/earth-yellow-24.png")));
+        //Image locomotiveImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/electric-loc-yellow-24.png")));
+        //Image turnoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/turnout-yellow-24.png")));
+        //Image signalImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/signal-yellow-24.png")));
+        //Image diagnosticsImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/stethoscope-yellow-24.png")));
+        //Image designImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/layout-yellow-24.png")));
+        //Show label
+        TouchBarTextField touchBarTextField = new TouchBarTextField();
+        touchBarTextField.setStringValue("JCS");
+        touchBar.addItem(new TouchBarItem("touchBarTextField", touchBarTextField, true));
 
-            //Show label
-            TouchBarTextField touchBarTextField = new TouchBarTextField();
-            touchBarTextField.setStringValue("JCS");
-            touchBar.addItem(new TouchBarItem("touchBarTextField", touchBarTextField, true));
-
-            //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFlexibleSpace));
-            //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFixedSpaceSmall));
-            //Buttons
-            //TouchBarButton stopButton = new TouchBarButton();
-            //stopButton.setImage(powerImage);
-            //stopButton.setAction((TouchBarView view) -> {
-            //    Logger.trace("Touchbar Stop button clicked...");
-            //    JCS.getJCSFrame().stop();
-            //});
-            //touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
-
-            //TouchBarButton overviewButton = new TouchBarButton();
-            //overviewButton.setImage(displayLayoutImage);
-            //overviewButton.setAction((TouchBarView view) -> {
-            //Logger.trace("Touchbar Overview button clicked...");
-            //JCSGUI.getJCSFrame().showDisplayLayoutPanel();
-            //});
-            //touchBar.addItem(new TouchBarItem("overviewButton", overviewButton, true));
-            //TouchBarButton locoButton = new TouchBarButton();
-            //locoButton.setImage(locomotiveImage);
-            //locoButton.setAction((TouchBarView view) -> {
-            //    Logger.trace("Touchbar Loco button clicked...");
-            //    JCS.getJCSFrame().showLocomotives();
-            //});
-            //touchBar.addItem(new TouchBarItem("locoButton", locoButton, true));
-
-            //TouchBarButton turnoutsButton = new TouchBarButton();
-            //turnoutsButton.setImage(turnoutImage);
-            //turnoutsButton.setAction((TouchBarView view) -> {
-            //    Logger.trace("Touchbar Turnouts button clicked...");
-            //    JCS.getJCSFrame().showTurnouts();
-            //});
-            //touchBar.addItem(new TouchBarItem("turnoutsButton", turnoutsButton, true));
-
-            //TouchBarButton signalsButton = new TouchBarButton();
-            //signalsButton.setImage(signalImage);
-            //signalsButton.setAction((TouchBarView view) -> {
-            //    Logger.trace("Touchbar Signals button clicked...");
-            //    JCS.getJCSFrame().showSignals();
-            //});
-            //touchBar.addItem(new TouchBarItem("signalsButton", signalsButton, true));
-
-            //TouchBarButton diagnosticsButton = new TouchBarButton();
-            //diagnosticsButton.setTitle("Diagnostics");
-            //diagnosticsButton.setImage(diagnosticsImage);
-            //diagnosticsButton.setAction((TouchBarView view) -> {
-            //    Logger.trace("Touchbar diagnostics button clicked...");
-            //    JCS.getJCSFrame().showDiagnostics();
-            //});
-            //touchBar.addItem(new TouchBarItem("diagnosticsButton", diagnosticsButton, true));
-
+        //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFlexibleSpace));
+        //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFixedSpaceSmall));
+        //Buttons
+        //TouchBarButton stopButton = new TouchBarButton();
+        //stopButton.setImage(powerImage);
+        //stopButton.setAction((TouchBarView view) -> {
+        //    Logger.trace("Touchbar Stop button clicked...");
+        //    JCS.getJCSFrame().stop();
+        //});
+        //touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
+        //TouchBarButton overviewButton = new TouchBarButton();
+        //overviewButton.setImage(displayLayoutImage);
+        //overviewButton.setAction((TouchBarView view) -> {
+        //Logger.trace("Touchbar Overview button clicked...");
+        //JCSGUI.getJCSFrame().showDisplayLayoutPanel();
+        //});
+        //touchBar.addItem(new TouchBarItem("overviewButton", overviewButton, true));
+        //TouchBarButton locoButton = new TouchBarButton();
+        //locoButton.setImage(locomotiveImage);
+        //locoButton.setAction((TouchBarView view) -> {
+        //    Logger.trace("Touchbar Loco button clicked...");
+        //    JCS.getJCSFrame().showLocomotives();
+        //});
+        //touchBar.addItem(new TouchBarItem("locoButton", locoButton, true));
+        //TouchBarButton turnoutsButton = new TouchBarButton();
+        //turnoutsButton.setImage(turnoutImage);
+        //turnoutsButton.setAction((TouchBarView view) -> {
+        //    Logger.trace("Touchbar Turnouts button clicked...");
+        //    JCS.getJCSFrame().showTurnouts();
+        //});
+        //touchBar.addItem(new TouchBarItem("turnoutsButton", turnoutsButton, true));
+        //TouchBarButton signalsButton = new TouchBarButton();
+        //signalsButton.setImage(signalImage);
+        //signalsButton.setAction((TouchBarView view) -> {
+        //    Logger.trace("Touchbar Signals button clicked...");
+        //    JCS.getJCSFrame().showSignals();
+        //});
+        //touchBar.addItem(new TouchBarItem("signalsButton", signalsButton, true));
+        //TouchBarButton diagnosticsButton = new TouchBarButton();
+        //diagnosticsButton.setTitle("Diagnostics");
+        //diagnosticsButton.setImage(diagnosticsImage);
+        //diagnosticsButton.setAction((TouchBarView view) -> {
+        //    Logger.trace("Touchbar diagnostics button clicked...");
+        //    JCS.getJCSFrame().showDiagnostics();
+        //});
+        //touchBar.addItem(new TouchBarItem("diagnosticsButton", diagnosticsButton, true));
 //      TouchBarButton designButton = new TouchBarButton();
 //      //diagnosticsButton.setTitle("Design");
 //      designButton.setImage(designImage);

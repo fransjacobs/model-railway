@@ -78,6 +78,8 @@ public class JCS extends Thread {
 
     private void initGui() {
         JCS.logProgress("Starting GUI...");
+        
+        //Also see https://www.formdev.com/flatlaf/
 
         try {
             if (SystemUtils.IS_OS_MAC) {
@@ -88,7 +90,8 @@ public class JCS extends Thread {
                 if (plaf != null) {
                     UIManager.setLookAndFeel(plaf);
                 } else {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                    UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {

@@ -18,7 +18,7 @@
  */
 package jcs.ui.layout.pathfinding;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.Tile;
@@ -37,18 +37,26 @@ public class Node {
 
     private boolean junction;
 
+    private Tile tile;
+
     public Node(Tile tile) {
-        this(tile.getId(), TileType.SWITCH.equals(tile.getTileType()));
+        this(tile.getId(), tile);
     }
 
     public Node(String id) {
-        this(id, false);
+        this(id, null);
     }
 
-    public Node(String id, boolean junction) {
+    public Node(String id, Tile tile) {
         this.id = id;
-        this.junction = junction;
-        edges = new ArrayList<>();
+        this.tile = tile;
+
+        if (tile != null) {
+            this.junction = TileType.SWITCH.equals(tile.getTileType());
+        } else {
+            this.junction = false;
+        }
+        this.edges = new LinkedList<>();
     }
 
     public String getId() {
@@ -75,23 +83,49 @@ public class Node {
         return junction;
     }
 
+    public boolean contains(Edge edge) {
+        List<Edge> snaphot = new LinkedList<>(this.edges);
+
+        for (Edge e : snaphot) {
+            if (e.getSourceId().equals(edge.getSourceId()) && e.getTargetId().equals(edge.getTargetId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
-     * Check if traversal is possible to this node from the 'from' Node
+     * Check if travel is possible toNode this node toNode the 'toNode' Node
      *
-     * @param from the traversal start node
-     * @return true when traversal is possible
+     * @param toNode the travel destination node
+     * @return true when travel is possible
      */
-    public boolean canTraverse(Node from) {
-        if (from.getParent() != null && from.getParent().isJunction() && isJunction()) {
-            String src = from.getParent().getId();
-            String srcValue = src.substring(src.length() - 1);
-            String tgtValue = id.substring(id.length() - 1);
+    public boolean canTravel(Node toNode) {
+        if (this.isJunction() && this.getParent() != null && this.getParent().isJunction() && toNode.isJunction()) {
+            //Logger.trace("Junctions: " + this.getParent().getId() + " -> " + this.getId() + " -> " + toNode.getId());
 
-            return srcValue.equals(tgtValue);
+            String parentId = this.getParent().getId();
+            String tgtId = toNode.getId();
 
+            //a path from xx-G via xx to xx-R or vv is not possible
+            if (parentId.replace("-G", "").replace("-R", "").equals(tgtId.replace("-G", "").replace("-R", ""))) {
+                if (parentId.equals(tgtId)) {
+                    //Logger.trace("Can Travel from: " + parentId + this.getId() + " -> " + tgtId);
+                    return true;
+                } else {
+                    //Logger.trace("Can't travel from: " + parentId + " -> " + this.getId() + " -> " + tgtId);
+                    return false;
+                }
+            } else {
+                return true;
+            }
         } else {
             return true;
         }
+    }
+
+    public Tile getTile() {
+        return tile;
     }
 
     @Override

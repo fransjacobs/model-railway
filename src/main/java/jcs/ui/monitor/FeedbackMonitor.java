@@ -18,6 +18,8 @@
  */
 package jcs.ui.monitor;
 
+import com.formdev.flatlaf.util.SystemInfo;
+import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.trackservice.TrackServiceFactory;
@@ -37,6 +39,11 @@ public class FeedbackMonitor extends javax.swing.JFrame {
      */
     public FeedbackMonitor() {
         sensorTableModel = new SensorTableModel();
+        if (SystemInfo.isMacFullWindowContentSupported) {
+            this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+            this.getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
+            this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+        }
         initComponents();
         alignSensorTable();
     }

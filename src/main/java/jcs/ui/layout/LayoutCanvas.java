@@ -1092,9 +1092,9 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         Logger.trace("Layout has " + blocks.size() + " blocks...");
 
         //Router2 r = new Router2();
-        //r.createGraph(snapshot);
+        //r.setGraph(snapshot);
         BreathFirst bfr = new BreathFirst();
-        //bfr.createGraph(snapshot);
+        //bfr.setGraph(snapshot);
 
 //        Color[] colors = {Color.blue, Color.cyan, Color.magenta, Color.orange, Color.pink, Color.red, Color.yellow, Color.green, Color.black, Color.darkGray};
 //        List<List<Tile>> routes = new ArrayList<>();

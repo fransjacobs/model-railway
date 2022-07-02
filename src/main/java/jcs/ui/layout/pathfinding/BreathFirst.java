@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import jcs.entities.Route;
 import org.tinylog.Logger;
 
 /**
@@ -33,14 +34,17 @@ public class BreathFirst {
 
     private final LayoutAnalyzer layoutAnalyzer;
     private final Map<String, Node> nodeCache;
+    private final Map<String, Route> routes;
 
     public BreathFirst() {
         this.nodeCache = new HashMap<>();
+        this.routes = new HashMap<>();
         this.layoutAnalyzer = new LayoutAnalyzer();
     }
 
     private List<Node> constructPath(Node from, Node to) {
         LinkedList<Node> path = new LinkedList<>();
+
         StringBuilder sb = new StringBuilder();
         while (to.getParent() != null) {
             sb.append(to.getId());
@@ -49,25 +53,38 @@ public class BreathFirst {
             to = to.getParent();
         }
 
-        logRoute(from, path);
+        LinkedList<String> elements = buildElementsList(from, path);
+        String first = elements.getFirst();
+        String last = elements.getLast();
+
+        Route route = new Route(first, last, elements);
+        this.routes.put(route.getId(), route);
         return path;
     }
 
     //Check if the path is valid
-    private void logRoute(Node from, List<Node> path) {
+    private LinkedList<String> buildElementsList(Node from, List<Node> path) {
+        LinkedList<String> elements = new LinkedList<>();
 
         StringBuilder sb = new StringBuilder();
         sb.append("Path: ");
-        sb.append(from.getId());
-        sb.append(" -> ");
+        if (from != null) {
+            elements.add(from.getId());
+
+            sb.append(from.getId());
+            sb.append(" -> ");
+        }
         for (int i = 0; i < path.size(); i++) {
             Node t = path.get(i);
+            elements.add(t.getId());
+
             sb.append(t.getId());
             if (i + 1 < path.size()) {
                 sb.append(" -> ");
             }
         }
         Logger.trace(sb);
+        return elements;
     }
 
     public List<Node> search(Node from, Node to) {
@@ -96,7 +113,7 @@ public class BreathFirst {
                     Node tgtNode = this.layoutAnalyzer.getGraph().get(tgt);
 
                     if (!tgt.equals(fromBk)) {
-                        if (!visited.contains(tgt) && !searchList.contains(tgt) && tgtNode.canTraverse(node)) {
+                        if (!visited.contains(tgt) && !searchList.contains(tgt) && node.canTravel(tgtNode)) {
                             tgtNode.setParent(node);
                             searchList.add(tgt);
                         }
@@ -109,35 +126,42 @@ public class BreathFirst {
         return null;
     }
 
-    public void createGraph() {
-        layoutAnalyzer.buildGraph();
+    public void setGraph(Map<String, Node> graph) {
         nodeCache.clear();
-        nodeCache.putAll(layoutAnalyzer.getGraph());
-        Logger.trace("Created lookup map with " + nodeCache.size() + " entries...");
+        nodeCache.putAll(graph);
     }
 
     public static void main(String[] a) {
-        System.setProperty("trackServiceAlwaysUseDemo", "true");
+        System.setProperty("trackServiceSkipControllerInit", "true");
         BreathFirst bf = new BreathFirst();
-        bf.createGraph();
 
-        List<List<Node>> candidateRoutes = bf.layoutAnalyzer.getBlockToBlockNodes();
+        bf.setGraph(bf.layoutAnalyzer.buildGraph(jcs.ui.layout.LayoutUtil.loadLayout(true, false)));
 
-        Logger.trace("Try to route " + candidateRoutes.size() + " Possible block to block driveways");
+        List<List<Node>> candidateRoutes = bf.layoutAnalyzer.getAllBlockToBlockNodes();
+
+        Logger.trace("Try to route " + candidateRoutes.size() + " Possible block to block routes");
 
         List<List<Node>> driveways = new ArrayList<>();
 
         for (List<Node> fromTo : candidateRoutes) {
             Node from = fromTo.get(0);
             Node to = fromTo.get(1);
+
+            //if ("bk-1-".equals(from.getId()) && "bk-2-".equals(from.getId())) {
             List<Node> driveway = bf.search(from, to);
             if (driveway != null) {
                 driveways.add(driveway);
-
             }
+            //}
         }
 
-        Logger.trace("Found " + driveways.size() + " driveways");
+        Logger.trace("Found " + bf.routes.size() + " routes");
+
+        for (Route route : bf.routes.values()) {
+            Logger.trace(route.toLogString());
+
+        }
+
         System.exit(0);
     }
 
