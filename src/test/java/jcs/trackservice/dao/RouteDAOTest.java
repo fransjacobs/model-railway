@@ -18,15 +18,15 @@
  */
 package jcs.trackservice.dao;
 
+import java.awt.Color;
 import jcs.trackservice.dao.util.DAOTestHelper;
-import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.Route;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
@@ -39,32 +39,19 @@ public class RouteDAOTest {
     public RouteDAOTest() {
         DAOTestHelper.setConnectProperties();
         DAOTestHelper.createNewDatabase();
-        DAOTestHelper.insertLocoData();
-        //DAOTestHelper.insertLayoutTileData();
-        DAOTestHelper.insertDriveWayData();
+        DAOTestHelper.insertTileLayoutData();
         DAOTestHelper.insertRouteData();
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    //@Before
+    @Before
     public void setUp() {
-        routes = new ArrayList<>();
-        BigDecimal id = new BigDecimal(1);
-        Integer address = 1;
-        String name = "Rt 1";
-        String description = "Route 1";
-        BigDecimal drwaId = new BigDecimal(1);
-        BigDecimal latiId = new BigDecimal(1);
+        routes = new LinkedList<>();
 
-        //Route r = new Route(id, address, name, description, drwaId, latiId);
-        //routes.add(r);
+        Route r1 = new Route("bk-1+|bk-3-", "bk-1+", "bk-3-", "red");
+        Route r2 = new Route("bk-2+|bk-3-", "bk-2+", "bk-3-", "green");
+        routes.add(r1);
+        routes.add(r2);
+
     }
 
     @After
@@ -74,7 +61,7 @@ public class RouteDAOTest {
     /**
      * Test of findAll method, of class RouteDAO.
      */
-    //@Test
+    @Test
     public void testFindAll() {
         System.out.println("findAll");
         RouteDAO instance = new RouteDAO();
@@ -84,105 +71,57 @@ public class RouteDAOTest {
     }
 
     /**
-     * Test of find method, of class RouteDAO.
-     */
-    //@Test
-    public void testFind() {
-        System.out.println("find");
-        Integer address = 1;
-        RouteDAO instance = new RouteDAO();
-        Route expResult = routes.get(0);
-        Route result = instance.find(address);
-        assertEquals(expResult, result);
-    }
-
-    /**
      * Test of findById method, of class RouteDAO.
      */
-    //@Test
+    @Test
     public void testFindById() {
         System.out.println("findById");
-        BigDecimal id = new BigDecimal(1);
+        String id = "bk-2+|bk-3-";
         RouteDAO instance = new RouteDAO();
-        Route expResult = routes.get(0);
+        Route expResult = routes.get(1);
         Route result = instance.findById(id);
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of findByDrwaId method, of class RouteDAO.
-     */
-    //@Test
-    public void testFindByDrwaId() {
-        System.out.println("findByDrwaId");
-        BigDecimal drwaId = new BigDecimal(1);
-        RouteDAO instance = new RouteDAO();
-        List<Route> expResult = routes;
-        List<Route> result = instance.findByDrwaId(drwaId);
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of findByLatiId method, of class RouteDAO.
-     */
-    //@Test
-    public void testFindByLatiId() {
-        System.out.println("findByLatiId");
-        BigDecimal latiId = new BigDecimal(1);
-        RouteDAO instance = new RouteDAO();
-        List<Route> expResult = routes;
-        List<Route> result = instance.findByLatiId(latiId);
         assertEquals(expResult, result);
     }
 
     /**
      * Test of persist method, of class RouteDAO.
      */
-    //@Test
+    @Test
     public void testPersist() {
         System.out.println("persist");
-        Route route = null; //new Route(2, new BigDecimal(1), new BigDecimal(2));
+        Route route = new Route("bk-2-|bk-3+", "bk-2-", "bk-3+", "yellow");
         RouteDAO instance = new RouteDAO();
-        BigDecimal expResult = new BigDecimal(2);
-        BigDecimal result = null; //instance.persist(route);
+        String expResult = "bk-2-|bk-3+";
+        String result = instance.persist(route);
         assertEquals(expResult, result);
 
         Route r = instance.findById(result);
-
-        //route.setId(result);
-
         assertEquals(route, r);
 
-        //route.setLatiId(new BigDecimal(3));
-
+        route.setColor(Color.blue);
         instance.persist(route);
 
         r = instance.findById(result);
-
         assertEquals(route, r);
     }
 
     /**
      * Test of remove method, of class RouteDAO.
      */
-    //@Test
+    @Test
     public void testRemove() {
         System.out.println("remove");
-        Route route = null; //new Route(2, new BigDecimal(1), new BigDecimal(2));
+        Route route = new Route("bk-1-|bk-3+", "bk-1-", "bk-3+", "orange");
         RouteDAO instance = new RouteDAO();
 
-        Route r = instance.find(2);
+        Route r = instance.findById("bk-1-|bk-3+");
         assertNull(r);
-
         instance.persist(route);
-        r = instance.find(2);
+        r = instance.findById("bk-1-|bk-3+");
         assertNotNull(r);
 
-        //route.setId(new BigDecimal(2));
-        assertEquals(route, r);
-
         instance.remove(route);
-        r = instance.find(2);
+        r = instance.findById("bk-1-|bk-3+");
         assertNull(r);
     }
 

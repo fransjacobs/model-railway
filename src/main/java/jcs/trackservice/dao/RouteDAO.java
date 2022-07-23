@@ -18,7 +18,7 @@
  */
 package jcs.trackservice.dao;
 
-import java.math.BigDecimal;
+import java.awt.Color;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,8 +32,8 @@ import jcs.entities.Route;
  */
 public class RouteDAO extends AbstractDAO<Route> {
 
-    private static final String INS_DW_STMT = "insert into routes (ADDRESS,NAME,DESCRIPTION,DRWA_ID,LATI_ID,ID) values(?,?,?,?,?,?,)";
-    private static final String UPD_DW_STMT = "update routes set ADDRESS = ?,NAME = ?,DESCRIPTION = ?,DRWA_ID = ?,LATI_ID = ? where ID = ?";
+    private static final String INS_DW_STMT = "insert into routes (FROMTILEID,TOTILEID,COLOR,ID) values(?,?,?,?)";
+    private static final String UPD_DW_STMT = "update routes set FROMTILEID = ?,TOTILEID = ?,COLOR = ? where ID = ?";
 
     public RouteDAO() {
         super();
@@ -41,69 +41,46 @@ public class RouteDAO extends AbstractDAO<Route> {
 
     @Override
     protected Route map(ResultSet rs) throws SQLException {
-        Integer address = rs.getInt("ADDRESS");
-        String name = rs.getString("NAME");
-        String description = rs.getString("DESCRIPTION");
-        BigDecimal drwaId = rs.getBigDecimal("DRWA_ID");
-        BigDecimal latiId = rs.getBigDecimal("LATI_ID");
-        BigDecimal id = rs.getBigDecimal("ID");
+        String fromTileId = rs.getString("FROMTILEID");
+        String toTileId = rs.getString("TOTILEID");
+        String color = rs.getString("COLOR");
+        String id = rs.getString("ID");
 
-        Route r = null;//new Route(id, address, name, description, drwaId, latiId);
+        Route r = new Route(id, fromTileId, toTileId, color);
         return r;
     }
 
     @Override
     protected void bind(PreparedStatement ps, Route route, boolean insert) throws SQLException {
-//        ps.setInt(1, route.getAddress());
-//        ps.setString(2, route.getName());
-//        ps.setString(3, route.getDescription());
-//
-//        if (route.getDrwaId() == null) {
-//            ps.setNull(4, Types.BIGINT);
-//        } else {
-//            ps.setBigDecimal(4, route.getDrwaId());
-//        }
-//        if (route.getLatiId() == null) {
-//            ps.setNull(5, Types.BIGINT);
-//        } else {
-//            ps.setBigDecimal(5, route.getLatiId());
-//        }
-//
-//        ps.setBigDecimal(6, route.getId());
+        ps.setString(1, route.getFromId());
+        ps.setString(2, route.getToId());
+
+        Color c = route.getColor();
+
+        if (c != null) {
+            String rgb = "RGB:" + c.getRGB();
+            ps.setString(3, rgb);
+        } else {
+            ps.setNull(3, Types.VARCHAR);
+        }
+        ps.setString(4, route.getId());
     }
 
     @Override
     public List<Route> findAll() {
-        String stmt = "select * from routes order by address asc";
+        String stmt = "select * from routes order by id asc";
 
         return this.findAll(stmt);
     }
 
-    //@Override
-    public Route find(Integer address) {
-        String stmt = "select * from routes where address = ?";
-
-        return this.find(address, stmt);
-    }
-
-    public Route findById(BigDecimal id) {
+    public Route findById(String key) {
         String stmt = "select * from routes where id = ?";
-        return this.findById(id, stmt);
-    }
-
-    public List<Route> findByDrwaId(BigDecimal drwaId) {
-        String stmt = "select * from routes where drwa_id = ? order by address asc";
-        return this.findBy(drwaId, stmt);
-    }
-
-    public List<Route> findByLatiId(BigDecimal latiId) {
-        String stmt = "select * from routes where lati_id = ? order by address asc";
-        return this.findBy(latiId, stmt);
+        return this.findById(key, stmt);
     }
 
     @Override
     public String persist(Route route) {
-        Route dw = null; //this.find(route.getAddress());
+        Route dw = this.findById(route.getId());
 
         String statement;
         if (dw == null) {

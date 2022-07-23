@@ -20,32 +20,49 @@ package jcs.entities;
 
 import java.awt.Color;
 import java.io.Serializable;
-import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import org.beryx.awt.color.ColorFactory;
 
 public class Route implements JCSEntity, Serializable {
 
     private String id;
     private String fromId;
     private String toId;
-    private boolean locked;
-    private boolean blocked;
     private Color color;
-    private BigDecimal locoId;
 
     private List<String> elementIds;
-
-    private List<RouteElement> elements;
+    private List<RouteElement> routeElements;
 
     public Route() {
     }
 
+    public Route(String id, String fromId, String toId, String color) {
+        this(id, fromId, toId, color, new LinkedList<>());
+    }
+
     public Route(String fromId, String toId, List<String> elementIds) {
+        this(null, fromId, toId, null, elementIds);
+    }
+
+    public Route(String id, String fromId, String toId, String color, List<String> elementIds) {
+        if (id == null) {
+            this.id = fromId + "|" + toId;
+        } else {
+            this.id = id;
+        }
         this.fromId = fromId;
         this.toId = toId;
-        this.id = fromId + "|" + toId;
 
+        if (color != null) {
+            if (color.startsWith("RGB:")) {
+                String rgb = color.replaceAll("RGB:", "");
+                this.color = Color.decode(rgb);
+            } else {
+                this.color = ColorFactory.valueOf(color);
+            }
+        }
         this.elementIds = elementIds;
     }
 
@@ -75,36 +92,12 @@ public class Route implements JCSEntity, Serializable {
         this.toId = toId;
     }
 
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-
-    public boolean isBlocked() {
-        return blocked;
-    }
-
-    public void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
-
     public Color getColor() {
         return color;
     }
 
     public void setColor(Color color) {
         this.color = color;
-    }
-
-    public BigDecimal getLocoId() {
-        return locoId;
-    }
-
-    public void setLocoId(BigDecimal locoId) {
-        this.locoId = locoId;
     }
 
     public List<String> getElementIds() {
@@ -115,12 +108,21 @@ public class Route implements JCSEntity, Serializable {
         this.elementIds = elementIds;
     }
 
-    public List<RouteElement> getElements() {
-        return elements;
+    private void buildRouteElements(List<String> elementIds) {
+        for (int i = 0; i < elementIds.size(); i++) {
+            String nodeId = elementIds.get(i);
+            //TODO
+            //String tileId = 
+            //String av =        
+        }
     }
 
-    public void setElements(List<RouteElement> elements) {
-        this.elements = elements;
+    public List<RouteElement> getRouteElements() {
+        return routeElements;
+    }
+
+    public void setRouteElements(List<RouteElement> routeElements) {
+        this.routeElements = routeElements;
     }
 
     @Override
@@ -129,10 +131,7 @@ public class Route implements JCSEntity, Serializable {
         hash = 79 * hash + Objects.hashCode(this.id);
         hash = 79 * hash + Objects.hashCode(this.fromId);
         hash = 79 * hash + Objects.hashCode(this.toId);
-        hash = 79 * hash + (this.locked ? 1 : 0);
-        hash = 79 * hash + (this.blocked ? 1 : 0);
         hash = 79 * hash + Objects.hashCode(this.color);
-        hash = 79 * hash + Objects.hashCode(this.locoId);
         return hash;
     }
 
@@ -148,12 +147,6 @@ public class Route implements JCSEntity, Serializable {
             return false;
         }
         final Route other = (Route) obj;
-        if (this.locked != other.locked) {
-            return false;
-        }
-        if (this.blocked != other.blocked) {
-            return false;
-        }
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
@@ -163,15 +156,12 @@ public class Route implements JCSEntity, Serializable {
         if (!Objects.equals(this.toId, other.toId)) {
             return false;
         }
-        if (!Objects.equals(this.color, other.color)) {
-            return false;
-        }
-        return Objects.equals(this.locoId, other.locoId);
+        return (Objects.equals(this.color, other.color));
     }
 
     @Override
     public String toString() {
-        return "Route{" + "id=" + id + ", fromTileId=" + fromId + ", toTileId=" + toId + '}';
+        return "Route{" + "id=" + id + ", fromTileId=" + fromId + ", toTileId=" + toId + ", color=" + color + "}";
     }
 
     @Override
@@ -183,8 +173,8 @@ public class Route implements JCSEntity, Serializable {
         if (this.elementIds != null && !this.elementIds.isEmpty()) {
             for (String e : this.elementIds) {
                 sb.append(e);
-                if(!e.equals(this.toId)) {
-                  sb.append(" -> ");
+                if (!e.equals(this.toId)) {
+                    sb.append(" -> ");
                 }
             }
         }

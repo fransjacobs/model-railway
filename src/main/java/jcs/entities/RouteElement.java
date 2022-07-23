@@ -21,21 +21,24 @@ package jcs.entities;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
-import jcs.entities.enums.Orientation;
-import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.enums.AccessoryValue;
 
 public class RouteElement implements JCSEntity, Serializable {
 
     private BigDecimal id;
     private String routeId;
-    private String TileId;
+    private String nodeId;
+    private String tileId;
+    private AccessoryValue accessoryValue;
     private int elementOrder;
-    private Orientation tileOrientation;
-    private Direction tileDirection;
 
     public RouteElement() {
     }
 
+    public RouteElement(String routeId,String nodeId,String tileId,AccessoryValue accessoryValue,int elementOrder) {
+    }
+
+    
     @Override
     public BigDecimal getId() {
         return this.id;
@@ -54,12 +57,28 @@ public class RouteElement implements JCSEntity, Serializable {
         this.routeId = routeId;
     }
 
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
     public String getTileId() {
-        return TileId;
+        return tileId;
     }
 
     public void setTileId(String TileId) {
-        this.TileId = TileId;
+        this.tileId = TileId;
+    }
+
+    public AccessoryValue getAccessoryValue() {
+        return accessoryValue;
+    }
+
+    public void setAccessoryValue(AccessoryValue accessoryValue) {
+        this.accessoryValue = accessoryValue;
     }
 
     public int getElementOrder() {
@@ -70,31 +89,15 @@ public class RouteElement implements JCSEntity, Serializable {
         this.elementOrder = elementOrder;
     }
 
-    public Orientation getTileOrientation() {
-        return tileOrientation;
-    }
-
-    public void setTileOrientation(Orientation tileOrientation) {
-        this.tileOrientation = tileOrientation;
-    }
-
-    public Direction getTileDirection() {
-        return tileDirection;
-    }
-
-    public void setTileDirection(Direction tileDirection) {
-        this.tileDirection = tileDirection;
-    }
-
     @Override
     public int hashCode() {
         int hash = 3;
         hash = 23 * hash + Objects.hashCode(this.id);
         hash = 23 * hash + Objects.hashCode(this.routeId);
-        hash = 23 * hash + Objects.hashCode(this.TileId);
+        hash = 23 * hash + Objects.hashCode(this.nodeId);
+        hash = 23 * hash + Objects.hashCode(this.tileId);
+        hash = 23 * hash + Objects.hashCode(this.accessoryValue);
         hash = 23 * hash + this.elementOrder;
-        hash = 23 * hash + Objects.hashCode(this.tileOrientation);
-        hash = 23 * hash + Objects.hashCode(this.tileDirection);
         return hash;
     }
 
@@ -116,21 +119,21 @@ public class RouteElement implements JCSEntity, Serializable {
         if (!Objects.equals(this.routeId, other.routeId)) {
             return false;
         }
-        if (!Objects.equals(this.TileId, other.TileId)) {
+        if (!Objects.equals(this.nodeId, other.nodeId)) {
+            return false;
+        }
+        if (!Objects.equals(this.tileId, other.tileId)) {
             return false;
         }
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        if (this.tileOrientation != other.tileOrientation) {
-            return false;
-        }
-        return this.tileDirection == other.tileDirection;
+        return this.accessoryValue == other.accessoryValue;
     }
 
     @Override
     public String toString() {
-        return "RouteElement{" + "id=" + id + ", routeId=" + routeId + ", TileId=" + TileId + ", elementOrder=" + elementOrder + '}';
+        return "RouteElement{" + "id=" + id + ", routeId=" + routeId + ", nodeId=" + nodeId + ", tileId=" + tileId + ", accessoryValue=" + accessoryValue + ", elementOrder=" + elementOrder + '}';
     }
 
     @Override

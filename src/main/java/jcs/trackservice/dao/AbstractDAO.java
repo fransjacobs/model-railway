@@ -124,6 +124,7 @@ public abstract class AbstractDAO<T extends JCSEntity> {
         return id;
     }
 
+    @Deprecated
     protected static String getSequenceName(ControllableDevice cd) {
         switch (cd.getClass().getSimpleName()) {
             //case "Locomotive":

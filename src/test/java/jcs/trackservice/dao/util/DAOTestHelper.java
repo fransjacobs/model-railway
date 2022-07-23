@@ -205,26 +205,6 @@ public class DAOTestHelper extends DatabaseCreator {
         }
     }
 
-//    public static void insertLayoutTileData() {
-//        Logger.debug("Inserting LayoutTiles...");
-//        try {
-//            try (Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
-//                Statement stmt = c.createStatement();
-//                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
-//                        + "VALUES(lati_seq.nextval,'SwitchTile','East','Left', 30, 30)");
-//
-//                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
-//                        + "VALUES(lati_seq.nextval,'DiagonalTrack','South','Center', 40, 50)");
-//
-//                stmt.executeUpdate("INSERT INTO LAYOUTTILES(ID,TILETYPE,ORIENTATION,DIRECTION,X,Y) "
-//                        + "VALUES(lati_seq.nextval,'StraightTrack','West','Center', 50, 60)");
-//
-//                c.commit();
-//            }
-//        } catch (SQLException ex) {
-//            Logger.error(ex);
-//        }
-//    }
     public static void insertTileData() {
         Logger.debug("Inserting TileBeans...");
         try {
@@ -304,28 +284,32 @@ public class DAOTestHelper extends DatabaseCreator {
 
     }
 
-    public static void insertDriveWayData() {
-        Logger.debug("Inserting DriveWays...");
-        try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
-                Statement stmt = c.createStatement();
-                stmt.executeUpdate("INSERT INTO DRIVEWAYS (ID,ADDRESS,NAME,DESCRIPTION,FROM_LATI_ID,TO_LATI_ID,LOCO_ID,ACTIVE,RESERVED,OCCUPIED) "
-                        + "VALUES (drwa_seq.nextval,1,'Blk 1','Block 1',null,null,null,1,0,0)");
-
-                c.commit();
-            }
-        } catch (SQLException ex) {
-            Logger.error(ex);
-        }
-    }
+//    public static void insertDriveWayData() {
+//        Logger.debug("Inserting DriveWays...");
+//        try {
+//            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+//                Statement stmt = c.createStatement();
+//                stmt.executeUpdate("INSERT INTO DRIVEWAYS (ID,ADDRESS,NAME,DESCRIPTION,FROM_LATI_ID,TO_LATI_ID,LOCO_ID,ACTIVE,RESERVED,OCCUPIED) "
+//                        + "VALUES (drwa_seq.nextval,1,'Blk 1','Block 1',null,null,null,1,0,0)");
+//
+//                c.commit();
+//            }
+//        } catch (SQLException ex) {
+//            Logger.error(ex);
+//        }
+//    }
 
     public static void insertRouteData() {
         Logger.debug("Inserting Routes...");
         try {
             try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
-                stmt.executeUpdate("INSERT INTO ROUTES (ID,ADDRESS,NAME,DESCRIPTION,DRWA_ID,LATI_ID) "
-                        + "VALUES (rout_seq.nextval,1,'Rt 1','Route 1',1,1)");
+                
+                stmt.executeUpdate("INSERT INTO ROUTES (FROMTILEID,TOTILEID,COLOR,ID) "
+                        + "VALUES ('bk-1+','bk-3-','red','bk-1+|bk-3-')");
+
+                stmt.executeUpdate("INSERT INTO ROUTES (FROMTILEID,TOTILEID,COLOR,ID) "
+                        + "VALUES ('bk-2+','bk-3-','green','bk-2+|bk-3-')");
 
                 c.commit();
             }

@@ -132,17 +132,10 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists accessories CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
 
-        //stmt.executeUpdate("DROP TABLE if exists accessorytypes CASCADE CONSTRAINTS");
-        //stmt.executeUpdate("DROP TABLE if exists statustypes CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
-        //stmt.executeUpdate("DROP TABLE if exists signalvalues CASCADE CONSTRAINTS;");
         stmt.executeUpdate("DROP TABLE if exists sensors CASCADE CONSTRAINTS");
-
-        //stmt.executeUpdate("DROP SEQUENCE if exists femo_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists soac_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists trpo_seq");
-        //stmt.executeUpdate("DROP SEQUENCE if exists sens_seq");
 
         Logger.trace("Existing schema objects dropped...");
     }
@@ -245,26 +238,6 @@ public class DatabaseCreator {
         Logger.trace("Table accessories created...");
     }
 
-//    private static void statustypes(Statement stmt) throws SQLException {
-//        stmt.executeUpdate("CREATE TABLE statustypes ("
-//                + "status_type    VARCHAR(255) NOT NULL,"
-//                + "description    VARCHAR(255))");
-//
-//        stmt.executeUpdate("ALTER TABLE statustypes ADD CONSTRAINT stty_pk PRIMARY KEY ( status_type )");
-//
-//        Logger.trace("Table statustypes created...");
-//    }
-
-//    private static void signalvalues(Statement stmt) throws SQLException {
-//        stmt.executeUpdate("CREATE TABLE signalvalues ("
-//                + "signal_value    VARCHAR(255) NOT NULL,"
-//                + "description     VARCHAR(255))");
-//
-//        stmt.executeUpdate("ALTER TABLE signalvalues ADD CONSTRAINT siva_pk PRIMARY KEY ( signal_value )");
-//
-//        Logger.trace("Table signalvalues created...");
-//    }
-
     private static void jcsproperties(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE jcsproperties ("
                 + "pkey    VARCHAR(255) NOT NULL,"
@@ -275,40 +248,21 @@ public class DatabaseCreator {
         Logger.trace("Table jcsproperties created...");
     }
 
-//    private static void driveways(Statement stmt) throws SQLException {
-//        stmt.executeUpdate("CREATE TABLE driveways ("
-//                + "id             NUMBER NOT NULL,"
-//                + "address        INTEGER NOT NULL,"
-//                + "name           VARCHAR2(255 CHAR),"
-//                + "description    VARCHAR2(255 CHAR),"
-//                + "from_lati_id   NUMBER,"
-//                + "to_lati_id     NUMBER,"
-//                + "loco_id        NUMBER,"
-//                + "active         INTEGER NOT NULL,"
-//                + "reserved       INTEGER NOT NULL,"
-//                + "occupied       INTEGER NOT NULL)");
-//
-//        stmt.executeUpdate("ALTER TABLE driveways ADD CONSTRAINT drwa_pk PRIMARY KEY ( id )");
-//
-//        stmt.executeUpdate("ALTER TABLE driveways ADD CONSTRAINT drwa_address_un UNIQUE ( address )");
-//
-//        Logger.trace("Table driveways created...");
-//    }
-//    private static void routes(Statement stmt) throws SQLException {
-//        stmt.executeUpdate("CREATE TABLE routes ("
-//                + "id             NUMBER NOT NULL,"
-//                + "address        INTEGER NOT NULL,"
-//                + "name           VARCHAR2(255 CHAR),"
-//                + "description    VARCHAR2(255 CHAR),"
-//                + "drwa_id        NUMBER NOT NULL,"
-//                + "lati_id        NUMBER NOT NULL)");
-//
-//        stmt.executeUpdate("ALTER TABLE routes ADD CONSTRAINT rout_pk PRIMARY KEY ( id )");
-//
-//        stmt.executeUpdate("ALTER TABLE routes ADD CONSTRAINT rout_address_un UNIQUE ( address )");
-//
-//        Logger.trace("Table routes created...");
-//    }
+    private static void routes(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE ROUTES ("
+                + "ID VARCHAR(255) NOT NULL,"
+                + "FROMTILEID VARCHAR(255) NOT NULL,"
+                + "TOTILEID VARCHAR(255) NOT NULL,"
+                + "COLOR VARCHAR(255))");
+
+        stmt.executeUpdate("ALTER TABLE ROUTES ADD CONSTRAINT ROUT_PK PRIMARY KEY ( ID )");
+
+        stmt.executeUpdate("ALTER TABLE ROUTES ADD CONSTRAINT ROUT_FROM_TO_UN UNIQUE (FROMTILEID,TOTILEID)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX ROUT_FROM_TO_UN_IDX ON ROUTES (FROMTILEID,TOTILEID)");
+
+        Logger.trace("Table routes created...");
+    }
+
     private static void createForeignKeys(Statement stmt) throws SQLException {
         stmt.executeUpdate("ALTER TABLE functions"
                 + " ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid )"
@@ -368,14 +322,11 @@ public class DatabaseCreator {
 //        stmt.executeUpdate("INSERT INTO statustypes (status_type,description) values('G','Green')");
 //        stmt.executeUpdate("INSERT INTO statustypes (status_type,description) values('R','Red')");
 //        stmt.executeUpdate("INSERT INTO statustypes (status_type,description) values('O','Off')");
-
 //        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0','Hp0')");
 //        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp1','Hp1')");
 //        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp2','Hp2')");
 //        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0Sh1','Hp0Sh1')");
 //        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('OFF','OFF')");
-
-
         //Supported Controllers
         stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('CS3','jcs.controller.cs3.MarklinCS3')");
 
@@ -385,7 +336,7 @@ public class DatabaseCreator {
     private static void createSchema(boolean testMode) {
         Logger.trace(testMode ? "Test Mode: " : "" + "Creating JCS schema objects...");
         try {
-            try (Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("set SCHEMA JCS");
@@ -404,7 +355,7 @@ public class DatabaseCreator {
                 jcsproperties(stmt);
                 //trackplan
                 //driveways(stmt);
-                //routes(stmt);
+                routes(stmt);
 
                 createForeignKeys(stmt);
 
@@ -426,7 +377,7 @@ public class DatabaseCreator {
         }
 
         try {
-            try (Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
+            try ( Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
                 if (c != null) {
                     Statement stmt = c.createStatement();
 
