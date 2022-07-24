@@ -275,7 +275,7 @@ public class DAOTestHelper extends DatabaseCreator {
                         + "('st-5','Straight','East','Center',620,180,NULL,NULL,NULL),"
                         + "('st-17','Straight','West','Center',300,380,NULL,NULL,NULL),"
                         + "('ct-1','Curved','South','Center',580,140,NULL,NULL,NULL)");
-                
+
                 c.commit();
             }
         } catch (SQLException ex) {
@@ -284,32 +284,65 @@ public class DAOTestHelper extends DatabaseCreator {
 
     }
 
-//    public static void insertDriveWayData() {
-//        Logger.debug("Inserting DriveWays...");
-//        try {
-//            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
-//                Statement stmt = c.createStatement();
-//                stmt.executeUpdate("INSERT INTO DRIVEWAYS (ID,ADDRESS,NAME,DESCRIPTION,FROM_LATI_ID,TO_LATI_ID,LOCO_ID,ACTIVE,RESERVED,OCCUPIED) "
-//                        + "VALUES (drwa_seq.nextval,1,'Blk 1','Block 1',null,null,null,1,0,0)");
-//
-//                c.commit();
-//            }
-//        } catch (SQLException ex) {
-//            Logger.error(ex);
-//        }
-//    }
-
     public static void insertRouteData() {
         Logger.debug("Inserting Routes...");
         try {
             try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
                 Statement stmt = c.createStatement();
-                
+
                 stmt.executeUpdate("INSERT INTO ROUTES (FROMTILEID,TOTILEID,COLOR,ID) "
                         + "VALUES ('bk-1+','bk-3-','red','bk-1+|bk-3-')");
 
                 stmt.executeUpdate("INSERT INTO ROUTES (FROMTILEID,TOTILEID,COLOR,ID) "
                         + "VALUES ('bk-2+','bk-3-','green','bk-2+|bk-3-')");
+
+                c.commit();
+            }
+        } catch (SQLException ex) {
+            Logger.error(ex);
+        }
+    }
+
+    public static void insertRouteElementData() {
+        Logger.debug("Inserting RouteElements...");
+        try {
+            try ( Connection c = connect(JCS_USER, JCS_PWD, true, true)) {
+                Statement stmt = c.createStatement();
+
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','bk-1+','bk-1',null,0)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','se-2','se-2',null,1)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-2','st-2',null,2)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','sw-2-G','sw-2','G',3)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','sw-2','sw-2','G',4)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-5','st-5',null,5)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','ct-4','ct-4',null,6)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-11','st-11',null,7)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-12','st-12',null,8)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-13','st-13',null,9)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-14','st-14',null,10)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','ct-6','ct-6',null,11)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-20','st-20',null,12)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-19','st-19',null,13)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','st-18','st-18',null,14)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','se-6','se-6',null,15)");
+                stmt.executeUpdate("INSERT INTO ROUTEELEMENTS (ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) "
+                        + "VALUES ('bk-1+|bk-3-','bk-3-','bk-3',null,16)");
 
                 c.commit();
             }

@@ -30,15 +30,24 @@ public class RouteElement implements JCSEntity, Serializable {
     private String nodeId;
     private String tileId;
     private AccessoryValue accessoryValue;
-    private int elementOrder;
+    private Integer elementOrder;
 
     public RouteElement() {
     }
 
-    public RouteElement(String routeId,String nodeId,String tileId,AccessoryValue accessoryValue,int elementOrder) {
+    public RouteElement(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder) {
+        this(routeId, nodeId, tileId, accessoryValue, elementOrder, null);
     }
 
-    
+    public RouteElement(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder, BigDecimal id) {
+        this.routeId = routeId;
+        this.nodeId = nodeId;
+        this.tileId = tileId;
+        this.accessoryValue = accessoryValue;
+        this.elementOrder = elementOrder;
+        this.id = id;
+    }
+
     @Override
     public BigDecimal getId() {
         return this.id;
@@ -81,11 +90,11 @@ public class RouteElement implements JCSEntity, Serializable {
         this.accessoryValue = accessoryValue;
     }
 
-    public int getElementOrder() {
+    public Integer getElementOrder() {
         return elementOrder;
     }
 
-    public void setElementOrder(int elementOrder) {
+    public void setElementOrder(Integer elementOrder) {
         this.elementOrder = elementOrder;
     }
 
@@ -97,7 +106,7 @@ public class RouteElement implements JCSEntity, Serializable {
         hash = 23 * hash + Objects.hashCode(this.nodeId);
         hash = 23 * hash + Objects.hashCode(this.tileId);
         hash = 23 * hash + Objects.hashCode(this.accessoryValue);
-        hash = 23 * hash + this.elementOrder;
+        hash = 23 * hash + Objects.hashCode(this.elementOrder);
         return hash;
     }
 
@@ -113,7 +122,7 @@ public class RouteElement implements JCSEntity, Serializable {
             return false;
         }
         final RouteElement other = (RouteElement) obj;
-        if (this.elementOrder != other.elementOrder) {
+        if (!Objects.equals(this.elementOrder, other.elementOrder)) {
             return false;
         }
         if (!Objects.equals(this.routeId, other.routeId)) {
@@ -128,12 +137,12 @@ public class RouteElement implements JCSEntity, Serializable {
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        return this.accessoryValue == other.accessoryValue;
+        return Objects.equals(this.accessoryValue, other.accessoryValue);
     }
 
     @Override
     public String toString() {
-        return "RouteElement{" + "id=" + id + ", routeId=" + routeId + ", nodeId=" + nodeId + ", tileId=" + tileId + ", accessoryValue=" + accessoryValue + ", elementOrder=" + elementOrder + '}';
+        return "RouteElement{routeId=" + routeId + ", nodeId=" + nodeId + ", tileId=" + tileId + ", accessoryValue=" + accessoryValue + ", elementOrder=" + elementOrder + ", id=" + id + "}";
     }
 
     @Override

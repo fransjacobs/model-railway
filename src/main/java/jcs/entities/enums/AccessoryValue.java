@@ -72,11 +72,11 @@ public enum AccessoryValue {
         }
         switch (dbValue) {
             case "R":
-                return "RED";
+                return "Red";
             case "G":
-                return "GREEN";
+                return "Green";
             default:
-                return "OFF";
+                return "Off";
         }
     }
 

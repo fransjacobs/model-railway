@@ -130,12 +130,14 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists functions CASCADE CONSTRAINTS");
         stmt.executeUpdate("DROP TABLE if exists jcsproperties CASCADE CONSTRAINTS;");
         stmt.executeUpdate("DROP TABLE if exists accessories CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists sensors CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
+
         stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists routeelements CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
-        stmt.executeUpdate("DROP TABLE if exists sensors CASCADE CONSTRAINTS");
 
         Logger.trace("Existing schema objects dropped...");
     }
@@ -263,56 +265,30 @@ public class DatabaseCreator {
         Logger.trace("Table routes created...");
     }
 
+    private static void routeElements(Statement stmt) throws SQLException {
+        stmt.executeUpdate("CREATE TABLE ROUTEELEMENTS ("
+                + "ID IDENTITY NOT NULL,"
+                + "ROUTEID VARCHAR(255) NOT NULL,"
+                + "NODEID VARCHAR(255) NOT NULL,"
+                + "TILEID VARCHAR(255) NOT NULL,"
+                + "ACCESSORYVALUE VARCHAR(255),"
+                + "ORDER_SEQ INTEGER NOT NULL DEFAULT 0)");
+
+        stmt.executeUpdate("ALTER TABLE ROUTEELEMENTS ADD CONSTRAINT ROEL_UN UNIQUE (ROUTEID,TILEID,NODEID)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX ROEL_UN_IDX ON ROUTEELEMENTS (ROUTEID,TILEID,NODEID)");
+
+        Logger.trace("Table routeelements created...");
+    }
+
     private static void createForeignKeys(Statement stmt) throws SQLException {
         stmt.executeUpdate("ALTER TABLE functions"
                 + " ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid )"
                 + " REFERENCES locomotives ( id )"
                 + " NOT DEFERRABLE");
 
-//        stmt.executeUpdate("ALTER TABLE accessories"
-//                + " ADD CONSTRAINT soac_acty_fk FOREIGN KEY ( accessory_type )"
-//                + " REFERENCES accessorytypes ( accessory_type )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE accessories"
-//                + " ADD CONSTRAINT soac_stty_fk FOREIGN KEY ( current_status_type )"
-//                + " REFERENCES statustypes ( status_type )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE accessories"
-//                + " ADD CONSTRAINT soac_soac_fk FOREIGN KEY ( soac_id )"
-//                + " REFERENCES accessories ( id )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE accessories"
-//                + " ADD CONSTRAINT soac_siva_fk FOREIGN KEY ( signal_value )"
-//                + " REFERENCES signalvalues ( signal_value )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE layouttiles"
-//                + " ADD CONSTRAINT lati_soac_fk FOREIGN KEY ( soac_id )"
-//                + " REFERENCES accessories ( id )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE layouttiles"
-//                + " ADD CONSTRAINT lati_sens_fk FOREIGN KEY ( sens_id )"
-//                + " REFERENCES sensors ( id )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE driveways"
-//                + " ADD CONSTRAINT from_lati_fk FOREIGN KEY ( from_lati_id )"
-//                + " REFERENCES layouttiles ( id )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE driveways"
-//                + " ADD CONSTRAINT to_lati_fk FOREIGN KEY ( to_lati_id )"
-//                + " REFERENCES layouttiles ( id )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE driveways"
-//                + " ADD CONSTRAINT loco_drwa_fk FOREIGN KEY ( loco_id )"
-//                + " REFERENCES locomotives ( id )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE routes"
-//                + " ADD CONSTRAINT drwa_rout_fk FOREIGN KEY ( drwa_id )"
-//                + " REFERENCES driveways ( id )"
-//                + " NOT DEFERRABLE");
-//        stmt.executeUpdate("ALTER TABLE routes"
-//                + " ADD CONSTRAINT lati_rout_fk FOREIGN KEY ( lati_id )"
-//                + " REFERENCES layouttiles ( id )"
-//                + " NOT DEFERRABLE");
+        stmt.executeUpdate("ALTER TABLE ROUTEELEMENTS ADD CONSTRAINT ROEL_ROUT_FK FOREIGN KEY (ROUTEID) REFERENCES ROUTES(ID)");
+        stmt.executeUpdate("ALTER TABLE ROUTEELEMENTS ADD CONSTRAINT ROEL_TILE_FK FOREIGN KEY (TILEID) REFERENCES TILES(ID)");
+
         Logger.trace("Foreign Keys created...");
     }
 
@@ -345,17 +321,14 @@ public class DatabaseCreator {
                 createTiles(stmt);
 
                 createTrackpower(stmt);
-                //accessoryTypes(stmt);
                 sensors(stmt);
                 locomotives(stmt);
                 functions(stmt);
                 accessories(stmt);
-                //statustypes(stmt);
-                //signalvalues(stmt);
                 jcsproperties(stmt);
-                //trackplan
-                //driveways(stmt);
+
                 routes(stmt);
+                routeElements(stmt);
 
                 createForeignKeys(stmt);
 

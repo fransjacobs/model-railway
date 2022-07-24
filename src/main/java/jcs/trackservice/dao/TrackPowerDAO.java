@@ -31,6 +31,7 @@ import jcs.entities.TrackPower;
  *
  * @author frans
  */
+@Deprecated
 public class TrackPowerDAO extends AbstractDAO<TrackPower> {
 
   private static final String INS_TRPO_STMT = "insert into TRACKPOWER (STATUS,FEEDBACKSOURCE,LASTUPDATED,ID) values(?,?,?,?)";
