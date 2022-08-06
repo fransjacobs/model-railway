@@ -141,6 +141,7 @@ public class RouteElementDAOTest {
     public void testPersist() {
         System.out.println("persist");
         RouteElement routeElement = new RouteElement("bk-2+|bk-3-", "bk-2+", "bk-2", null, 0);
+
         RouteElementDAO instance = new RouteElementDAO();
         BigDecimal expResult = new BigDecimal(18);
         BigDecimal result = instance.persist(routeElement);
@@ -152,6 +153,26 @@ public class RouteElementDAOTest {
         assertEquals(routeElement, re);
     }
 
+    
+    @Test
+    public void testPersist2() {
+        System.out.println("persist2");
+        RouteElement routeElement = new RouteElement("bk-2+|bk-3-", "sw-2-R", "sw-2", AccessoryValue.RED, 3);
+
+
+        RouteElementDAO instance = new RouteElementDAO();
+        BigDecimal expResult = new BigDecimal(18);
+        BigDecimal result = instance.persist(routeElement);
+        assertEquals(expResult, result);
+
+        routeElement.setId(expResult);
+
+        RouteElement re = instance.findById(expResult);
+        assertEquals(routeElement, re);
+    }
+    
+    
+    
     /**
      * Test of remove method, of class RouteElementDAO.
      */

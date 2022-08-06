@@ -23,7 +23,9 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import jcs.entities.enums.AccessoryValue;
 import org.beryx.awt.color.ColorFactory;
+import org.tinylog.Logger;
 
 public class Route implements JCSEntity, Serializable {
 
@@ -43,10 +45,18 @@ public class Route implements JCSEntity, Serializable {
     }
 
     public Route(String fromId, String toId, List<String> elementIds) {
-        this(null, fromId, toId, null, elementIds);
+        this(null, fromId, toId, null, elementIds, createdRouteElementsFromElements(fromId, toId, elementIds));
     }
 
-    public Route(String id, String fromId, String toId, String color, List<String> elementIds) {
+    public Route(String fromId, String toId, String color, List<String> elementIds) {
+        this(null, fromId, toId, color, elementIds, createdRouteElementsFromElements(fromId, toId, elementIds));
+    }
+
+    public Route(String id, String fromId, String toId, String color, List<RouteElement> routeElements) {
+        this(id, fromId, toId, color, toElementIds(routeElements), routeElements);
+    }
+
+    public Route(String id, String fromId, String toId, String color, List<String> elementIds, List<RouteElement> routeElements) {
         if (id == null) {
             this.id = fromId + "|" + toId;
         } else {
@@ -64,6 +74,50 @@ public class Route implements JCSEntity, Serializable {
             }
         }
         this.elementIds = elementIds;
+        this.routeElements = routeElements;
+    }
+
+    private static List<RouteElement> createdRouteElementsFromElements(String fromId, String toId, List<String> elementIds) {
+        List<RouteElement> rel = new LinkedList<>();
+        for (int i = 0; i < elementIds.size(); i++) {
+            String nodeId = elementIds.get(i);
+            
+            String tileId;
+            if(nodeId.endsWith("-R")) {
+                tileId = nodeId.replace("-R","");
+            }
+            else if(nodeId.endsWith("-G")) {
+                tileId = nodeId.replace("-G","");
+            }
+            else if(nodeId.endsWith("-") || nodeId.endsWith("+")) {
+                tileId = nodeId.substring(0,nodeId.length() -1);
+            }
+            else {
+                tileId = nodeId;
+            }
+
+            AccessoryValue accessoryValue = null;
+            if (nodeId.endsWith("-R")) {
+                accessoryValue = AccessoryValue.RED;
+            } else if (nodeId.endsWith("-G")) {
+                accessoryValue = AccessoryValue.GREEN;
+            }
+            Integer elementOrder = i;
+
+            RouteElement routeElement = new RouteElement(fromId + "|" + toId, nodeId, tileId, accessoryValue, elementOrder);
+            rel.add(routeElement);
+
+            Logger.trace(routeElement);
+        }
+        return rel;
+    }
+
+    private static List<String> toElementIds(List<RouteElement> routeElements) {
+        List<String> eids = new LinkedList<>();
+        for (RouteElement re : routeElements) {
+            eids.add(re.getNodeId());
+        }
+        return eids;
     }
 
     @Override
@@ -108,21 +162,13 @@ public class Route implements JCSEntity, Serializable {
         this.elementIds = elementIds;
     }
 
-    private void buildRouteElements(List<String> elementIds) {
-        for (int i = 0; i < elementIds.size(); i++) {
-            String nodeId = elementIds.get(i);
-            //TODO
-            //String tileId = 
-            //String av =        
-        }
-    }
-
     public List<RouteElement> getRouteElements() {
         return routeElements;
     }
 
     public void setRouteElements(List<RouteElement> routeElements) {
         this.routeElements = routeElements;
+        this.elementIds = toElementIds(routeElements);
     }
 
     @Override
@@ -167,13 +213,25 @@ public class Route implements JCSEntity, Serializable {
     @Override
     public String toLogString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Path: ");
+        sb.append("Route: ");
         sb.append(this.id);
         sb.append(": ");
-        if (this.elementIds != null && !this.elementIds.isEmpty()) {
-            for (String e : this.elementIds) {
-                sb.append(e);
-                if (!e.equals(this.toId)) {
+        if (this.routeElements != null && !this.routeElements.isEmpty()) {
+            for (RouteElement re : this.routeElements) {
+                sb.append(re.getNodeId());
+                if (!re.getNodeId().equals(re.getTileId())) {
+                    sb.append("[");
+                    sb.append(re.getTileId());
+                    sb.append("]");
+                }
+
+                if (re.getAccessoryValue() != null) {
+                    sb.append("[");
+                    sb.append(re.getAccessoryValue());
+                    sb.append("]");
+                }
+
+                if (!re.getNodeId().equals(this.toId)) {
                     sb.append(" -> ");
                 }
             }

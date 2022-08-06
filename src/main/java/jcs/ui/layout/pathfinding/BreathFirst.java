@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import jcs.entities.Route;
+import jcs.ui.layout.LayoutUtil;
 import org.tinylog.Logger;
 
 /**
@@ -131,6 +132,13 @@ public class BreathFirst {
         nodeCache.putAll(graph);
     }
 
+//    private Route createRouteEntity(Node from, Node to, List<Node> nodes) {
+//        Route route = new Route(from.getId(),to.getId()); 
+//        
+//        
+//        Logger.trace("#: "+route.toLogString());
+//        return route;
+//    }
     public static void main(String[] a) {
         System.setProperty("trackServiceSkipControllerInit", "true");
         BreathFirst bf = new BreathFirst();
@@ -140,26 +148,22 @@ public class BreathFirst {
         List<List<Node>> candidateRoutes = bf.layoutAnalyzer.getAllBlockToBlockNodes();
 
         Logger.trace("Try to route " + candidateRoutes.size() + " Possible block to block routes");
-
-        List<List<Node>> driveways = new ArrayList<>();
-
         for (List<Node> fromTo : candidateRoutes) {
             Node from = fromTo.get(0);
             Node to = fromTo.get(1);
-
-            //if ("bk-1-".equals(from.getId()) && "bk-2-".equals(from.getId())) {
-            List<Node> driveway = bf.search(from, to);
-            if (driveway != null) {
-                driveways.add(driveway);
-            }
-            //}
+            bf.search(from, to);
         }
 
         Logger.trace("Found " + bf.routes.size() + " routes");
 
         for (Route route : bf.routes.values()) {
+            LayoutUtil.persist(route);
             Logger.trace(route.toLogString());
-
+        }
+        Logger.trace("#########");
+        List<Route> rl = LayoutUtil.getRoutes();
+        for (Route r : rl) {
+            Logger.trace(r.toLogString());
         }
 
         System.exit(0);

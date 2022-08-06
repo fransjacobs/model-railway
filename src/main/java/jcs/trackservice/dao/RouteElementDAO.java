@@ -64,7 +64,8 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
         ps.setString(2, routeElement.getNodeId());
         ps.setString(3, routeElement.getTileId());
         if (routeElement.getAccessoryValue() != null) {
-            ps.setString(4, routeElement.getAccessoryValue().getDBValue());
+            String dbv = routeElement.getAccessoryValue().getDBValue();
+            ps.setString(4, dbv);
         } else {
             ps.setNull(4, Types.VARCHAR);
         }
@@ -88,7 +89,7 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
     }
 
     public List<RouteElement> findByRouteId(String key) {
-        String stmt = "select * from routeelements where routeid = ?";
+        String stmt = "select * from routeelements where routeid = ? order by ORDER_SEQ";
         return this.findBy(key, stmt);
     }
 
@@ -103,7 +104,7 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
             statement = UPD_DW_STMT;
         }
 
-        upsert(routeElement, statement);
+        upsert(routeElement, statement, true);
 
         return routeElement.getId();
     }
@@ -112,5 +113,10 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
     public void remove(RouteElement routeElement) {
         String stmt = "delete from routeelements where id = ?";
         this.remove(routeElement, stmt);
+    }
+
+    public void removeByRouteId(String routeId) {
+        String stmt = "delete from routeelements where routeid = ?";
+        this.remove(routeId, stmt);
     }
 }

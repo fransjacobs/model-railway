@@ -29,6 +29,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.JCSEntity;
 import jcs.entities.JCSProperty;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.Route;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
@@ -98,13 +99,10 @@ public interface TrackService {
 
     void removeAccessoryListener(AccessoryListener listener);
 
-    //void removeAllAccessoryListeners();
-    //void notifyAllAccessoryListeners();
     void addSensorListener(SensorListener listener);
 
     void removeSensorListener(SensorListener listener);
 
-    //void notifyAllSensorListeners();
     //Sensors
     List<SensorBean> getSensors();
 
@@ -129,7 +127,6 @@ public interface TrackService {
     //Generic remove for Loco/accessory/feedback
     void remove(JCSEntity entity);
 
-    //StatusDataConfigParser getControllerInfo();
     String getControllerName();
 
     String getControllerSerialNumber();
@@ -160,7 +157,12 @@ public interface TrackService {
 
     void synchronizeLocomotivesWithController();
 
-    //void synchronizeAccessoriesWithController();
+    List<Route> getRoutes();
+
+    void persist(Route route);
+
+    void remove(Route route);
+
     void synchronizeTurnouts();
 
     void synchronizeSignals();

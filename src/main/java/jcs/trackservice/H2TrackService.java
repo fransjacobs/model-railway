@@ -75,6 +75,10 @@ import static jcs.entities.enums.TileType.STRAIGHT;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
+import jcs.entities.Route;
+import jcs.entities.RouteElement;
+import jcs.trackservice.dao.RouteDAO;
+import jcs.trackservice.dao.RouteElementDAO;
 import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
 import jcs.trackservice.events.VelocityListener;
@@ -88,6 +92,9 @@ public class H2TrackService implements TrackService {
     private final SensorDAO sensDAO;
     private final TileBeanDAO tileDAO;
 
+    private final RouteDAO routeDAO;
+    private final RouteElementDAO routeElementDAO;
+
     private MarklinController controllerService;
 
     private final List<SensorListener> sensorListeners;
@@ -100,7 +107,6 @@ public class H2TrackService implements TrackService {
     private final Properties jcsProperties;
 
     //private StatusDataConfigParser controllerInfo;
-
     private HashMap<String, Image> imageCache;
     private HashMap<String, Image> functionImageCache;
 
@@ -120,6 +126,9 @@ public class H2TrackService implements TrackService {
         funcDAO = new FunctionBeanDAO();
         acceDAO = new AccessoryBeanDAO();
         tileDAO = new TileBeanDAO();
+
+        routeDAO = new RouteDAO();
+        routeElementDAO = new RouteElementDAO();
 
         sensorListeners = new LinkedList<>();
         accessoryListeners = new LinkedList<>();
@@ -149,63 +158,6 @@ public class H2TrackService implements TrackService {
         });
     }
 
-    //TODO clean this up!
-//    private boolean connectController() {
-//
-//        JCS.logProgress("Connecting to Central Station");
-//        String controllerImpl = System.getProperty("CS3");
-//        if (controllerService == null) {
-//            try {
-//                this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
-//            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-//                Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
-//            }
-//        }
-//
-//        JCS.logProgress("Obtaining the last state of all items...");
-//
-//        //Configure the sensors
-//        int sensorCount = 0;//controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
-//        List<SensorBean> allSensors = sensDAO.findAll();
-//        if (sensorCount != allSensors.size()) {
-//            Logger.debug("The Sensor count has changed since last run from " + allSensors.size() + " to " + sensorCount + "...");
-//            //remove sensors which are not in the system
-//            if (allSensors.size() > sensorCount) {
-//                for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
-//                    SensorBean s = this.sensDAO.find(contactId);
-//                    if (s == null) {
-//                        //remove the sensor
-//                        sensDAO.remove(s);
-//                    }
-//                }
-//            }
-//            for (int contactId = 1; contactId <= sensorCount; contactId++) {
-//                //is there a sensor in the database?
-//                SensorBean s = this.sensDAO.find(contactId);
-//                if (s == null) {
-//                    String name = "m" + SensorBean.calculateModuleNumber(contactId) + "p" + SensorBean.calculatePortNumber(contactId);
-//                    String description = name;
-//                    //create the sensor
-//                    s = new SensorBean(contactId, name, description, 0, 0, 0, 0);
-//                    if (s.getId() != null) {
-//                        sensDAO.persist(s);
-//                    }
-//                }
-//            }
-//        } else {
-//            Logger.trace("The Sensor count has not changed since last run...");
-//        }
-//        if (controllerService != null) {
-//            this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
-//            this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
-//            this.controllerService.addFunctionMessageEventListener(new FunctionMessageListener(this));
-//            this.controllerService.addDirectionMessageEventListener(new DirectionMessageListener(this));
-//            this.controllerService.addVelocityMessageEventListener(new VelocityMessageListener(this));
-//        }
-//
-//        return this.controllerService != null && this.controllerService.isConnected();
-//
-//    }
     @Override
     public final boolean connect() {
         JCS.logProgress("Connecting to Central Station");
@@ -539,6 +491,34 @@ public class H2TrackService implements TrackService {
             }
             persist(tb);
         }
+    }
+
+    @Override
+    public List<Route> getRoutes() {
+        List<Route> routes = this.routeDAO.findAll();
+
+        for (Route r : routes) {
+            List<RouteElement> elements = this.routeElementDAO.findByRouteId(r.getId());
+            r.setRouteElements(elements);
+        }
+        return routes;
+    }
+
+    @Override
+    public void persist(Route route) {
+        this.routeDAO.persist(route);
+
+        //first remove all elements if any
+        this.routeElementDAO.removeByRouteId(route.getId());
+        for (RouteElement re : route.getRouteElements()) {
+            this.routeElementDAO.persist(re);
+        }
+    }
+
+    @Override
+    public void remove(Route route) {
+        this.routeElementDAO.removeByRouteId(route.getId());
+        this.routeDAO.remove(route);
     }
 
     @Override
@@ -927,3 +907,61 @@ public class H2TrackService implements TrackService {
     }
 
 }
+
+//TODO clean this up!
+//    private boolean connectController() {
+//
+//        JCS.logProgress("Connecting to Central Station");
+//        String controllerImpl = System.getProperty("CS3");
+//        if (controllerService == null) {
+//            try {
+//                this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+//            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+//                Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
+//            }
+//        }
+//
+//        JCS.logProgress("Obtaining the last state of all items...");
+//
+//        //Configure the sensors
+//        int sensorCount = 0;//controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
+//        List<SensorBean> allSensors = sensDAO.findAll();
+//        if (sensorCount != allSensors.size()) {
+//            Logger.debug("The Sensor count has changed since last run from " + allSensors.size() + " to " + sensorCount + "...");
+//            //remove sensors which are not in the system
+//            if (allSensors.size() > sensorCount) {
+//                for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
+//                    SensorBean s = this.sensDAO.find(contactId);
+//                    if (s == null) {
+//                        //remove the sensor
+//                        sensDAO.remove(s);
+//                    }
+//                }
+//            }
+//            for (int contactId = 1; contactId <= sensorCount; contactId++) {
+//                //is there a sensor in the database?
+//                SensorBean s = this.sensDAO.find(contactId);
+//                if (s == null) {
+//                    String name = "m" + SensorBean.calculateModuleNumber(contactId) + "p" + SensorBean.calculatePortNumber(contactId);
+//                    String description = name;
+//                    //create the sensor
+//                    s = new SensorBean(contactId, name, description, 0, 0, 0, 0);
+//                    if (s.getId() != null) {
+//                        sensDAO.persist(s);
+//                    }
+//                }
+//            }
+//        } else {
+//            Logger.trace("The Sensor count has not changed since last run...");
+//        }
+//        if (controllerService != null) {
+//            this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
+//            this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
+//            this.controllerService.addFunctionMessageEventListener(new FunctionMessageListener(this));
+//            this.controllerService.addDirectionMessageEventListener(new DirectionMessageListener(this));
+//            this.controllerService.addVelocityMessageEventListener(new VelocityMessageListener(this));
+//        }
+//
+//        return this.controllerService != null && this.controllerService.isConnected();
+//
+//    }

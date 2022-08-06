@@ -82,9 +82,9 @@ public enum AccessoryValue {
 
     private static String translate2DBValue(String value) {
         switch (value) {
-            case "RED":
+            case "Red":
                 return "R";
-            case "GREEN":
+            case "Green":
                 return "G";
             default:
                 return "O";

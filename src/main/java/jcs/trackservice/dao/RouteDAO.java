@@ -89,7 +89,7 @@ public class RouteDAO extends AbstractDAO<Route> {
             statement = UPD_DW_STMT;
         }
 
-        upsert(route, statement);
+        upsert(route, statement,false);
 
         return route.getId();
     }
