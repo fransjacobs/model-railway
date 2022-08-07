@@ -54,7 +54,7 @@ class TCPConnection implements CS3Connection {
         try {
             if (socket == null || !socket.isConnected()) {
                 socket = new Socket(cs3Address, CS3Connection.CS3_RX_PORT);
-                socket.setSoTimeout(5000);
+                socket.setSoTimeout(10000);
 
                 dos = new DataOutputStream(socket.getOutputStream());
                 messageReceiver = new ClientMessageReceiver(socket);

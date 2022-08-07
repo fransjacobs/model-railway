@@ -756,7 +756,9 @@ public class LayoutPanel extends JPanel {
 
     private void routeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
         Logger.debug("Start Routing...");
-        this.canvas.routeLayout();
+        //this.canvas.routeLayout();
+        
+        this.canvas.showRoutesDialog();
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
@@ -834,6 +836,9 @@ public class LayoutPanel extends JPanel {
 
             f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+            layoutPanel.loadLayout();
+            
+            
             f.pack();
 
             Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

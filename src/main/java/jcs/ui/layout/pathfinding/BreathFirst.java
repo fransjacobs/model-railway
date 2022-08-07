@@ -18,13 +18,14 @@
  */
 package jcs.ui.layout.pathfinding;
 
-import java.util.ArrayList;
+import java.awt.Point;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import jcs.entities.Route;
 import jcs.ui.layout.LayoutUtil;
+import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -128,41 +129,73 @@ public class BreathFirst {
     }
 
     public void setGraph(Map<String, Node> graph) {
-        nodeCache.clear();
-        nodeCache.putAll(graph);
+        this.nodeCache.clear();
+        this.nodeCache.putAll(graph);
+        this.routes.clear();
     }
 
-//    private Route createRouteEntity(Node from, Node to, List<Node> nodes) {
-//        Route route = new Route(from.getId(),to.getId()); 
-//        
-//        
-//        Logger.trace("#: "+route.toLogString());
-//        return route;
-//    }
-    public static void main(String[] a) {
-        System.setProperty("trackServiceSkipControllerInit", "true");
-        BreathFirst bf = new BreathFirst();
+    public void buildGraph(Map<Point, Tile> tiles) {
+        setGraph(layoutAnalyzer.buildGraph(tiles));
+    }
 
-        bf.setGraph(bf.layoutAnalyzer.buildGraph(jcs.ui.layout.LayoutUtil.loadLayout(true, false)));
+    public Route getRoute(String id) {
+        return this.routes.get(id);
+    }
 
-        List<List<Node>> candidateRoutes = bf.layoutAnalyzer.getAllBlockToBlockNodes();
+    public List<Route> getRoutes() {
+        List<Route> rl = new LinkedList<>();
+        rl.addAll(this.routes.values());
+        return rl;
+    }
 
+    public void routeAll() {
+        this.routes.clear();
+
+        List<List<Node>> candidateRoutes = layoutAnalyzer.getAllBlockToBlockNodes();
         Logger.trace("Try to route " + candidateRoutes.size() + " Possible block to block routes");
         for (List<Node> fromTo : candidateRoutes) {
             Node from = fromTo.get(0);
             Node to = fromTo.get(1);
-            bf.search(from, to);
+            search(from, to);
         }
+        Logger.trace("Found " + routes.size() + " routes");
+    }
 
-        Logger.trace("Found " + bf.routes.size() + " routes");
+    public void persistRoutes() {
+        for (Route route : this.routes.values()) {
+            LayoutUtil.persist(route);
+        }
+    }
 
-        for (Route route : bf.routes.values()) {
+    public static void main(String[] a) {
+        System.setProperty("trackServiceSkipControllerInit", "true");
+        BreathFirst bf = new BreathFirst();
+
+        //bf.setGraph(bf.layoutAnalyzer.buildGraph(jcs.ui.layout.LayoutUtil.loadLayout(true, false)));
+        bf.buildGraph(jcs.ui.layout.LayoutUtil.loadLayout(true, false));
+
+//        List<List<Node>> candidateRoutes = bf.layoutAnalyzer.getAllBlockToBlockNodes();
+//
+//        Logger.trace("Try to route " + candidateRoutes.size() + " Possible block to block routes");
+//        for (List<Node> fromTo : candidateRoutes) {
+//            Node from = fromTo.get(0);
+//            Node to = fromTo.get(1);
+//            bf.search(from, to);
+//        }
+//
+//        Logger.trace("Found " + bf.routes.size() + " routes");
+        bf.routeAll();
+
+        List<Route> rl = bf.getRoutes();
+
+        for (Route route : rl) {
             LayoutUtil.persist(route);
             Logger.trace(route.toLogString());
         }
+
         Logger.trace("#########");
-        List<Route> rl = LayoutUtil.getRoutes();
-        for (Route r : rl) {
+        List<Route> prl = LayoutUtil.getRoutes();
+        for (Route r : prl) {
             Logger.trace(r.toLogString());
         }
 

@@ -32,7 +32,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,10 +39,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import jcs.entities.AccessoryBean;
+import jcs.entities.Route;
+import jcs.entities.RouteElement;
 import jcs.entities.TileBean;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.enums.Direction;
@@ -53,7 +56,6 @@ import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
 import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.BreathFirst;
-import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
@@ -87,6 +89,10 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 
     private Tile movingTile;
 
+    private RoutesDialog routesDialog;
+
+    private final Set<String> selectedRoute;
+
     /**
      * Creates new form GridsCanvas
      */
@@ -96,6 +102,9 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 
         this.selectedTiles = new HashSet<>();
         this.movingTiles = new HashSet<>();
+
+        this.selectedRoute = new HashSet<>();
+
         this.executor = Executors.newSingleThreadExecutor();
         //Default 
         this.mode = Mode.SELECT;
@@ -108,6 +117,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     private void postInit() {
+        routesDialog = new RoutesDialog(getParentFrame(), false, this);
     }
 
     @Override
@@ -116,8 +126,10 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         Graphics2D g2 = (Graphics2D) g.create();
 
         Set<Tile> snapshot;
+        Set<String> routeSnapshot;
         synchronized (tiles) {
             snapshot = new HashSet<>(tiles.values());
+            routeSnapshot = new HashSet<>(selectedRoute);
         }
 
         if (this.drawGrid) {
@@ -136,8 +148,13 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
                     tile.setBackgroundColor(Color.white);
                 }
 
-                tile.drawTile(g2, drawGrid);
+                if (routeSnapshot.contains(tile.getId())) {
+                    tile.setTrackColor(Color.darkGray);
+                } else {
+                    tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
+                }
 
+                tile.drawTile(g2, drawGrid);
                 tile.drawCenterPoint(g2, Color.magenta, 3);
             }
         }
@@ -593,8 +610,8 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         if (signal.getAccessoryBean() != null) {
             AccessoryBean ab = signal.getAccessoryBean();
             ab.toggle();
-            Logger.trace("A: "+ab.getAddress()+" S: "+ab.getStates()+" P: "+ab.getPosition());
-            
+            Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
+
             TrackServiceFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
         } else {
             Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
@@ -964,18 +981,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     private java.awt.Frame getParentFrame() {
-        java.awt.Frame frame = null;
-        java.awt.Container container;
-        int compCount = 10;
-        while (compCount > 0) {
-            container = this.getParent();
-            if (container != null && container instanceof java.awt.Frame) {
-                frame = (java.awt.Frame) container;
-                compCount = 0;
-            } else {
-                compCount--;
-            }
-        }
+        JFrame frame = (JFrame) SwingUtilities.getRoot(this);
         return frame;
     }
 
@@ -1079,56 +1085,40 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     void routeLayout() {
-        //only routes from block to block so
-        List<Block> blocks = new ArrayList<>();
-        //Find blocks..
-        Set<Tile> snapshot = new HashSet<>(tiles.values());
-        Logger.trace("Layout has " + snapshot.size() + " tiles...");
-        for (Tile b : snapshot) {
-            if (b instanceof Block) {
-                blocks.add((Block) b);
-            }
-        }
-        Logger.trace("Layout has " + blocks.size() + " blocks...");
-
-        //Router2 r = new Router2();
-        //r.setGraph(snapshot);
-        BreathFirst bfr = new BreathFirst();
-        //bfr.setGraph(snapshot);
-
-//        Color[] colors = {Color.blue, Color.cyan, Color.magenta, Color.orange, Color.pink, Color.red, Color.yellow, Color.green, Color.black, Color.darkGray};
-//        List<List<Tile>> routes = new ArrayList<>();
-//
-//        int col = 0;
-//        for (Block from : blocks) {
-//            for (Block to : blocks) {
-//                if (!from.getId().equals(to.getId())) {
-//                    Logger.trace("Route from: " + from.getId() + " (" + from.getCenterX() + "," + from.getCenterY() + ") to: " + to.getId() + " (" + to.getCenterX() + "," + to.getCenterY() + ")...");
-//                    //List<Tile> route = r.route(from, to);
-//
-//                    List<Tile> route = bfr.search(from, to);
-//                    if (route != null && !route.isEmpty()) {
-//                        routes.add(route);
-//
-//                        for (Tile at : route) {
-//                            at.setTrackColor(colors[col]);
-//                            //?
-//                            //this.tiles.put(at.getCenter(), at);
-//                        }
-//                        if (col < colors.length) {
-//                            col++;
-//                        } else {
-//                            col = 0;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        Logger.debug("Found " + routes.size() + " routes...");
-        this.repaint();
-
+        this.executor.execute(() -> routeLayoutWithBreathFirst());
     }
 
+    void routeLayoutDirect() {
+        routeLayoutWithBreathFirst();
+    }
+
+    private void routeLayoutWithBreathFirst() {
+        //Make sure the layout is saved
+        this.saveTiles();
+
+        BreathFirst bf = new BreathFirst();
+        bf.buildGraph(this.tiles);
+        bf.routeAll();
+        bf.persistRoutes();
+    }
+
+    void showRoutesDialog() {
+        this.routesDialog.setVisible(true);
+    }
+
+    void setSelectRoute(Route route) {
+        this.selectedRoute.clear();
+
+        if (route != null) {
+            List<RouteElement> rel = route.getRouteElements();
+
+            for (RouteElement re : rel) {
+                String id = re.getTileId();
+                this.selectedRoute.add(id);
+            }
+        }
+        this.executor.execute(() -> repaint());
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPopupMenu curvedPopupMenu;
