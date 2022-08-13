@@ -33,6 +33,7 @@ import org.tinylog.Logger;
  */
 public class RoutesDialog extends javax.swing.JDialog {
 
+    private final boolean readonly;
     private final List<Route> routes;
 
     private final LayoutCanvas layoutCanvas;
@@ -45,14 +46,23 @@ public class RoutesDialog extends javax.swing.JDialog {
      * @param parent
      * @param modal
      * @param layoutCanvas
+     * @param readonly
      */
-    public RoutesDialog(java.awt.Frame parent, boolean modal, LayoutCanvas layoutCanvas) {
+    public RoutesDialog(java.awt.Frame parent, boolean modal, LayoutCanvas layoutCanvas, boolean readonly) {
         super(parent, modal);
-
+        this.readonly = readonly;
         this.routes = new LinkedList<>();
         this.layoutCanvas = layoutCanvas;
 
         initComponents();
+
+        if (this.readonly) {
+            this.routeBtn.setEnabled(!readonly);
+            this.routeBtn.setVisible(!readonly);
+
+            this.deleteRoutesBtn.setEnabled(!readonly);
+            this.deleteRoutesBtn.setVisible(!readonly);
+        }
 
         if (this.defaultRouteColor == null) {
             this.defaultRouteColor = Color.darkGray;
@@ -153,7 +163,7 @@ public class RoutesDialog extends javax.swing.JDialog {
     private void routeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_routeListValueChanged
         if (this.routeList.getSelectedIndex() >= 0) {
             Route selected = this.routes.get(this.routeList.getSelectedIndex());
-            Logger.trace("Selected Route: " + selected);
+            Logger.trace("Setting Selected " + selected.toLogString());
             this.layoutCanvas.setSelectRoute(selected);
         }
     }//GEN-LAST:event_routeListValueChanged

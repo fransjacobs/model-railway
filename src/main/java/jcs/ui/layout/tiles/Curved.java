@@ -23,13 +23,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.HashSet;
-import java.util.Set;
 import jcs.entities.TileBean;
-import static jcs.entities.TileBean.DEFAULT_WIDTH;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout.LayoutUtil;
-import static jcs.ui.layout.LayoutUtil.DEFAULT_HEIGHT;
 
 /**
  * Draw a Curved Track

@@ -48,6 +48,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.Route;
 import jcs.entities.RouteElement;
 import jcs.entities.TileBean;
+import jcs.entities.enums.AccessoryValue;
 import jcs.trackservice.TrackServiceFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
@@ -69,6 +70,7 @@ import org.tinylog.Logger;
  */
 public class LayoutCanvas extends JPanel implements RepaintListener {
 
+    private boolean readonly;
     private Mode mode;
     private boolean drawGrid = true;
 
@@ -90,34 +92,34 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     private Tile movingTile;
 
     private RoutesDialog routesDialog;
+    private final Map<String, RouteElement> selectedRouteElements;
 
-    private final Set<String> selectedRoute;
-
-    /**
-     * Creates new form GridsCanvas
-     */
     public LayoutCanvas() {
+        this(false);
+    }
+
+    public LayoutCanvas(boolean readonly) {
+        this.readonly = readonly;
         this.tiles = new HashMap<>();
         this.altTiles = new HashMap<>();
 
         this.selectedTiles = new HashSet<>();
         this.movingTiles = new HashSet<>();
 
-        this.selectedRoute = new HashSet<>();
+        this.selectedRouteElements = new HashMap<>();
 
         this.executor = Executors.newSingleThreadExecutor();
-        //Default 
+
         this.mode = Mode.SELECT;
         this.orientation = Orientation.EAST;
         this.direction = Direction.CENTER;
 
         initComponents();
-
         postInit();
     }
 
     private void postInit() {
-        routesDialog = new RoutesDialog(getParentFrame(), false, this);
+        routesDialog = new RoutesDialog(getParentFrame(), false, this, this.readonly);
     }
 
     @Override
@@ -126,10 +128,11 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         Graphics2D g2 = (Graphics2D) g.create();
 
         Set<Tile> snapshot;
-        Set<String> routeSnapshot;
+        Map<String, RouteElement> routeSnapshot;
+
         synchronized (tiles) {
             snapshot = new HashSet<>(tiles.values());
-            routeSnapshot = new HashSet<>(selectedRoute);
+            routeSnapshot = new HashMap<>(this.selectedRouteElements);
         }
 
         if (this.drawGrid) {
@@ -142,20 +145,36 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         for (Tile tile : snapshot) {
             if (tile != null) {
                 tile.setDrawOutline(drawGrid);
+
                 if (selectedTiles.contains(tile.getCenter())) {
                     tile.setBackgroundColor(Color.yellow);
                 } else {
                     tile.setBackgroundColor(Color.white);
                 }
 
-                if (routeSnapshot.contains(tile.getId())) {
-                    tile.setTrackColor(Color.darkGray);
+                if (routeSnapshot.containsKey(tile.getId())) {
+                    if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
+                        RouteElement re = routeSnapshot.get(tile.getId());
+                        AccessoryValue av = re.getAccessoryValue();
+                        ((Switch) tile).setRouteValue(av, Color.darkGray);
+                        Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
+                    } else {
+                        tile.setTrackColor(Color.darkGray);
+                    }
                 } else {
-                    tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
+                    if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
+                        ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
+                    } else {
+                        tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
+                    }
                 }
 
                 tile.drawTile(g2, drawGrid);
-                tile.drawCenterPoint(g2, Color.magenta, 3);
+
+                //debug
+                if (!this.readonly) {
+                    tile.drawCenterPoint(g2, Color.magenta, 3);
+                }
             }
         }
 
@@ -487,9 +506,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         setOpaque(false);
         setPreferredSize(new Dimension(800, 700));
         addMouseMotionListener(new MouseMotionAdapter() {
-            public void mouseDragged(MouseEvent evt) {
-                formMouseDragged(evt);
-            }
             public void mouseMoved(MouseEvent evt) {
                 formMouseMoved(evt);
             }
@@ -497,12 +513,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 formMouseClicked(evt);
-            }
-            public void mouseEntered(MouseEvent evt) {
-                formMouseEntered(evt);
-            }
-            public void mouseExited(MouseEvent evt) {
-                formMouseExited(evt);
             }
             public void mousePressed(MouseEvent evt) {
                 formMousePressed(evt);
@@ -519,7 +529,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
       Point p = LayoutUtil.snapToGrid(evt.getPoint());
       Logger.trace("Snap Tile X: " + p.getX() + " Y:" + p.getY() + " Mode: " + this.mode);
 
-      //cross tile selectie gaat fout
       Tile tile = this.findTile(p);
 
       //Always make a new selection
@@ -562,15 +571,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
       this.repaint();
 
   }//GEN-LAST:event_formMouseClicked
-
-
-  private void formMouseDragged(MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
-//      this.movedPoint = AbstractTile2.snapToGrid(evt.getX(), evt.getY());
-//      Logger.trace("Moved point: " + this.movedPoint + " button " + evt.getButton() + " " + evt.paramString());
-//      if (!this.selectedTiles.isEmpty()) {
-//
-//      }
-  }//GEN-LAST:event_formMouseDragged
 
     private void executeControlActionForTile(Tile tile, Point p) {
         TileType tt = tile.getTileType();
@@ -786,12 +786,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
       }
   }//GEN-LAST:event_formMouseReleased
 
-  private void formMouseExited(MouseEvent evt) {//GEN-FIRST:event_formMouseExited
-      //Logger.trace("X: " + evt.getX() + " Y:" + evt.getY());
-      //this.mouseInCanvas = false;
-      //this.repaint();
-  }//GEN-LAST:event_formMouseExited
-
   private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
       Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
@@ -809,11 +803,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
           this.mouseLocation = null;
       }
   }//GEN-LAST:event_verticalMIActionPerformed
-
-  private void formMouseEntered(MouseEvent evt) {//GEN-FIRST:event_formMouseEntered
-      //Logger.trace("X: " + evt.getX() + " Y:" + evt.getY());
-      //this.mouseInCanvas = true;
-  }//GEN-LAST:event_formMouseEntered
 
   private void rightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightMIActionPerformed
       Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
@@ -990,7 +979,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 
         //make copy as the map could be cleared
         Set<Point> snapshot = new HashSet<>(selectedTiles);
-
         for (Point p : snapshot) {
             Logger.trace("Selected Tile @ " + p);
             if (this.tiles.containsKey(p)) {
@@ -1015,8 +1003,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
                 this.selectedTiles.addAll(t.getAllPoints());
             }
         }
-        //this.executor.execute(() -> notifySelectionModeChange());
-        //notifySelectionModeChange();
         this.executor.execute(() -> repaint());
     }
 
@@ -1046,9 +1032,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
                 this.selectedTiles.addAll(t.getAllPoints());
             }
         }
-
-        //this.executor.execute(() -> notifySelectionModeChange());
-        //notifySelectionModeChange();
         this.executor.execute(() -> repaint());
     }
 
@@ -1078,14 +1061,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
                 this.selectedTiles.addAll(t.getAllPoints());
             }
         }
-
-        //this.executor.execute(() -> notifySelectionModeChange());
-        //notifySelectionModeChange();
         this.executor.execute(() -> repaint());
-    }
-
-    void routeLayout() {
-        this.executor.execute(() -> routeLayoutWithBreathFirst());
     }
 
     void routeLayoutDirect() {
@@ -1107,16 +1083,23 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     void setSelectRoute(Route route) {
-        this.selectedRoute.clear();
-
+        selectedRouteElements.clear();
         if (route != null) {
             List<RouteElement> rel = route.getRouteElements();
-
             for (RouteElement re : rel) {
                 String id = re.getTileId();
-                this.selectedRoute.add(id);
+                String nodeId = re.getNodeId();
+                if (id.startsWith("sw-") || id.startsWith("cs-")) {
+                    //Switches are 2 times in there, only the one with a value is needed
+                    if (!id.equals(nodeId)) {
+                        selectedRouteElements.put(id, re);
+                    }
+                } else {
+                    selectedRouteElements.put(id, re);
+                }
             }
         }
+
         this.executor.execute(() -> repaint());
     }
 

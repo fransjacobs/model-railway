@@ -63,7 +63,6 @@ import jcs.JCS;
 import jcs.controller.cs3.events.PowerEvent;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.trackservice.TrackServiceFactory;
-import jcs.ui.layout.DisplayLayoutPanel;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
 import jcs.ui.options.OptionDialog;
@@ -86,6 +85,7 @@ public class JCSFrame extends JFrame implements UICallback {
     public JCSFrame() {
         actionMap = new HashMap<>();
         initComponents();
+
         if (SystemUtils.IS_OS_MAC_OSX) {
             this.quitMI.setVisible(false);
             this.optionsMI.setVisible(false);
@@ -98,7 +98,7 @@ public class JCSFrame extends JFrame implements UICallback {
                 //this.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
             }
 
-            init();
+            initJCS();
 
             if (SystemInfo.isMacFullWindowContentSupported) {
                 //avoid overlap of the red/orange/green buttons and the window title
@@ -109,19 +109,17 @@ public class JCSFrame extends JFrame implements UICallback {
         }
     }
 
-    private void init() {
+    private void initJCS() {
         if (TrackServiceFactory.getTrackService() != null) {
+
             this.setTitle(this.getTitleString());
             this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
 
             this.locomotivesPanel.loadLocomotives();
-
             setCS3Properties();
-
             feedbackMonitor = new FeedbackMonitor();
 
             this.powerButton.setSelected(TrackServiceFactory.getTrackService().isPowerOn());
-
             TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
 
             //Initialize the Touchbar for MacOS
@@ -182,7 +180,6 @@ public class JCSFrame extends JFrame implements UICallback {
         Logger.debug("Show Locomotives");
 
         handlePreferences();
-
     }
 
     public void showTurnouts() {
@@ -237,6 +234,7 @@ public class JCSFrame extends JFrame implements UICallback {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel5 = new JPanel();
         jcsToolBar = new JToolBar();
         connectButton = new JToggleButton();
         filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
@@ -262,7 +260,7 @@ public class JCSFrame extends JFrame implements UICallback {
         jLabel1 = new JLabel();
         diagnosticPanel = new ControllerPanel();
         layoutPanel = new LayoutPanel();
-        overviewPanel = new DisplayLayoutPanel();
+        overviewPanel = new LayoutPanel(true);
         leftPanel = new JPanel();
         locomotivesPanel = new LocomotivePanel();
         bottomLeftPanel = new JPanel();
@@ -304,10 +302,16 @@ public class JCSFrame extends JFrame implements UICallback {
             }
         });
 
+        jPanel5.setName("jPanel5"); // NOI18N
+        FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
+        flowLayout8.setAlignOnBaseline(true);
+        jPanel5.setLayout(flowLayout8);
+
         jcsToolBar.setFloatable(false);
         jcsToolBar.setBorderPainted(false);
         jcsToolBar.setDoubleBuffered(true);
-        jcsToolBar.setMargin(new Insets(1, 1, 1, 40));
+        jcsToolBar.setMargin(new Insets(1, 1, 1, 1));
+        jcsToolBar.setMaximumSize(new Dimension(1050, 42));
         jcsToolBar.setMinimumSize(new Dimension(1000, 42));
         jcsToolBar.setName("ToolBar"); // NOI18N
         jcsToolBar.setOpaque(false);
@@ -442,7 +446,9 @@ public class JCSFrame extends JFrame implements UICallback {
         filler8.setName("filler8"); // NOI18N
         jcsToolBar.add(filler8);
 
-        getContentPane().add(jcsToolBar, BorderLayout.NORTH);
+        jPanel5.add(jcsToolBar);
+
+        getContentPane().add(jPanel5, BorderLayout.NORTH);
 
         statusPanel.setMinimumSize(new Dimension(574, 45));
         statusPanel.setName("statusPanel"); // NOI18N
@@ -737,34 +743,34 @@ public class JCSFrame extends JFrame implements UICallback {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-  private void showLocosMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showLocosMIActionPerformed
-      showLocomotives();
-  }//GEN-LAST:event_showLocosMIActionPerformed
+    private void showLocosMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showLocosMIActionPerformed
+        showLocomotives();
+    }//GEN-LAST:event_showLocosMIActionPerformed
 
-  private void showDiagnosticsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDiagnosticsBtnActionPerformed
-      showDiagnostics();
-  }//GEN-LAST:event_showDiagnosticsBtnActionPerformed
+    private void showDiagnosticsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDiagnosticsBtnActionPerformed
+        showDiagnostics();
+    }//GEN-LAST:event_showDiagnosticsBtnActionPerformed
 
-  private void quitMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_quitMIActionPerformed
-      this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-  }//GEN-LAST:event_quitMIActionPerformed
+    private void quitMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_quitMIActionPerformed
+        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+    }//GEN-LAST:event_quitMIActionPerformed
 
-  private void formWindowClosing(WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-      boolean closed = this.handleQuitRequest();
-      if (closed) {
-          this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-          setVisible(false);
-          dispose();
-      }
-  }//GEN-LAST:event_formWindowClosing
+    private void formWindowClosing(WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        boolean closed = this.handleQuitRequest();
+        if (closed) {
+            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setVisible(false);
+            dispose();
+        }
+    }//GEN-LAST:event_formWindowClosing
 
-  private void optionsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_optionsMIActionPerformed
-      handlePreferences();
-  }//GEN-LAST:event_optionsMIActionPerformed
+    private void optionsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_optionsMIActionPerformed
+        handlePreferences();
+    }//GEN-LAST:event_optionsMIActionPerformed
 
-  private void stopBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopBtnActionPerformed
-      stop();
-  }//GEN-LAST:event_stopBtnActionPerformed
+    private void stopBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopBtnActionPerformed
+        stop();
+    }//GEN-LAST:event_stopBtnActionPerformed
 
     private void showEditDesignBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showEditDesignBtnActionPerformed
         showDesignLayoutPanel();
@@ -897,60 +903,61 @@ public class JCSFrame extends JFrame implements UICallback {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    JPanel bottomLeftPanel;
-    JPanel centerPanel;
-    JToggleButton connectButton;
-    JMenuItem connectMI;
-    JLabel controllerCatalogLbl;
-    JLabel controllerCatalogNumberLbl;
-    JLabel controllerDescriptionLbl;
-    JLabel controllerHostLbl;
-    JLabel controllerHostNameLbl;
-    JLabel controllerLbl;
-    JLabel controllerSerialLbl;
-    JLabel controllerSerialNumberLbl;
-    ControllerPanel diagnosticPanel;
-    JMenuItem editLayout;
-    JMenu fileMenu;
-    Box.Filler filler1;
-    Box.Filler filler2;
-    Box.Filler filler3;
-    Box.Filler filler4;
-    Box.Filler filler5;
-    Box.Filler filler6;
-    Box.Filler filler7;
-    Box.Filler filler8;
-    JLabel jLabel1;
-    JPanel jPanel1;
-    JPanel jPanel2;
-    JPanel jPanel3;
-    JPanel jPanel4;
-    JMenuBar jcsMenuBar;
-    JToolBar jcsToolBar;
-    LayoutPanel layoutPanel;
-    JPanel leftPanel;
-    JSplitPane locoDisplaySP;
-    LocomotivePanel locomotivesPanel;
-    JPanel mainPanel;
-    JMenuItem optionsMI;
-    DisplayLayoutPanel overviewPanel;
-    JToggleButton powerButton;
-    JMenuItem quitMI;
-    JPanel settingsPanel;
-    JButton showDiagnosticsBtn;
-    JButton showEditDesignBtn;
-    JButton showFeedbackMonitorBtn;
-    JMenuItem showHome;
-    JMenuItem showKeyboard;
-    JMenuItem showLocosMI;
-    JButton showOverviewBtn;
-    JMenuItem showSensorMonitor;
-    JPanel statusPanel;
-    JPanel statusPanelLeft;
-    JPanel statusPanelMiddle;
-    JPanel statusPanelRight;
-    JButton stopBtn;
-    JMenu toolsMenu;
-    JMenu viewMenu;
+    private JPanel bottomLeftPanel;
+    private JPanel centerPanel;
+    private JToggleButton connectButton;
+    private JMenuItem connectMI;
+    private JLabel controllerCatalogLbl;
+    private JLabel controllerCatalogNumberLbl;
+    private JLabel controllerDescriptionLbl;
+    private JLabel controllerHostLbl;
+    private JLabel controllerHostNameLbl;
+    private JLabel controllerLbl;
+    private JLabel controllerSerialLbl;
+    private JLabel controllerSerialNumberLbl;
+    private ControllerPanel diagnosticPanel;
+    private JMenuItem editLayout;
+    private JMenu fileMenu;
+    private Box.Filler filler1;
+    private Box.Filler filler2;
+    private Box.Filler filler3;
+    private Box.Filler filler4;
+    private Box.Filler filler5;
+    private Box.Filler filler6;
+    private Box.Filler filler7;
+    private Box.Filler filler8;
+    private JLabel jLabel1;
+    private JPanel jPanel1;
+    private JPanel jPanel2;
+    private JPanel jPanel3;
+    private JPanel jPanel4;
+    private JPanel jPanel5;
+    private JMenuBar jcsMenuBar;
+    private JToolBar jcsToolBar;
+    private LayoutPanel layoutPanel;
+    private JPanel leftPanel;
+    private JSplitPane locoDisplaySP;
+    private LocomotivePanel locomotivesPanel;
+    private JPanel mainPanel;
+    private JMenuItem optionsMI;
+    private LayoutPanel overviewPanel;
+    private JToggleButton powerButton;
+    private JMenuItem quitMI;
+    private JPanel settingsPanel;
+    private JButton showDiagnosticsBtn;
+    private JButton showEditDesignBtn;
+    private JButton showFeedbackMonitorBtn;
+    private JMenuItem showHome;
+    private JMenuItem showKeyboard;
+    private JMenuItem showLocosMI;
+    private JButton showOverviewBtn;
+    private JMenuItem showSensorMonitor;
+    private JPanel statusPanel;
+    private JPanel statusPanelLeft;
+    private JPanel statusPanelMiddle;
+    private JPanel statusPanelRight;
+    private JButton stopBtn;
+    private JMenu toolsMenu;
+    private JMenu viewMenu;
     // End of variables declaration//GEN-END:variables
 }

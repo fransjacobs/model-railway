@@ -39,6 +39,8 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
     private static int idSeq;
 
     protected AccessoryValue value;
+    protected AccessoryValue routeValue;
+    protected Color routeColor;
 
     public Switch(TileBean tileBean) {
         super(tileBean);
@@ -64,6 +66,12 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
     public void setValue(AccessoryValue value) {
         this.value = value;
+        this.image = null;
+    }
+
+    public void setRouteValue(AccessoryValue value, Color routeColor) {
+        this.routeValue = value;
+        this.routeColor = routeColor;
         this.image = null;
     }
 
@@ -99,6 +107,13 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
         if (value == null) {
             this.value = AccessoryValue.OFF;
         }
+        if (routeValue == null) {
+            this.routeValue = AccessoryValue.OFF;
+        }
+
+        if (this.routeColor == null) {
+            this.routeColor = trackColor;
+        }
 
         switch (this.value) {
             case RED:
@@ -110,9 +125,20 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
                 renderStraight(g2, Color.green, backgroundColor);
                 break;
             default:
-                renderStraight(g2, trackColor, backgroundColor);
-                renderDiagonal(g2, trackColor, backgroundColor);
-                break;
+                switch (this.routeValue) {
+                    case RED:
+                        renderStraight(g2, trackColor, backgroundColor);
+                        renderDiagonal(g2, this.routeColor, backgroundColor);
+                        break;
+                    case GREEN:
+                        renderDiagonal(g2, trackColor, backgroundColor);
+                        renderStraight(g2, this.routeColor, backgroundColor);
+                        break;
+                    default:
+                        renderStraight(g2, trackColor, backgroundColor);
+                        renderDiagonal(g2, trackColor, backgroundColor);
+                        break;
+                }
         }
     }
 

@@ -129,7 +129,6 @@ public class JCS extends Thread {
         Logger.info(sb);
         splashScreen.hideSplash();
         splashScreen.close();
-
     }
 
     /**

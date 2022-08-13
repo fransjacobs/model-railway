@@ -23,7 +23,6 @@ import jcs.entities.enums.TileType;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -32,7 +31,6 @@ import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -40,8 +38,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.ui.layout.enums.Mode;
@@ -54,18 +50,16 @@ import org.tinylog.Logger;
  */
 public class LayoutPanel extends JPanel {
 
-    public static final int GRID_SIZE = Tile.GRID;
-
+    private final boolean readonly;
     private Mode mode;
-
     private TileType tileType;
 
-    //private final ExecutorService executor;
-    /**
-     * Creates new form GridsCanvas
-     */
     public LayoutPanel() {
-        //this.executor = Executors.newSingleThreadExecutor();
+      this(false);
+    }
+
+    public LayoutPanel(boolean readonly) {
+        this.readonly = readonly;
         this.mode = Mode.SELECT;
         this.tileType = TileType.STRAIGHT;
         initComponents();
@@ -76,6 +70,76 @@ public class LayoutPanel extends JPanel {
         this.straightBtn.setSelected(true);
         this.canvas.setTileType(tileType);
         this.canvas.setMode(mode);
+             
+        if(this.readonly) {
+            this.canvas.setDrawGrid(!readonly);
+            
+            this.saveBtn.setEnabled(!readonly);
+            this.saveBtn.setVisible(!readonly);
+            this.toolBar.remove(this.saveBtn);
+            
+            this.loadBtn.setEnabled(!readonly);
+            this.loadBtn.setVisible(!readonly);
+            this.toolBar.remove(this.loadBtn);
+            
+            this.repaintBtn.setEnabled(readonly);           
+            this.repaintBtn.setVisible(readonly);           
+
+            this.routeBtn.setEnabled(readonly);
+            this.routeBtn.setVisible(readonly);
+            
+            this.selectBtn.setEnabled(!readonly);
+            this.selectBtn.setVisible(!readonly);
+            this.toolBar.remove(this.selectBtn);
+            
+            this.addBtn.setEnabled(!readonly);
+            this.addBtn.setVisible(!readonly);
+            
+            this.deleteBtn.setEnabled(!readonly);
+            this.deleteBtn.setVisible(!readonly);
+            
+            this.gridBtn.setEnabled(!readonly);
+            this.gridBtn.setVisible(!readonly);
+            
+            this.straightBtn.setEnabled(!readonly);
+            this.straightBtn.setVisible(!readonly);
+            
+            this.curvedBtn.setEnabled(!readonly);                       
+            this.curvedBtn.setVisible(!readonly);                       
+
+            this.blockBtn.setEnabled(!readonly);
+            this.blockBtn.setVisible(!readonly);
+
+            this.sensorBtn.setEnabled(!readonly);
+            this.sensorBtn.setVisible(!readonly);
+
+            this.signalBtn.setEnabled(!readonly);
+            this.signalBtn.setVisible(!readonly);
+
+            this.leftSwitchBtn.setEnabled(!readonly);
+            this.leftSwitchBtn.setVisible(!readonly);
+
+            this.rightSwitchBtn.setEnabled(!readonly);
+            this.rightSwitchBtn.setVisible(!readonly);
+
+            this.crossLBtn.setEnabled(!readonly);
+            this.crossLBtn.setVisible(!readonly);
+
+            this.crossRBtn.setEnabled(!readonly);
+            this.crossRBtn.setVisible(!readonly);
+            
+            this.moveBtn.setEnabled(!readonly);
+            this.moveBtn.setVisible(!readonly);
+
+            this.flipVerticalBtn.setEnabled(!readonly);
+            this.flipVerticalBtn.setVisible(!readonly);
+
+            this.flipHorizontalBtn.setEnabled(!readonly);
+            this.flipHorizontalBtn.setVisible(!readonly);
+
+            this.rotateBtn.setEnabled(!readonly);
+            this.rotateBtn.setVisible(!readonly);
+        }
     }
 
     public void saveLayout() {
@@ -114,12 +178,12 @@ public class LayoutPanel extends JPanel {
         toolBar = new JToolBar();
         saveBtn = new JButton();
         loadBtn = new JButton();
+        repaintBtn = new JButton();
         routeBtn = new JButton();
         filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         selectBtn = new JButton();
         addBtn = new JButton();
         deleteBtn = new JButton();
-        repaintBtn = new JButton();
         filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         gridBtn = new JToggleButton();
         filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
@@ -138,7 +202,7 @@ public class LayoutPanel extends JPanel {
         flipHorizontalBtn = new JButton();
         rotateBtn = new JButton();
         canvasScrollPane = new JScrollPane();
-        canvas = new LayoutCanvas();
+        canvas = new LayoutCanvas(this.readonly);
 
         verticalMI.setText("Vertical");
         verticalMI.addActionListener(new ActionListener() {
@@ -282,6 +346,21 @@ public class LayoutPanel extends JPanel {
         });
         toolBar.add(loadBtn);
 
+        repaintBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
+        repaintBtn.setToolTipText("Repaint");
+        repaintBtn.setFocusable(false);
+        repaintBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        repaintBtn.setMaximumSize(new Dimension(40, 40));
+        repaintBtn.setMinimumSize(new Dimension(38, 38));
+        repaintBtn.setPreferredSize(new Dimension(38, 38));
+        repaintBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        repaintBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                repaintBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(repaintBtn);
+
         routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/route-24.png"))); // NOI18N
         routeBtn.setToolTipText("Route");
         routeBtn.setFocusable(false);
@@ -342,21 +421,6 @@ public class LayoutPanel extends JPanel {
             }
         });
         toolBar.add(deleteBtn);
-
-        repaintBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
-        repaintBtn.setToolTipText("Repaint");
-        repaintBtn.setFocusable(false);
-        repaintBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-        repaintBtn.setMaximumSize(new Dimension(40, 40));
-        repaintBtn.setMinimumSize(new Dimension(38, 38));
-        repaintBtn.setPreferredSize(new Dimension(38, 38));
-        repaintBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-        repaintBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                repaintBtnActionPerformed(evt);
-            }
-        });
-        toolBar.add(repaintBtn);
         toolBar.add(filler3);
 
         gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/grid-2-24.png"))); // NOI18N
@@ -601,7 +665,6 @@ public class LayoutPanel extends JPanel {
         add(canvasScrollPane, BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-
   private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
 //      Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 //
@@ -768,7 +831,6 @@ public class LayoutPanel extends JPanel {
         }
     }//GEN-LAST:event_formComponentHidden
 
-
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
         Logger.trace("SHOWN");
         if (JCS.getJCSFrame() != null) {
@@ -819,34 +881,29 @@ public class LayoutPanel extends JPanel {
 //        }
     }
 
-    public static void main(String args[]) {
-        //System.setProperty("trackServiceAlwaysUseDemo", "true");
-        try {
-            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.error(ex);
-        }
-
-        java.awt.EventQueue.invokeLater(() -> {
-            JFrame f = new JFrame("LayoutCanvas Tester");
-            LayoutPanel layoutPanel = new LayoutPanel();
-            f.add(layoutPanel);
-
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-            layoutPanel.loadLayout();
-            
-            
-            f.pack();
-
-            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-            f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
-
-            f.setVisible(true);
-        });
-    }
+//    public static void main(String args[]) {
+//        //System.setProperty("trackServiceAlwaysUseDemo", "true");
+//        try {
+//            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+//            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+//            Logger.error(ex);
+//        }
+//
+//        java.awt.EventQueue.invokeLater(() -> {
+//            JFrame f = new JFrame("LayoutCanvas Tester");
+//            LayoutPanel layoutPanel = new LayoutPanel();
+//            f.add(layoutPanel);
+//
+//            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            layoutPanel.loadLayout();
+//            f.pack();
+//
+//            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+//            f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
+//            f.setVisible(true);
+//        });
+//    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

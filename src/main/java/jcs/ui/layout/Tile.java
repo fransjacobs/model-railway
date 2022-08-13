@@ -37,7 +37,7 @@ public interface Tile extends Shape {
     public static final int GRID = 20;
     public static final int DEFAULT_WIDTH = GRID * 2;
     public static final int DEFAULT_HEIGHT = GRID * 2;
-    
+
     public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
     Color getTrackColor();
@@ -74,10 +74,6 @@ public interface Tile extends Shape {
 
     void move(int newX, int newY);
 
-    //Point snapToGrid(Point p);
-    //Point snapToGrid(int x, int y);
-    //BufferedImage flipHorizontally(BufferedImage source);
-    //BufferedImage flipVertically(BufferedImage source);
     Orientation getOrientation();
 
     void setOrientation(Orientation orientation);
@@ -121,7 +117,7 @@ public interface Tile extends Shape {
     void setDrawOutline(boolean drawOutline);
 
     TileType getTileType();
-    
+
     void setRepaintListener(RepaintListener listener);
 
 }

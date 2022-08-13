@@ -78,13 +78,14 @@ abstract class AbstractTile implements Shape, Tile {
     protected TileBean tileBean;
 
     protected Color trackColor;
+
     protected Color backgroundColor;
     protected boolean drawName = true;
 
     protected String id;
 
     protected boolean drawOutline = false;
-    
+
     protected RepaintListener repaintListener;
 
     protected AbstractTile(Point center) {
@@ -104,6 +105,7 @@ abstract class AbstractTile implements Shape, Tile {
         this.direction = direction;
         this.center = center;
         this.trackColor = DEFAULT_TRACK_COLOR;
+
         this.backgroundColor = backgroundColor;
         if (this.backgroundColor == null) {
             this.backgroundColor = Color.white;
@@ -128,7 +130,7 @@ abstract class AbstractTile implements Shape, Tile {
 
     @Override
     public final void setTrackColor(Color trackColor) {
-        if (!this.trackColor.equals(trackColor)) {
+        if (!Objects.equals(this.trackColor, trackColor)) {
             this.trackColor = trackColor;
             this.image = null;
         }
@@ -141,7 +143,7 @@ abstract class AbstractTile implements Shape, Tile {
 
     @Override
     public void setBackgroundColor(Color backgroundColor) {
-        if (!this.backgroundColor.equals(backgroundColor)) {
+        if (!Objects.equals(this.backgroundColor, backgroundColor)) {
             this.backgroundColor = backgroundColor;
             this.image = null;
         }
@@ -252,7 +254,6 @@ abstract class AbstractTile implements Shape, Tile {
      *
      * @param g2d the Graphic context
      */
-    //abstract void renderTile(Graphics2D g2d, Color trackColor, Color backgroundColor);
     @Override
     public void drawName(Graphics2D g2) {
 
@@ -500,7 +501,7 @@ abstract class AbstractTile implements Shape, Tile {
                 signalType = ((Signal) this).getSignalType();
             }
 
-            tileBean = new TileBean(tileType, orientation, direction, center, id, signalType,null, null);
+            tileBean = new TileBean(tileType, orientation, direction, center, id, signalType, null, null);
         } else {
             //Synchronize the bean
             this.tileBean.setOrientation(orientation);
@@ -689,9 +690,9 @@ abstract class AbstractTile implements Shape, Tile {
     public void setRepaintListener(RepaintListener repaintListener) {
         this.repaintListener = repaintListener;
     }
-    
+
     protected void repaintTile() {
-        if(this.repaintListener != null) {
+        if (this.repaintListener != null) {
             this.repaintListener.repaintTile(this);
         }
     }
