@@ -102,8 +102,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -140,8 +140,9 @@
                             <finalName>jcs</finalName>
                             <archive>
                                 <manifest>
+                                    <addClasspath>true</addClasspath>
                                     <mainClass>
-                                        lan.wervel.jcs.JCSGUI
+                                        jcs.JCS
                                     </mainClass>
                                 </manifest>
                             </archive>
@@ -152,6 +153,44 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>2.1.0</version>
+                <configuration>
+                    <platforms>
+                        <platform>unix</platform>
+                        <platform>windows</platform>
+                    </platforms>
+                    <assembleDirectory>${project.build.directory}/${project.name}</assembleDirectory>
+                    <repositoryName>lib</repositoryName>
+                    <binFolder>bin</binFolder>
+                    <configurationDirectory>conf</configurationDirectory>
+                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                    <configurationSourceDirectory>src/main/resources</configurationSourceDirectory>
+                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <encoding>UTF-8</encoding>
+                    <logsDirectory>logs</logsDirectory>
+                    <tempDirectory>tmp</tempDirectory>
+                    <programs>
+                        <program>
+                            <mainClass>jcs.JCS</mainClass>
+                            <id>jcs</id>
+                            <jvmSettings>
+                                <extraArguments>
+                                    <extraArgument>-Xms256M</extraArgument>
+                                    <extraArgument>-Xmx1024M</extraArgument>
+                                    <extraArgument>-Dtinylog.writer.level=trace</extraArgument>
+                                    <extraArgument>-Xloggc:@BASEDIR@/logs/jcs_gc.log</extraArgument>
+                                    <extraArgument>-verbose:gc</extraArgument>
+                                    <extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
+                                </extraArguments>
+                            </jvmSettings>
+                        </program>
+                    </programs>
+                </configuration>
             </plugin>
             <!--
             <plugin>
