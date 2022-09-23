@@ -63,7 +63,7 @@
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik</artifactId>
-            <version>1.14</version>
+            <version>1.15</version>
             <type>pom</type>
         </dependency>
         
