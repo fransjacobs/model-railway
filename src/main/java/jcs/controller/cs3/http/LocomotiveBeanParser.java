@@ -174,37 +174,37 @@ public class LocomotiveBeanParser {
         }
         Integer vMin = null;
         if (locoProps.get(VMIN) != null) {
-            vMin = Integer.parseInt(locoProps.get(VMIN));
+            vMin = Integer.valueOf(locoProps.get(VMIN));
         }
         Integer accelerationDelay = null;
         if (locoProps.get(AV) != null) {
-            accelerationDelay = Integer.parseInt(locoProps.get(AV));
+            accelerationDelay = Integer.valueOf(locoProps.get(AV));
         }
         Integer brakeDelay = null;
         if (locoProps.get(BV) != null) {
-            brakeDelay = Integer.parseInt(locoProps.get(BV));
+            brakeDelay = Integer.valueOf(locoProps.get(BV));
         }
         Integer volume = null;
         if (locoProps.get(VOLUME) != null) {
-            volume = Integer.parseInt(locoProps.get(VOLUME));
+            volume = Integer.valueOf(locoProps.get(VOLUME));
         }
         String spm = locoProps.get(SPM);
         Integer velocity = null;
         if (locoProps.get(VELOCITY) != null) {
-            velocity = Integer.parseInt(locoProps.get(VELOCITY));
+            velocity = Integer.valueOf(locoProps.get(VELOCITY));
         }
         Integer direction = null;
         if (locoProps.get(RICHTUNG) != null) {
-            direction = Integer.parseInt(locoProps.get(RICHTUNG));
+            direction = Integer.valueOf(locoProps.get(RICHTUNG));
         }
         String mfxType = locoProps.get(MFXTYPE);
-        String blocks = locoProps.get(BLOCKS);
+        String block = locoProps.get(BLOCKS);
 
         BigDecimal id = new BigDecimal(uid);
 
         LocomotiveBean lb = new LocomotiveBean(id, name, previousName, uid, mfxUid, address, icon, decoderType,
                 mfxSid, tachoMax, vMin, accelerationDelay, brakeDelay, volume, spm,
-                velocity, direction, mfxType, blocks);
+                velocity, direction, mfxType, block, true);
 
         //Ignore functions which have no functionType
         Logger.trace("Loc: " + name + " has " + locoFunctions.size() + " functions");

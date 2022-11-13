@@ -18,6 +18,7 @@
  */
 package jcs.ui;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,8 +65,16 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     public void loadLocomotives() {
         if (TrackServiceFactory.getTrackService() != null) {
             List<LocomotiveBean> locos = TrackServiceFactory.getTrackService().getLocomotives();
+
             ListModel<LocomotiveBean> listModel = new DefaultListModel<>();
-            ((DefaultListModel) listModel).addAll(locos);
+
+            List<LocomotiveBean> filteredLocos = new LinkedList<>();
+            for (LocomotiveBean loc : locos) {
+                if (loc.isShow()) {
+                    filteredLocos.add(loc);
+                }
+            }
+            ((DefaultListModel) listModel).addAll(filteredLocos);
             this.locoList.setModel(listModel);
         }
     }
@@ -323,8 +332,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
                 int velocity = selected.getVelocity();
                 double max = selected.getTachoMax();
                 int sliderValue = (int) Math.round(max / 1000 * velocity);
-                
-                Logger.trace("Change to "+selected+" sliderValue: "+sliderValue);
+
+                Logger.trace("Change to " + selected + " sliderValue: " + sliderValue);
 
                 //set the new slider properties without triggering a change event
                 ChangeListener[] changeListeners = this.velocitySlider.getChangeListeners();

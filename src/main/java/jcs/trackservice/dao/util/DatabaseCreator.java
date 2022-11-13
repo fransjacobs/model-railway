@@ -203,8 +203,9 @@ public class DatabaseCreator {
                 + "velocity           INTEGER, "
                 + "direction          INTEGER, "
                 + "mfxtype            VARCHAR(255), "
-                + "blocks             VARCHAR(255))");
-
+                + "block              VARCHAR(255), "
+                + "show               INTEGER DEFAULT 1 NOT NULL )");
+        
         stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_pk PRIMARY KEY ( id )");
         stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype )");
         Logger.trace("Table locomotives created...");

@@ -48,7 +48,8 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     private Integer velocity;
     private Integer richtung;
     private String mfxType;
-    private String blocks;
+    private String block;
+    private boolean show;
 
     private Image locIcon;
 
@@ -62,7 +63,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
             Long mfxUid, Integer address, String icon, String decoderTypeString,
             String mfxSid, Integer tachoMax, Integer vMin, Integer accelerationDelay,
             Integer brakeDelay, Integer volume, String spm, Integer velocity,
-            Integer direction, String mfxType, String blocks) {
+            Integer direction, String mfxType, String block, boolean show) {
 
         this.id = id;
         this.name = name;
@@ -82,7 +83,8 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.velocity = velocity;
         this.richtung = direction;
         this.mfxType = mfxType;
-        this.blocks = blocks;
+        this.block = block;
+        this.show = show;
 
         functions = new HashMap<>();
     }
@@ -146,8 +148,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     public DecoderType getDecoderType() {
         return DecoderType.get(this.decoderTypeString);
     }
-    
-    
+
     public String getMfxSid() {
         return mfxSid;
     }
@@ -240,12 +241,20 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.mfxType = mfxType;
     }
 
-    public String getBlocks() {
-        return blocks;
+    public String getBlock() {
+        return block;
     }
 
-    public void setBlocks(String blocks) {
-        this.blocks = blocks;
+    public void setBlock(String block) {
+        this.block = block;
+    }
+
+    public boolean isShow() {
+        return show;
+    }
+
+    public void setShow(boolean show) {
+        this.show = show;
     }
 
     public Image getLocIcon() {
@@ -263,8 +272,8 @@ public class LocomotiveBean implements JCSEntity, Serializable {
 
     @Override
     public void setId(Object id) {
-        if (id instanceof BigDecimal) {
-            this.id = (BigDecimal) id;
+        if (id instanceof BigDecimal bigDecimal) {
+            this.id = bigDecimal;
         }
     }
 
@@ -297,7 +306,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
 
     @Override
     public String toLogString() {
-        return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + blocks + ", locIcon=" + locIcon + '}';
+        return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + block + ", locIcon=" + locIcon + '}';
     }
 
     //Convenience
@@ -350,8 +359,9 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         hash = 53 * hash + Objects.hashCode(this.velocity);
         hash = 53 * hash + Objects.hashCode(this.richtung);
         hash = 53 * hash + Objects.hashCode(this.mfxType);
-        hash = 53 * hash + Objects.hashCode(this.blocks);
+        hash = 53 * hash + Objects.hashCode(this.block);
         hash = 53 * hash + Objects.hashCode(this.locIcon);
+        hash = 53 * hash + Objects.hashCode(this.show);
         return hash;
     }
 
@@ -388,7 +398,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         if (!Objects.equals(this.mfxType, other.mfxType)) {
             return false;
         }
-        if (!Objects.equals(this.blocks, other.blocks)) {
+        if (!Objects.equals(this.block, other.block)) {
             return false;
         }
         if (!Objects.equals(this.id, other.id)) {
@@ -422,6 +432,9 @@ public class LocomotiveBean implements JCSEntity, Serializable {
             return false;
         }
         if (!Objects.equals(this.richtung, other.richtung)) {
+            return false;
+        }
+        if (!Objects.equals(this.show, other.show)) {
             return false;
         }
         return Objects.equals(this.locIcon, other.locIcon);

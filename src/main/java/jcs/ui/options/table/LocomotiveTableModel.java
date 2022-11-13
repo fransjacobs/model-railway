@@ -51,7 +51,7 @@ public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
             cols.add("Address");
             cols.add("Decoder");
             cols.add("Icon");
-            //cols.add("Id");
+            cols.add("Show");
             return cols;
         }
         return this.columns;
@@ -68,8 +68,8 @@ public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
                 return device.getDecoderTypeString();
             case 3:
                 return device.getIcon();
-            //case 4:
-            //    return device.getId();
+            case 4:
+                return device.isShow();
             default:
                 return null;
         }
@@ -77,20 +77,14 @@ public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case 0:
-                return String.class;
-            case 1:
-                return Integer.class;
-            case 2:
-                return String.class;
-            case 3:
-                return String.class;
-//            case 4:
-//                return BigDecimal.class;
-            default:
-                return String.class;
-        }
+        return switch (columnIndex) {
+            case 0 -> String.class;
+            case 1 -> Integer.class;
+            case 2 -> String.class;
+            case 3 -> String.class;
+            case 4 -> Boolean.class;
+            default -> String.class;
+        };
     }
 
     @Override
@@ -108,9 +102,9 @@ public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
             case 3:
                 device.setIcon((String) value);
                 break;
-//            case 4:
-//                device.setId((BigDecimal) value);
-//                break;
+            case 4:
+                device.setShow((Boolean) value);
+                break;
             default:
                 break;
         }

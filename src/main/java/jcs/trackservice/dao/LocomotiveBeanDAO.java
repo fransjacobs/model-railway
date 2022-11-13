@@ -32,8 +32,8 @@ import jcs.entities.LocomotiveBean;
  */
 public class LocomotiveBeanDAO extends AbstractDAO<LocomotiveBean> {
 
-    private static final String INS_LOC_STMT = "insert into locomotives (NAME,PREVIOUSNAME,UID,MFXUID,ADDRESS,ICON,DECODERTYPE,MFXSID,TACHOMAX,VMIN,ACCELERATIONDELAY,BRAKEDELAY,VOLUME,SPM,VELOCITY,DIRECTION,MFXTYPE,BLOCKS,ID) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    private static final String UPD_LOC_STMT = "update locomotives set NAME = ?,PREVIOUSNAME = ?,UID = ?,MFXUID = ?,ADDRESS = ?,ICON = ?,DECODERTYPE = ?,MFXSID = ?,TACHOMAX = ?,VMIN = ?,ACCELERATIONDELAY = ?,BRAKEDELAY = ?,VOLUME = ?,SPM = ?,VELOCITY = ?,DIRECTION = ?,MFXTYPE = ?,BLOCKS = ? where id = ?";
+    private static final String INS_LOC_STMT = "insert into locomotives (NAME,PREVIOUSNAME,UID,MFXUID,ADDRESS,ICON,DECODERTYPE,MFXSID,TACHOMAX,VMIN,ACCELERATIONDELAY,BRAKEDELAY,VOLUME,SPM,VELOCITY,DIRECTION,MFXTYPE,BLOCK,SHOW,ID) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    private static final String UPD_LOC_STMT = "update locomotives set NAME = ?,PREVIOUSNAME = ?,UID = ?,MFXUID = ?,ADDRESS = ?,ICON = ?,DECODERTYPE = ?,MFXSID = ?,TACHOMAX = ?,VMIN = ?,ACCELERATIONDELAY = ?,BRAKEDELAY = ?,VOLUME = ?,SPM = ?,VELOCITY = ?,DIRECTION = ?,MFXTYPE = ?,BLOCK = ?, SHOW = ? where id = ?";
 
     public LocomotiveBeanDAO() {
         super();
@@ -58,13 +58,16 @@ public class LocomotiveBeanDAO extends AbstractDAO<LocomotiveBean> {
         Integer velocity = rs.getInt("VELOCITY");
         Integer direction = rs.getInt("DIRECTION");
         String mfxType = rs.getString("MFXTYPE");
-        String blocks = rs.getString("BLOCKS");
+        String block = rs.getString("BLOCK");
+        Integer show = rs.getInt("SHOW");
+
+        boolean showb = show == 1;
 
         BigDecimal id = rs.getBigDecimal("ID");
 
         return new LocomotiveBean(id, name, previousName, uid, mfxUid, address, icon, decoderType,
                 mfxSid, tachoMax, vMin, accelerationDelay, brakeDelay, volume, spm,
-                velocity, direction, mfxType, blocks);
+                velocity, direction, mfxType, block, showb);
     }
 
     @Override
@@ -121,9 +124,11 @@ public class LocomotiveBeanDAO extends AbstractDAO<LocomotiveBean> {
         }
 
         ps.setString(17, loc.getMfxType());
-        ps.setString(18, loc.getBlocks());
-        
-        ps.setBigDecimal(19, loc.getId());
+        ps.setString(18, loc.getBlock());
+
+        ps.setInt(19, (loc.isShow() ? 1 : 0));
+
+        ps.setBigDecimal(20, loc.getId());
     }
 
     @Override

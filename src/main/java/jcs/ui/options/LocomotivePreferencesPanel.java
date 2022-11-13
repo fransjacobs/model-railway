@@ -33,6 +33,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -90,7 +91,7 @@ public class LocomotivePreferencesPanel extends JPanel {
         this.locoTable.getColumnModel().getColumn(2).setPreferredWidth(80);
         //this.locoTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
         this.locoTable.getColumnModel().getColumn(3).setPreferredWidth(200);
-        //this.locoTable.getColumnModel().getColumn(4).setPreferredWidth(150);
+        this.locoTable.getColumnModel().getColumn(4).setPreferredWidth(40);
     }
 
     /**
@@ -114,6 +115,7 @@ public class LocomotivePreferencesPanel extends JPanel {
         locoDetailPanel = new JPanel();
         row1Panel = new JPanel();
         filler3 = new Box.Filler(new Dimension(100, 0), new Dimension(50, 0), new Dimension(100, 32767));
+        showCB = new JCheckBox();
         imageLbl = new JLabel();
         row2Panel = new JPanel();
         nameLbl = new JLabel();
@@ -205,13 +207,15 @@ public class LocomotivePreferencesPanel extends JPanel {
         centerSplitPane.setPreferredSize(new Dimension(1000, 540));
 
         locoTableScrollPane.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        locoTableScrollPane.setMinimumSize(new Dimension(500, 500));
-        locoTableScrollPane.setPreferredSize(new Dimension(500, 500));
+        locoTableScrollPane.setMinimumSize(new Dimension(500, 460));
+        locoTableScrollPane.setPreferredSize(new Dimension(500, 460));
+        locoTableScrollPane.setViewportView(locoTable);
 
         locoTable.setModel(locoTableModel);
         locoTable.setDoubleBuffered(true);
         locoTable.setGridColor(new Color(204, 204, 204));
-        locoTable.setPreferredSize(new Dimension(480, 470));
+        locoTable.setPreferredSize(new Dimension(480, 460));
+        locoTable.setRequestFocusEnabled(false);
         locoTable.setRowHeight(20);
         locoTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         locoTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -236,6 +240,12 @@ public class LocomotivePreferencesPanel extends JPanel {
         flowLayout1.setAlignOnBaseline(true);
         row1Panel.setLayout(flowLayout1);
         row1Panel.add(filler3);
+
+        showCB.setText("Show");
+        showCB.setToolTipText("Show the Locomotive");
+        showCB.setDoubleBuffered(true);
+        showCB.setHorizontalTextPosition(SwingConstants.LEADING);
+        row1Panel.add(showCB);
 
         imageLbl.setHorizontalAlignment(SwingConstants.TRAILING);
         imageLbl.setPreferredSize(new Dimension(128, 48));
@@ -276,6 +286,7 @@ public class LocomotivePreferencesPanel extends JPanel {
         addressSpinner.setModel(new SpinnerNumberModel(0, 0, 80, 1));
         addressSpinner.setDoubleBuffered(true);
         addressSpinner.setEditor(new JSpinner.NumberEditor(addressSpinner, ""));
+        addressSpinner.setEnabled(false);
         addressSpinner.setMinimumSize(new Dimension(50, 26));
         addressSpinner.setName(""); // NOI18N
         addressSpinner.setNextFocusableComponent(nameTF);
@@ -288,6 +299,7 @@ public class LocomotivePreferencesPanel extends JPanel {
         row3Panel.add(decoderLabel);
 
         decoderCB.setModel(new DefaultComboBoxModel<>(new String[] { "mm_prg", "mfx", "dcc", "sx1" }));
+        decoderCB.setEnabled(false);
         row3Panel.add(decoderCB);
 
         locoDetailPanel.add(row3Panel);
@@ -304,6 +316,8 @@ public class LocomotivePreferencesPanel extends JPanel {
         row4Panel.add(tachoMaxLbl);
 
         tachoMaxSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
+        tachoMaxSpinner.setDoubleBuffered(true);
+        tachoMaxSpinner.setEnabled(false);
         tachoMaxSpinner.setPreferredSize(new Dimension(60, 26));
         row4Panel.add(tachoMaxSpinner);
 
@@ -321,6 +335,8 @@ public class LocomotivePreferencesPanel extends JPanel {
         row5Panel.add(minSpeedLbl);
 
         minSpeedSpinner.setModel(new SpinnerNumberModel());
+        minSpeedSpinner.setDoubleBuffered(true);
+        minSpeedSpinner.setEnabled(false);
         minSpeedSpinner.setPreferredSize(new Dimension(60, 26));
         row5Panel.add(minSpeedSpinner);
 
@@ -338,6 +354,8 @@ public class LocomotivePreferencesPanel extends JPanel {
         row6Panel.add(accDelayLbl);
 
         accDelaySpinner.setModel(new SpinnerNumberModel(0, 0, 255, 1));
+        accDelaySpinner.setDoubleBuffered(true);
+        accDelaySpinner.setEnabled(false);
         accDelaySpinner.setPreferredSize(new Dimension(60, 26));
         row6Panel.add(accDelaySpinner);
 
@@ -355,6 +373,8 @@ public class LocomotivePreferencesPanel extends JPanel {
         row7Panel.add(brakeDelayLbl);
 
         brakeDelaySpinner.setModel(new SpinnerNumberModel());
+        brakeDelaySpinner.setDoubleBuffered(true);
+        brakeDelaySpinner.setEnabled(false);
         brakeDelaySpinner.setPreferredSize(new Dimension(60, 26));
         row7Panel.add(brakeDelaySpinner);
 
@@ -372,6 +392,8 @@ public class LocomotivePreferencesPanel extends JPanel {
         row8Panel.add(volumeLbl);
 
         volumeSpinner.setModel(new SpinnerNumberModel());
+        volumeSpinner.setDoubleBuffered(true);
+        volumeSpinner.setEnabled(false);
         volumeSpinner.setPreferredSize(new Dimension(60, 26));
         row8Panel.add(volumeSpinner);
 
@@ -518,17 +540,20 @@ public class LocomotivePreferencesPanel extends JPanel {
     }//GEN-LAST:event_synchronizeBtnActionPerformed
 
     protected LocomotiveBean setLocomotiveValues(LocomotiveBean loco) {
-        Integer address = (Integer) this.addressSpinner.getValue();
-        String decoder = (String) this.decoderCB.getSelectedItem();
+        
+        boolean show = this.showCB.isSelected();
+        
+        //Integer address = (Integer) this.addressSpinner.getValue();
+        //String decoder = (String) this.decoderCB.getSelectedItem();
 
         String name = this.nameTF.getText();
 
-        Integer minSpeed = (Integer) this.minSpeedSpinner.getValue();
-        Integer tachoMax = (Integer) this.tachoMaxSpinner.getValue();
+        //Integer minSpeed = (Integer) this.minSpeedSpinner.getValue();
+        //Integer tachoMax = (Integer) this.tachoMaxSpinner.getValue();
 
-        Integer accDelay = (Integer) this.accDelaySpinner.getValue();
-        Integer brakeDelay = (Integer) this.brakeDelaySpinner.getValue();
-        Integer volume = (Integer) this.volumeSpinner.getValue();
+        //Integer accDelay = (Integer) this.accDelaySpinner.getValue();
+        //Integer brakeDelay = (Integer) this.brakeDelaySpinner.getValue();
+        //Integer volume = (Integer) this.volumeSpinner.getValue();
 
         LocomotiveBean loc;
         if (loco != null) {
@@ -537,14 +562,16 @@ public class LocomotivePreferencesPanel extends JPanel {
             loc = new LocomotiveBean();
         }
 
-        loc.setAddress(address);
-        loc.setDecoderTypeString(decoder);
+        //loc.setAddress(address);
+        //loc.setDecoderTypeString(decoder);
         loc.setName(name);
-        loc.setvMin(minSpeed);
-        loc.setTachoMax(tachoMax);
-        loc.setAccelerationDelay(accDelay);
-        loc.setBrakeDelay(brakeDelay);
-        loc.setVolume(volume);
+        //loc.setvMin(minSpeed);
+        //loc.setTachoMax(tachoMax);
+        //loc.setAccelerationDelay(accDelay);
+        //loc.setBrakeDelay(brakeDelay);
+        //loc.setVolume(volume);
+        
+        loc.setShow(show);
 
         return loc;
     }
@@ -567,6 +594,8 @@ public class LocomotivePreferencesPanel extends JPanel {
             this.accDelaySpinner.setValue(loco.getAccelerationDelay());
             this.brakeDelaySpinner.setValue(loco.getBrakeDelay());
             this.volumeSpinner.setValue(loco.getVolume());
+            this.showCB.setSelected(loco.isShow());
+            
         } else {
             this.imageLbl.setText("ICON");
 
@@ -579,6 +608,7 @@ public class LocomotivePreferencesPanel extends JPanel {
             this.accDelaySpinner.setValue(0);
             this.brakeDelaySpinner.setValue(0);
             this.volumeSpinner.setValue(0);
+            this.showCB.setSelected(false);
         }
     }
 
@@ -648,6 +678,7 @@ public class LocomotivePreferencesPanel extends JPanel {
     private JPanel row9Panel;
     private JButton saveBtn;
     private LocomotiveBean selectedLocomotive;
+    private JCheckBox showCB;
     private JButton synchronizeBtn;
     private JLabel tachoMaxLbl;
     private JSpinner tachoMaxSpinner;
