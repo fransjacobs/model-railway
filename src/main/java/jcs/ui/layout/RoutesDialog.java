@@ -24,7 +24,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
-import jcs.entities.Route;
+import jcs.entities.RouteBean;
 import org.tinylog.Logger;
 
 /**
@@ -34,7 +34,7 @@ import org.tinylog.Logger;
 public class RoutesDialog extends javax.swing.JDialog {
 
     private final boolean readonly;
-    private final List<Route> routes;
+    private final List<RouteBean> routes;
 
     private final LayoutCanvas layoutCanvas;
 
@@ -162,7 +162,7 @@ public class RoutesDialog extends javax.swing.JDialog {
 
     private void routeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_routeListValueChanged
         if (this.routeList.getSelectedIndex() >= 0) {
-            Route selected = this.routes.get(this.routeList.getSelectedIndex());
+            RouteBean selected = this.routes.get(this.routeList.getSelectedIndex());
             Logger.trace("Setting Selected " + selected.toLogString());
             this.layoutCanvas.setSelectRoute(selected);
         }

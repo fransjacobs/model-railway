@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
-public class TrackPower extends ControllableDevice {
+public class TrackPowerBean extends ControllableDevice {
 
   public enum Status {
     ON, OFF, UNKNOWN
@@ -36,15 +36,15 @@ public class TrackPower extends ControllableDevice {
   private Status status;
   private Date lastUpdated;
 
-  public TrackPower() {
+  public TrackPowerBean() {
     this(Status.UNKNOWN, FeedbackSource.OTHER);
   }
 
-  public TrackPower(Status status, FeedbackSource feedbackSource) {
+  public TrackPowerBean(Status status, FeedbackSource feedbackSource) {
     this(status, feedbackSource, null);
   }
 
-  private TrackPower(Status status, FeedbackSource feedbackSource, Date lastUpdated) {
+  private TrackPowerBean(Status status, FeedbackSource feedbackSource, Date lastUpdated) {
     super(1, null);
     this.feedbackSource = feedbackSource;
     this.status = status;
@@ -150,8 +150,8 @@ public class TrackPower extends ControllableDevice {
   }
 
 //  @Override
-//  public TrackPower copy() {
-//    return new TrackPower(this.status, this.feedbackSource, this.lastUpdated);
+//  public TrackPowerBean copy() {
+//    return new TrackPowerBean(this.status, this.feedbackSource, this.lastUpdated);
 //  }
 
   public static FeedbackSource getFeedbackSource(String feedbackSource) {
@@ -194,7 +194,7 @@ public class TrackPower extends ControllableDevice {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final TrackPower other = (TrackPower) obj;
+    final TrackPowerBean other = (TrackPowerBean) obj;
     if (this.feedbackSource != other.feedbackSource) {
       return false;
     }

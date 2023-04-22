@@ -27,9 +27,9 @@ import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.JCSEntity;
-import jcs.entities.JCSProperty;
+import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.Route;
+import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
@@ -135,11 +135,11 @@ public interface TrackService {
 
     LinkSxx getLinkSxx();
 
-    List<JCSProperty> getProperties();
+    List<JCSPropertyBean> getProperties();
 
-    JCSProperty getProperty(String key);
+    JCSPropertyBean getProperty(String key);
 
-    JCSProperty persist(JCSProperty property);
+    JCSPropertyBean persist(JCSPropertyBean property);
 
     void addMessageListener(CanMessageListener listener);
 
@@ -157,11 +157,11 @@ public interface TrackService {
 
     void synchronizeLocomotivesWithController();
 
-    List<Route> getRoutes();
+    List<RouteBean> getRoutes();
 
-    void persist(Route route);
+    void persist(RouteBean route);
 
-    void remove(Route route);
+    void remove(RouteBean route);
 
     void synchronizeTurnouts();
 

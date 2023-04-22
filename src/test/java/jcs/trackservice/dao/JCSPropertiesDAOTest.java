@@ -21,7 +21,7 @@ package jcs.trackservice.dao;
 import jcs.trackservice.dao.util.DAOTestHelper;
 import java.util.LinkedList;
 import java.util.List;
-import jcs.entities.JCSProperty;
+import jcs.entities.JCSPropertyBean;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
@@ -33,7 +33,7 @@ import org.junit.Test;
  */
 public class JCSPropertiesDAOTest {
 
-    private final List<JCSProperty> jcsPropertyList;
+    private final List<JCSPropertyBean> jcsPropertyList;
 
     public JCSPropertiesDAOTest() {
         DAOTestHelper.setConnectProperties();
@@ -45,9 +45,9 @@ public class JCSPropertiesDAOTest {
     @Before
     public void setUp() {
 
-        JCSProperty p0 = new JCSProperty("CS3", "jcs.controller.cs3.MarklinCS3");
-        JCSProperty p10 = new JCSProperty("k1", "v1");
-        JCSProperty p11 = new JCSProperty("k2", "v2");
+        JCSPropertyBean p0 = new JCSPropertyBean("CS3", "jcs.controller.cs3.MarklinCS3");
+        JCSPropertyBean p10 = new JCSPropertyBean("k1", "v1");
+        JCSPropertyBean p11 = new JCSPropertyBean("k2", "v2");
 
         jcsPropertyList.add(p0);
         jcsPropertyList.add(p10);
@@ -58,8 +58,8 @@ public class JCSPropertiesDAOTest {
     public void testFindAll() {
         System.out.println("findAll");
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
-        List<JCSProperty> expResult = jcsPropertyList;
-        List<JCSProperty> result = instance.findAll();
+        List<JCSPropertyBean> expResult = jcsPropertyList;
+        List<JCSPropertyBean> result = instance.findAll();
         assertEquals(expResult, result);
     }
 
@@ -68,22 +68,22 @@ public class JCSPropertiesDAOTest {
         System.out.println("find");
         String key = "k2";
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
-        JCSProperty expResult = jcsPropertyList.get(2);
-        JCSProperty result = instance.find(key);
+        JCSPropertyBean expResult = jcsPropertyList.get(2);
+        JCSPropertyBean result = instance.find(key);
         assertEquals(expResult, result);
     }
 
     @Test
     public void testPersist() {
         System.out.println("persist");
-        JCSProperty property = new JCSProperty("k3", "v3");
+        JCSPropertyBean property = new JCSPropertyBean("k3", "v3");
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
         String expResult = "k3";
         String result = instance.persist(property);
         assertEquals(expResult, result);
 
         //really check
-        JCSProperty chkP = instance.find("k3");
+        JCSPropertyBean chkP = instance.find("k3");
         assertEquals(property, chkP);
 
         property.setValue("UPDATED");
@@ -97,10 +97,10 @@ public class JCSPropertiesDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        JCSProperty property = new JCSProperty("k4", "v4");
+        JCSPropertyBean property = new JCSPropertyBean("k4", "v4");
         JCSPropertiesDAO instance = new JCSPropertiesDAO();
         instance.persist(property);
-        JCSProperty chkP = instance.find("k4");
+        JCSPropertyBean chkP = instance.find("k4");
         assertEquals(property, chkP);
 
         instance.remove(property);

@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Deprecated
 public abstract class ControllableDevice implements JCSEntity, Serializable, Comparable {
 
     protected Integer address;

@@ -135,7 +135,7 @@ public class DatabaseCreator {
         stmt.executeUpdate("DROP TABLE if exists tiles CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP TABLE if exists routes CASCADE CONSTRAINTS");
-        stmt.executeUpdate("DROP TABLE if exists routeelements CASCADE CONSTRAINTS");
+        stmt.executeUpdate("DROP TABLE if exists rout_eelements CASCADE CONSTRAINTS");
 
         stmt.executeUpdate("DROP TABLE if exists trackpower CASCADE CONSTRAINTS");
 
@@ -144,15 +144,15 @@ public class DatabaseCreator {
 
     private static void createTiles(Statement stmt) throws SQLException {
         stmt.executeUpdate("create table tiles ("
-                + "id           VARCHAR(255) not null,"
-                + "tileType     VARCHAR(255) not null,"
-                + "orientation  VARCHAR(255) not null,"
-                + "direction    VARCHAR(255) not null,"
-                + "x            INTEGER NOT NULL,"
-                + "y            INTEGER NOT NULL,"
-                + "signalType   VARCHAR(255),"
-                + "accessoryid  BIGINT,"
-                + "sensorid     BIGINT)");
+                + "id            varchar(255) not null,"
+                + "tile_type     varchar(255) not null,"
+                + "orientation   varchar(255) not null,"
+                + "direction     varchar(255) not null,"
+                + "x             integer not null,"
+                + "y             integer not null,"
+                + "signal_type   varchar(255),"
+                + "accessory_id  bigint,"
+                + "sensor_id     bigint)");
 
         stmt.executeUpdate("ALTER TABLE tiles ADD CONSTRAINT tile_pk PRIMARY KEY ( id )");
         stmt.executeUpdate("CREATE UNIQUE INDEX tiles_x_y_idx on tiles ( x, y )");
@@ -171,14 +171,14 @@ public class DatabaseCreator {
 
     private static void sensors(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE sensors ("
-                + "id                IDENTITY not null,"
-                + "name              VARCHAR2(255) NOT NULL,"
-                + "deviceid          INTEGER,"
-                + "contactid         INTEGER,"
-                + "status            INTEGER,"
-                + "previousstatus    INTEGER,"
-                + "millis            INTEGER,"
-                + "lastupdated       DATE)");
+                + "id                 IDENTITY not null,"
+                + "name               VARCHAR2(255) NOT NULL,"
+                + "device_id          INTEGER,"
+                + "contact_id         INTEGER,"
+                + "status             INTEGER,"
+                + "previous_status    INTEGER,"
+                + "millis             INTEGER,"
+                + "last_updated       DATE)");
 
         Logger.trace("Table sensors created...");
     }
@@ -186,26 +186,20 @@ public class DatabaseCreator {
     private static void locomotives(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE locomotives ("
                 + "id                 bigint NOT NULL, "
-                + "name               VARCHAR(255) NOT NULL, "
-                + "previousname       VARCHAR(255), "
-                + "uid                VARCHAR(255), "
+                + "name               varchar(255) NOT NULL, "
+                + "uid                varchar(255), "
                 + "mfxuid             VARCHAR(255), "
                 + "address            INTEGER NOT NULL, "
                 + "icon               VARCHAR(255), "
                 + "decodertype        VARCHAR(255), "
-                + "mfxsid             VARCHAR(255), "
                 + "tachomax           INTEGER, "
                 + "vmin               INTEGER, "
-                + "accelerationDelay  INTEGER, "
-                + "brakeDelay         INTEGER, "
-                + "volume             INTEGER, "
-                + "spm                VARCHAR(255), "
                 + "velocity           INTEGER, "
                 + "direction          INTEGER, "
-                + "mfxtype            VARCHAR(255), "
-                + "block              VARCHAR(255), "
+                + "commuter           INTEGER NOT NULL DEFAULT 0, "
+                + "length             INTEGER, "
                 + "show               INTEGER DEFAULT 1 NOT NULL )");
-        
+
         stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_pk PRIMARY KEY ( id )");
         stmt.executeUpdate("ALTER TABLE locomotives ADD CONSTRAINT loco_address_un UNIQUE ( address, decodertype )");
         Logger.trace("Table locomotives created...");
@@ -213,12 +207,12 @@ public class DatabaseCreator {
 
     private static void functions(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE functions ("
-                + "locoid           bigint NOT NULL, "
-                + "number           INTEGER NOT NULL, "
-                + "type             INTEGER NOT NULL, "
-                + "fvalue           INTEGER)");
+                + "loco_id            bigint NOT NULL, "
+                + "number             integer NOT NULL, "
+                + "type               integer NOT NULL, "
+                + "fvalue             integer )");
 
-        stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( locoid, number )");
+        stmt.executeUpdate("ALTER TABLE functions ADD CONSTRAINT func_pk PRIMARY KEY ( loco_id, number )");
         Logger.trace("Table functions created...");
     }
 
@@ -253,42 +247,42 @@ public class DatabaseCreator {
 
     private static void routes(Statement stmt) throws SQLException {
         stmt.executeUpdate("CREATE TABLE ROUTES ("
-                + "ID VARCHAR(255) NOT NULL,"
-                + "FROMTILEID VARCHAR(255) NOT NULL,"
-                + "TOTILEID VARCHAR(255) NOT NULL,"
-                + "COLOR VARCHAR(255))");
+                + "ID                     VARCHAR(255) NOT NULL,"
+                + "FROM_TILE_ID           VARCHAR(255) NOT NULL,"
+                + "TO_TILE_ID             VARCHAR(255) NOT NULL,"
+                + "COLOR                  VARCHAR(255))");
 
         stmt.executeUpdate("ALTER TABLE ROUTES ADD CONSTRAINT ROUT_PK PRIMARY KEY ( ID )");
 
-        stmt.executeUpdate("ALTER TABLE ROUTES ADD CONSTRAINT ROUT_FROM_TO_UN UNIQUE (FROMTILEID,TOTILEID)");
-        stmt.executeUpdate("CREATE UNIQUE INDEX ROUT_FROM_TO_UN_IDX ON ROUTES (FROMTILEID,TOTILEID)");
+        stmt.executeUpdate("ALTER TABLE ROUTES ADD CONSTRAINT ROUT_FROM_TO_UN UNIQUE (FROM_TILE_ID,TO_TILE_ID)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX ROUT_FROM_TO_UN_IDX ON ROUTES (FROM_TILE_ID,TO_TILE_ID)");
 
         Logger.trace("Table routes created...");
     }
 
     private static void routeElements(Statement stmt) throws SQLException {
-        stmt.executeUpdate("CREATE TABLE ROUTEELEMENTS ("
-                + "ID IDENTITY NOT NULL,"
-                + "ROUTEID VARCHAR(255) NOT NULL,"
-                + "NODEID VARCHAR(255) NOT NULL,"
-                + "TILEID VARCHAR(255) NOT NULL,"
-                + "ACCESSORYVALUE VARCHAR(255),"
-                + "ORDER_SEQ INTEGER NOT NULL DEFAULT 0)");
+        stmt.executeUpdate("CREATE TABLE ROUTE_ELEMENTS ("
+                + "ID                     IDENTITY NOT NULL,"
+                + "ROUTE_ID               VARCHAR(255) NOT NULL,"
+                + "NODE_ID                VARCHAR(255) NOT NULL,"
+                + "TILE_ID                VARCHAR(255) NOT NULL,"
+                + "ACCESSORY_VALUE        VARCHAR(255),"
+                + "ORDER_SEQ              INTEGER NOT NULL DEFAULT 0)");
 
-        stmt.executeUpdate("ALTER TABLE ROUTEELEMENTS ADD CONSTRAINT ROEL_UN UNIQUE (ROUTEID,TILEID,NODEID)");
-        stmt.executeUpdate("CREATE UNIQUE INDEX ROEL_UN_IDX ON ROUTEELEMENTS (ROUTEID,TILEID,NODEID)");
+        stmt.executeUpdate("ALTER TABLE ROUTEELEMENTS ADD CONSTRAINT ROEL_UN UNIQUE (ROUTE_ID,TILE_ID,NODE_ID)");
+        stmt.executeUpdate("CREATE UNIQUE INDEX ROEL_UN_IDX ON ROUTEELEMENTS (ROUTE_ID,TILE_ID,NODE_ID)");
 
         Logger.trace("Table routeelements created...");
     }
 
     private static void createForeignKeys(Statement stmt) throws SQLException {
         stmt.executeUpdate("ALTER TABLE functions"
-                + " ADD CONSTRAINT func_loco_fk FOREIGN KEY ( locoid )"
+                + " ADD CONSTRAINT func_loco_fk FOREIGN KEY ( loco_id )"
                 + " REFERENCES locomotives ( id )"
                 + " NOT DEFERRABLE");
 
-        stmt.executeUpdate("ALTER TABLE ROUTEELEMENTS ADD CONSTRAINT ROEL_ROUT_FK FOREIGN KEY (ROUTEID) REFERENCES ROUTES(ID)");
-        stmt.executeUpdate("ALTER TABLE ROUTEELEMENTS ADD CONSTRAINT ROEL_TILE_FK FOREIGN KEY (TILEID) REFERENCES TILES(ID)");
+        stmt.executeUpdate("ALTER TABLE ROUTE_ELEMENTS ADD CONSTRAINT ROEL_ROUT_FK FOREIGN KEY (ROUTE_ID) REFERENCES ROUTES(ID)");
+        stmt.executeUpdate("ALTER TABLE ROUTE_ELEMENTS ADD CONSTRAINT ROEL_TILE_FK FOREIGN KEY (TILE_ID) REFERENCES TILES(ID)");
 
         Logger.trace("Foreign Keys created...");
     }
@@ -296,15 +290,6 @@ public class DatabaseCreator {
     private static void insertReferenceData(Statement stmt) throws SQLException {
         stmt.executeUpdate("INSERT INTO trackpower(STATUS,FEEDBACKSOURCE,LASTUPDATED) VALUES('OFF','OTHER',null)");
 
-//        stmt.executeUpdate("INSERT INTO statustypes (status_type,description) values('G','Green')");
-//        stmt.executeUpdate("INSERT INTO statustypes (status_type,description) values('R','Red')");
-//        stmt.executeUpdate("INSERT INTO statustypes (status_type,description) values('O','Off')");
-//        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0','Hp0')");
-//        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp1','Hp1')");
-//        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp2','Hp2')");
-//        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('Hp0Sh1','Hp0Sh1')");
-//        stmt.executeUpdate("INSERT INTO SIGNALVALUES (SIGNAL_VALUE,DESCRIPTION) VALUES ('OFF','OFF')");
-        //Supported Controllers
         stmt.executeUpdate("INSERT INTO jcsproperties (PKEY,PVALUE) VALUES ('CS3','jcs.controller.cs3.MarklinCS3')");
 
         Logger.trace("Reference Data inserted...");
@@ -313,7 +298,7 @@ public class DatabaseCreator {
     private static void createSchema(boolean testMode) {
         Logger.trace(testMode ? "Test Mode: " : "" + "Creating JCS schema objects...");
         try {
-            try ( Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
+            try (Connection c = connect(JCS_USER, JCS_PWD, true, testMode)) {
                 Statement stmt = c.createStatement();
 
                 stmt.executeUpdate("set SCHEMA JCS");
@@ -351,7 +336,7 @@ public class DatabaseCreator {
         }
 
         try {
-            try ( Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
+            try (Connection c = connect(ADMIN_USER, ADMIN_PWD, false, testMode)) {
                 if (c != null) {
                     Statement stmt = c.createStatement();
 

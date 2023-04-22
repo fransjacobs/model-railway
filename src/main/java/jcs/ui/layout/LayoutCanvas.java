@@ -45,8 +45,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import jcs.entities.AccessoryBean;
-import jcs.entities.Route;
-import jcs.entities.RouteElement;
+import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.trackservice.TrackServiceFactory;
@@ -92,7 +92,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     private Tile movingTile;
 
     private RoutesDialog routesDialog;
-    private final Map<String, RouteElement> selectedRouteElements;
+    private final Map<String, RouteElementBean> selectedRouteElements;
 
     public LayoutCanvas() {
         this(false);
@@ -128,7 +128,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         Graphics2D g2 = (Graphics2D) g.create();
 
         Set<Tile> snapshot;
-        Map<String, RouteElement> routeSnapshot;
+        Map<String, RouteElementBean> routeSnapshot;
 
         synchronized (tiles) {
             snapshot = new HashSet<>(tiles.values());
@@ -154,7 +154,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 
                 if (routeSnapshot.containsKey(tile.getId())) {
                     if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
-                        RouteElement re = routeSnapshot.get(tile.getId());
+                        RouteElementBean re = routeSnapshot.get(tile.getId());
                         AccessoryValue av = re.getAccessoryValue();
                         ((Switch) tile).setRouteValue(av, Color.darkGray);
                         Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
@@ -1082,11 +1082,11 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         this.routesDialog.setVisible(true);
     }
 
-    void setSelectRoute(Route route) {
+    void setSelectRoute(RouteBean route) {
         selectedRouteElements.clear();
         if (route != null) {
-            List<RouteElement> rel = route.getRouteElements();
-            for (RouteElement re : rel) {
+            List<RouteElementBean> rel = route.getRouteElements();
+            for (RouteElementBean re : rel) {
                 String id = re.getTileId();
                 String nodeId = re.getNodeId();
                 if (id.startsWith("sw-") || id.startsWith("cs-")) {

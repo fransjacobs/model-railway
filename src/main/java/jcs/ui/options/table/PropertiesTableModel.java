@@ -21,14 +21,14 @@ package jcs.ui.options.table;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import jcs.entities.JCSProperty;
+import jcs.entities.JCSPropertyBean;
 import jcs.trackservice.TrackServiceFactory;
 
 /**
  *
  * @author frans
  */
-public class PropertiesTableModel extends EntityTableModel<JCSProperty> {
+public class PropertiesTableModel extends EntityTableModel<JCSPropertyBean> {
 
     public PropertiesTableModel() {
         super();
@@ -46,7 +46,7 @@ public class PropertiesTableModel extends EntityTableModel<JCSProperty> {
     }
 
     @Override
-    protected List<JCSProperty> getEntityBeans() {
+    protected List<JCSPropertyBean> getEntityBeans() {
         if (TrackServiceFactory.getTrackService() != null) {
             return TrackServiceFactory.getTrackService().getProperties();
         } else {
@@ -55,7 +55,7 @@ public class PropertiesTableModel extends EntityTableModel<JCSProperty> {
     }
 
     @Override
-    Object getColumnValue(JCSProperty device, int column) {
+    Object getColumnValue(JCSPropertyBean device, int column) {
         switch (column) {
             case 0:
                 return device.getKey();
@@ -79,7 +79,7 @@ public class PropertiesTableModel extends EntityTableModel<JCSProperty> {
     }
 
     @Override
-    void setColumnValue(JCSProperty device, int column, Object value) {
+    void setColumnValue(JCSPropertyBean device, int column, Object value) {
         switch (column) {
             case 0:
                 device.setKey((String) value);

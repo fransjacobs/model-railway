@@ -39,7 +39,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.entities.JCSProperty;
+import jcs.entities.JCSPropertyBean;
 import jcs.ui.options.table.ControllerInfoTableModel;
 import org.tinylog.Logger;
 
@@ -146,7 +146,7 @@ public class ControllerInfoPanel extends JPanel {
       JTable source = (JTable) evt.getSource();
       int row = source.rowAtPoint(evt.getPoint());
 
-      JCSProperty p = propertiesTableModel.getControllableDeviceAt(row);
+      JCSPropertyBean p = propertiesTableModel.getControllableDeviceAt(row);
       if (p != null) {
           Logger.debug("Selected row: " + row + ", Property Key: " + p.getKey());
       }

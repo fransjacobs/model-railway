@@ -25,14 +25,14 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import jcs.entities.TrackPower;
+import jcs.entities.TrackPowerBean;
 
 /**
  *
  * @author frans
  */
 @Deprecated
-public class TrackPowerDAO extends AbstractDAO<TrackPower> {
+public class TrackPowerDAO extends AbstractDAO<TrackPowerBean> {
 
   private static final String INS_TRPO_STMT = "insert into TRACKPOWER (STATUS,FEEDBACKSOURCE,LASTUPDATED,ID) values(?,?,?,?)";
   private static final String UPD_TRPO_STMT = "update TRACKPOWER set STATUS = ?, FEEDBACKSOURCE = ?, LASTUPDATED = ? where ID = ?";
@@ -42,13 +42,13 @@ public class TrackPowerDAO extends AbstractDAO<TrackPower> {
   }
 
   @Override
-  protected TrackPower map(ResultSet rs) throws SQLException {
+  protected TrackPowerBean map(ResultSet rs) throws SQLException {
     BigDecimal id = rs.getBigDecimal("ID");
     String status = rs.getString("STATUS");
     String feedbacksource = rs.getString("FEEDBACKSOURCE");
     Date lastupdated = rs.getTimestamp("LASTUPDATED");
 
-    TrackPower trpo = new TrackPower(TrackPower.getStatusType(status), TrackPower.getFeedbackSource(feedbacksource));
+    TrackPowerBean trpo = new TrackPowerBean(TrackPowerBean.getStatusType(status), TrackPowerBean.getFeedbackSource(feedbacksource));
     trpo.setLastUpdated(lastupdated);
     trpo.setAddress(1);
     trpo.setId(id);
@@ -56,7 +56,7 @@ public class TrackPowerDAO extends AbstractDAO<TrackPower> {
   }
 
   @Override
-  protected void bind(PreparedStatement ps, TrackPower trpo, boolean insert) throws SQLException {
+  protected void bind(PreparedStatement ps, TrackPowerBean trpo, boolean insert) throws SQLException {
     ps.setString(1, trpo.getStatus().toString());
     ps.setString(2, trpo.getFeedbackSource().toString());
     if (trpo.getLastUpdated() != null) {
@@ -70,16 +70,16 @@ public class TrackPowerDAO extends AbstractDAO<TrackPower> {
   }
 
   @Override
-  public List<TrackPower> findAll() {
+  public List<TrackPowerBean> findAll() {
     String stmt = "select * from trackpower order by id asc";
 
     return this.findAll(stmt);
   }
 
   //@Override
-  public TrackPower find(Integer address) {
+  public TrackPowerBean find(Integer address) {
     String stmt = "select * from trackpower where id = ?";
-    TrackPower tp;
+    TrackPowerBean tp;
     synchronized (this) {
       tp = this.find(address, stmt);
     }
@@ -87,9 +87,9 @@ public class TrackPowerDAO extends AbstractDAO<TrackPower> {
   }
 
   @Override
-  public BigDecimal persist(TrackPower trackPower) {
-    //Check whether the TrackPower exists...
-    TrackPower trpo = this.find(trackPower.getAddress());
+  public BigDecimal persist(TrackPowerBean trackPower) {
+    //Check whether the TrackPowerBean exists...
+    TrackPowerBean trpo = this.find(trackPower.getAddress());
 
     boolean update = false;
     String statement;
@@ -108,7 +108,7 @@ public class TrackPowerDAO extends AbstractDAO<TrackPower> {
   }
 
   @Override
-  public void remove(TrackPower feedbackModule) {
+  public void remove(TrackPowerBean feedbackModule) {
     String stmt = "delete from feedbackmodules where id = ?";
     this.remove(feedbackModule, stmt);
   }

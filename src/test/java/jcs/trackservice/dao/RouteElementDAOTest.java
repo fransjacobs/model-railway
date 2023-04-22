@@ -21,8 +21,8 @@ package jcs.trackservice.dao;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
-import jcs.entities.Route;
-import jcs.entities.RouteElement;
+import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.trackservice.dao.util.DAOTestHelper;
 import org.junit.After;
@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  */
 public class RouteElementDAOTest {
 
-    private List<RouteElement> routeElements;
+    private List<RouteElementBean> routeElements;
 
     public RouteElementDAOTest() {
         DAOTestHelper.setConnectProperties();
@@ -51,26 +51,26 @@ public class RouteElementDAOTest {
 
         routeElements = new LinkedList<>();
 
-        Route r1 = new Route("bk-1+|bk-3-", "bk-1+", "bk-3-", "red");
-        Route r2 = new Route("bk-2+|bk-3-", "bk-2+", "bk-3-", "green");
+        RouteBean r1 = new RouteBean("bk-1+|bk-3-", "bk-1+", "bk-3-", "red");
+        RouteBean r2 = new RouteBean("bk-2+|bk-3-", "bk-2+", "bk-3-", "green");
 
-        RouteElement re0 = new RouteElement("bk-1+|bk-3-", "bk-1+", "bk-1", null, 0, new BigDecimal(1));
-        RouteElement re1 = new RouteElement("bk-1+|bk-3-", "se-2", "se-2", null, 1, new BigDecimal(2));
-        RouteElement re2 = new RouteElement("bk-1+|bk-3-", "st-2", "st-2", null, 2, new BigDecimal(3));
-        RouteElement re3 = new RouteElement("bk-1+|bk-3-", "sw-2-G", "sw-2", AccessoryValue.GREEN, 3, new BigDecimal(4));
-        RouteElement re4 = new RouteElement("bk-1+|bk-3-", "sw-2", "sw-2", AccessoryValue.GREEN, 4, new BigDecimal(5));
-        RouteElement re5 = new RouteElement("bk-1+|bk-3-", "st-5", "st-5", null, 5, new BigDecimal(6));
-        RouteElement re6 = new RouteElement("bk-1+|bk-3-", "ct-4", "ct-4", null, 6, new BigDecimal(7));
-        RouteElement re7 = new RouteElement("bk-1+|bk-3-", "st-11", "st-11", null, 7, new BigDecimal(8));
-        RouteElement re8 = new RouteElement("bk-1+|bk-3-", "st-12", "st-12", null, 8, new BigDecimal(9));
-        RouteElement re9 = new RouteElement("bk-1+|bk-3-", "st-13", "st-13", null, 9, new BigDecimal(10));
-        RouteElement re10 = new RouteElement("bk-1+|bk-3-", "st-14", "st-14", null, 10, new BigDecimal(11));
-        RouteElement re11 = new RouteElement("bk-1+|bk-3-", "ct-6", "ct-6", null, 11, new BigDecimal(12));
-        RouteElement re12 = new RouteElement("bk-1+|bk-3-", "st-20", "st-20", null, 12, new BigDecimal(13));
-        RouteElement re13 = new RouteElement("bk-1+|bk-3-", "st-19", "st-19", null, 13, new BigDecimal(14));
-        RouteElement re14 = new RouteElement("bk-1+|bk-3-", "st-18", "st-18", null, 14, new BigDecimal(15));
-        RouteElement re15 = new RouteElement("bk-1+|bk-3-", "se-6", "se-6", null, 15, new BigDecimal(16));
-        RouteElement re16 = new RouteElement("bk-1+|bk-3-", "bk-3-", "bk-3", null, 16, new BigDecimal(17));
+        RouteElementBean re0 = new RouteElementBean("bk-1+|bk-3-", "bk-1+", "bk-1", null, 0, new BigDecimal(1));
+        RouteElementBean re1 = new RouteElementBean("bk-1+|bk-3-", "se-2", "se-2", null, 1, new BigDecimal(2));
+        RouteElementBean re2 = new RouteElementBean("bk-1+|bk-3-", "st-2", "st-2", null, 2, new BigDecimal(3));
+        RouteElementBean re3 = new RouteElementBean("bk-1+|bk-3-", "sw-2-G", "sw-2", AccessoryValue.GREEN, 3, new BigDecimal(4));
+        RouteElementBean re4 = new RouteElementBean("bk-1+|bk-3-", "sw-2", "sw-2", AccessoryValue.GREEN, 4, new BigDecimal(5));
+        RouteElementBean re5 = new RouteElementBean("bk-1+|bk-3-", "st-5", "st-5", null, 5, new BigDecimal(6));
+        RouteElementBean re6 = new RouteElementBean("bk-1+|bk-3-", "ct-4", "ct-4", null, 6, new BigDecimal(7));
+        RouteElementBean re7 = new RouteElementBean("bk-1+|bk-3-", "st-11", "st-11", null, 7, new BigDecimal(8));
+        RouteElementBean re8 = new RouteElementBean("bk-1+|bk-3-", "st-12", "st-12", null, 8, new BigDecimal(9));
+        RouteElementBean re9 = new RouteElementBean("bk-1+|bk-3-", "st-13", "st-13", null, 9, new BigDecimal(10));
+        RouteElementBean re10 = new RouteElementBean("bk-1+|bk-3-", "st-14", "st-14", null, 10, new BigDecimal(11));
+        RouteElementBean re11 = new RouteElementBean("bk-1+|bk-3-", "ct-6", "ct-6", null, 11, new BigDecimal(12));
+        RouteElementBean re12 = new RouteElementBean("bk-1+|bk-3-", "st-20", "st-20", null, 12, new BigDecimal(13));
+        RouteElementBean re13 = new RouteElementBean("bk-1+|bk-3-", "st-19", "st-19", null, 13, new BigDecimal(14));
+        RouteElementBean re14 = new RouteElementBean("bk-1+|bk-3-", "st-18", "st-18", null, 14, new BigDecimal(15));
+        RouteElementBean re15 = new RouteElementBean("bk-1+|bk-3-", "se-6", "se-6", null, 15, new BigDecimal(16));
+        RouteElementBean re16 = new RouteElementBean("bk-1+|bk-3-", "bk-3-", "bk-3", null, 16, new BigDecimal(17));
 
         //path: bk-1+ -> se-2 -> st-2 -> sw-2-G -> sw-2 -> st-5 -> ct-4 -> st-11 -> st-12 -> st-13 -> st-14 -> ct-6 -> st-20 -> st-19 -> st-18 -> se-6 -> bk-3-
         routeElements.add(re0);
@@ -103,8 +103,8 @@ public class RouteElementDAOTest {
     public void testFindAll() {
         System.out.println("findAll");
         RouteElementDAO instance = new RouteElementDAO();
-        List<RouteElement> expResult = this.routeElements;
-        List<RouteElement> result = instance.findAll();
+        List<RouteElementBean> expResult = this.routeElements;
+        List<RouteElementBean> result = instance.findAll();
         assertEquals(expResult, result);
     }
 
@@ -116,8 +116,8 @@ public class RouteElementDAOTest {
         System.out.println("findById");
         BigDecimal id = new BigDecimal(16);
         RouteElementDAO instance = new RouteElementDAO();
-        RouteElement expResult = this.routeElements.get(15);
-        RouteElement result = instance.findById(id);
+        RouteElementBean expResult = this.routeElements.get(15);
+        RouteElementBean result = instance.findById(id);
         assertEquals(expResult, result);
     }
 
@@ -129,8 +129,8 @@ public class RouteElementDAOTest {
         System.out.println("findByRouteId");
         String key = "bk-1+|bk-3-";
         RouteElementDAO instance = new RouteElementDAO();
-        List<RouteElement> expResult = this.routeElements;
-        List<RouteElement> result = instance.findByRouteId(key);
+        List<RouteElementBean> expResult = this.routeElements;
+        List<RouteElementBean> result = instance.findByRouteId(key);
         assertEquals(expResult, result);
     }
 
@@ -140,7 +140,7 @@ public class RouteElementDAOTest {
     @Test
     public void testPersist() {
         System.out.println("persist");
-        RouteElement routeElement = new RouteElement("bk-2+|bk-3-", "bk-2+", "bk-2", null, 0);
+        RouteElementBean routeElement = new RouteElementBean("bk-2+|bk-3-", "bk-2+", "bk-2", null, 0);
 
         RouteElementDAO instance = new RouteElementDAO();
         BigDecimal expResult = new BigDecimal(18);
@@ -149,7 +149,7 @@ public class RouteElementDAOTest {
 
         routeElement.setId(expResult);
 
-        RouteElement re = instance.findById(expResult);
+        RouteElementBean re = instance.findById(expResult);
         assertEquals(routeElement, re);
     }
 
@@ -157,7 +157,7 @@ public class RouteElementDAOTest {
     @Test
     public void testPersist2() {
         System.out.println("persist2");
-        RouteElement routeElement = new RouteElement("bk-2+|bk-3-", "sw-2-R", "sw-2", AccessoryValue.RED, 3);
+        RouteElementBean routeElement = new RouteElementBean("bk-2+|bk-3-", "sw-2-R", "sw-2", AccessoryValue.RED, 3);
 
 
         RouteElementDAO instance = new RouteElementDAO();
@@ -167,7 +167,7 @@ public class RouteElementDAOTest {
 
         routeElement.setId(expResult);
 
-        RouteElement re = instance.findById(expResult);
+        RouteElementBean re = instance.findById(expResult);
         assertEquals(routeElement, re);
     }
     
@@ -179,12 +179,12 @@ public class RouteElementDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        RouteElement routeElement = new RouteElement("bk-2+|bk-3-", "se-3", "se-3", null, 0);
+        RouteElementBean routeElement = new RouteElementBean("bk-2+|bk-3-", "se-3", "se-3", null, 0);
         RouteElementDAO instance = new RouteElementDAO();
 
         BigDecimal result = instance.persist(routeElement);
         assertNotNull(result);
-        RouteElement re = instance.findById(result);
+        RouteElementBean re = instance.findById(result);
         routeElement.setId(result);
         assertEquals(routeElement, re);
 

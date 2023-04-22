@@ -22,7 +22,7 @@ import jcs.trackservice.dao.util.DAOTestHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import jcs.entities.TrackPower;
+import jcs.entities.TrackPowerBean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  */
 public class TrackPowerDAOTest {
 
-  private final List<TrackPower> trackPowerList;
+  private final List<TrackPowerBean> trackPowerList;
 
   public TrackPowerDAOTest() {
     DAOTestHelper.setConnectProperties();
@@ -45,18 +45,18 @@ public class TrackPowerDAOTest {
 
   @Before
   public void setUp() {
-    TrackPower tp1 = new TrackPower();
-    tp1.setStatus(TrackPower.Status.OFF);
+    TrackPowerBean tp1 = new TrackPowerBean();
+    tp1.setStatus(TrackPowerBean.Status.OFF);
     trackPowerList.add(tp1);
   }
 
   @After
   public void tearDown() {
     TrackPowerDAO instance = new TrackPowerDAO();
-    TrackPower tp = instance.find(1);
+    TrackPowerBean tp = instance.find(1);
     if (tp != null) {
-      tp.setStatus(TrackPower.Status.UNKNOWN);
-      tp.setFeedbackSource(TrackPower.FeedbackSource.OTHER);
+      tp.setStatus(TrackPowerBean.Status.UNKNOWN);
+      tp.setFeedbackSource(TrackPowerBean.FeedbackSource.OTHER);
       instance.persist(tp);
 
       tp.setLastUpdated(null);
@@ -68,8 +68,8 @@ public class TrackPowerDAOTest {
   public void testFindAll() {
     System.out.println("findAll");
     TrackPowerDAO instance = new TrackPowerDAO();
-    List<TrackPower> expResult = trackPowerList;
-    List<TrackPower> result = instance.findAll();
+    List<TrackPowerBean> expResult = trackPowerList;
+    List<TrackPowerBean> result = instance.findAll();
     //Don't know the last updated date time hence just get it
     expResult.get(0).setLastUpdated(result.get(0).getLastUpdated());
 
@@ -82,10 +82,10 @@ public class TrackPowerDAOTest {
 
     Integer address = 1;
     TrackPowerDAO instance = new TrackPowerDAO();
-    TrackPower result = instance.find(address);
+    TrackPowerBean result = instance.find(address);
 
     assertNotNull(result);
-    TrackPower expResult = trackPowerList.get(0);
+    TrackPowerBean expResult = trackPowerList.get(0);
 
     assertEquals(expResult.getStatus(), result.getStatus());
     assertEquals(expResult.getFeedbackSource(), result.getFeedbackSource());
@@ -103,7 +103,7 @@ public class TrackPowerDAOTest {
     TrackPowerDAO instance = new TrackPowerDAO();
     BigDecimal result = instance.persist(trackPowerList.get(0));
 
-    TrackPower tp = instance.find(1);
+    TrackPowerBean tp = instance.find(1);
 
     BigDecimal expResult = tp.getId();
     assertEquals(expResult, result);
@@ -111,7 +111,7 @@ public class TrackPowerDAOTest {
     tp.On();
     instance.persist(tp);
 
-    TrackPower res = instance.find(1);
+    TrackPowerBean res = instance.find(1);
     assertTrue(res.isOn());
     assertFalse(res.isOff());
     assertNotNull(res.getLastUpdated());
@@ -124,7 +124,7 @@ public class TrackPowerDAOTest {
     TrackPowerDAO instance = new TrackPowerDAO();
     BigDecimal result = instance.persist(trackPowerList.get(0));
 
-    TrackPower tp = instance.find(1);
+    TrackPowerBean tp = instance.find(1);
 
     BigDecimal expResult = tp.getId();
     assertEquals(expResult, result);
@@ -132,7 +132,7 @@ public class TrackPowerDAOTest {
     tp.Off();
     instance.persist(tp);
 
-    TrackPower res = instance.find(1);
+    TrackPowerBean res = instance.find(1);
     assertTrue(res.isOff());
     assertFalse(res.isOn());
     assertNotNull(res.getLastUpdated());

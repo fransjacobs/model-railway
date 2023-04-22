@@ -21,20 +21,20 @@ package jcs.entities;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class JCSProperty implements JCSEntity {
+public class JCSPropertyBean implements JCSEntity {
 
     private String key;
     private String value;
 
-    public JCSProperty() {
+    public JCSPropertyBean() {
         this(null, null);
     }
 
-    public JCSProperty(String key, String value) {
+    public JCSPropertyBean(String key, String value) {
         this(null, key, value);
     }
 
-    public JCSProperty(BigDecimal id, String key, String value) {
+    public JCSPropertyBean(BigDecimal id, String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -108,7 +108,7 @@ public class JCSProperty implements JCSEntity {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final JCSProperty other = (JCSProperty) obj;
+        final JCSPropertyBean other = (JCSPropertyBean) obj;
         if (!Objects.equals(this.key, other.key)) {
             return false;
         }

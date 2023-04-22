@@ -24,14 +24,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
-import jcs.entities.RouteElement;
+import jcs.entities.RouteElementBean;
 import jcs.entities.enums.AccessoryValue;
 
 /**
  *
  * @author frans
  */
-public class RouteElementDAO extends AbstractDAO<RouteElement> {
+public class RouteElementDAO extends AbstractDAO<RouteElementBean> {
 
     private static final String INS_DW_STMT = "insert into routeelements(ROUTEID,NODEID,TILEID,ACCESSORYVALUE,ORDER_SEQ) values(?,?,?,?,?)";
     private static final String UPD_DW_STMT = "update routeelements set ROUTEID = ?,NODEID = ?,TILEID = ?, ACCESSORYVALUE = ?, ORDER_SEQ = ? where ID = ?";
@@ -41,7 +41,7 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
     }
 
     @Override
-    protected RouteElement map(ResultSet rs) throws SQLException {
+    protected RouteElementBean map(ResultSet rs) throws SQLException {
         String routeId = rs.getString("ROUTEID");
         String nodeId = rs.getString("NODEID");
         String tileId = rs.getString("TILEID");
@@ -54,12 +54,12 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
         if (accessoryValue != null) {
             av = AccessoryValue.dbGet(accessoryValue);
         }
-        RouteElement r = new RouteElement(routeId, nodeId, tileId, av, elementOrder, id);
+        RouteElementBean r = new RouteElementBean(routeId, nodeId, tileId, av, elementOrder, id);
         return r;
     }
 
     @Override
-    protected void bind(PreparedStatement ps, RouteElement routeElement, boolean insert) throws SQLException {
+    protected void bind(PreparedStatement ps, RouteElementBean routeElement, boolean insert) throws SQLException {
         ps.setString(1, routeElement.getRouteId());
         ps.setString(2, routeElement.getNodeId());
         ps.setString(3, routeElement.getTileId());
@@ -77,25 +77,25 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
     }
 
     @Override
-    public List<RouteElement> findAll() {
+    public List<RouteElementBean> findAll() {
         String stmt = "select * from routeelements order by id asc";
 
         return this.findAll(stmt);
     }
 
-    public RouteElement findById(BigDecimal id) {
+    public RouteElementBean findById(BigDecimal id) {
         String stmt = "select * from routeelements where id = ?";
         return this.findById(id, stmt);
     }
 
-    public List<RouteElement> findByRouteId(String key) {
+    public List<RouteElementBean> findByRouteId(String key) {
         String stmt = "select * from routeelements where routeid = ? order by ORDER_SEQ";
         return this.findBy(key, stmt);
     }
 
     @Override
-    public BigDecimal persist(RouteElement routeElement) {
-        RouteElement dw = this.findById(routeElement.getId());
+    public BigDecimal persist(RouteElementBean routeElement) {
+        RouteElementBean dw = this.findById(routeElement.getId());
 
         String statement;
         if (dw == null) {
@@ -110,7 +110,7 @@ public class RouteElementDAO extends AbstractDAO<RouteElement> {
     }
 
     @Override
-    public void remove(RouteElement routeElement) {
+    public void remove(RouteElementBean routeElement) {
         String stmt = "delete from routeelements where id = ?";
         this.remove(routeElement, stmt);
     }

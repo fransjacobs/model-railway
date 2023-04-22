@@ -40,7 +40,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.entities.JCSProperty;
+import jcs.entities.JCSPropertyBean;
 import jcs.trackservice.TrackServiceFactory;
 import org.tinylog.Logger;
 
@@ -188,7 +188,7 @@ public class PropertiesPanel extends JPanel {
       alignPropertiesTable();
 
       Logger.debug("Create new JCSProperty...");
-      JCSProperty p = new JCSProperty();
+      JCSPropertyBean p = new JCSPropertyBean();
       propertiesTableModel.addRow(p);
   }//GEN-LAST:event_newBtnActionPerformed
 
@@ -196,7 +196,7 @@ public class PropertiesPanel extends JPanel {
       JTable source = (JTable) evt.getSource();
       int row = source.rowAtPoint(evt.getPoint());
 
-      JCSProperty p = propertiesTableModel.getControllableDeviceAt(row);
+      JCSPropertyBean p = propertiesTableModel.getControllableDeviceAt(row);
       if (p != null) {
           Logger.debug("Selected row: " + row + ", Property Key: " + p.getKey());
       }
@@ -213,10 +213,10 @@ public class PropertiesPanel extends JPanel {
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
       int selectedRow = this.propertiesTable.getSelectedRow();
-      JCSProperty p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
+      JCSPropertyBean p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
       Logger.debug("Save the Property: " + p + " ID: " + p.getId());
 
-      JCSProperty cp = TrackServiceFactory.getTrackService().getProperty(p.getKey());
+      JCSPropertyBean cp = TrackServiceFactory.getTrackService().getProperty(p.getKey());
       if (cp != null) {
           //p.setId(cp.getId());
           Logger.debug("Found existing " + cp );
@@ -230,7 +230,7 @@ public class PropertiesPanel extends JPanel {
 
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       int selectedRow = this.propertiesTable.getSelectedRow();
-      JCSProperty p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
+      JCSPropertyBean p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
       if (TrackServiceFactory.getTrackService() != null) {
           Logger.trace("Delete the Property: " + p);
           TrackServiceFactory.getTrackService().remove(p);

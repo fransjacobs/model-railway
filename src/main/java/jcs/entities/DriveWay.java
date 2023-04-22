@@ -21,6 +21,7 @@ package jcs.entities;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Deprecated
 public class DriveWay extends ControllableDevice {
 
     private BigDecimal fromLatiId;

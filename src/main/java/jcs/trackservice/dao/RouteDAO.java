@@ -24,13 +24,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
-import jcs.entities.Route;
+import jcs.entities.RouteBean;
 
 /**
  *
  * @author frans
  */
-public class RouteDAO extends AbstractDAO<Route> {
+public class RouteDAO extends AbstractDAO<RouteBean> {
 
     private static final String INS_DW_STMT = "insert into routes (FROMTILEID,TOTILEID,COLOR,ID) values(?,?,?,?)";
     private static final String UPD_DW_STMT = "update routes set FROMTILEID = ?,TOTILEID = ?,COLOR = ? where ID = ?";
@@ -40,18 +40,18 @@ public class RouteDAO extends AbstractDAO<Route> {
     }
 
     @Override
-    protected Route map(ResultSet rs) throws SQLException {
+    protected RouteBean map(ResultSet rs) throws SQLException {
         String fromTileId = rs.getString("FROMTILEID");
         String toTileId = rs.getString("TOTILEID");
         String color = rs.getString("COLOR");
         String id = rs.getString("ID");
 
-        Route r = new Route(id, fromTileId, toTileId, color);
+        RouteBean r = new RouteBean(id, fromTileId, toTileId, color);
         return r;
     }
 
     @Override
-    protected void bind(PreparedStatement ps, Route route, boolean insert) throws SQLException {
+    protected void bind(PreparedStatement ps, RouteBean route, boolean insert) throws SQLException {
         ps.setString(1, route.getFromId());
         ps.setString(2, route.getToId());
 
@@ -67,20 +67,20 @@ public class RouteDAO extends AbstractDAO<Route> {
     }
 
     @Override
-    public List<Route> findAll() {
+    public List<RouteBean> findAll() {
         String stmt = "select * from routes order by id asc";
 
         return this.findAll(stmt);
     }
 
-    public Route findById(String key) {
+    public RouteBean findById(String key) {
         String stmt = "select * from routes where id = ?";
         return this.findById(key, stmt);
     }
 
     @Override
-    public String persist(Route route) {
-        Route dw = this.findById(route.getId());
+    public String persist(RouteBean route) {
+        RouteBean dw = this.findById(route.getId());
 
         String statement;
         if (dw == null) {
@@ -95,7 +95,7 @@ public class RouteDAO extends AbstractDAO<Route> {
     }
 
     @Override
-    public void remove(Route route) {
+    public void remove(RouteBean route) {
         String stmt = "delete from routes where id = ?";
         this.remove(route, stmt);
     }

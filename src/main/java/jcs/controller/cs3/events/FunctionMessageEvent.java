@@ -66,7 +66,7 @@ public class FunctionMessageEvent implements Serializable {
             function.setValue(functionValue);
             
             this.locomotiveBean.setId(id);
-            this.locomotiveBean.addFunctions(function);
+            this.locomotiveBean.addFunction(function);
             this.updatedFunctionNumber = functionNumber;
         } else {
             Logger.warn("Can't parse message, not an Locomotive Function Response! " + resp);

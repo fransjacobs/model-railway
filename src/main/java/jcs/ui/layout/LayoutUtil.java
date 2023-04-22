@@ -27,8 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import jcs.entities.Route;
-import jcs.entities.RouteElement;
+import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
@@ -581,7 +581,7 @@ public class LayoutUtil {
         return nodeIds;
     }
     
-    public static void persist(Route route) {
+    public static void persist(RouteBean route) {
         
         if (TrackServiceFactory.getTrackService() == null) {
             return;
@@ -589,7 +589,7 @@ public class LayoutUtil {
         TrackServiceFactory.getTrackService().persist(route);
     }
     
-    public static List<Route> getRoutes() {
+    public static List<RouteBean> getRoutes() {
         if (TrackServiceFactory.getTrackService() != null) {
             return TrackServiceFactory.getTrackService().getRoutes();
         } else {
@@ -599,19 +599,19 @@ public class LayoutUtil {
     
     public static void deleteAllRoutes() {
         if (TrackServiceFactory.getTrackService() != null) {
-            List<Route> routes = TrackServiceFactory.getTrackService().getRoutes();
-            for (Route r : routes) {
+            List<RouteBean> routes = TrackServiceFactory.getTrackService().getRoutes();
+            for (RouteBean r : routes) {
                 TrackServiceFactory.getTrackService().remove(r);
             }
         }
     }
     
-    public static List<Tile> getRouteTiles(Route route) {
+    public static List<Tile> getRouteTiles(RouteBean route) {
         List<Tile> routeTiles = new LinkedList<>();
         
-        List<RouteElement> rel = route.getRouteElements();
+        List<RouteElementBean> rel = route.getRouteElements();
         
-        for (RouteElement re : rel) {
+        for (RouteElementBean re : rel) {
             String id = re.getTileId();
             Tile t = LayoutUtil.tileLookup.get(id);
             if (t != null) {

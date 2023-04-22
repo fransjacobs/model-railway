@@ -23,7 +23,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.util.logging.Level;
 import jcs.JCS;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.CanMessageFactory;
@@ -101,7 +100,7 @@ public class CS3ConnectionFactory {
         return getInstance().getHTTPConnectionImpl();
     }
 
-    private void sendMobileAppPing() {
+    void sendMobileAppPing() {
         try {
             InetAddress localAddress = InetAddress.getByName("0.0.0.0");
             InetAddress broadcastAddress = InetAddress.getByName(BROADCAST_ADDRESS);

@@ -25,6 +25,7 @@ import java.util.Objects;
  *
  * @author Frans Jacobs
  */
+@Deprecated
 public class LayoutTileGroup extends ControllableDevice {
 
     private String color;

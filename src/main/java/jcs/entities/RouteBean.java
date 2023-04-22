@@ -27,7 +27,7 @@ import jcs.entities.enums.AccessoryValue;
 import org.beryx.awt.color.ColorFactory;
 import org.tinylog.Logger;
 
-public class Route implements JCSEntity, Serializable {
+public class RouteBean implements JCSEntity, Serializable {
 
     private String id;
     private String fromId;
@@ -35,28 +35,28 @@ public class Route implements JCSEntity, Serializable {
     private Color color;
 
     private List<String> elementIds;
-    private List<RouteElement> routeElements;
+    private List<RouteElementBean> routeElements;
 
-    public Route() {
+    public RouteBean() {
     }
 
-    public Route(String id, String fromId, String toId, String color) {
+    public RouteBean(String id, String fromId, String toId, String color) {
         this(id, fromId, toId, color, new LinkedList<>());
     }
 
-    public Route(String fromId, String toId, List<String> elementIds) {
+    public RouteBean(String fromId, String toId, List<String> elementIds) {
         this(null, fromId, toId, null, elementIds, createdRouteElementsFromElements(fromId, toId, elementIds));
     }
 
-    public Route(String fromId, String toId, String color, List<String> elementIds) {
+    public RouteBean(String fromId, String toId, String color, List<String> elementIds) {
         this(null, fromId, toId, color, elementIds, createdRouteElementsFromElements(fromId, toId, elementIds));
     }
 
-    public Route(String id, String fromId, String toId, String color, List<RouteElement> routeElements) {
+    public RouteBean(String id, String fromId, String toId, String color, List<RouteElementBean> routeElements) {
         this(id, fromId, toId, color, toElementIds(routeElements), routeElements);
     }
 
-    public Route(String id, String fromId, String toId, String color, List<String> elementIds, List<RouteElement> routeElements) {
+    public RouteBean(String id, String fromId, String toId, String color, List<String> elementIds, List<RouteElementBean> routeElements) {
         if (id == null) {
             this.id = fromId + "|" + toId;
         } else {
@@ -77,8 +77,8 @@ public class Route implements JCSEntity, Serializable {
         this.routeElements = routeElements;
     }
 
-    private static List<RouteElement> createdRouteElementsFromElements(String fromId, String toId, List<String> elementIds) {
-        List<RouteElement> rel = new LinkedList<>();
+    private static List<RouteElementBean> createdRouteElementsFromElements(String fromId, String toId, List<String> elementIds) {
+        List<RouteElementBean> rel = new LinkedList<>();
         for (int i = 0; i < elementIds.size(); i++) {
             String nodeId = elementIds.get(i);
             
@@ -104,7 +104,7 @@ public class Route implements JCSEntity, Serializable {
             }
             Integer elementOrder = i;
 
-            RouteElement routeElement = new RouteElement(fromId + "|" + toId, nodeId, tileId, accessoryValue, elementOrder);
+            RouteElementBean routeElement = new RouteElementBean(fromId + "|" + toId, nodeId, tileId, accessoryValue, elementOrder);
             rel.add(routeElement);
 
             Logger.trace(routeElement);
@@ -112,9 +112,9 @@ public class Route implements JCSEntity, Serializable {
         return rel;
     }
 
-    private static List<String> toElementIds(List<RouteElement> routeElements) {
+    private static List<String> toElementIds(List<RouteElementBean> routeElements) {
         List<String> eids = new LinkedList<>();
-        for (RouteElement re : routeElements) {
+        for (RouteElementBean re : routeElements) {
             eids.add(re.getNodeId());
         }
         return eids;
@@ -162,11 +162,11 @@ public class Route implements JCSEntity, Serializable {
         this.elementIds = elementIds;
     }
 
-    public List<RouteElement> getRouteElements() {
+    public List<RouteElementBean> getRouteElements() {
         return routeElements;
     }
 
-    public void setRouteElements(List<RouteElement> routeElements) {
+    public void setRouteElements(List<RouteElementBean> routeElements) {
         this.routeElements = routeElements;
         this.elementIds = toElementIds(routeElements);
     }
@@ -192,7 +192,7 @@ public class Route implements JCSEntity, Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Route other = (Route) obj;
+        final RouteBean other = (RouteBean) obj;
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
@@ -217,7 +217,7 @@ public class Route implements JCSEntity, Serializable {
         sb.append(this.id);
         sb.append(": ");
         if (this.routeElements != null && !this.routeElements.isEmpty()) {
-            for (RouteElement re : this.routeElements) {
+            for (RouteElementBean re : this.routeElements) {
                 sb.append(re.getNodeId());
                 if (!re.getNodeId().equals(re.getTileId())) {
                     sb.append("[");

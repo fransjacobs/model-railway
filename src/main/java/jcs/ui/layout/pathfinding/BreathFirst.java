@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import jcs.entities.Route;
+import jcs.entities.RouteBean;
 import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
@@ -36,7 +36,7 @@ public class BreathFirst {
 
     private final LayoutAnalyzer layoutAnalyzer;
     private final Map<String, Node> nodeCache;
-    private final Map<String, Route> routes;
+    private final Map<String, RouteBean> routes;
 
     public BreathFirst() {
         this.nodeCache = new HashMap<>();
@@ -59,7 +59,7 @@ public class BreathFirst {
         String first = elements.getFirst();
         String last = elements.getLast();
 
-        Route route = new Route(first, last, elements);
+        RouteBean route = new RouteBean(first, last, elements);
         this.routes.put(route.getId(), route);
         return path;
     }
@@ -138,12 +138,12 @@ public class BreathFirst {
         setGraph(layoutAnalyzer.buildGraph(tiles));
     }
 
-    public Route getRoute(String id) {
+    public RouteBean getRoute(String id) {
         return this.routes.get(id);
     }
 
-    public List<Route> getRoutes() {
-        List<Route> rl = new LinkedList<>();
+    public List<RouteBean> getRoutes() {
+        List<RouteBean> rl = new LinkedList<>();
         rl.addAll(this.routes.values());
         return rl;
     }
@@ -162,7 +162,7 @@ public class BreathFirst {
     }
 
     public void persistRoutes() {
-        for (Route route : this.routes.values()) {
+        for (RouteBean route : this.routes.values()) {
             LayoutUtil.persist(route);
         }
     }
@@ -186,16 +186,16 @@ public class BreathFirst {
 //        Logger.trace("Found " + bf.routes.size() + " routes");
         bf.routeAll();
 
-        List<Route> rl = bf.getRoutes();
+        List<RouteBean> rl = bf.getRoutes();
 
-        for (Route route : rl) {
+        for (RouteBean route : rl) {
             LayoutUtil.persist(route);
             Logger.trace(route.toLogString());
         }
 
         Logger.trace("#########");
-        List<Route> prl = LayoutUtil.getRoutes();
-        for (Route r : prl) {
+        List<RouteBean> prl = LayoutUtil.getRoutes();
+        for (RouteBean r : prl) {
             Logger.trace(r.toLogString());
         }
 

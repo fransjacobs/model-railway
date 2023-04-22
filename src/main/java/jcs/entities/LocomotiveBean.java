@@ -285,7 +285,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         return functions;
     }
 
-    public void addFunctions(FunctionBean function) {
+    public void addFunction(FunctionBean function) {
         this.functions.put(function.getNumber(), function);
     }
 

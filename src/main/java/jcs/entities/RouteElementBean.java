@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import jcs.entities.enums.AccessoryValue;
 
-public class RouteElement implements JCSEntity, Serializable {
+public class RouteElementBean implements JCSEntity, Serializable {
 
     private BigDecimal id;
     private String routeId;
@@ -32,14 +32,14 @@ public class RouteElement implements JCSEntity, Serializable {
     private AccessoryValue accessoryValue;
     private Integer elementOrder;
 
-    public RouteElement() {
+    public RouteElementBean() {
     }
 
-    public RouteElement(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder) {
+    public RouteElementBean(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder) {
         this(routeId, nodeId, tileId, accessoryValue, elementOrder, null);
     }
 
-    public RouteElement(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder, BigDecimal id) {
+    public RouteElementBean(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder, BigDecimal id) {
         this.routeId = routeId;
         this.nodeId = nodeId;
         this.tileId = tileId;
@@ -121,7 +121,7 @@ public class RouteElement implements JCSEntity, Serializable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final RouteElement other = (RouteElement) obj;
+        final RouteElementBean other = (RouteElementBean) obj;
         if (!Objects.equals(this.elementOrder, other.elementOrder)) {
             return false;
         }

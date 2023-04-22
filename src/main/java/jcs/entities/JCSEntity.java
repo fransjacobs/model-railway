@@ -22,6 +22,7 @@ package jcs.entities;
  *
  * @author fransjacobs
  */
+@Deprecated
 public interface JCSEntity {
 
     Object getId();

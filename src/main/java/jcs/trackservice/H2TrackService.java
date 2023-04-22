@@ -37,7 +37,7 @@ import javax.imageio.ImageIO;
 import jcs.JCS;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
-import jcs.entities.JCSProperty;
+import jcs.entities.JCSPropertyBean;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
@@ -75,8 +75,8 @@ import static jcs.entities.enums.TileType.STRAIGHT;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
-import jcs.entities.Route;
-import jcs.entities.RouteElement;
+import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import jcs.trackservice.dao.RouteDAO;
 import jcs.trackservice.dao.RouteElementDAO;
 import jcs.trackservice.events.DirectionListener;
@@ -150,7 +150,7 @@ public class H2TrackService implements TrackService {
 
     private void retrieveJCSProperties() {
         JCS.logProgress("Connect to Database");
-        List<JCSProperty> props = this.propDao.findAll();
+        List<JCSPropertyBean> props = this.propDao.findAll();
 
         props.forEach(p -> {
             jcsProperties.setProperty(p.getKey(), p.getValue());
@@ -235,8 +235,8 @@ public class H2TrackService implements TrackService {
 //        } else if (entity instanceof SignalBean) {
 //            //Check whether the signal is linked to a layout tile
 //            signalDAO.remove((SignalBean) entity);
-        } else if (entity instanceof JCSProperty) {
-            this.propDao.remove((JCSProperty) entity);
+        } else if (entity instanceof JCSPropertyBean) {
+            this.propDao.remove((JCSPropertyBean) entity);
         }
     }
 
@@ -389,17 +389,17 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public List<JCSProperty> getProperties() {
+    public List<JCSPropertyBean> getProperties() {
         return this.propDao.findAll();
     }
 
     @Override
-    public JCSProperty getProperty(String key) {
+    public JCSPropertyBean getProperty(String key) {
         return this.propDao.find(key);
     }
 
     @Override
-    public JCSProperty persist(JCSProperty property) {
+    public JCSPropertyBean persist(JCSPropertyBean property) {
         this.propDao.persist(property);
         return property;
     }
@@ -494,29 +494,29 @@ public class H2TrackService implements TrackService {
     }
 
     @Override
-    public List<Route> getRoutes() {
-        List<Route> routes = this.routeDAO.findAll();
+    public List<RouteBean> getRoutes() {
+        List<RouteBean> routes = this.routeDAO.findAll();
 
-        for (Route r : routes) {
-            List<RouteElement> elements = this.routeElementDAO.findByRouteId(r.getId());
+        for (RouteBean r : routes) {
+            List<RouteElementBean> elements = this.routeElementDAO.findByRouteId(r.getId());
             r.setRouteElements(elements);
         }
         return routes;
     }
 
     @Override
-    public void persist(Route route) {
+    public void persist(RouteBean route) {
         this.routeDAO.persist(route);
 
         //first remove all elements if any
         this.routeElementDAO.removeByRouteId(route.getId());
-        for (RouteElement re : route.getRouteElements()) {
+        for (RouteElementBean re : route.getRouteElements()) {
             this.routeElementDAO.persist(re);
         }
     }
 
     @Override
-    public void remove(Route route) {
+    public void remove(RouteBean route) {
         this.routeElementDAO.removeByRouteId(route.getId());
         this.routeDAO.remove(route);
     }

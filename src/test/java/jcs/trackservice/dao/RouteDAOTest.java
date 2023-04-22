@@ -22,7 +22,7 @@ import java.awt.Color;
 import jcs.trackservice.dao.util.DAOTestHelper;
 import java.util.LinkedList;
 import java.util.List;
-import jcs.entities.Route;
+import jcs.entities.RouteBean;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -34,7 +34,7 @@ import org.junit.Test;
  */
 public class RouteDAOTest {
 
-    private List<Route> routes;
+    private List<RouteBean> routes;
 
     public RouteDAOTest() {
         DAOTestHelper.setConnectProperties();
@@ -47,8 +47,8 @@ public class RouteDAOTest {
     public void setUp() {
         routes = new LinkedList<>();
 
-        Route r1 = new Route("bk-1+|bk-3-", "bk-1+", "bk-3-", "red");
-        Route r2 = new Route("bk-2+|bk-3-", "bk-2+", "bk-3-", "green");
+        RouteBean r1 = new RouteBean("bk-1+|bk-3-", "bk-1+", "bk-3-", "red");
+        RouteBean r2 = new RouteBean("bk-2+|bk-3-", "bk-2+", "bk-3-", "green");
         routes.add(r1);
         routes.add(r2);
 
@@ -65,8 +65,8 @@ public class RouteDAOTest {
     public void testFindAll() {
         System.out.println("findAll");
         RouteDAO instance = new RouteDAO();
-        List<Route> expResult = routes;
-        List<Route> result = instance.findAll();
+        List<RouteBean> expResult = routes;
+        List<RouteBean> result = instance.findAll();
         assertEquals(expResult, result);
     }
 
@@ -78,8 +78,8 @@ public class RouteDAOTest {
         System.out.println("findById");
         String id = "bk-2+|bk-3-";
         RouteDAO instance = new RouteDAO();
-        Route expResult = routes.get(1);
-        Route result = instance.findById(id);
+        RouteBean expResult = routes.get(1);
+        RouteBean result = instance.findById(id);
         assertEquals(expResult, result);
     }
 
@@ -89,13 +89,13 @@ public class RouteDAOTest {
     @Test
     public void testPersist() {
         System.out.println("persist");
-        Route route = new Route("bk-2-|bk-3+", "bk-2-", "bk-3+", "yellow");
+        RouteBean route = new RouteBean("bk-2-|bk-3+", "bk-2-", "bk-3+", "yellow");
         RouteDAO instance = new RouteDAO();
         String expResult = "bk-2-|bk-3+";
         String result = instance.persist(route);
         assertEquals(expResult, result);
 
-        Route r = instance.findById(result);
+        RouteBean r = instance.findById(result);
         assertEquals(route, r);
 
         route.setColor(Color.blue);
@@ -111,10 +111,10 @@ public class RouteDAOTest {
     @Test
     public void testRemove() {
         System.out.println("remove");
-        Route route = new Route("bk-1-|bk-3+", "bk-1-", "bk-3+", "orange");
+        RouteBean route = new RouteBean("bk-1-|bk-3+", "bk-1-", "bk-3+", "orange");
         RouteDAO instance = new RouteDAO();
 
-        Route r = instance.findById("bk-1-|bk-3+");
+        RouteBean r = instance.findById("bk-1-|bk-3+");
         assertNull(r);
         instance.persist(route);
         r = instance.findById("bk-1-|bk-3+");

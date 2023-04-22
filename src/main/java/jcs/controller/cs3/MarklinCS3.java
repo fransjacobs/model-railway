@@ -118,6 +118,7 @@ public class MarklinCS3 implements MarklinController {
 
     public MarklinCS3() {
         this(true);
+        
     }
 
     MarklinCS3(boolean connect) {
