@@ -22,7 +22,7 @@ import com.formdev.flatlaf.util.SystemInfo;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.table.DefaultTableCellRenderer;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.options.table.SensorTableModel;
 import org.tinylog.Logger;
 
@@ -150,16 +150,16 @@ public class FeedbackMonitor extends javax.swing.JFrame {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().removeSensorListener(sensorTableModel);
+        if (TrackControllerFactory.getTrackService() != null) {
+            TrackControllerFactory.getTrackService().removeSensorListener(sensorTableModel);
             Logger.trace("Removed sensor listener");
         }
         this.sensorTableModel.clear();
     }//GEN-LAST:event_formWindowClosed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().addSensorListener(sensorTableModel);
+        if (TrackControllerFactory.getTrackService() != null) {
+            TrackControllerFactory.getTrackService().addSensorListener(sensorTableModel);
             Logger.trace("Added sensor listener");
         }
     }//GEN-LAST:event_formWindowActivated

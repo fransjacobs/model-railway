@@ -19,7 +19,6 @@
 package jcs.controller.cs3.events;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.MarklinCan;
 import jcs.entities.LocomotiveBean;
@@ -55,8 +54,7 @@ public class VelocityMessageEvent implements Serializable {
         if (resp.isResponseMessage() && MarklinCan.SYSTEM_COMMAND == resp.getCommand() && MarklinCan.LOC_STOP_SUB_CMD == resp.getSubCommand() && MarklinCan.DLC_5 == resp.getDlc()) {
             //Loc halt command could be issued due to a direction change.
             int[] data = resp.getData();
-            Integer locId = ByteUtil.toInt(new int[]{data[0], data[1], data[2], data[3]});
-            BigDecimal id = new BigDecimal(locId);
+            Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
 
             LocomotiveBean lb = new LocomotiveBean();
             lb.setId(id);
@@ -67,8 +65,7 @@ public class VelocityMessageEvent implements Serializable {
             }
         } else if (resp.isResponseMessage() && MarklinCan.LOC_VELOCITY_RESP == resp.getCommand()) {
             int[] data = resp.getData();
-            Integer locId = ByteUtil.toInt(new int[]{data[0], data[1], data[2], data[3]});
-            BigDecimal id = new BigDecimal(locId);
+            Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
 
             Integer velocity = ByteUtil.toInt(new int[]{data[4], data[5]});
 

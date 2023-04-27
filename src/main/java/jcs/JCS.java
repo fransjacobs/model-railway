@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs;
 
@@ -22,8 +19,9 @@ import jcs.ui.util.ProcessFactory;
 import java.awt.GraphicsEnvironment;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.trackservice.TrackService;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.persistence.PersistenceFactory;
+import jcs.persistence.PersistenceService;
+import jcs.persistence.util.H2DatabaseUtil;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.MacOsAdapter;
@@ -33,18 +31,15 @@ import org.apache.commons.lang3.SystemUtils;
 import org.tinylog.Logger;
 
 /**
- * Single Locomotive Control This is the run time start point for this
- * application. It first figures out what to do (local serial port, act as a
- * server etc)
  *
- * @author frans
+ * JCS. This is the run time start point for the application.
  *
  */
 public class JCS extends Thread {
 
     private static JCS instance = null;
     private static JCSSplash splashScreen;
-    private static TrackService trackService;
+    private static PersistenceService persistentStore;
 
     private static MacOsAdapter osAdapter;
     private static JCSFrame jcsFrame;
@@ -76,11 +71,10 @@ public class JCS extends Thread {
         return jcsFrame;
     }
 
-    private void initGui() {
+    private void startGui() {
         JCS.logProgress("Starting GUI...");
-        
-        //Also see https://www.formdev.com/flatlaf/
 
+        //Also see https://www.formdev.com/flatlaf/
         try {
             if (SystemUtils.IS_OS_MAC) {
                 MacOsAdapter.setMacOsProperties();
@@ -164,11 +158,23 @@ public class JCS extends Thread {
         RunUtil.loadProperties();
 
         logProgress("Starting...");
-        trackService = TrackServiceFactory.getTrackService();
+        //Check the persistent properties prepare environment
+        if (H2DatabaseUtil.databaseFileExists(false)) {
+            //Database files are there so try to create connection
+        } else {
+            //No Database file so maybe first start lets creat one
+            H2DatabaseUtil.createDatabaseUsers(false);
+            H2DatabaseUtil.createDatabase();
+        }
+        
+        PersistenceFactory.setConnectionProperties();
 
-        if (trackService != null) {
+        persistentStore = PersistenceFactory.getService();
+
+        if (persistentStore != null) {
             JCS jcs = JCS.getInstance();
-            jcs.initGui();
+
+            jcs.startGui();
         } else {
             Logger.error("Could not obtain a TrackService. Quitting....");
             logProgress("Error. Can't Obtain a Track Service!");
@@ -177,7 +183,5 @@ public class JCS extends Thread {
             splashScreen.close();
             System.exit(0);
         }
-
     }
-
 }

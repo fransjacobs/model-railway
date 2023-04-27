@@ -18,7 +18,6 @@
  */
 package jcs.controller.cs3.http;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -80,13 +79,13 @@ public class LocomotiveBeanParser {
 
         for (String s : items) {
             switch (s) {
-                case LOCOMOTIVES_START:
-                    break;
-                case VERSION:
-                    break;
-                case SESSION:
-                    break;
-                case LOCOMOTIVE:
+                case LOCOMOTIVES_START -> {
+                }
+                case VERSION -> {
+                }
+                case SESSION -> {
+                }
+                case LOCOMOTIVE -> {
                     if (lm.containsKey(".uid")) {
                         LocomotiveBean loc = createLoco(lm, locoFunctions);
                         locs.add(loc);
@@ -95,24 +94,24 @@ public class LocomotiveBeanParser {
                     lm.clear();
                     locoFunctions.clear();
                     locoFunction = null;
-                    break;
-                case FUNCTIONEN:
+                }
+                case FUNCTIONEN -> {
                     functions = true;
                     if (locoFunction != null && locoFunction.getNumber() != null) {
                         locoFunctions.put(locoFunction.getNumber(), locoFunction);
                     }
                     locoFunction = new FunctionBean();
-                    break;
-                case FUNCTIONEN_2:
+                }
+                case FUNCTIONEN_2 -> {
                     functions = true;
                     if (locoFunction != null && locoFunction.getNumber() != null) {
                         locoFunctions.put(locoFunction.getNumber(), locoFunction);
                     }
                     locoFunction = new FunctionBean();
-                    break;
-                case PRG:
-                    break;
-                default:
+                }
+                case PRG -> {
+                }
+                default -> {
                     if (s.contains("=")) {
                         String[] kp = s.split("=");
                         String key = kp[0];
@@ -138,7 +137,7 @@ public class LocomotiveBeanParser {
                     } else {
                         Logger.debug("Tag?: " + s);
                     }
-                    break;
+                }
             }
         }
         // parse the last loc
@@ -200,11 +199,11 @@ public class LocomotiveBeanParser {
         String mfxType = locoProps.get(MFXTYPE);
         String block = locoProps.get(BLOCKS);
 
-        BigDecimal id = new BigDecimal(uid);
+        Long id = (uid != null ? uid.longValue() : null);
 
         LocomotiveBean lb = new LocomotiveBean(id, name, previousName, uid, mfxUid, address, icon, decoderType,
-                mfxSid, tachoMax, vMin, accelerationDelay, brakeDelay, volume, spm,
-                velocity, direction, mfxType, block, true);
+                mfxSid, tachoMax, vMin, accelerationDelay, brakeDelay, volume, spm, velocity, direction, mfxType, block,
+                false, null, true);
 
         //Ignore functions which have no functionType
         Logger.trace("Loc: " + name + " has " + locoFunctions.size() + " functions");

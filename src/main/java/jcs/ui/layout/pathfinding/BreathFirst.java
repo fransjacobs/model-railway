@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2021 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout.pathfinding;
 
@@ -24,7 +21,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import jcs.entities.RouteBean;
-import jcs.ui.layout.LayoutUtil;
+import jcs.entities.RouteElementBean;
+import jcs.entities.enums.AccessoryValue;
+import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
@@ -59,9 +58,51 @@ public class BreathFirst {
         String first = elements.getFirst();
         String last = elements.getLast();
 
-        RouteBean route = new RouteBean(first, last, elements);
-        this.routes.put(route.getId(), route);
+        //TODO!
+        RouteBean route = new RouteBean(null, first, first, last, last, null);
+
+        List<RouteElementBean> rel = createRouteElementsFromElements(first, last, elements);
+
+        route.setRouteElements(rel);
+
+        //public RouteBean(Integer id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
+        String rid = first + first + last + last;
+
+        this.routes.put(rid, route);
         return path;
+    }
+
+    private static List<RouteElementBean> createRouteElementsFromElements(String fromTileId, String toTileId, List<String> elementIds) {
+        List<RouteElementBean> rel = new LinkedList<>();
+        for (int i = 0; i < elementIds.size(); i++) {
+            String nodeId = elementIds.get(i);
+
+            String tileId;
+            if (nodeId.endsWith("-R")) {
+                tileId = nodeId.replace("-R", "");
+            } else if (nodeId.endsWith("-G")) {
+                tileId = nodeId.replace("-G", "");
+            } else if (nodeId.endsWith("-") || nodeId.endsWith("+")) {
+                tileId = nodeId.substring(0, nodeId.length() - 1);
+            } else {
+                tileId = nodeId;
+            }
+
+            AccessoryValue accessoryValue = null;
+            if (nodeId.endsWith("-R")) {
+                accessoryValue = AccessoryValue.RED;
+            } else if (nodeId.endsWith("-G")) {
+                accessoryValue = AccessoryValue.GREEN;
+            }
+            Integer elementOrder = i;
+
+            //RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
+            RouteElementBean routeElement = new RouteElementBean(null, null, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
+            rel.add(routeElement);
+
+            Logger.trace(routeElement);
+        }
+        return rel;
     }
 
     //Check if the path is valid
@@ -163,7 +204,7 @@ public class BreathFirst {
 
     public void persistRoutes() {
         for (RouteBean route : this.routes.values()) {
-            LayoutUtil.persist(route);
+            PersistenceFactory.getService().persist(route);
         }
     }
 
@@ -189,12 +230,12 @@ public class BreathFirst {
         List<RouteBean> rl = bf.getRoutes();
 
         for (RouteBean route : rl) {
-            LayoutUtil.persist(route);
+            PersistenceFactory.getService().persist(route);
             Logger.trace(route.toLogString());
         }
 
         Logger.trace("#########");
-        List<RouteBean> prl = LayoutUtil.getRoutes();
+        List<RouteBean> prl = PersistenceFactory.getService().getRoutes();
         for (RouteBean r : prl) {
             Logger.trace(r.toLogString());
         }

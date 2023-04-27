@@ -22,7 +22,7 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.tiles.Switch;
 import org.tinylog.Logger;
 
@@ -55,7 +55,7 @@ public class SwitchDialog extends javax.swing.JDialog {
         this.headingLbl.setText(text);
 
         if (this.turnout != null) {
-            List<AccessoryBean> turnouts = TrackServiceFactory.getTrackService().getTurnouts();
+            List<AccessoryBean> turnouts = TrackControllerFactory.getTrackService().getTurnouts();
             AccessoryBean emptyBean = new AccessoryBean();
             turnouts.add(emptyBean);
 
@@ -70,7 +70,7 @@ public class SwitchDialog extends javax.swing.JDialog {
 
             this.accessoryComboBoxModel.setSelectedItem(ab);
             //Unregister is properties might change
-            TrackServiceFactory.getTrackService().removeAccessoryListener(turnout);
+            TrackControllerFactory.getTrackService().removeAccessoryListener(turnout);
         }
     }
 
@@ -162,11 +162,11 @@ public class SwitchDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
         if (this.turnout != null && this.turnout.getAccessoryBean() != null) {
             if(this.turnout.getAccessoryBean().getName() != null) {
-                TrackServiceFactory.getTrackService().persist((turnout.getTileBean()));
-                TrackServiceFactory.getTrackService().addAccessoryListener(turnout);
+                TrackControllerFactory.getTrackService().persist((turnout.getTileBean()));
+                TrackControllerFactory.getTrackService().addAccessoryListener(turnout);
             } else {
                 this.turnout.setAccessoryBean(null);
-                TrackServiceFactory.getTrackService().persist((turnout.getTileBean()));
+                TrackControllerFactory.getTrackService().persist((turnout.getTileBean()));
             }
         }
         this.setVisible(false);

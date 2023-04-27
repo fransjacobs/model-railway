@@ -1,71 +1,78 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import jcs.entities.enums.AccessoryValue;
 
-public class RouteElementBean implements JCSEntity, Serializable {
+@Table(name = "route_elements", indexes = {
+    @Index(name = "roel_rout_node+tile_idx", columnList = "route_id,node_id,tile_id", unique = true)})
+public class RouteElementBean implements Serializable {
 
-    private BigDecimal id;
-    private String routeId;
+    private Long id;
+    private Long routeId;
     private String nodeId;
     private String tileId;
-    private AccessoryValue accessoryValue;
+    private String accessoryState;
     private Integer elementOrder;
 
     public RouteElementBean() {
     }
 
-    public RouteElementBean(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder) {
-        this(routeId, nodeId, tileId, accessoryValue, elementOrder, null);
+    public RouteElementBean(Long routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder) {
+        this(null, routeId, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
     }
 
-    public RouteElementBean(String routeId, String nodeId, String tileId, AccessoryValue accessoryValue, Integer elementOrder, BigDecimal id) {
+    public RouteElementBean(Long id, Long routeId, String nodeId, String tileId, String accessoryValue, Integer elementOrder) {
+        this.id = id;
         this.routeId = routeId;
         this.nodeId = nodeId;
         this.tileId = tileId;
-        this.accessoryValue = accessoryValue;
+        this.accessoryState = accessoryValue;
         this.elementOrder = elementOrder;
-        this.id = id;
     }
 
-    @Override
-    public BigDecimal getId() {
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+    public Long getId() {
         return this.id;
     }
 
-    @Override
-    public void setId(Object id) {
-        this.id = (BigDecimal) id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getRouteId() {
+    @Column(name = "route_id", nullable = false)
+    public Long getRouteId() {
         return routeId;
     }
 
-    public void setRouteId(String routeId) {
+    public void setRouteId(Long routeId) {
         this.routeId = routeId;
     }
 
+    @Column(name = "node_id", length = 255, nullable = false)
     public String getNodeId() {
         return nodeId;
     }
@@ -74,6 +81,7 @@ public class RouteElementBean implements JCSEntity, Serializable {
         this.nodeId = nodeId;
     }
 
+    @Column(name = "tile_id", length = 255, nullable = false)
     public String getTileId() {
         return tileId;
     }
@@ -82,14 +90,25 @@ public class RouteElementBean implements JCSEntity, Serializable {
         this.tileId = TileId;
     }
 
+    @Column(name = "accessory_value", length = 255)
+    public String getAccessoryState() {
+        return accessoryState;
+    }
+
+    public void setAccessoryState(String accessoryState) {
+        this.accessoryState = accessoryState;
+    }
+
+    @Transient
     public AccessoryValue getAccessoryValue() {
-        return accessoryValue;
+        return AccessoryValue.dbGet(this.accessoryState);
     }
 
     public void setAccessoryValue(AccessoryValue accessoryValue) {
-        this.accessoryValue = accessoryValue;
+        this.accessoryState = accessoryValue.getDBValue();
     }
 
+    @Column(name = "order_seq", columnDefinition = "order_seq integer default 0")
     public Integer getElementOrder() {
         return elementOrder;
     }
@@ -105,7 +124,7 @@ public class RouteElementBean implements JCSEntity, Serializable {
         hash = 23 * hash + Objects.hashCode(this.routeId);
         hash = 23 * hash + Objects.hashCode(this.nodeId);
         hash = 23 * hash + Objects.hashCode(this.tileId);
-        hash = 23 * hash + Objects.hashCode(this.accessoryValue);
+        hash = 23 * hash + Objects.hashCode(this.accessoryState);
         hash = 23 * hash + Objects.hashCode(this.elementOrder);
         return hash;
     }
@@ -137,15 +156,14 @@ public class RouteElementBean implements JCSEntity, Serializable {
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        return Objects.equals(this.accessoryValue, other.accessoryValue);
+        return Objects.equals(this.accessoryState, other.accessoryState);
     }
 
     @Override
     public String toString() {
-        return "RouteElement{routeId=" + routeId + ", nodeId=" + nodeId + ", tileId=" + tileId + ", accessoryValue=" + accessoryValue + ", elementOrder=" + elementOrder + ", id=" + id + "}";
+        return "RouteElement{id=" + id + ", routeId=" + routeId + ", nodeId=" + nodeId + ", tileId=" + tileId + ", accessoryValue=" + accessoryState + ", elementOrder=" + elementOrder + "}";
     }
 
-    @Override
     public String toLogString() {
         return toString();
     }

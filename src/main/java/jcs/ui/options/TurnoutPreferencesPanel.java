@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.options;
 
@@ -27,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.math.BigDecimal;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -50,7 +46,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.AccessoryBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.options.table.TurnoutTableModel;
 import org.tinylog.Logger;
 
@@ -85,7 +81,7 @@ public class TurnoutPreferencesPanel extends JPanel {
     }
 
     private AccessoryBean getAccessoryFromTrackService(AccessoryBean turnout) {
-        return TrackServiceFactory.getTrackService().getAccessory(turnout.getId());
+        return TrackControllerFactory.getTrackService().getAccessory(turnout.getId());
     }
 
     private void selectTurnout(int row) {
@@ -450,7 +446,7 @@ public class TurnoutPreferencesPanel extends JPanel {
       Long idl = turnoutTableModel.getRowCount() + 1l;
 
       selectedTurnout.setName("W " + idl);
-      selectedTurnout.setId(new BigDecimal(idl));
+      selectedTurnout.setId(idl);
       selectedTurnout.setPosition(0);
 
       setComponentValues(selectedTurnout);
@@ -465,7 +461,7 @@ public class TurnoutPreferencesPanel extends JPanel {
       if (t != null) {
           Logger.debug("Selected row: " + row + ", Turnout ID: " + t.getId());
           //Refresh from repo
-          this.selectedTurnout = TrackServiceFactory.getTrackService().getAccessory(t.getId());
+          this.selectedTurnout = TrackControllerFactory.getTrackService().getAccessory(t.getId());
           this.setComponentValues(this.selectedTurnout);
       }
   }//GEN-LAST:event_turnoutTableMouseClicked
@@ -474,7 +470,7 @@ public class TurnoutPreferencesPanel extends JPanel {
       this.selectedTurnout = setTurnoutValues();
       Logger.debug("Save the Turnout: " + this.selectedTurnout);
 
-      AccessoryBean t = TrackServiceFactory.getTrackService().getAccessory(selectedTurnout.getId());
+      AccessoryBean t = TrackControllerFactory.getTrackService().getAccessory(selectedTurnout.getId());
       if (t != null) {
           this.selectedTurnout.setId(t.getId());
           Logger.debug("Found turnout with id " + t.getId());
@@ -482,7 +478,7 @@ public class TurnoutPreferencesPanel extends JPanel {
           this.selectedTurnout.setPosition(0);
       }
 
-      selectedTurnout = TrackServiceFactory.getTrackService().persist(selectedTurnout);
+      selectedTurnout = TrackControllerFactory.getTrackService().persist(selectedTurnout);
       setComponentValues(selectedTurnout);
       turnoutTableModel.refresh();
       alignTurnoutTable();
@@ -490,7 +486,7 @@ public class TurnoutPreferencesPanel extends JPanel {
 
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       Logger.debug("Delete Turnout: " + this.selectedTurnout);
-      TrackServiceFactory.getTrackService().remove(selectedTurnout);
+      TrackControllerFactory.getTrackService().remove(selectedTurnout);
       turnoutTableModel.refresh();
       selectedTurnout = null;
       setComponentValues(selectedTurnout);
@@ -508,7 +504,7 @@ public class TurnoutPreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackServiceFactory.getTrackService().synchronizeTurnouts();
+        TrackControllerFactory.getTrackService().synchronizeTurnouts();
         refresh();
     }
 
@@ -522,7 +518,7 @@ public class TurnoutPreferencesPanel extends JPanel {
 
     //Create Turnout from fields  
     protected AccessoryBean setTurnoutValues() {
-        BigDecimal id = (BigDecimal) this.idSpinner.getValue();
+        Long id = (Long) this.idSpinner.getValue();
         Integer address = id.intValue();
         String name = nameTF.getText();
         String type = typeTF.getText();
@@ -531,7 +527,7 @@ public class TurnoutPreferencesPanel extends JPanel {
         String decoder = this.decoderTF.getText();
         Integer position = (Integer) this.positionSpinner.getValue();
 
-        AccessoryBean turnout = new AccessoryBean(id, address,name, type, position, switchTime, decoderType, decoder);
+        AccessoryBean turnout = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
 
         return turnout;
     }

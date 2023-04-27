@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui;
 
@@ -62,7 +59,8 @@ import javax.swing.WindowConstants;
 import jcs.JCS;
 import jcs.controller.cs3.events.PowerEvent;
 import jcs.controller.cs3.events.PowerEventListener;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.persistence.PersistenceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
 import jcs.ui.options.OptionDialog;
@@ -110,8 +108,7 @@ public class JCSFrame extends JFrame implements UICallback {
     }
 
     private void initJCS() {
-        if (TrackServiceFactory.getTrackService() != null) {
-
+        if (PersistenceFactory.getService() != null) {
             this.setTitle(this.getTitleString());
             this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
 
@@ -119,8 +116,8 @@ public class JCSFrame extends JFrame implements UICallback {
             setCS3Properties();
             feedbackMonitor = new FeedbackMonitor();
 
-            this.powerButton.setSelected(TrackServiceFactory.getTrackService().isPowerOn());
-            TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
+            this.powerButton.setSelected(TrackControllerFactory.getTrackService().isPowerOn());
+            TrackControllerFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
 
             //Initialize the Touchbar for MacOS
             if (SystemUtils.IS_OS_MAC_OSX) {
@@ -205,19 +202,19 @@ public class JCSFrame extends JFrame implements UICallback {
     }
 
     public void stop() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().switchPower(false);
+        if (TrackControllerFactory.getTrackService() != null) {
+            TrackControllerFactory.getTrackService().switchPower(false);
         }
     }
 
     private void setCS3Properties() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            if (TrackServiceFactory.getTrackService().getControllerName() != null) {
+        if (TrackControllerFactory.getTrackService() != null) {
+            if (TrackControllerFactory.getTrackService().getControllerName() != null) {
                 this.connectButton.setSelected(true);
-                this.controllerDescriptionLbl.setText(TrackServiceFactory.getTrackService().getControllerName());
-                this.controllerCatalogNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerArticleNumber());
-                this.controllerSerialNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerSerialNumber());
-                this.controllerHostNameLbl.setText("CS3-" + TrackServiceFactory.getTrackService().getControllerSerialNumber());
+                this.controllerDescriptionLbl.setText(TrackControllerFactory.getTrackService().getControllerName());
+                this.controllerCatalogNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerArticleNumber());
+                this.controllerSerialNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerSerialNumber());
+                this.controllerHostNameLbl.setText("CS3-" + TrackControllerFactory.getTrackService().getControllerSerialNumber());
             } else {
                 this.connectButton.setSelected(false);
                 this.controllerHostNameLbl.setText("Not Connected");
@@ -783,8 +780,8 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
         boolean on = ((JToggleButton) evt.getSource()).isSelected();
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().switchPower(on);
+        if (TrackControllerFactory.getTrackService() != null) {
+            TrackControllerFactory.getTrackService().switchPower(on);
         }
     }//GEN-LAST:event_powerButtonActionPerformed
 
@@ -793,19 +790,19 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
 
     private void connect(boolean connect) {
-        if (TrackServiceFactory.getTrackService() != null) {
+        if (TrackControllerFactory.getTrackService() != null) {
             if (connect) {
-                TrackServiceFactory.getTrackService().connect();
-                this.controllerDescriptionLbl.setText(TrackServiceFactory.getTrackService().getControllerName());
-                this.controllerCatalogNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerArticleNumber());
-                this.controllerSerialNumberLbl.setText(TrackServiceFactory.getTrackService().getControllerSerialNumber());
-                this.controllerHostNameLbl.setText("CS3-" + TrackServiceFactory.getTrackService().getControllerSerialNumber());
+                TrackControllerFactory.getTrackService().connect();
+                this.controllerDescriptionLbl.setText(TrackControllerFactory.getTrackService().getControllerName());
+                this.controllerCatalogNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerArticleNumber());
+                this.controllerSerialNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerSerialNumber());
+                this.controllerHostNameLbl.setText("CS3-" + TrackControllerFactory.getTrackService().getControllerSerialNumber());
 
-                TrackServiceFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
+                TrackControllerFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
 
                 this.connectMI.setText("Disconnect");
             } else {
-                TrackServiceFactory.getTrackService().disconnect();
+                TrackControllerFactory.getTrackService().disconnect();
                 this.controllerDescriptionLbl.setText("-");
                 this.controllerCatalogNumberLbl.setText("-");
                 this.controllerSerialNumberLbl.setText("-");
@@ -849,8 +846,8 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private String getTitleString() {
         String jcsVersion = JCS.getVersionInfo().getVersion();
-        if (TrackServiceFactory.getTrackService() != null && TrackServiceFactory.getTrackService().getControllerSerialNumber() != null) {
-            return "JCS " + "Connected to " + TrackServiceFactory.getTrackService().getControllerName();
+        if (TrackControllerFactory.getTrackService() != null && TrackControllerFactory.getTrackService().getControllerSerialNumber() != null) {
+            return "JCS " + "Connected to " + TrackControllerFactory.getTrackService().getControllerName();
         } else {
             return "JCS " + jcsVersion + " - NOT Connected!";
         }

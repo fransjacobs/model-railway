@@ -47,7 +47,7 @@ public class AccessoryJSONParser {
             AccessoryBean ab = new AccessoryBean();
 
             ab.setName(accArray.getJSONObject(i).getString("name"));
-            ab.setId(accArray.getJSONObject(i).getBigDecimal("id"));
+            ab.setId(accArray.getJSONObject(i).getLong("id"));
             ab.setAddress(accArray.getJSONObject(i).getInt("address"));
             ab.setIcon(accArray.getJSONObject(i).getString("icon"));
             ab.setIconFile(accArray.getJSONObject(i).getString("iconFile"));
@@ -68,15 +68,9 @@ public class AccessoryJSONParser {
                 Logger.trace("Unknown Accessory: " + ab.toLogString());
             } else {
                 switch (ab.getGroup()) {
-                    case "weichen":
-                        this.turnouts.add(ab);
-                        break;
-                    case "lichtsignale":
-                        this.signals.add(ab);
-                        break;
-                    default:
-                        Logger.trace("Unknown Accessory: " + ab.toLogString());
-                        break;
+                    case "weichen" -> this.turnouts.add(ab);
+                    case "lichtsignale" -> this.signals.add(ab);
+                    default -> Logger.trace("Unknown Accessory: " + ab.toLogString());
                 }
             }
         }

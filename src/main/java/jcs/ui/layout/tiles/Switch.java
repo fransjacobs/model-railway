@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout.tiles;
 
@@ -31,9 +28,6 @@ import jcs.entities.enums.Orientation;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.ui.layout.tiles.enums.Direction;
 
-/**
- * Draw a Railway Switch Depending on the Direction it is a Left or Right switch
- */
 public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
     private static int idSeq;
@@ -116,29 +110,30 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
         }
 
         switch (this.value) {
-            case RED:
+            case RED -> {
                 renderStraight(g2, trackColor, backgroundColor);
                 renderDiagonal(g2, Color.red, backgroundColor);
-                break;
-            case GREEN:
+            }
+            case GREEN -> {
                 renderDiagonal(g2, trackColor, backgroundColor);
                 renderStraight(g2, Color.green, backgroundColor);
-                break;
-            default:
+            }
+            default -> {
                 switch (this.routeValue) {
-                    case RED:
+                    case RED -> {
                         renderStraight(g2, trackColor, backgroundColor);
                         renderDiagonal(g2, this.routeColor, backgroundColor);
-                        break;
-                    case GREEN:
+                    }
+                    case GREEN -> {
                         renderDiagonal(g2, trackColor, backgroundColor);
                         renderStraight(g2, this.routeColor, backgroundColor);
-                        break;
-                    default:
+                    }
+                    default -> {
                         renderStraight(g2, trackColor, backgroundColor);
                         renderDiagonal(g2, trackColor, backgroundColor);
-                        break;
+                    }
                 }
+            }
         }
     }
 
@@ -148,8 +143,8 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
     }
 
     public AccessoryBean getAccessoryBean() {
-        if (this.tileBean != null && this.tileBean.getEntityBean() != null) {
-            return (AccessoryBean) this.tileBean.getEntityBean();
+        if (this.tileBean != null && this.tileBean.getAccessoryBean() != null) {
+            return this.tileBean.getAccessoryBean();
         } else {
             return null;
         }
@@ -164,7 +159,7 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
     @Override
     public void onChange(AccessoryMessageEvent event) {
-        if (this.getTileBean().getAccessoryBeanId() != null && this.getTileBean().getAccessoryBeanId().equals(event.getAccessoryBean().getId())) {
+        if (this.getTileBean().getAccessoryBean() != null && this.getTileBean().getAccessoryId().equals(event.getAccessoryBean().getId())) {
             setValue(event.getAccessoryBean().getAccessoryValue());
             repaintTile();
         }

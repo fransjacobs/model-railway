@@ -1,31 +1,33 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
-import java.math.BigDecimal;
 import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
 
-public class AccessoryBean implements JCSEntity {
+@Table(name = "accessories")
+public class AccessoryBean {
 
-    private BigDecimal id;
+    private Long id;
     private Integer address;
     private String name;
     private String type;
@@ -46,11 +48,11 @@ public class AccessoryBean implements JCSEntity {
         this(null, address, name, type, position, switchTime, decoderType, decoder);
     }
 
-    public AccessoryBean(BigDecimal id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
-        this(id, address, name, type, position, switchTime, decoderType, decoder, null, null, null, null);
+    public AccessoryBean(Long id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
+        this(id, address, name, type, position, null, switchTime, decoderType, decoder, null, null, null);
     }
 
-    public AccessoryBean(BigDecimal id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder, String group, String icon, String iconFile, Integer states) {
+    public AccessoryBean(Long id, Integer address, String name, String type, Integer position, Integer states, Integer switchTime, String decoderType, String decoder, String group, String icon, String iconFile) {
         this.id = id;
         this.address = address;
         this.name = name;
@@ -65,22 +67,18 @@ public class AccessoryBean implements JCSEntity {
         this.states = states;
     }
 
-    @Override
-    public BigDecimal getId() {
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+    public Long getId() {
         return id;
     }
 
-    @Override
-    public void setId(Object id) {
-        if (id instanceof BigDecimal) {
-            this.id = (BigDecimal) id;
-        }
-    }
-
-    public void setId(BigDecimal id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
+    @Column(name = "address", nullable = false)
     public Integer getAddress() {
         return address;
     }
@@ -89,6 +87,7 @@ public class AccessoryBean implements JCSEntity {
         this.address = address;
     }
 
+    @Column(name = "name", length = 255, nullable = false)
     public String getName() {
         return name;
     }
@@ -97,6 +96,7 @@ public class AccessoryBean implements JCSEntity {
         this.name = name;
     }
 
+    @Column(name = "type", length = 255, nullable = false)
     public String getType() {
         return type;
     }
@@ -105,6 +105,7 @@ public class AccessoryBean implements JCSEntity {
         this.type = type;
     }
 
+    @Column(name = "position")
     public Integer getPosition() {
         return position;
     }
@@ -113,6 +114,7 @@ public class AccessoryBean implements JCSEntity {
         this.position = position;
     }
 
+    @Column(name = "states")
     public Integer getStates() {
         return states;
     }
@@ -121,6 +123,7 @@ public class AccessoryBean implements JCSEntity {
         this.states = states;
     }
 
+    @Transient
     public void toggle() {
         //based on number of states
         int s = this.states;
@@ -136,6 +139,7 @@ public class AccessoryBean implements JCSEntity {
         }
     }
 
+    @Transient
     public AccessoryValue getAccessoryValue() {
         return AccessoryValue.cs3Get(this.position);
     }
@@ -144,6 +148,7 @@ public class AccessoryBean implements JCSEntity {
         this.setPosition(accessoryValue.getCS3Value());
     }
 
+    @Transient
     public SignalValue getSignalValue() {
         return SignalValue.cs3Get(this.position);
     }
@@ -152,6 +157,7 @@ public class AccessoryBean implements JCSEntity {
         this.setPosition(signalValue.getCS3Value());
     }
 
+    @Column(name = "switch_time")
     public Integer getSwitchTime() {
         return switchTime;
     }
@@ -160,6 +166,7 @@ public class AccessoryBean implements JCSEntity {
         this.switchTime = switchTime;
     }
 
+    @Column(name = "decoder_type", length = 255)
     public String getDecoderType() {
         return decoderType;
     }
@@ -168,6 +175,7 @@ public class AccessoryBean implements JCSEntity {
         this.decoderType = decoderType;
     }
 
+    @Column(name = "decoder", length = 255)
     public String getDecoder() {
         return decoder;
     }
@@ -176,6 +184,7 @@ public class AccessoryBean implements JCSEntity {
         this.decoder = decoder;
     }
 
+    @Column(name = "accessory_group", length = 255)
     public String getGroup() {
         return group;
     }
@@ -184,6 +193,7 @@ public class AccessoryBean implements JCSEntity {
         this.group = group;
     }
 
+    @Column(name = "icon", length = 255)
     public String getIcon() {
         return icon;
     }
@@ -192,6 +202,7 @@ public class AccessoryBean implements JCSEntity {
         this.icon = icon;
     }
 
+    @Column(name = "icon_file", length = 255)
     public String getIconFile() {
         return iconFile;
     }
@@ -200,6 +211,7 @@ public class AccessoryBean implements JCSEntity {
         this.iconFile = iconFile;
     }
 
+    @Transient
     public boolean isSignal() {
         return "lichtsignale".equals(this.group);
     }
@@ -209,7 +221,6 @@ public class AccessoryBean implements JCSEntity {
         return name;
     }
 
-    @Override
     public String toLogString() {
         return "AccessoryBean{" + "id=" + id + ", address=" + address + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + ", group=" + group + ", states=" + states + "}";
     }

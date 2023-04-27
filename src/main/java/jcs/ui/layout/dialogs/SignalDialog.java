@@ -22,7 +22,7 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.tiles.Signal;
 import org.tinylog.Logger;
 
@@ -55,7 +55,7 @@ public class SignalDialog extends javax.swing.JDialog {
         this.headingLbl.setText(text);
 
         if (this.signal != null) {
-            List<AccessoryBean> signals = TrackServiceFactory.getTrackService().getSignals();
+            List<AccessoryBean> signals = TrackControllerFactory.getTrackService().getSignals();
             AccessoryBean emptyBean = new AccessoryBean();
             signals.add(emptyBean);
 
@@ -70,7 +70,7 @@ public class SignalDialog extends javax.swing.JDialog {
 
             this.accessoryComboBoxModel.setSelectedItem(ab);
             //Unregister is properties might change
-            TrackServiceFactory.getTrackService().removeAccessoryListener(signal);
+            TrackControllerFactory.getTrackService().removeAccessoryListener(signal);
         }
     }
 
@@ -162,11 +162,11 @@ public class SignalDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
         if (this.signal != null && this.signal.getAccessoryBean() != null) {
             if (this.signal.getAccessoryBean().getName() != null) {
-                TrackServiceFactory.getTrackService().persist((signal.getTileBean()));
-                TrackServiceFactory.getTrackService().addAccessoryListener(signal);
+                TrackControllerFactory.getTrackService().persist((signal.getTileBean()));
+                TrackControllerFactory.getTrackService().addAccessoryListener(signal);
             } else {
                 this.signal.setAccessoryBean(null);
-                TrackServiceFactory.getTrackService().persist((signal.getTileBean()));
+                TrackControllerFactory.getTrackService().persist((signal.getTileBean()));
             }
         }
         this.setVisible(false);

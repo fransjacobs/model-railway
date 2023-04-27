@@ -1,36 +1,37 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
 import java.awt.Image;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 
-public class LocomotiveBean implements JCSEntity, Serializable {
+@Table(name = "locomotives")
+public class LocomotiveBean implements Serializable {
 
-    private BigDecimal id;
+    private Long id;
     private String name;
     private String previousName;
     private Long uid;
@@ -48,22 +49,32 @@ public class LocomotiveBean implements JCSEntity, Serializable {
     private Integer velocity;
     private Integer richtung;
     private String mfxType;
+    private boolean commuter;
+    private Integer length;
     private String block;
     private boolean show;
 
     private Image locIcon;
 
     private final Map<Integer, FunctionBean> functions;
+    //private List<LocomotiveFunction> locomotiveFunctions;
 
     public LocomotiveBean() {
         functions = new HashMap<>();
     }
 
-    public LocomotiveBean(BigDecimal id, String name, String previousName, Long uid,
+    public LocomotiveBean(Long id, String name, Long uid, Long mfxUid, Integer address, String icon, String decoderTypeString,
+            String mfxSid, Integer tachoMax, Integer vMin, Integer velocity, Integer direction, boolean commuter, Integer length, boolean show) {
+
+        this(id, name, null, uid, mfxUid, address, icon, decoderTypeString, mfxSid, tachoMax, vMin, null, null, null, null, velocity,
+                direction, null, null, commuter, length, show);
+    }
+
+    public LocomotiveBean(Long id, String name, String previousName, Long uid,
             Long mfxUid, Integer address, String icon, String decoderTypeString,
             String mfxSid, Integer tachoMax, Integer vMin, Integer accelerationDelay,
             Integer brakeDelay, Integer volume, String spm, Integer velocity,
-            Integer direction, String mfxType, String block, boolean show) {
+            Integer direction, String mfxType, String block, boolean commuter, Integer length, boolean show) {
 
         this.id = id;
         this.name = name;
@@ -84,11 +95,24 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.richtung = direction;
         this.mfxType = mfxType;
         this.block = block;
+        this.commuter = commuter;
+        this.length = length;
         this.show = show;
 
         functions = new HashMap<>();
     }
 
+    @Id
+    @Column(name = "id")
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Column(name = "name", length = 255, nullable = false)
     public String getName() {
         return name;
     }
@@ -97,6 +121,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.name = name;
     }
 
+    @Transient
     public String getPreviousName() {
         return previousName;
     }
@@ -105,6 +130,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.previousName = previousName;
     }
 
+    @Column(name = "uid")
     public Long getUid() {
         return uid;
     }
@@ -113,6 +139,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.uid = uid;
     }
 
+    @Column(name = "mfx_uid")
     public Long getMfxUid() {
         return mfxUid;
     }
@@ -121,6 +148,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.mfxUid = mfxUid;
     }
 
+    @Column(name = "address", nullable = false)
     public Integer getAddress() {
         return address;
     }
@@ -129,6 +157,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.address = address;
     }
 
+    @Column(name = "icon", length = 255)
     public String getIcon() {
         return icon;
     }
@@ -137,6 +166,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.icon = icon;
     }
 
+    @Column(name = "decoder_type", length = 255, nullable = false)
     public String getDecoderTypeString() {
         return decoderTypeString;
     }
@@ -145,10 +175,12 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.decoderTypeString = decoderTypeString;
     }
 
+    @Transient
     public DecoderType getDecoderType() {
         return DecoderType.get(this.decoderTypeString);
     }
 
+    @Column(name = "mfx_sid")
     public String getMfxSid() {
         return mfxSid;
     }
@@ -157,6 +189,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.mfxSid = mfxSid;
     }
 
+    @Column(name = "tacho_max")
     public Integer getTachoMax() {
         return tachoMax;
     }
@@ -165,6 +198,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.tachoMax = tachoMax;
     }
 
+    @Column(name = "v_min")
     public Integer getvMin() {
         return vMin;
     }
@@ -173,6 +207,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.vMin = vMin;
     }
 
+    @Transient
     public Integer getAccelerationDelay() {
         return accelerationDelay;
     }
@@ -181,6 +216,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.accelerationDelay = accelerationDelay;
     }
 
+    @Transient
     public Integer getBrakeDelay() {
         return brakeDelay;
     }
@@ -189,6 +225,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.brakeDelay = brakeDelay;
     }
 
+    @Transient
     public Integer getVolume() {
         return volume;
     }
@@ -197,14 +234,17 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.volume = volume;
     }
 
+    @Transient
     public String getSpm() {
         return spm;
     }
 
+    @Transient
     public void setSpm(String spm) {
         this.spm = spm;
     }
 
+    @Column(name = "velocity")
     public Integer getVelocity() {
         return velocity;
     }
@@ -213,6 +253,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.velocity = velocity;
     }
 
+    @Column(name = "richtung")
     public Integer getRichtung() {
         return richtung;
     }
@@ -221,6 +262,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.richtung = richtung;
     }
 
+    @Transient
     public Direction getDirection() {
         if (this.richtung != null) {
             return Direction.getDirection(this.richtung);
@@ -233,6 +275,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.richtung = direction.getMarklinValue();
     }
 
+    @Transient
     public String getMfxType() {
         return mfxType;
     }
@@ -241,6 +284,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.mfxType = mfxType;
     }
 
+    @Transient
     public String getBlock() {
         return block;
     }
@@ -249,6 +293,25 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.block = block;
     }
 
+    @Column(name = "commuter", columnDefinition = "commuter bool default '0'")
+    public boolean isCommuter() {
+        return commuter;
+    }
+
+    public void setCommuter(boolean commuter) {
+        this.commuter = commuter;
+    }
+
+    @Column(name = "length")
+    public Integer getLength() {
+        return length;
+    }
+
+    public void setLength(Integer locLength) {
+        this.length = locLength;
+    }
+
+    @Column(name = "show", nullable = false, columnDefinition = "show bool default '1'")
     public boolean isShow() {
         return show;
     }
@@ -257,6 +320,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.show = show;
     }
 
+    @Transient
     public Image getLocIcon() {
         return locIcon;
     }
@@ -265,22 +329,14 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         this.locIcon = locIcon;
     }
 
-    @Override
-    public BigDecimal getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(Object id) {
-        if (id instanceof BigDecimal bigDecimal) {
-            this.id = bigDecimal;
-        }
-    }
-
-    public void setId(BigDecimal id) {
-        this.id = id;
-    }
-
+//    @OneToMany(targetEntity=LocomotiveFunction.class )
+//  public List<LocomotiveFunction> getLocomotiveFunctions() {
+//    return locomotiveFunctions;
+//  }
+//  public void setLocomotiveFunctions(List<LocomotiveFunction> locomotiveFunctions) {
+//    this.locomotiveFunctions = locomotiveFunctions;
+//  }
+    @Transient
     public Map<Integer, FunctionBean> getFunctions() {
         return functions;
     }
@@ -295,21 +351,30 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         }
     }
 
+    public void replaceAllFunctions(List<FunctionBean> functions) {
+        this.functions.clear();
+        for (FunctionBean function : functions) {
+            this.functions.put(function.getNumber(), function);
+        }
+    }
+
+    @Transient
     public FunctionBean getFunctionBean(Integer functionNumber) {
         return this.functions.get(functionNumber);
     }
 
     @Override
     public String toString() {
-        return this.name;
+        //return this.name;
+        return toLogString();
     }
 
-    @Override
     public String toLogString() {
         return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + block + ", locIcon=" + locIcon + '}';
     }
 
     //Convenience
+    @Transient
     public boolean isFunctionValue(Integer number) {
         if (this.functions.containsKey(number)) {
             FunctionBean f = this.functions.get(number);
@@ -320,6 +385,7 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         }
     }
 
+    @Transient
     public boolean hasFunction(Integer number) {
         return this.functions.containsKey(number);
     }
@@ -380,9 +446,9 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (!Objects.equals(this.previousName, other.previousName)) {
-            return false;
-        }
+//        if (!Objects.equals(this.previousName, other.previousName)) {
+//            return false;
+//        }
         if (!Objects.equals(this.icon, other.icon)) {
             return false;
         }
@@ -392,15 +458,15 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         if (!Objects.equals(this.mfxSid, other.mfxSid)) {
             return false;
         }
-        if (!Objects.equals(this.spm, other.spm)) {
-            return false;
-        }
+//        if (!Objects.equals(this.spm, other.spm)) {
+//            return false;
+//        }
         if (!Objects.equals(this.mfxType, other.mfxType)) {
             return false;
         }
-        if (!Objects.equals(this.block, other.block)) {
-            return false;
-        }
+//        if (!Objects.equals(this.block, other.block)) {
+//            return false;
+//        }
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
@@ -419,25 +485,23 @@ public class LocomotiveBean implements JCSEntity, Serializable {
         if (!Objects.equals(this.vMin, other.vMin)) {
             return false;
         }
-        if (!Objects.equals(this.accelerationDelay, other.accelerationDelay)) {
-            return false;
-        }
-        if (!Objects.equals(this.brakeDelay, other.brakeDelay)) {
-            return false;
-        }
-        if (!Objects.equals(this.volume, other.volume)) {
-            return false;
-        }
+//        if (!Objects.equals(this.accelerationDelay, other.accelerationDelay)) {
+//            return false;
+//        }
+//        if (!Objects.equals(this.brakeDelay, other.brakeDelay)) {
+//            return false;
+//        }
+//        if (!Objects.equals(this.volume, other.volume)) {
+//            return false;
+//        }
         if (!Objects.equals(this.velocity, other.velocity)) {
             return false;
         }
         if (!Objects.equals(this.richtung, other.richtung)) {
             return false;
         }
-        if (!Objects.equals(this.show, other.show)) {
-            return false;
-        }
-        return Objects.equals(this.locIcon, other.locIcon);
+        return Objects.equals(this.show, other.show);
+        //return Objects.equals(this.locIcon, other.locIcon);
     }
 
 }

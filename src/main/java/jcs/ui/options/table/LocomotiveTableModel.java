@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.options.table;
 
@@ -22,22 +19,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import jcs.entities.LocomotiveBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.persistence.PersistenceFactory;
 
 /**
  *
  * @author frans
  */
-public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
+public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
 
     public LocomotiveTableModel() {
         super();
     }
 
     @Override
-    protected List<LocomotiveBean> getEntityBeans() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            return TrackServiceFactory.getTrackService().getLocomotives();
+    protected List<LocomotiveBean> getBeans() {
+        if (PersistenceFactory.getService() != null) {
+            return PersistenceFactory.getService().getLocomotives();
         } else {
             return Collections.EMPTY_LIST;
         }
@@ -58,58 +55,77 @@ public class LocomotiveTableModel extends EntityTableModel<LocomotiveBean> {
     }
 
     @Override
-    Object getColumnValue(LocomotiveBean device, int column) {
-        switch (column) {
-            case 0:
-                return device.getName();
-            case 1:
-                return device.getAddress();
-            case 2:
-                return device.getDecoderTypeString();
-            case 3:
-                return device.getIcon();
-            case 4:
-                return device.isShow();
-            default:
-                return null;
-        }
+    Object getColumnValue(LocomotiveBean locomotive, int column) {
+        return switch (column) {
+            case 0 ->
+                locomotive.getName();
+            case 1 ->
+                locomotive.getAddress();
+            case 2 ->
+                locomotive.getDecoderTypeString();
+            case 3 ->
+                locomotive.getIcon();
+            case 4 ->
+                locomotive.isShow();
+            default ->
+                null;
+        };
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         return switch (columnIndex) {
-            case 0 -> String.class;
-            case 1 -> Integer.class;
-            case 2 -> String.class;
-            case 3 -> String.class;
-            case 4 -> Boolean.class;
-            default -> String.class;
+            case 0 ->
+                String.class;
+            case 1 ->
+                Integer.class;
+            case 2 ->
+                String.class;
+            case 3 ->
+                String.class;
+            case 4 ->
+                Boolean.class;
+            default ->
+                String.class;
         };
     }
 
     @Override
-    void setColumnValue(LocomotiveBean device, int column, Object value) {
+    void setColumnValue(LocomotiveBean locomotive, int column, Object value) {
         switch (column) {
-            case 0:
-                device.setName((String) value);
-                break;
-            case 1:
-                device.setAddress((Integer) value);
-                break;
-            case 2:
-                device.setDecoderTypeString((String) value);
-                break;
-            case 3:
-                device.setIcon((String) value);
-                break;
-            case 4:
-                device.setShow((Boolean) value);
-                break;
-            default:
-                break;
+            case 0 ->
+                locomotive.setName((String) value);
+            case 1 ->
+                locomotive.setAddress((Integer) value);
+            case 2 ->
+                locomotive.setDecoderTypeString((String) value);
+            case 3 ->
+                locomotive.setIcon((String) value);
+            case 4 ->
+                locomotive.setShow((Boolean) value);
+            default -> {
+            }
         }
 
-        TrackServiceFactory.getTrackService().persist(device);
+        PersistenceFactory.getService().persist(locomotive);
     }
 
+    @Override
+    protected int findRowIndex(LocomotiveBean bean) {
+        int row = -1;
+
+        if (bean != null && bean.getId() != null) {
+            Long id = bean.getId();
+            int rowCount = this.beans.size();
+
+            for (int i = 0; i < rowCount; i++) {
+                LocomotiveBean d = beans.get(i);
+                if (id.equals(d.getId())) {
+                    row = i;
+                    break;
+                }
+            }
+        }
+        return row;
+    }
 }

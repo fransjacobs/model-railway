@@ -1,32 +1,27 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.trackservice;
 
 import java.awt.Image;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.JCSEntity;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -49,7 +44,7 @@ import jcs.trackservice.events.VelocityListener;
  *
  * @author frans
  */
-public interface TrackService {
+public interface TrackController {
 
     void switchPower(boolean on);
 
@@ -66,12 +61,16 @@ public interface TrackService {
     void removePowerEventListener(PowerEventListener listener);
 
     //Locomotive 
+    @Deprecated //use the PersistenService
     List<LocomotiveBean> getLocomotives();
 
+    @Deprecated //use the PersistenService
     LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
 
-    LocomotiveBean getLocomotive(BigDecimal id);
+    @Deprecated //use the PersistenService
+    LocomotiveBean getLocomotive(Long id);
 
+    @Deprecated //use the PersistenService
     LocomotiveBean persist(LocomotiveBean locomotive);
 
     Image getFunctionImage(String imageName);
@@ -83,14 +82,19 @@ public interface TrackService {
     void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
     //Accessories
+    @Deprecated //use the PersistenService
     List<AccessoryBean> getTurnouts();
 
+    @Deprecated //use the PersistenService
     List<AccessoryBean> getSignals();
 
-    AccessoryBean getAccessory(BigDecimal id);
+    @Deprecated //use the PersistenService
+    AccessoryBean getAccessory(Long id);
 
-    AccessoryBean getAccessory(Integer address);
+    @Deprecated //use the PersistenService
+    AccessoryBean getAccessory(Integer address, String decoderTypee);
 
+    @Deprecated //use the PersistenService
     AccessoryBean persist(AccessoryBean accessory);
 
     void switchAccessory(AccessoryValue value, AccessoryBean accessory);
@@ -104,12 +108,16 @@ public interface TrackService {
     void removeSensorListener(SensorListener listener);
 
     //Sensors
+    @Deprecated //use the PersistenService
     List<SensorBean> getSensors();
 
-    SensorBean getSensor(BigDecimal id);
+    @Deprecated //use the PersistenService
+    SensorBean getSensor(Long id);
 
+    @Deprecated //use the PersistenService
     SensorBean getSensor(Integer deviceId, Integer contactId);
 
+    @Deprecated //use the PersistenService
     SensorBean persist(SensorBean sensor);
 
     void addFunctionListener(FunctionListener listener);
@@ -124,8 +132,17 @@ public interface TrackService {
 
     public void removeVelocityListener(VelocityListener listener);
 
-    //Generic remove for Loco/accessory/feedback
-    void remove(JCSEntity entity);
+    @Deprecated //use the PersistenService
+    void remove(SensorBean sensor);
+
+    @Deprecated //use the PersistenService
+    void remove(LocomotiveBean locomotive);
+
+    @Deprecated //use the PersistenService
+    void remove(AccessoryBean accessory);
+
+    @Deprecated //use the PersistenService
+    void remove(JCSPropertyBean property);
 
     String getControllerName();
 
@@ -135,32 +152,43 @@ public interface TrackService {
 
     LinkSxx getLinkSxx();
 
+    @Deprecated //use the PersistenService
     List<JCSPropertyBean> getProperties();
 
+    @Deprecated //use the PersistenService
     JCSPropertyBean getProperty(String key);
 
+    @Deprecated //use the PersistenService
     JCSPropertyBean persist(JCSPropertyBean property);
 
     void addMessageListener(CanMessageListener listener);
 
     void removeMessageListener(CanMessageListener listener);
 
+    @Deprecated //use the PersistenService
     Set<TileBean> getTiles();
 
+    @Deprecated //use the PersistenService
     TileBean getTile(Integer x, Integer y);
 
+    @Deprecated //use the PersistenService
     TileBean persist(TileBean tile);
 
+    @Deprecated //use the PersistenService
     void persist(Set<TileBean> tiles);
 
+    @Deprecated //use the PersistenService
     void remove(TileBean tile);
 
     void synchronizeLocomotivesWithController();
 
+    @Deprecated //use the PersistenService
     List<RouteBean> getRoutes();
 
+    @Deprecated //use the PersistenService
     void persist(RouteBean route);
 
+    @Deprecated //use the PersistenService
     void remove(RouteBean route);
 
     void synchronizeTurnouts();

@@ -19,7 +19,6 @@
 package jcs.controller.cs3.events;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
 
@@ -29,7 +28,7 @@ import jcs.entities.enums.Direction;
  */
 public class LocomotiveEvent implements Serializable {
 
-    private final BigDecimal id;
+    private final Long id;
     private final Direction direction;
     private final Integer speed;
     private final boolean f0;
@@ -49,11 +48,11 @@ public class LocomotiveEvent implements Serializable {
         this.f4 = locomotive.isFunctionValue(4);
     }
 
-    public BigDecimal getId() {
+    public Long getId() {
         return id;
     }
 
-    public boolean isEventFor(BigDecimal id) {
+    public boolean isEventFor(Long id) {
         if (id != null) {
             return id.equals(this.id);
         }

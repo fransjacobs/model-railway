@@ -1,72 +1,67 @@
 /*
- * Copyright (C) 2022 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.util;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author fransjacobs
- */
 public class ByteUtil {
 
-    public static int toInt(byte[] value) {
-        int val = -1;
+    public static long toLong(byte[] value) {
+        long val = -1;
         if (value != null) {
-            switch (value.length) {
-                case 2:
-                    val = ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
-                    break;
-                case 4:
-                    val = ((value[0] & 0xFF) << 24)
-                            | ((value[1] & 0xFF) << 16)
-                            | ((value[2] & 0xFF) << 8)
-                            | (value[3] & 0xFF);
-                    break;
-                default:
-                    val = 0;
-                    break;
-            }
+            val = switch (value.length) {
+                case 2 ->
+                    ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
+                case 4 ->
+                    ((value[0] & 0xFF) << 24)
+                    | ((value[1] & 0xFF) << 16)
+                    | ((value[2] & 0xFF) << 8)
+                    | (value[3] & 0xFF);
+                default ->
+                    0;
+            };
+        }
+        return val;
+    }
+
+    public static int toInt(byte[] value) {
+        return (int) toLong(value);
+    }
+
+    public static long toLong(int[] value) {
+        long val = -1;
+        if (value != null) {
+            val = switch (value.length) {
+                case 2 ->
+                    ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
+                case 4 ->
+                    ((value[0] & 0xFF) << 24)
+                    | ((value[1] & 0xFF) << 16)
+                    | ((value[2] & 0xFF) << 8)
+                    | (value[3] & 0xFF);
+                default ->
+                    0;
+            };
         }
         return val;
     }
 
     public static int toInt(int[] value) {
-        int val = -1;
-        if (value != null) {
-            switch (value.length) {
-                case 2:
-                    val = ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
-                    break;
-                case 4:
-                    val = ((value[0] & 0xFF) << 24)
-                            | ((value[1] & 0xFF) << 16)
-                            | ((value[2] & 0xFF) << 8)
-                            | (value[3] & 0xFF);
-                    break;
-                default:
-                    val = 0;
-                    break;
-            }
-        }
-        return val;
+        return (int) toLong(value);
     }
 
     public static int[] to2ByteArray(int value) {

@@ -1,31 +1,35 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
-public class FunctionBean implements JCSEntity, Serializable {
+@Table(name = "locomotive_functions", indexes = {
+    @Index(name = "lofu_loco_func_idx", columnList = "locomotive_id, number", unique = true)})
+public class FunctionBean implements Serializable {
 
-    private BigDecimal id;
-    private BigDecimal locomotiveId;
+    private Long id;
+    private Long locomotiveId;
     private Integer number;
     private Integer functionType;
     private Integer value;
@@ -37,17 +41,33 @@ public class FunctionBean implements JCSEntity, Serializable {
         this(null, number, null, null);
     }
 
-    public FunctionBean(Integer number, BigDecimal locomotiveId) {
+    public FunctionBean(Integer number, Long locomotiveId) {
         this(locomotiveId, number, null, null);
     }
 
-    public FunctionBean(BigDecimal locomotiveId, Integer number, Integer functionType, Integer value) {
+    public FunctionBean(Long locomotiveId, Integer number, Integer functionType, Integer value) {
+        this(null, locomotiveId, number, functionType, value);
+    }
+
+    public FunctionBean(Long id, Long locomotiveId, Integer number, Integer functionType, Integer value) {
         this.locomotiveId = locomotiveId;
         this.number = number;
         this.functionType = functionType;
         this.value = value;
     }
 
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Column(name = "f_number", nullable = false)
     public Integer getNumber() {
         return number;
     }
@@ -57,9 +77,10 @@ public class FunctionBean implements JCSEntity, Serializable {
     }
 
     public void setNumber(String number) {
-        this.number = Integer.parseInt(number);
+        this.number = Integer.valueOf(number);
     }
 
+    @Column(name = "f_type", nullable = false)
     public Integer getFunctionType() {
         return functionType;
     }
@@ -69,13 +90,15 @@ public class FunctionBean implements JCSEntity, Serializable {
     }
 
     public void setFunctionType(String functionType) {
-        this.functionType = Integer.parseInt(functionType);
+        this.functionType = Integer.valueOf(functionType);
     }
 
+    @Column(name = "f_value", nullable = false)
     public Integer getValue() {
         return value;
     }
 
+    @Transient
     public boolean isOn() {
         return this.value >= 1;
     }
@@ -85,31 +108,16 @@ public class FunctionBean implements JCSEntity, Serializable {
     }
 
     public void setValue(String value) {
-        this.value = Integer.parseInt(value);
+        this.value = Integer.valueOf(value);
     }
 
-    public BigDecimal getLocomotiveId() {
+    @Column(name = "locomotive_id", nullable = false)
+    public Long getLocomotiveId() {
         return locomotiveId;
     }
 
-    public void setLocomotiveId(BigDecimal locomotiveId) {
+    public void setLocomotiveId(Long locomotiveId) {
         this.locomotiveId = locomotiveId;
-    }
-
-    @Override
-    public BigDecimal getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(Object id) {
-        if (id instanceof BigDecimal) {
-            this.id = (BigDecimal) id;
-        }
-    }
-
-    public void setId(BigDecimal id) {
-        this.id = id;
     }
 
     @Override
@@ -151,7 +159,6 @@ public class FunctionBean implements JCSEntity, Serializable {
         return "locoId:" + locomotiveId + ", number:" + number + ";type: " + functionType + ", value: " + value;
     }
 
-    @Override
     public String toLogString() {
         return toString();
     }

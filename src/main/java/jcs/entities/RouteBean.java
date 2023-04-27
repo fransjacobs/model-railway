@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
@@ -23,160 +20,170 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import jcs.entities.enums.AccessoryValue;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import org.beryx.awt.color.ColorFactory;
-import org.tinylog.Logger;
 
-public class RouteBean implements JCSEntity, Serializable {
+@Table(name = "routes", indexes = {
+    @Index(name = "route_from_to_idx", columnList = "from_tile_id,from_tile_id_site, to_tile_id,to_tile_id_site", unique = true)})
+public class RouteBean implements Serializable {
 
-    private String id;
-    private String fromId;
-    private String toId;
-    private Color color;
+    private Long id;
+    private String fromTileId;
+    private String fromTileSite;
+    private String toTileId;
+    private String toTileSite;
+    private String color;
 
-    private List<String> elementIds;
     private List<RouteElementBean> routeElements;
 
     public RouteBean() {
     }
 
-    public RouteBean(String id, String fromId, String toId, String color) {
-        this(id, fromId, toId, color, new LinkedList<>());
+    public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
+        this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, new LinkedList<>());
     }
 
-    public RouteBean(String fromId, String toId, List<String> elementIds) {
-        this(null, fromId, toId, null, elementIds, createdRouteElementsFromElements(fromId, toId, elementIds));
-    }
-
-    public RouteBean(String fromId, String toId, String color, List<String> elementIds) {
-        this(null, fromId, toId, color, elementIds, createdRouteElementsFromElements(fromId, toId, elementIds));
-    }
-
-    public RouteBean(String id, String fromId, String toId, String color, List<RouteElementBean> routeElements) {
-        this(id, fromId, toId, color, toElementIds(routeElements), routeElements);
-    }
-
-    public RouteBean(String id, String fromId, String toId, String color, List<String> elementIds, List<RouteElementBean> routeElements) {
-        if (id == null) {
-            this.id = fromId + "|" + toId;
-        } else {
-            this.id = id;
-        }
-        this.fromId = fromId;
-        this.toId = toId;
-
-        if (color != null) {
-            if (color.startsWith("RGB:")) {
-                String rgb = color.replaceAll("RGB:", "");
-                this.color = Color.decode(rgb);
-            } else {
-                this.color = ColorFactory.valueOf(color);
-            }
-        }
-        this.elementIds = elementIds;
+    public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, List<RouteElementBean> routeElements) {
+        this.id = id;
+        this.fromTileId = fromTileId;
+        this.fromTileSite = fromTileSite;
+        this.toTileId = toTileId;
+        this.toTileSite = toTileSite;
+        this.color = color;
         this.routeElements = routeElements;
     }
 
-    private static List<RouteElementBean> createdRouteElementsFromElements(String fromId, String toId, List<String> elementIds) {
-        List<RouteElementBean> rel = new LinkedList<>();
-        for (int i = 0; i < elementIds.size(); i++) {
-            String nodeId = elementIds.get(i);
-            
-            String tileId;
-            if(nodeId.endsWith("-R")) {
-                tileId = nodeId.replace("-R","");
-            }
-            else if(nodeId.endsWith("-G")) {
-                tileId = nodeId.replace("-G","");
-            }
-            else if(nodeId.endsWith("-") || nodeId.endsWith("+")) {
-                tileId = nodeId.substring(0,nodeId.length() -1);
-            }
-            else {
-                tileId = nodeId;
-            }
-
-            AccessoryValue accessoryValue = null;
-            if (nodeId.endsWith("-R")) {
-                accessoryValue = AccessoryValue.RED;
-            } else if (nodeId.endsWith("-G")) {
-                accessoryValue = AccessoryValue.GREEN;
-            }
-            Integer elementOrder = i;
-
-            RouteElementBean routeElement = new RouteElementBean(fromId + "|" + toId, nodeId, tileId, accessoryValue, elementOrder);
-            rel.add(routeElement);
-
-            Logger.trace(routeElement);
-        }
-        return rel;
-    }
-
-    private static List<String> toElementIds(List<RouteElementBean> routeElements) {
-        List<String> eids = new LinkedList<>();
-        for (RouteElementBean re : routeElements) {
-            eids.add(re.getNodeId());
-        }
-        return eids;
-    }
-
-    @Override
-    public String getId() {
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+    public Long getId() {
         return this.id;
     }
 
-    @Override
-    public void setId(Object id) {
-        this.id = (String) id;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getFromId() {
-        return fromId;
+    @Column(name = "from_tile_id", nullable = false)
+    public String getFromTileId() {
+        return fromTileId;
     }
 
-    public void setFromId(String fromId) {
-        this.fromId = fromId;
+    public void setFromTileId(String fromTileId) {
+        this.fromTileId = fromTileId;
     }
 
-    public String getToId() {
-        return toId;
+    @Column(name = "from_tile_site", nullable = false)
+    public String getFromTileSite() {
+        return fromTileSite;
     }
 
-    public void setToId(String toId) {
-        this.toId = toId;
+    public void setFromTileSite(String fromTileSite) {
+        this.fromTileSite = fromTileSite;
     }
 
-    public Color getColor() {
+    @Column(name = "to_tile_id", nullable = false)
+    public String getToTileId() {
+        return toTileId;
+    }
+
+    public void setToTileId(String toTileId) {
+        this.toTileId = toTileId;
+    }
+
+    @Column(name = "to_tile_site", nullable = false)
+    public String getToTileSite() {
+        return toTileSite;
+    }
+
+    public void setToTileSite(String toTileSite) {
+        this.toTileSite = toTileSite;
+    }
+
+    @Column(name = "route_color", length = 255)
+    public String getRouteColor() {
         return color;
     }
 
-    public void setColor(Color color) {
+    public void setRouteColor(String color) {
         this.color = color;
     }
 
-    public List<String> getElementIds() {
-        return elementIds;
+    private Color stringToColor(String colorString) {
+        if (colorString != null) {
+            if (colorString.startsWith("RGB:")) {
+                String rgb = colorString.replaceAll("RGB:", "");
+                return Color.decode(rgb);
+            } else {
+                return ColorFactory.valueOf(colorString);
+            }
+        } else {
+            return null;
+        }
     }
 
-    public void setElementIds(List<String> elementIds) {
-        this.elementIds = elementIds;
+    @Transient
+    public Color getColor() {
+        return stringToColor(this.color);
     }
 
+    public void setColor(Color color) {
+        this.color = color.toString();
+    }
+
+    @Transient
     public List<RouteElementBean> getRouteElements() {
         return routeElements;
     }
 
     public void setRouteElements(List<RouteElementBean> routeElements) {
         this.routeElements = routeElements;
-        this.elementIds = toElementIds(routeElements);
     }
 
+//    private static List<RouteElementBean> createdRouteElementsFromElements(String fromTileId, String toTileId, List<String> elementIds) {
+//        List<RouteElementBean> rel = new LinkedList<>();
+//        for (int i = 0; i < elementIds.size(); i++) {
+//            String nodeId = elementIds.get(i);
+//
+//            String tileId;
+//            if (nodeId.endsWith("-R")) {
+//                tileId = nodeId.replace("-R", "");
+//            } else if (nodeId.endsWith("-G")) {
+//                tileId = nodeId.replace("-G", "");
+//            } else if (nodeId.endsWith("-") || nodeId.endsWith("+")) {
+//                tileId = nodeId.substring(0, nodeId.length() - 1);
+//            } else {
+//                tileId = nodeId;
+//            }
+//
+//            AccessoryValue accessoryValue = null;
+//            if (nodeId.endsWith("-R")) {
+//                accessoryValue = AccessoryValue.RED;
+//            } else if (nodeId.endsWith("-G")) {
+//                accessoryValue = AccessoryValue.GREEN;
+//            }
+//            Integer elementOrder = i;
+//
+//            RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
+//            rel.add(routeElement);
+//
+//            Logger.trace(routeElement);
+//        }
+//        return rel;
+//    }
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 79 * hash + Objects.hashCode(this.id);
-        hash = 79 * hash + Objects.hashCode(this.fromId);
-        hash = 79 * hash + Objects.hashCode(this.toId);
+        hash = 79 * hash + Objects.hashCode(this.fromTileId);
+        hash = 79 * hash + Objects.hashCode(this.fromTileSite);
+        hash = 79 * hash + Objects.hashCode(this.toTileId);
+        hash = 79 * hash + Objects.hashCode(this.toTileSite);
         hash = 79 * hash + Objects.hashCode(this.color);
         return hash;
     }
@@ -196,10 +203,16 @@ public class RouteBean implements JCSEntity, Serializable {
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        if (!Objects.equals(this.fromId, other.fromId)) {
+        if (!Objects.equals(this.fromTileId, other.fromTileId)) {
             return false;
         }
-        if (!Objects.equals(this.toId, other.toId)) {
+        if (!Objects.equals(this.fromTileSite, other.fromTileSite)) {
+            return false;
+        }
+        if (!Objects.equals(this.toTileId, other.toTileId)) {
+            return false;
+        }
+        if (!Objects.equals(this.toTileSite, other.toTileSite)) {
             return false;
         }
         return (Objects.equals(this.color, other.color));
@@ -207,10 +220,9 @@ public class RouteBean implements JCSEntity, Serializable {
 
     @Override
     public String toString() {
-        return "Route{" + "id=" + id + ", fromTileId=" + fromId + ", toTileId=" + toId + ", color=" + color + "}";
+        return "Route{" + "id=" + id + ", fromTile=" + fromTileId + fromTileSite + ", toTile=" + toTileId + toTileSite + ", color=" + color + "}";
     }
 
-    @Override
     public String toLogString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Route: ");
@@ -231,7 +243,7 @@ public class RouteBean implements JCSEntity, Serializable {
                     sb.append("]");
                 }
 
-                if (!re.getNodeId().equals(this.toId)) {
+                if (!re.getNodeId().equals(this.toTileId)) {
                     sb.append(" -> ");
                 }
             }

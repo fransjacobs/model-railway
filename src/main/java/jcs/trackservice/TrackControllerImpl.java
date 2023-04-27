@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.trackservice;
 
@@ -24,8 +21,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -42,20 +37,13 @@ import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
-import jcs.trackservice.dao.JCSPropertiesDAO;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
-import jcs.entities.JCSEntity;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
-import jcs.trackservice.dao.AccessoryBeanDAO;
-import jcs.trackservice.dao.SensorDAO;
 import jcs.trackservice.events.SensorListener;
-import jcs.trackservice.dao.FunctionBeanDAO;
-import jcs.trackservice.dao.LocomotiveBeanDAO;
-import jcs.trackservice.dao.TileBeanDAO;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
 import jcs.controller.cs3.devices.LinkSxx;
@@ -76,24 +64,12 @@ import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
 import jcs.entities.RouteBean;
-import jcs.entities.RouteElementBean;
-import jcs.trackservice.dao.RouteDAO;
-import jcs.trackservice.dao.RouteElementDAO;
+import jcs.persistence.PersistenceFactory;
 import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
 import jcs.trackservice.events.VelocityListener;
 
-public class H2TrackService implements TrackService {
-
-    private final JCSPropertiesDAO propDao;
-    private final LocomotiveBeanDAO locoDAO;
-    private final FunctionBeanDAO funcDAO;
-    private final AccessoryBeanDAO acceDAO;
-    private final SensorDAO sensDAO;
-    private final TileBeanDAO tileDAO;
-
-    private final RouteDAO routeDAO;
-    private final RouteElementDAO routeElementDAO;
+public class TrackControllerImpl implements TrackController {
 
     private MarklinController controllerService;
 
@@ -110,25 +86,16 @@ public class H2TrackService implements TrackService {
     private HashMap<String, Image> imageCache;
     private HashMap<String, Image> functionImageCache;
 
-    public H2TrackService() {
+    public TrackControllerImpl() {
         this(true);
     }
 
-    private H2TrackService(boolean aquireControllerService) {
-        propDao = new JCSPropertiesDAO();
+    private TrackControllerImpl(boolean aquireControllerService) {
+        //propDao = new JCSPropertiesDAO();
         jcsProperties = new Properties();
 
         imageCache = new HashMap<>();
         functionImageCache = new HashMap<>();
-
-        sensDAO = new SensorDAO();
-        locoDAO = new LocomotiveBeanDAO();
-        funcDAO = new FunctionBeanDAO();
-        acceDAO = new AccessoryBeanDAO();
-        tileDAO = new TileBeanDAO();
-
-        routeDAO = new RouteDAO();
-        routeElementDAO = new RouteElementDAO();
 
         sensorListeners = new LinkedList<>();
         accessoryListeners = new LinkedList<>();
@@ -149,9 +116,8 @@ public class H2TrackService implements TrackService {
     }
 
     private void retrieveJCSProperties() {
-        JCS.logProgress("Connect to Database");
-        List<JCSPropertyBean> props = this.propDao.findAll();
-
+        JCS.logProgress("Obtain properties from Persistent store");
+        List<JCSPropertyBean> props = PersistenceFactory.getService().getProperties();
         props.forEach(p -> {
             jcsProperties.setProperty(p.getKey(), p.getValue());
             System.setProperty(p.getKey(), p.getValue());
@@ -197,82 +163,57 @@ public class H2TrackService implements TrackService {
 
     @Override
     public List<SensorBean> getSensors() {
-        return sensDAO.findAll();
+        return PersistenceFactory.getService().getSensors();
     }
 
     @Override
     public SensorBean getSensor(Integer deviceId, Integer contactId) {
-        return sensDAO.find(deviceId, contactId);
+        return PersistenceFactory.getService().getSensor(deviceId, contactId);
     }
 
     @Override
-    public SensorBean getSensor(BigDecimal id) {
-        return sensDAO.findById(id);
+    public SensorBean getSensor(Long id) {
+        return PersistenceFactory.getService().getSensor(id);
     }
 
     @Override
     public SensorBean persist(SensorBean sensor) {
-        SensorBean prev = sensDAO.find(sensor.getDeviceId(), sensor.getContactId());
-        if (prev != null) {
-            sensor.setId(prev.getId());
-            sensor.setName(prev.getName());
-            sensDAO.persist(sensor);
-        }
-        return sensor;
+        return PersistenceFactory.getService().persist(sensor);
     }
 
     @Override
-    public void remove(JCSEntity entity) {
-        if (entity instanceof SensorBean) {
-            sensDAO.remove((SensorBean) entity);
-        } else if (entity instanceof LocomotiveBean) {
-            Collection<FunctionBean> functions = ((LocomotiveBean) entity).getFunctions().values();
-            funcDAO.remove(functions);
-            locoDAO.remove((LocomotiveBean) entity);
-        } else if (entity instanceof AccessoryBean) {
-            //Check whether the turnout is linked to a layout tile
-            this.acceDAO.remove((AccessoryBean) entity);
-//        } else if (entity instanceof SignalBean) {
-//            //Check whether the signal is linked to a layout tile
-//            signalDAO.remove((SignalBean) entity);
-        } else if (entity instanceof JCSPropertyBean) {
-            this.propDao.remove((JCSPropertyBean) entity);
-        }
+    public void remove(SensorBean sensor) {
+        PersistenceFactory.getService().remove(sensor);
+    }
+
+    @Override
+    public void remove(LocomotiveBean locomotive) {
+        PersistenceFactory.getService().remove(locomotive);
+    }
+
+    @Override
+    public void remove(AccessoryBean accessory) {
+        PersistenceFactory.getService().remove(accessory);
+    }
+
+    @Override
+    public void remove(JCSPropertyBean property) {
+        PersistenceFactory.getService().remove(property);
     }
 
     @Override
     public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
-        LocomotiveBean loco = locoDAO.find(address, decoderType.getDecoderType());
-        if (loco != null) {
-            List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
-            loco.addAllFunctions(functions);
-            loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-        }
-        return loco;
+        return PersistenceFactory.getService().getLocomotive(address, decoderType);
     }
 
     @Override
-    public LocomotiveBean getLocomotive(BigDecimal id) {
-        LocomotiveBean loco = locoDAO.findById(id);
-        if (loco != null) {
-            List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
-            loco.addAllFunctions(functions);
-            loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-        }
-        return loco;
+    public LocomotiveBean getLocomotive(Long id) {
+        return PersistenceFactory.getService().getLocomotive(id);
     }
 
     @Override
     public List<LocomotiveBean> getLocomotives() {
-        List<LocomotiveBean> locos = locoDAO.findAll();
-
-        for (LocomotiveBean loco : locos) {
-            List<FunctionBean> functions = this.funcDAO.findBy(loco.getId());
-            loco.addAllFunctions(functions);
-            loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-        }
-
-        return locos;
+        return PersistenceFactory.getService().getLocomotives();
     }
 
     public Image getLocomotiveImage(String imageName) {
@@ -356,101 +297,96 @@ public class H2TrackService implements TrackService {
 
     @Override
     public LocomotiveBean persist(LocomotiveBean locomotive) {
-        locoDAO.persist(locomotive);
-        funcDAO.persist(locomotive.getFunctions().values());
-
-        return locomotive;
+        return PersistenceFactory.getService().persist(locomotive);
     }
 
     @Override
     public List<AccessoryBean> getTurnouts() {
-        return this.acceDAO.findBy("%weiche");
+        return PersistenceFactory.getService().getTurnouts();
     }
 
     @Override
     public List<AccessoryBean> getSignals() {
-        return this.acceDAO.findBy("%signal%");
+        return PersistenceFactory.getService().getSignals();
     }
 
     @Override
-    public AccessoryBean getAccessory(BigDecimal id) {
-        return this.acceDAO.findById(id);
+    public AccessoryBean getAccessory(Long id) {
+        return PersistenceFactory.getService().getAccessoryById(id);
     }
 
     @Override
-    public AccessoryBean getAccessory(Integer address) {
-        return this.acceDAO.find(address);
+    public AccessoryBean getAccessory(Integer address, String decoderType) {
+        return PersistenceFactory.getService().getAccessory(address);
     }
 
     @Override
     public AccessoryBean persist(AccessoryBean accessory) {
-        this.acceDAO.persist(accessory);
-        return accessory;
+        return PersistenceFactory.getService().persist(accessory);
     }
 
     @Override
     public List<JCSPropertyBean> getProperties() {
-        return this.propDao.findAll();
+        return PersistenceFactory.getService().getProperties();
     }
 
     @Override
     public JCSPropertyBean getProperty(String key) {
-        return this.propDao.find(key);
+        return PersistenceFactory.getService().getProperty(key);
     }
 
     @Override
     public JCSPropertyBean persist(JCSPropertyBean property) {
-        this.propDao.persist(property);
-        return property;
+        return PersistenceFactory.getService().persist(property);
     }
 
     @Override
     public Set<TileBean> getTiles() {
         Set<TileBean> beans = new HashSet<>();
-        beans.addAll(this.tileDAO.findAll());
+        beans.addAll(PersistenceFactory.getService().getTiles());
 
         return beans;
     }
 
     @Override
     public TileBean getTile(Integer x, Integer y) {
-        return this.tileDAO.findByXY(x, y);
+        return PersistenceFactory.getService().getTile(x, y);
     }
 
     @Override
     public TileBean persist(TileBean tile) {
 
-        if (tile.getEntityBean() != null) {
+        if (tile.getAccessoryBean() != null || tile.getSensorBean() != null) {
             TileType tileType = tile.getTileType();
 
             switch (tileType) {
-                case STRAIGHT:
-                    break;
-                case CURVED:
-                    break;
-                case SWITCH:
+                case STRAIGHT -> {
+                }
+                case CURVED -> {
+                }
+                case SWITCH -> {
                     AccessoryBean turnout = (AccessoryBean) tile.getAccessoryBean();
-                    tile.setAccessoryBeanId(this.acceDAO.persist(turnout));
-                    break;
-                case CROSS:
+                    tile.setAccessoryId(PersistenceFactory.getService().persist(turnout).getId());
+                }
+                case CROSS -> {
                     AccessoryBean cross = (AccessoryBean) tile.getAccessoryBean();
-                    tile.setAccessoryBeanId(this.acceDAO.persist(cross));
-                    break;
-                case SIGNAL:
+                    tile.setAccessoryId(PersistenceFactory.getService().persist(cross).getId());
+                }
+                case SIGNAL -> {
                     AccessoryBean signal = (AccessoryBean) tile.getAccessoryBean();
-                    tile.setAccessoryBeanId(this.acceDAO.persist(signal));
-                    break;
-                case SENSOR:
+                    tile.setAccessoryId(PersistenceFactory.getService().persist(signal).getId());
+                }
+                case SENSOR -> {
                     SensorBean sensor = (SensorBean) tile.getSensorBean();
-                    tile.setSensorBeanId(this.sensDAO.persist(sensor));
-                    break;
-                case BLOCK:
-                    break;
-                default:
+                    tile.setSensorId(PersistenceFactory.getService().persist(sensor).getId());
+                }
+                case BLOCK -> {
+                }
+                default ->
                     Logger.warn("Unknown Tile Type " + tileType);
             }
         }
-        this.tileDAO.persist(tile);
+        PersistenceFactory.getService().persist(tile);
 
         return tile;
     }
@@ -458,7 +394,7 @@ public class H2TrackService implements TrackService {
     @Override
     public void persist(Set<TileBean> tiles) {
         //get all existing tiles from database
-        List<TileBean> existing = tileDAO.findAll();
+        List<TileBean> existing = PersistenceFactory.getService().getTiles();
 
         Map<Point, TileBean> currentTP = new HashMap<>();
         Map<Point, TileBean> updatedTP = new HashMap<>();
@@ -477,14 +413,14 @@ public class H2TrackService implements TrackService {
 
         for (Point p : currentPoints) {
             if (!updatedPoints.contains(p)) {
-                tileDAO.remove(p.x, p.y);
+                PersistenceFactory.getService().removeTile(p.x, p.y);
             }
         }
 
         for (TileBean tb : tiles) {
             if (tb.getId() == null) {
                 //store the layouttile but incase check if it exist based on x and y
-                TileBean tbxy = this.tileDAO.findByXY(tb.getX(), tb.getY());
+                TileBean tbxy = PersistenceFactory.getService().getTile(tb.getX(), tb.getY());
                 if (tbxy != null) {
                     tb.setId(tbxy.getId());
                 }
@@ -495,35 +431,22 @@ public class H2TrackService implements TrackService {
 
     @Override
     public List<RouteBean> getRoutes() {
-        List<RouteBean> routes = this.routeDAO.findAll();
-
-        for (RouteBean r : routes) {
-            List<RouteElementBean> elements = this.routeElementDAO.findByRouteId(r.getId());
-            r.setRouteElements(elements);
-        }
-        return routes;
+        return PersistenceFactory.getService().getRoutes();
     }
 
     @Override
     public void persist(RouteBean route) {
-        this.routeDAO.persist(route);
-
-        //first remove all elements if any
-        this.routeElementDAO.removeByRouteId(route.getId());
-        for (RouteElementBean re : route.getRouteElements()) {
-            this.routeElementDAO.persist(re);
-        }
+        PersistenceFactory.getService().persist(route);
     }
 
     @Override
     public void remove(RouteBean route) {
-        this.routeElementDAO.removeByRouteId(route.getId());
-        this.routeDAO.remove(route);
+        PersistenceFactory.getService().remove(route);
     }
 
     @Override
     public void remove(TileBean tile) {
-        this.tileDAO.remove(tile);
+        PersistenceFactory.getService().remove(tile);
     }
 
     @Override
@@ -600,8 +523,8 @@ public class H2TrackService implements TrackService {
 
         for (LocomotiveBean loc : fromCs2) {
             Integer addr = loc.getAddress();
-            String dt = loc.getDecoderTypeString();
-            LocomotiveBean dbLoc = this.locoDAO.find(addr, dt);
+            DecoderType dt = loc.getDecoderType();
+            LocomotiveBean dbLoc = PersistenceFactory.getService().getLocomotive(addr, dt);
             if (dbLoc != null) {
                 loc.setId(dbLoc.getId());
                 Logger.trace("Update " + loc.toLogString());
@@ -621,7 +544,7 @@ public class H2TrackService implements TrackService {
 
         for (AccessoryBean ab : ma) {
             Logger.trace(ab.toLogString());
-            this.acceDAO.persist(ab);
+            PersistenceFactory.getService().persist(ab);
         }
     }
 
@@ -631,7 +554,7 @@ public class H2TrackService implements TrackService {
 
         for (AccessoryBean ab : ma) {
             Logger.trace(ab.toLogString());
-            this.acceDAO.persist(ab);
+            PersistenceFactory.getService().persist(ab);
         }
     }
 
@@ -744,9 +667,9 @@ public class H2TrackService implements TrackService {
 
     private class SensorMessageEventListener implements SensorMessageListener {
 
-        private final H2TrackService trackService;
+        private final TrackControllerImpl trackService;
 
-        SensorMessageEventListener(H2TrackService trackService) {
+        SensorMessageEventListener(TrackControllerImpl trackService) {
             this.trackService = trackService;
         }
 
@@ -768,9 +691,9 @@ public class H2TrackService implements TrackService {
 
     private class AccessoryMessageListener implements AccessoryMessageEventListener {
 
-        private final H2TrackService trackService;
+        private final TrackControllerImpl trackService;
 
-        AccessoryMessageListener(H2TrackService trackService) {
+        AccessoryMessageListener(TrackControllerImpl trackService) {
             this.trackService = trackService;
         }
 
@@ -779,12 +702,12 @@ public class H2TrackService implements TrackService {
             AccessoryBean ab = event.getAccessoryBean();
 
             int address = ab.getAddress();
-            AccessoryBean dbab = this.trackService.getAccessory(ab.getAddress());
+            AccessoryBean dbab = PersistenceFactory.getService().getAccessory(ab.getAddress());
             if (dbab == null) {
                 //check if address is even, might be the second address of a signal
                 if (address % 2 == 0) {
                     address = address - 1;
-                    dbab = this.trackService.getAccessory(address);
+                    dbab = PersistenceFactory.getService().getAccessory(address);
                     if (dbab != null && dbab.isSignal() && dbab.getStates() > 2) {
                         ab.setAddress(address);
                         int p = ab.getPosition() + 2;
@@ -821,18 +744,16 @@ public class H2TrackService implements TrackService {
 
     private class FunctionMessageListener implements FunctionMessageEventListener {
 
-        private final H2TrackService trackService;
+        private final TrackControllerImpl trackService;
 
-        FunctionMessageListener(H2TrackService trackService) {
+        FunctionMessageListener(TrackControllerImpl trackService) {
             this.trackService = trackService;
         }
 
         @Override
         public void onFunctionMessage(FunctionMessageEvent functionEvent) {
             LocomotiveBean lb = functionEvent.getLocomotiveBean();
-
-            BigDecimal id = lb.getId();
-            LocomotiveBean dblb = this.trackService.getLocomotive(id);
+            LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
             if (dblb != null) {
                 FunctionBean fb = lb.getFunctionBean(functionEvent.getUpdatedFunctionNumber());
@@ -850,18 +771,16 @@ public class H2TrackService implements TrackService {
 
     private class DirectionMessageListener implements DirectionMessageEventListener {
 
-        private final H2TrackService trackService;
+        private final TrackControllerImpl trackService;
 
-        DirectionMessageListener(H2TrackService trackService) {
+        DirectionMessageListener(TrackControllerImpl trackService) {
             this.trackService = trackService;
         }
 
         @Override
         public void onDirectionMessage(DirectionMessageEvent directionEvent) {
             LocomotiveBean lb = directionEvent.getLocomotiveBean();
-
-            BigDecimal id = lb.getId();
-            LocomotiveBean dblb = this.trackService.getLocomotive(id);
+            LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
             if (dblb != null) {
                 Integer richtung = lb.getRichtung();
@@ -879,9 +798,9 @@ public class H2TrackService implements TrackService {
 
     private class VelocityMessageListener implements VelocityMessageEventListener {
 
-        private final H2TrackService trackService;
+        private final TrackControllerImpl trackService;
 
-        VelocityMessageListener(H2TrackService trackService) {
+        VelocityMessageListener(TrackControllerImpl trackService) {
             this.trackService = trackService;
         }
 
@@ -889,8 +808,7 @@ public class H2TrackService implements TrackService {
         public void onVelocityMessage(VelocityMessageEvent velocityEvent) {
             LocomotiveBean lb = velocityEvent.getLocomotiveBean();
             if (lb != null && lb.getId() != null) {
-                BigDecimal id = lb.getId();
-                LocomotiveBean dblb = this.trackService.getLocomotive(id);
+                LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
                 if (dblb != null) {
                     Integer velocity = lb.getVelocity();

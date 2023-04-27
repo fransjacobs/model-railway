@@ -30,7 +30,7 @@ import jcs.entities.enums.AccessoryValue;
 import static jcs.entities.enums.AccessoryValue.GREEN;
 import static jcs.entities.enums.AccessoryValue.RED;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;
 
@@ -262,7 +262,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
             TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
             f.add(signalRowPanel);
 
-            TrackServiceFactory.getTrackService().addAccessoryListener(signalRowPanel);
+            TrackControllerFactory.getTrackService().addAccessoryListener(signalRowPanel);
 
         }
 

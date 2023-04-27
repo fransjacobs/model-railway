@@ -19,7 +19,7 @@
 package jcs.ui.layout.dialogs;
 
 import jcs.entities.SensorBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.tiles.Sensor;
 
 /**
@@ -55,9 +55,9 @@ public class SensorDialog extends javax.swing.JDialog {
                 sb = new SensorBean();
                 this.sensor.setSensorBean(sb);
             } else {
-                if (TrackServiceFactory.getTrackService() != null) {
+                if (TrackControllerFactory.getTrackService() != null) {
                     //Unregister is properties might change
-                    TrackServiceFactory.getTrackService().removeSensorListener(this.sensor);
+                    TrackControllerFactory.getTrackService().removeSensorListener(this.sensor);
                 }
             }
 
@@ -182,10 +182,10 @@ public class SensorDialog extends javax.swing.JDialog {
             this.sensor.getSensorBean().setDeviceId((Integer) this.deviceIdSpinner.getValue());
             this.sensor.getSensorBean().setName(this.nameTF.getText());
 
-            if (TrackServiceFactory.getTrackService() != null) {
-                TrackServiceFactory.getTrackService().persist((sensor.getTileBean()));
+            if (TrackControllerFactory.getTrackService() != null) {
+                TrackControllerFactory.getTrackService().persist((sensor.getTileBean()));
 
-                TrackServiceFactory.getTrackService().addSensorListener(sensor);
+                TrackControllerFactory.getTrackService().addSensorListener(sensor);
             }
         }
         this.setVisible(false);

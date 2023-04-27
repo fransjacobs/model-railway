@@ -27,7 +27,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.math.BigDecimal;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -50,7 +49,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.AccessoryBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.options.table.SignalTableModel;
 import org.tinylog.Logger;
 
@@ -85,7 +84,7 @@ public class SignalPreferencesPanel extends JPanel {
     }
 
     private AccessoryBean getAccessoryFromTrackService(AccessoryBean turnout) {
-        return TrackServiceFactory.getTrackService().getAccessory(turnout.getId());
+        return TrackControllerFactory.getTrackService().getAccessory(turnout.getId());
     }
 
     private void selectSignal(int row) {
@@ -449,7 +448,7 @@ public class SignalPreferencesPanel extends JPanel {
       Long idl = signalTableModel.getRowCount() + 1l;
 
       selectedSignal.setName("W " + idl);
-      selectedSignal.setId(new BigDecimal(idl));
+      selectedSignal.setId(idl);
       selectedSignal.setPosition(0);
 
       setComponentValues(selectedSignal);
@@ -464,7 +463,7 @@ public class SignalPreferencesPanel extends JPanel {
       if (t != null) {
           Logger.debug("Selected row: " + row + ", Signal ID: " + t.getId());
           //Refresh from repo
-          this.selectedSignal = TrackServiceFactory.getTrackService().getAccessory(t.getId());
+          this.selectedSignal = TrackControllerFactory.getTrackService().getAccessory(t.getId());
           this.setComponentValues(this.selectedSignal);
       }
   }//GEN-LAST:event_signalTableMouseClicked
@@ -473,7 +472,7 @@ public class SignalPreferencesPanel extends JPanel {
       this.selectedSignal = setSignalValues();
       Logger.debug("Save the Signal: " + this.selectedSignal);
 
-      AccessoryBean t = TrackServiceFactory.getTrackService().getAccessory(selectedSignal.getId());
+      AccessoryBean t = TrackControllerFactory.getTrackService().getAccessory(selectedSignal.getId());
       if (t != null) {
           this.selectedSignal.setId(t.getId());
           Logger.debug("Found signal with id " + t.getId());
@@ -481,7 +480,7 @@ public class SignalPreferencesPanel extends JPanel {
           this.selectedSignal.setPosition(0);
       }
 
-      selectedSignal = TrackServiceFactory.getTrackService().persist(selectedSignal);
+      selectedSignal = TrackControllerFactory.getTrackService().persist(selectedSignal);
       setComponentValues(selectedSignal);
       signalTableModel.refresh();
       alignSignalTable();
@@ -489,7 +488,7 @@ public class SignalPreferencesPanel extends JPanel {
 
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       Logger.debug("Delete Signal: " + this.selectedSignal);
-      TrackServiceFactory.getTrackService().remove(selectedSignal);
+      TrackControllerFactory.getTrackService().remove(selectedSignal);
       signalTableModel.refresh();
       selectedSignal = null;
       setComponentValues(selectedSignal);
@@ -507,7 +506,7 @@ public class SignalPreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackServiceFactory.getTrackService().synchronizeSignals();
+        TrackControllerFactory.getTrackService().synchronizeSignals();
         refresh();
     }
 
@@ -521,7 +520,7 @@ public class SignalPreferencesPanel extends JPanel {
 
     //Create Signal from fields  
     protected AccessoryBean setSignalValues() {
-        BigDecimal id = (BigDecimal) this.idSpinner.getValue();
+        Long id = (Long) this.idSpinner.getValue();
         Integer address = id.intValue();
         String name = nameTF.getText();
         String type = typeTF.getText();

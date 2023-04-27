@@ -49,7 +49,7 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import jcs.ui.layout.dialogs.SensorDialog;
@@ -392,7 +392,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
                 Logger.warn("Tile is null?");
             }
         }
-        TrackServiceFactory.getTrackService().persist(beans);
+        TrackControllerFactory.getTrackService().persist(beans);
     }
 
     /**
@@ -600,7 +600,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         if (turnout.getAccessoryBean() != null) {
             AccessoryBean ab = turnout.getAccessoryBean();
             ab.toggle();
-            TrackServiceFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+            TrackControllerFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
         } else {
             Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
         }
@@ -612,7 +612,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
             ab.toggle();
             Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
 
-            TrackServiceFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+            TrackControllerFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
         } else {
             Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
         }

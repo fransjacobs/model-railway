@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.options.table;
 
@@ -25,38 +22,38 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import jcs.entities.SensorBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.persistence.PersistenceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.trackservice.events.SensorListener;
 
 /**
  *
  * @author frans
  */
-public class SensorTableModel extends EntityTableModel<SensorBean> implements SensorListener {
+public class SensorTableModel extends BeanTableModel<SensorBean> implements SensorListener {
 
     private Map<Integer, SensorBean> sensorBeanCache;
 
     public SensorTableModel() {
         super();
         this.sensorBeanCache = new HashMap<>();
-        this.devices = new LinkedList<>();
+        this.beans = new LinkedList<>();
     }
 
     @Override
-    protected List<SensorBean> getEntityBeans() {
+    protected List<SensorBean> getBeans() {
         if (sensorBeanCache == null) {
             this.sensorBeanCache = new HashMap<>();
         }
         this.sensorBeanCache.clear();
 
-        if (TrackServiceFactory.getTrackService() != null) {
-            List<SensorBean> beans = TrackServiceFactory.getTrackService().getSensors();
-            for (SensorBean sb : beans) {
+        if (PersistenceFactory.getService() != null) {
+            List<SensorBean> sbl = PersistenceFactory.getService().getSensors();
+            for (SensorBean sb : sbl) {
                 Integer key = sb.getDeviceId() + sb.getContactId();
                 this.sensorBeanCache.put(key, sb);
             }
-
-            return beans;
+            return sbl;
         } else {
             List<SensorBean> sensorList = new LinkedList<>();
             return sensorList;
@@ -74,7 +71,7 @@ public class SensorTableModel extends EntityTableModel<SensorBean> implements Se
             csb.setLastUpdated(sensor.getLastUpdated());
         } else {
             sensorBeanCache.put(key, sensor);
-            devices.add(sensor);
+            beans.add(sensor);
         }
 
         this.fireTableDataChanged();
@@ -98,86 +95,98 @@ public class SensorTableModel extends EntityTableModel<SensorBean> implements Se
 
     @Override
     public Object getColumnValue(SensorBean sensor, int column) {
-        switch (column) {
-            case 0:
-                return sensor.getId();
-            case 1:
-                return sensor.getName();
-            case 2:
-                return sensor.getDeviceId();
-            case 3:
-                return sensor.getContactId();
-            case 4:
-                return sensor.getStatus();
-            case 5:
-                return sensor.getPreviousStatus();
-            case 6:
-                return sensor.getMillis();
-            default:
-                return null;
-        }
+        return switch (column) {
+            case 0 ->
+                sensor.getId();
+            case 1 ->
+                sensor.getName();
+            case 2 ->
+                sensor.getDeviceId();
+            case 3 ->
+                sensor.getContactId();
+            case 4 ->
+                sensor.getStatus();
+            case 5 ->
+                sensor.getPreviousStatus();
+            case 6 ->
+                sensor.getMillis();
+            default ->
+                null;
+        };
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case 0:
-                return BigDecimal.class;
-            case 1:
-                return String.class;
-            case 2:
-                return Integer.class;
-            case 3:
-                return Integer.class;
-            case 4:
-                return Integer.class;
-            case 5:
-                return Integer.class;
-            case 6:
-                return Integer.class;
-            default:
-                return String.class;
-        }
+        return switch (columnIndex) {
+            case 0 ->
+                BigDecimal.class;
+            case 1 ->
+                String.class;
+            case 2 ->
+                Integer.class;
+            case 3 ->
+                Integer.class;
+            case 4 ->
+                Integer.class;
+            case 5 ->
+                Integer.class;
+            case 6 ->
+                Integer.class;
+            default ->
+                String.class;
+        };
     }
 
     @Override
     void setColumnValue(SensorBean sensor, int column, Object value) {
         switch (column) {
-            case 0:
-                sensor.setId((BigDecimal) value);
-                break;
-            case 1:
+            case 0 ->
+                sensor.setId((Long) value);
+            case 1 ->
                 sensor.setName((String) value);
-                break;
-            case 2:
+            case 2 ->
                 sensor.setDeviceId((Integer) value);
-                break;
-            case 3:
+            case 3 ->
                 sensor.setContactId((Integer) value);
-                break;
-            case 4:
+            case 4 ->
                 sensor.setStatus((Integer) value);
-                break;
-            case 5:
+            case 5 ->
                 sensor.setPreviousStatus((Integer) value);
-                break;
-            case 6:
+            case 6 ->
                 sensor.setMillis((Integer) value);
-                break;
-            default:
-                break;
+            default -> {
+            }
         }
 
-        TrackServiceFactory.getTrackService().persist(sensor);
+        TrackControllerFactory.getTrackService().persist(sensor);
     }
 
     public void clear() {
-        if (this.devices != null) {
-            this.devices.clear();
+        if (this.beans != null) {
+            this.beans.clear();
             this.sensorBeanCache.clear();
         }
         this.fireTableDataChanged();
 
+    }
+
+    @Override
+    protected int findRowIndex(SensorBean bean) {
+        int row = -1;
+
+        if (bean != null && bean.getId() != null) {
+            Long id = bean.getId();
+            int rowCount = this.beans.size();
+
+            for (int i = 0; i < rowCount; i++) {
+                SensorBean d = beans.get(i);
+                if (id.equals(d.getId())) {
+                    row = i;
+                    break;
+                }
+            }
+        }
+        return row;
     }
 
 }

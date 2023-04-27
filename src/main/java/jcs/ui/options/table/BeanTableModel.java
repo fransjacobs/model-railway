@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2020 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.options.table;
 
@@ -22,7 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
-import jcs.entities.JCSEntity;
 import org.tinylog.Logger;
 
 /**
@@ -30,37 +26,39 @@ import org.tinylog.Logger;
  * @author Frans Jacobs
  * @param <T>
  */
-public abstract class EntityTableModel<T extends JCSEntity> extends AbstractTableModel implements Serializable {
+public abstract class BeanTableModel<T> extends AbstractTableModel implements Serializable {
 
-    protected List<T> devices;
+    protected List<T> beans;
 
     protected List<String> columns;
 
     /**
      * Creates an empty table with zero rows and zero columns.
      */
-    public EntityTableModel() {
+    public BeanTableModel() {
         init();
     }
 
     private void init() {
         columns = getColumns();
-        devices = getEntityBeans();
+        beans = getBeans();
     }
 
     protected abstract List<String> getColumns();
 
-    protected abstract List<T> getEntityBeans();
+    protected abstract List<T> getBeans();
+
+    protected abstract int findRowIndex(T bean);
 
     public void addRow(T row) {
-        this.devices.add(row);
-        int rowNumAdded = this.devices.size() - 1;
+        this.beans.add(row);
+        int rowNumAdded = this.beans.size() - 1;
         fireTableRowsInserted(rowNumAdded, rowNumAdded);
     }
 
     public void removeRow(T entity) {
         int row = this.findRowIndex(entity);
-        devices.remove(entity);
+        beans.remove(entity);
         fireTableRowsDeleted(row, row);
     }
 
@@ -71,7 +69,7 @@ public abstract class EntityTableModel<T extends JCSEntity> extends AbstractTabl
      * @param row the row index.
      */
     public void removeRow(int row) {
-        this.devices.remove(row);
+        this.beans.remove(row);
         fireTableRowsDeleted(row, row);
     }
 
@@ -82,7 +80,7 @@ public abstract class EntityTableModel<T extends JCSEntity> extends AbstractTabl
      */
     @Override
     public int getRowCount() {
-        return this.devices.size();
+        return this.beans.size();
     }
 
     /**
@@ -136,12 +134,12 @@ public abstract class EntityTableModel<T extends JCSEntity> extends AbstractTabl
      */
     @Override
     public Object getValueAt(int row, int column) {
-        if (devices != null && row < devices.size()) {
+        if (beans != null && row < beans.size()) {
             //Logger.trace("row: " + row + " column: " + column);
-            T device = this.devices.get(row);
+            T device = this.beans.get(row);
             return getColumnValue(device, column);
         }
-        Logger.warn("row: " + row + " rows: " + devices.size());
+        Logger.warn("row: " + row + " rows: " + beans.size());
         return null;
     }
 
@@ -158,8 +156,8 @@ public abstract class EntityTableModel<T extends JCSEntity> extends AbstractTabl
      */
     @Override
     public void setValueAt(Object value, int row, int column) {
-        if (this.devices != null && row < this.devices.size()) {
-            T device = this.devices.get(row);
+        if (this.beans != null && row < this.beans.size()) {
+            T device = this.beans.get(row);
             setColumnValue(device, column, value);
             fireTableCellUpdated(row, column);
         }
@@ -171,35 +169,34 @@ public abstract class EntityTableModel<T extends JCSEntity> extends AbstractTabl
      * @return The controllable device on row
      */
     public T getControllableDeviceAt(int row) {
-        if (devices != null && row >= 0 && row < devices.size()) {
+        if (beans != null && row >= 0 && row < beans.size()) {
             //Logger.trace("Row: " + row);
-            return this.devices.get(row);
+            return this.beans.get(row);
         }
-        Logger.warn("No row " + row + " rowsize is " + (devices == null ? "null" : "" + devices.size()));
+        Logger.warn("No row " + row + " rowsize is " + (beans == null ? "null" : "" + beans.size()));
         return null;
     }
 
-    protected int findRowIndex(T entity) {
-        int row = -1;
-
-        if (entity != null && entity.getId() != null) {
-            Object id = entity.getId();
-            int rowCount = this.devices.size();
-
-            for (int i = 0; i < rowCount; i++) {
-                T d = devices.get(i);
-                if (id.equals(d.getId())) {
-                    row = i;
-                    break;
-                }
-            }
-        }
-
-        return row;
-    }
-
+//    protected int findRowIndex(T entity) {
+//        int row = -1;
+//
+//        if (entity != null && entity.getId() != null) {
+//            Object id = entity.getId();
+//            int rowCount = this.beans.size();
+//
+//            for (int i = 0; i < rowCount; i++) {
+//                T d = beans.get(i);
+//                if (id.equals(d.getId())) {
+//                    row = i;
+//                    break;
+//                }
+//            }
+//        }
+//
+//        return row;
+//    }
     public void refresh() {
-        this.devices = this.getEntityBeans();
+        this.beans = this.getBeans();
         this.fireTableDataChanged();
     }
 

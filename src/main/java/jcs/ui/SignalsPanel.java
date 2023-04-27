@@ -22,7 +22,7 @@ import java.awt.GridLayout;
 import java.util.Collections;
 import java.util.List;
 import jcs.entities.AccessoryBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.widgets.SignalRowPanel;
 import org.tinylog.Logger;
 
@@ -45,11 +45,11 @@ public class SignalsPanel extends javax.swing.JPanel {
     }
 
     public void refreshPanel() {
-        if (TrackServiceFactory.getTrackService() == null) {
+        if (TrackControllerFactory.getTrackService() == null) {
             return;
         }
         //stub
-        List<AccessoryBean> signals = Collections.EMPTY_LIST; // TrackServiceFactory.getTrackService().getSignals();
+        List<AccessoryBean> signals = Collections.EMPTY_LIST; // TrackControllerFactory.getTrackService().getSignals();
 
         Logger.trace("There are " + signals.size() + " signals...");
 
@@ -71,7 +71,7 @@ public class SignalsPanel extends javax.swing.JPanel {
             }
 
             this.add(signalRowPanel);
-            TrackServiceFactory.getTrackService().addAccessoryListener(signalRowPanel);
+            TrackControllerFactory.getTrackService().addAccessoryListener(signalRowPanel);
         }
         GridLayout gl = new GridLayout(rows, cols);
         this.setLayout(gl);

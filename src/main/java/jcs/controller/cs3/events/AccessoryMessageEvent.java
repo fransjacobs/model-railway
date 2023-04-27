@@ -19,7 +19,6 @@
 package jcs.controller.cs3.events;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.MarklinCan;
 import jcs.entities.AccessoryBean;
@@ -56,7 +55,10 @@ public class AccessoryMessageEvent implements Serializable {
             Integer position = data[4] & 0xff;
             //CS is zero based
             address = address + 1;
-            this.accessoryBean = new AccessoryBean(new BigDecimal(address),address, null, null, position, null, null, null);
+            
+            long id = address;
+            
+            this.accessoryBean = new AccessoryBean(id,address, null, null, position, null, null, null);
             if (resp.getDlc() == MarklinCan.DLC_8) {
                 Integer switchTime = ByteUtil.toInt(new int[]{data[6], data[7]});
                 this.accessoryBean.setSwitchTime(switchTime);

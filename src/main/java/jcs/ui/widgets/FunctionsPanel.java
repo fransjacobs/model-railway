@@ -1,26 +1,22 @@
 /*
- * Copyright (C) 2022 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.widgets;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +29,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jcs.controller.cs3.events.FunctionMessageEvent;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.persistence.PersistenceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.trackservice.events.FunctionListener;
 import org.tinylog.Logger;
 
@@ -101,8 +98,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
 
         setEnabled(false);
 
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().addFunctionListener(this);
+        if (TrackControllerFactory.getTrackService() != null) {
+            TrackControllerFactory.getTrackService().addFunctionListener(this);
         }
     }
 
@@ -130,7 +127,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     }
 
     public void setLocomotive(LocomotiveBean locomotive) {
-        if (TrackServiceFactory.getTrackService() != null && locomotive != null) {
+        if (TrackControllerFactory.getTrackService() != null && locomotive != null) {
             this.locomotive = locomotive;
             Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
@@ -147,7 +144,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
                     String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
                     String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
 
-                    Image iconOff = TrackServiceFactory.getTrackService().getFunctionImage(functionOff);
+                    Image iconOff = TrackControllerFactory.getTrackService().getFunctionImage(functionOff);
                     if (iconOff == null) {
                         button.setText("F" + i);
                         Logger.trace("Missing icon " + functionOff);
@@ -157,7 +154,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
                         button.setIcon(new ImageIcon(iconOff));
                     }
 
-                    Image iconOn = TrackServiceFactory.getTrackService().getFunctionImage(functionOn);
+                    Image iconOn = TrackControllerFactory.getTrackService().getFunctionImage(functionOn);
                     if (iconOn == null) {
                     } else {
                         button.setText("");
@@ -189,8 +186,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     }
 
     private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
-        if (TrackServiceFactory.getTrackService() != null && this.locomotive != null) {
-            TrackServiceFactory.getTrackService().changeFunction(newValue, functionNumber, locomotiveBean);
+        if (TrackControllerFactory.getTrackService() != null && this.locomotive != null) {
+            TrackControllerFactory.getTrackService().changeFunction(newValue, functionNumber, locomotiveBean);
         }
     }
 
@@ -691,11 +688,11 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
             testFrame.pack();
             testFrame.setLocationRelativeTo(null);
 
-            if (TrackServiceFactory.getTrackService() != null) {
+            if (TrackControllerFactory.getTrackService() != null) {
 
-                //LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16390));
-                //LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16394));
-                LocomotiveBean loc = TrackServiceFactory.getTrackService().getLocomotive(new BigDecimal(16391));
+                //LocomotiveBean loc = TrackControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
+                //LocomotiveBean loc = TrackControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
+                LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16391L);
 
                 testPanel.setLocomotive(loc);
 

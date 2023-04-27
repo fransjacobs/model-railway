@@ -19,10 +19,8 @@
 package jcs.controller.cs3.events;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.can.MarklinCan;
-import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -55,11 +53,10 @@ public class DirectionMessageEvent implements Serializable {
 
         if (resp.isResponseMessage() && MarklinCan.LOC_DIRECTION_RESP == resp.getCommand()) {
             int[] data = resp.getData();
-            Integer locId = ByteUtil.toInt(new int[]{data[0], data[1], data[2], data[3]});
+            Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
 
             Integer richtung = data[4] & 0xff;
             LocomotiveBean lb = new LocomotiveBean();
-            BigDecimal id = new BigDecimal(locId);
 
             lb.setId(id);
             lb.setRichtung(richtung);

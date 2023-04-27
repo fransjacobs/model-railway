@@ -1,27 +1,29 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
-public class JCSPropertyBean implements JCSEntity {
+@Table(name = "jcs_properties")
+public class JCSPropertyBean {
 
     private String key;
     private String value;
@@ -39,6 +41,15 @@ public class JCSPropertyBean implements JCSEntity {
         this.value = value;
     }
 
+//CREATE TABLE JCS_PROPERTIES (
+//  P_KEY    VARCHAR(255) NOT NULL,
+//  P_VALUE  VARCHAR(255) NOT NULL,
+//  CONSTRAINT PROP_PK PRIMARY KEY ( P_KEY )
+//);
+//
+//CREATE UNIQUE INDEX PROP_PK_IDX ON JCS_PROPERTIES (P_KEY);
+    @Id
+    @Column(name = "p_key", length = 255, nullable = false)
     public String getKey() {
         return key;
     }
@@ -47,24 +58,13 @@ public class JCSPropertyBean implements JCSEntity {
         this.key = key;
     }
 
+    @Column(name = "p_value", length = 255, nullable = false)
     public String getValue() {
         return value;
     }
 
     public void setValue(String value) {
         this.value = value;
-    }
-
-    @Override
-    public void setId(Object id) {
-        if (id instanceof String) {
-            this.key = (String) id;
-        }
-    }
-
-    @Override
-    public Object getId() {
-        return this.key;
     }
 
     @Override
@@ -76,15 +76,16 @@ public class JCSPropertyBean implements JCSEntity {
         return sb.toString();
     }
 
-    @Override
     public String toLogString() {
         return toString();
     }
 
+    @Transient
     public boolean getBooleanValue() {
         return "true".equalsIgnoreCase(this.value) | "y".equalsIgnoreCase(this.value) | "1".equals(this.value);
     }
 
+    @Transient
     public int getIntValue() {
         return Integer.getInteger(this.value);
     }

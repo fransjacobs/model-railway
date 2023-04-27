@@ -34,7 +34,7 @@ import jcs.controller.cs3.events.DirectionMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.VelocityListener;
 import org.tinylog.Logger;
@@ -56,15 +56,15 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
 
     private void postInit() {
         setEnabled(false);
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().addDirectionListener(this);
-            TrackServiceFactory.getTrackService().addVelocityListener(this);
+        if (TrackControllerFactory.getTrackService() != null) {
+            TrackControllerFactory.getTrackService().addDirectionListener(this);
+            TrackControllerFactory.getTrackService().addVelocityListener(this);
         }
     }
 
     public void loadLocomotives() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            List<LocomotiveBean> locos = TrackServiceFactory.getTrackService().getLocomotives();
+        if (TrackControllerFactory.getTrackService() != null) {
+            List<LocomotiveBean> locos = TrackControllerFactory.getTrackService().getLocomotives();
 
             ListModel<LocomotiveBean> listModel = new DefaultListModel<>();
 
@@ -379,8 +379,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }//GEN-LAST:event_velocitySliderStateChanged
 
     private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
-        if (TrackServiceFactory.getTrackService() != null) {
-            TrackServiceFactory.getTrackService().changeVelocity(newVelocity, locomotiveBean);
+        if (TrackControllerFactory.getTrackService() != null) {
+            TrackControllerFactory.getTrackService().changeVelocity(newVelocity, locomotiveBean);
         }
     }
 
@@ -446,8 +446,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }
 
     private void changeDirection(Direction newDirection, LocomotiveBean locomotiveBean) {
-        if (TrackServiceFactory.getTrackService() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
-            TrackServiceFactory.getTrackService().changeDirection(newDirection, locomotiveBean);
+        if (TrackControllerFactory.getTrackService() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+            TrackControllerFactory.getTrackService().changeDirection(newDirection, locomotiveBean);
         }
     }
 

@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.options.table;
 
@@ -23,13 +20,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import jcs.entities.AccessoryBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.persistence.PersistenceFactory;
 
 /**
  *
  * @author frans
  */
-public class TurnoutTableModel extends EntityTableModel<AccessoryBean> {
+public class TurnoutTableModel extends BeanTableModel<AccessoryBean> {
 
     public TurnoutTableModel() {
         super();
@@ -49,9 +46,9 @@ public class TurnoutTableModel extends EntityTableModel<AccessoryBean> {
     }
 
     @Override
-    protected List<AccessoryBean> getEntityBeans() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            return TrackServiceFactory.getTrackService().getTurnouts();
+    protected List<AccessoryBean> getBeans() {
+        if (PersistenceFactory.getService() != null) {
+            return PersistenceFactory.getService().getTurnouts();
         } else {
             return Collections.EMPTY_LIST;
         }
@@ -59,54 +56,69 @@ public class TurnoutTableModel extends EntityTableModel<AccessoryBean> {
 
     @Override
     public Object getColumnValue(AccessoryBean device, int column) {
-        switch (column) {
-            case 0:
-                return device.getId();
-            case 1:
-                return device.getName();
-            case 2:
-                return device.getType();
-            case 3:
-                return device.getPosition();
-            default:
-                return null;
-        }
+        return switch (column) {
+            case 0 ->
+                device.getId();
+            case 1 ->
+                device.getName();
+            case 2 ->
+                device.getType();
+            case 3 ->
+                device.getPosition();
+            default ->
+                null;
+        };
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case 0:
-                return BigDecimal.class;
-            case 1:
-                return String.class;
-            case 2:
-                return String.class;
-            case 3:
-                return Integer.class;
-            default:
-                return null;
-        }
+        return switch (columnIndex) {
+            case 0 ->
+                BigDecimal.class;
+            case 1 ->
+                String.class;
+            case 2 ->
+                String.class;
+            case 3 ->
+                Integer.class;
+            default ->
+                null;
+        };
     }
 
     @Override
     void setColumnValue(AccessoryBean device, int column, Object value) {
         switch (column) {
-            case 0:
-                device.setId((BigDecimal) value);
-                break;
-            case 1:
+            case 0 ->
+                device.setId((Long) value);
+            case 1 ->
                 device.setName((String) value);
-                break;
-            case 2:
+            case 2 ->
                 device.setType((String) value);
-                break;
-            case 3:
+            case 3 ->
                 device.setPosition((Integer) value);
-                break;
-            default:
-                break;
+            default -> {
+            }
         }
+    }
+
+    @Override
+    protected int findRowIndex(AccessoryBean bean) {
+        int row = -1;
+
+        if (bean != null && bean.getId() != null) {
+            Long id = bean.getId();
+            int rowCount = this.beans.size();
+
+            for (int i = 0; i < rowCount; i++) {
+                AccessoryBean d = beans.get(i);
+                if (id.equals(d.getId())) {
+                    row = i;
+                    break;
+                }
+            }
+        }
+        return row;
     }
 
 }

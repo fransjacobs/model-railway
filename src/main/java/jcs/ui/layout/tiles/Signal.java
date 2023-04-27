@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2021 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout.tiles;
 
@@ -48,8 +45,8 @@ public class Signal extends Straight implements Tile, AccessoryListener {
 
     public Signal(TileBean tileBean) {
         super(tileBean);
-        if (tileBean.getEntityBean() != null) {
-            AccessoryBean ab = (AccessoryBean) tileBean.getEntityBean();
+        if (tileBean.getAccessoryBean() != null) {
+            AccessoryBean ab = tileBean.getAccessoryBean();
             this.signalType = SignalType.getSignalType(ab.getType());
         }
     }
@@ -118,16 +115,16 @@ public class Signal extends Straight implements Tile, AccessoryListener {
         }
 
         switch (signalValue) {
-            case Hp0:
+            case Hp0 -> {
                 color1 = Color.red;
                 color2 = Color.gray;
-                break;
-            case Hp1:
+            }
+            case Hp1 -> {
                 color1 = Color.gray;
                 color2 = Color.green;
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
         }
 
         g2d.setStroke(new BasicStroke(10f));
@@ -181,24 +178,23 @@ public class Signal extends Straight implements Tile, AccessoryListener {
         }
 
         switch (this.signalValue) {
-            case Hp0:
+            case Hp0 -> {
                 color2 = Color.red;
                 color3 = Color.red;
-                break;
-            case Hp1:
+            }
+            case Hp1 ->
                 color1 = Color.green;
-                break;
-            case Hp2:
+            case Hp2 -> {
                 color1 = Color.green;
                 color6 = Color.yellow;
-                break;
-            case Hp0Sh1:
+            }
+            case Hp0Sh1 -> {
                 color2 = Color.red;
                 color4 = Color.white;
                 color5 = Color.white;
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
         }
 
         g2d.setStroke(new BasicStroke(10f));
@@ -248,16 +244,16 @@ public class Signal extends Straight implements Tile, AccessoryListener {
         }
 
         switch (this.signalValue) {
-            case Hp0:
+            case Hp0 -> {
                 color1 = Color.red;
                 color2 = Color.red;
-                break;
-            case Hp1:
+            }
+            case Hp1 -> {
                 color3 = Color.white;
                 color4 = Color.white;
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
         }
 
         g2d.setStroke(new BasicStroke(10f));
@@ -284,27 +280,19 @@ public class Signal extends Straight implements Tile, AccessoryListener {
         renderStraight(g2d, trackColor, backgroundColor);
 
         switch (signalType) {
-            case HP012:
-                renderSignal3(g2d);
-                break;
-            case HP012SH1:
-                renderSignal4(g2d);
-                break;
-            case HP0SH1:
-                renderSignal2m(g2d);
-                break;
-            default:
-                //HP01
+            case HP012 -> renderSignal3(g2d);
+            case HP012SH1 -> renderSignal4(g2d);
+            case HP0SH1 -> renderSignal2m(g2d);
+            default -> //HP01
                 renderSignal2(g2d);
-                break;
         }
 
         g2d.dispose();
     }
 
     public AccessoryBean getAccessoryBean() {
-        if (this.tileBean != null && this.tileBean.getEntityBean() != null) {
-            return (AccessoryBean) this.tileBean.getEntityBean();
+        if (this.tileBean != null && this.tileBean.getAccessoryBean() != null) {
+            return (AccessoryBean) this.tileBean.getAccessoryBean();
         } else {
             return null;
         }
@@ -319,10 +307,10 @@ public class Signal extends Straight implements Tile, AccessoryListener {
 
     @Override
     public void onChange(AccessoryMessageEvent event) {
-        if (this.getTileBean().getAccessoryBeanId() != null && this.getTileBean().getAccessoryBeanId().equals(event.getAccessoryBean().getId())) {
+        if (this.getTileBean().getAccessoryBean() != null && this.getTileBean().getAccessoryId().equals(event.getAccessoryBean().getId())) {
             this.setSignalValue(event.getAccessoryBean().getSignalValue());
             repaintTile();
-        } 
+        }
     }
 
 }

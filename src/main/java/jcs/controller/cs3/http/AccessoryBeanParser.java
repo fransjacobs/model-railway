@@ -18,7 +18,6 @@
  */
 package jcs.controller.cs3.http;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -86,11 +85,11 @@ public class AccessoryBeanParser {
         for (String s : items) {
             Logger.trace("Line: " + s);
             switch (s) {
-                case ACCESSORY_START:
-                    break;
-                case VERSION:
-                    break;
-                case ARTIKEL:
+                case ACCESSORY_START -> {
+                }
+                case VERSION -> {
+                }
+                case ARTIKEL -> {
                     if (ma.containsKey(NAME)) {
                         AccessoryBean sa = createAccessory(ma);
                         if (sa != null) {
@@ -98,8 +97,8 @@ public class AccessoryBeanParser {
                         }
                     }
                     ma.clear();
-                    break;
-                default:
+                }
+                default -> {
                     if (s.contains("=")) {
                         String[] kp = s.split("=");
                         String key = kp[0];
@@ -108,7 +107,7 @@ public class AccessoryBeanParser {
                     } else {
                         Logger.debug("Tag?: " + s);
                     }
-                    break;
+                }
             }
         }
         // parse the last Accessory
@@ -128,18 +127,18 @@ public class AccessoryBeanParser {
         for (String s : items) {
             Logger.trace("Line: " + s);
             switch (s) {
-                case ACCESSORY_START:
-                    break;
-                case VERSION:
-                    break;
-                case ARTIKEL:
+                case ACCESSORY_START -> {
+                }
+                case VERSION -> {
+                }
+                case ARTIKEL -> {
                     if (ma.containsKey(ID)) {
                         AccessoryBean ab = createAccessory(ma);
                         accessories.add(ab);
                     }
                     ma.clear();
-                    break;
-                default:
+                }
+                default -> {
                     if (s.contains("=")) {
                         String[] kp = s.split("=");
                         String key = kp[0];
@@ -148,7 +147,7 @@ public class AccessoryBeanParser {
                     } else {
                         Logger.debug("Tag?: " + s);
                     }
-                    break;
+                }
             }
         }
         // parse the last Accessory
@@ -164,8 +163,8 @@ public class AccessoryBeanParser {
     private AccessoryBean createAccessory(Map<String, String> ma) {
 
         String ids = ma.get(ID);
-        BigDecimal id = new BigDecimal(ids);
-        Integer address = Integer.parseInt(ma.get(ID));
+        Long id = Long.parseLong(ids);
+        Integer address = Integer.valueOf(ma.get(ID));
 
         String name = ma.get(NAME);
         String type = ma.get(TYPE);
@@ -183,9 +182,7 @@ public class AccessoryBeanParser {
         String decoderType = ma.get(DECTYP);
         String decoder = ma.get(DECODER);
 
-        AccessoryBean ab = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
-
-        return ab;
+        return new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
     }
 
 //    private SignalBean createSignal(Map<String, String> accessoryProps, String type, int lightImages) {

@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019, 2022 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.widgets;
 
@@ -26,7 +23,7 @@ import javax.swing.border.TitledBorder;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;
 
@@ -111,10 +108,10 @@ public class SwitchPanel extends JPanel {
 
     private void presetButtonboolean(JToggleButton button) {
         button.setActionCommand((button.getText()));
-        BigDecimal id = new BigDecimal(button.getActionCommand());
+        Long id = Long.valueOf(button.getActionCommand());
 
-        if (TrackServiceFactory.getTrackService() != null) {
-            AccessoryBean ab = TrackServiceFactory.getTrackService().getAccessory(id);
+        if (TrackControllerFactory.getTrackService() != null) {
+            AccessoryBean ab = TrackControllerFactory.getTrackService().getAccessory(id);
             if (ab != null) {
                 button.setForeground(new Color(0, 153, 0));
                 button.setSelected(AccessoryValue.RED.equals(ab.getAccessoryValue()));
@@ -122,8 +119,8 @@ public class SwitchPanel extends JPanel {
             } else {
                 button.setForeground(new Color(0, 0, 0));
             }
-            AccessoryStatusListener asl = new AccessoryStatusListener(button, id);
-            TrackServiceFactory.getTrackService().addAccessoryListener(asl);
+            AccessoryStatusListener asl = new AccessoryStatusListener(button, new BigDecimal(id));
+            TrackControllerFactory.getTrackService().addAccessoryListener(asl);
         }
     }
 
@@ -418,14 +415,14 @@ public class SwitchPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sendCommand(String actionCommand, String name, boolean selected) {
-        BigDecimal id = new BigDecimal(actionCommand);
+        Long id = Long.valueOf(actionCommand);
         Integer address = id.intValue();
         AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
         Logger.trace("ID: " + id + " Value: " + value);
 
-        if (TrackServiceFactory.getTrackService() != null) {
+        if (TrackControllerFactory.getTrackService() != null) {
             AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
-            TrackServiceFactory.getTrackService().switchAccessory(value, a);
+            TrackControllerFactory.getTrackService().switchAccessory(value, a);
         }
     }
 

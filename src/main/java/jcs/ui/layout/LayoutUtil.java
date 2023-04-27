@@ -1,34 +1,27 @@
 /*
- * Copyright (C) 2021 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import jcs.entities.RouteBean;
-import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
@@ -36,9 +29,8 @@ import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
-import jcs.trackservice.TrackServiceFactory;
-import jcs.trackservice.events.AccessoryListener;
-import jcs.trackservice.events.SensorListener;
+import jcs.persistence.PersistenceFactory;
+
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
@@ -48,18 +40,18 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class LayoutUtil {
-    
+
     private static final int GRID = 20;
     public static final int DEFAULT_WIDTH = GRID * 2;
     public static final int DEFAULT_HEIGHT = GRID * 2;
-    
+
     private final static Map<Point, Tile> tiles = new HashMap<>();
     private final static Map<Point, Tile> altTilesLookup = new HashMap<>();
     private final static Map<String, Tile> tileLookup = new HashMap<>();
-    
+
     private LayoutUtil() {
     }
-    
+
     public static final Point snapToGrid(Point p) {
         return snapToGrid(p.x, p.y);
     }
@@ -75,48 +67,48 @@ public class LayoutUtil {
         int steps = x / DEFAULT_WIDTH;
         int sx = steps;
         sx = sx * DEFAULT_WIDTH + GRID;
-        
+
         steps = y / DEFAULT_HEIGHT;
         int sy = steps;
         sy = sy * DEFAULT_HEIGHT + GRID;
-        
+
         return new Point(sx, sy);
     }
-    
+
     private static void addRelatedBeans(TileBean tileBean) {
         TileType tileType = tileBean.getTileType();
         switch (tileType) {
-            case STRAIGHT:
-                break;
-            case CURVED:
-                break;
-            case SWITCH:
-                if (tileBean.getAccessoryBeanId() != null) {
-                    tileBean.setAccessoryBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getAccessoryBeanId()));
+            case STRAIGHT -> {
+            }
+            case CURVED -> {
+            }
+            case SWITCH -> {
+                if (tileBean.getAccessoryBean() != null) {
+                    tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
                 }
-                break;
-            case CROSS:
-                if (tileBean.getAccessoryBeanId() != null) {
-                    tileBean.setAccessoryBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getAccessoryBeanId()));
+            }
+            case CROSS -> {
+                if (tileBean.getAccessoryBean() != null) {
+                    tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
                 }
-                break;
-            case SIGNAL:
-                if (tileBean.getAccessoryBeanId() != null) {
-                    tileBean.setAccessoryBean(TrackServiceFactory.getTrackService().getAccessory(tileBean.getAccessoryBeanId()));
+            }
+            case SIGNAL -> {
+                if (tileBean.getAccessoryBean() != null) {
+                    tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
                 }
-                break;
-            case SENSOR:
-                if (tileBean.getSensorBeanId() != null) {
-                    tileBean.setSensorBean(TrackServiceFactory.getTrackService().getSensor(tileBean.getSensorBeanId()));
+            }
+            case SENSOR -> {
+                if (tileBean.getSensorId() != null) {
+                    tileBean.setSensorBean(PersistenceFactory.getService().getSensor(tileBean.getSensorId()));
                 }
-                break;
-            case BLOCK:
-                break;
-            default:
+            }
+            case BLOCK -> {
+            }
+            default ->
                 Logger.warn("Unknown Tile Type " + tileType);
         }
     }
-    
+
     public static final Map<Point, Tile> loadLayout(boolean drawGridLines, boolean showValues) {
         return loadLayout(drawGridLines, null, showValues);
     }
@@ -134,28 +126,30 @@ public class LayoutUtil {
             LayoutUtil.tiles.clear();
             LayoutUtil.altTilesLookup.clear();
             LayoutUtil.tileLookup.clear();
-            
-            if (TrackServiceFactory.getTrackService() != null) {
-                Set<TileBean> beans = TrackServiceFactory.getTrackService().getTiles();
+
+            if (PersistenceFactory.getService() != null) {
+                List<TileBean> tbl = PersistenceFactory.getService().getTiles();
                 
+                Set<TileBean> beans = new HashSet<>(tbl);
+
                 for (TileBean tb : beans) {
                     addRelatedBeans(tb);
                     Tile tile = TileFactory.createTile(tb, drawGridLines, showValues);
-                    
+
                     if (listener != null) {
                         tile.setRepaintListener(listener);
                     }
-                    
+
                     registerAsEventListener(tile);
-                    
+
                     LayoutUtil.tiles.put(tile.getCenter(), tile);
                     for (Point ap : tile.getAltPoints()) {
                         LayoutUtil.altTilesLookup.put(ap, tile);
                     }
-                    
+
                     LayoutUtil.tileLookup.put(tile.getId(), tile);
                 }
-                
+
                 Logger.debug("Loaded " + tiles.size() + " Tiles...");
             } else {
                 Logger.error("Can't load tiles, no Trackservice available");
@@ -163,36 +157,36 @@ public class LayoutUtil {
         }
         return LayoutUtil.tiles;
     }
-    
+
     private static void registerAsEventListener(Tile tile) {
-        
-        switch (tile.getTileType()) {
-            case SENSOR:
-                TrackServiceFactory.getTrackService().addSensorListener((SensorListener) tile);
-                break;
-            case SWITCH:
-                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
-                break;
-            case SIGNAL:
-                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
-                break;
-            
-            default:
-                //Do nothing
-                break;
-        }
+
+//        switch (tile.getTileType()) {
+//            case SENSOR:
+//                TrackServiceFactory.getTrackService().addSensorListener((SensorListener) tile);
+//                break;
+//            case SWITCH:
+//                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
+//                break;
+//            case SIGNAL:
+//                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
+//                break;
+//
+//            default:
+//                //Do nothing
+//                break;
+//        }
     }
-    
+
     private static boolean isNotLoaded() {
         return LayoutUtil.tiles == null || LayoutUtil.tiles.isEmpty();
     }
-    
+
     public static Tile findTile(Point cp) {
         if (isNotLoaded()) {
             LayoutUtil.loadLayout(true, false);
         }
         Tile result = LayoutUtil.tiles.get(cp);
-        
+
         if (result == null) {
             result = LayoutUtil.altTilesLookup.get(cp);
             if (result != null) {
@@ -200,11 +194,11 @@ public class LayoutUtil {
         }
         return result;
     }
-    
+
     public static boolean isTile(Point cp) {
         return findTile(cp) != null;
     }
-    
+
     public static boolean isBlock(Point cp) {
         Tile t = findTile(cp);
         if (t == null) {
@@ -212,7 +206,7 @@ public class LayoutUtil {
         }
         return TileType.BLOCK.equals(t.getTileType());
     }
-    
+
     public static boolean isTrack(Point cp) {
         Tile t = findTile(cp);
         if (t == null) {
@@ -221,12 +215,12 @@ public class LayoutUtil {
         TileType tt = t.getTileType();
         return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
     }
-    
+
     public static final Map<Point, Tile> getTiles() {
         if (isNotLoaded()) {
             LayoutUtil.loadLayout(true, false);
         }
-        
+
         return LayoutUtil.tiles;
     }
 
@@ -243,11 +237,11 @@ public class LayoutUtil {
         double d = Math.hypot(a, b);
         return d;
     }
-    
+
     public static Set<Point> adjacentPointsFor(Tile tile) {
         return adjacentPointsFor(tile, AccessoryValue.OFF);
     }
-    
+
     public static Set<Point> adjacentPointsFor(Tile tile, AccessoryValue accessoryValue) {
         Set<Point> adjacent = new HashSet<>();
         int x = tile.getCenterX();
@@ -256,33 +250,33 @@ public class LayoutUtil {
         int h = tile.getHeight();
         Orientation orientation = tile.getOrientation();
         Direction direction = tile.getDirection();
-        
+
         int oX = w / 2 + Tile.GRID;
         int oY = h / 2 + Tile.GRID;
-        
+
         switch (tile.getTileType()) {
-            case CURVED:
+            case CURVED -> {
                 switch (orientation) {
-                    case SOUTH:
+                    case SOUTH -> {
                         adjacent.add(new Point(x - oX, y));
                         adjacent.add(new Point(x, y + oY));
-                        break;
-                    case WEST:
+                }
+                    case WEST -> {
                         adjacent.add(new Point(x - oX, y));
                         adjacent.add(new Point(x, y - oY));
-                        break;
-                    case NORTH:
+                }
+                    case NORTH -> {
                         adjacent.add(new Point(x + oX, y));
                         adjacent.add(new Point(x, y - oY));
-                        break;
-                    default:
+                }
+                    default -> {
                         //EAST
                         adjacent.add(new Point(x + oX, y));
                         adjacent.add(new Point(x, y + oY));
-                        break;
                 }
-                break;
-            case CROSS:
+                }
+            }
+            case CROSS -> {
                 if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
                     adjacent.add(new Point(x + oX, y));
                     adjacent.add(new Point(x - oX, y));
@@ -290,8 +284,8 @@ public class LayoutUtil {
                     adjacent.add(new Point(x, y + oY));
                     adjacent.add(new Point(x, y - oY));
                 }
-                break;
-            case SWITCH:
+            }
+            case SWITCH -> {
                 switch (orientation) {
                     case SOUTH:
                         switch (accessoryValue) {
@@ -362,8 +356,8 @@ public class LayoutUtil {
                         }
                         break;
                 }
-                break;
-            default:
+            }
+            default -> {
                 if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
                     adjacent.add(new Point(x + oX, y));
                     adjacent.add(new Point(x - oX, y));
@@ -371,18 +365,18 @@ public class LayoutUtil {
                     adjacent.add(new Point(x, y + oY));
                     adjacent.add(new Point(x, y - oY));
                 }
-                break;
+            }
         }
         return adjacent;
     }
-    
+
     private static Point getAdjacentPoint(Tile block, String plusMinus) {
         int x = block.getCenterX();
         int y = block.getCenterY();
         int w = block.getWidth();
         int h = block.getHeight();
         Orientation o = block.getOrientation();
-        
+
         Point neighborPlus, neighborMin;
         switch (o) {
             case SOUTH:
@@ -421,12 +415,12 @@ public class LayoutUtil {
         Point p = getAdjacentPoint(block, "+");
         return p.equals(point);
     }
-    
+
     public static Point getPlusAdjacent(Tile block) {
         Point p = getAdjacentPoint(block, "+");
         return p;
     }
-    
+
     public static Point getMinusAdjacent(Tile block) {
         Point p = getAdjacentPoint(block, "-");
         return p;
@@ -443,14 +437,14 @@ public class LayoutUtil {
         Point p = getAdjacentPoint(block, "-");
         return p.equals(point);
     }
-    
+
     private static Point getPlusMinus(Tile block, String plusMinus) {
         int x = block.getCenterX();
         int y = block.getCenterY();
         int w = block.getWidth();
         int h = block.getHeight();
         Orientation o = block.getOrientation();
-        
+
         Point cpPlus, cpMin;
         switch (o) {
             case SOUTH:
@@ -580,45 +574,41 @@ public class LayoutUtil {
         }
         return nodeIds;
     }
-    
-    public static void persist(RouteBean route) {
-        
-        if (TrackServiceFactory.getTrackService() == null) {
-            return;
-        }
-        TrackServiceFactory.getTrackService().persist(route);
-    }
-    
-    public static List<RouteBean> getRoutes() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            return TrackServiceFactory.getTrackService().getRoutes();
-        } else {
-            return Collections.EMPTY_LIST;
-        }
-    }
-    
-    public static void deleteAllRoutes() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            List<RouteBean> routes = TrackServiceFactory.getTrackService().getRoutes();
-            for (RouteBean r : routes) {
-                TrackServiceFactory.getTrackService().remove(r);
-            }
-        }
-    }
-    
-    public static List<Tile> getRouteTiles(RouteBean route) {
-        List<Tile> routeTiles = new LinkedList<>();
-        
-        List<RouteElementBean> rel = route.getRouteElements();
-        
-        for (RouteElementBean re : rel) {
-            String id = re.getTileId();
-            Tile t = LayoutUtil.tileLookup.get(id);
-            if (t != null) {
-                routeTiles.add(t);
-            }
-        }
-        return routeTiles;
-    }
-    
+
+//    public static void persistProperty(RouteBean route) {
+//
+//        if (TrackServiceFactory.getTrackService() == null) {
+//            return;
+//        }
+//        TrackServiceFactory.getTrackService().persistProperty(route);
+//    }
+//    public static List<RouteBean> getRoutes() {
+//        if (TrackServiceFactory.getTrackService() != null) {
+//            return TrackServiceFactory.getTrackService().getRoutes();
+//        } else {
+//            return Collections.EMPTY_LIST;
+//        }
+//    }
+//    public static void deleteAllRoutes() {
+//        if (TrackServiceFactory.getTrackService() != null) {
+//            List<RouteBean> routes = TrackServiceFactory.getTrackService().getRoutes();
+//            for (RouteBean r : routes) {
+//                TrackServiceFactory.getTrackService().remove(r);
+//            }
+//        }
+//    }
+//    public static List<Tile> getRouteTiles(RouteBean route) {
+//        List<Tile> routeTiles = new LinkedList<>();
+//
+//        List<RouteElementBean> rel = route.getRouteElements();
+//
+//        for (RouteElementBean re : rel) {
+//            String id = re.getTileId();
+//            Tile t = LayoutUtil.tileLookup.get(id);
+//            if (t != null) {
+//                routeTiles.add(t);
+//            }
+//        }
+//        return routeTiles;
+//    }
 }

@@ -1,54 +1,53 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
 import java.awt.Point;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
 import jcs.ui.layout.tiles.enums.Direction;
 
-/**
- * Bean to store Tile properties
- *
- * @author frans
- */
-public class TileBean implements JCSEntity, Serializable, Comparable {
+@Table(name = "tiles", indexes = {
+    @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
+public class TileBean implements Serializable, Comparable {
 
-    private TileType tileType;
-    private Orientation orientation;
-    private Direction direction;
-    private SignalType signalType;
-    private Point center;
     private String id;
-
-    private BigDecimal accessoryBeanId;
-    private BigDecimal sensorBeanId;
+    private Integer x;
+    private Integer y;
+    private String type;
+    private String tileOrientation;
+    private String tileDirection;
+    private String signalAccessoryType;
+    private Long accessoryId;
+    private Long sensorId;
 
     private List<TileBean> neighbours;
 
-    //private JCSEntity bean;
     private AccessoryBean accessoryBean;
     private SensorBean sensorBean;
 
@@ -57,144 +56,162 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
     public static final int DEFAULT_HEIGHT = 40;
 
     public TileBean() {
-        this(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(0, 0), null, null, null, null);
+        this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
     }
 
-    public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id) {
-        this(tileType, orientation, direction, new Point(x, y), id, null, null, null);
+    public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y) {
+        this(id, tileType, orientation, direction, x, y, null, null, null);
     }
 
-    public TileBean(TileType tileType, Orientation orientation, Direction direction, int x, int y, String id, SignalType signalType, BigDecimal accessoryBeanId, BigDecimal sensorBeanId) {
-        this(tileType, orientation, direction, new Point(x, y), id, signalType, null, sensorBeanId);
+    public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, Long accessoryId, Long sensorId) {
+        this(id, tileType, orientation, direction, center.x, center.y, signalType, null, sensorId);
     }
 
-    public TileBean(TileType tileType, Orientation orientation, Direction direction, Point center, String id, SignalType signalType, BigDecimal accessoryBeanId, BigDecimal sensorBeanId) {
-        this.tileType = tileType;
-        this.orientation = orientation;
-        this.direction = direction;
-        this.center = center;
+    public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, Long accessoryId, Long sensorId) {
         this.id = id;
-        this.signalType = signalType;
-        this.accessoryBeanId = accessoryBeanId;
-        this.sensorBeanId = sensorBeanId;
+        this.setTileType(tileType);
+        this.setOrientation(orientation);
+        this.setDirection(direction);
+        this.x = x;
+        this.y = y;
+        this.setSignalType(signalType);
+        this.accessoryId = accessoryId;
+        this.sensorId = sensorId;
 
         neighbours = new ArrayList<>();
     }
 
-    public TileType getTileType() {
-        return tileType;
-    }
-
-    public void setTileType(TileType tileType) {
-        this.tileType = tileType;
-    }
-
-    public Orientation getOrientation() {
-        return orientation;
-    }
-
-    public void setOrientation(Orientation orientation) {
-        this.orientation = orientation;
-    }
-
-    public Direction getDirection() {
-        return direction;
-    }
-
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
-
-    public SignalType getSignalType() {
-        return signalType;
-    }
-
-    public void setSignalType(SignalType signalType) {
-        this.signalType = signalType;
-    }
-
-    public Point getCenter() {
-        return center;
-    }
-
-    public void setCenter(Point center) {
-        this.center = center;
-    }
-
-    @Override
+    @Id
+    @Column(name = "id")
     public String getId() {
         return id;
-    }
-
-    @Override
-    public void setId(Object id) {
-        if (id instanceof String) {
-            this.id = (String) id;
-        }
     }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    public int getX() {
-        if (this.center != null) {
-            return this.center.x;
-        } else {
-            return 0;
+    @Column(name = "x", nullable = false)
+    public Integer getX() {
+        return this.x;
+    }
+
+    public void setX(Integer x) {
+        this.x = x;
+    }
+
+    @Column(name = "y", nullable = false)
+    public Integer getY() {
+        return this.y;
+    }
+
+    public void setY(Integer y) {
+        this.y = y;
+    }
+
+    @Column(name = "tile_type", length = 255, nullable = false)
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @Transient
+    public TileType getTileType() {
+        return TileType.get(type);
+    }
+
+    public final void setTileType(TileType tileType) {
+        this.type = tileType.getTileType();
+    }
+
+    @Column(name = "orientation", length = 255, nullable = false)
+    public String getTileOrientation() {
+        return tileOrientation;
+    }
+
+    public void setTileOrientation(String tileOrientation) {
+        this.tileOrientation = tileOrientation;
+    }
+
+    @Transient
+    public Orientation getOrientation() {
+        return Orientation.get(this.tileOrientation);
+    }
+
+    public final void setOrientation(Orientation orientation) {
+        this.tileOrientation = orientation.getOrientation();
+    }
+
+    @Column(name = "direction", length = 255, nullable = false)
+    public String getTileDirection() {
+        return tileDirection;
+    }
+
+    public void setTileDirection(String tileDirection) {
+        this.tileDirection = tileDirection;
+    }
+
+    @Transient
+    public Direction getDirection() {
+        return Direction.get(tileDirection);
+    }
+
+    public final void setDirection(Direction direction) {
+        this.tileDirection = direction.getDirection();
+    }
+
+    @Column(name = "signal_type", length = 255, nullable = false)
+    public String getSignalAccessoryType() {
+        return signalAccessoryType;
+    }
+
+    public void setSignalAccessoryType(String signalAccessoryType) {
+        this.signalAccessoryType = signalAccessoryType;
+    }
+
+    @Transient
+    public SignalType getSignalType() {
+        return SignalType.get(signalAccessoryType);
+    }
+
+    public final void setSignalType(SignalType signalType) {
+        if (signalType != null) {
+            this.signalAccessoryType = signalType.getSignalType();
         }
     }
 
-    public void setX(int x) {
-        Point p = new Point(x, this.getY());
-        this.center = p;
+    @Transient
+    public Point getCenter() {
+        return new Point(this.x, this.y);
     }
 
-    public int getY() {
-        if (this.center != null) {
-            return this.center.y;
-        } else {
-            return 0;
-        }
+    public final void setCenter(Point center) {
+        this.x = center.x;
+        this.y = center.y;
     }
 
-    public void setY(int y) {
-        Point p = new Point(this.getX(), y);
-        this.center = p;
+    @Column(name = "accessory_id")
+    public Long getAccessoryId() {
+        return accessoryId;
     }
 
-    public JCSEntity getEntityBean() {
-        switch (this.tileType) {
-            case SENSOR:
-                return this.sensorBean;
-            case SIGNAL:
-                return this.accessoryBean;
-            case SWITCH:
-                return this.accessoryBean;
-            case CROSS:
-                return this.accessoryBean;
-
-            default:
-                return null;
-        }
+    public void setAccessoryId(Long accessoryId) {
+        this.accessoryId = accessoryId;
     }
 
-    public BigDecimal getAccessoryBeanId() {
-        return accessoryBeanId;
+    @Column(name = "sensor_id")
+    public Long getSensorId() {
+        return sensorId;
     }
 
-    public void setAccessoryBeanId(BigDecimal accessoryBeanId) {
-        this.accessoryBeanId = accessoryBeanId;
+    public void setSensorId(Long sensorId) {
+        this.sensorId = sensorId;
     }
 
-    public BigDecimal getSensorBeanId() {
-        return sensorBeanId;
-    }
-
-    public void setSensorBeanId(BigDecimal sensorBeanId) {
-        this.sensorBeanId = sensorBeanId;
-    }
-
+    @Transient
     public AccessoryBean getAccessoryBean() {
         return accessoryBean;
     }
@@ -203,6 +220,7 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         this.accessoryBean = accessoryBean;
     }
 
+    @Transient
     public SensorBean getSensorBean() {
         return sensorBean;
     }
@@ -211,6 +229,22 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         this.sensorBean = sensorBean;
     }
 
+    //TODO!
+//    public JCSEntity getEntityBean() {
+//        switch (this.tileType) {
+//            case SENSOR:
+//                return this.sensorBean;
+//            case SIGNAL:
+//                return this.accessoryBean;
+//            case SWITCH:
+//                return this.accessoryBean;
+//            case CROSS:
+//                return this.accessoryBean;
+//
+//            default:
+//                return null;
+//        }
+//    }
     @Override
     public int compareTo(Object other) {
         int resx = Integer.compare(this.getX(), ((TileBean) other).getX());
@@ -225,14 +259,15 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 11 * hash + Objects.hashCode(this.tileType);
-        hash = 11 * hash + Objects.hashCode(this.orientation);
-        hash = 11 * hash + Objects.hashCode(this.direction);
-        hash = 11 * hash + Objects.hashCode(this.signalType);
-        hash = 11 * hash + Objects.hashCode(this.center);
+        hash = 11 * hash + Objects.hashCode(this.type);
+        hash = 11 * hash + Objects.hashCode(this.tileDirection);
+        hash = 11 * hash + Objects.hashCode(this.tileDirection);
+        hash = 11 * hash + Objects.hashCode(this.signalAccessoryType);
+        hash = 11 * hash + Objects.hashCode(this.x);
+        hash = 11 * hash + Objects.hashCode(this.y);
         hash = 11 * hash + Objects.hashCode(this.id);
-        hash = 11 * hash + Objects.hashCode(this.accessoryBeanId);
-        hash = 11 * hash + Objects.hashCode(this.sensorBeanId);
+        hash = 11 * hash + Objects.hashCode(this.accessoryId);
+        hash = 11 * hash + Objects.hashCode(this.sensorId);
         return hash;
     }
 
@@ -251,88 +286,101 @@ public class TileBean implements JCSEntity, Serializable, Comparable {
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
-        if (!Objects.equals(this.accessoryBeanId, other.accessoryBeanId)) {
+        if (!Objects.equals(this.type, other.type)) {
             return false;
         }
-        if (!Objects.equals(this.sensorBeanId, other.sensorBeanId)) {
+        if (!Objects.equals(this.tileOrientation, other.tileOrientation)) {
             return false;
         }
-        if (this.tileType != other.tileType) {
+        if (!Objects.equals(this.tileDirection, other.tileDirection)) {
             return false;
         }
-        if (this.orientation != other.orientation) {
+        if (!Objects.equals(this.signalAccessoryType, other.signalAccessoryType)) {
             return false;
         }
-        if (this.direction != other.direction) {
+        if (!Objects.equals(this.x, other.x)) {
             return false;
         }
-        if (this.signalType != other.signalType) {
+        if (!Objects.equals(this.y, other.y)) {
             return false;
         }
-        if (!Objects.equals(this.center, other.center)) {
+        if (!Objects.equals(this.accessoryId, other.accessoryId)) {
             return false;
         }
-        return true;
+        return Objects.equals(this.sensorId, other.sensorId);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("TileBean{id=").append(id);
-        sb.append(", tileType=").append(tileType);
-        sb.append(", orientation=").append(orientation);
-        sb.append(", direction=").append(direction);
-        sb.append(", center=").append(center);
-        sb.append(", signalType=").append(signalType);
+        sb.append(", tileType=").append(type);
+        sb.append(", orientation=").append(tileOrientation);
+        sb.append(", direction=").append(tileDirection);
+        sb.append(", center=[(x=").append(x);
+        sb.append(",y=").append(y);
+        sb.append(")]");
+        sb.append(", signalType=").append(this.signalAccessoryType);
+        sb.append(", accessoryId=").append(this.accessoryId);
+        sb.append(", sensorId=").append(this.sensorId);
+
         sb.append('}');
         return sb.toString();
     }
 
-    @Override
     public String toLogString() {
         return toString();
     }
 
+    @Transient
     public int getWidth() {
-        switch (this.tileType) {
-            case BLOCK:
-                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+        switch (this.getTileType()) {
+            case BLOCK -> {
+                if (Orientation.EAST.equals(this.getOrientation()) || Orientation.WEST.equals(getOrientation())) {
                     return DEFAULT_WIDTH * 3;
                 } else {
                     return DEFAULT_WIDTH;
                 }
-            case CROSS:
-                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+            }
+            case CROSS -> {
+                if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
                     return DEFAULT_WIDTH * 2;
                 } else {
                     return DEFAULT_WIDTH;
                 }
-            default:
+            }
+            default -> {
                 //Straight,Curved,Sensor,Signal,Switch
                 return DEFAULT_WIDTH;
+            }
         }
     }
 
+    @Transient
     public int getHeight() {
-        switch (this.tileType) {
-            case BLOCK:
-                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+        switch (this.getTileType()) {
+            case BLOCK -> {
+                if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
                     return DEFAULT_HEIGHT;
                 } else {
                     return DEFAULT_HEIGHT * 3;
                 }
-            case CROSS:
-                if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
+            }
+            case CROSS -> {
+                if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
                     return DEFAULT_HEIGHT;
                 } else {
                     return DEFAULT_HEIGHT * 2;
                 }
-            default:
+            }
+            default -> {
                 //Straight,Curved,Sensor,Signal,Switch
                 return DEFAULT_HEIGHT;
+            }
         }
     }
 
+    @Transient
     public List<TileBean> getNeighbours() {
         return neighbours;
     }

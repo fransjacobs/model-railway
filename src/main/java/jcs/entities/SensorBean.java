@@ -1,31 +1,35 @@
 /*
- * Copyright (C) 2018 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
-public class SensorBean implements JCSEntity, Serializable {
+@Table(name = "sensors", indexes = {
+    @Index(name = "sens_devi_cont_idx", columnList = "device_id, contact_id", unique = true)})
+public class SensorBean implements Serializable {
 
-    private BigDecimal id;
+    private Long id;
     private String name;
 
     private Integer deviceId;
@@ -47,7 +51,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this(null, name, deviceId, contactId, status, previousStatus, millis, lastUpdated);
     }
 
-    public SensorBean(BigDecimal id, String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+    public SensorBean(Long id, String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
         this.id = id;
         this.name = name;
 
@@ -59,22 +63,19 @@ public class SensorBean implements JCSEntity, Serializable {
         this.lastUpdated = lastUpdated;
     }
 
-    @Override
-    public BigDecimal getId() {
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+
+    public Long getId() {
         return id;
     }
 
-    @Override
-    public void setId(Object id) {
-        if (id instanceof BigDecimal) {
-            this.id = (BigDecimal) id;
-        }
-    }
-
-    public void setId(BigDecimal id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
+    @Column(name = "name", length = 255, nullable = false)
     public String getName() {
         return name;
     }
@@ -83,6 +84,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.name = name;
     }
 
+    @Column(name = "device_id")
     public Integer getDeviceId() {
         return deviceId;
     }
@@ -91,6 +93,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.deviceId = deviceId;
     }
 
+    @Column(name = "contact_id")
     public Integer getContactId() {
         return contactId;
     }
@@ -99,6 +102,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.contactId = contactId;
     }
 
+    @Column(name = "status")
     public Integer getStatus() {
         return status;
     }
@@ -107,6 +111,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.status = status;
     }
 
+    @Column(name = "previous_status")
     public Integer getPreviousStatus() {
         return previousStatus;
     }
@@ -115,6 +120,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.previousStatus = previousStatus;
     }
 
+    @Column(name = "millis")
     public Integer getMillis() {
         return millis;
     }
@@ -123,6 +129,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.millis = millis;
     }
 
+    @Column(name = "last_updated")
     public Date getLastUpdated() {
         return lastUpdated;
     }
@@ -131,6 +138,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.lastUpdated = lastUpdated;
     }
 
+    @Transient
     public boolean isActive() {
         return this.status > 0;
     }
@@ -143,6 +151,7 @@ public class SensorBean implements JCSEntity, Serializable {
         this.previousStatus = active ? 1 : 0;
     }
 
+    @Transient
     public boolean isPreviousActive() {
         return this.previousStatus > 0;
     }
@@ -151,20 +160,17 @@ public class SensorBean implements JCSEntity, Serializable {
 //        int module = (contactId - 1) / 16 + 1;
 //        return module;
 //    }
-
 //    public static int calculatePortNumber(int contactId) {
 //        int module = (contactId - 1) / 16 + 1;
 //        int mport = contactId - (module - 1) * 16;
 //        return mport;
 //    }
-
 //    public static int calculateContactId(int module, int port) {
 //        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
 //        module = module - 1;
 //        int contactId = module * 16;
 //        return contactId + port;
 //    }
-
     @Override
     public int hashCode() {
         int hash = 3;
@@ -232,20 +238,11 @@ public class SensorBean implements JCSEntity, Serializable {
         return Objects.equals(this.contactId, other.contactId);
     }
 
-//    @Override
-//    public String toString() {
-//        if (contactId == null) {
-//            return "-";
-//        } else {
-//            return contactId + ", M: " + calculateModuleNumber(contactId) + " P: " + calculatePortNumber(contactId);
-//        }
-//    }
     @Override
     public String toString() {
         return "SensorBean{" + "id=" + id + ", name=" + name + ", deviceId=" + deviceId + ", contactId=" + contactId + ", status=" + status + ", previousStatus=" + previousStatus + ", millis=" + millis + ", lastUpdated=" + lastUpdated + '}';
     }
 
-    @Override
     public String toLogString() {
         return toString();
     }

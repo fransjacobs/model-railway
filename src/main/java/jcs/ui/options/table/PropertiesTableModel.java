@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.options.table;
 
@@ -22,13 +19,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import jcs.entities.JCSPropertyBean;
-import jcs.trackservice.TrackServiceFactory;
+import jcs.persistence.PersistenceFactory;
 
 /**
  *
  * @author frans
  */
-public class PropertiesTableModel extends EntityTableModel<JCSPropertyBean> {
+public class PropertiesTableModel extends BeanTableModel<JCSPropertyBean> {
 
     public PropertiesTableModel() {
         super();
@@ -46,9 +43,9 @@ public class PropertiesTableModel extends EntityTableModel<JCSPropertyBean> {
     }
 
     @Override
-    protected List<JCSPropertyBean> getEntityBeans() {
-        if (TrackServiceFactory.getTrackService() != null) {
-            return TrackServiceFactory.getTrackService().getProperties();
+    protected List<JCSPropertyBean> getBeans() {
+        if (PersistenceFactory.getService() != null) {
+            return PersistenceFactory.getService().getProperties();
         } else {
             return Collections.EMPTY_LIST;
         }
@@ -56,45 +53,62 @@ public class PropertiesTableModel extends EntityTableModel<JCSPropertyBean> {
 
     @Override
     Object getColumnValue(JCSPropertyBean device, int column) {
-        switch (column) {
-            case 0:
-                return device.getKey();
-            case 1:
-                return device.getValue();
-            default:
-                return null;
-        }
+        return switch (column) {
+            case 0 ->
+                device.getKey();
+            case 1 ->
+                device.getValue();
+            default ->
+                null;
+        };
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-            case 0:
-                return String.class;
-            case 1:
-                return String.class;
-            default:
-                return String.class;
-        }
+        return switch (columnIndex) {
+            case 0 ->
+                String.class;
+            case 1 ->
+                String.class;
+            default ->
+                String.class;
+        };
     }
 
     @Override
     void setColumnValue(JCSPropertyBean device, int column, Object value) {
         switch (column) {
-            case 0:
+            case 0 ->
                 device.setKey((String) value);
-                break;
-            case 1:
+            case 1 ->
                 device.setValue((String) value);
-                break;
-            default:
-                break;
+            default -> {
+            }
         }
     }
 
     @Override
     public boolean isCellEditable(int row, int column) {
         return true;
+    }
+
+    @Override
+    protected int findRowIndex(JCSPropertyBean bean) {
+        int row = -1;
+
+        if (bean != null && bean.getKey() != null) {
+            String key = bean.getKey();
+            int rowCount = this.beans.size();
+
+            for (int i = 0; i < rowCount; i++) {
+                JCSPropertyBean d = beans.get(i);
+                if (key.equals(d.getKey())) {
+                    row = i;
+                    break;
+                }
+            }
+        }
+        return row;
     }
 
 }

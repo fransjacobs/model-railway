@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout.tiles;
 
@@ -47,6 +44,7 @@ import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
 /**
+ * 
  * Basic graphic element to display a track, turnout, etc on the screen. By
  * default the drawing of a Tile is Horizontal from L to R or West to East.
  * Default orientation is East
@@ -200,26 +198,26 @@ abstract class AbstractTile implements Shape, Tile {
             int ox = 0, oy = 0;
 
             switch (o) {
-                case SOUTH:
+                case SOUTH -> {
                     trans.rotate(Math.PI / 2, getWidth() / 2, getHeight() / 2);
                     ox = (this.height - this.width) / 2;
                     oy = (this.width - this.height) / 2;
                     trans.translate(-ox, -oy);
-                    break;
-                case WEST:
+                }
+                case WEST -> {
                     trans.rotate(Math.PI, getWidth() / 2, getHeight() / 2);
                     trans.translate(ox, oy);
-                    break;
-                case NORTH:
+                }
+                case NORTH -> {
                     trans.rotate(-Math.PI / 2, getWidth() / 2, getHeight() / 2);
                     ox = (this.height - this.width) / 2;
                     oy = (this.width - this.height) / 2;
                     trans.translate(-ox, -oy);
-                    break;
-                default:
+                }
+                default -> {
                     trans.rotate(0.0, getWidth() / 2, getHeight() / 2);
                     trans.translate(ox, oy);
-                    break;
+                }
             }
 
             g2di.setTransform(trans);
@@ -299,18 +297,10 @@ abstract class AbstractTile implements Shape, Tile {
     @Override
     public void rotate() {
         switch (this.orientation) {
-            case EAST:
-                setOrientation(Orientation.SOUTH);
-                break;
-            case SOUTH:
-                setOrientation(Orientation.WEST);
-                break;
-            case WEST:
-                setOrientation(Orientation.NORTH);
-                break;
-            default:
-                setOrientation(Orientation.EAST);
-                break;
+            case EAST -> setOrientation(Orientation.SOUTH);
+            case SOUTH -> setOrientation(Orientation.WEST);
+            case WEST -> setOrientation(Orientation.NORTH);
+            default -> setOrientation(Orientation.EAST);
         }
     }
 
@@ -497,18 +487,18 @@ abstract class AbstractTile implements Shape, Tile {
             Logger.trace("Create new TileBean for: " + getClass().getName());
             TileType tileType = TileType.get(getClass().getSimpleName());
             SignalType signalType = null;
-            if (this instanceof Signal) {
-                signalType = ((Signal) this).getSignalType();
+            if (this instanceof Signal signal) {
+                signalType = signal.getSignalType();
             }
 
-            tileBean = new TileBean(tileType, orientation, direction, center, id, signalType, null, null);
+            tileBean = new TileBean(id, tileType, orientation, direction, center, signalType, null, null);
         } else {
             //Synchronize the bean
             this.tileBean.setOrientation(orientation);
             this.tileBean.setDirection(direction);
             this.tileBean.setCenter(center);
-            if (this instanceof Signal) {
-                this.tileBean.setSignalType(((Signal) this).getSignalType());
+            if (this instanceof Signal signal) {
+                this.tileBean.setSignalType(signal.getSignalType());
             }
         }
         return tileBean;
