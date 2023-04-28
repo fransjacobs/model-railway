@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2020 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.controller.cs3;
 
@@ -459,23 +456,13 @@ public class MarklinCS3 implements MarklinController {
 
     private int getLocoAddres(int address, DecoderType decoderType) {
         int locoAddress;
-        switch (decoderType) {
-            case MFX:
-                locoAddress = 0x4000 + address;
-                break;
-            case DCC:
-                locoAddress = 0xC000 + address;
-                break;
-            case SX1:
-                locoAddress = 0x0800 + address;
-                break;
-            case MM:
-                locoAddress = address;
-                break;
-            default:
-                locoAddress = address;
-                break;
-        }
+        locoAddress = switch (decoderType) {
+            case MFX -> 0x4000 + address;
+            case DCC -> 0xC000 + address;
+            case SX1 -> 0x0800 + address;
+            case MM -> address;
+            default -> address;
+        };
 
         return locoAddress;
     }
@@ -733,35 +720,35 @@ public class MarklinCS3 implements MarklinController {
             int subcmd = msg.getSubCommand();
 
             switch (cmd) {
-                case MarklinCan.S88_EVENT_RESPONSE:
+                case MarklinCan.S88_EVENT_RESPONSE -> {
                     SensorMessageEvent sme = new SensorMessageEvent(msg, canEvent.getEventDate());
                     if (sme.getSensorBean() != null) {
                         controller.notifySensorMessageEventListeners(sme);
                     }
-                    break;
-                case MarklinCan.ACCESSORY_SWITCHING_RESP:
+                }
+                case MarklinCan.ACCESSORY_SWITCHING_RESP -> {
                     AccessoryMessageEvent ae = new AccessoryMessageEvent(msg);
                     if (ae.getAccessoryBean() != null && ae.getAccessoryBean().getAddress() != null) {
                         controller.notifyAccessoryEventListeners(ae);
                     }
-                    break;
-                case MarklinCan.LOC_FUNCTION_RESP:
+                }
+                case MarklinCan.LOC_FUNCTION_RESP -> {
                     FunctionMessageEvent lfe = new FunctionMessageEvent(msg);
                     if (lfe.getLocomotiveBean() != null && lfe.getLocomotiveBean().getId() != null) {
                         controller.notifyFunctionEventListeners(lfe);
                     }
-                    break;
-                case MarklinCan.LOC_DIRECTION_RESP:
+                }
+                case MarklinCan.LOC_DIRECTION_RESP -> {
                     DirectionMessageEvent dme = new DirectionMessageEvent(msg);
                     if (dme.getLocomotiveBean() != null && dme.getLocomotiveBean().getId() != null) {
                         controller.notifyDirectionEventListeners(dme);
                     }
-                    break;
-                case MarklinCan.LOC_VELOCITY_RESP:
+                }
+                case MarklinCan.LOC_VELOCITY_RESP -> {
                     VelocityMessageEvent vme = new VelocityMessageEvent(msg);
                     controller.notifyVelocityEventListeners(vme);
-                    break;
-                case MarklinCan.SYSTEM_COMMAND_RESP:
+                }
+                case MarklinCan.SYSTEM_COMMAND_RESP -> {
                     switch (subcmd) {
                         case MarklinCan.STOP_SUB_CMD:
                             PowerEvent spe = new PowerEvent(msg);
@@ -787,14 +774,13 @@ public class MarklinCS3 implements MarklinController {
                             //0x00 0x01 0x03 0x26 0x05 0x00 0x00 0x40 0x07 0x03 0x00 0x00 0x00
                             break;
                     }
+                }
 
-                    break;
-
-                default:
-                    //Logger.trace("Message: " + msg);
-                    break;
+                default -> {
+                }
             }
-        }
+            //Logger.trace("Message: " + msg);
+                    }
     }
 
 //    0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x30 0x00 0x01 0x00 0x00 0x00

@@ -1,24 +1,21 @@
 /*
- * Copyright (C) 2022 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,6 +31,7 @@ import jcs.controller.cs3.events.DirectionMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
+import jcs.persistence.PersistenceFactory;
 import jcs.trackservice.TrackControllerFactory;
 import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.VelocityListener;
@@ -46,6 +44,9 @@ import org.tinylog.Logger;
 public class LocomotivePanel extends javax.swing.JPanel implements DirectionListener, VelocityListener {
 
     private final ExecutorService executor;
+
+    private List<LocomotiveBean> filteredLocos;
+    List<String> locoNames;
 
     public LocomotivePanel() {
         initComponents();
@@ -63,20 +64,27 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }
 
     public void loadLocomotives() {
-        if (TrackControllerFactory.getTrackService() != null) {
-            List<LocomotiveBean> locos = TrackControllerFactory.getTrackService().getLocomotives();
+        if (PersistenceFactory.getService() != null) {
+            List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotives();
 
-            ListModel<LocomotiveBean> listModel = new DefaultListModel<>();
+            ListModel<String> listModel = new DefaultListModel<>();
 
-            List<LocomotiveBean> filteredLocos = new LinkedList<>();
+            locoNames = new ArrayList<>(locos.size());
+            filteredLocos = new ArrayList<>(locos.size());
             for (LocomotiveBean loc : locos) {
                 if (loc.isShow()) {
                     filteredLocos.add(loc);
+                    locoNames.add(loc.getName());
                 }
             }
-            ((DefaultListModel) listModel).addAll(filteredLocos);
+            ((DefaultListModel) listModel).addAll(locoNames);
             this.locoList.setModel(listModel);
         }
+    }
+
+    private LocomotiveBean getSelectedLocomotive(String selectedLocoName) {
+        int idx = this.locoNames.indexOf(selectedLocoName);
+        return this.filteredLocos.get(idx);
     }
 
     /**
@@ -277,7 +285,7 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
         funcSpeedPanel.add(functionsPanel, java.awt.BorderLayout.CENTER);
 
         speedPanel.setName("speedPanel"); // NOI18N
-        speedPanel.setLayout(new java.awt.GridLayout());
+        speedPanel.setLayout(new java.awt.GridLayout(1, 0));
 
         velocitySlider.setMinorTickSpacing(10);
         velocitySlider.setOrientation(javax.swing.JSlider.VERTICAL);
@@ -323,7 +331,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     private void locoListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_locoListValueChanged
         if (!evt.getValueIsAdjusting()) {
             if (this.locoList.getSelectedIndex() != -1) {
-                LocomotiveBean selected = this.locoList.getSelectedValue();
+                String locName = this.locoList.getSelectedValue();
+                LocomotiveBean selected = getSelectedLocomotive(locName);
                 this.functionsPanel.setLocomotive(selected);
                 this.nameLbL.setText(selected.getName());
                 this.iconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
@@ -366,7 +375,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     private void velocitySliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_velocitySliderStateChanged
         JSlider slider = (JSlider) evt.getSource();
         if (!slider.getValueIsAdjusting()) {
-            LocomotiveBean selected = this.locoList.getSelectedValue();
+            String locName = this.locoList.getSelectedValue();
+            LocomotiveBean selected = getSelectedLocomotive(locName);
             if (selected != null) {
                 int max = selected.getTachoMax();
                 double value = slider.getValue();
@@ -387,10 +397,11 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     @Override
     public void onVelocityChange(VelocityMessageEvent event) {
         LocomotiveBean lb = event.getLocomotiveBean();
-        LocomotiveBean selected = this.locoList.getSelectedValue();
+        String locName = this.locoList.getSelectedValue();
+        LocomotiveBean selected = getSelectedLocomotive(locName);
 
-        if (lb != null && selected != null && lb.getId().equals(this.locoList.getSelectedValue().getId())) {
-            LocomotiveBean locomotiveBean = this.locoList.getSelectedValue();
+        if (lb != null && selected != null && lb.getId().equals(selected.getId())) {
+            LocomotiveBean locomotiveBean = selected;
             locomotiveBean.setVelocity(lb.getVelocity());
 
             int velocity = locomotiveBean.getVelocity();
@@ -413,7 +424,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }
 
     private void speedBtn1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedBtn1ActionPerformed
-        LocomotiveBean selected = this.locoList.getSelectedValue();
+        String locName = this.locoList.getSelectedValue();
+        LocomotiveBean selected = getSelectedLocomotive(locName);
         if (selected != null) {
             int tachoMax = selected.getTachoMax();
             this.velocitySlider.setValue(tachoMax / 4);
@@ -421,7 +433,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }//GEN-LAST:event_speedBtn1ActionPerformed
 
     private void speedBtn2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedBtn2ActionPerformed
-        LocomotiveBean selected = this.locoList.getSelectedValue();
+        String locName = this.locoList.getSelectedValue();
+        LocomotiveBean selected = getSelectedLocomotive(locName);
         if (selected != null) {
             int tachoMax = selected.getTachoMax();
             this.velocitySlider.setValue(tachoMax / 2);
@@ -429,7 +442,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }//GEN-LAST:event_speedBtn2ActionPerformed
 
     private void speedBtn3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speedBtn3ActionPerformed
-        LocomotiveBean selected = this.locoList.getSelectedValue();
+        String locName = this.locoList.getSelectedValue();
+        LocomotiveBean selected = getSelectedLocomotive(locName);
         if (selected != null) {
             int tachoMax = selected.getTachoMax();
             this.velocitySlider.setValue((tachoMax / 4) * 3);
@@ -441,7 +455,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }//GEN-LAST:event_stopBtnActionPerformed
 
     private void changeDirection(Direction direction) {
-        LocomotiveBean locomotive = this.locoList.getSelectedValue();
+        String locName = this.locoList.getSelectedValue();
+        LocomotiveBean locomotive = getSelectedLocomotive(locName);
         executor.execute(() -> changeDirection(direction, locomotive));
     }
 
@@ -475,8 +490,11 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     @Override
     public void onDirectionChange(DirectionMessageEvent event) {
         LocomotiveBean lb = event.getLocomotiveBean();
-        if (lb.getId().equals(this.locoList.getSelectedValue().getId())) {
-            this.locoList.getSelectedValue().setRichtung(lb.getRichtung());
+        String locName = this.locoList.getSelectedValue();
+        LocomotiveBean selected = getSelectedLocomotive(locName);
+
+        if (lb.getId().equals(selected.getId())) {
+            selected.setRichtung(lb.getRichtung());
 
             if (Direction.BACKWARDS.equals(lb.getDirection())) {
                 this.backwardsBtn.setSelected(true);
@@ -525,7 +543,7 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     private javax.swing.JPanel locIdPanel;
     private javax.swing.JPanel locNamePanel;
     private javax.swing.JPanel locSelectionPanel;
-    private javax.swing.JList<LocomotiveBean> locoList;
+    private javax.swing.JList<String> locoList;
     private javax.swing.JScrollPane locoScrollPane;
     private javax.swing.JLabel maxTachoLbl;
     private javax.swing.JLabel nameLbL;

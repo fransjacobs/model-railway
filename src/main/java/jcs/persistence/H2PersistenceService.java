@@ -18,7 +18,6 @@ package jcs.persistence;
 import com.dieselpoint.norm.Database;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -55,7 +54,7 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     private void connect() {
-         Logger.debug("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
+        Logger.debug("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
         database = new Database();
         database.setSqlMaker(new H2Maker());
     }
@@ -205,6 +204,8 @@ public class H2PersistenceService implements PersistenceService {
         List<FunctionBean> functions = new LinkedList<>();
         functions.addAll(locomotive.getFunctions().values());
 
+        //remove the current functions
+        database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
         persistFunctionBeans(functions);
         locomotive.replaceAllFunctions(functions);
 
@@ -223,18 +224,9 @@ public class H2PersistenceService implements PersistenceService {
     public Image getLocomotiveImage(String imageName) {
         if (!imageCache.containsKey(imageName)) {
             //Try to load the image from the file cache
-            boolean fromCS3 = false;
             Image image = readImage(imageName);
-            if (image == null) {
-//                TODO
-//                image = controllerService.getLocomotiveImage(imageName);
-                fromCS3 = (image != null);
-            }
             if (image != null) {
                 int size = 100;
-                if (fromCS3) {
-                    storeImage(image, imageName);
-                }
                 float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
                 this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
             }
@@ -254,20 +246,6 @@ public class H2PersistenceService implements PersistenceService {
             }
         }
         return this.functionImageCache.get(imageName);
-    }
-
-    private void storeImage(Image image, String imageName) {
-        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache";
-        File cachePath = new File(path);
-        if (cachePath.mkdir()) {
-            Logger.trace("Created new directory " + cachePath);
-        }
-        try {
-            ImageIO.write((BufferedImage) image, "png", new File(path + File.separator + imageName + ".png"));
-        } catch (IOException ex) {
-            Logger.error("Can't store image " + cachePath.getName() + "! ", ex.getMessage());
-        }
-        Logger.trace("Stored image " + imageName + ".png in the cache");
     }
 
     private Image readImage(String imageName) {
@@ -440,10 +418,6 @@ public class H2PersistenceService implements PersistenceService {
         return routeElements;
     }
 
-//    private void removeRouteElementsByRouteId(String routeId) {
-//        int rows = database.where("route_id=?", routeId).delete().getRowsAffected();
-//        Logger.trace(rows + " rows deleted");
-//    }
     private RouteElementBean persist(RouteElementBean routeElement) {
         if (database.where("id=?", routeElement.getId()).first(RouteElementBean.class) != null) {
             int rows = database.update(routeElement).getRowsAffected();
@@ -528,54 +502,6 @@ public class H2PersistenceService implements PersistenceService {
         Logger.trace(rows + " rows deleted");
     }
 
-    
-    
-    
-    
-    
-    
-    ////////////////////////////////////////////////////////////////////////////
-    //    @Override
-    //    public void synchronizeLocomotivesWithController() {
-    //        List<LocomotiveBean> fromCs2 = this.controllerService.getLocomotives();
-    //
-    //        for (LocomotiveBean loc : fromCs2) {
-    //            Integer addr = loc.getAddress();
-    //            String dt = loc.getDecoderTypeString();
-    //            LocomotiveBean dbLoc = this.locoDAO.find(addr, dt);
-    //            if (dbLoc != null) {
-    //                loc.setId(dbLoc.getId());
-    //                Logger.trace("Update " + loc.toLogString());
-    //            } else {
-    //                Logger.trace("Add " + loc.toLogString());
-    //            }
-    //
-    //            persistProperty(loc);
-    //        }
-    //        //Also cache the function Icons
-    //        this.controllerService.cacheAllFunctionIcons();
-    //    }
-    //    @Override
-    //    public void synchronizeTurnouts() {
-    //        List<AccessoryBean> ma = this.controllerService.getSwitches();
-    //
-    //        for (AccessoryBean ab : ma) {
-    //            Logger.trace(ab.toLogString());
-    //            this.acceDAO.persistProperty(ab);
-    //        }
-    //    }
-    //    @Override
-    //    public void synchronizeSignals() {
-    //        List<AccessoryBean> ma = this.controllerService.getSignals();
-    //
-    //        for (AccessoryBean ab : ma) {
-    //            Logger.trace(ab.toLogString());
-    //            this.acceDAO.persistProperty(ab);
-    //        }
-    //    }
-//    private void setSysProperties() {
-//        H2DatabaseUtil.setProperties(true);
-//    }
     private void setJCSPropertiesAsSystemProperties() {
         List<JCSPropertyBean> props = getProperties();
         props.forEach(p -> {

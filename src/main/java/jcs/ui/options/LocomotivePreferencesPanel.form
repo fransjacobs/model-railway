@@ -252,11 +252,12 @@
                   </Border>
                 </Property>
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[500, 460]"/>
+                  <Dimension value="[500, 440]"/>
                 </Property>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[500, 460]"/>
+                  <Dimension value="[500, 400]"/>
                 </Property>
+                <Property name="requestFocusEnabled" type="boolean" value="false"/>
                 <Property name="viewportView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="locoTable"/>
                 </Property>
@@ -282,7 +283,7 @@
                       <Color blue="cc" green="cc" red="cc" type="rgb"/>
                     </Property>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[480, 460]"/>
+                      <Dimension value="[480, 600]"/>
                     </Property>
                     <Property name="requestFocusEnabled" type="boolean" value="false"/>
                     <Property name="rowHeight" type="int" value="20"/>
@@ -339,7 +340,7 @@
                           <Dimension value="[100, 0]"/>
                         </Property>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[50, 0]"/>
+                          <Dimension value="[55, 0]"/>
                         </Property>
                       </Properties>
                       <AuxValues>
@@ -350,6 +351,14 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Show"/>
                         <Property name="toolTipText" type="java.lang.String" value="Show the Locomotive"/>
+                        <Property name="doubleBuffered" type="boolean" value="true"/>
+                        <Property name="horizontalTextPosition" type="int" value="10"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="commuterCB">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Commuter"/>
+                        <Property name="toolTipText" type="java.lang.String" value="A commuter Train"/>
                         <Property name="doubleBuffered" type="boolean" value="true"/>
                         <Property name="horizontalTextPosition" type="int" value="10"/>
                       </Properties>
@@ -454,7 +463,23 @@
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="14_imageLbl">
+                        <CodeExpression id="14_commuterCB">
+                          <CodeVariable name="commuterCB" type="8194" declaredType="javax.swing.JCheckBox"/>
+                          <ExpressionOrigin>
+                            <ExpressionProvider type="ComponentRef">
+                              <ComponentRef name="commuterCB"/>
+                            </ExpressionProvider>
+                          </ExpressionOrigin>
+                        </CodeExpression>
+                      </Parameters>
+                    </CodeStatement>
+                    <CodeStatement>
+                      <CodeExpression id="11_row1Panel"/>
+                      <StatementProvider type="CodeMethod">
+                        <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                      </StatementProvider>
+                      <Parameters>
+                        <CodeExpression id="15_imageLbl">
                           <CodeVariable name="imageLbl" type="8194" declaredType="javax.swing.JLabel"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
@@ -490,25 +515,26 @@
                     </Component>
                     <Component class="javax.swing.JTextField" name="nameTF">
                       <Properties>
+                        <Property name="editable" type="boolean" value="false"/>
                         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[160, 26]"/>
+                          <Dimension value="[175, 26]"/>
                         </Property>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[200, 26]"/>
+                          <Dimension value="[225, 26]"/>
                         </Property>
                       </Properties>
                     </Component>
                   </SubComponents>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="15_flowLayout3">
+                      <CodeExpression id="16_flowLayout3">
                         <CodeVariable name="flowLayout3" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
                             <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                           </ExpressionProvider>
                           <Parameters>
-                            <CodeExpression id="16">
+                            <CodeExpression id="17">
                               <ExpressionOrigin>
                                 <Value type="int" value="0"/>
                               </ExpressionOrigin>
@@ -517,19 +543,19 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="15_flowLayout3"/>
+                        <CodeExpression id="16_flowLayout3"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="16"/>
+                        <CodeExpression id="17"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="15_flowLayout3"/>
+                      <CodeExpression id="16_flowLayout3"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="17">
+                        <CodeExpression id="18">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -537,7 +563,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="18_row2Panel">
+                      <CodeExpression id="19_row2Panel">
                         <CodeVariable name="row2Panel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -549,16 +575,16 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="15_flowLayout3"/>
+                        <CodeExpression id="16_flowLayout3"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="18_row2Panel"/>
+                      <CodeExpression id="19_row2Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="19_nameLbl">
+                        <CodeExpression id="20_nameLbl">
                           <CodeVariable name="nameLbl" type="8194" declaredType="javax.swing.JLabel"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
@@ -569,12 +595,12 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="18_row2Panel"/>
+                      <CodeExpression id="19_row2Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="20_nameTF">
+                        <CodeExpression id="21_nameTF">
                           <CodeVariable name="nameTF" type="8194" declaredType="javax.swing.JTextField"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
@@ -626,7 +652,7 @@
                           <ComponentRef name="nameTF"/>
                         </Property>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[60, 26]"/>
+                          <Dimension value="[70, 26]"/>
                         </Property>
                       </Properties>
                       <AuxValues>
@@ -661,14 +687,14 @@
                   </SubComponents>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="21_flowLayout4">
+                      <CodeExpression id="22_flowLayout4">
                         <CodeVariable name="flowLayout4" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
                             <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                           </ExpressionProvider>
                           <Parameters>
-                            <CodeExpression id="22">
+                            <CodeExpression id="23">
                               <ExpressionOrigin>
                                 <Value type="int" value="0"/>
                               </ExpressionOrigin>
@@ -677,19 +703,19 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="21_flowLayout4"/>
+                        <CodeExpression id="22_flowLayout4"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="22"/>
+                        <CodeExpression id="23"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="21_flowLayout4"/>
+                      <CodeExpression id="22_flowLayout4"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="23">
+                        <CodeExpression id="24">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -697,7 +723,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="24_row3Panel">
+                      <CodeExpression id="25_row3Panel">
                         <CodeVariable name="row3Panel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -709,16 +735,16 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="21_flowLayout4"/>
+                        <CodeExpression id="22_flowLayout4"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="24_row3Panel"/>
+                      <CodeExpression id="25_row3Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="25_addressLbl">
+                        <CodeExpression id="26_addressLbl">
                           <CodeVariable name="addressLbl" type="8194" declaredType="javax.swing.JLabel"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
@@ -729,12 +755,12 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="24_row3Panel"/>
+                      <CodeExpression id="25_row3Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="26_addressSpinner">
+                        <CodeExpression id="27_addressSpinner">
                           <CodeVariable name="addressSpinner" type="8194" declaredType="javax.swing.JSpinner"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
@@ -745,12 +771,12 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="24_row3Panel"/>
+                      <CodeExpression id="25_row3Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="27_decoderLabel">
+                        <CodeExpression id="28_decoderLabel">
                           <CodeVariable name="decoderLabel" type="8194" declaredType="javax.swing.JLabel"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
@@ -761,12 +787,12 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="24_row3Panel"/>
+                      <CodeExpression id="25_row3Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="28_decoderCB">
+                        <CodeExpression id="29_decoderCB">
                           <CodeVariable name="decoderCB" type="8194" declaredType="javax.swing.JComboBox"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
@@ -788,38 +814,37 @@
                     </Property>
                   </Properties>
                   <SubComponents>
-                    <Component class="javax.swing.JLabel" name="tachoMaxLbl">
+                    <Component class="javax.swing.JLabel" name="lengthLbl">
                       <Properties>
                         <Property name="horizontalAlignment" type="int" value="11"/>
-                        <Property name="text" type="java.lang.String" value="Tacho"/>
+                        <Property name="text" type="java.lang.String" value="Length"/>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                           <Dimension value="[100, 16]"/>
                         </Property>
                       </Properties>
                     </Component>
-                    <Component class="javax.swing.JSpinner" name="tachoMaxSpinner">
+                    <Component class="javax.swing.JSpinner" name="lengthSpinner">
                       <Properties>
                         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                          <SpinnerModel initial="0" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+                          <SpinnerModel initial="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
                         </Property>
                         <Property name="doubleBuffered" type="boolean" value="true"/>
-                        <Property name="enabled" type="boolean" value="false"/>
                         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[60, 26]"/>
+                          <Dimension value="[70, 26]"/>
                         </Property>
                       </Properties>
                     </Component>
                   </SubComponents>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="29_flowLayout5">
+                      <CodeExpression id="30_flowLayout5">
                         <CodeVariable name="flowLayout5" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
                             <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                           </ExpressionProvider>
                           <Parameters>
-                            <CodeExpression id="30">
+                            <CodeExpression id="31">
                               <ExpressionOrigin>
                                 <Value type="int" value="0"/>
                               </ExpressionOrigin>
@@ -828,19 +853,19 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="29_flowLayout5"/>
+                        <CodeExpression id="30_flowLayout5"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="30"/>
+                        <CodeExpression id="31"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="29_flowLayout5"/>
+                      <CodeExpression id="30_flowLayout5"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="31">
+                        <CodeExpression id="32">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -848,7 +873,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="32_row4Panel">
+                      <CodeExpression id="33_row4Panel">
                         <CodeVariable name="row4Panel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -860,36 +885,36 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="29_flowLayout5"/>
+                        <CodeExpression id="30_flowLayout5"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="32_row4Panel"/>
+                      <CodeExpression id="33_row4Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="33_tachoMaxLbl">
-                          <CodeVariable name="tachoMaxLbl" type="8194" declaredType="javax.swing.JLabel"/>
+                        <CodeExpression id="34_lengthLbl">
+                          <CodeVariable name="lengthLbl" type="8194" declaredType="javax.swing.JLabel"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
-                              <ComponentRef name="tachoMaxLbl"/>
+                              <ComponentRef name="lengthLbl"/>
                             </ExpressionProvider>
                           </ExpressionOrigin>
                         </CodeExpression>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="32_row4Panel"/>
+                      <CodeExpression id="33_row4Panel"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="34_tachoMaxSpinner">
-                          <CodeVariable name="tachoMaxSpinner" type="8194" declaredType="javax.swing.JSpinner"/>
+                        <CodeExpression id="35_lengthSpinner">
+                          <CodeVariable name="lengthSpinner" type="8194" declaredType="javax.swing.JSpinner"/>
                           <ExpressionOrigin>
                             <ExpressionProvider type="ComponentRef">
-                              <ComponentRef name="tachoMaxSpinner"/>
+                              <ComponentRef name="lengthSpinner"/>
                             </ExpressionProvider>
                           </ExpressionOrigin>
                         </CodeExpression>
@@ -906,39 +931,16 @@
                       <Dimension value="[380, 30]"/>
                     </Property>
                   </Properties>
-                  <SubComponents>
-                    <Component class="javax.swing.JLabel" name="minSpeedLbl">
-                      <Properties>
-                        <Property name="horizontalAlignment" type="int" value="11"/>
-                        <Property name="text" type="java.lang.String" value="V min"/>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[100, 16]"/>
-                        </Property>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JSpinner" name="minSpeedSpinner">
-                      <Properties>
-                        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-                          <SpinnerModel initial="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
-                        </Property>
-                        <Property name="doubleBuffered" type="boolean" value="true"/>
-                        <Property name="enabled" type="boolean" value="false"/>
-                        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                          <Dimension value="[60, 26]"/>
-                        </Property>
-                      </Properties>
-                    </Component>
-                  </SubComponents>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="35_flowLayout6">
+                      <CodeExpression id="36_flowLayout6">
                         <CodeVariable name="flowLayout6" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
                             <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                           </ExpressionProvider>
                           <Parameters>
-                            <CodeExpression id="36">
+                            <CodeExpression id="37">
                               <ExpressionOrigin>
                                 <Value type="int" value="0"/>
                               </ExpressionOrigin>
@@ -947,19 +949,19 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="35_flowLayout6"/>
+                        <CodeExpression id="36_flowLayout6"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="36"/>
+                        <CodeExpression id="37"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="35_flowLayout6"/>
+                      <CodeExpression id="36_flowLayout6"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="37">
+                        <CodeExpression id="38">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -967,7 +969,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="38_row5Panel">
+                      <CodeExpression id="39_row5Panel">
                         <CodeVariable name="row5Panel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -979,39 +981,7 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="35_flowLayout6"/>
-                      </Parameters>
-                    </CodeStatement>
-                    <CodeStatement>
-                      <CodeExpression id="38_row5Panel"/>
-                      <StatementProvider type="CodeMethod">
-                        <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                      </StatementProvider>
-                      <Parameters>
-                        <CodeExpression id="39_minSpeedLbl">
-                          <CodeVariable name="minSpeedLbl" type="8194" declaredType="javax.swing.JLabel"/>
-                          <ExpressionOrigin>
-                            <ExpressionProvider type="ComponentRef">
-                              <ComponentRef name="minSpeedLbl"/>
-                            </ExpressionProvider>
-                          </ExpressionOrigin>
-                        </CodeExpression>
-                      </Parameters>
-                    </CodeStatement>
-                    <CodeStatement>
-                      <CodeExpression id="38_row5Panel"/>
-                      <StatementProvider type="CodeMethod">
-                        <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-                      </StatementProvider>
-                      <Parameters>
-                        <CodeExpression id="40_minSpeedSpinner">
-                          <CodeVariable name="minSpeedSpinner" type="8194" declaredType="javax.swing.JSpinner"/>
-                          <ExpressionOrigin>
-                            <ExpressionProvider type="ComponentRef">
-                              <ComponentRef name="minSpeedSpinner"/>
-                            </ExpressionProvider>
-                          </ExpressionOrigin>
-                        </CodeExpression>
+                        <CodeExpression id="36_flowLayout6"/>
                       </Parameters>
                     </CodeStatement>
                   </LayoutCode>
@@ -1027,14 +997,14 @@
                   </Properties>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="41_flowLayout7">
+                      <CodeExpression id="40_flowLayout7">
                         <CodeVariable name="flowLayout7" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
                             <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                           </ExpressionProvider>
                           <Parameters>
-                            <CodeExpression id="42">
+                            <CodeExpression id="41">
                               <ExpressionOrigin>
                                 <Value type="int" value="0"/>
                               </ExpressionOrigin>
@@ -1043,19 +1013,19 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="41_flowLayout7"/>
+                        <CodeExpression id="40_flowLayout7"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="42"/>
+                        <CodeExpression id="41"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="41_flowLayout7"/>
+                      <CodeExpression id="40_flowLayout7"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="43">
+                        <CodeExpression id="42">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -1063,7 +1033,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="44_row6Panel">
+                      <CodeExpression id="43_row6Panel">
                         <CodeVariable name="row6Panel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -1075,7 +1045,7 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="41_flowLayout7"/>
+                        <CodeExpression id="40_flowLayout7"/>
                       </Parameters>
                     </CodeStatement>
                   </LayoutCode>
@@ -1091,14 +1061,14 @@
                   </Properties>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="45_flowLayout9">
+                      <CodeExpression id="44_flowLayout9">
                         <CodeVariable name="flowLayout9" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
                             <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                           </ExpressionProvider>
                           <Parameters>
-                            <CodeExpression id="46">
+                            <CodeExpression id="45">
                               <ExpressionOrigin>
                                 <Value type="int" value="0"/>
                               </ExpressionOrigin>
@@ -1107,19 +1077,19 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="45_flowLayout9"/>
+                        <CodeExpression id="44_flowLayout9"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="46"/>
+                        <CodeExpression id="45"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="45_flowLayout9"/>
+                      <CodeExpression id="44_flowLayout9"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="47">
+                        <CodeExpression id="46">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -1127,7 +1097,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="48_row7Panel">
+                      <CodeExpression id="47_row7Panel">
                         <CodeVariable name="row7Panel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -1139,7 +1109,7 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="45_flowLayout9"/>
+                        <CodeExpression id="44_flowLayout9"/>
                       </Parameters>
                     </CodeStatement>
                   </LayoutCode>
@@ -1155,14 +1125,14 @@
                   </Properties>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="49_flowLayout8">
+                      <CodeExpression id="48_flowLayout8">
                         <CodeVariable name="flowLayout8" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
                             <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                           </ExpressionProvider>
                           <Parameters>
-                            <CodeExpression id="50">
+                            <CodeExpression id="49">
                               <ExpressionOrigin>
                                 <Value type="int" value="0"/>
                               </ExpressionOrigin>
@@ -1171,19 +1141,19 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="49_flowLayout8"/>
+                        <CodeExpression id="48_flowLayout8"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="50"/>
+                        <CodeExpression id="49"/>
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="49_flowLayout8"/>
+                      <CodeExpression id="48_flowLayout8"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="51">
+                        <CodeExpression id="50">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -1191,7 +1161,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="52_row8Panel">
+                      <CodeExpression id="51_row8Panel">
                         <CodeVariable name="row8Panel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -1203,7 +1173,7 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="49_flowLayout8"/>
+                        <CodeExpression id="48_flowLayout8"/>
                       </Parameters>
                     </CodeStatement>
                   </LayoutCode>
@@ -1246,7 +1216,7 @@
                   </Properties>
                   <LayoutCode>
                     <CodeStatement>
-                      <CodeExpression id="53_flowLayout10">
+                      <CodeExpression id="52_flowLayout10">
                         <CodeVariable name="flowLayout10" type="4096" declaredType="java.awt.FlowLayout"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="CodeConstructor">
@@ -1255,16 +1225,16 @@
                         </ExpressionOrigin>
                       </CodeExpression>
                       <StatementProvider type="CodeExpression">
-                        <CodeExpression id="53_flowLayout10"/>
+                        <CodeExpression id="52_flowLayout10"/>
                       </StatementProvider>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="53_flowLayout10"/>
+                      <CodeExpression id="52_flowLayout10"/>
                       <StatementProvider type="CodeMethod">
                         <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="54">
+                        <CodeExpression id="53">
                           <ExpressionOrigin>
                             <Value type="boolean" value="true"/>
                           </ExpressionOrigin>
@@ -1272,7 +1242,7 @@
                       </Parameters>
                     </CodeStatement>
                     <CodeStatement>
-                      <CodeExpression id="55_buttonPanel">
+                      <CodeExpression id="54_buttonPanel">
                         <CodeVariable name="buttonPanel" type="8194" declaredType="javax.swing.JPanel"/>
                         <ExpressionOrigin>
                           <ExpressionProvider type="ComponentRef">
@@ -1284,7 +1254,7 @@
                         <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                       </StatementProvider>
                       <Parameters>
-                        <CodeExpression id="53_flowLayout10"/>
+                        <CodeExpression id="52_flowLayout10"/>
                       </Parameters>
                     </CodeStatement>
                   </LayoutCode>
@@ -1318,6 +1288,7 @@
               <Image iconType="3" name="/media/delete-24.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Delete"/>
+            <Property name="enabled" type="boolean" value="false"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[100, 36]"/>
             </Property>

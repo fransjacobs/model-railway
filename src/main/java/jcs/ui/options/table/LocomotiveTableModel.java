@@ -34,7 +34,14 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
     @Override
     protected List<LocomotiveBean> getBeans() {
         if (PersistenceFactory.getService() != null) {
-            return PersistenceFactory.getService().getLocomotives();
+            if (this.beans != null) {
+                this.beans.clear();
+                this.beans.addAll(PersistenceFactory.getService().getLocomotives());
+            } else {
+                this.beans = PersistenceFactory.getService().getLocomotives();
+            }
+            this.fireTableRowsInserted(beans.size(), beans.size());
+            return beans;
         } else {
             return Collections.EMPTY_LIST;
         }
@@ -47,7 +54,8 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
             cols.add("Name");
             cols.add("Address");
             cols.add("Decoder");
-            cols.add("Icon");
+            cols.add("Lenght");
+            cols.add("Commuter");
             cols.add("Show");
             return cols;
         }
@@ -64,8 +72,10 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
             case 2 ->
                 locomotive.getDecoderTypeString();
             case 3 ->
-                locomotive.getIcon();
+                locomotive.getLength();
             case 4 ->
+                locomotive.isCommuter();
+            case 5 ->
                 locomotive.isShow();
             default ->
                 null;
@@ -82,8 +92,10 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
             case 2 ->
                 String.class;
             case 3 ->
-                String.class;
+                Integer.class;
             case 4 ->
+                Boolean.class;
+            case 5 ->
                 Boolean.class;
             default ->
                 String.class;
@@ -100,13 +112,14 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
             case 2 ->
                 locomotive.setDecoderTypeString((String) value);
             case 3 ->
-                locomotive.setIcon((String) value);
+                locomotive.setLength((Integer) value);
             case 4 ->
+                locomotive.setCommuter((Boolean) value);
+            case 5 ->
                 locomotive.setShow((Boolean) value);
             default -> {
             }
         }
-
         PersistenceFactory.getService().persist(locomotive);
     }
 

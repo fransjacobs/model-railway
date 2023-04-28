@@ -73,7 +73,7 @@ public interface TrackController {
     @Deprecated //use the PersistenService
     LocomotiveBean persist(LocomotiveBean locomotive);
 
-    Image getFunctionImage(String imageName);
+    //Image getFunctionImage(String imageName);
 
     void changeDirection(Direction direction, LocomotiveBean locomotive);
 

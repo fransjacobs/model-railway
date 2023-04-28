@@ -167,8 +167,6 @@ public class JCS extends Thread {
             H2DatabaseUtil.createDatabase();
         }
         
-        PersistenceFactory.setConnectionProperties();
-
         persistentStore = PersistenceFactory.getService();
 
         if (persistentStore != null) {

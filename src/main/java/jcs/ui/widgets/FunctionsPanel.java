@@ -127,7 +127,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     }
 
     public void setLocomotive(LocomotiveBean locomotive) {
-        if (TrackControllerFactory.getTrackService() != null && locomotive != null) {
+        if (PersistenceFactory.getService() != null && locomotive != null) {
             this.locomotive = locomotive;
             Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
@@ -144,7 +144,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
                     String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
                     String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
 
-                    Image iconOff = TrackControllerFactory.getTrackService().getFunctionImage(functionOff);
+                    Image iconOff = PersistenceFactory.getService().getFunctionImage(functionOff);
                     if (iconOff == null) {
                         button.setText("F" + i);
                         Logger.trace("Missing icon " + functionOff);
@@ -154,7 +154,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
                         button.setIcon(new ImageIcon(iconOff));
                     }
 
-                    Image iconOn = TrackControllerFactory.getTrackService().getFunctionImage(functionOn);
+                    Image iconOn = PersistenceFactory.getService().getFunctionImage(functionOn);
                     if (iconOn == null) {
                     } else {
                         button.setText("");

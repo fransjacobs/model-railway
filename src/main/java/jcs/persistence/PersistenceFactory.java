@@ -31,7 +31,7 @@ public class PersistenceFactory {
     private static PersistenceFactory getInstance() {
         if (instance == null) {
             instance = new PersistenceFactory();
-            instance.createPersistenceService();
+            instance.createPersistenceService(false);
         }
         return instance;
     }
@@ -44,13 +44,15 @@ public class PersistenceFactory {
         return persistenceService;
     }
 
-    private boolean createPersistenceService() {
+    protected boolean createPersistenceService(boolean test) {
         String persistenceServiceImpl = System.getProperty("persistenceService");
 
         if (persistenceServiceImpl == null) {
             RunUtil.loadProperties();
             persistenceServiceImpl = System.getProperty("persistenceService");
         }
+
+        H2DatabaseUtil.setProperties(test);
 
         if (persistenceServiceImpl != null) {
             try {
@@ -69,7 +71,4 @@ public class PersistenceFactory {
         return persistenceService != null;
     }
 
-    public static void setConnectionProperties() {
-        H2DatabaseUtil.setProperties(false);
-    }
 }
