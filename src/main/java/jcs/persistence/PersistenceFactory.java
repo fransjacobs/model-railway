@@ -24,6 +24,8 @@ public class PersistenceFactory {
 
     private PersistenceService persistenceService;
     private static PersistenceFactory instance;
+    
+    public static boolean testMode;
 
     private PersistenceFactory() {
     }
@@ -31,7 +33,7 @@ public class PersistenceFactory {
     private static PersistenceFactory getInstance() {
         if (instance == null) {
             instance = new PersistenceFactory();
-            instance.createPersistenceService(false);
+            instance.createPersistenceService(testMode);
         }
         return instance;
     }

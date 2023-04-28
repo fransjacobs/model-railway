@@ -274,16 +274,4 @@ public class H2DatabaseUtil {
         }
         return exist;
     }
-
-    public static void create() {
-        //createDatabase(false);
-        //createSchema(false);
-        Logger.info("Created new a JCS Database...");
-    }
-
-    public static void main(String[] a) {
-        createDatabaseUsers(false);
-        createDatabase();
-    }
-
 }

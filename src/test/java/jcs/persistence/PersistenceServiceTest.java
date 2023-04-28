@@ -699,7 +699,7 @@ public class PersistenceServiceTest {
     public void testRemove_TileBean() {
         System.out.println("remove");
         TileBean sw13 = new TileBean("sw-13", TileType.CURVED, Orientation.EAST, Direction.CENTER, 80, 50, null, null, null);
-        PersistenceService instance = PersistenceFactory.getService();
+         PersistenceService instance = PersistenceFactory.getService();
 
         TileBean result = instance.persist(sw13);
         assertEquals(sw13, result);

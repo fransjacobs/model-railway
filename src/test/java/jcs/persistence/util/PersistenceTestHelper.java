@@ -17,6 +17,7 @@ package jcs.persistence.util;
 
 import com.dieselpoint.norm.Database;
 import java.net.URL;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -33,12 +34,14 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
 
     public static PersistenceTestHelper getInstance() {
         if (instance == null) {
+            PersistenceTestHelper.test = true;
+            H2DatabaseUtil.test = true;
+            H2DatabaseUtil.setProperties(true);
+            PersistenceFactory.testMode = true;
 
             createDatabaseUsers(true);
             createDatabase();
             instance = new PersistenceTestHelper();
-
-            H2DatabaseUtil.setProperties(true);
         }
         return instance;
     }
@@ -52,6 +55,8 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
         String f = url.getFile();
 
         executeSQLScript(f);
+        
+        H2DatabaseUtil.setProperties(true);
 
         Logger.debug("Inserted Test data...");
     }
