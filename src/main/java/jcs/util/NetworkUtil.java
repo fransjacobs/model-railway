@@ -18,11 +18,13 @@
  */
 package jcs.util;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import org.tinylog.Logger;
@@ -63,7 +65,8 @@ public class NetworkUtil {
 
   /**
    * Return all active addresses of this server, except loopback address.
-   * @return 
+   *
+   * @return
    */
   public static List<InetAddress> getAllAddresses() {
     List<InetAddress> addrlist = new ArrayList<>();
@@ -89,16 +92,50 @@ public class NetworkUtil {
     return addrlist;
   }
 
+  public static InetAddress getIPv4InetAddress() throws SocketException, UnknownHostException {
+    InetAddress wlan = null;
+    InetAddress eth = null;
+    InetAddress lo = null;
+
+    Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+    for (NetworkInterface netint : Collections.list(nets)) {
+      //Get all networks
+      Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+      for (InetAddress ia : Collections.list(inetAddresses)) {
+        if (ia instanceof Inet4Address) {
+          //Got an ip4 address, which kind?
+          if (netint.getDisplayName().contains("wlan")) {
+            wlan = ia;
+          } else if (netint.getDisplayName().contains("eth")) {
+            eth = ia;
+          } else if (netint.getDisplayName().contains("lo")) {
+            lo = ia;
+          }
+        }
+      }
+    }
+    if (eth != null) {
+      Logger.trace("Inteface eth: " + eth.getHostAddress());
+      return eth;
+    } else if (wlan != null) {
+      Logger.trace("Inteface wlan: " + wlan.getHostAddress());
+      return wlan;
+    } else {
+      Logger.trace("Inteface lo: " + (lo != null ? lo.getHostAddress() : ""));
+      return lo;
+    }
+  }
+
   /**
    * For testing.
+   *
    * @param args
    */
   public static void main(String[] args) {
     InetAddress myAddress = getMyAddress();
-    
-    System.out.println("My IP Address: "+myAddress.getHostAddress());
-    
-    
+
+    System.out.println("My IP Address: " + myAddress.getHostAddress());
+
     List<InetAddress> addrs = getAllAddresses();
     System.out.println("IP Addresses: ");
     for (InetAddress addr : addrs) {
