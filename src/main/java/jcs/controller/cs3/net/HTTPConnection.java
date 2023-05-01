@@ -225,7 +225,7 @@ public class HTTPConnection {
     }
 
     public static void main(String[] args) throws Exception {
-        InetAddress inetAddr = InetAddress.getByName("192.168.1.180");
+        InetAddress inetAddr = InetAddress.getByName("192.168.178.180");
         HTTPConnection hc = new HTTPConnection(inetAddr);
 
         /*
