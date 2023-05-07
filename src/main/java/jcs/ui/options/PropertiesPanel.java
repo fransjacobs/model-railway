@@ -213,13 +213,13 @@ public class PropertiesPanel extends JPanel {
       JCSPropertyBean p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
       Logger.debug("Save the Property: " + p + " ID: " + p.getKey());
 
-      JCSPropertyBean cp = TrackControllerFactory.getTrackService().getProperty(p.getKey());
+      JCSPropertyBean cp = TrackControllerFactory.getTrackController().getProperty(p.getKey());
       if (cp != null) {
           //p.setId(cp.getId());
           Logger.debug("Found existing " + cp);
       }
 
-      TrackControllerFactory.getTrackService().persist(p);
+      TrackControllerFactory.getTrackController().persist(p);
 
       propertiesTableModel.refresh();
       alignPropertiesTable();
@@ -228,9 +228,9 @@ public class PropertiesPanel extends JPanel {
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       int selectedRow = this.propertiesTable.getSelectedRow();
       JCSPropertyBean p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
-      if (TrackControllerFactory.getTrackService() != null) {
+      if (TrackControllerFactory.getTrackController() != null) {
           Logger.trace("Delete the Property: " + p);
-          TrackControllerFactory.getTrackService().remove(p);
+          TrackControllerFactory.getTrackController().remove(p);
       }
       propertiesTableModel.refresh();
       alignPropertiesTable();

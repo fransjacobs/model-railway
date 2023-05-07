@@ -273,7 +273,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
     }
 
     private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
-        if (TrackControllerFactory.getTrackService() != null) {
+        if (TrackControllerFactory.getTrackController() != null) {
             //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
         }
     }
@@ -317,7 +317,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
             SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
             f.add(signalRowPanel);
 
-            TrackControllerFactory.getTrackService().addAccessoryListener(signalRowPanel);
+            TrackControllerFactory.getTrackController().addAccessoryListener(signalRowPanel);
         }
 
         f.pack();

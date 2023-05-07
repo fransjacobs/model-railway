@@ -55,7 +55,7 @@ public class SignalDialog extends javax.swing.JDialog {
         this.headingLbl.setText(text);
 
         if (this.signal != null) {
-            List<AccessoryBean> signals = TrackControllerFactory.getTrackService().getSignals();
+            List<AccessoryBean> signals = TrackControllerFactory.getTrackController().getSignals();
             AccessoryBean emptyBean = new AccessoryBean();
             signals.add(emptyBean);
 
@@ -70,7 +70,7 @@ public class SignalDialog extends javax.swing.JDialog {
 
             this.accessoryComboBoxModel.setSelectedItem(ab);
             //Unregister is properties might change
-            TrackControllerFactory.getTrackService().removeAccessoryListener(signal);
+            TrackControllerFactory.getTrackController().removeAccessoryListener(signal);
         }
     }
 
@@ -162,11 +162,11 @@ public class SignalDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
         if (this.signal != null && this.signal.getAccessoryBean() != null) {
             if (this.signal.getAccessoryBean().getName() != null) {
-                TrackControllerFactory.getTrackService().persist((signal.getTileBean()));
-                TrackControllerFactory.getTrackService().addAccessoryListener(signal);
+                TrackControllerFactory.getTrackController().persist((signal.getTileBean()));
+                TrackControllerFactory.getTrackController().addAccessoryListener(signal);
             } else {
                 this.signal.setAccessoryBean(null);
-                TrackControllerFactory.getTrackService().persist((signal.getTileBean()));
+                TrackControllerFactory.getTrackController().persist((signal.getTileBean()));
             }
         }
         this.setVisible(false);

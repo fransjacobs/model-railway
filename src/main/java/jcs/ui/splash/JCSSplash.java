@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2022 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.splash;
 
@@ -30,155 +27,172 @@ import org.tinylog.Logger;
  */
 public class JCSSplash extends JWindow implements Runnable {
 
-    private boolean running;
-    private static Thread splashThread;
+  private boolean running;
+  private static Thread splashThread;
 
-    private int progress;
+  private int progress;
 
-    public static final int MAX_SPLASH_TIME = 60000;
+  public static final int MAX_SPLASH_TIME = 60000;
 
-    private final List<String> messages;
+  private final List<String> messages;
 
-    /**
-     * Creates new form NewBeanForm
-     */
-    public JCSSplash() {
-        super();
+  /**
+   * Creates new form NewBeanForm
+   */
+  public JCSSplash() {
+    super();
 
-        messages = new LinkedList<>();
-        initComponents();
-        setAlwaysOnTop(true);
-    }
+    messages = new LinkedList<>();
+    initComponents();
+    setAlwaysOnTop(true);
+  }
 
-    @Override
-    public void run() {
-        long start = System.currentTimeMillis();
-        pack();
-        setLocationRelativeTo(null);
-        setVisible(true);
+  @Override
+  public void run() {
+    long start = System.currentTimeMillis();
+    pack();
+    setLocationRelativeTo(null);
+    setVisible(true);
+    progressLabel.setText("JCS starting...");
 
-        while (running) {
-            sleep(500);
-            //check against the max time
-            long dur = System.currentTimeMillis() - start;
-            if (dur > MAX_SPLASH_TIME) {
-                running = false;
-            }
-        }
-        progressBar.setValue(progressBar.getMaximum());
-        progressLabel.setText("JCS started");
-        
-        sleep(500);
-
-        this.dispose();
-        Logger.trace("Total progress steps: " + this.progress + " Splashscreen finished...");
-    }
-
-    public void setProgressMax(int maxProgress) {
-        progressBar.setMaximum(maxProgress);
-    }
-
-    private void updateProgress(int progress, String message) {
-        final int theProgress = progress;
-        SwingUtilities.invokeLater(() -> {
-            progressLabel.setText(message);
-            progressBar.setValue(theProgress);
-        });
-    }
-
-    public void logProgress(String message) {
-        this.messages.add(message);
-        updateProgress(++progress, message);
-    }
-
-    private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ie) {
-            Logger.trace(ie);
-        }
-    }
-
-    public void close() {
+    while (running) {
+      sleep(500);
+      //check against the max time
+      long dur = System.currentTimeMillis() - start;
+      if (dur > MAX_SPLASH_TIME) {
         running = false;
+      }
     }
+    progressBar.setValue(progressBar.getMaximum());
+    progressLabel.setText("JCS started");
 
-    public void showSplash() {
-        splashThread = new Thread(this);
-        this.running = true;
-        splashThread.start();
-        sleep(500);
+    sleep(250);
+
+    this.dispose();
+    Logger.trace("Total progress steps: " + this.progress + " Splashscreen finished...");
+  }
+
+  public void setProgressMax(int maxProgress) {
+    progressBar.setMaximum(maxProgress);
+  }
+
+  private void updateProgress(int progress, String message) {
+    final int theProgress = progress;
+    SwingUtilities.invokeLater(() -> {
+      progressLabel.setText(message);
+      progressBar.setValue(theProgress);
+    });
+  }
+
+  public void logProgress(String message) {
+    this.messages.add(message);
+    updateProgress(++progress, message);
+  }
+
+  private void sleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException ie) {
+      Logger.trace(ie);
     }
+  }
 
-    public void hideSplash() {
-        this.running = false;
+  public void close() {
+    running = false;
+  }
+
+  public void showSplash() {
+    splashThread = new Thread(this);
+    this.running = true;
+    splashThread.start();
+    sleep(500);
+  }
+
+  public void hideSplash() {
+    hideSplash(0);
+  }
+
+  public void hideSplash(int millis) {
+    sleep(millis);
+    this.running = false;
+  }
+
+  public static void main(String[] a) {
+    JCSSplash splash = new JCSSplash();
+    splash.showSplash();
+
+    splash.setProgressMax(60);
+
+    for (int i = 0; i < 60; i++) {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException ex) {
+      }
+      splash.logProgress("i:" + i);
     }
+  }
 
-    public static void main(String[] a) {
-        JCSSplash splash = new JCSSplash();
-        splash.showSplash();
-    }
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this
+   * method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
+  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+  private void initComponents() {
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    imagePanel = new javax.swing.JPanel();
+    imageLbl = new javax.swing.JLabel();
+    progressPanel = new javax.swing.JPanel();
+    progressTextPanel = new javax.swing.JPanel();
+    progressLabel = new javax.swing.JLabel();
+    progressBarPanel = new javax.swing.JPanel();
+    progressBar = new javax.swing.JProgressBar();
 
-        imagePanel = new javax.swing.JPanel();
-        imageLbl = new javax.swing.JLabel();
-        progressPanel = new javax.swing.JPanel();
-        progressTextPanel = new javax.swing.JPanel();
-        progressLabel = new javax.swing.JLabel();
-        progressBarPanel = new javax.swing.JPanel();
-        progressBar = new javax.swing.JProgressBar();
+    setPreferredSize(new java.awt.Dimension(500, 400));
 
-        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
-        flowLayout1.setAlignOnBaseline(true);
-        imagePanel.setLayout(flowLayout1);
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
+    flowLayout1.setAlignOnBaseline(true);
+    imagePanel.setLayout(flowLayout1);
 
-        imageLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/SteamTrain.png"))); // NOI18N
-        imagePanel.add(imageLbl);
+    imageLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/SteamTrain.png"))); // NOI18N
+    imagePanel.add(imageLbl);
 
-        getContentPane().add(imagePanel, java.awt.BorderLayout.CENTER);
+    getContentPane().add(imagePanel, java.awt.BorderLayout.CENTER);
 
-        progressPanel.setLayout(new java.awt.GridLayout(2, 0));
+    progressPanel.setLayout(new java.awt.GridLayout(2, 0));
 
-        progressTextPanel.setPreferredSize(new java.awt.Dimension(500, 30));
-        java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 5);
-        flowLayout3.setAlignOnBaseline(true);
-        progressTextPanel.setLayout(flowLayout3);
+    progressTextPanel.setPreferredSize(new java.awt.Dimension(500, 30));
+    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 5);
+    flowLayout3.setAlignOnBaseline(true);
+    progressTextPanel.setLayout(flowLayout3);
 
-        progressLabel.setText("progress messages");
-        progressTextPanel.add(progressLabel);
+    progressLabel.setText("progress messages");
+    progressTextPanel.add(progressLabel);
 
-        progressPanel.add(progressTextPanel);
+    progressPanel.add(progressTextPanel);
 
-        progressBarPanel.setPreferredSize(new java.awt.Dimension(500, 30));
-        java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 0);
-        flowLayout2.setAlignOnBaseline(true);
-        progressBarPanel.setLayout(flowLayout2);
+    progressBarPanel.setPreferredSize(new java.awt.Dimension(500, 30));
+    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 10, 0);
+    flowLayout2.setAlignOnBaseline(true);
+    progressBarPanel.setLayout(flowLayout2);
 
-        progressBar.setDoubleBuffered(true);
-        progressBar.setPreferredSize(new java.awt.Dimension(480, 20));
-        progressBarPanel.add(progressBar);
+    progressBar.setDoubleBuffered(true);
+    progressBar.setPreferredSize(new java.awt.Dimension(480, 20));
+    progressBarPanel.add(progressBar);
 
-        progressPanel.add(progressBarPanel);
+    progressPanel.add(progressBarPanel);
 
-        getContentPane().add(progressPanel, java.awt.BorderLayout.SOUTH);
-    }// </editor-fold>//GEN-END:initComponents
+    getContentPane().add(progressPanel, java.awt.BorderLayout.SOUTH);
+  }// </editor-fold>//GEN-END:initComponents
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel imageLbl;
-    private javax.swing.JPanel imagePanel;
-    private javax.swing.JProgressBar progressBar;
-    private javax.swing.JPanel progressBarPanel;
-    private javax.swing.JLabel progressLabel;
-    private javax.swing.JPanel progressPanel;
-    private javax.swing.JPanel progressTextPanel;
-    // End of variables declaration//GEN-END:variables
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JLabel imageLbl;
+  private javax.swing.JPanel imagePanel;
+  private javax.swing.JProgressBar progressBar;
+  private javax.swing.JPanel progressBarPanel;
+  private javax.swing.JLabel progressLabel;
+  private javax.swing.JPanel progressPanel;
+  private javax.swing.JPanel progressTextPanel;
+  // End of variables declaration//GEN-END:variables
 }

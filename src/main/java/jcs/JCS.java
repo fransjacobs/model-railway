@@ -17,17 +17,22 @@ package jcs;
 
 import jcs.ui.util.ProcessFactory;
 import java.awt.GraphicsEnvironment;
+import java.net.URL;
+import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.controller.cs3.events.PowerEvent;
+import jcs.controller.cs3.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
+import jcs.trackservice.TrackController;
+import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.MacOsAdapter;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
-import org.apache.commons.lang3.SystemUtils;
 import org.tinylog.Logger;
 
 /**
@@ -40,6 +45,7 @@ public class JCS extends Thread {
   private static JCS instance = null;
   private static JCSSplash splashScreen;
   private static PersistenceService persistentStore;
+  private static TrackController trackController;
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
@@ -58,7 +64,7 @@ public class JCS extends Thread {
   }
 
   public static void showTouchbar(JCSFrame frame) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
+    if (RunUtil.isMacOSX()) {
       osAdapter.showTouchbar(frame);
     }
   }
@@ -67,40 +73,30 @@ public class JCS extends Thread {
     return versionInfo;
   }
 
-  public static JCSFrame getJCSFrame() {
+  public static JCSFrame getParentFrame() {
     return jcsFrame;
   }
 
-  private static boolean isMacOSX() {
-    return System.getProperty("os.name").contains("Mac OS X");
-  }
-
   private void startGui() {
-    JCS.logProgress("Starting GUI...");
+    JCS.logProgress("Check OS...");
 
-    //Also see https://www.formdev.com/flatlaf/
-    try {
-      if (SystemUtils.IS_OS_MAC) {
-        MacOsAdapter.setMacOsProperties();
-        osAdapter = new MacOsAdapter();
-      } else {
-        String plaf = System.getProperty("jcs.plaf");
-        if (plaf != null) {
-          UIManager.setLookAndFeel(plaf);
-        } else {
-          //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-          UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-        }
-      }
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.error(ex);
+    if (RunUtil.isMacOSX()) {
+      MacOsAdapter.setMacOsProperties();
+      osAdapter = new MacOsAdapter();
     }
 
     java.awt.EventQueue.invokeLater(() -> {
+
       jcsFrame = new JCSFrame();
 
-      if (SystemUtils.IS_OS_MAC_OSX) {
+      if (RunUtil.isMacOSX()) {
         osAdapter.setUiCallback(jcsFrame);
+      }
+
+      URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
+      //URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
+      if (iconUrl != null) {
+        jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
       }
 
       jcsFrame.pack();
@@ -125,7 +121,7 @@ public class JCS extends Thread {
     sb.append(" [MB].");
 
     Logger.info(sb);
-    splashScreen.hideSplash();
+    splashScreen.hideSplash(200);
     splashScreen.close();
   }
 
@@ -155,35 +151,85 @@ public class JCS extends Thread {
       //Quit....
       System.exit(1);
     }
+    //Load properties
+    RunUtil.loadProperties();
+    RunUtil.loadExternalProperties();
+
+    try {
+      String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
+      if (plaf != null) {
+        UIManager.setLookAndFeel(plaf);
+      } else {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      }
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.error(ex);
+    }
+
     splashScreen = new JCSSplash();
     splashScreen.showSplash();
-    splashScreen.setProgressMax(10);
+    splashScreen.setProgressMax(25);
 
-    RunUtil.loadProperties();
+    logProgress("JCS is Starting...");
 
-    logProgress("Starting...");
     //Check the persistent properties prepare environment
     if (H2DatabaseUtil.databaseFileExists(false)) {
       //Database files are there so try to create connection
+      logProgress("Connecting to existing Database...");
+
     } else {
       //No Database file so maybe first start lets creat one
+      logProgress("Create new Database...");
       H2DatabaseUtil.createDatabaseUsers(false);
       H2DatabaseUtil.createDatabase();
     }
 
     persistentStore = PersistenceFactory.getService();
-
     if (persistentStore != null) {
-      JCS jcs = JCS.getInstance();
+      logProgress("Aquire Track Controller...");
+      trackController = TrackControllerFactory.getTrackController();
+      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect"))) {
+        if (trackController != null) {
+          boolean connected = trackController.connect();
+          if (connected) {
+            logProgress("Connected with Track Controller...");
 
+            boolean power = trackController.isPowerOn();
+            logProgress("Track Power is " + (power ? "on" : "off"));
+            Logger.info("Track Power is " + (power ? "on" : "off"));
+            trackController.addPowerEventListener(new JCS.Powerlistener());
+          } else {
+            logProgress("Could NOT connect with Track Controller...");
+          }
+        }
+      }
+
+      logProgress("Starting UI...");
+
+      JCS jcs = JCS.getInstance();
       jcs.startGui();
     } else {
-      Logger.error("Could not obtain a TrackService. Quitting....");
-      logProgress("Error. Can't Obtain a Track Service!");
-
-      splashScreen.hideSplash();
+      Logger.error("Could not obtain a Persistent store. Quitting....");
+      logProgress("Error! Can't Obtain a Persistent store!");
+      splashScreen.hideSplash(500);
       splashScreen.close();
       System.exit(0);
     }
   }
+
+  private static class Powerlistener implements PowerEventListener {
+
+    Powerlistener() {
+    }
+
+    @Override
+    public void onPowerChange(PowerEvent event) {
+      Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
+
+      if (JCS.jcsFrame != null) {
+        JCS.jcsFrame.powerChanged(event);
+      }
+    }
+  }
+
 }

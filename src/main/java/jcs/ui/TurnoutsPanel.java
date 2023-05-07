@@ -45,7 +45,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
     }
 
     public void refreshPanel() {
-        if (TrackControllerFactory.getTrackService() == null) {
+        if (TrackControllerFactory.getTrackController() == null) {
             return;
         }
         //stub
@@ -70,7 +70,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
             }
 
             this.add(turnoutRowPanel);
-            TrackControllerFactory.getTrackService().addAccessoryListener(turnoutRowPanel);
+            TrackControllerFactory.getTrackController().addAccessoryListener(turnoutRowPanel);
         }
         GridLayout gl = new GridLayout(rows, cols);
         this.setLayout(gl);

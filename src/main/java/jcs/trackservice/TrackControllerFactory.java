@@ -25,51 +25,51 @@ import org.tinylog.Logger;
  */
 public class TrackControllerFactory {
 
-    private TrackController trackService;
-    private static TrackControllerFactory instance;
+  private TrackController trackController;
+  private static TrackControllerFactory instance;
 
-    private TrackControllerFactory() {
+  private TrackControllerFactory() {
+  }
+
+  public static TrackControllerFactory getInstance() {
+    if (instance == null) {
+      instance = new TrackControllerFactory();
+      instance.aquireTrackServiceImpl();
+    }
+    return instance;
+  }
+
+  public static TrackController getTrackController() {
+    return TrackControllerFactory.getInstance().getTrackControllerImpl();
+  }
+
+  private TrackController getTrackControllerImpl() {
+    return trackController;
+  }
+
+  private boolean aquireTrackServiceImpl() {
+    String trackServiceImpl = System.getProperty("trackService");
+
+    if (trackServiceImpl == null) {
+      RunUtil.loadProperties();
+      trackServiceImpl = System.getProperty("trackService");
+    }
+    Logger.trace("Try to instantiate: " + trackServiceImpl);
+
+    if (trackServiceImpl != null) {
+      try {
+        this.trackController = (TrackController) Class.forName(trackServiceImpl).getDeclaredConstructor().newInstance();
+      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+        Logger.error("Can't instantiate a '" + trackServiceImpl + "' " + ex.getMessage());
+        Logger.trace(ex);
+      }
+    } else {
+      Logger.error("Cant find implementation class for 'trackController'!");
     }
 
-    public static TrackControllerFactory getInstance() {
-        if (instance == null) {
-            instance = new TrackControllerFactory();
-            instance.aquireTrackServiceImpl();
-        }
-        return instance;
+    if (trackController != null) {
+      Logger.debug("Using " + trackController.getClass().getSimpleName() + " as TrackController...");
     }
-
-    public static TrackController getTrackService() {
-        return TrackControllerFactory.getInstance().getTrackServiceImpl();
-    }
-
-    private TrackController getTrackServiceImpl() {
-        return trackService;
-    }
-
-    private boolean aquireTrackServiceImpl() {
-        String trackServiceImpl = System.getProperty("trackService");
-
-        if (trackServiceImpl == null) {
-            RunUtil.loadProperties();
-            trackServiceImpl = System.getProperty("trackService");
-        }
-        Logger.trace("Try to instantiate: " + trackServiceImpl);
-
-        if (trackServiceImpl != null) {
-            try {
-                this.trackService = (TrackController) Class.forName(trackServiceImpl).getDeclaredConstructor().newInstance();
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-                Logger.error("Can't instantiate a '" + trackServiceImpl + "' " + ex.getMessage());
-                Logger.trace(ex);
-            }
-        } else {
-            Logger.error("Cant find implementation class for 'trackService'!");
-        }
-
-        if (trackService != null) {
-            Logger.debug("Using " + trackService.getClass().getSimpleName() + " as Track Service...");
-        }
-        return trackService != null;
-    }
+    return trackController != null;
+  }
 }

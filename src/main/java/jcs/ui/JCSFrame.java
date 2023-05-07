@@ -25,7 +25,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -58,14 +57,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import jcs.JCS;
 import jcs.controller.cs3.events.PowerEvent;
-import jcs.controller.cs3.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
 import jcs.ui.options.OptionDialog;
 import jcs.ui.util.UICallback;
-import org.apache.commons.lang3.SystemUtils;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -74,160 +72,161 @@ import org.tinylog.Logger;
  */
 public class JCSFrame extends JFrame implements UICallback {
 
-    private final Map<KeyStroke, Action> actionMap;
-    private FeedbackMonitor feedbackMonitor;
+  private final Map<KeyStroke, Action> actionMap;
+  private FeedbackMonitor feedbackMonitor;
 
-    /**
-     * Creates new form JCSFrame
-     */
-    public JCSFrame() {
-        actionMap = new HashMap<>();
-        initComponents();
+  /**
+   * Creates new form JCSFrame
+   */
+  public JCSFrame() {
+    actionMap = new HashMap<>();
+    initComponents();
 
-        if (SystemUtils.IS_OS_MAC_OSX) {
-            this.quitMI.setVisible(false);
-            this.optionsMI.setVisible(false);
-            this.toolsMenu.setVisible(false);
+    if (RunUtil.isMacOSX()) {
+      this.quitMI.setVisible(false);
+      this.optionsMI.setVisible(false);
+      this.toolsMenu.setVisible(false);
 
-            if (SystemInfo.isMacFullWindowContentSupported) {
-                this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
-                this.getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
-                this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
-                //this.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
-            }
+      if (SystemInfo.isMacFullWindowContentSupported) {
+        this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+        this.getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
+        this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+        //this.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
+      }
 
-            initJCS();
+      initJCS();
 
-            if (SystemInfo.isMacFullWindowContentSupported) {
-                //avoid overlap of the red/orange/green buttons and the window title
-                this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
-            }
+      if (SystemInfo.isMacFullWindowContentSupported) {
+        //avoid overlap of the red/orange/green buttons and the window title
+        this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
+      }
 
-            initKeyStrokes();
-        }
+      initKeyStrokes();
     }
+  }
 
-    private void initJCS() {
-        if (PersistenceFactory.getService() != null) {
-            this.setTitle(this.getTitleString());
-            this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
+  private void initJCS() {
+    if (PersistenceFactory.getService() != null) {
+      this.setTitle(this.getTitleString());
 
-            this.locomotivesPanel.loadLocomotives();
-            setCS3Properties();
-            feedbackMonitor = new FeedbackMonitor();
+      this.locomotivesPanel.loadLocomotives();
+      setCS3Properties();
+      feedbackMonitor = new FeedbackMonitor();
 
-            this.powerButton.setSelected(TrackControllerFactory.getTrackService().isPowerOn());
-            TrackControllerFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
+      this.powerButton.setSelected(TrackControllerFactory.getTrackController().isPowerOn());
+      
+      if(TrackControllerFactory.getTrackController().isConnected()) {
+        setCS3Properties();
+      }
 
-            //Initialize the Touchbar for MacOS
-            if (SystemUtils.IS_OS_MAC_OSX) {
-                JCS.showTouchbar(this);
-                this.setTitle("");
-            }
+      //Initialize the Touchbar for MacOS
+      if (RunUtil.isMacOSX()) {
+        JCS.showTouchbar(this);
+        this.setTitle("");
+      }
 
-            //Show the default panel
-            showOverviewPanel();
-        }
+      //Show the default panel
+      showOverviewPanel();
     }
+  }
 
-    private void initKeyStrokes() {
-        KeyStroke key0 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
+  private void initKeyStrokes() {
+    KeyStroke key0 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
 
-        actionMap.put(key0, new AbstractAction("stopAction") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                stop();
-            }
+    actionMap.put(key0, new AbstractAction("stopAction") {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        stop();
+      }
+    });
+
+    KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+    kfm.addKeyEventDispatcher((KeyEvent e) -> {
+      KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
+      if (actionMap.containsKey(keyStroke)) {
+        final Action a = actionMap.get(keyStroke);
+        final ActionEvent ae = new ActionEvent(e.getSource(), e.getID(), null);
+        SwingUtilities.invokeLater(() -> {
+          a.actionPerformed(ae);
         });
+        return true;
+      }
+      return false;
+    });
+  }
 
-        KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-        kfm.addKeyEventDispatcher((KeyEvent e) -> {
-            KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
-            if (actionMap.containsKey(keyStroke)) {
-                final Action a = actionMap.get(keyStroke);
-                final ActionEvent ae = new ActionEvent(e.getSource(), e.getID(), null);
-                SwingUtilities.invokeLater(() -> {
-                    a.actionPerformed(ae);
-                });
-                return true;
-            }
-            return false;
-        });
+  public void showExtraToolbar(JToolBar toolbar) {
+    this.jcsToolBar.add(toolbar);
+    jcsToolBar.doLayout();
+    this.repaint();
+  }
+
+  public void hideExtraToolbar(JToolBar toolbar) {
+    this.jcsToolBar.remove(toolbar);
+    jcsToolBar.doLayout();
+    this.repaint();
+  }
+
+  public void showOverviewPanel() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "overviewPanel");
+    this.overviewPanel.loadLayout();
+  }
+
+  public void showLocomotives() {
+    Logger.debug("Show Locomotives");
+
+    handlePreferences();
+  }
+
+  public void showTurnouts() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "turnoutsPanel");
+  }
+
+  public void showSignals() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "signalsPanel");
+  }
+
+  public void showDiagnostics() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "diagnosticPanel");
+
+  }
+
+  public void showDesignLayoutPanel() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "designPanel");
+    this.layoutPanel.loadLayout();
+  }
+
+  public void stop() {
+    if (TrackControllerFactory.getTrackController() != null) {
+      TrackControllerFactory.getTrackController().switchPower(false);
     }
+  }
 
-    public void showExtraToolbar(JToolBar toolbar) {
-        this.jcsToolBar.add(toolbar);
-        jcsToolBar.doLayout();
-        this.repaint();
+  private void setCS3Properties() {
+    if (TrackControllerFactory.getTrackController() != null) {
+      if (TrackControllerFactory.getTrackController().getControllerName() != null) {
+        this.connectButton.setSelected(true);
+        this.controllerDescriptionLbl.setText(TrackControllerFactory.getTrackController().getControllerName());
+        this.controllerCatalogNumberLbl.setText(TrackControllerFactory.getTrackController().getControllerArticleNumber());
+        this.controllerSerialNumberLbl.setText(TrackControllerFactory.getTrackController().getControllerSerialNumber());
+        this.controllerHostNameLbl.setText("CS3-" + TrackControllerFactory.getTrackController().getControllerSerialNumber());
+      } else {
+        this.connectButton.setSelected(false);
+        this.controllerHostNameLbl.setText("Not Connected");
+      }
     }
+  }
 
-    public void hideExtraToolbar(JToolBar toolbar) {
-        this.jcsToolBar.remove(toolbar);
-        jcsToolBar.doLayout();
-        this.repaint();
-    }
-
-    public void showOverviewPanel() {
-        CardLayout card = (CardLayout) this.centerPanel.getLayout();
-        card.show(this.centerPanel, "overviewPanel");
-        this.overviewPanel.loadLayout();
-    }
-
-    public void showLocomotives() {
-        Logger.debug("Show Locomotives");
-
-        handlePreferences();
-    }
-
-    public void showTurnouts() {
-        CardLayout card = (CardLayout) this.centerPanel.getLayout();
-        card.show(this.centerPanel, "turnoutsPanel");
-    }
-
-    public void showSignals() {
-        CardLayout card = (CardLayout) this.centerPanel.getLayout();
-        card.show(this.centerPanel, "signalsPanel");
-    }
-
-    public void showDiagnostics() {
-        CardLayout card = (CardLayout) this.centerPanel.getLayout();
-        card.show(this.centerPanel, "diagnosticPanel");
-
-    }
-
-    public void showDesignLayoutPanel() {
-        CardLayout card = (CardLayout) this.centerPanel.getLayout();
-        card.show(this.centerPanel, "designPanel");
-        this.layoutPanel.loadLayout();
-    }
-
-    public void stop() {
-        if (TrackControllerFactory.getTrackService() != null) {
-            TrackControllerFactory.getTrackService().switchPower(false);
-        }
-    }
-
-    private void setCS3Properties() {
-        if (TrackControllerFactory.getTrackService() != null) {
-            if (TrackControllerFactory.getTrackService().getControllerName() != null) {
-                this.connectButton.setSelected(true);
-                this.controllerDescriptionLbl.setText(TrackControllerFactory.getTrackService().getControllerName());
-                this.controllerCatalogNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerArticleNumber());
-                this.controllerSerialNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerSerialNumber());
-                this.controllerHostNameLbl.setText("CS3-" + TrackControllerFactory.getTrackService().getControllerSerialNumber());
-            } else {
-                this.connectButton.setSelected(false);
-                this.controllerHostNameLbl.setText("Not Connected");
-            }
-        }
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("deprecation")
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this
+   * method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("deprecation")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -741,163 +740,167 @@ public class JCSFrame extends JFrame implements UICallback {
     }// </editor-fold>//GEN-END:initComponents
 
     private void showLocosMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showLocosMIActionPerformed
-        showLocomotives();
+      showLocomotives();
     }//GEN-LAST:event_showLocosMIActionPerformed
 
     private void showDiagnosticsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDiagnosticsBtnActionPerformed
-        showDiagnostics();
+      showDiagnostics();
     }//GEN-LAST:event_showDiagnosticsBtnActionPerformed
 
     private void quitMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_quitMIActionPerformed
-        this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+      this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }//GEN-LAST:event_quitMIActionPerformed
 
     private void formWindowClosing(WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        boolean closed = this.handleQuitRequest();
-        if (closed) {
-            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setVisible(false);
-            dispose();
-        }
+      boolean closed = this.handleQuitRequest();
+      if (closed) {
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(false);
+        dispose();
+      }
     }//GEN-LAST:event_formWindowClosing
 
     private void optionsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_optionsMIActionPerformed
-        handlePreferences();
+      handlePreferences();
     }//GEN-LAST:event_optionsMIActionPerformed
 
     private void stopBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopBtnActionPerformed
-        stop();
+      stop();
     }//GEN-LAST:event_stopBtnActionPerformed
 
     private void showEditDesignBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showEditDesignBtnActionPerformed
-        showDesignLayoutPanel();
+      showDesignLayoutPanel();
     }//GEN-LAST:event_showEditDesignBtnActionPerformed
 
     private void showOverviewBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showOverviewBtnActionPerformed
-        showOverviewPanel();
-        this.overviewPanel.loadLayout();
+      showOverviewPanel();
+      this.overviewPanel.loadLayout();
     }//GEN-LAST:event_showOverviewBtnActionPerformed
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
-        boolean on = ((JToggleButton) evt.getSource()).isSelected();
-        if (TrackControllerFactory.getTrackService() != null) {
-            TrackControllerFactory.getTrackService().switchPower(on);
-        }
+      boolean on = ((JToggleButton) evt.getSource()).isSelected();
+      if (TrackControllerFactory.getTrackController() != null) {
+        TrackControllerFactory.getTrackController().switchPower(on);
+      }
     }//GEN-LAST:event_powerButtonActionPerformed
 
     private void showFeedbackMonitorBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorBtnActionPerformed
-        this.feedbackMonitor.showMonitor();
+      this.feedbackMonitor.showMonitor();
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
 
-    private void connect(boolean connect) {
-        if (TrackControllerFactory.getTrackService() != null) {
-            if (connect) {
-                TrackControllerFactory.getTrackService().connect();
-                this.controllerDescriptionLbl.setText(TrackControllerFactory.getTrackService().getControllerName());
-                this.controllerCatalogNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerArticleNumber());
-                this.controllerSerialNumberLbl.setText(TrackControllerFactory.getTrackService().getControllerSerialNumber());
-                this.controllerHostNameLbl.setText("CS3-" + TrackControllerFactory.getTrackService().getControllerSerialNumber());
+  private void connect(boolean connect) {
+    if (TrackControllerFactory.getTrackController() != null) {
+      if (connect) {
+        TrackControllerFactory.getTrackController().connect();
+        this.controllerDescriptionLbl.setText(TrackControllerFactory.getTrackController().getControllerName());
+        this.controllerCatalogNumberLbl.setText(TrackControllerFactory.getTrackController().getControllerArticleNumber());
+        this.controllerSerialNumberLbl.setText(TrackControllerFactory.getTrackController().getControllerSerialNumber());
+        this.controllerHostNameLbl.setText("CS3-" + TrackControllerFactory.getTrackController().getControllerSerialNumber());
 
-                TrackControllerFactory.getTrackService().addPowerEventListener(new Powerlistener(this));
+        //TrackControllerFactory.getTrackController().addPowerEventListener(new Powerlistener(this));
 
-                this.connectMI.setText("Disconnect");
-            } else {
-                TrackControllerFactory.getTrackService().disconnect();
-                this.controllerDescriptionLbl.setText("-");
-                this.controllerCatalogNumberLbl.setText("-");
-                this.controllerSerialNumberLbl.setText("-");
-                this.controllerHostNameLbl.setText("Disconnected");
+        this.connectMI.setText("Disconnect");
+      } else {
+        TrackControllerFactory.getTrackController().disconnect();
+        this.controllerDescriptionLbl.setText("-");
+        this.controllerCatalogNumberLbl.setText("-");
+        this.controllerSerialNumberLbl.setText("-");
+        this.controllerHostNameLbl.setText("Disconnected");
 
-                this.connectMI.setText("Connect");
-            }
-        }
-        this.powerButton.setEnabled(connect);
-        this.showFeedbackMonitorBtn.setEnabled(connect);
+        this.connectMI.setText("Connect");
+      }
     }
+    this.powerButton.setEnabled(connect);
+    this.showFeedbackMonitorBtn.setEnabled(connect);
+  }
 
 
     private void connectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
-        boolean connect = ((JToggleButton) evt.getSource()).isSelected();
-        connect(connect);
+      boolean connect = ((JToggleButton) evt.getSource()).isSelected();
+      connect(connect);
     }//GEN-LAST:event_connectButtonActionPerformed
 
     private void showHomeActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showHomeActionPerformed
-        showOverviewPanel();
-        this.overviewPanel.loadLayout();
+      showOverviewPanel();
+      this.overviewPanel.loadLayout();
     }//GEN-LAST:event_showHomeActionPerformed
 
     private void editLayoutActionPerformed(ActionEvent evt) {//GEN-FIRST:event_editLayoutActionPerformed
-        showDesignLayoutPanel();
+      showDesignLayoutPanel();
     }//GEN-LAST:event_editLayoutActionPerformed
 
     private void showKeyboardActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showKeyboardActionPerformed
-        showDiagnostics();
+      showDiagnostics();
     }//GEN-LAST:event_showKeyboardActionPerformed
 
     private void showSensorMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSensorMonitorActionPerformed
-        this.feedbackMonitor.showMonitor();
+      this.feedbackMonitor.showMonitor();
     }//GEN-LAST:event_showSensorMonitorActionPerformed
 
     private void connectMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectMIActionPerformed
-        boolean connect = "Connect".equals(((JMenuItem) evt.getSource()).getText());
-        connect(connect);
-        this.connectButton.setSelected(connect);
+      boolean connect = "Connect".equals(((JMenuItem) evt.getSource()).getText());
+      connect(connect);
+      this.connectButton.setSelected(connect);
     }//GEN-LAST:event_connectMIActionPerformed
 
-    private String getTitleString() {
-        String jcsVersion = JCS.getVersionInfo().getVersion();
-        if (TrackControllerFactory.getTrackService() != null && TrackControllerFactory.getTrackService().getControllerSerialNumber() != null) {
-            return "JCS " + "Connected to " + TrackControllerFactory.getTrackService().getControllerName();
-        } else {
-            return "JCS " + jcsVersion + " - NOT Connected!";
-        }
+  private String getTitleString() {
+    String jcsVersion = JCS.getVersionInfo().getVersion();
+    if (TrackControllerFactory.getTrackController() != null && TrackControllerFactory.getTrackController().getControllerSerialNumber() != null) {
+      return "JCS " + "Connected to " + TrackControllerFactory.getTrackController().getControllerName();
+    } else {
+      return "JCS " + jcsVersion + " - NOT Connected!";
     }
+  }
 
-    @Override
-    public void openFiles(List<File> files) {
-        Logger.trace("Open Files...");
-    }
+  @Override
+  public void openFiles(List<File> files) {
+    Logger.trace("Open Files...");
+  }
 
-    @Override
-    public boolean handleQuitRequest() {
-        int result = JOptionPane.showConfirmDialog(JCS.getJCSFrame(), "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
-        return result == JOptionPane.YES_OPTION;
-    }
+  @Override
+  public boolean handleQuitRequest() {
+    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
+    return result == JOptionPane.YES_OPTION;
+  }
 
-    @Override
-    public void handleAbout() {
-        ImageIcon jcsIcon = new ImageIcon(JCSFrame.class
-                .getResource("/media/jcs-train-64.png"));
-        JOptionPane.showMessageDialog(JCS.getJCSFrame(), "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
-    }
+  @Override
+  public void handleAbout() {
+    ImageIcon jcsIcon = new ImageIcon(JCSFrame.class
+            .getResource("/media/jcs-train-64.png"));
+    JOptionPane.showMessageDialog(this, "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
+  }
 
-    @Override
-    public void handlePreferences() {
-        Logger.trace("handlePreferences");
+  @Override
+  public void handlePreferences() {
+    Logger.trace("handlePreferences");
 
-        OptionDialog preferencesDialog = new OptionDialog(this, false);
-        preferencesDialog.setVisible(true);
+    OptionDialog preferencesDialog = new OptionDialog(this, false);
+    preferencesDialog.setVisible(true);
 
-        Logger.debug("refresh data...");
-        //this.diagnosticPanel.refreshPanel();
-        //this.overviewPanel.refreshPanel();
+    Logger.debug("refresh data...");
+    //this.diagnosticPanel.refreshPanel();
+    //this.overviewPanel.refreshPanel();
 
-    }
+  }
 
-    private class Powerlistener implements PowerEventListener {
+  public void powerChanged(PowerEvent event) {
+    this.powerButton.setSelected(event.isPower());
+  }
 
-        private final JCSFrame jcsFrame;
-
-        Powerlistener(JCSFrame jcsFrame) {
-            this.jcsFrame = jcsFrame;
-        }
-
-        @Override
-        public void onPowerChange(PowerEvent event) {
-            this.jcsFrame.powerButton.setSelected(event.isPower());
-
-        }
-    }
+//  private class Powerlistener implements PowerEventListener {
+//
+//    private final JCSFrame jcsFrame;
+//
+//    Powerlistener(JCSFrame jcsFrame) {
+//      this.jcsFrame = jcsFrame;
+//    }
+//
+//    @Override
+//    public void onPowerChange(PowerEvent event) {
+//      this.jcsFrame.powerButton.setSelected(event.isPower());
+//
+//    }
+//  }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPanel bottomLeftPanel;

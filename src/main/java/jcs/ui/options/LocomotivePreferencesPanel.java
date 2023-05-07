@@ -456,7 +456,7 @@ public class LocomotivePreferencesPanel extends JPanel {
 
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       Logger.trace("Delete Loco: " + this.selectedLocomotive);
-      TrackControllerFactory.getTrackService().remove(selectedLocomotive);
+      TrackControllerFactory.getTrackController().remove(selectedLocomotive);
       this.selectedLocomotive = null;
       this.locoTableModel.refresh();
       this.setComponentValues(selectedLocomotive);
@@ -477,7 +477,7 @@ public class LocomotivePreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackControllerFactory.getTrackService().synchronizeLocomotivesWithController();
+        TrackControllerFactory.getTrackController().synchronizeLocomotivesWithController();
 
         refresh();
     }

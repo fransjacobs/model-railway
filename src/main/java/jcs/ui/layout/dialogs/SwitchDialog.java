@@ -55,7 +55,7 @@ public class SwitchDialog extends javax.swing.JDialog {
         this.headingLbl.setText(text);
 
         if (this.turnout != null) {
-            List<AccessoryBean> turnouts = TrackControllerFactory.getTrackService().getTurnouts();
+            List<AccessoryBean> turnouts = TrackControllerFactory.getTrackController().getTurnouts();
             AccessoryBean emptyBean = new AccessoryBean();
             turnouts.add(emptyBean);
 
@@ -70,7 +70,7 @@ public class SwitchDialog extends javax.swing.JDialog {
 
             this.accessoryComboBoxModel.setSelectedItem(ab);
             //Unregister is properties might change
-            TrackControllerFactory.getTrackService().removeAccessoryListener(turnout);
+            TrackControllerFactory.getTrackController().removeAccessoryListener(turnout);
         }
     }
 
@@ -162,11 +162,11 @@ public class SwitchDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
         if (this.turnout != null && this.turnout.getAccessoryBean() != null) {
             if(this.turnout.getAccessoryBean().getName() != null) {
-                TrackControllerFactory.getTrackService().persist((turnout.getTileBean()));
-                TrackControllerFactory.getTrackService().addAccessoryListener(turnout);
+                TrackControllerFactory.getTrackController().persist((turnout.getTileBean()));
+                TrackControllerFactory.getTrackController().addAccessoryListener(turnout);
             } else {
                 this.turnout.setAccessoryBean(null);
-                TrackControllerFactory.getTrackService().persist((turnout.getTileBean()));
+                TrackControllerFactory.getTrackController().persist((turnout.getTileBean()));
             }
         }
         this.setVisible(false);

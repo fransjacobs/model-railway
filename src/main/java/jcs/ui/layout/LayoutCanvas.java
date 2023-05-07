@@ -392,7 +392,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
                 Logger.warn("Tile is null?");
             }
         }
-        TrackControllerFactory.getTrackService().persist(beans);
+        TrackControllerFactory.getTrackController().persist(beans);
     }
 
     /**
@@ -600,7 +600,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         if (turnout.getAccessoryBean() != null) {
             AccessoryBean ab = turnout.getAccessoryBean();
             ab.toggle();
-            TrackControllerFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+            TrackControllerFactory.getTrackController().switchAccessory(ab.getAccessoryValue(), ab);
         } else {
             Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
         }
@@ -612,7 +612,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
             ab.toggle();
             Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
 
-            TrackControllerFactory.getTrackService().switchAccessory(ab.getAccessoryValue(), ab);
+            TrackControllerFactory.getTrackController().switchAccessory(ab.getAccessoryValue(), ab);
         } else {
             Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
         }

@@ -150,16 +150,16 @@ public class FeedbackMonitor extends javax.swing.JFrame {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        if (TrackControllerFactory.getTrackService() != null) {
-            TrackControllerFactory.getTrackService().removeSensorListener(sensorTableModel);
+        if (TrackControllerFactory.getTrackController() != null) {
+            TrackControllerFactory.getTrackController().removeSensorListener(sensorTableModel);
             Logger.trace("Removed sensor listener");
         }
         this.sensorTableModel.clear();
     }//GEN-LAST:event_formWindowClosed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-        if (TrackControllerFactory.getTrackService() != null) {
-            TrackControllerFactory.getTrackService().addSensorListener(sensorTableModel);
+        if (TrackControllerFactory.getTrackController() != null) {
+            TrackControllerFactory.getTrackController().addSensorListener(sensorTableModel);
             Logger.trace("Added sensor listener");
         }
     }//GEN-LAST:event_formWindowActivated

@@ -110,8 +110,8 @@ public class SwitchPanel extends JPanel {
         button.setActionCommand((button.getText()));
         Long id = Long.valueOf(button.getActionCommand());
 
-        if (TrackControllerFactory.getTrackService() != null) {
-            AccessoryBean ab = TrackControllerFactory.getTrackService().getAccessory(id);
+        if (TrackControllerFactory.getTrackController() != null) {
+            AccessoryBean ab = TrackControllerFactory.getTrackController().getAccessory(id);
             if (ab != null) {
                 button.setForeground(new Color(0, 153, 0));
                 button.setSelected(AccessoryValue.RED.equals(ab.getAccessoryValue()));
@@ -120,7 +120,7 @@ public class SwitchPanel extends JPanel {
                 button.setForeground(new Color(0, 0, 0));
             }
             AccessoryStatusListener asl = new AccessoryStatusListener(button, new BigDecimal(id));
-            TrackControllerFactory.getTrackService().addAccessoryListener(asl);
+            TrackControllerFactory.getTrackController().addAccessoryListener(asl);
         }
     }
 
@@ -420,9 +420,9 @@ public class SwitchPanel extends JPanel {
         AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
         Logger.trace("ID: " + id + " Value: " + value);
 
-        if (TrackControllerFactory.getTrackService() != null) {
+        if (TrackControllerFactory.getTrackController() != null) {
             AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
-            TrackControllerFactory.getTrackService().switchAccessory(value, a);
+            TrackControllerFactory.getTrackController().switchAccessory(value, a);
         }
     }
 

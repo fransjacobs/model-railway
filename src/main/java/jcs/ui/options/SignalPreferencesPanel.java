@@ -84,7 +84,7 @@ public class SignalPreferencesPanel extends JPanel {
     }
 
     private AccessoryBean getAccessoryFromTrackService(AccessoryBean turnout) {
-        return TrackControllerFactory.getTrackService().getAccessory(turnout.getId());
+        return TrackControllerFactory.getTrackController().getAccessory(turnout.getId());
     }
 
     private void selectSignal(int row) {
@@ -463,7 +463,7 @@ public class SignalPreferencesPanel extends JPanel {
       if (t != null) {
           Logger.debug("Selected row: " + row + ", Signal ID: " + t.getId());
           //Refresh from repo
-          this.selectedSignal = TrackControllerFactory.getTrackService().getAccessory(t.getId());
+          this.selectedSignal = TrackControllerFactory.getTrackController().getAccessory(t.getId());
           this.setComponentValues(this.selectedSignal);
       }
   }//GEN-LAST:event_signalTableMouseClicked
@@ -472,7 +472,7 @@ public class SignalPreferencesPanel extends JPanel {
       this.selectedSignal = setSignalValues();
       Logger.debug("Save the Signal: " + this.selectedSignal);
 
-      AccessoryBean t = TrackControllerFactory.getTrackService().getAccessory(selectedSignal.getId());
+      AccessoryBean t = TrackControllerFactory.getTrackController().getAccessory(selectedSignal.getId());
       if (t != null) {
           this.selectedSignal.setId(t.getId());
           Logger.debug("Found signal with id " + t.getId());
@@ -480,7 +480,7 @@ public class SignalPreferencesPanel extends JPanel {
           this.selectedSignal.setPosition(0);
       }
 
-      selectedSignal = TrackControllerFactory.getTrackService().persist(selectedSignal);
+      selectedSignal = TrackControllerFactory.getTrackController().persist(selectedSignal);
       setComponentValues(selectedSignal);
       signalTableModel.refresh();
       alignSignalTable();
@@ -488,7 +488,7 @@ public class SignalPreferencesPanel extends JPanel {
 
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       Logger.debug("Delete Signal: " + this.selectedSignal);
-      TrackControllerFactory.getTrackService().remove(selectedSignal);
+      TrackControllerFactory.getTrackController().remove(selectedSignal);
       signalTableModel.refresh();
       selectedSignal = null;
       setComponentValues(selectedSignal);
@@ -506,7 +506,7 @@ public class SignalPreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackControllerFactory.getTrackService().synchronizeSignals();
+        TrackControllerFactory.getTrackController().synchronizeSignals();
         refresh();
     }
 

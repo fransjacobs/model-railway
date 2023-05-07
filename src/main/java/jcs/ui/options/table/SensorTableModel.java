@@ -158,7 +158,7 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
             }
         }
 
-        TrackControllerFactory.getTrackService().persist(sensor);
+        TrackControllerFactory.getTrackController().persist(sensor);
     }
 
     public void clear() {

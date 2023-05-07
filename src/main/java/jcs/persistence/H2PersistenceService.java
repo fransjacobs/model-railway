@@ -37,7 +37,7 @@ import org.tinylog.Logger;
 
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
-import jcs.norm.sqlmakers.H2Maker;
+import jcs.persistence.sqlmakers.H2SqlMaker;
 
 public class H2PersistenceService implements PersistenceService {
 
@@ -56,7 +56,7 @@ public class H2PersistenceService implements PersistenceService {
     private void connect() {
         Logger.debug("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
         database = new Database();
-        database.setSqlMaker(new H2Maker());
+        database.setSqlMaker(new H2SqlMaker());
     }
 
     @Override

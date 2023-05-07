@@ -57,9 +57,9 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
 
     private void postInit() {
         setEnabled(false);
-        if (TrackControllerFactory.getTrackService() != null) {
-            TrackControllerFactory.getTrackService().addDirectionListener(this);
-            TrackControllerFactory.getTrackService().addVelocityListener(this);
+        if (TrackControllerFactory.getTrackController() != null) {
+            TrackControllerFactory.getTrackController().addDirectionListener(this);
+            TrackControllerFactory.getTrackController().addVelocityListener(this);
         }
     }
 
@@ -389,8 +389,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }//GEN-LAST:event_velocitySliderStateChanged
 
     private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
-        if (TrackControllerFactory.getTrackService() != null) {
-            TrackControllerFactory.getTrackService().changeVelocity(newVelocity, locomotiveBean);
+        if (TrackControllerFactory.getTrackController() != null) {
+            TrackControllerFactory.getTrackController().changeVelocity(newVelocity, locomotiveBean);
         }
     }
 
@@ -461,8 +461,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }
 
     private void changeDirection(Direction newDirection, LocomotiveBean locomotiveBean) {
-        if (TrackControllerFactory.getTrackService() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
-            TrackControllerFactory.getTrackService().changeDirection(newDirection, locomotiveBean);
+        if (TrackControllerFactory.getTrackController() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+            TrackControllerFactory.getTrackController().changeDirection(newDirection, locomotiveBean);
         }
     }
 

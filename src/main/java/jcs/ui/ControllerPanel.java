@@ -24,9 +24,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -51,231 +53,265 @@ import org.tinylog.Logger;
  */
 public class ControllerPanel extends JPanel {
 
-    /**
-     * Creates new form FeedbackMonitorPanel
-     */
-    public ControllerPanel() {
-        initComponents();
-        postInit();
+  /**
+   * Creates new form FeedbackMonitorPanel
+   */
+  public ControllerPanel() {
+    initComponents();
+    postInit();
+  }
+
+  void registerListeners() {
+    if (TrackControllerFactory.getTrackController() != null) {
+      this.csModule1Panel.registerSensorListeners();
+      this.csModule2Panel.registerSensorListeners();
+      this.csModule3Panel.registerSensorListeners();
+      this.csModule4Panel.registerSensorListeners();
+
+      this.bus1Module1Panel.registerSensorListeners();
+      this.bus1Module2Panel.registerSensorListeners();
+      this.bus1Module3Panel.registerSensorListeners();
+      this.bus1Module4Panel.registerSensorListeners();
+
+      this.bus2Module1Panel.registerSensorListeners();
+      this.bus2Module2Panel.registerSensorListeners();
+      this.bus2Module3Panel.registerSensorListeners();
+      this.bus2Module4Panel.registerSensorListeners();
+
+      this.bus3Module1Panel.registerSensorListeners();
+      this.bus3Module2Panel.registerSensorListeners();
+      this.bus3Module3Panel.registerSensorListeners();
+      this.bus3Module4Panel.registerSensorListeners();
+      Logger.trace("Added Sensor Listeners...");
+    }
+  }
+
+  void removeListeners() {
+    if (TrackControllerFactory.getTrackController() != null) {
+      this.csModule1Panel.removeSensorListeners();
+      this.csModule2Panel.removeSensorListeners();
+      this.csModule3Panel.removeSensorListeners();
+      this.csModule4Panel.removeSensorListeners();
+
+      this.bus1Module1Panel.removeSensorListeners();
+      this.bus1Module2Panel.removeSensorListeners();
+      this.bus1Module3Panel.removeSensorListeners();
+      this.bus1Module4Panel.removeSensorListeners();
+
+      this.bus2Module1Panel.removeSensorListeners();
+      this.bus2Module2Panel.removeSensorListeners();
+      this.bus2Module3Panel.removeSensorListeners();
+      this.bus2Module4Panel.removeSensorListeners();
+
+      this.bus3Module1Panel.removeSensorListeners();
+      this.bus3Module2Panel.removeSensorListeners();
+      this.bus3Module3Panel.removeSensorListeners();
+      this.bus3Module4Panel.removeSensorListeners();
+      Logger.trace("Removed Sensor Listeners...");
+    }
+  }
+
+  private void postInit() {
+    //Find the number of feedback modules from the Controller LinkS88 busses
+    if (TrackControllerFactory.getTrackController() != null && TrackControllerFactory.getTrackController().getLinkSxx() != null) {
+
+      LinkSxx linkSxx = TrackControllerFactory.getTrackController().getLinkSxx();
+      int deviceId = linkSxx.getDeviceId();
+      //For now support only a max of 4 modules per bus, which
+      //should be sufficient for most tracks ;)
+      this.csModule1Panel.setContactIdOffset(0);
+      this.csModule1Panel.setDeviceId(deviceId);
+
+      this.csModule2Panel.setContactIdOffset(0);
+      this.csModule2Panel.setDeviceId(deviceId);
+
+      this.csModule3Panel.setContactIdOffset(0);
+      this.csModule3Panel.setDeviceId(deviceId);
+
+      this.csModule4Panel.setContactIdOffset(0);
+      this.csModule4Panel.setDeviceId(deviceId);
+
+      int bus1Offset = linkSxx.getContactIdOffset(1);
+      this.bus1Module1Panel.setContactIdOffset(bus1Offset);
+      this.bus1Module1Panel.setDeviceId(deviceId);
+
+      this.bus1Module2Panel.setContactIdOffset(bus1Offset);
+      this.bus1Module2Panel.setDeviceId(deviceId);
+
+      this.bus1Module3Panel.setContactIdOffset(bus1Offset);
+      this.bus1Module3Panel.setDeviceId(deviceId);
+
+      this.bus1Module4Panel.setContactIdOffset(bus1Offset);
+      this.bus1Module4Panel.setDeviceId(deviceId);
+
+      int bus2Offset = linkSxx.getContactIdOffset(2);
+      this.bus2Module1Panel.setContactIdOffset(bus2Offset);
+      this.bus2Module1Panel.setDeviceId(deviceId);
+
+      this.bus2Module2Panel.setContactIdOffset(bus2Offset);
+      this.bus2Module2Panel.setDeviceId(deviceId);
+      this.bus2Module2Panel.registerSensorListeners();
+
+      this.bus2Module3Panel.setContactIdOffset(bus2Offset);
+      this.bus2Module3Panel.setDeviceId(deviceId);
+
+      this.bus2Module4Panel.setContactIdOffset(bus2Offset);
+      this.bus2Module4Panel.setDeviceId(deviceId);
+
+      int bus3Offset = linkSxx.getContactIdOffset(3);
+      this.bus3Module1Panel.setContactIdOffset(bus3Offset);
+      this.bus3Module1Panel.setDeviceId(deviceId);
+
+      this.bus3Module2Panel.setContactIdOffset(bus3Offset);
+      this.bus3Module2Panel.setDeviceId(deviceId);
+
+      this.bus3Module3Panel.setContactIdOffset(bus3Offset);
+      this.bus3Module3Panel.setDeviceId(deviceId);
+
+      this.bus3Module4Panel.setContactIdOffset(bus3Offset);
+      this.bus3Module4Panel.setDeviceId(deviceId);
+    }
+  }
+
+  private class MessageListener implements CanMessageListener {
+
+    private final ControllerPanel diagnosticPanel;
+
+    MessageListener(ControllerPanel panel) {
+      diagnosticPanel = panel;
     }
 
-    void registerListeners() {
-        if (TrackControllerFactory.getTrackService() != null) {
-            this.csModule1Panel.registerSensorListeners();
-            this.csModule2Panel.registerSensorListeners();
-            this.csModule3Panel.registerSensorListeners();
-            this.csModule4Panel.registerSensorListeners();
+    @Override
+    public void onCanMessage(CanMessageEvent canEvent) {
+      CanMessage msg = canEvent.getCanMessage();
 
-            this.bus1Module1Panel.registerSensorListeners();
-            this.bus1Module2Panel.registerSensorListeners();
-            this.bus1Module3Panel.registerSensorListeners();
-            this.bus1Module4Panel.registerSensorListeners();
+      StringBuilder sb = new StringBuilder();
+      SimpleDateFormat sdf = new SimpleDateFormat("HH24:mm:ss.S");
+      sb.append(sdf.format(canEvent.getEventDate()));
+      sb.append(" ");
+      sb.append(canEvent.getSourceAddress().getHostName());
+      sb.append(" ");
+      sb.append(canEvent.getCanMessage().getMessageName());
+      sb.append(" ");
+      sb.append(canEvent.getCanMessage());
+      sb.append("\n");
 
-            this.bus2Module1Panel.registerSensorListeners();
-            this.bus2Module2Panel.registerSensorListeners();
-            this.bus2Module3Panel.registerSensorListeners();
-            this.bus2Module4Panel.registerSensorListeners();
+      diagnosticPanel.logArea.append(sb.toString());
 
-            this.bus3Module1Panel.registerSensorListeners();
-            this.bus3Module2Panel.registerSensorListeners();
-            this.bus3Module3Panel.registerSensorListeners();
-            this.bus3Module4Panel.registerSensorListeners();
-            Logger.trace("Added Sensor Listeners...");
-        }
     }
 
-    void removeListeners() {
-        if (TrackControllerFactory.getTrackService() != null) {
-            this.csModule1Panel.removeSensorListeners();
-            this.csModule2Panel.removeSensorListeners();
-            this.csModule3Panel.removeSensorListeners();
-            this.csModule4Panel.removeSensorListeners();
+  }
 
-            this.bus1Module1Panel.removeSensorListeners();
-            this.bus1Module2Panel.removeSensorListeners();
-            this.bus1Module3Panel.removeSensorListeners();
-            this.bus1Module4Panel.removeSensorListeners();
+  private class LogTextAreaHandler implements CanMessageListener {
 
-            this.bus2Module1Panel.removeSensorListeners();
-            this.bus2Module2Panel.removeSensorListeners();
-            this.bus2Module3Panel.removeSensorListeners();
-            this.bus2Module4Panel.removeSensorListeners();
+    private final JTextArea textArea;
+    private int lines = 0;
+    int lineHeight;
 
-            this.bus3Module1Panel.removeSensorListeners();
-            this.bus3Module2Panel.removeSensorListeners();
-            this.bus3Module3Panel.removeSensorListeners();
-            this.bus3Module4Panel.removeSensorListeners();
-            Logger.trace("Removed Sensor Listeners...");
-        }
+    LogTextAreaHandler(JTextArea textArea) {
+      this.textArea = textArea;
+      lineHeight = textArea.getFontMetrics(textArea.getFont()).getHeight();
     }
 
-    private void postInit() {
-        //Find the number of feedback modules from the Controller LinkS88 busses
-        if (TrackControllerFactory.getTrackService() != null && TrackControllerFactory.getTrackService().getLinkSxx() != null) {
+    @Override
+    public void onCanMessage(CanMessageEvent canEvent) {
+      CanMessage msg = canEvent.getCanMessage();
 
-            LinkSxx linkSxx = TrackControllerFactory.getTrackService().getLinkSxx();
-            int deviceId = linkSxx.getDeviceId();
-            //For now support only a max of 4 modules per bus, which
-            //should be sufficient for most tracks ;)
-            this.csModule1Panel.setContactIdOffset(0);
-            this.csModule1Panel.setDeviceId(deviceId);
+      StringBuilder sb = new StringBuilder();
+      SimpleDateFormat sdf = new SimpleDateFormat("HH24:mm:ss.S");
+      sb.append(sdf.format(canEvent.getEventDate()));
+      //sb.append(" [");
+      //sb.append(canEvent.getSourceAddress().getHostName());
+      //sb.append("] ");
+      sb.append(": ");
+      sb.append(canEvent.getCanMessage());
+      sb.append(", ");
+      sb.append(canEvent.getCanMessage().getMessageName());
+      sb.append("\n");
 
-            this.csModule2Panel.setContactIdOffset(0);
-            this.csModule2Panel.setDeviceId(deviceId);
+      //if (EventQueue.isDispatchThread()) {
+      //textArea.insert(sb.toString(), 1);
+      //textArea.append(sb.toString());
+      //textArea.setCaretPosition(textArea.getText().length());
+      try {
+        textArea.getDocument().insertString(0, sb.toString(), null);
+        lines += 1;
 
-            this.csModule3Panel.setContactIdOffset(0);
-            this.csModule3Panel.setDeviceId(deviceId);
+        //int height = this.lineHeight * lines;
+        int height = 30 * lines;
+        //textArea.setSize(this.textArea.getWidth(), height);
+        textArea.setPreferredSize(new Dimension(this.textArea.getWidth(), height));
+      } catch (BadLocationException e1) {
+        Logger.trace(e1);
+      }
+    }
+  }
 
-            this.csModule4Panel.setContactIdOffset(0);
-            this.csModule4Panel.setDeviceId(deviceId);
+  public static void main(String args[]) {
+    try {
+//      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
 
-            int bus1Offset = linkSxx.getContactIdOffset(1);
-            this.bus1Module1Panel.setContactIdOffset(bus1Offset);
-            this.bus1Module1Panel.setDeviceId(deviceId);
-
-            this.bus1Module2Panel.setContactIdOffset(bus1Offset);
-            this.bus1Module2Panel.setDeviceId(deviceId);
-
-            this.bus1Module3Panel.setContactIdOffset(bus1Offset);
-            this.bus1Module3Panel.setDeviceId(deviceId);
-
-            this.bus1Module4Panel.setContactIdOffset(bus1Offset);
-            this.bus1Module4Panel.setDeviceId(deviceId);
-
-            int bus2Offset = linkSxx.getContactIdOffset(2);
-            this.bus2Module1Panel.setContactIdOffset(bus2Offset);
-            this.bus2Module1Panel.setDeviceId(deviceId);
-
-            this.bus2Module2Panel.setContactIdOffset(bus2Offset);
-            this.bus2Module2Panel.setDeviceId(deviceId);
-            this.bus2Module2Panel.registerSensorListeners();
-
-            this.bus2Module3Panel.setContactIdOffset(bus2Offset);
-            this.bus2Module3Panel.setDeviceId(deviceId);
-
-            this.bus2Module4Panel.setContactIdOffset(bus2Offset);
-            this.bus2Module4Panel.setDeviceId(deviceId);
-
-            int bus3Offset = linkSxx.getContactIdOffset(3);
-            this.bus3Module1Panel.setContactIdOffset(bus3Offset);
-            this.bus3Module1Panel.setDeviceId(deviceId);
-
-            this.bus3Module2Panel.setContactIdOffset(bus3Offset);
-            this.bus3Module2Panel.setDeviceId(deviceId);
-
-            this.bus3Module3Panel.setContactIdOffset(bus3Offset);
-            this.bus3Module3Panel.setDeviceId(deviceId);
-
-            this.bus3Module4Panel.setContactIdOffset(bus3Offset);
-            this.bus3Module4Panel.setDeviceId(deviceId);
-        }
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.error("Can't set the LookAndFeel: " + ex);
     }
 
-    private class MessageListener implements CanMessageListener {
+    java.awt.EventQueue.invokeLater(() -> {
 
-        private final ControllerPanel diagnosticPanel;
+      ControllerPanel testPanel = new ControllerPanel();
+      JFrame testFrame = new JFrame("ControllerPanel Tester");
 
-        MessageListener(ControllerPanel panel) {
-            diagnosticPanel = panel;
-        }
+      //this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
+      URL iconUrl = ControllerPanel.class.getResource("/media/jcs-train-2-512.png");
+      //Image iconi = Toolkit.getDefaultToolkit().getImage(ControllerPanel.class.getResource("/media/jcs-train-64.png"));
+      
+      if (iconUrl != null) {
+        //ImageIcon appIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
+        testFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+      }
 
+      JFrame.setDefaultLookAndFeelDecorated(true);
+
+      testFrame.add(testPanel);
+
+      testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
-        public void onCanMessage(CanMessageEvent canEvent) {
-            CanMessage msg = canEvent.getCanMessage();
-
-            StringBuilder sb = new StringBuilder();
-            SimpleDateFormat sdf = new SimpleDateFormat("HH24:mm:ss.S");
-            sb.append(sdf.format(canEvent.getEventDate()));
-            sb.append(" ");
-            sb.append(canEvent.getSourceAddress().getHostName());
-            sb.append(" ");
-            sb.append(canEvent.getCanMessage().getMessageName());
-            sb.append(" ");
-            sb.append(canEvent.getCanMessage());
-            sb.append("\n");
-
-            diagnosticPanel.logArea.append(sb.toString());
-
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          System.exit(0);
         }
+      });
+      testFrame.pack();
+      testFrame.setLocationRelativeTo(null);
+      testFrame.setVisible(true);
+    });
+  }
 
-    }
-
-    private class LogTextAreaHandler implements CanMessageListener {
-
-        private final JTextArea textArea;
-        private int lines = 0;
-        int lineHeight;
-
-        LogTextAreaHandler(JTextArea textArea) {
-            this.textArea = textArea;
-            lineHeight = textArea.getFontMetrics(textArea.getFont()).getHeight();
-        }
-
-        @Override
-        public void onCanMessage(CanMessageEvent canEvent) {
-            CanMessage msg = canEvent.getCanMessage();
-
-            StringBuilder sb = new StringBuilder();
-            SimpleDateFormat sdf = new SimpleDateFormat("HH24:mm:ss.S");
-            sb.append(sdf.format(canEvent.getEventDate()));
-            //sb.append(" [");
-            //sb.append(canEvent.getSourceAddress().getHostName());
-            //sb.append("] ");
-            sb.append(": ");
-            sb.append(canEvent.getCanMessage());
-            sb.append(", ");
-            sb.append(canEvent.getCanMessage().getMessageName());
-            sb.append("\n");
-
-            //if (EventQueue.isDispatchThread()) {
-            //textArea.insert(sb.toString(), 1);
-            //textArea.append(sb.toString());
-            //textArea.setCaretPosition(textArea.getText().length());
-            try {
-                textArea.getDocument().insertString(0, sb.toString(), null);
-                lines += 1;
-
-                //int height = this.lineHeight * lines;
-                int height = 30 * lines;
-                //textArea.setSize(this.textArea.getWidth(), height);
-                textArea.setPreferredSize(new Dimension(this.textArea.getWidth(), height));
-            } catch (BadLocationException e1) {
-                Logger.trace(e1);
-            }
-        }
-    }
-
-    public static void main(String args[]) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.error("Can't set the LookAndFeel: " + ex);
-        }
-        java.awt.EventQueue.invokeLater(() -> {
-
-            ControllerPanel testPanel = new ControllerPanel();
-            JFrame testFrame = new JFrame("ControllerPanel Tester");
-
-            testFrame.add(testPanel);
-
-            testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-                @Override
-                public void windowClosing(java.awt.event.WindowEvent e) {
-                    System.exit(0);
-                }
-            });
-            testFrame.pack();
-            testFrame.setLocationRelativeTo(null);
-            testFrame.setVisible(true);
-        });
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
+  
+  
+  
+//  protected List<Image> doGetWindowIcons() { 
+// 	List<Image> list = new ArrayList<>(); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon16.png").getImage()); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon24.png").getImage()); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon32.png").getImage()); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon40.png").getImage()); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon48.png").getImage()); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon64.png").getImage()); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon128.png").getImage()); 
+// 	list.add(ResourceManager.loadImage("images/GhidraIcon256.png").getImage()); 
+// 	return list; 
+//  
+  
+  
+  
+  
+  
+  
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this
+   * method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -614,11 +650,11 @@ public class ControllerPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-        registerListeners();
+      registerListeners();
     }//GEN-LAST:event_formComponentShown
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-        removeListeners();
+      removeListeners();
     }//GEN-LAST:event_formComponentHidden
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

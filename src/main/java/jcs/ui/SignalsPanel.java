@@ -45,7 +45,7 @@ public class SignalsPanel extends javax.swing.JPanel {
     }
 
     public void refreshPanel() {
-        if (TrackControllerFactory.getTrackService() == null) {
+        if (TrackControllerFactory.getTrackController() == null) {
             return;
         }
         //stub
@@ -71,7 +71,7 @@ public class SignalsPanel extends javax.swing.JPanel {
             }
 
             this.add(signalRowPanel);
-            TrackControllerFactory.getTrackService().addAccessoryListener(signalRowPanel);
+            TrackControllerFactory.getTrackController().addAccessoryListener(signalRowPanel);
         }
         GridLayout gl = new GridLayout(rows, cols);
         this.setLayout(gl);

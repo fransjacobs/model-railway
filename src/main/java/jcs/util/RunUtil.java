@@ -15,82 +15,78 @@
  */
 package jcs.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Properties;
 
 import org.tinylog.Logger;
 
-@SuppressWarnings("unused")
+//@SuppressWarnings("unused")
 public class RunUtil {
 
   public static final String DEFAULT_PATH = "~/jcs/";
 
-  public static final int OS_LINUX = 0;
-  public static final int OS_WINDOWS = 1;
-  public static final int OS_SOLARIS = 2;
-  public static final int OS_MAC_OS_X = 3;
-
-  private static int osType = -1;
-
+//  public static final int OS_LINUX = 0;
+//  public static final int OS_WINDOWS = 1;
+//  public static final int OS_SOLARIS = 2;
+//  public static final int OS_MAC_OS_X = 3;
+//
+//  private static int osType = -1;
   static {
-    String osName = System.getProperty("os.name");
-    String architecture = System.getProperty("os.arch");
-    String userHome = System.getProperty("user.home");
+//    String osName = System.getProperty("os.name");
+//    String architecture = System.getProperty("os.arch");
+//    String userHome = System.getProperty("user.home");
+//
+//    String fileSeparator = System.getProperty("file.separator");
+//    String tmpFolder = System.getProperty("java.io.tmpdir");
+//
+//    String libRootFolder = new File(userHome).canWrite() ? userHome : tmpFolder;
+//
+//    String javaLibPath = System.getProperty("java.library.path");
 
-    String fileSeparator = System.getProperty("file.separator");
-    String tmpFolder = System.getProperty("java.io.tmpdir");
-
-    String libRootFolder = new File(userHome).canWrite() ? userHome : tmpFolder;
-
-    String javaLibPath = System.getProperty("java.library.path");
-
-    if (osName.equals("Linux")) {
-      osType = OS_LINUX;
-    } else if (osName.startsWith("Win")) {
-      osType = OS_WINDOWS;
-    } else if (osName.equals("SunOS")) {
-      osType = OS_SOLARIS;
-    } else if (osName.equals("Mac OS X") || osName.equals("Darwin")) {
-      osType = OS_MAC_OS_X;
-    }
-
-    switch (architecture) {
-      case "i386", "i686" ->
-        architecture = "x86";
-      case "amd64", "universal" ->
-        architecture = "x86_64";
-      case "arm" -> {
-        String floatStr = "sf";
-        if (javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")) {
-          floatStr = "hf";
-        } else {
-          try {
-            Process readelfProcess = Runtime.getRuntime().exec("readelf -A /proc/self/exe");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
-            String buffer = "";
-            while ((buffer = reader.readLine()) != null && !buffer.isEmpty()) {
-              if (buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())) {
-                floatStr = "hf";
-                break;
-              }
-            }
-            reader.close();
-          } catch (IOException ex) {
-            // Do nothing
-          }
-        }
-        architecture = "arm" + floatStr;
-      }
-      default -> {
-      }
-    }
+//    if (osName.equals("Linux")) {
+//      osType = OS_LINUX;
+//    } else if (osName.startsWith("Win")) {
+//      osType = OS_WINDOWS;
+//    } else if (osName.equals("SunOS")) {
+//      osType = OS_SOLARIS;
+//    } else if (osName.equals("Mac OS X") || osName.equals("Darwin")) {
+//      osType = OS_MAC_OS_X;
+//    }
+//    switch (architecture) {
+//      case "i386", "i686" ->
+//        architecture = "x86";
+//      case "amd64", "universal" ->
+//        architecture = "x86_64";
+//      case "arm" -> {
+//        String floatStr = "sf";
+//        if (javaLibPath.toLowerCase().contains("gnueabihf") || javaLibPath.toLowerCase().contains("armhf")) {
+//          floatStr = "hf";
+//        } else {
+//          try {
+//            Process readelfProcess = Runtime.getRuntime().exec("readelf -A /proc/self/exe");
+//            BufferedReader reader = new BufferedReader(new InputStreamReader(readelfProcess.getInputStream()));
+//            String buffer = "";
+//            while ((buffer = reader.readLine()) != null && !buffer.isEmpty()) {
+//              if (buffer.toLowerCase().contains("Tag_ABI_VFP_args".toLowerCase())) {
+//                floatStr = "hf";
+//                break;
+//              }
+//            }
+//            reader.close();
+//          } catch (IOException ex) {
+//            // Do nothing
+//          }
+//        }
+//        architecture = "arm" + floatStr;
+//      }
+//      default -> {
+//      }
+//    }
     // Preference storage
     // Mac OS ~/Library/Preferences/com.apple.java.util.prefs.plist
     //Logger.trace("Running on OS: " + osName + " architecture: " + architecture + ".");
@@ -102,8 +98,16 @@ public class RunUtil {
    *
    * @return
    */
-  public static int getOsType() {
-    return osType;
+//  public static int getOsType() {
+//    return osType;
+//  }
+  public static boolean isMacOSX() {
+    return System.getProperty("os.name").contains("Mac OS X");
+  }
+
+  public static boolean isLinux() {
+    String os = System.getProperty("os.name").toLowerCase();
+    return os.contains("nix") || os.contains("nux");
   }
 
   public static void loadProperties() {
@@ -123,6 +127,25 @@ public class RunUtil {
       if (System.getProperty(key) == null) {
         System.setProperty(key, value);
       }
+    }
+  }
+
+  public static void loadExternalProperties() {
+    Properties prop = new Properties();
+    String p = DEFAULT_PATH + "jcs.properties";
+    p = p.replace("~", System.getProperty("user.home"));
+
+    try {
+      prop.load(new FileInputStream(p));
+      for (Object pk : prop.keySet()) {
+        String key = (String) pk;
+        String value = (String) prop.get(pk);
+        if (System.getProperty(key) == null) {
+          System.setProperty(key, value);
+        }
+      }
+    } catch (IOException ex) {
+      Logger.trace("Can't read external properties from " + p);
     }
   }
 

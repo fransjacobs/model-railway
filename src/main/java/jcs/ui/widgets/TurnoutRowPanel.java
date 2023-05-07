@@ -262,7 +262,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
             TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
             f.add(signalRowPanel);
 
-            TrackControllerFactory.getTrackService().addAccessoryListener(signalRowPanel);
+            TrackControllerFactory.getTrackController().addAccessoryListener(signalRowPanel);
 
         }
 

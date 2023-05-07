@@ -826,18 +826,18 @@ public class LayoutPanel extends JPanel {
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
         Logger.trace("HIDDEN");
-        if (JCS.getJCSFrame() != null) {
-            JCS.getJCSFrame().hideExtraToolbar(this.toolBar);
+        if (JCS.getParentFrame() != null) {
+            JCS.getParentFrame().hideExtraToolbar(this.toolBar);
         }
     }//GEN-LAST:event_formComponentHidden
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
         Logger.trace("SHOWN");
-        if (JCS.getJCSFrame() != null) {
+        if (JCS.getParentFrame() != null) {
             topPanel.remove(this.toolBar);
             this.remove(topPanel);
             this.doLayout();
-            JCS.getJCSFrame().showExtraToolbar(this.toolBar);
+            JCS.getParentFrame().showExtraToolbar(this.toolBar);
         }
     }//GEN-LAST:event_formComponentShown
 

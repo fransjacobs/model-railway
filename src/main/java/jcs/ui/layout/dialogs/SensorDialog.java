@@ -55,9 +55,9 @@ public class SensorDialog extends javax.swing.JDialog {
                 sb = new SensorBean();
                 this.sensor.setSensorBean(sb);
             } else {
-                if (TrackControllerFactory.getTrackService() != null) {
+                if (TrackControllerFactory.getTrackController() != null) {
                     //Unregister is properties might change
-                    TrackControllerFactory.getTrackService().removeSensorListener(this.sensor);
+                    TrackControllerFactory.getTrackController().removeSensorListener(this.sensor);
                 }
             }
 
@@ -182,10 +182,10 @@ public class SensorDialog extends javax.swing.JDialog {
             this.sensor.getSensorBean().setDeviceId((Integer) this.deviceIdSpinner.getValue());
             this.sensor.getSensorBean().setName(this.nameTF.getText());
 
-            if (TrackControllerFactory.getTrackService() != null) {
-                TrackControllerFactory.getTrackService().persist((sensor.getTileBean()));
+            if (TrackControllerFactory.getTrackController() != null) {
+                TrackControllerFactory.getTrackController().persist((sensor.getTileBean()));
 
-                TrackControllerFactory.getTrackService().addSensorListener(sensor);
+                TrackControllerFactory.getTrackController().addSensorListener(sensor);
             }
         }
         this.setVisible(false);

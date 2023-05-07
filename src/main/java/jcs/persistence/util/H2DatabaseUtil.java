@@ -16,7 +16,6 @@
 package jcs.persistence.util;
 
 import com.dieselpoint.norm.Database;
-import com.dieselpoint.norm.sqlmakers.PostgresMaker;
 import java.io.File;
 
 import java.io.FileNotFoundException;
@@ -32,6 +31,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Stream;
+import jcs.persistence.sqlmakers.H2SqlMaker;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -79,7 +79,7 @@ public class H2DatabaseUtil {
         Logger.trace("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
 
         this.db = new Database();
-        this.db.setSqlMaker(new PostgresMaker());
+        this.db.setSqlMaker(new H2SqlMaker());
         Logger.trace("Connected to: " + System.getProperty("norm.jdbcUrl"));
     }
 

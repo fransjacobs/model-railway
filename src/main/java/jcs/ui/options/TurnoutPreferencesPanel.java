@@ -81,7 +81,7 @@ public class TurnoutPreferencesPanel extends JPanel {
     }
 
     private AccessoryBean getAccessoryFromTrackService(AccessoryBean turnout) {
-        return TrackControllerFactory.getTrackService().getAccessory(turnout.getId());
+        return TrackControllerFactory.getTrackController().getAccessory(turnout.getId());
     }
 
     private void selectTurnout(int row) {
@@ -461,7 +461,7 @@ public class TurnoutPreferencesPanel extends JPanel {
       if (t != null) {
           Logger.debug("Selected row: " + row + ", Turnout ID: " + t.getId());
           //Refresh from repo
-          this.selectedTurnout = TrackControllerFactory.getTrackService().getAccessory(t.getId());
+          this.selectedTurnout = TrackControllerFactory.getTrackController().getAccessory(t.getId());
           this.setComponentValues(this.selectedTurnout);
       }
   }//GEN-LAST:event_turnoutTableMouseClicked
@@ -470,7 +470,7 @@ public class TurnoutPreferencesPanel extends JPanel {
       this.selectedTurnout = setTurnoutValues();
       Logger.debug("Save the Turnout: " + this.selectedTurnout);
 
-      AccessoryBean t = TrackControllerFactory.getTrackService().getAccessory(selectedTurnout.getId());
+      AccessoryBean t = TrackControllerFactory.getTrackController().getAccessory(selectedTurnout.getId());
       if (t != null) {
           this.selectedTurnout.setId(t.getId());
           Logger.debug("Found turnout with id " + t.getId());
@@ -478,7 +478,7 @@ public class TurnoutPreferencesPanel extends JPanel {
           this.selectedTurnout.setPosition(0);
       }
 
-      selectedTurnout = TrackControllerFactory.getTrackService().persist(selectedTurnout);
+      selectedTurnout = TrackControllerFactory.getTrackController().persist(selectedTurnout);
       setComponentValues(selectedTurnout);
       turnoutTableModel.refresh();
       alignTurnoutTable();
@@ -486,7 +486,7 @@ public class TurnoutPreferencesPanel extends JPanel {
 
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       Logger.debug("Delete Turnout: " + this.selectedTurnout);
-      TrackControllerFactory.getTrackService().remove(selectedTurnout);
+      TrackControllerFactory.getTrackController().remove(selectedTurnout);
       turnoutTableModel.refresh();
       selectedTurnout = null;
       setComponentValues(selectedTurnout);
@@ -504,7 +504,7 @@ public class TurnoutPreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackControllerFactory.getTrackService().synchronizeTurnouts();
+        TrackControllerFactory.getTrackController().synchronizeTurnouts();
         refresh();
     }
 

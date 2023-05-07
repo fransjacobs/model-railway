@@ -98,8 +98,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
 
         setEnabled(false);
 
-        if (TrackControllerFactory.getTrackService() != null) {
-            TrackControllerFactory.getTrackService().addFunctionListener(this);
+        if (TrackControllerFactory.getTrackController() != null) {
+            TrackControllerFactory.getTrackController().addFunctionListener(this);
         }
     }
 
@@ -186,8 +186,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     }
 
     private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
-        if (TrackControllerFactory.getTrackService() != null && this.locomotive != null) {
-            TrackControllerFactory.getTrackService().changeFunction(newValue, functionNumber, locomotiveBean);
+        if (TrackControllerFactory.getTrackController() != null && this.locomotive != null) {
+            TrackControllerFactory.getTrackController().changeFunction(newValue, functionNumber, locomotiveBean);
         }
     }
 
@@ -688,7 +688,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
             testFrame.pack();
             testFrame.setLocationRelativeTo(null);
 
-            if (TrackControllerFactory.getTrackService() != null) {
+            if (TrackControllerFactory.getTrackController() != null) {
 
                 //LocomotiveBean loc = TrackControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
                 //LocomotiveBean loc = TrackControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));

@@ -15,7 +15,6 @@
  */
 package jcs.trackservice;
 
-import java.awt.Image;
 import java.util.List;
 import java.util.Set;
 import jcs.controller.cs3.devices.LinkSxx;
