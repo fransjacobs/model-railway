@@ -35,10 +35,6 @@ import jcs.persistence.sqlmakers.H2SqlMaker;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
-/**
- *
- * @author frans
- */
 public class H2DatabaseUtil {
 
     protected static final String JCS_DB_NAME = "jcs-db";
