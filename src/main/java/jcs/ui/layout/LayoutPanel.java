@@ -289,7 +289,7 @@ public class LayoutPanel extends JPanel {
 
         setMinimumSize(new Dimension(1000, 160));
         setOpaque(false);
-        setPreferredSize(new Dimension(1000, 775));
+        setPreferredSize(new Dimension(1400, 900));
         addComponentListener(new ComponentAdapter() {
             public void componentHidden(ComponentEvent evt) {
                 formComponentHidden(evt);

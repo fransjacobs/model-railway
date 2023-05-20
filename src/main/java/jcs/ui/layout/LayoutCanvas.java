@@ -319,7 +319,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 
     void setTileType(TileType tileType) {
         this.tileType = tileType;
-        Logger.trace("TileType: " + this.tileType);
+        Logger.trace("TileType: " + this.tileType+" Current mode: "+this.mode);
     }
 
     Orientation getOrientation() {
