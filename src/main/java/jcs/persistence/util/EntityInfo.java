@@ -305,6 +305,15 @@ public class EntityInfo<T> {
     return columnList;
   }
 
+  public Class getColumnDataType(String columnName) {
+    EntityAttribute ea = this.attributeMap.get(columnName);
+    if (ea != null) {
+      return ea.dataType;
+    } else {
+      return null;
+    }
+  }
+
   public List<String> getDisplayColumnList() {
     return this.displayColumnList;
   }
@@ -332,7 +341,10 @@ public class EntityInfo<T> {
 
     List<String> columns = LocoInfo.getAllColumnNames();
     for (int i = 0; i < columns.size(); i++) {
-      System.out.println(columns.get(i));
+      
+      Class dt = LocoInfo.getColumnDataType(columns.get(i));
+      
+      System.out.println(columns.get(i)+" type: "+dt.getSimpleName());
     }
 
     System.out.println();
@@ -353,9 +365,8 @@ public class EntityInfo<T> {
       System.out.println(columns.get(i) + " -> " + LocoInfo.getValue(loco16389, columns.get(i)));
     }
 
-    String[] showCols = new String[] {"decoder_type","address","name","velocity","richtung"};
+    String[] showCols = new String[]{"decoder_type", "address", "name", "velocity", "richtung"};
     LocoInfo.setDisplayColumns(showCols);
-    
 
     System.out.println();
 

@@ -16,6 +16,7 @@
 package jcs.controller;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import jcs.controller.cs3.devices.GFP;
 import jcs.controller.cs3.devices.LinkSxx;
@@ -83,7 +84,7 @@ public interface MarklinController {
 
     List<LocomotiveBean> getLocomotives();
 
-    void cacheAllFunctionIcons();
+    void cacheAllFunctionIcons(PropertyChangeListener progressListener);
 
     Image getLocomotiveImage(String icon);
 

@@ -15,6 +15,7 @@
  */
 package jcs.trackservice;
 
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Set;
 import jcs.controller.cs3.devices.LinkSxx;
@@ -27,7 +28,6 @@ import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.trackservice.events.DirectionListener;
@@ -36,163 +36,147 @@ import jcs.trackservice.events.SensorListener;
 import jcs.trackservice.events.VelocityListener;
 
 /**
- * The Track repository contain all track item which are used on the Track This
- * can be Locomotives, Turnouts, Signals, etc There For future use the
- * implementation of the Repository could be changed to an other storage
- * provider
+ * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For
+ * future use the implementation of the Repository could be changed to an other storage provider
  *
  * @author frans
  */
 public interface TrackController {
 
-    void switchPower(boolean on);
+  void switchPower(boolean on);
 
-    boolean isPowerOn();
+  boolean isPowerOn();
 
-    boolean connect();
+  boolean connect();
 
-    boolean isConnected();
+  boolean isConnected();
 
-    void disconnect();
+  void disconnect();
 
-    void addPowerEventListener(PowerEventListener listener);
+  void addPowerEventListener(PowerEventListener listener);
 
-    void removePowerEventListener(PowerEventListener listener);
+  void removePowerEventListener(PowerEventListener listener);
 
-    //Locomotive 
-    @Deprecated //use the PersistenService
-    List<LocomotiveBean> getLocomotives();
+  //Image getFunctionImage(String imageName);
+  void changeDirection(Direction direction, LocomotiveBean locomotive);
 
-    @Deprecated //use the PersistenService
-    LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
+  void changeVelocity(Integer speed, LocomotiveBean locomotive);
 
-    @Deprecated //use the PersistenService
-    LocomotiveBean getLocomotive(Long id);
+  void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
-    @Deprecated //use the PersistenService
-    LocomotiveBean persist(LocomotiveBean locomotive);
+  //Accessories
+  @Deprecated //use the PersistenService
+  List<AccessoryBean> getTurnouts();
 
-    //Image getFunctionImage(String imageName);
+  @Deprecated //use the PersistenService
+  List<AccessoryBean> getSignals();
 
-    void changeDirection(Direction direction, LocomotiveBean locomotive);
+  @Deprecated //use the PersistenService
+  AccessoryBean getAccessory(Long id);
 
-    void changeVelocity(Integer speed, LocomotiveBean locomotive);
+  @Deprecated //use the PersistenService
+  AccessoryBean getAccessory(Integer address, String decoderTypee);
 
-    void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
+  @Deprecated //use the PersistenService
+  AccessoryBean persist(AccessoryBean accessory);
 
-    //Accessories
-    @Deprecated //use the PersistenService
-    List<AccessoryBean> getTurnouts();
+  void switchAccessory(AccessoryValue value, AccessoryBean accessory);
 
-    @Deprecated //use the PersistenService
-    List<AccessoryBean> getSignals();
+  void addAccessoryListener(AccessoryListener listener);
 
-    @Deprecated //use the PersistenService
-    AccessoryBean getAccessory(Long id);
+  void removeAccessoryListener(AccessoryListener listener);
 
-    @Deprecated //use the PersistenService
-    AccessoryBean getAccessory(Integer address, String decoderTypee);
+  void addSensorListener(SensorListener listener);
 
-    @Deprecated //use the PersistenService
-    AccessoryBean persist(AccessoryBean accessory);
+  void removeSensorListener(SensorListener listener);
 
-    void switchAccessory(AccessoryValue value, AccessoryBean accessory);
+  //Sensors
+  @Deprecated //use the PersistenService
+  List<SensorBean> getSensors();
 
-    void addAccessoryListener(AccessoryListener listener);
+  @Deprecated //use the PersistenService
+  SensorBean getSensor(Long id);
 
-    void removeAccessoryListener(AccessoryListener listener);
+  @Deprecated //use the PersistenService
+  SensorBean getSensor(Integer deviceId, Integer contactId);
 
-    void addSensorListener(SensorListener listener);
+  @Deprecated //use the PersistenService
+  SensorBean persist(SensorBean sensor);
 
-    void removeSensorListener(SensorListener listener);
+  void addFunctionListener(FunctionListener listener);
 
-    //Sensors
-    @Deprecated //use the PersistenService
-    List<SensorBean> getSensors();
+  void removeFunctionListener(FunctionListener listener);
 
-    @Deprecated //use the PersistenService
-    SensorBean getSensor(Long id);
+  void addDirectionListener(DirectionListener listener);
 
-    @Deprecated //use the PersistenService
-    SensorBean getSensor(Integer deviceId, Integer contactId);
+  void removeDirectionListener(DirectionListener listener);
 
-    @Deprecated //use the PersistenService
-    SensorBean persist(SensorBean sensor);
+  void addVelocityListener(VelocityListener listener);
 
-    void addFunctionListener(FunctionListener listener);
+  public void removeVelocityListener(VelocityListener listener);
 
-    void removeFunctionListener(FunctionListener listener);
+  @Deprecated //use the PersistenService
+  void remove(SensorBean sensor);
 
-    void addDirectionListener(DirectionListener listener);
+  @Deprecated //use the PersistenService
+  void remove(LocomotiveBean locomotive);
 
-    void removeDirectionListener(DirectionListener listener);
+  @Deprecated //use the PersistenService
+  void remove(AccessoryBean accessory);
 
-    void addVelocityListener(VelocityListener listener);
+  @Deprecated //use the PersistenService
+  void remove(JCSPropertyBean property);
 
-    public void removeVelocityListener(VelocityListener listener);
+  String getControllerName();
 
-    @Deprecated //use the PersistenService
-    void remove(SensorBean sensor);
+  String getControllerSerialNumber();
 
-    @Deprecated //use the PersistenService
-    void remove(LocomotiveBean locomotive);
+  String getControllerArticleNumber();
 
-    @Deprecated //use the PersistenService
-    void remove(AccessoryBean accessory);
+  LinkSxx getLinkSxx();
 
-    @Deprecated //use the PersistenService
-    void remove(JCSPropertyBean property);
+  @Deprecated //use the PersistenService
+  List<JCSPropertyBean> getProperties();
 
-    String getControllerName();
+  @Deprecated //use the PersistenService
+  JCSPropertyBean getProperty(String key);
 
-    String getControllerSerialNumber();
+  @Deprecated //use the PersistenService
+  JCSPropertyBean persist(JCSPropertyBean property);
 
-    String getControllerArticleNumber();
+  void addMessageListener(CanMessageListener listener);
 
-    LinkSxx getLinkSxx();
+  void removeMessageListener(CanMessageListener listener);
 
-    @Deprecated //use the PersistenService
-    List<JCSPropertyBean> getProperties();
+  @Deprecated //use the PersistenService
+  Set<TileBean> getTiles();
 
-    @Deprecated //use the PersistenService
-    JCSPropertyBean getProperty(String key);
+  @Deprecated //use the PersistenService
+  TileBean getTile(Integer x, Integer y);
 
-    @Deprecated //use the PersistenService
-    JCSPropertyBean persist(JCSPropertyBean property);
+  @Deprecated //use the PersistenService
+  TileBean persist(TileBean tile);
 
-    void addMessageListener(CanMessageListener listener);
+  @Deprecated //use the PersistenService
+  void persist(Set<TileBean> tiles);
 
-    void removeMessageListener(CanMessageListener listener);
+  @Deprecated //use the PersistenService
+  void remove(TileBean tile);
 
-    @Deprecated //use the PersistenService
-    Set<TileBean> getTiles();
+  void synchronizeLocomotivesWithController(PropertyChangeListener progressListener);
 
-    @Deprecated //use the PersistenService
-    TileBean getTile(Integer x, Integer y);
+  @Deprecated //use the PersistenService
+  List<RouteBean> getRoutes();
 
-    @Deprecated //use the PersistenService
-    TileBean persist(TileBean tile);
+  @Deprecated //use the PersistenService
+  void persist(RouteBean route);
 
-    @Deprecated //use the PersistenService
-    void persist(Set<TileBean> tiles);
+  @Deprecated //use the PersistenService
+  void remove(RouteBean route);
 
-    @Deprecated //use the PersistenService
-    void remove(TileBean tile);
+  void synchronizeTurnouts();
 
-    void synchronizeLocomotivesWithController();
+  void synchronizeSignals();
 
-    @Deprecated //use the PersistenService
-    List<RouteBean> getRoutes();
-
-    @Deprecated //use the PersistenService
-    void persist(RouteBean route);
-
-    @Deprecated //use the PersistenService
-    void remove(RouteBean route);
-
-    void synchronizeTurnouts();
-
-    void synchronizeSignals();
-
-    void updateGuiStatuses();
+  void updateGuiStatuses();
 }

@@ -16,6 +16,8 @@
 package jcs.controller.cs3.http;
 
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -31,89 +33,108 @@ import org.tinylog.Logger;
  */
 public class SvgIconToPngIconConverter {
 
-    private static final String SVG_NAME_SPACE = "<svg version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
-    private static final String YELLOW = "<style>.st0{fill:rgb(220, 160, 10);}</style>";
+  private static final String SVG_NAME_SPACE = "<svg version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
+  private static final String YELLOW = "<style>.st0{fill:rgb(220, 160, 10);}</style>";
 
-    public SvgIconToPngIconConverter() {
-        ImageIO.scanForPlugins();
+  private PropertyChangeListener progressListener;
+
+  public SvgIconToPngIconConverter() {
+    this(null);
+  }
+
+  public SvgIconToPngIconConverter(PropertyChangeListener progressListener) {
+    this.progressListener = progressListener;
+    ImageIO.scanForPlugins();
+  }
+
+  private void publishProgress(String msg) {
+    if (progressListener != null) {
+      PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, msg);
+      progressListener.propertyChange(pce);
+    }
+  }
+
+  private void convertAndCacheFunctionImage(String imageName, String svg) throws IOException {
+    convertAndCacheFunctionImage(imageName, svg, false);
+  }
+
+  void convertAndCacheFunctionImage(String imageName, String svg, boolean testMode) throws IOException {
+    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions";
+    File cachePath = new File(path);
+    if (cachePath.mkdir()) {
+      Logger.trace("Created new directory " + cachePath);
+      publishProgress("Created new directory " + cachePath);
     }
 
-    private void convertAndCacheFunctionImage(String imageName, String svg) throws IOException {
-        convertAndCacheFunctionImage(imageName, svg, false);
+    //try {
+    if (testMode) {
+      String svgp = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "svg";
+      File svgPath = new File(svgp);
+      if (svgPath.mkdir()) {
+        Logger.trace("Created new directory " + svgPath);
+        publishProgress("Created new directory " + svgPath);
+      }
+
+      //For debug also write the svg's to a file            
+      File svgf = new File(svgp + File.separator + imageName + ".svg");
+      try (BufferedWriter writer = new BufferedWriter(new FileWriter(svgf))) {
+        writer.write(svg);
+      }
     }
 
-    void convertAndCacheFunctionImage(String imageName, String svg, boolean testMode) throws IOException {
-        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions";
-        File cachePath = new File(path);
-        if (cachePath.mkdir()) {
-            Logger.trace("Created new directory " + cachePath);
-        }
+    if (1 == 1) {
+      String svgBlack = svg;
 
-        //try {
-        if (testMode) {
-            String svgp = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "svg";
-            File svgPath = new File(svgp);
-            if (svgPath.mkdir()) {
-                Logger.trace("Created new directory " + svgPath);
-            }
+      if (!svg.contains(SVG_NAME_SPACE)) {
+        svgBlack = svgBlack.replaceFirst("<svg", SVG_NAME_SPACE);
+        Logger.trace(svgBlack);
+        publishProgress("Creating " + svgBlack);
+      }
 
-            //For debug also write the svg's to a file            
-            File svgf = new File(svgp + File.separator + imageName + ".svg");
-            try ( BufferedWriter writer = new BufferedWriter(new FileWriter(svgf))) {
-                writer.write(svg);
-            }
-        }
+      String svg1 = svgBlack.substring(0, svgBlack.indexOf("<path"));
+      String svg2 = svgBlack.substring(svgBlack.indexOf("<path"));
 
-        if (1 == 1) {
-            String svgBlack = svg;
+      //Add Yellow style
+      String svgYellow = svg1 + YELLOW + svg2;
 
-            if (!svg.contains(SVG_NAME_SPACE)) {
-                svgBlack = svgBlack.replaceFirst("<svg", SVG_NAME_SPACE);
-                Logger.trace(svgBlack);
-            }
+      Logger.trace(svgYellow);
+      publishProgress("Creating " + svgYellow);
+      if (svgYellow.contains("fill=\"")) {
+        svgYellow = svgYellow.replaceAll("fill=\"(.*?)\"", "fill=\"#DCA00A\"");
+      } else {
+        svgYellow = svgYellow.replaceAll("<path ", "<path fill=\"rgb(220, 160, 10)\" ");
+      }
 
-            String svg1 = svgBlack.substring(0, svgBlack.indexOf("<path"));
-            String svg2 = svgBlack.substring(svgBlack.indexOf("<path"));
+      String name1 = imageName.substring(0, imageName.lastIndexOf("_"));
+      String name2 = imageName.substring(imageName.lastIndexOf("_"));
 
-            //Add Yellow style
-            String svgYellow = svg1 + YELLOW + svg2;
+      String imageNameBK = name1 + "_sw" + name2;
+      String imageNameYE = name1 + "_ge" + name2;
 
-            Logger.trace(svgYellow);
-            if (svgYellow.contains("fill=\"")) {
-                svgYellow = svgYellow.replaceAll("fill=\"(.*?)\"", "fill=\"#DCA00A\"");
-            } else {
-                svgYellow = svgYellow.replaceAll("<path ", "<path fill=\"rgb(220, 160, 10)\" ");
-            }
+      BufferedImage imgBlack = ImageIO.read(IOUtils.getInputStreamFromString(svgBlack));
+      ImageIO.write((BufferedImage) imgBlack, "PNG", new File(path + File.separator + imageNameBK + ".png"));
 
-            String name1 = imageName.substring(0, imageName.lastIndexOf("_"));
-            String name2 = imageName.substring(imageName.lastIndexOf("_"));
-
-            String imageNameBK = name1 + "_sw" + name2;
-            String imageNameYE = name1 + "_ge" + name2;
-
-            BufferedImage imgBlack = ImageIO.read(IOUtils.getInputStreamFromString(svgBlack));
-            ImageIO.write((BufferedImage) imgBlack, "PNG", new File(path + File.separator + imageNameBK + ".png"));
-
-            BufferedImage imgYellow = ImageIO.read(IOUtils.getInputStreamFromString(svgYellow));
-            ImageIO.write((BufferedImage) imgYellow, "PNG", new File(path + File.separator + imageNameYE + ".png"));
-        }
+      BufferedImage imgYellow = ImageIO.read(IOUtils.getInputStreamFromString(svgYellow));
+      ImageIO.write((BufferedImage) imgYellow, "PNG", new File(path + File.separator + imageNameYE + ".png"));
     }
+  }
 
-    private void handleJSONObject(JSONObject jsonObject) {
-        for (String key : jsonObject.keySet()) {
-            String svg = jsonObject.getString(key);
-            String imageBaseName = key.substring(0, key.indexOf("."));
-            try {
-                convertAndCacheFunctionImage(imageBaseName, svg);
-            } catch (IOException e) {
-                Logger.error("Error in image " + imageBaseName + ": " + e.getMessage());
-            }
-        }
-        Logger.info("Processed " + jsonObject.keySet().size() + " svg's");
+  private void handleJSONObject(JSONObject jsonObject) {
+    for (String key : jsonObject.keySet()) {
+      String svg = jsonObject.getString(key);
+      String imageBaseName = key.substring(0, key.indexOf("."));
+      try {
+        convertAndCacheFunctionImage(imageBaseName, svg);
+      } catch (IOException e) {
+        Logger.error("Error in image " + imageBaseName + ": " + e.getMessage());
+      }
     }
+    Logger.info("Processed " + jsonObject.keySet().size() + " svg's");
+    publishProgress("Processed " + jsonObject.keySet().size() + " svg's");
+  }
 
-    public void convertAndCacheAllFunctionsSvgIcons(String json) {
-        JSONObject jo = new JSONObject(json);
-        handleJSONObject(jo);
-    }
+  public void convertAndCacheAllFunctionsSvgIcons(String json) {
+    JSONObject jo = new JSONObject(json);
+    handleJSONObject(jo);
+  }
 }

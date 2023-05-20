@@ -476,7 +476,7 @@ public class LocomotivePreferencesPanel extends JPanel {
     }
 
     private void synchronize() {
-        TrackControllerFactory.getTrackController().synchronizeLocomotivesWithController();
+        TrackControllerFactory.getTrackController().synchronizeLocomotivesWithController(null);
 
         refresh();
     }
