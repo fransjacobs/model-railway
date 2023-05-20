@@ -25,104 +25,91 @@ import java.awt.geom.Ellipse2D;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
+import jcs.entities.enums.TileType;
 import jcs.trackservice.events.SensorListener;
 
 public class Sensor extends Straight implements Tile, SensorListener {
 
-    private static int idSeq;
-    private boolean active;
+  private static int idSeq;
+  private boolean active;
 
-    public Sensor(TileBean tileBean) {
-        super(tileBean);
+  public Sensor(TileBean tileBean) {
+    super(tileBean);
+  }
+
+  public Sensor(Orientation orientation, int x, int y) {
+    this(orientation, new Point(x, y));
+  }
+
+  public Sensor(Orientation orientation, Point center) {
+    super(orientation, center);
+    this.type = TileType.SENSOR.getTileType();
+  }
+
+  @Override
+  protected final String getNewId() {
+    idSeq++;
+    return "se-" + idSeq;
+  }
+
+  public boolean isActive() {
+    return this.active;
+  }
+
+  public void setActive(boolean active) {
+    this.active = active;
+    this.image = null;
+  }
+
+  private void renderSensor(Graphics2D g2) {
+    int xx, yy; //, w, h;
+    xx = 13;
+    yy = 13;
+
+    Point c = new Point(xx, yy);
+    float radius = 30;
+    float[] dist = {0.0f, 0.6f};
+
+    if (this.active) {
+      Color[] colors = {Color.red.brighter(), Color.white};
+      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
+      g2.setPaint(foreground);
+    } else {
+      Color[] colors = {Color.green.darker(), Color.white};
+      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
+      g2.setPaint(foreground);
     }
 
-    public Sensor(Orientation orientation, int x, int y) {
-        this(orientation, new Point(x, y));
+    g2.fill(new Ellipse2D.Double(xx, yy, 0.5f * radius, 0.5f * radius));
+
+  }
+
+  @Override
+  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    Graphics2D g2d = (Graphics2D) g2.create();
+
+    renderStraight(g2d, trackColor, backgroundColor);
+    renderSensor(g2d);
+
+    g2d.dispose();
+  }
+
+  @Override
+  protected void setIdSeq(int id) {
+    idSeq = id;
+  }
+
+  @Override
+  public void onChange(SensorBean sensor) {
+    if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
+      this.setActive(sensor.isActive());
+      repaintTile();
     }
+  }
 
-    public Sensor(Orientation orientation, Point center) {
-        super(orientation, center);
-    }
-
-    @Override
-    protected final String getNewId() {
-        idSeq++;
-        return "se-" + idSeq;
-    }
-
-    public boolean isActive() {
-        return this.active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-        this.image = null;
-    }
-
-    private void renderSensor(Graphics2D g2) {
-        int x, y; //, w, h;
-        x = 13;
-        y = 13;
-
-        Point c = new Point(x, y);
-        float radius = 30;
-        float[] dist = {0.0f, 0.6f};
-
-        if (this.active) {
-            Color[] colors = {Color.red.brighter(), Color.white};
-            RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
-            g2.setPaint(foreground);
-        } else {
-            Color[] colors = {Color.green.darker(), Color.white};
-            RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
-            g2.setPaint(foreground);
-        }
-
-        g2.fill(new Ellipse2D.Double(x, y, 0.5f * radius, 0.5f * radius));
-
-    }
-
-    @Override
-    public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        Graphics2D g2d = (Graphics2D) g2.create();
-
-        renderStraight(g2d, trackColor, backgroundColor);
-        renderSensor(g2d);
-
-        g2d.dispose();
-    }
-
-    @Override
-    protected void setIdSeq(int id) {
-        idSeq = id;
-    }
-
-    public SensorBean getSensorBean() {
-        if (this.tileBean != null && this.tileBean.getSensorBean() != null) {
-            return this.tileBean.getSensorBean();
-        } else {
-            return null;
-        }
-    }
-
-    public void setSensorBean(SensorBean sensorBean) {
-        if (this.tileBean == null) {
-            this.tileBean = this.getTileBean();
-        }
-        this.tileBean.setSensorBean(sensorBean);
-    }
-
-    @Override
-    public void onChange(SensorBean sensor) {
-        if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
-            this.setActive(sensor.isActive());
-            repaintTile();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + orientation + ", direction: " + direction + ", active: " + active + ", center: " + center + "}";
-    }
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", active: " + active + ", center: (" + x + "," + y + ")}";
+  }
 
 }

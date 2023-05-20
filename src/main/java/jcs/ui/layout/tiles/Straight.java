@@ -22,53 +22,56 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
-import jcs.ui.layout.LayoutUtil;
+import jcs.entities.enums.TileType;
 
 public class Straight extends AbstractTile implements Tile {
 
-    private static int idSeq;
+  private static int idSeq;
 
-    public Straight(TileBean tileBean) {
-        super(tileBean);
-        this.width = LayoutUtil.DEFAULT_WIDTH;
-        this.height = LayoutUtil.DEFAULT_HEIGHT;
-    }
+  public Straight(TileBean tileBean) {
+    super(tileBean);
+    this.width = DEFAULT_WIDTH;
+    this.height = DEFAULT_HEIGHT;
+  }
 
-    public Straight(Orientation orientation, int x, int y) {
-        this(orientation, new Point(x, y));
-    }
+  public Straight(Orientation orientation, Point center) {
+    this(orientation, center.x, center.y);
 
-    public Straight(Orientation orientation, Point center) {
-        super(orientation, center);
-        this.width = DEFAULT_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-    }
+  }
 
-    @Override
-    protected String getNewId() {
-        idSeq++;
-        return "st-" + idSeq;
-    }
+  public Straight(Orientation orientation, int x, int y) {
+    super(orientation, x, y);
+    this.type = TileType.STRAIGHT.getTileType();
+    this.width = DEFAULT_WIDTH;
+    this.height = DEFAULT_HEIGHT;
+  }
 
-    protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        int x, y, w, h;
-        x = 0;
-        y = 17;
-        w = DEFAULT_WIDTH;
-        h = 6;
+  @Override
+  protected String getNewId() {
+    idSeq++;
+    return "st-" + idSeq;
+  }
 
-        g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-        g2.setPaint(trackColor);
-        g2.fillRect(x, y, w, h);
-    }
+  @Override
+  protected void setIdSeq(int id) {
+    idSeq = id;
+  }
 
-    @Override
-    public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        renderStraight(g2, trackColor, backgroundColor);
-    }
+  protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    int xx, yy, w, h;
+    xx = 0;
+    yy = 17;
+    w = DEFAULT_WIDTH;
+    h = 6;
 
-    @Override
-    protected void setIdSeq(int id) {
-        idSeq = id;
-    }
+    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+    g2.setPaint(trackColor);
+    g2.fillRect(xx, yy, w, h);
+  }
+
+  @Override
+  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    renderStraight(g2, trackColor, backgroundColor);
+  }
+
 }

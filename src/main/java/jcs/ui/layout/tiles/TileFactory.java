@@ -121,14 +121,12 @@ public class TileFactory {
     }
 
     public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, Point center, boolean drawOutline) {
-        AbstractTile tile = null;
+        Tile tile = null;
         switch (tileType) {
             case STRAIGHT -> tile = new Straight(orientation, center);
             case CURVED -> tile = new Curved(orientation, center);
             case SWITCH -> tile = new Switch(orientation, direction, center);
-            case CROSS -> {
-                return new Cross(orientation, direction, center);
-            }
+            case CROSS -> tile = new Cross(orientation, direction, center);
             case SIGNAL -> tile = new Signal(orientation, center);
             case SENSOR -> tile = new Sensor(orientation, center);
             case BLOCK -> tile = new Block(orientation, center);

@@ -25,221 +25,222 @@ import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
+import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.enums.Direction;
-import jcs.ui.layout.LayoutUtil;
 
 public class Cross extends Switch implements Tile {
 
-    private static int idSeq;
+  private static int idSeq;
 
-    public static final int CROSS_WIDTH = LayoutUtil.DEFAULT_WIDTH * 2;
-    public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
-    public static final int CROSS_OFFSET = GRID;
+  public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
+  public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
+  public static final int CROSS_OFFSET = GRID;
 
-    public Cross(TileBean tileBean) {
-        super(tileBean);
-        if (Orientation.EAST.equals(orientation) || Orientation.WEST.equals(orientation)) {
-            this.width = CROSS_WIDTH;
-            this.height = DEFAULT_HEIGHT;
-        } else {
-            this.width = DEFAULT_WIDTH;
-            this.height = CROSS_HEIGHT;
-        }
+  public Cross(TileBean tileBean) {
+    super(tileBean);
+    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+      this.width = CROSS_WIDTH;
+      this.height = DEFAULT_HEIGHT;
+    } else {
+      this.width = DEFAULT_WIDTH;
+      this.height = CROSS_HEIGHT;
+    }
+  }
+
+  public Cross(Orientation orientation, Direction direction, int x, int y) {
+    this(orientation, direction, new Point(x, y));
+  }
+
+  public Cross(Orientation orientation, Direction direction, Point center) {
+    super(orientation, direction, center);
+    this.type = TileType.CROSS.getTileType();
+    // As a cross is asymetrical an offset is necessary
+    switch (orientation) {
+      case SOUTH -> {
+        this.offsetX = 0;
+        this.offsetY = CROSS_OFFSET;
+        this.width = DEFAULT_WIDTH;
+        this.height = CROSS_HEIGHT;
+      }
+      case WEST -> {
+        this.offsetX = -CROSS_OFFSET;
+        this.offsetY = 0;
+        this.width = CROSS_WIDTH;
+        this.height = DEFAULT_HEIGHT;
+      }
+      case NORTH -> {
+        this.offsetX = 0;
+        this.offsetY = -CROSS_OFFSET;
+        this.width = DEFAULT_WIDTH;
+        this.height = CROSS_HEIGHT;
+      }
+      default -> {
+        //East so default
+        this.offsetX = +CROSS_OFFSET;
+        this.offsetY = 0;
+        this.width = CROSS_WIDTH;
+        this.height = DEFAULT_HEIGHT;
+      }
+    }
+  }
+
+  @Override
+  protected String getNewId() {
+    idSeq++;
+    return "cs-" + idSeq;
+  }
+
+  @Override
+  protected void setIdSeq(int id) {
+    idSeq = id;
+  }
+
+  @Override
+  public Set<Point> getAltPoints() {
+    int xx = this.x;
+    int yy = this.y;
+    Set<Point> alternatives = new HashSet<>();
+
+    switch (getOrientation()) {
+      case SOUTH -> {
+        Point sp = new Point(xx, (yy + DEFAULT_HEIGHT));
+        alternatives.add(sp);
+      }
+      case WEST -> {
+        Point wp = new Point((xx - DEFAULT_WIDTH), yy);
+        alternatives.add(wp);
+      }
+      case NORTH -> {
+        Point np = new Point(xx, (yy - DEFAULT_HEIGHT));
+        alternatives.add(np);
+      }
+      default -> {
+        //East so default 
+        Point ep = new Point((x + DEFAULT_WIDTH), yy);
+        alternatives.add(ep);
+      }
+    }
+    return alternatives;
+  }
+
+  @Override
+  public void rotate() {
+    super.rotate();
+
+    //Due to the asymetical shape (center is on the left)
+    //the offset has to be changedr the rotation
+    switch (getOrientation()) {
+      case SOUTH -> {
+        this.offsetX = 0;
+        this.offsetY = CROSS_OFFSET;
+        this.width = DEFAULT_WIDTH;
+        this.height = CROSS_HEIGHT;
+      }
+      case WEST -> {
+        this.offsetX = -CROSS_OFFSET;
+        this.offsetY = 0;
+        this.width = CROSS_WIDTH;
+        this.height = DEFAULT_HEIGHT;
+      }
+      case NORTH -> {
+        this.offsetX = 0;
+        this.offsetY = -CROSS_OFFSET;
+        this.width = DEFAULT_WIDTH;
+        this.height = CROSS_HEIGHT;
+      }
+      default -> {
+        //East so default 
+        this.offsetX = +CROSS_OFFSET;
+        this.offsetY = 0;
+        this.width = CROSS_WIDTH;
+        this.height = DEFAULT_HEIGHT;
+      }
+    }
+  }
+
+  @Override
+  protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    int xx, yy, w, h;
+    xx = 0;
+    yy = 17;
+    w = DEFAULT_WIDTH;
+    h = 6;
+
+    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+    g2.setPaint(trackColor);
+    g2.fillRect(xx, yy, w, h);
+  }
+
+  protected void renderStraight2(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    int xx, yy, w, h;
+    xx = DEFAULT_WIDTH;
+    yy = 17;
+    w = DEFAULT_WIDTH;
+    h = 6;
+
+    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+    g2.setPaint(trackColor);
+    g2.fillRect(xx, yy, w, h);
+  }
+
+  @Override
+  protected void renderDiagonal(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    int[] xPoints, yPoints;
+    if (Direction.RIGHT.equals(getDirection())) {
+      xPoints = new int[]{40, 40, 16, 24};
+      yPoints = new int[]{16, 24, 0, 0};
+    } else {
+      xPoints = new int[]{40, 40, 16, 24};
+      yPoints = new int[]{24, 16, 40, 40};
     }
 
-    public Cross(Orientation orientation, Direction direction, int x, int y) {
-        this(orientation, direction, new Point(x, y));
+    g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setPaint(trackColor);
+    g2.fillPolygon(xPoints, yPoints, xPoints.length);
+  }
+
+  protected void renderDiagonal2(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    int[] xPoints, yPoints;
+    if (Direction.RIGHT.equals(getDirection())) {
+      xPoints = new int[]{40, 40, 56, 64};
+      yPoints = new int[]{16, 24, 40, 40};
+    } else {
+      xPoints = new int[]{40, 40, 56, 64};
+      yPoints = new int[]{24, 16, 0, 0};
     }
 
-    public Cross(Orientation orientation, Direction direction, Point center) {
-        super(orientation, direction, center);
-        // As a cross is asymetrical an offset is necessary
-        switch (orientation) {
-            case SOUTH:
-                this.offsetX = 0;
-                this.offsetY = CROSS_OFFSET;
-                this.width = DEFAULT_WIDTH;
-                this.height = CROSS_HEIGHT;
-                break;
-            case WEST:
-                this.offsetX = -CROSS_OFFSET;
-                this.offsetY = 0;
-                this.width = CROSS_WIDTH;
-                this.height = DEFAULT_HEIGHT;
-                break;
-            case NORTH:
-                this.offsetX = 0;
-                this.offsetY = -CROSS_OFFSET;
-                this.width = DEFAULT_WIDTH;
-                this.height = CROSS_HEIGHT;
-                break;
-            default:
-                //East so default 
-                this.offsetX = +CROSS_OFFSET;
-                this.offsetY = 0;
-                this.width = CROSS_WIDTH;
-                this.height = DEFAULT_HEIGHT;
-                break;
-        }
+    g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setPaint(trackColor);
+    g2.fillPolygon(xPoints, yPoints, xPoints.length);
+  }
+
+  @Override
+  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+    if (value == null) {
+      this.value = AccessoryValue.OFF;
     }
 
-    @Override
-    public Set<Point> getAltPoints() {
-        int x = this.center.x;
-        int y = this.center.y;
-        Set<Point> alternatives = new HashSet<>();
+    switch (this.value) {
+      case RED -> {
+        renderStraight2(g2, trackColor, backgroundColor);
+        renderDiagonal(g2, trackColor, backgroundColor);
 
-        switch (orientation) {
-            case SOUTH:
-                Point sp = new Point(x, (y + DEFAULT_HEIGHT));
-                alternatives.add(sp);
-                break;
-            case WEST:
-                Point wp = new Point((x - DEFAULT_WIDTH), y);
-                alternatives.add(wp);
-                break;
-            case NORTH:
-                Point np = new Point(x, (y - DEFAULT_HEIGHT));
-                alternatives.add(np);
-                break;
-            default:
-                //East so default 
-                Point ep = new Point((x + DEFAULT_WIDTH), y);
-                alternatives.add(ep);
-                break;
-        }
-        return alternatives;
+        renderStraight(g2, Color.red, backgroundColor);
+        renderDiagonal2(g2, Color.red, backgroundColor);
+      }
+      case GREEN -> {
+        renderDiagonal(g2, trackColor, backgroundColor);
+        renderDiagonal2(g2, trackColor, backgroundColor);
+        renderStraight(g2, Color.green, backgroundColor);
+        renderStraight2(g2, Color.green, backgroundColor);
+      }
+      default -> {
+        renderStraight(g2, trackColor, backgroundColor);
+        renderStraight2(g2, trackColor, backgroundColor);
+        renderDiagonal(g2, trackColor, backgroundColor);
+        renderDiagonal2(g2, trackColor, backgroundColor);
+      }
     }
-
-    @Override
-    public void rotate() {
-        super.rotate();
-
-        //Due to the asymetical shape (center is on the left)
-        //the offset has to be changedr the rotation
-        switch (orientation) {
-            case SOUTH:
-                this.offsetX = 0;
-                this.offsetY = CROSS_OFFSET;
-                this.width = DEFAULT_WIDTH;
-                this.height = CROSS_HEIGHT;
-                break;
-            case WEST:
-                this.offsetX = -CROSS_OFFSET;
-                this.offsetY = 0;
-                this.width = CROSS_WIDTH;
-                this.height = DEFAULT_HEIGHT;
-                break;
-            case NORTH:
-                this.offsetX = 0;
-                this.offsetY = -CROSS_OFFSET;
-                this.width = DEFAULT_WIDTH;
-                this.height = CROSS_HEIGHT;
-                break;
-            default:
-                //East so default 
-                this.offsetX = +CROSS_OFFSET;
-                this.offsetY = 0;
-                this.width = CROSS_WIDTH;
-                this.height = DEFAULT_HEIGHT;
-                break;
-        }
-    }
-
-    @Override
-    protected String getNewId() {
-        idSeq++;
-        return "cs-" + idSeq;
-    }
-
-    @Override
-    protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        int x, y, w, h;
-        x = 0;
-        y = 17;
-        w = DEFAULT_WIDTH;
-        h = 6;
-
-        g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-        g2.setPaint(trackColor);
-        g2.fillRect(x, y, w, h);
-    }
-
-    protected void renderStraight2(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        int x, y, w, h;
-        x = DEFAULT_WIDTH;
-        y = 17;
-        w = DEFAULT_WIDTH;
-        h = 6;
-
-        g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-        g2.setPaint(trackColor);
-        g2.fillRect(x, y, w, h);
-    }
-
-    @Override
-    protected void renderDiagonal(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        int[] xPoints, yPoints;
-        if (Direction.RIGHT.equals(this.direction)) {
-            xPoints = new int[]{40, 40, 16, 24};
-            yPoints = new int[]{16, 24, 0, 0};
-        } else {
-            xPoints = new int[]{40, 40, 16, 24};
-            yPoints = new int[]{24, 16, 40, 40};
-        }
-
-        g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2.setPaint(trackColor);
-        g2.fillPolygon(xPoints, yPoints, xPoints.length);
-    }
-
-    protected void renderDiagonal2(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        int[] xPoints, yPoints;
-        if (Direction.RIGHT.equals(this.direction)) {
-            xPoints = new int[]{40, 40, 56, 64};
-            yPoints = new int[]{16, 24, 40, 40};
-        } else {
-            xPoints = new int[]{40, 40, 56, 64};
-            yPoints = new int[]{24, 16, 0, 0};
-        }
-
-        g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        g2.setPaint(trackColor);
-        g2.fillPolygon(xPoints, yPoints, xPoints.length);
-    }
-
-    @Override
-    public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-        if (value == null) {
-            this.value = AccessoryValue.OFF;
-        }
-
-        switch (this.value) {
-            case RED:
-                renderStraight2(g2, trackColor, backgroundColor);
-                renderDiagonal(g2, trackColor, backgroundColor);
-
-                renderStraight(g2, Color.red, backgroundColor);
-                renderDiagonal2(g2, Color.red, backgroundColor);
-                break;
-            case GREEN:
-                renderDiagonal(g2, trackColor, backgroundColor);
-                renderDiagonal2(g2, trackColor, backgroundColor);
-                renderStraight(g2, Color.green, backgroundColor);
-                renderStraight2(g2, Color.green, backgroundColor);
-                break;
-            default:
-                renderStraight(g2, trackColor, backgroundColor);
-                renderStraight2(g2, trackColor, backgroundColor);
-                renderDiagonal(g2, trackColor, backgroundColor);
-                renderDiagonal2(g2, trackColor, backgroundColor);
-                break;
-        }
-    }
-
-    @Override
-    protected void setIdSeq(int id) {
-        idSeq = id;
-    }
+  }
 
 }
