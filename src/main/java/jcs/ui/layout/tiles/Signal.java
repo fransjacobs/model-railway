@@ -86,12 +86,6 @@ public class Signal extends Straight implements Tile, AccessoryListener {
     this.image = null;
   }
 
-//    public SignalType getSignalType() {
-//        return signalType;
-//    }
-//    public void setSignalType(SignalType signalType) {
-//        this.signalType = signalType;
-//    }
   /**
    * Render a Signal with 2 lights
    *
@@ -293,19 +287,6 @@ public class Signal extends Straight implements Tile, AccessoryListener {
     g2d.dispose();
   }
 
-//    public AccessoryBean getAccessoryBean() {
-//        if (this.tileBean != null && this.tileBean.getAccessoryBean() != null) {
-//            return (AccessoryBean) this.tileBean.getAccessoryBean();
-//        } else {
-//            return null;
-//        }
-//    }
-//    public void setAccessoryBean(AccessoryBean accessoryBean) {
-//        if (this.tileBean == null) {
-//            this.tileBean = this.getTileBean();
-//        }
-//        this.tileBean.setAccessoryBean(accessoryBean);
-//    }
   @Override
   public void onChange(AccessoryMessageEvent event) {
     if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {

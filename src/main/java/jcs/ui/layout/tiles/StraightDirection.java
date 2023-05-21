@@ -15,41 +15,42 @@
  */
 package jcs.ui.layout.tiles;
 
-import jcs.ui.layout.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
+import java.awt.RadialGradientPaint;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Path2D;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
+import org.tinylog.Logger;
 
-public class Straight extends AbstractTile implements Tile {
+public class StraightDirection extends Straight {
 
   private static int idSeq;
 
-  public Straight(TileBean tileBean) {
+  public StraightDirection(TileBean tileBean) {
     super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
   }
 
-  public Straight(Orientation orientation, Point center) {
-    this(orientation, center.x, center.y);
-
+  public StraightDirection(Orientation orientation, int x, int y) {
+    this(orientation, new Point(x, y));
   }
 
-  public Straight(Orientation orientation, int x, int y) {
-    super(orientation, x, y);
-    this.type = TileType.STRAIGHT.getTileType();
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public StraightDirection(Orientation orientation, Point center) {
+    super(orientation, center);
+    this.type = TileType.STRAIGHT_DIR.getTileType();
   }
 
   @Override
-  protected String getNewId() {
+  protected final String getNewId() {
     idSeq++;
-    return "st-" + idSeq;
+    return "sd-" + idSeq;
   }
 
   @Override
@@ -57,23 +58,24 @@ public class Straight extends AbstractTile implements Tile {
     idSeq = id;
   }
 
-  protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    int xx, yy, w, h;
-    xx = 0;
-    yy = 17;
-    w = DEFAULT_WIDTH;
-    h = 6;
+  private void renderDirectionArrow(Graphics2D g2) {
 
+    //   |\
+    // ==|+===
+    //   |/
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
-    g2.fillRect(xx, yy, w, h);
+    g2.setPaint(Color.green.darker());
+
+    g2.fillPolygon(new int[]{15, 15, 27}, new int[]{13, 27, 20}, 3);
   }
 
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    renderStraight(g2, trackColor, backgroundColor);
+    Graphics2D g2d = (Graphics2D) g2.create();
+
+    renderStraight(g2d, trackColor, backgroundColor);
+    renderDirectionArrow(g2d);
+    g2d.dispose();
   }
 
-  
-  
 }

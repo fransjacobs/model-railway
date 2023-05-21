@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import jcs.ui.layout.Tile;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.MultipleGradientPaint.CycleMethod;
@@ -28,7 +27,7 @@ import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 import jcs.trackservice.events.SensorListener;
 
-public class Sensor extends Straight implements Tile, SensorListener {
+public class Sensor extends Straight implements SensorListener {
 
   private static int idSeq;
   private boolean active;

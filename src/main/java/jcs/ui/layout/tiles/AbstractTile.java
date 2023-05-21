@@ -595,7 +595,7 @@ abstract class AbstractTile extends TileBean implements Tile {
 //  }
   @Override
   public String toString() {
-    return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", center: (" + this.x + "," + this.y + ")}";
+    return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", center: " + xyToString() + "}";
   }
 
   @Override
@@ -652,6 +652,10 @@ abstract class AbstractTile extends TileBean implements Tile {
 
     //Check if X and Y range is ok
     return !(x < tlx || x > (tlx + w) || y < tly || y > (tly + h));
+  }
+
+  protected String xyToString() {
+    return "(" + this.x + "," + this.y + ")";
   }
 
   @Override
