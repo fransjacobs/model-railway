@@ -369,11 +369,9 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public TileBean persist(TileBean tileBean) {
     if (database.where("id=?", tileBean.getId()).first(TileBean.class) != null) {
-      int rows = database.update(tileBean).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      database.update(tileBean).getRowsAffected();
     } else {
-      int rows = database.insert(tileBean).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      database.insert(tileBean).getRowsAffected();
     }
     return tileBean;
   }
