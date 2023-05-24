@@ -26,6 +26,7 @@ import jcs.entities.enums.Orientation;
 import org.tinylog.Logger;
 import static jcs.entities.enums.TileType.CURVED;
 import static jcs.entities.enums.TileType.STRAIGHT;
+import static jcs.entities.enums.TileType.STRAIGHT_DIR;
 import jcs.ui.layout.Tile;
 
 /**
@@ -46,6 +47,7 @@ public class TileFactory {
   private static int sensorIdSeq;
   private static int blockIdSeq;
   private static int straightDirectionIdSeq;
+  private static int endIdSeq;
 
   private static int getIdSeq(String id) {
     String idnr = id.substring(3);
@@ -118,6 +120,11 @@ public class TileFactory {
         straightDirectionIdSeq = getHeighestIdSeq(straightDirectionIdSeq, getIdSeq(tileBean.getId()));
         tile.setIdSeq(straightDirectionIdSeq);
       }
+      case END -> {
+        tile = new End(tileBean);
+        endIdSeq = getHeighestIdSeq(endIdSeq, getIdSeq(tileBean.getId()));
+        tile.setIdSeq(endIdSeq);
+      }
       default ->
         Logger.warn("Unknown Tile Type " + tileType);
     }
@@ -147,6 +154,8 @@ public class TileFactory {
         tile = new Block(orientation, center);
       case STRAIGHT_DIR ->
         tile = new StraightDirection(orientation, center);
+      case END ->
+        tile = new End(orientation, center);
 
       default ->
         Logger.warn("Unknown Tile Type " + tileType);

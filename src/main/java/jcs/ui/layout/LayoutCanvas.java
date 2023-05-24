@@ -50,6 +50,8 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.TileType.STRAIGHT;
+import static jcs.entities.enums.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
@@ -381,7 +383,6 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     //Set<TileBean> beans = new HashSet<>();
-
     List<TileBean> beans = new LinkedList<>();
 
     for (Tile tile : snapshot) {
@@ -541,7 +542,7 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
     }
 
     switch (this.mode) {
-      case ADD:
+      case ADD -> {
         if (MouseEvent.BUTTON1 == evt.getButton()) {
           this.selectedTiles.clear();
 
@@ -552,21 +553,21 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
         if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
           showOperationsPopupMenu(tile, p);
         }
-        break;
-      case DELETE:
+      }
+      case DELETE -> {
         Set<Point> toRemove = new HashSet<>(selectedTiles);
         this.removeTiles(toRemove);
-        break;
-      case CONTROL:
+      }
+      case CONTROL -> {
         if (tile != null) {
           executeControlActionForTile(tile, p);
         }
-        break;
-      default:
+      }
+      default -> {
         if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
           showOperationsPopupMenu(tile, p);
         }
-        break;
+      }
     }
     this.repaint();
 
@@ -575,24 +576,22 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
   private void executeControlActionForTile(Tile tile, Point p) {
     TileType tt = tile.getTileType();
     switch (tt) {
-      case STRAIGHT:
-        break;
-      case CURVED:
-        break;
-      case SENSOR:
-        break;
-      case BLOCK:
-        break;
-      case SIGNAL:
+      case STRAIGHT -> {
+      }
+      case CURVED -> {
+      }
+      case SENSOR -> {
+      }
+      case BLOCK -> {
+      }
+      case SIGNAL ->
         toggleSignal((Signal) tile);
-        break;
-      case SWITCH:
+      case SWITCH ->
         toggleSwitch((Switch) tile);
-        break;
-      case CROSS:
-        break;
-      default:
-        break;
+      case CROSS -> {
+      }
+      default -> {
+      }
     }
   }
 
@@ -631,32 +630,41 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
       Tile tile = findTile(tcp);
       TileType tt = tile.getTileType();
       switch (tt) {
-        case STRAIGHT:
+        case END -> {
           showRotate = true;
           showDelete = true;
-          break;
-        case CURVED:
+        }
+        case STRAIGHT_DIR -> {
           showRotate = true;
           showDelete = true;
-          break;
-        case SENSOR:
+        }
+        case STRAIGHT -> {
+          showRotate = true;
+          showDelete = true;
+        }
+        case CURVED -> {
+          showRotate = true;
+          showDelete = true;
+        }
+        case SENSOR -> {
           SensorDialog fbd = new SensorDialog(getParentFrame(), (Sensor) tile);
           fbd.setVisible(true);
-          break;
-//                case BLOCK:
+        }
+        case SIGNAL -> {
+          SignalDialog sd = new SignalDialog(getParentFrame(), (Signal) tile);
+          sd.setVisible(true);
+        }
+        case SWITCH -> {
+          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
+          td.setVisible(true);
+        }
+        case BLOCK -> {
 //                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
 //                    osd.setVisible(true);
 //                    break;
-        case SIGNAL:
-          SignalDialog sd = new SignalDialog(getParentFrame(), (Signal) tile);
-          sd.setVisible(true);
-          break;
-        case SWITCH:
-          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
-          td.setVisible(true);
-          break;
-        default:
-          break;
+        }
+        default -> {
+        }
       }
     }
     this.executor.execute(() -> repaint());
@@ -673,45 +681,37 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 
     TileType tt = tile.getTileType();
     switch (tt) {
-//            case "StraightTrack":
-//                showRotate = true;
-//                showDelete = true;
-//                break;
-//            case "DiagonalTrack":
-//                showRotate = true;
-//                showDelete = true;
-//                break;
-      case SENSOR:
+      case SENSOR -> {
         showProperties = true;
         showRotate = true;
         showDelete = true;
-        break;
-      case BLOCK:
+      }
+      case BLOCK -> {
         showProperties = true;
         showRotate = true;
         showDelete = true;
-        break;
-      case SIGNAL:
+      }
+      case SIGNAL -> {
         showProperties = true;
         showRotate = true;
         showDelete = true;
-        break;
-      case SWITCH:
+      }
+      case SWITCH -> {
         showProperties = true;
         showFlip = true;
         showRotate = true;
         showDelete = true;
-        break;
-      case CROSS:
+      }
+      case CROSS -> {
         showProperties = true;
         showFlip = true;
         showRotate = true;
         showDelete = true;
-        break;
-      default:
+      }
+      default -> {
         showRotate = true;
         showDelete = true;
-        break;
+      }
     }
     this.xyMI.setVisible(true);
     this.xyMI.setText(tile.getId() + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
@@ -888,20 +888,12 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
       int h = et.getHeight();
 
       Point np;
-      switch (this.orientation) {
-        case EAST:
-          np = new Point(ecp.x + w, ecp.y);
-          break;
-        case WEST:
-          np = new Point(newPoint.x - w, ecp.y);
-          break;
-        case SOUTH:
-          np = new Point(ecp.x, newPoint.y + h);
-          break;
-        default:
-          np = new Point(ecp.x, newPoint.y - h);
-          break;
-      }
+      np = switch (this.orientation) {
+        case EAST -> new Point(ecp.x + w, ecp.y);
+        case WEST -> new Point(newPoint.x - w, ecp.y);
+        case SOUTH -> new Point(ecp.x, newPoint.y + h);
+        default -> new Point(ecp.x, newPoint.y - h);
+      };
 
       Logger.trace("Alternative CP: " + np);
       // recursive check

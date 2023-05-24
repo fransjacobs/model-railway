@@ -87,6 +87,11 @@ public class TileTester extends JFrame {
   private final Tile tileWest9;
   private final Tile tileNorth9;
 
+  private final Tile tileEast10;
+  private final Tile tileSouth10;
+  private final Tile tileWest10;
+  private final Tile tileNorth10;
+
   @SuppressWarnings("OverridableMethodCallInConstructor")
   public TileTester(String title) {
     super(title);
@@ -152,6 +157,11 @@ public class TileTester extends JFrame {
     tileSouth9 = new StraightDirection(Orientation.SOUTH, 160, 700);
     tileWest9 = new StraightDirection(Orientation.WEST, 250, 700);
     tileNorth9 = new StraightDirection(Orientation.NORTH, 340, 700);
+
+    tileEast10 = new End(Orientation.EAST, 70, 750);
+    tileSouth10 = new End(Orientation.SOUTH, 160, 750);
+    tileWest10 = new End(Orientation.WEST, 250, 750);
+    tileNorth10 = new End(Orientation.NORTH, 340, 750);
 
   }
 
@@ -322,6 +332,23 @@ public class TileTester extends JFrame {
     tileNorth9.drawBounds(g2d);
     tileNorth9.drawCenterPoint(g2d, Color.cyan);
 
+    //
+    tileEast10.drawTile(g2d, false);
+    tileEast10.drawBounds(g2d);
+    tileEast10.drawCenterPoint(g2d, Color.red);
+
+    tileSouth10.drawTile(g2d, false);
+    tileSouth10.drawBounds(g2d);
+    tileSouth10.drawCenterPoint(g2d, Color.blue);
+
+    tileWest10.drawTile(g2d, false);
+    tileWest10.drawBounds(g2d);
+    tileWest10.drawCenterPoint(g2d, Color.red);
+
+    tileNorth10.drawTile(g2d, false);
+    tileNorth10.drawBounds(g2d);
+    tileNorth10.drawCenterPoint(g2d, Color.cyan);
+
   }
 
   public static void main(String args[]) {
@@ -335,7 +362,7 @@ public class TileTester extends JFrame {
     TileTester app = new TileTester("Tile Tester 2");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    app.setSize(400, 760);
+    app.setSize(400, 820);
 
     app.setLocation(dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 

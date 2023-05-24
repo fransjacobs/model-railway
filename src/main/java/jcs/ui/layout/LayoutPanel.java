@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout;
 
@@ -196,6 +193,7 @@ public class LayoutPanel extends JPanel {
     crossLBtn = new JToggleButton();
     crossRBtn = new JToggleButton();
     straightDirectionBtn = new JToggleButton();
+    endTrackBtn = new JToggleButton();
     filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     moveBtn = new JButton();
     flipVerticalBtn = new JButton();
@@ -593,7 +591,6 @@ public class LayoutPanel extends JPanel {
     straightDirectionBtn.setDoubleBuffered(true);
     straightDirectionBtn.setFocusable(false);
     straightDirectionBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    straightDirectionBtn.setLabel("");
     straightDirectionBtn.setMaximumSize(new Dimension(38, 38));
     straightDirectionBtn.setMinimumSize(new Dimension(38, 38));
     straightDirectionBtn.setPreferredSize(new Dimension(38, 38));
@@ -605,6 +602,22 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(straightDirectionBtn);
+
+    tileBtnGroup.add(endTrackBtn);
+    endTrackBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-end-track.png"))); // NOI18N
+    endTrackBtn.setFocusable(false);
+    endTrackBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    endTrackBtn.setMaximumSize(new Dimension(38, 38));
+    endTrackBtn.setMinimumSize(new Dimension(38, 38));
+    endTrackBtn.setPreferredSize(new Dimension(38, 38));
+    endTrackBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-end-track_Y.png"))); // NOI18N
+    endTrackBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    endTrackBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        endTrackBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(endTrackBtn);
     toolBar.add(filler4);
 
     moveBtn.setIcon(new ImageIcon(getClass().getResource("/media/drag-24.png"))); // NOI18N
@@ -863,6 +876,10 @@ public class LayoutPanel extends JPanel {
     setTileType(TileType.STRAIGHT_DIR);
   }//GEN-LAST:event_straightDirectionBtnActionPerformed
 
+  private void endTrackBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_endTrackBtnActionPerformed
+    setTileType(TileType.END);
+  }//GEN-LAST:event_endTrackBtnActionPerformed
+
   private void setTileType(TileType tileType) {
     this.tileType = tileType;
     this.canvas.setTileType(tileType);
@@ -938,6 +955,7 @@ public class LayoutPanel extends JPanel {
   private JPopupMenu curvedPopupMenu;
   private JButton deleteBtn;
   private JMenuItem deleteMI;
+  private JToggleButton endTrackBtn;
   private Box.Filler filler1;
   private Box.Filler filler2;
   private Box.Filler filler3;
