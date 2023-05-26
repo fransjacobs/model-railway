@@ -140,6 +140,7 @@ public class Block extends AbstractTile implements Tile {
   @Override
   public void drawName(Graphics2D g2d) {
 
+    g2d.setPaint(Color.darkGray);
     switch (getOrientation()) {
       case EAST ->
         drawRotate(g2d, 16, GRID + 4, 0, getId());

@@ -28,16 +28,23 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
+import static jcs.entities.TileBean.DEFAULT_HEIGHT;
+import static jcs.entities.TileBean.DEFAULT_WIDTH;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.ui.layout.LayoutUtil;
-import jcs.ui.layout.RepaintListener;
 import jcs.ui.layout.Tile;
+import static jcs.ui.layout.Tile.DEFAULT_TRACK_COLOR;
 
 /**
  *
@@ -54,7 +61,6 @@ import jcs.ui.layout.Tile;
  */
 abstract class AbstractTile extends TileBean implements Tile {
 
-  protected BufferedImage image;
   protected int width;
   protected int height;
   protected int offsetX = 0;
@@ -67,7 +73,7 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   protected boolean drawOutline = false;
 
-  protected RepaintListener repaintListener;
+  protected PropertyChangeListener propertyChangeListener;
 
   protected AbstractTile(Point center) {
     this(Orientation.EAST, Direction.CENTER, center.x, center.y);
@@ -153,7 +159,6 @@ abstract class AbstractTile extends TileBean implements Tile {
   public final void setTrackColor(Color trackColor) {
     if (!Objects.equals(this.trackColor, trackColor)) {
       this.trackColor = trackColor;
-      this.image = null;
     }
   }
 
@@ -166,7 +171,6 @@ abstract class AbstractTile extends TileBean implements Tile {
   public void setBackgroundColor(Color backgroundColor) {
     if (!Objects.equals(this.backgroundColor, backgroundColor)) {
       this.backgroundColor = backgroundColor;
-      this.image = null;
     }
   }
 
@@ -182,7 +186,14 @@ abstract class AbstractTile extends TileBean implements Tile {
    */
   @Override
   public void drawTile(Graphics2D g2d, boolean drawOutline) {
-    if (image == null) {
+    //by default and image is rendered in the EAST orientation
+    Orientation o = getOrientation();
+    if (o == null) {
+      o = Orientation.EAST;
+    }
+
+    BufferedImage cbi = TileImageCache.get(this);
+    if (cbi == null) {
       BufferedImage bi = createImage();
 
       Graphics2D g2di = bi.createGraphics();
@@ -198,12 +209,6 @@ abstract class AbstractTile extends TileBean implements Tile {
 
       AffineTransform backup = g2di.getTransform();
       AffineTransform trans = new AffineTransform();
-
-      //by default and image is rendered in the EAST orientation
-      Orientation o = getOrientation();
-      if (o == null) {
-        o = Orientation.EAST;
-      }
 
       g2di.setBackground(backgroundColor);
       g2di.clearRect(0, 0, this.width, this.height);
@@ -249,14 +254,13 @@ abstract class AbstractTile extends TileBean implements Tile {
           g2di.drawRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         }
       }
-
-      image = bi;
       g2di.setTransform(backup);
-
       g2di.dispose();
+      TileImageCache.put(this, bi);
+      cbi = bi;
     }
 
-    g2d.drawImage(image, (x - image.getWidth() / 2) + this.offsetX, (y - image.getHeight() / 2) + this.offsetY, null);
+    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + this.offsetX, (y - cbi.getHeight() / 2) + this.offsetY, null);
   }
 
   /**
@@ -376,28 +380,16 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public void setOrientation(Orientation orientation) {
-    if (!getOrientation().equals(orientation)) {
-      //image is cached, so remove will be created again
-      image = null;
-    }
     this.tileOrientation = orientation.getOrientation();
   }
 
   @Override
   public void setDirection(Direction direction) {
-    if (!Direction.get(tileDirection).equals(direction)) {
-      //image is cached, so remove will be created again
-      image = null;
-    }
     this.tileDirection = direction.getDirection();
   }
 
   @Override
   public void setCenter(Point center) {
-    if (!(this.x == center.x && this.y == center.y)) {
-      //image is cached, so remove will be created again
-      image = null;
-    }
     this.x = center.x;
     this.y = center.y;
   }
@@ -462,20 +454,6 @@ abstract class AbstractTile extends TileBean implements Tile {
     } else {
       return this.x;
     }
-
-//    int cx;
-//    if (this.center != null) {
-//      cx = this.center.x;
-//    } else {
-//      int w;
-//      if (this.width > 0) {
-//        w = this.width;
-//      } else {
-//        w = Tile.DEFAULT_WIDTH;
-//      }
-//      cx = w / 2;
-//    }
-//    return cx;
   }
 
   @Override
@@ -491,56 +469,8 @@ abstract class AbstractTile extends TileBean implements Tile {
     } else {
       return this.y;
     }
-
-//    int cy;
-//    if (this.center != null) {
-//      cy = this.center.y;
-//    } else {
-//      int h;
-//      if (this.height > 0) {
-//        h = this.height;
-//      } else {
-//        h = Tile.DEFAULT_HEIGHT;
-//      }
-//      cy = h / 2;
-//    }
-//    return cy;
   }
 
-//    @Override
-//    public TileBean getTileBean() {
-//        if (tileBean == null) {
-//            Logger.trace("Create new TileBean for: " + getClass().getName());
-//            TileType tileType = TileType.get(getClass().getSimpleName());
-//            SignalType signalType = null;
-//            if (this instanceof Signal signal) {
-//                signalType = signal.getSignalType();
-//            }
-//
-//            tileBean = new TileBean(id, tileType, orientation, direction, center, signalType, null, null);
-//        } else {
-//            //Synchronize the bean
-//            this.tileBean.setOrientation(orientation);
-//            this.tileBean.setDirection(direction);
-//            this.tileBean.setCenter(center);
-//            if (this instanceof Signal signal) {
-//                this.tileBean.setSignalType(signal.getSignalType());
-//            }
-//        }
-//        return tileBean;
-//    }
-//    @Override
-//    public final void setTileBean(TileBean tileBean) {
-//        this.tileBean = tileBean;
-//        this.orientation = tileBean.getOrientation();
-//        this.direction = tileBean.getDirection();
-//        this.center = tileBean.getCenter();
-//
-//        if (tileBean.getTileType().equals(TileType.SIGNAL)) {
-//            ((Signal) this).setSignalType(tileBean.getSignalType());
-//        }
-//        this.id = tileBean.getId();
-//    }
   public boolean isDrawName() {
     return drawName;
   }
@@ -558,41 +488,9 @@ abstract class AbstractTile extends TileBean implements Tile {
   public void setDrawOutline(boolean drawOutline) {
     if (this.drawOutline != drawOutline) {
       this.drawOutline = drawOutline;
-      this.image = null;
     }
   }
 
-//  @Override
-//  public int hashCode() {
-//    int hash = 5;
-//    hash = 59 * hash + Objects.hashCode(this.getClass().getSimpleName());
-//    hash = 59 * hash + Objects.hashCode(this.center);
-//    hash = 59 * hash + Objects.hashCode(this.id);
-//    return hash;
-//  }
-//  @Override
-//  public boolean equals(Object obj) {
-//    if (this == obj) {
-//      return true;
-//    }
-//    if (obj == null) {
-//      return false;
-//    }
-//    if (!Objects.equals(getClass(), obj.getClass())) {
-//      return false;
-//    }
-//    final AbstractTile other = (AbstractTile) obj;
-//    if (this.orientation != other.orientation) {
-//      return false;
-//    }
-//    if (this.direction != other.direction) {
-//      return false;
-//    }
-//    if (Objects.equals(this.id, other.id)) {
-//      return false;
-//    }
-//    return Objects.equals(this.center, other.center);
-//  }
   @Override
   public String toString() {
     return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", center: " + xyToString() + "}";
@@ -693,18 +591,19 @@ abstract class AbstractTile extends TileBean implements Tile {
     return getBounds().getPathIterator(at, flatness);
   }
 
-  public RepaintListener getRepaintListener() {
-    return repaintListener;
+  public PropertyChangeListener getPropertyChangeListener() {
+    return this.propertyChangeListener;
   }
 
   @Override
-  public void setRepaintListener(RepaintListener repaintListener) {
-    this.repaintListener = repaintListener;
+  public void setPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+    this.propertyChangeListener = propertyChangeListener;
   }
 
   protected void repaintTile() {
-    if (this.repaintListener != null) {
-      this.repaintListener.repaintTile(this);
+    if (this.propertyChangeListener != null) {
+      this.propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "repaintTile", this, this));
     }
   }
+
 }

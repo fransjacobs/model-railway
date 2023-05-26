@@ -16,6 +16,7 @@
 package jcs.ui.layout;
 
 import java.awt.Point;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,7 +118,7 @@ public class LayoutUtil {
    * @param showValues
    * @return A Map of tiles, key is the center point of the tile
    */
-  public static final Map<Point, Tile> loadLayout(boolean drawGridLines, RepaintListener listener, boolean showValues) {
+  public static final Map<Point, Tile> loadLayout(boolean drawGridLines, PropertyChangeListener listener, boolean showValues) {
     synchronized (LayoutUtil.tiles) {
       LayoutUtil.tiles.clear();
       LayoutUtil.altTilesLookup.clear();
@@ -133,7 +134,7 @@ public class LayoutUtil {
           Tile tile = TileFactory.createTile(tb, drawGridLines, showValues);
 
           if (listener != null) {
-            tile.setRepaintListener(listener);
+            tile.setPropertyChangeListener(listener);
           }
 
           registerAsEventListener(tile);

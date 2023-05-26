@@ -32,7 +32,7 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
   private static int idSeq;
 
-  protected AccessoryValue value;
+  protected AccessoryValue accessoryValue;
   protected AccessoryValue routeValue;
   protected Color routeColor;
 
@@ -59,15 +59,21 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
     return "sw-" + idSeq;
   }
 
+  public AccessoryValue getAccessoryValue() {
+    if (this.accessoryValue == null) {
+      return AccessoryValue.OFF;
+    } else {
+      return accessoryValue;
+    }
+  }
+
   public void setValue(AccessoryValue value) {
-    this.value = value;
-    this.image = null;
+    this.accessoryValue = value;
   }
 
   public void setRouteValue(AccessoryValue value, Color routeColor) {
     this.routeValue = value;
     this.routeColor = routeColor;
-    this.image = null;
   }
 
   protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
@@ -99,8 +105,8 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    if (value == null) {
-      this.value = AccessoryValue.OFF;
+    if (accessoryValue == null) {
+      this.accessoryValue = AccessoryValue.OFF;
     }
     if (routeValue == null) {
       this.routeValue = AccessoryValue.OFF;
@@ -110,7 +116,8 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
       this.routeColor = trackColor;
     }
 
-    switch (this.value) {
+    switch (this.accessoryValue) {
+
       case RED -> {
         renderStraight(g2, trackColor, backgroundColor);
         renderDiagonal(g2, Color.red, backgroundColor);

@@ -18,17 +18,10 @@ package jcs.ui.layout.tiles;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
-import java.awt.RadialGradientPaint;
-import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Path2D;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
-import org.tinylog.Logger;
 
 public class StraightDirection extends Straight {
 

@@ -57,7 +57,6 @@ public class Sensor extends Straight implements SensorListener {
 
   public void setActive(boolean active) {
     this.active = active;
-    this.image = null;
   }
 
   private void renderSensor(Graphics2D g2) {

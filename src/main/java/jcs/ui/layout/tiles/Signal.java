@@ -33,10 +33,6 @@ import jcs.entities.enums.SignalType;
 import jcs.entities.enums.TileType;
 import jcs.trackservice.events.AccessoryListener;
 
-/**
- *
- * @author frans
- */
 public class Signal extends Straight implements Tile, AccessoryListener {
 
   private static int idSeq;
@@ -81,9 +77,13 @@ public class Signal extends Straight implements Tile, AccessoryListener {
     return signalValue;
   }
 
+  @Override
+  public SignalType getSignalType() {
+    return signalType;
+  }
+
   public void setSignalValue(SignalValue signalValue) {
     this.signalValue = signalValue;
-    this.image = null;
   }
 
   /**

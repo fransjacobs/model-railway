@@ -29,6 +29,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -69,7 +71,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LayoutCanvas extends JPanel implements RepaintListener {
+public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private boolean readonly;
   private Mode mode;
@@ -183,8 +185,12 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
   }
 
   @Override
-  public void repaintTile(Tile tile) {
-    this.repaint(tile.getBounds());
+  public void propertyChange(PropertyChangeEvent evt) {
+    if ("repaintTile".equals(evt.getPropertyName())) {
+
+      Tile tile = (Tile) evt.getNewValue();
+      this.repaint(tile.getBounds());
+    }
   }
 
   private void paintNullGrid(Graphics g) {
@@ -889,10 +895,14 @@ public class LayoutCanvas extends JPanel implements RepaintListener {
 
       Point np;
       np = switch (this.orientation) {
-        case EAST -> new Point(ecp.x + w, ecp.y);
-        case WEST -> new Point(newPoint.x - w, ecp.y);
-        case SOUTH -> new Point(ecp.x, newPoint.y + h);
-        default -> new Point(ecp.x, newPoint.y - h);
+        case EAST ->
+          new Point(ecp.x + w, ecp.y);
+        case WEST ->
+          new Point(newPoint.x - w, ecp.y);
+        case SOUTH ->
+          new Point(ecp.x, newPoint.y + h);
+        default ->
+          new Point(ecp.x, newPoint.y - h);
       };
 
       Logger.trace("Alternative CP: " + np);

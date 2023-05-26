@@ -216,11 +216,11 @@ public class Cross extends Switch implements Tile {
 
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    if (value == null) {
-      this.value = AccessoryValue.OFF;
+    if (accessoryValue == null) {
+      this.accessoryValue = AccessoryValue.OFF;
     }
 
-    switch (this.value) {
+    switch (this.accessoryValue) {
       case RED -> {
         renderStraight2(g2, trackColor, backgroundColor);
         renderDiagonal(g2, trackColor, backgroundColor);

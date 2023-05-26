@@ -16,6 +16,7 @@
 package jcs.persistence;
 
 import com.dieselpoint.norm.Database;
+import com.dieselpoint.norm.DbException;
 import java.awt.Image;
 import java.awt.Point;
 import java.io.File;
@@ -268,36 +269,6 @@ public class H2PersistenceService implements PersistenceService {
     return image;
   }
 
-//  private Image readLocomotiveImage(String imageName) {
-//    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
-//    Image image = null;
-//
-//    File imgFile = new File(path + imageName + ".png");
-//    if (imgFile.exists()) {
-//      try {
-//        image = ImageIO.read(imgFile);
-//
-//      } catch (IOException e) {
-//        Logger.trace("Image file " + imageName + ".png does not exists");
-//      }
-//    }
-//    return image;
-//  }
-//  private Image readFunctionImage(String imageName) {
-//    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions" + File.separator;
-//    Image image = null;
-//
-//    File imgFile = new File(path + imageName + ".png");
-//    if (imgFile.exists()) {
-//      try {
-//        image = ImageIO.read(imgFile);
-//
-//      } catch (IOException e) {
-//        Logger.trace("Image file " + imageName + ".png does not exists");
-//      }
-//    }
-//    return image;
-//  }
   @Override
   public List<AccessoryBean> getTurnouts() {
     String typeClause = "%weiche";
@@ -369,9 +340,25 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public TileBean persist(TileBean tileBean) {
     if (database.where("id=?", tileBean.getId()).first(TileBean.class) != null) {
-      database.update(tileBean).getRowsAffected();
+      try {
+        database.update(tileBean).getRowsAffected();
+      } catch (DbException dbe) {
+        //When a tile is moved it could cause an index violation
+        if (dbe.getMessage().contains("Unique index or primary key violation")) {
+          database.delete(tileBean);
+          database.insert(tileBean);
+        }
+      }
     } else {
-      database.insert(tileBean).getRowsAffected();
+      try {
+        database.insert(tileBean).getRowsAffected();
+      } catch (DbException dbe) {
+        //When a tile is moved it could cause an index violation
+        if (dbe.getMessage().contains("Unique index or primary key violation")) {
+          removeTile(tileBean.getX(), tileBean.getY());
+          database.insert(tileBean);
+        }
+      }
     }
     return tileBean;
   }

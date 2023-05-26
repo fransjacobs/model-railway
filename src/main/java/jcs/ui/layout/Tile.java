@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.beans.PropertyChangeListener;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
@@ -100,15 +101,13 @@ public interface Tile extends Shape {
   int getCenterY();
 
   TileBean getTileBean();
-  //void setTileBean(TileBean tileBean);
-  //boolean isDrawName();
-  //void setDrawName(boolean drawName);
+
   boolean isDrawOutline();
 
   void setDrawOutline(boolean drawOutline);
 
   TileType getTileType();
 
-  void setRepaintListener(RepaintListener listener);
+  void setPropertyChangeListener(PropertyChangeListener listener);
 
 }

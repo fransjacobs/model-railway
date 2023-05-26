@@ -74,6 +74,4 @@ public class Straight extends AbstractTile implements Tile {
     renderStraight(g2, trackColor, backgroundColor);
   }
 
-  
-  
 }
