@@ -32,16 +32,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
-import static jcs.entities.TileBean.DEFAULT_HEIGHT;
-import static jcs.entities.TileBean.DEFAULT_WIDTH;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
 import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.Tile;
 import static jcs.ui.layout.Tile.DEFAULT_TRACK_COLOR;
@@ -97,15 +98,28 @@ abstract class AbstractTile extends TileBean implements Tile {
 
     this.x = x;
     this.y = y;
+    this.width = getDefaultWidth();
+    this.height = getDefaultHeight();
 
     this.trackColor = DEFAULT_TRACK_COLOR;
-
     this.backgroundColor = backgroundColor;
     if (this.backgroundColor == null) {
       this.backgroundColor = Color.white;
     }
     init();
   }
+
+  /**
+   *
+   * @return a new tile specific unique id
+   */
+  protected abstract String getNewId();
+
+  /**
+   *
+   * @param id the last tile specific unique sequence number
+   */
+  abstract void setIdSeq(int id);
 
   protected AbstractTile(TileBean tileBean) {
     copyInto(tileBean);
@@ -123,7 +137,7 @@ abstract class AbstractTile extends TileBean implements Tile {
     this.setSignalType(other.getSignalType());
     this.accessoryId = other.getAccessoryId();
     this.sensorId = other.getSensorId();
-    this.neighbours = other.getNeighbours();
+    //this.neighbours = other.getNeighbours();
   }
 
   @Override
@@ -139,7 +153,7 @@ abstract class AbstractTile extends TileBean implements Tile {
     tb.setSignalAccessoryType(this.signalAccessoryType);
     tb.setAccessoryId(this.accessoryId);
     tb.setSensorId(this.sensorId);
-    tb.setNeighbours(this.neighbours);
+    //tb.setNeighbours(this.neighbours);
     tb.setAccessoryBean(this.accessoryBean);
     tb.setSensorBean(this.sensorBean);
 
@@ -174,10 +188,6 @@ abstract class AbstractTile extends TileBean implements Tile {
     }
   }
 
-  protected abstract String getNewId();
-
-  abstract void setIdSeq(int id);
-
   /**
    * Draw the AbstractTile
    *
@@ -211,7 +221,7 @@ abstract class AbstractTile extends TileBean implements Tile {
       AffineTransform trans = new AffineTransform();
 
       g2di.setBackground(backgroundColor);
-      g2di.clearRect(0, 0, this.width, this.height);
+      g2di.clearRect(0, 0, this.getWidth(), this.height);
 
       int ox = 0, oy = 0;
 
@@ -432,42 +442,20 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  public int getHeight() {
-    return this.height;
-  }
-
-  @Override
-  public int getWidth() {
-    return this.width;
-  }
-
-  @Override
   public int getCenterX() {
-    if (this.x == 0) {
-      int w;
-      if (this.width > 0) {
-        w = this.width;
-      } else {
-        w = DEFAULT_WIDTH;
-      }
-      return w / 2;
-    } else {
+    if (this.x > 0) {
       return this.x;
+    } else {
+      return getDefaultWidth() / 2;
     }
   }
 
   @Override
   public int getCenterY() {
-    if (this.y == 0) {
-      int h;
-      if (this.height > 0) {
-        h = this.height;
-      } else {
-        h = DEFAULT_HEIGHT;
-      }
-      return h / 2;
-    } else {
+    if (this.y > 0) {
       return this.y;
+    } else {
+      return getDefaultHeight() / 2;
     }
   }
 
@@ -552,7 +540,8 @@ abstract class AbstractTile extends TileBean implements Tile {
     return !(x < tlx || x > (tlx + w) || y < tly || y > (tly + h));
   }
 
-  protected String xyToString() {
+  @Override
+  public String xyToString() {
     return "(" + this.x + "," + this.y + ")";
   }
 
@@ -604,6 +593,70 @@ abstract class AbstractTile extends TileBean implements Tile {
     if (this.propertyChangeListener != null) {
       this.propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "repaintTile", this, this));
     }
+  }
+
+  @Override
+  public int getHeight() {
+    return this.height;
+  }
+
+  @Override
+  public int getWidth() {
+    return this.width;
+  }
+
+  protected final int getDefaultWidth() {
+    switch (this.getTileType()) {
+      case BLOCK -> {
+        if (Orientation.EAST.equals(this.getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_WIDTH * 3;
+        } else {
+          return DEFAULT_WIDTH;
+        }
+      }
+      case CROSS -> {
+        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_WIDTH * 2;
+        } else {
+          return DEFAULT_WIDTH;
+        }
+      }
+      default -> {
+        //Straight,Curved,Sensor,Signal,Switch
+        return DEFAULT_WIDTH;
+      }
+    }
+  }
+
+  protected final int getDefaultHeight() {
+    switch (this.getTileType()) {
+      case BLOCK -> {
+        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_HEIGHT;
+        } else {
+          return DEFAULT_HEIGHT * 3;
+        }
+      }
+      case CROSS -> {
+        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_HEIGHT;
+        } else {
+          return DEFAULT_HEIGHT * 2;
+        }
+      }
+      default -> {
+        //Straight,Curved,Sensor,Signal,Switch
+        return DEFAULT_HEIGHT;
+      }
+    }
+  }
+
+  public List<TileBean> getNeighbours() {
+    return neighbours;
+  }
+
+  public void setNeighbours(List<TileBean> neighbours) {
+    this.neighbours = neighbours;
   }
 
 }

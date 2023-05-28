@@ -28,8 +28,6 @@ import javax.persistence.Transient;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
 import jcs.ui.layout.tiles.enums.Direction;
 
 @Table(name = "tiles", indexes = {
@@ -50,10 +48,6 @@ public class TileBean implements Serializable, Comparable {
 
   protected AccessoryBean accessoryBean;
   protected SensorBean sensorBean;
-
-  public static final int GRID = 20;
-  public static final int DEFAULT_WIDTH = GRID * 2;
-  public static final int DEFAULT_HEIGHT = GRID * 2;
 
   public TileBean() {
     this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
@@ -229,22 +223,6 @@ public class TileBean implements Serializable, Comparable {
     this.sensorBean = sensorBean;
   }
 
-  //TODO!
-//    public JCSEntity getEntityBean() {
-//        switch (this.tileType) {
-//            case SENSOR:
-//                return this.sensorBean;
-//            case SIGNAL:
-//                return this.accessoryBean;
-//            case SWITCH:
-//                return this.accessoryBean;
-//            case CROSS:
-//                return this.accessoryBean;
-//
-//            default:
-//                return null;
-//        }
-//    }
   @Override
   public int compareTo(Object other) {
     int resx = Integer.compare(this.getX(), ((TileBean) other).getX());
@@ -330,63 +308,6 @@ public class TileBean implements Serializable, Comparable {
 
   public String toLogString() {
     return toString();
-  }
-
-  @Transient
-  public int getWidth() {
-    switch (this.getTileType()) {
-      case BLOCK -> {
-        if (Orientation.EAST.equals(this.getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_WIDTH * 3;
-        } else {
-          return DEFAULT_WIDTH;
-        }
-      }
-      case CROSS -> {
-        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_WIDTH * 2;
-        } else {
-          return DEFAULT_WIDTH;
-        }
-      }
-      default -> {
-        //Straight,Curved,Sensor,Signal,Switch
-        return DEFAULT_WIDTH;
-      }
-    }
-  }
-
-  @Transient
-  public int getHeight() {
-    switch (this.getTileType()) {
-      case BLOCK -> {
-        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_HEIGHT;
-        } else {
-          return DEFAULT_HEIGHT * 3;
-        }
-      }
-      case CROSS -> {
-        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_HEIGHT;
-        } else {
-          return DEFAULT_HEIGHT * 2;
-        }
-      }
-      default -> {
-        //Straight,Curved,Sensor,Signal,Switch
-        return DEFAULT_HEIGHT;
-      }
-    }
-  }
-
-  @Transient
-  public List<TileBean> getNeighbours() {
-    return neighbours;
-  }
-
-  public void setNeighbours(List<TileBean> neighbours) {
-    this.neighbours = neighbours;
   }
 
 }

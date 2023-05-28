@@ -64,6 +64,7 @@ public class LayoutPanel extends JPanel {
   }
 
   private void postInit() {
+    selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png")));
     this.straightBtn.setSelected(true);
     this.canvas.setTileType(tileType);
     this.canvas.setMode(mode);
@@ -124,6 +125,12 @@ public class LayoutPanel extends JPanel {
 
       this.crossRBtn.setEnabled(!readonly);
       this.crossRBtn.setVisible(!readonly);
+
+      this.endTrackBtn.setEnabled(!readonly);
+      this.endTrackBtn.setVisible(!readonly);
+
+      this.straightDirectionBtn.setEnabled(!readonly);
+      this.straightDirectionBtn.setVisible(!readonly);
 
       this.moveBtn.setEnabled(!readonly);
       this.moveBtn.setVisible(!readonly);
@@ -892,57 +899,33 @@ public class LayoutPanel extends JPanel {
 
   private void setMode(Mode mode) {
     this.mode = mode;
-    this.canvas.setMode(mode);
 
-//        switch (this.mode) {
-//            case ADD:
-//                straightBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.curvedBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.blockBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.sensorBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.leftSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.rightSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.signalBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.crossLBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.crossRBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                break;
-//            default:
-//                this.straightBtn.setBorder(null);
-//                this.curvedBtn.setBorder(null);
-//                this.blockBtn.setBorder(null);
-//                this.sensorBtn.setBorder(null);
-//                this.leftSwitchBtn.setBorder(null);
-//                this.rightSwitchBtn.setBorder(null);
-//                this.signalBtn.setBorder(null);
-//                this.crossLBtn.setBorder(null);
-//                this.crossRBtn.setBorder(null);
-//                break;
-//        }
+    switch (this.mode) {
+      case SELECT:
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png")));
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));
+      case ADD:
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24-y.png")));
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));
+        break;
+      case DELETE:
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24-y.png")));
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
+        break;
+      default:
+
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));
+        break;
+    }
+
+    this.canvas.setMode(mode);
   }
 
-//    public static void main(String args[]) {
-//        //System.setProperty("trackServiceAlwaysUseDemo", "true");
-//        try {
-//            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-//            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-//            Logger.error(ex);
-//        }
-//
-//        java.awt.EventQueue.invokeLater(() -> {
-//            JFrame f = new JFrame("LayoutCanvas Tester");
-//            LayoutPanel layoutPanel = new LayoutPanel();
-//            f.add(layoutPanel);
-//
-//            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            layoutPanel.loadLayout();
-//            f.pack();
-//
-//            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-//            f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
-//            f.setVisible(true);
-//        });
-//    }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JButton addBtn;

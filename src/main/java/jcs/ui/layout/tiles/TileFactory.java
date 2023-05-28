@@ -16,6 +16,8 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Point;
+import java.util.LinkedList;
+import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
@@ -135,6 +137,10 @@ public class TileFactory {
     return (Tile) tile;
   }
 
+  public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, int x, int y, boolean drawOutline) {
+    return createTile(tileType, orientation, direction, new Point(x, y), drawOutline);
+  }
+
   public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, Point center, boolean drawOutline) {
     Tile tile = null;
     switch (tileType) {
@@ -165,6 +171,16 @@ public class TileFactory {
       tile.setDrawOutline(drawOutline);
     }
     return (Tile) tile;
+  }
+
+  public static List<Tile> convert(List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
+    List<Tile> tiles = new LinkedList<>();
+
+    for (TileBean tileBean : tileBeans) {
+      Tile tile = createTile(tileBean, drawOutline, showValues);
+      tiles.add(tile);
+    }
+    return tiles;
   }
 
 }

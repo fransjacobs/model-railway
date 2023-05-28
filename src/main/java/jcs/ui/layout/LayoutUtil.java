@@ -30,6 +30,7 @@ import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.STRAIGHT;
 import jcs.persistence.PersistenceFactory;
 
 import jcs.ui.layout.tiles.enums.Direction;
@@ -61,13 +62,13 @@ public class LayoutUtil {
    * @return Coordinates which are the X en Y wrapped
    */
   public static final Point snapToGrid(int x, int y) {
-    int steps = x / TileBean.DEFAULT_WIDTH;
+    int steps = x / Tile.DEFAULT_WIDTH;
     int sx = steps;
-    sx = sx * TileBean.DEFAULT_WIDTH + TileBean.GRID;
+    sx = sx * Tile.DEFAULT_WIDTH + Tile.GRID;
 
-    steps = y / TileBean.DEFAULT_HEIGHT;
+    steps = y / Tile.DEFAULT_HEIGHT;
     int sy = steps;
-    sy = sy * TileBean.DEFAULT_HEIGHT + TileBean.GRID;
+    sy = sy * Tile.DEFAULT_HEIGHT + Tile.GRID;
 
     return new Point(sx, sy);
   }
@@ -76,6 +77,10 @@ public class LayoutUtil {
     TileType tileType = tileBean.getTileType();
     switch (tileType) {
       case STRAIGHT -> {
+      }
+      case STRAIGHT_DIR -> {
+      }
+      case END -> {
       }
       case CURVED -> {
       }
@@ -248,8 +253,8 @@ public class LayoutUtil {
     Orientation orientation = tile.getOrientation();
     Direction direction = tile.getDirection();
 
-    int oX = w / 2 + TileBean.GRID;
-    int oY = h / 2 + TileBean.GRID;
+    int oX = w / 2 + Tile.GRID;
+    int oY = h / 2 + Tile.GRID;
 
     switch (tile.getTileType()) {
       case CURVED -> {
@@ -377,21 +382,21 @@ public class LayoutUtil {
     Point neighborPlus, neighborMin;
     switch (o) {
       case SOUTH:
-        neighborPlus = new Point(x, y + h / 3 + TileBean.GRID * 2);
-        neighborMin = new Point(x, y - h / 3 - TileBean.GRID * 2);
+        neighborPlus = new Point(x, y + h / 3 + Tile.GRID * 2);
+        neighborMin = new Point(x, y - h / 3 - Tile.GRID * 2);
         break;
       case WEST:
-        neighborPlus = new Point(x - w / 3 - TileBean.GRID * 2, y);
-        neighborMin = new Point(x + w / 3 + TileBean.GRID * 2, y);
+        neighborPlus = new Point(x - w / 3 - Tile.GRID * 2, y);
+        neighborMin = new Point(x + w / 3 + Tile.GRID * 2, y);
         break;
       case NORTH:
-        neighborPlus = new Point(x, y - h / 3 - TileBean.GRID * 2);
-        neighborMin = new Point(x, y + h / 3 + TileBean.GRID * 2);
+        neighborPlus = new Point(x, y - h / 3 - Tile.GRID * 2);
+        neighborMin = new Point(x, y + h / 3 + Tile.GRID * 2);
         break;
       default:
         //East 
-        neighborPlus = new Point(x + w / 3 + TileBean.GRID * 2, y);
-        neighborMin = new Point(x - w / 3 - TileBean.GRID * 2, y);
+        neighborPlus = new Point(x + w / 3 + Tile.GRID * 2, y);
+        neighborMin = new Point(x - w / 3 - Tile.GRID * 2, y);
         break;
     }
     if ("+".equals(plusMinus)) {

@@ -32,6 +32,10 @@ import jcs.ui.layout.tiles.enums.Direction;
  */
 public interface Tile extends Shape {
 
+  public static final int GRID = 20;
+  public static final int DEFAULT_WIDTH = GRID * 2;
+  public static final int DEFAULT_HEIGHT = GRID * 2;
+
   public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
   Color getTrackColor();
@@ -109,5 +113,7 @@ public interface Tile extends Shape {
   TileType getTileType();
 
   void setPropertyChangeListener(PropertyChangeListener listener);
+
+  String xyToString();
 
 }

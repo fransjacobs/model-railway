@@ -1,26 +1,33 @@
 /*
- * Copyright (C) 2021 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout.pathfinding;
 
 import java.util.LinkedList;
 import java.util.List;
+import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
+import static jcs.entities.enums.TileType.CURVED;
+import static jcs.entities.enums.TileType.END;
+import static jcs.entities.enums.TileType.SENSOR;
+import static jcs.entities.enums.TileType.SIGNAL;
+import static jcs.entities.enums.TileType.STRAIGHT;
+import static jcs.entities.enums.TileType.STRAIGHT_DIR;
+import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.Tile;
 
 /**
@@ -29,108 +36,201 @@ import jcs.ui.layout.Tile;
  */
 public class Node {
 
-    private String id;
+  private final Tile tile;
 
-    private final List<Edge> edges;
+  private Node parent;
+  private List<Edge> edges;
 
-    private Node parent;
+  private final boolean junction;
 
-    private boolean junction;
+  public Node(Tile tile) {
+    this.tile = tile;
+    this.junction = TileType.SWITCH.equals(tile.getTileType()) || TileType.CROSS.equals(tile.getTileType());
+    this.edges = new LinkedList<>();
+  }
 
-    private Tile tile;
+//  public Node(String id) {
+//    this(id, null);
+//  }
+//  public Node(String id, Tile tile) {
+//    this.id = id;
+//    this.tile = tile;
+//  }
+  public int getX() {
+    return tile.getCenterX();
+  }
 
-    public Node(Tile tile) {
-        this(tile.getId(), tile);
+  public int getGridX() {
+    return (tile.getCenterX() - Tile.GRID) / (Tile.GRID * 2);
+  }
+
+  public int getY() {
+    return tile.getCenterY();
+  }
+
+  public int getGridY() {
+    return (tile.getCenterY() - Tile.GRID) / (Tile.GRID * 2);
+  }
+
+  /**
+   * A tile has 1 or more connection or transitions, i.e. where the tiles connect
+   *
+   * @return the number of connection possibilities a node has.
+   */
+  public int transitions() {
+    return switch (tile.getTileType()) {
+      case STRAIGHT ->
+        2;
+      case STRAIGHT_DIR ->
+        2;
+      case SENSOR ->
+        2;
+      case SIGNAL ->
+        2;
+      case CURVED ->
+        2;
+      case BLOCK ->
+        2;
+      case SWITCH ->
+        3;
+      case CROSS ->
+        4;
+      case END ->
+        1;
+      default ->
+        0;
+    };
+  }
+
+  public boolean isHorizontal() {
+    return Orientation.EAST.equals(tile.getOrientation()) || Orientation.WEST.equals(tile.getOrientation());
+  }
+
+  public boolean isVertical() {
+    return Orientation.NORTH.equals(tile.getOrientation()) || Orientation.SOUTH.equals(tile.getOrientation());
+  }
+
+  TileType getTileType() {
+    return tile.getTileType();
+  }
+
+  //een standard tile is precies 1 vakje van het grid tile met xy 10,10 is grid 0,0; xy 50,10 is dus 1,0, 50,50 is 1,1   
+  // v een rechte tile op 90,90 (2,2) die horizontaal is heeft een verbinding aan de linkerkan met 50,90 (1,2) en rechts met 130,90 (3,2)
+// waar moet je op letten om the checken of je van deze haar de ander kan
+  //als dit tte rechte is dan kan het alleen horizontaal of vertical. the oande moet in geval van een recte ook horizontall of verticall zijn
+  // pseudo code
+  // kan reizen
+  /**
+   * Applicable for Straight, StraightDirection,Signal and Sensor
+   *
+   * @param other node to traverse to
+   * @return true whet it is possible to traverse from this node to the other node
+   */
+  private boolean canTraverseToSquare(Node other) {
+    if (!(TileType.STRAIGHT.equals(other.getTileType())
+            || TileType.SENSOR.equals(other.getTileType())
+            || TileType.SIGNAL.equals(other.getTileType())
+            || TileType.STRAIGHT_DIR.equals(other.getTileType()))) {
+      return false;
     }
-
-    public Node(String id) {
-        this(id, null);
+    if (isHorizontal()) {
+      if (!(other.isHorizontal() && (getGridY() == other.getGridY()))) {
+        return false;
+      }
+      return ((getGridX() + 1 == other.getGridX()) || (getGridX() - 1 == other.getGridX()));
+    } else {
+      if (!(other.isVertical() && (getGridX() == other.getGridX()))) {
+        return false;
+      }
+      return ((getGridY() + 1 == other.getGridY()) || (getGridY() - 1 == other.getGridY()));
     }
+  }
 
-    public Node(String id, Tile tile) {
-        this.id = id;
-        this.tile = tile;
+  public boolean canTraverseTo(Node other) {
+    //Can this node traverse to the node other.
+    //A Tile is a rectangle (in most cases even a square.
+    switch (tile.getTileType()) {
+      case STRAIGHT:
+        return canTraverseToSquare(other);
 
-        if (tile != null) {
-            this.junction = TileType.SWITCH.equals(tile.getTileType());
-        } else {
-            this.junction = false;
-        }
-        this.edges = new LinkedList<>();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void addEdge(Edge edge) {
-        this.edges.add(edge);
-    }
-
-    public List<Edge> getEdges() {
-        return edges;
-    }
-
-    public Node getParent() {
-        return parent;
-    }
-
-    public void setParent(Node parent) {
-        this.parent = parent;
-    }
-
-    public boolean isJunction() {
-        return junction;
-    }
-
-    public boolean contains(Edge edge) {
-        List<Edge> snaphot = new LinkedList<>(this.edges);
-
-        for (Edge e : snaphot) {
-            if (e.getSourceId().equals(edge.getSourceId()) && e.getTargetId().equals(edge.getTargetId())) {
-                return true;
-            }
-        }
+      default:
         return false;
     }
+  }
 
-    /**
-     * Check if travel is possible toNode this node toNode the 'toNode' Node
-     *
-     * @param toNode the travel destination node
-     * @return true when travel is possible
-     */
-    public boolean canTravel(Node toNode) {
-        if (this.isJunction() && this.getParent() != null && this.getParent().isJunction() && toNode.isJunction()) {
-            //Logger.trace("Junctions: " + this.getParent().getId() + " -> " + this.getId() + " -> " + toNode.getId());
+  public String getId() {
+    return this.tile.getId();
+  }
 
-            String parentId = this.getParent().getId();
-            String tgtId = toNode.getId();
+  public void addEdge(Edge edge) {
+    this.edges.add(edge);
+  }
 
-            //a path from xx-G via xx to xx-R or vv is not possible
-            if (parentId.replace("-G", "").replace("-R", "").equals(tgtId.replace("-G", "").replace("-R", ""))) {
-                if (parentId.equals(tgtId)) {
-                    //Logger.trace("Can Travel from: " + parentId + this.getId() + " -> " + tgtId);
-                    return true;
-                } else {
-                    //Logger.trace("Can't travel from: " + parentId + " -> " + this.getId() + " -> " + tgtId);
-                    return false;
-                }
-            } else {
-                return true;
-            }
+  public List<Edge> getEdges() {
+    return edges;
+  }
+
+  public Node getParent() {
+    return parent;
+  }
+
+  public void setParent(Node parent) {
+    this.parent = parent;
+  }
+
+  public boolean isJunction() {
+    return junction;
+  }
+
+  public boolean contains(Edge edge) {
+    List<Edge> snaphot = new LinkedList<>(this.edges);
+
+    for (Edge e : snaphot) {
+      if (e.getSourceId().equals(edge.getSourceId()) && e.getTargetId().equals(edge.getTargetId())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Check if travel is possible toNode this node toNode the 'toNode' Node
+   *
+   * @param toNode the travel destination node
+   * @return true when travel is possible
+   */
+  @Deprecated
+  public boolean canTravel(Node toNode) {
+    if (this.isJunction() && this.getParent() != null && this.getParent().isJunction() && toNode.isJunction()) {
+      //Logger.trace("Junctions: " + this.getParent().getId() + " -> " + this.getId() + " -> " + toNode.getId());
+
+      String parentId = this.getParent().getId();
+      String tgtId = toNode.getId();
+
+      //a path from xx-G via xx to xx-R or vv is not possible
+      if (parentId.replace("-G", "").replace("-R", "").equals(tgtId.replace("-G", "").replace("-R", ""))) {
+        if (parentId.equals(tgtId)) {
+          //Logger.trace("Can Travel from: " + parentId + this.getId() + " -> " + tgtId);
+          return true;
         } else {
-            return true;
+          //Logger.trace("Can't travel from: " + parentId + " -> " + this.getId() + " -> " + tgtId);
+          return false;
         }
+      } else {
+        return true;
+      }
+    } else {
+      return true;
     }
+  }
 
-    public Tile getTile() {
-        return tile;
-    }
+  public Tile getTile() {
+    return tile;
+  }
 
-    @Override
-    public String toString() {
-        return "Node{" + "id=" + id + '}';
-    }
+  @Override
+  public String toString() {
+    return "Node{" + "id=" + tile.getId() + '}';
+  }
 
 }

@@ -260,7 +260,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       for (int r = 0; r < width; r++) {
         for (int c = 0; c < height; c++) {
-          gc.drawOval(r * TileBean.GRID * 2, c * TileBean.GRID * 2, 1, 1);
+          gc.drawOval(r * Tile.GRID * 2, c * Tile.GRID * 2, 1, 1);
         }
       }
       gc.dispose();

@@ -88,7 +88,7 @@ public class BreathFirst {
                 tileId = nodeId;
             }
 
-            AccessoryValue accessoryValue = null;
+            AccessoryValue accessoryValue = AccessoryValue.OFF;
             if (nodeId.endsWith("-R")) {
                 accessoryValue = AccessoryValue.RED;
             } else if (nodeId.endsWith("-G")) {
@@ -98,6 +98,8 @@ public class BreathFirst {
 
             //RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
             RouteElementBean routeElement = new RouteElementBean(null, null, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
+            
+            
             rel.add(routeElement);
 
             Logger.trace(routeElement);

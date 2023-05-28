@@ -321,6 +321,7 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public List<TileBean> getTiles() {
     List<TileBean> tileBeans = database.results(TileBean.class);
+    //TODO add related objects
     return tileBeans;
   }
 
@@ -334,6 +335,8 @@ public class H2PersistenceService implements PersistenceService {
   public TileBean getTile(Integer x, Integer y) {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
+    //TODO Add related Objects
+    
     return tileBean;
   }
 
@@ -346,6 +349,7 @@ public class H2PersistenceService implements PersistenceService {
         //When a tile is moved it could cause an index violation
         if (dbe.getMessage().contains("Unique index or primary key violation")) {
           database.delete(tileBean);
+          removeTile(tileBean.getX(), tileBean.getY());
           database.insert(tileBean);
         }
       }
@@ -355,6 +359,7 @@ public class H2PersistenceService implements PersistenceService {
       } catch (DbException dbe) {
         //When a tile is moved it could cause an index violation
         if (dbe.getMessage().contains("Unique index or primary key violation")) {
+          database.delete(tileBean);
           removeTile(tileBean.getX(), tileBean.getY());
           database.insert(tileBean);
         }
