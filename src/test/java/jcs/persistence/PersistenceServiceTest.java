@@ -746,8 +746,8 @@ public class PersistenceServiceTest {
         instance.persist(tbl);
         current2 = instance.getTiles();
 
-        //There should now be 10 tiles...
-        assertEquals(10, current2.size());
+        //There should now be 11 tiles...
+        assertEquals(11, current2.size());
     }
 
     @Test

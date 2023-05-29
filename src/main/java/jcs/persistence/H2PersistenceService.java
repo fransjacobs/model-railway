@@ -336,7 +336,7 @@ public class H2PersistenceService implements PersistenceService {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
     //TODO Add related Objects
-    
+
     return tileBean;
   }
 
@@ -382,43 +382,8 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public void persist(List<TileBean> tiles) {
-    //When persisting a whole list of tiles,
-    //check for tiles which have changed position
-    //and check for tiles which have to be removed
-    List<TileBean> existing = database.results(TileBean.class);
-
-    Map<Point, TileBean> currentTP = new HashMap<>();
-    Map<Point, TileBean> updatedTP = new HashMap<>();
-
-    for (TileBean tb : existing) {
-      currentTP.put(tb.getCenter(), tb);
-    }
-
+    database.sql("delete from tiles");
     for (TileBean tb : tiles) {
-      updatedTP.put(tb.getCenter(), tb);
-    }
-
-    //remove the ones which do no longer exists
-    Set<Point> currentPoints = currentTP.keySet();
-    Set<Point> updatedPoints = updatedTP.keySet();
-
-    for (Point p : currentPoints) {
-      if (!updatedPoints.contains(p)) {
-        TileBean tb = this.getTile(p.x, p.y);
-        this.remove(tb);
-      }
-    }
-
-    for (TileBean tb : tiles) {
-      if (tb.getId() == null) {
-        Integer x = tb.getX();
-        Integer y = tb.getY();
-        TileBean tbxy = this.getTile(x, y);
-
-        if (tbxy != null) {
-          tb.setId(tbxy.getId());
-        }
-      }
       persist(tb);
     }
   }

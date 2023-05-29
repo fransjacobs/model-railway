@@ -291,7 +291,7 @@
             <Component class="javax.swing.JButton" name="selectBtn">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/cursor-24.png"/>
+                  <Image iconType="3" name="/media/cursor-24-y.png"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="Select"/>
                 <Property name="focusable" type="boolean" value="false"/>

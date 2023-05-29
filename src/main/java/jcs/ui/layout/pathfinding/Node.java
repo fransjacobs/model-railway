@@ -31,43 +31,56 @@ import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.Tile;
 
 /**
+ * A Node is the representation in the Graph of a tile with some extra feature to enable the track routing
  *
- * @author fransjacobs
  */
 public class Node {
 
   private final Tile tile;
+  private final TileType tileType;
+  private final Orientation orientation;
 
   private Node parent;
-  private List<Edge> edges;
+  private final List<Edge> edges;
 
   private final boolean junction;
 
   public Node(Tile tile) {
     this.tile = tile;
+    this.tileType = tile.getTileType();
+    this.orientation = tile.getOrientation();
     this.junction = TileType.SWITCH.equals(tile.getTileType()) || TileType.CROSS.equals(tile.getTileType());
     this.edges = new LinkedList<>();
   }
 
-//  public Node(String id) {
-//    this(id, null);
-//  }
-//  public Node(String id, Tile tile) {
-//    this.id = id;
-//    this.tile = tile;
-//  }
+  /**
+   *
+   * @return the X (pixel) coordinate of the center of the tile
+   */
   public int getX() {
     return tile.getCenterX();
   }
 
+  /**
+   *
+   * @return the X number of the grid square (grid is 40 x 40 pix)
+   */
   public int getGridX() {
     return (tile.getCenterX() - Tile.GRID) / (Tile.GRID * 2);
   }
 
+  /**
+   *
+   * @return then Y (pixel) coordinate of the center of the tile
+   */
   public int getY() {
     return tile.getCenterY();
   }
 
+  /**
+   *
+   * @return the Y number of the grid square (grid is 40 x 40 pix)
+   */
   public int getGridY() {
     return (tile.getCenterY() - Tile.GRID) / (Tile.GRID * 2);
   }
@@ -102,47 +115,150 @@ public class Node {
     };
   }
 
-  public boolean isHorizontal() {
-    return Orientation.EAST.equals(tile.getOrientation()) || Orientation.WEST.equals(tile.getOrientation());
-  }
-
-  public boolean isVertical() {
-    return Orientation.NORTH.equals(tile.getOrientation()) || Orientation.SOUTH.equals(tile.getOrientation());
-  }
-
-  TileType getTileType() {
-    return tile.getTileType();
-  }
-
-  //een standard tile is precies 1 vakje van het grid tile met xy 10,10 is grid 0,0; xy 50,10 is dus 1,0, 50,50 is 1,1   
-  // v een rechte tile op 90,90 (2,2) die horizontaal is heeft een verbinding aan de linkerkan met 50,90 (1,2) en rechts met 130,90 (3,2)
-// waar moet je op letten om the checken of je van deze haar de ander kan
-  //als dit tte rechte is dan kan het alleen horizontaal of vertical. the oande moet in geval van een recte ook horizontall of verticall zijn
-  // pseudo code
-  // kan reizen
   /**
-   * Applicable for Straight, StraightDirection,Signal and Sensor
+   * The main route of the tile is horizontal
+   *
+   * @return true when main route goes from East to West or vv
+   */
+  public boolean isHorizontal() {
+    return Orientation.EAST == this.orientation || Orientation.WEST == this.orientation;
+  }
+
+  /**
+   * The main route of the tile is vertical
+   *
+   * @return true when main route goes from North to South or vv
+   */
+  public boolean isVertical() {
+    return Orientation.NORTH == this.orientation || Orientation.SOUTH == this.orientation;
+  }
+
+  /**
+   * The main route of the tile is diagonal
+   *
+   * @return true when main route goes from North to East or West to South and vv
+   */
+  public boolean isDiagonal() {
+    return TileType.CURVED.equals(tile.getTileType());
+  }
+
+  public TileType getTileType() {
+    return tileType;
+  }
+
+  public Orientation getOrientation() {
+    return orientation;
+  }
+
+  /**
+   * Applicable for Straight, StraightDirection,Signal and Sensor A 'normal' Tile is 40 x 40 pix or one grid square. A block is 3 squares long.
    *
    * @param other node to traverse to
-   * @return true whet it is possible to traverse from this node to the other node
+   * @return true whether it is possible to traverse from this node to the other node
    */
-  private boolean canTraverseToSquare(Node other) {
-    if (!(TileType.STRAIGHT.equals(other.getTileType())
-            || TileType.SENSOR.equals(other.getTileType())
-            || TileType.SIGNAL.equals(other.getTileType())
-            || TileType.STRAIGHT_DIR.equals(other.getTileType()))) {
-      return false;
-    }
+  private boolean canTraverseFromSquare(Node other) {
     if (isHorizontal()) {
-      if (!(other.isHorizontal() && (getGridY() == other.getGridY()))) {
+      if (!(getGridY() == other.getGridY()) && !other.isJunction() && !other.isDiagonal()) {
+        //both tiles need to be on the same Y
         return false;
       }
-      return ((getGridX() + 1 == other.getGridX()) || (getGridX() - 1 == other.getGridX()));
+      if (!(TileType.CURVED == other.tileType || TileType.SWITCH == other.tileType || TileType.CROSS == other.tileType || TileType.END == other.tileType)) {
+        //Check 'normal' rectangle shaped tiles
+        int gXw, gXe; // check west and east
+        //Block is 3 squares long so add +/-1 to the sides
+        if (TileType.BLOCK == other.tileType) {
+          gXw = other.getGridX() + 1;
+          gXe = other.getGridX() - 1;
+        } else {
+          gXw = other.getGridX();
+          gXe = other.getGridX();
+        }
+        int gX = getGridX();
+        return (gX - 1) == gXw || (gX + 1) == gXe;
+      } else if (TileType.CURVED == other.tileType) {
+        // Curved; when horizontal on the east side a Curved W and S is possibe, on the west side a N and E is possible
+        //determine on which side the curved tile exist
+        if (getGridX() - 1 == other.getGridX()) {
+          //west side
+          return Orientation.NORTH == other.orientation || Orientation.EAST == other.orientation;
+        } else if (getGridX() + 1 == other.getGridX()) {
+          // east side
+          return Orientation.WEST == other.orientation || Orientation.SOUTH == other.orientation;
+        } else {
+          //should never occur
+          return false;
+        }
+      } else if (TileType.END == other.tileType) {
+        //And end stop has only 1 connection
+        //determine on which side the end tile exist
+        if (getGridX() - 1 == other.getGridX()) {
+          //west side
+          return Orientation.WEST == other.orientation;
+        } else if (getGridX() + 1 == other.getGridX()) {
+          // east side
+          return Orientation.EAST == other.orientation;
+        } else {
+          return false;
+        }
+      } else if (TileType.SWITCH == other.tileType) {
+        return false;  //stub
+      } else if (TileType.CROSS == other.tileType) {
+        return false;  //stub
+      } else {
+        //Todo other tiletypes
+        return false; //stub
+      }
     } else {
-      if (!(other.isVertical() && (getGridX() == other.getGridX()))) {
+      //Vertical
+      if (!(getGridX() == other.getGridX()) && !other.isJunction() && !other.isDiagonal()) {
         return false;
       }
-      return ((getGridY() + 1 == other.getGridY()) || (getGridY() - 1 == other.getGridY()));
+      if (!(TileType.CURVED.equals(other.tileType) || (TileType.SWITCH.equals(other.tileType)) || (TileType.CROSS.equals(other.tileType)) || (TileType.END.equals(other.tileType)))) {
+        //Check 'normal' rectangle shaped tiles
+        int gYn, gYs; //check north and south
+        //Block is 3 squares long so add +/-1 to the sides
+        if (TileType.BLOCK.equals(other.tileType)) {
+          gYn = other.getGridY() + 1;
+          gYs = other.getGridY() - 1;
+        } else {
+          gYn = other.getGridY();
+          gYs = other.getGridY();
+        }
+        int gY = getGridY();
+        return (gY - 1) == gYn || (gY + 1) == gYs;
+      } else if (TileType.CURVED == other.tileType) {
+        // Curved; when verstical on the north side a Curved E and S is possibe, on the south side a N and W is possible
+        //determine on which side the curved tile exist
+        if (getGridY() - 1 == other.getGridY()) {
+          //north side
+          return Orientation.SOUTH == other.orientation || Orientation.EAST == other.orientation;
+        } else if (getGridY() + 1 == other.getGridY()) {
+          // east side
+          return Orientation.WEST == other.orientation || Orientation.NORTH == other.orientation;
+        } else {
+          //should never occur
+          return false;
+        }
+      } else if (TileType.END == other.tileType) {
+        //And end stop has only 1 connection
+        //determine on which side the end tile exist
+        if (getGridY() - 1 == other.getGridY()) {
+          //north side
+          return Orientation.NORTH == other.orientation;
+        } else if (getGridY() + 1 == other.getGridY()) {
+          // south side
+          return Orientation.SOUTH == other.orientation;
+        } else {
+          return false;
+        }
+      } else if (TileType.SWITCH == other.tileType) {
+        return false;  //stub
+      } else if (TileType.CROSS == other.tileType) {
+        return false;  //stub
+      } else {
+        //Todo other tile types
+        return false; //stub
+      }
     }
   }
 
@@ -151,7 +267,7 @@ public class Node {
     //A Tile is a rectangle (in most cases even a square.
     switch (tile.getTileType()) {
       case STRAIGHT:
-        return canTraverseToSquare(other);
+        return canTraverseFromSquare(other);
 
       default:
         return false;

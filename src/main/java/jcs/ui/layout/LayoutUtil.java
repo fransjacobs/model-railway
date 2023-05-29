@@ -73,6 +73,18 @@ public class LayoutUtil {
     return new Point(sx, sy);
   }
 
+  public static int getGridX(int x) {
+    int steps = x / Tile.DEFAULT_WIDTH;
+    int sx = steps * Tile.DEFAULT_WIDTH + Tile.GRID;
+    return (sx - Tile.GRID) / (Tile.GRID * 2);
+  }
+
+  public static int getGridY(int y) {
+    int steps = y / Tile.DEFAULT_HEIGHT;
+    int sy = steps * Tile.DEFAULT_HEIGHT + Tile.GRID;
+    return (sy - Tile.GRID) / (Tile.GRID * 2);
+  }
+
   private static void addRelatedBeans(TileBean tileBean) {
     TileType tileType = tileBean.getTileType();
     switch (tileType) {
@@ -493,8 +505,7 @@ public class LayoutUtil {
   }
 
   /**
-   * The Adjacent Ids depend on the direction of the switch. The common point has 2 Ids one for R and one for G The opposite side
-   * has one id for G, the fork side the R
+   * The Adjacent Ids depend on the direction of the switch. The common point has 2 Ids one for R and one for G The opposite side has one id for G, the fork side the R
    *
    * @param tile the "from"
    * @param switchTile the "target"
