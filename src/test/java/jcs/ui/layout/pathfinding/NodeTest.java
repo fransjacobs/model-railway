@@ -98,15 +98,15 @@ public class NodeTest {
     Node south = new Node(TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false));
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.canTravelTo(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.canTravelTo(east);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north);
+    result = instance.canTravelTo(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.canTravelTo(south);
     assertEquals(expResult, result);
   }
 
@@ -122,15 +122,15 @@ public class NodeTest {
     Node south = new Node(TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false));
 
     boolean expResult = false;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.canTravelTo(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.canTravelTo(east);
     assertEquals(expResult, result);
 
     expResult = true;
-    result = instance.canTraverseTo(north);
+    result = instance.canTravelTo(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.canTravelTo(south);
     assertEquals(expResult, result);
   }
 
@@ -142,31 +142,27 @@ public class NodeTest {
 
     Node west = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 140, 220, false));
     Node east = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.EAST, Direction.CENTER, 300, 220, false));
-    Node north = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.NORTH, Direction.CENTER, 220, 140, false));
-    Node south = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, Direction.CENTER, 200, 300, false));
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.canTravelTo(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.canTravelTo(east);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testCanTraverseToVerticalBlock() {
     System.out.println("canTraverseToVerticalBlock");
-    Tile main = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220, false);
+    Tile main = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 220, false);
     Node instance = new Node(main);
 
-    Node west = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 140, 220, false));
-    Node east = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.EAST, Direction.CENTER, 300, 220, false));
     Node north = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.NORTH, Direction.CENTER, 220, 140, false));
-    Node south = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, Direction.CENTER, 200, 300, false));
+    Node south = new Node(TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, Direction.CENTER, 220, 300, false));
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.canTravelTo(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.canTravelTo(south);
     assertEquals(expResult, result);
   }
 
@@ -176,43 +172,34 @@ public class NodeTest {
     Tile main = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100, false);
     Node instance = new Node(main);
 
-    Node north = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 60, 100, false));
-    Node east = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 60, 100, false));
-    Node north2 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 140, 100, false));
-    Node east2 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 140, 100, false));
+    Node west1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 60, 100, false));
+    Node west2 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 60, 100, false));
+    Node west3 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 60, 100, false));
+    Node west4 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 60, 100, false));
 
-    Node west = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 140, 100, false));
-    Node south = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 140, 100, false));
-    Node west1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 60, 100, false));
-    Node south1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 60, 100, false));
-
-    Node north3 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 60, false));
+    Node east1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 140, 100, false));
+    Node east2 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 140, 100, false));
+    Node east3 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 140, 100, false));
+    Node east4 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 140, 100, false));
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(north);
+    boolean result = instance.canTravelTo(west1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.canTravelTo(west2);
     assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.canTraverseTo(north2);
+    result = instance.canTravelTo(east1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east2);
-    assertEquals(expResult, result);
-
-    expResult = true;
-    result = instance.canTraverseTo(west);
-    assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.canTravelTo(east2);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(west1);
+    result = instance.canTravelTo(west3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south1);
+    result = instance.canTravelTo(west4);
     assertEquals(expResult, result);
-
-    result = instance.canTraverseTo(north3);
+    result = instance.canTravelTo(east3);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(east4);
     assertEquals(expResult, result);
   }
 
@@ -222,43 +209,35 @@ public class NodeTest {
     Tile main = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 100, false);
     Node instance = new Node(main);
 
-    Node north = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 140, false));
-    Node west = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 140, false));
-    Node north1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 60, false));
-    Node west1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 60, false));
+    Node north1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 60, false));
+    Node north2 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 60, false));
+    Node north3 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 60, false));
+    Node north4 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 60, false));
 
-    Node east = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 60, false));
-    Node south = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 60, false));
-    Node east1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 140, false));
-    Node south1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 140, false));
-
-    Node north3 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 140, 100, false));
+    Node south1 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 140, false));
+    Node south2 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 140, false));
+    Node south3 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 140, false));
+    Node south4 = new Node(TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 140, false));
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(south);
+    boolean result = instance.canTravelTo(north1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.canTravelTo(north2);
     assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.canTraverseTo(south1);
+    result = instance.canTravelTo(south1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east1);
-    assertEquals(expResult, result);
-
-    expResult = true;
-    result = instance.canTraverseTo(north);
-    assertEquals(expResult, result);
-    result = instance.canTraverseTo(west);
+    result = instance.canTravelTo(south2);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north1);
+    result = instance.canTravelTo(north3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west1);
+    result = instance.canTravelTo(north4);
     assertEquals(expResult, result);
 
-    result = instance.canTraverseTo(north3);
+    result = instance.canTravelTo(south3);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(south4);
     assertEquals(expResult, result);
   }
 
@@ -275,15 +254,15 @@ public class NodeTest {
     Node west1 = new Node(TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 140, 100, false));
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(east);
+    boolean result = instance.canTravelTo(east);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west);
+    result = instance.canTravelTo(west);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(east1);
+    result = instance.canTravelTo(east1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west1);
+    result = instance.canTravelTo(west1);
     assertEquals(expResult, result);
   }
 
@@ -300,16 +279,129 @@ public class NodeTest {
     Node south1 = new Node(TileFactory.createTile(TileType.END, Orientation.SOUTH, Direction.CENTER, 100, 60, false));
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(north);
+    boolean result = instance.canTravelTo(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.canTravelTo(south);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north1);
+    result = instance.canTravelTo(north1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south1);
+    result = instance.canTravelTo(south1);
     assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testCanTraverseToHorizontalSwitch() {
+    System.out.println("canTraverseToHorizontalSwitch");
+    Tile main = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220, false);
+    Node instance = new Node(main);
+
+    Node west1 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 180, 220, false));
+    Node west2 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 180, 220, false));
+    Node west3 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 180, 220, false));
+    Node west4 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 180, 220, false));
+    Node west5 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 180, 220, false));
+    Node west6 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.RIGHT, 180, 220, false));
+    Node west7 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 180, 220, false));
+
+    Node east1 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 260, 220, false));
+    Node east2 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 260, 220, false));
+    Node east3 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 260, 220, false));
+    Node east4 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 260, 220, false));
+    Node east5 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 260, 220, false));
+    Node east6 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.LEFT, 260, 220, false));
+    Node east7 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 260, 220, false));
+
+    boolean expResult = true;
+    boolean result = instance.canTravelTo(west1);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(west2);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(west3);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(west4);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(west5);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(west6);
+    assertEquals(expResult, result);
+
+    result = instance.canTravelTo(east1);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(east2);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(east3);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(east4);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(east5);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(east6);
+    assertEquals(expResult, result);
+
+    expResult = false;
+    result = instance.canTravelTo(west7);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(east7);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testCanTraverseToVerticalSwitch() {
+    System.out.println("canTraverseToVerticalSwitch");
+    Tile main = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 220, false);
+    Node instance = new Node(main);
+
+    Node north1 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.LEFT, 220, 180, false));
+    Node north2 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 220, 180, false));
+    Node north3 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 220, 180, false));
+    Node north4 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.RIGHT, 220, 180, false));
+    Node north5 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 220, 180, false));
+    Node north6 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 220, 180, false));
+    Node north7 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 220, 180, false));
+
+    Node south1 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.RIGHT, 220, 260, false));
+    Node south2 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 220, 260, false));
+    Node south3 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 220, 260, false));
+    Node south4 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.LEFT, 220, 260, false));
+    Node south5 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 220, 260, false));
+    Node south6 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 220, 260, false));
+    Node south7 = new Node(TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 220, 260, false));
+
+    boolean expResult = true;
+    boolean result = instance.canTravelTo(north1);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(north2);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(north3);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(north4);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(north5);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(north6);
+    assertEquals(expResult, result);
+
+    result = instance.canTravelTo(south1);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(south2);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(south3);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(south4);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(south5);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(south6);
+    assertEquals(expResult, result);
+
+    expResult = false;
+    result = instance.canTravelTo(north7);
+    assertEquals(expResult, result);
+    result = instance.canTravelTo(south7);
+    assertEquals(expResult, result);
+
   }
 
 }

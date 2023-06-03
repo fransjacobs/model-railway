@@ -158,7 +158,7 @@ public class BreathFirst {
                     Node tgtNode = this.layoutAnalyzer.getGraph().get(tgt);
 
                     if (!tgt.equals(fromBk)) {
-                        if (!visited.contains(tgt) && !searchList.contains(tgt) && node.canTravel(tgtNode)) {
+                        if (!visited.contains(tgt) && !searchList.contains(tgt) && node.canTravelTo(tgtNode)) {
                             tgtNode.setParent(node);
                             searchList.add(tgt);
                         }

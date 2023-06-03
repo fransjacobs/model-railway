@@ -91,7 +91,7 @@ public interface PersistenceService {
 
     void remove(TileBean tile);
 
-    void removeTile(Integer x, Integer y);
+    //void removeTile(Integer x, Integer y);
 
     //Routes
     List<RouteBean> getRoutes();

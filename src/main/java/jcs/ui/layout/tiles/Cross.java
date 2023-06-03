@@ -41,9 +41,11 @@ public class Cross extends Switch implements Tile {
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
       this.width = CROSS_WIDTH;
       this.height = DEFAULT_HEIGHT;
+      this.offsetX = Tile.GRID;
     } else {
       this.width = DEFAULT_WIDTH;
       this.height = CROSS_HEIGHT;
+      this.offsetY = Tile.GRID;
     }
   }
 

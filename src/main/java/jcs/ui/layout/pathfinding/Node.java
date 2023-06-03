@@ -15,9 +15,15 @@
  */
 package jcs.ui.layout.pathfinding;
 
+import java.awt.Point;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
 import static jcs.entities.enums.TileType.CROSS;
@@ -29,9 +35,13 @@ import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.STRAIGHT_DIR;
 import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.Tile;
+import jcs.ui.layout.tiles.enums.Direction;
 
 /**
- * A Node is the representation in the Graph of a tile with some extra feature to enable the track routing
+ * A Node is the representation in the Graph of a tile.
+ *
+ * Every tile each tile represents a rail. The rail are drawn in the middle of the tile, so in case of a horizontal straight they connect in the middle of the west and east sides. So the edge
+ * connection points should match on every connected tile/node
  *
  */
 public class Node {
@@ -39,6 +49,7 @@ public class Node {
   private final Tile tile;
   private final TileType tileType;
   private final Orientation orientation;
+  private final Map<Orientation, Point> edgeConnections;
 
   private Node parent;
   private final List<Edge> edges;
@@ -49,8 +60,120 @@ public class Node {
     this.tile = tile;
     this.tileType = tile.getTileType();
     this.orientation = tile.getOrientation();
+
+    this.edgeConnections = new HashMap<>();
+
     this.junction = TileType.SWITCH.equals(tile.getTileType()) || TileType.CROSS.equals(tile.getTileType());
     this.edges = new LinkedList<>();
+
+    putEdgeConnections();
+
+  }
+
+  private void putEdgeConnections() {
+    switch (tileType) {
+      case BLOCK -> {
+        //Horizontal
+        if (Orientation.EAST == this.orientation || Orientation.WEST == this.orientation) {
+          this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID * 3, tile.getCenterY()));
+          this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID * 3, tile.getCenterY()));
+        } else {
+          //Vertical
+          this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID * 3));
+          this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID * 3));
+        }
+        break;
+      }
+      case END -> {
+        switch (this.orientation) {
+          case SOUTH ->
+            this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+          case WEST ->
+            this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+          case NORTH ->
+            this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+          default -> //EAST
+            this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+        }
+      }
+      case CURVED -> {
+        switch (this.orientation) {
+          case SOUTH -> {
+            this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+            this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+          }
+          case WEST -> {
+            this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+            this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+          }
+          case NORTH -> {
+            this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+            this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+          }
+          default -> {
+            //EAST
+            this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+            this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+          }
+        }
+      }
+      case SWITCH -> {
+        switch (this.orientation) {
+          case SOUTH -> {
+            this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+            this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+            if (Direction.LEFT == tile.getDirection()) {
+              this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+            } else {
+              this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+            }
+          }
+          case WEST -> {
+            this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+            this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+            if (Direction.LEFT == tile.getDirection()) {
+              this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+            } else {
+              this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+            }
+          }
+          case NORTH -> {
+            this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+            this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+            if (Direction.LEFT == tile.getDirection()) {
+              this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+            } else {
+              this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+            }
+          }
+          default -> {
+            //EAST
+            this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+            this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+            if (Direction.LEFT == tile.getDirection()) {
+              this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+            } else {
+              this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+            }
+          }
+        }
+      }
+      case CROSS -> {
+        //TODO
+      }
+      default -> {
+        //STRAIGHT, STRAIGHT_DIR, SIGNAL, SENSOR
+        if (Orientation.EAST == this.orientation || Orientation.WEST == this.orientation) {
+          //Horizontal
+          this.edgeConnections.put(Orientation.EAST, new Point(tile.getCenterX() + Tile.GRID, tile.getCenterY()));
+          this.edgeConnections.put(Orientation.WEST, new Point(tile.getCenterX() - Tile.GRID, tile.getCenterY()));
+        } else {
+          //Vertical
+          this.edgeConnections.put(Orientation.NORTH, new Point(tile.getCenterX(), tile.getCenterY() - Tile.GRID));
+          this.edgeConnections.put(Orientation.SOUTH, new Point(tile.getCenterX(), tile.getCenterY() + Tile.GRID));
+        }
+      }
+    }
   }
 
   /**
@@ -121,7 +244,7 @@ public class Node {
    * @return true when main route goes from East to West or vv
    */
   public boolean isHorizontal() {
-    return Orientation.EAST == this.orientation || Orientation.WEST == this.orientation;
+    return (Orientation.EAST == this.orientation || Orientation.WEST == this.orientation) && TileType.CURVED != tileType;
   }
 
   /**
@@ -130,7 +253,7 @@ public class Node {
    * @return true when main route goes from North to South or vv
    */
   public boolean isVertical() {
-    return Orientation.NORTH == this.orientation || Orientation.SOUTH == this.orientation;
+    return (Orientation.NORTH == this.orientation || Orientation.SOUTH == this.orientation) && TileType.CURVED != tileType;
   }
 
   /**
@@ -150,128 +273,24 @@ public class Node {
     return orientation;
   }
 
-  /**
-   * Applicable for Straight, StraightDirection,Signal and Sensor A 'normal' Tile is 40 x 40 pix or one grid square. A block is 3 squares long.
-   *
-   * @param other node to traverse to
-   * @return true whether it is possible to traverse from this node to the other node
-   */
-  private boolean canTraverseFromSquare(Node other) {
-    if (isHorizontal()) {
-      if (!(getGridY() == other.getGridY()) && !other.isJunction() && !other.isDiagonal()) {
-        //both tiles need to be on the same Y
-        return false;
-      }
-      if (!(TileType.CURVED == other.tileType || TileType.SWITCH == other.tileType || TileType.CROSS == other.tileType || TileType.END == other.tileType)) {
-        //Check 'normal' rectangle shaped tiles
-        int gXw, gXe; // check west and east
-        //Block is 3 squares long so add +/-1 to the sides
-        if (TileType.BLOCK == other.tileType) {
-          gXw = other.getGridX() + 1;
-          gXe = other.getGridX() - 1;
-        } else {
-          gXw = other.getGridX();
-          gXe = other.getGridX();
-        }
-        int gX = getGridX();
-        return (gX - 1) == gXw || (gX + 1) == gXe;
-      } else if (TileType.CURVED == other.tileType) {
-        // Curved; when horizontal on the east side a Curved W and S is possibe, on the west side a N and E is possible
-        //determine on which side the curved tile exist
-        if (getGridX() - 1 == other.getGridX()) {
-          //west side
-          return Orientation.NORTH == other.orientation || Orientation.EAST == other.orientation;
-        } else if (getGridX() + 1 == other.getGridX()) {
-          // east side
-          return Orientation.WEST == other.orientation || Orientation.SOUTH == other.orientation;
-        } else {
-          //should never occur
-          return false;
-        }
-      } else if (TileType.END == other.tileType) {
-        //And end stop has only 1 connection
-        //determine on which side the end tile exist
-        if (getGridX() - 1 == other.getGridX()) {
-          //west side
-          return Orientation.WEST == other.orientation;
-        } else if (getGridX() + 1 == other.getGridX()) {
-          // east side
-          return Orientation.EAST == other.orientation;
-        } else {
-          return false;
-        }
-      } else if (TileType.SWITCH == other.tileType) {
-        return false;  //stub
-      } else if (TileType.CROSS == other.tileType) {
-        return false;  //stub
-      } else {
-        //Todo other tiletypes
-        return false; //stub
-      }
-    } else {
-      //Vertical
-      if (!(getGridX() == other.getGridX()) && !other.isJunction() && !other.isDiagonal()) {
-        return false;
-      }
-      if (!(TileType.CURVED.equals(other.tileType) || (TileType.SWITCH.equals(other.tileType)) || (TileType.CROSS.equals(other.tileType)) || (TileType.END.equals(other.tileType)))) {
-        //Check 'normal' rectangle shaped tiles
-        int gYn, gYs; //check north and south
-        //Block is 3 squares long so add +/-1 to the sides
-        if (TileType.BLOCK.equals(other.tileType)) {
-          gYn = other.getGridY() + 1;
-          gYs = other.getGridY() - 1;
-        } else {
-          gYn = other.getGridY();
-          gYs = other.getGridY();
-        }
-        int gY = getGridY();
-        return (gY - 1) == gYn || (gY + 1) == gYs;
-      } else if (TileType.CURVED == other.tileType) {
-        // Curved; when verstical on the north side a Curved E and S is possibe, on the south side a N and W is possible
-        //determine on which side the curved tile exist
-        if (getGridY() - 1 == other.getGridY()) {
-          //north side
-          return Orientation.SOUTH == other.orientation || Orientation.EAST == other.orientation;
-        } else if (getGridY() + 1 == other.getGridY()) {
-          // east side
-          return Orientation.WEST == other.orientation || Orientation.NORTH == other.orientation;
-        } else {
-          //should never occur
-          return false;
-        }
-      } else if (TileType.END == other.tileType) {
-        //And end stop has only 1 connection
-        //determine on which side the end tile exist
-        if (getGridY() - 1 == other.getGridY()) {
-          //north side
-          return Orientation.NORTH == other.orientation;
-        } else if (getGridY() + 1 == other.getGridY()) {
-          // south side
-          return Orientation.SOUTH == other.orientation;
-        } else {
-          return false;
-        }
-      } else if (TileType.SWITCH == other.tileType) {
-        return false;  //stub
-      } else if (TileType.CROSS == other.tileType) {
-        return false;  //stub
-      } else {
-        //Todo other tile types
-        return false; //stub
+  public boolean canTravelTo(Node other) {
+    boolean canTravel = false;
+//    Logger.trace(tileType + " O: " + orientation + " P: " + this.edgeConnections.get(this.orientation) + " C: " + this.tile.xyToString());
+//    for (Point p : edgeConnections.values()) {
+//      Logger.trace("O: " + orientation + " P: " + p + " C: " + tile.xyToString());
+//    }
+//    for (Point p : other.edgeConnections.values()) {
+//      Logger.trace("Other: " + other.tileType + " O: " + other.orientation + " P: " + p + " C: " + other.tile.xyToString());
+//    }
+
+    for (Point p : this.edgeConnections.values()) {
+      canTravel = other.edgeConnections.containsValue(p);
+      if (canTravel) {
+        break;
       }
     }
-  }
 
-  public boolean canTraverseTo(Node other) {
-    //Can this node traverse to the node other.
-    //A Tile is a rectangle (in most cases even a square.
-    switch (tile.getTileType()) {
-      case STRAIGHT:
-        return canTraverseFromSquare(other);
-
-      default:
-        return false;
-    }
+    return canTravel;
   }
 
   public String getId() {
@@ -307,37 +326,6 @@ public class Node {
       }
     }
     return false;
-  }
-
-  /**
-   * Check if travel is possible toNode this node toNode the 'toNode' Node
-   *
-   * @param toNode the travel destination node
-   * @return true when travel is possible
-   */
-  @Deprecated
-  public boolean canTravel(Node toNode) {
-    if (this.isJunction() && this.getParent() != null && this.getParent().isJunction() && toNode.isJunction()) {
-      //Logger.trace("Junctions: " + this.getParent().getId() + " -> " + this.getId() + " -> " + toNode.getId());
-
-      String parentId = this.getParent().getId();
-      String tgtId = toNode.getId();
-
-      //a path from xx-G via xx to xx-R or vv is not possible
-      if (parentId.replace("-G", "").replace("-R", "").equals(tgtId.replace("-G", "").replace("-R", ""))) {
-        if (parentId.equals(tgtId)) {
-          //Logger.trace("Can Travel from: " + parentId + this.getId() + " -> " + tgtId);
-          return true;
-        } else {
-          //Logger.trace("Can't travel from: " + parentId + " -> " + this.getId() + " -> " + tgtId);
-          return false;
-        }
-      } else {
-        return true;
-      }
-    } else {
-      return true;
-    }
   }
 
   public Tile getTile() {

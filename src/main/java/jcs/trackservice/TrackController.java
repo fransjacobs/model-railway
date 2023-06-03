@@ -148,21 +148,6 @@ public interface TrackController {
 
   void removeMessageListener(CanMessageListener listener);
 
-  @Deprecated //use the PersistenService
-  Set<TileBean> getTiles();
-
-  @Deprecated //use the PersistenService
-  TileBean getTile(Integer x, Integer y);
-
-  @Deprecated //use the PersistenService
-  TileBean persist(TileBean tile);
-
-  @Deprecated //use the PersistenService
-  void persist(Set<TileBean> tiles);
-
-  @Deprecated //use the PersistenService
-  void remove(TileBean tile);
-
   void synchronizeLocomotivesWithController(PropertyChangeListener progressListener);
 
   @Deprecated //use the PersistenService

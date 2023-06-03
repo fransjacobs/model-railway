@@ -16,16 +16,12 @@
 package jcs.persistence;
 
 import com.dieselpoint.norm.Database;
-import com.dieselpoint.norm.DbException;
 import java.awt.Image;
-import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.SensorBean;
@@ -343,27 +339,9 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public TileBean persist(TileBean tileBean) {
     if (database.where("id=?", tileBean.getId()).first(TileBean.class) != null) {
-      try {
-        database.update(tileBean).getRowsAffected();
-      } catch (DbException dbe) {
-        //When a tile is moved it could cause an index violation
-        if (dbe.getMessage().contains("Unique index or primary key violation")) {
-          database.delete(tileBean);
-          removeTile(tileBean.getX(), tileBean.getY());
-          database.insert(tileBean);
-        }
-      }
+      database.update(tileBean).getRowsAffected();
     } else {
-      try {
-        database.insert(tileBean).getRowsAffected();
-      } catch (DbException dbe) {
-        //When a tile is moved it could cause an index violation
-        if (dbe.getMessage().contains("Unique index or primary key violation")) {
-          database.delete(tileBean);
-          removeTile(tileBean.getX(), tileBean.getY());
-          database.insert(tileBean);
-        }
-      }
+      database.insert(tileBean).getRowsAffected();
     }
     return tileBean;
   }
@@ -374,15 +352,16 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
-  @Override
-  public void removeTile(Integer x, Integer y) {
-    Object[] args = new Object[]{x, y};
-    database.sql("delete from tiles where x= ? and y = ?", args);
-  }
+//  @Override
+//  public void removeTile(Integer x, Integer y) {
+//    Object[] args = new Object[]{x, y};
+//    database.sql("delete from tiles where x= ? and y = ?", args).execute();
+//  }
 
   @Override
   public void persist(List<TileBean> tiles) {
-    database.sql("delete from tiles");
+    int rows = database.sql("delete from tiles").execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " to persist: " + tiles.size());
     for (TileBean tb : tiles) {
       persist(tb);
     }

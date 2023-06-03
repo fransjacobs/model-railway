@@ -392,7 +392,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       snapshot = new HashSet<>(tiles.values());
     }
 
-    //Set<TileBean> beans = new HashSet<>();
     List<TileBean> beans = new LinkedList<>();
 
     for (Tile tile : snapshot) {
@@ -961,12 +960,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     for (Point p : pointsToRemove) {
       synchronized (tiles) {
         Tile removed = this.tiles.remove(p);
+
         if (removed != null && removed.getAllPoints() != null) {
+          //Remove tile from persistent store
+          //PersistenceFactory.getService().remove(removed.getTileBean());
+
           Set<Point> rps = removed.getAltPoints();
           //Also remove alt points
           for (Point ap : rps) {
             this.tiles.remove(ap);
           }
+
           Logger.trace("Removed: " + removed);
         }
       }
