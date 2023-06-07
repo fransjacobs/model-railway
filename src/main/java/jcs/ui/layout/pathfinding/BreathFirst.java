@@ -154,7 +154,7 @@ public class BreathFirst {
                 List<Edge> edges = node.getEdges();
 
                 for (Edge edge : edges) {
-                    String tgt = edge.getTargetId();
+                    String tgt = edge.getToId();
                     Node tgtNode = this.layoutAnalyzer.getGraph().get(tgt);
 
                     if (!tgt.equals(fromBk)) {

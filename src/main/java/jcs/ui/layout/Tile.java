@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
@@ -116,4 +117,13 @@ public interface Tile extends Shape {
 
   String xyToString();
 
+  int getGridX();
+
+  int getGridY();
+
+  Map<Orientation, Point> getNeighborPoints();
+
+  Map<Orientation, Point> getEdgeConnections();
+
+  boolean canTraverseTo(Tile other);
 }

@@ -15,37 +15,54 @@
  */
 package jcs.ui.layout.pathfinding;
 
+import jcs.entities.enums.Orientation;
+import jcs.ui.layout.tiles.enums.Direction;
+
 /**
  *
  * @author fransjacobs
  */
 public class Edge {
 
-    private final String sourceId;
-    private final String targetId;
-    private final double cost;
+  private Node from;
+  private Node to;
 
-    public Edge(String sourceId, String targetId, double cost) {
-        this.sourceId = sourceId;
-        this.targetId = targetId;
-        this.cost = cost;
-    }
+  private String fromId;
+  private String toId;
+  private Direction travelDirection;
+  private Orientation travelOrientation;
 
-    public String getSourceId() {
-        return sourceId;
-    }
+  public Edge(Node from, Node to) {
+    this.from = from;
+    this.to = to;
+  }
 
-    public String getTargetId() {
-        return targetId;
-    }
+  public Edge(String fromId, String toId, double cost) {
+    this(fromId, toId, null, null);
+  }
 
-    public double getCost() {
-        return cost;
-    }
+  public Edge(String fromId, String toId, Orientation travelOrientation) {
+    this(fromId, toId, travelOrientation, Direction.CENTER);
+  }
 
-    @Override
-    public String toString() {
-        return "Edge (" + sourceId + " -> " + targetId + ") distance: " + cost;
-    }
+  public Edge(String fromId, String toId, Orientation travelOrientation, Direction travelDirection) {
+    this.fromId = fromId;
+    this.toId = toId;
+    this.travelOrientation = travelOrientation;
+    this.travelDirection = travelDirection;
+  }
+
+  public String getFromId() {
+    return (from != null ? from.getId() : fromId);
+  }
+
+  public String getToId() {
+    return (to != null ? to.getId() : toId);
+  }
+
+  @Override
+  public String toString() {
+    return "Edge (" + (from != null ? from.getId() : fromId) + " -> " + (to != null ? to.getId() : toId) + ") dir: " + travelOrientation + " path: " + travelDirection;
+  }
 
 }
