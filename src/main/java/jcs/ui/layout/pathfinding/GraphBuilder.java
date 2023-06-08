@@ -19,6 +19,7 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 import jcs.persistence.PersistenceFactory;
@@ -89,20 +90,26 @@ public class GraphBuilder {
       Logger.trace(node + " allready exists");
     } else {
       Node node = new Node(tile);
-      Logger.trace("Node: " + node + (node.isJunction()?" Junction":"")+ "...");
+      Logger.trace("Node: " + node + (node.isJunction() ? " Junction" : "") + "...");
 
       //Check all sides of the tile fpt neighbors
+      int cnt = 0;
       for (Orientation dir : Orientation.values()) {
         Point p = tile.getNeighborPoints().get(dir);
         if (p != null) {
+          cnt++;
           //Found a neighbor, is it possible to travel from this tile to the neighbor?
           Tile neighbor = this.tiles.get(p);
           if (tile.canTraverseTo(neighbor)) {
             //When the node is a Switch there is a direction Green or Red...
-            if(TileType.SWITCH == neighbor.getTileType() || TileType.CROSS == neighbor.getTileType()) {
-              Logger.debug("Neighbor "+neighbor.getId()+" is a Junction");
+            Edge edge;
+            if (TileType.SWITCH == tile.getTileType() || TileType.CROSS == tile.getTileType() || TileType.SWITCH == neighbor.getTileType() || TileType.CROSS == neighbor.getTileType()) {
+              Logger.debug((node.isJunction() ? " Tile is Junction" : "") + " " + (neighbor.isJunction() ? " Neighbor is Junction" : "") + ", id: " + neighbor.getId());
+              AccessoryValue junctionDir = node.isJunction() ? tile.getSwitchValueTo(neighbor) : neighbor.getSwitchValueTo(tile);
+              edge = new Edge(node.getId(), neighbor.getId(), dir, junctionDir);
+            } else {
+              edge = new Edge(node.getId(), neighbor.getId(), dir);
             }
-            Edge edge = new Edge(node.getId(), neighbor.getId(), dir);
             node.addEdge(edge);
             Logger.trace(" ->" + edge);
           }
@@ -110,7 +117,7 @@ public class GraphBuilder {
       }
 
       this.graph.put(id, node);
-      Logger.trace("Added " + node);
+      Logger.trace("Added " + node + " with " + cnt + " edges");
     }
 
   }

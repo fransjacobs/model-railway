@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout;
 
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 
@@ -115,6 +116,63 @@ public class TileTest {
     assertEquals(expResult, result);
     result = instance.canTraverseTo(south);
     assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testCanTraverseToHorizontalSwitch() {
+    System.out.println("canTraverseToHorizontalSwitch");
+    Tile instance = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 100, 100, false);
+
+    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 60, 100, false);
+    Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 140, 100, false);
+    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 60, false);
+    Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
+
+    Tile west1 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 60, 100, false);
+    Tile west2 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 60, 100, false);
+    Tile east1 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 140, 100, false);
+
+    Tile north1 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 60, false);
+
+    Tile south1 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 140, false);
+    Tile south2 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 140, false);
+
+    Tile south3 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 140, false);
+    Tile south4 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
+
+    Tile south5 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 100, 140, false);
+
+    boolean expResult = true;
+    boolean result = instance.canTraverseTo(west);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(east);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(south);
+    assertEquals(expResult, result);
+
+    result = instance.canTraverseTo(south1);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(west1);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(south2);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(east1);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(south5);
+    assertEquals(expResult, result);
+
+    expResult = false;
+    result = instance.canTraverseTo(north);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(south3);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(south4);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(north1);
+    assertEquals(expResult, result);
+    result = instance.canTraverseTo(west2);
+    assertEquals(expResult, result);
+
   }
 
   @Test
@@ -292,8 +350,8 @@ public class TileTest {
   }
 
   @Test
-  public void testCanTraverseToHorizontalSwitch() {
-    System.out.println("canTraverseToHorizontalSwitch");
+  public void testCanTraverseToHorizontalSwitch2() {
+    System.out.println("canTraverseToHorizontalSwitch2");
     Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220, false);
 
     Tile west1 = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 180, 220, false);
@@ -398,6 +456,66 @@ public class TileTest {
     result = instance.canTraverseTo(north7);
     assertEquals(expResult, result);
     result = instance.canTraverseTo(south7);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testgetSwitchValueToHorizontalStraightCurved() {
+    System.out.println("getSwitchValueToHorizontalStraightCurved");
+    Tile instanceR = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 220, 220, false);
+    Tile instanceL = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 220, 220, false);
+
+    Tile west1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 180, 220, false);
+    Tile east1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 260, 220, false);
+
+    Tile north1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 180, false);
+
+    Tile north2 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 220, 180, false);
+    Tile north3 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 220, 180, false);
+
+    Tile north4 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 220, 180, false);
+    Tile north5 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 220, 180, false);
+
+    Tile south1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 220, 260, false);
+
+    Tile south2 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 220, 260, false);
+    Tile south3 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 220, 260, false);
+
+    AccessoryValue expResult = AccessoryValue.GREEN;
+    AccessoryValue result = instanceR.getSwitchValueTo(west1);
+    assertEquals(expResult, result);
+    result = instanceR.getSwitchValueTo(east1);
+    assertEquals(expResult, result);
+
+    result = instanceL.getSwitchValueTo(west1);
+    assertEquals(expResult, result);
+    result = instanceL.getSwitchValueTo(east1);
+    assertEquals(expResult, result);
+
+    expResult = AccessoryValue.RED;
+    result = instanceR.getSwitchValueTo(north1);
+    assertEquals(expResult, result);
+
+    result = instanceR.getSwitchValueTo(north2);
+    assertEquals(expResult, result);
+
+    result = instanceR.getSwitchValueTo(north3);
+    assertEquals(expResult, result);
+
+    result = instanceL.getSwitchValueTo(south2);
+    assertEquals(expResult, result);
+
+    result = instanceL.getSwitchValueTo(south3);
+    assertEquals(expResult, result);
+
+    expResult = AccessoryValue.OFF;
+    result = instanceR.getSwitchValueTo(south1);
+    assertEquals(expResult, result);
+
+    result = instanceR.getSwitchValueTo(north4);
+    assertEquals(expResult, result);
+
+    result = instanceR.getSwitchValueTo(north5);
     assertEquals(expResult, result);
 
   }

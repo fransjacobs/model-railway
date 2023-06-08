@@ -15,8 +15,8 @@
  */
 package jcs.ui.layout.pathfinding;
 
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
-import jcs.ui.layout.tiles.enums.Direction;
 
 /**
  *
@@ -29,8 +29,8 @@ public class Edge {
 
   private String fromId;
   private String toId;
-  private Direction travelDirection;
   private Orientation travelOrientation;
+  private AccessoryValue pathDirection;
 
   public Edge(Node from, Node to) {
     this.from = from;
@@ -42,14 +42,14 @@ public class Edge {
   }
 
   public Edge(String fromId, String toId, Orientation travelOrientation) {
-    this(fromId, toId, travelOrientation, Direction.CENTER);
+    this(fromId, toId, travelOrientation, AccessoryValue.OFF);
   }
 
-  public Edge(String fromId, String toId, Orientation travelOrientation, Direction travelDirection) {
+  public Edge(String fromId, String toId, Orientation travelOrientation, AccessoryValue pathDirection) {
     this.fromId = fromId;
     this.toId = toId;
     this.travelOrientation = travelOrientation;
-    this.travelDirection = travelDirection;
+    this.pathDirection = pathDirection;
   }
 
   public String getFromId() {
@@ -62,7 +62,7 @@ public class Edge {
 
   @Override
   public String toString() {
-    return "Edge (" + (from != null ? from.getId() : fromId) + " -> " + (to != null ? to.getId() : toId) + ") dir: " + travelOrientation + " path: " + travelDirection;
+    return "Edge (" + (from != null ? from.getId() : fromId) + " -> " + (to != null ? to.getId() : toId) + ") dir: " + travelOrientation + (AccessoryValue.OFF!=pathDirection?" path: " + pathDirection:"");
   }
 
 }

@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
-import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
@@ -52,7 +52,7 @@ import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.Tile;
 import static jcs.ui.layout.Tile.DEFAULT_TRACK_COLOR;
-import jcs.ui.layout.pathfinding.Node;
+import jcs.ui.layout.tiles.enums.Direction;
 
 /**
  *
@@ -666,6 +666,49 @@ abstract class AbstractTile extends TileBean implements Tile {
     return (getCenterY() - Tile.GRID) / (Tile.GRID * 2);
   }
 
+  /**
+   * The main route of the tile is horizontal
+   *
+   * @return true when main route goes from East to West or vv
+   */
+  @Override
+  public boolean isHorizontal() {
+    return (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) && TileType.CURVED != getTileType();
+  }
+
+  /**
+   * The main route of the tile is vertical
+   *
+   * @return true when main route goes from North to South or vv
+   */
+  @Override
+  public boolean isVertical() {
+    return (Orientation.NORTH == getOrientation() || Orientation.SOUTH == getOrientation()) && TileType.CURVED != getTileType();
+  }
+
+  @Override
+  public boolean isJunction() {
+    return TileType.SWITCH == this.getTileType() || TileType.CROSS == this.getTileType();
+  }
+
+  /**
+   * The main route of the tile is diagonal
+   *
+   * @return true when main route goes from North to East or West to South and vv
+   */
+  @Override
+  public boolean isDiagonal() {
+    return TileType.CURVED == getTileType();
+  }
+
+  public List<TileBean> getNeighbours() {
+    return neighbours;
+  }
+
+  public void setNeighbours(List<TileBean> neighbours) {
+    this.neighbours = neighbours;
+  }
+
   @Override
   public Map<Orientation, Point> getNeighborPoints() {
     Map<Orientation, Point> neighbors = new HashMap<>();
@@ -912,12 +955,34 @@ abstract class AbstractTile extends TileBean implements Tile {
     return canTravel;
   }
 
-  public List<TileBean> getNeighbours() {
-    return neighbours;
-  }
+  @Override
+  public AccessoryValue getSwitchValueTo(Tile other) {
+    TileType tiletype = this.getTileType();
+    Orientation orientation = this.getOrientation();
+    Direction direction = this.getDirection();
+    AccessoryValue switchDirection = AccessoryValue.OFF;
 
-  public void setNeighbours(List<TileBean> neighbours) {
-    this.neighbours = neighbours;
+    if (canTraverseTo(other)) {
+      //Traversal should be possible
+      //Only a switch has this "issue"
+      switch (tiletype) {
+        case SWITCH -> {
+          //horizontaal of verticaal?
+          if (this.isHorizontal() && other.isHorizontal() || this.isVertical() && other.isVertical()) {
+            //Both are horizontal or vertical so it is the longes side hence Green
+            switchDirection = AccessoryValue.GREEN;
+          } else {
+            //one is on the "limp" so must be Red?
+            switchDirection = AccessoryValue.RED;
+          }
+        }
+        case CROSS -> {
+        }
+        default -> {
+        }
+      }
+    }
+    return switchDirection;
   }
 
 }

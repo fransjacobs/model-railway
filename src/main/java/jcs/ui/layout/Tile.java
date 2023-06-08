@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.enums.Direction;
@@ -121,9 +122,35 @@ public interface Tile extends Shape {
 
   int getGridY();
 
+  /**
+   * The main route of the tile is horizontal
+   *
+   * @return true when main route goes from East to West or vv
+   */
+  boolean isHorizontal();
+
+  /**
+   * The main route of the tile is vertical
+   *
+   * @return true when main route goes from North to South or vv
+   */
+  boolean isVertical();
+
+  /**
+   * The main route of the tile is diagonal
+   *
+   * @return true when main route goes from North to East or West to South and vv
+   */
+  boolean isDiagonal();
+
+  
+  boolean isJunction();
+  
   Map<Orientation, Point> getNeighborPoints();
 
   Map<Orientation, Point> getEdgeConnections();
 
   boolean canTraverseTo(Tile other);
+
+  AccessoryValue getSwitchValueTo(Tile other);
 }
