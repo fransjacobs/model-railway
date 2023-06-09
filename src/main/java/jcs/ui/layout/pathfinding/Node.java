@@ -54,34 +54,20 @@ public class Node {
     this.edges = new LinkedList<>();
   }
 
-  /**
-   *
-   * @return the X (pixel) coordinate of the center of the tile
-   */
+  
   public int getX() {
     return tile.getCenterX();
   }
 
-  /**
-   *
-   * @return the X number of the grid square (grid is 40 x 40 pix)
-   */
+  
   public int getGridX() {
     return tile.getGridX();
   }
 
-  /**
-   *
-   * @return then Y (pixel) coordinate of the center of the tile
-   */
   public int getY() {
     return tile.getCenterY();
   }
 
-  /**
-   *
-   * @return the Y number of the grid square (grid is 40 x 40 pix)
-   */
   public int getGridY() {
     return tile.getGridY();
   }
@@ -90,61 +76,16 @@ public class Node {
     return TileType.BLOCK == this.tileType;
   }
 
-  /**
-   * A tile has 1 or more connection or transitions, i.e. where the tiles connect
-   *
-   * @return the number of connection possibilities a node has.
-   */
-  public int transitions() {
-    return switch (tile.getTileType()) {
-      case STRAIGHT ->
-        2;
-      case STRAIGHT_DIR ->
-        2;
-      case SENSOR ->
-        2;
-      case SIGNAL ->
-        2;
-      case CURVED ->
-        2;
-      case BLOCK ->
-        2;
-      case SWITCH ->
-        3;
-      case CROSS ->
-        4;
-      case END ->
-        1;
-      default ->
-        0;
-    };
-  }
-
-  /**
-   * The main route of the tile is horizontal
-   *
-   * @return true when main route goes from East to West or vv
-   */
   public boolean isHorizontal() {
-    return (Orientation.EAST == this.orientation || Orientation.WEST == this.orientation) && TileType.CURVED != tileType;
+    return this.tile.isHorizontal();
   }
 
-  /**
-   * The main route of the tile is vertical
-   *
-   * @return true when main route goes from North to South or vv
-   */
   public boolean isVertical() {
-    return (Orientation.NORTH == this.orientation || Orientation.SOUTH == this.orientation) && TileType.CURVED != tileType;
+    return this.tile.isVertical();
   }
 
-  /**
-   * The main route of the tile is diagonal
-   *
-   * @return true when main route goes from North to East or West to South and vv
-   */
   public boolean isDiagonal() {
-    return TileType.CURVED.equals(tile.getTileType());
+    return this.tile.isDiagonal();
   }
 
   public TileType getTileType() {
@@ -180,7 +121,7 @@ public class Node {
   }
 
   public boolean isJunction() {
-    return TileType.SWITCH == this.tileType || TileType.CROSS == this.tileType;
+    return this.tile.isJunction();
   }
 
   public boolean contains(Edge edge) {

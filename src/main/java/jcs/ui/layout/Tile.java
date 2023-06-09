@@ -86,8 +86,10 @@ public interface Tile extends Shape {
 
   void setCenter(Point center);
 
+  @Deprecated
   Set<Point> getAltPoints();
 
+  @Deprecated
   Set<Point> getAllPoints();
 
   int getOffsetX();
@@ -102,8 +104,16 @@ public interface Tile extends Shape {
 
   int getWidth();
 
+  /**
+   *
+   * @return the X (pixel) coordinate of the center of the tile
+   */
   int getCenterX();
 
+  /**
+   *
+   * @return then Y (pixel) coordinate of the center of the tile
+   */
   int getCenterY();
 
   TileBean getTileBean();
@@ -118,8 +128,16 @@ public interface Tile extends Shape {
 
   String xyToString();
 
+  /**
+   *
+   * @return the X number of the grid square (grid is 40 x 40 pix)
+   */
   int getGridX();
 
+  /**
+   *
+   * @return the Y number of the grid square (grid is 40 x 40 pix)
+   */
   int getGridY();
 
   /**
@@ -143,14 +161,17 @@ public interface Tile extends Shape {
    */
   boolean isDiagonal();
 
-  
   boolean isJunction();
-  
+
+  boolean isBlock();
+
   Map<Orientation, Point> getNeighborPoints();
 
   Map<Orientation, Point> getEdgeConnections();
 
   boolean canTraverseTo(Tile other);
+
+  String getIdSuffix(Tile other);
 
   AccessoryValue getSwitchValueTo(Tile other);
 }

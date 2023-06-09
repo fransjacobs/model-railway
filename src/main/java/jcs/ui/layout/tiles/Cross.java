@@ -126,6 +126,11 @@ public class Cross extends Switch implements Tile {
   }
 
   @Override
+  public boolean isJunction() {
+    return true;
+  }
+
+  @Override
   public void rotate() {
     super.rotate();
 

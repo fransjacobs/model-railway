@@ -410,11 +410,13 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
+  @Deprecated
   public Set<Point> getAltPoints() {
     return Collections.EMPTY_SET;
   }
 
   @Override
+  @Deprecated
   public Set<Point> getAllPoints() {
     Set<Point> aps = new HashSet<>();
     aps.add(getCenter());
@@ -688,7 +690,12 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public boolean isJunction() {
-    return TileType.SWITCH == this.getTileType() || TileType.CROSS == this.getTileType();
+    return false;
+  }
+
+  @Override
+  public boolean isBlock() {
+    return false;
   }
 
   /**
@@ -707,6 +714,11 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   public void setNeighbours(List<TileBean> neighbours) {
     this.neighbours = neighbours;
+  }
+
+  @Override
+  public String getIdSuffix(Tile other) {
+    return "";
   }
 
   @Override
@@ -957,32 +969,7 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public AccessoryValue getSwitchValueTo(Tile other) {
-    TileType tiletype = this.getTileType();
-    Orientation orientation = this.getOrientation();
-    Direction direction = this.getDirection();
-    AccessoryValue switchDirection = AccessoryValue.OFF;
-
-    if (canTraverseTo(other)) {
-      //Traversal should be possible
-      //Only a switch has this "issue"
-      switch (tiletype) {
-        case SWITCH -> {
-          //horizontaal of verticaal?
-          if (this.isHorizontal() && other.isHorizontal() || this.isVertical() && other.isVertical()) {
-            //Both are horizontal or vertical so it is the longes side hence Green
-            switchDirection = AccessoryValue.GREEN;
-          } else {
-            //one is on the "limp" so must be Red?
-            switchDirection = AccessoryValue.RED;
-          }
-        }
-        case CROSS -> {
-        }
-        default -> {
-        }
-      }
-    }
-    return switchDirection;
+    return AccessoryValue.OFF;
   }
 
 }

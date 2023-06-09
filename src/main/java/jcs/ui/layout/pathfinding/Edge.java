@@ -28,7 +28,9 @@ public class Edge {
   private Node to;
 
   private String fromId;
+  private String fromSuffix;
   private String toId;
+  private String toSuffix;
   private Orientation travelOrientation;
   private AccessoryValue pathDirection;
 
@@ -46,8 +48,19 @@ public class Edge {
   }
 
   public Edge(String fromId, String toId, Orientation travelOrientation, AccessoryValue pathDirection) {
+    this(fromId, toId, null, null, travelOrientation, pathDirection);
+  }
+
+  public Edge(String fromId, String toId, String fromSuffix, String toSuffix, Orientation travelOrientation) {
+    this(fromId, toId, fromSuffix, toSuffix, travelOrientation, AccessoryValue.OFF);
+  }
+
+  public Edge(String fromId, String toId, String fromSuffix, String toSuffix, Orientation travelOrientation, AccessoryValue pathDirection) {
     this.fromId = fromId;
     this.toId = toId;
+    this.fromSuffix = fromSuffix;
+    this.toSuffix = toSuffix;
+
     this.travelOrientation = travelOrientation;
     this.pathDirection = pathDirection;
   }
@@ -60,9 +73,17 @@ public class Edge {
     return (to != null ? to.getId() : toId);
   }
 
+  public String getFromSuffix() {
+    return fromSuffix;
+  }
+
+  public String getToSuffix() {
+    return toSuffix;
+  }
+
   @Override
   public String toString() {
-    return "Edge (" + (from != null ? from.getId() : fromId) + " -> " + (to != null ? to.getId() : toId) + ") dir: " + travelOrientation + (AccessoryValue.OFF!=pathDirection?" path: " + pathDirection:"");
+    return "Edge (" + (from != null ? from.getId() : fromId) + (fromSuffix != null ? fromSuffix : "") + " -> " + (to != null ? to.getId() : toId) + (toSuffix != null ? toSuffix : "") + ") dir: " + travelOrientation + (AccessoryValue.OFF != pathDirection ? " path: " + pathDirection : "");
   }
 
 }

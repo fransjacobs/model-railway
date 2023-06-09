@@ -25,6 +25,8 @@ import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.CROSS;
+import static jcs.entities.enums.TileType.SWITCH;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.ui.layout.tiles.enums.Direction;
 
@@ -156,6 +158,26 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
       setValue(event.getAccessoryBean().getAccessoryValue());
       repaintTile();
     }
+  }
+  
+  @Override
+  public boolean isJunction() {
+    return true;
+  }
+  
+  @Override
+  public AccessoryValue getSwitchValueTo(Tile other) {
+    AccessoryValue switchDirection = AccessoryValue.OFF;
+    if (canTraverseTo(other)) {
+      if (this.isHorizontal() && other.isHorizontal() || this.isVertical() && other.isVertical()) {
+        //Both are horizontal or vertical so it is the longes side hence Green
+        switchDirection = AccessoryValue.GREEN;
+      } else {
+        //one is on the "limp" so must be Red?
+        switchDirection = AccessoryValue.RED;
+      }
+    }
+    return switchDirection;
   }
 
 }

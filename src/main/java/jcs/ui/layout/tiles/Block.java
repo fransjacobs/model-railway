@@ -20,12 +20,15 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.enums.Direction;
+import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -99,6 +102,65 @@ public class Block extends AbstractTile implements Tile {
   }
 
   @Override
+  public boolean isBlock() {
+    return true;
+  }
+
+  @Override
+  public String getIdSuffix(Tile other) {
+    String suffix = null;
+    Orientation match = null;
+    if (canTraverseTo(other)) {
+      Map<Orientation, Point> blockSides = this.getEdgeConnections();
+      Map<Orientation, Point> otherSides = other.getEdgeConnections();
+
+      for (Orientation bo : Orientation.values()) {
+        Point bp = blockSides.get(bo);
+
+        if (bp != null) {
+          for (Orientation oo : Orientation.values()) {
+            Point op = otherSides.get(oo);
+            if (op != null) {
+              if (op.equals(bp)) {
+                match = bo;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (match != null) {
+      if (Orientation.EAST == this.getOrientation() && Orientation.EAST == match) {
+        suffix = "+";
+      }
+      if (Orientation.WEST == this.getOrientation() && Orientation.WEST == match) {
+        suffix = "+";
+      }
+      if (Orientation.EAST == this.getOrientation() && Orientation.WEST == match) {
+        suffix = "-";
+      }
+      if (Orientation.WEST == this.getOrientation() && Orientation.EAST == match) {
+        suffix = "-";
+      }
+      if (Orientation.NORTH == this.getOrientation() && Orientation.NORTH == match) {
+        suffix = "+";
+      }
+      if (Orientation.NORTH == this.getOrientation() && Orientation.SOUTH == match) {
+        suffix = "-";
+      }
+      if (Orientation.SOUTH == this.getOrientation() && Orientation.SOUTH == match) {
+        suffix = "+";
+      }
+      if (Orientation.SOUTH == this.getOrientation() && Orientation.NORTH == match) {
+        suffix = "-";
+      }
+    }
+    return suffix;
+  }
+
+  @Override
   public void rotate() {
     super.rotate();
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
@@ -139,7 +201,6 @@ public class Block extends AbstractTile implements Tile {
 
   @Override
   public void drawName(Graphics2D g2d) {
-
     g2d.setPaint(Color.darkGray);
     switch (getOrientation()) {
       case EAST ->

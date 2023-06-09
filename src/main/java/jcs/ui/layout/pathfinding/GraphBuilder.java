@@ -16,12 +16,13 @@
 package jcs.ui.layout.pathfinding;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.Tile;
 import jcs.ui.layout.tiles.TileFactory;
@@ -34,9 +35,7 @@ import org.tinylog.Logger;
  */
 public class GraphBuilder {
 
-  //private List<Tile> tiles;
-  private Map<Point, Tile> tiles;
-
+  private final Map<Point, Tile> tiles;
   private final Map<String, Node> graph;
 
   public GraphBuilder(List<Tile> tiles) {
@@ -46,41 +45,8 @@ public class GraphBuilder {
       this.tiles.put(tile.getCenter(), tile);
     }
     Logger.trace("Loaded " + tiles.size() + " tiles");
-  }
 
-  void findEdgesFor(Node node) {
-    //Tile tile = findTile(node.getId());
-    //Point tcp = tile.getCenter();
-    //Set<Point> adjacentPoints = LayoutUtil.adjacentPointsFor(tile);
-
-    //filter the points which do have a tile
-//    for (Point adj : adjacentPoints) {
-//      if (isTile(adj)) {
-//        Tile t = findTile(adj);
-//        Point cp = t.getCenter();
-//
-//        //Determine the node-id of the adjacent node
-//        String nodeId;
-//        switch (t.getTileType()) {
-//          case BLOCK -> {
-//            //A block has 2 sides ie 2 nodes so get the nearest point which is  bk-n+/-
-//            if (LayoutUtil.isPlusAdjacent(t, tcp)) {
-//              cp = LayoutUtil.getPlusCenter(t);
-//              nodeId = t.getId() + "+";
-//            } else {
-//              cp = LayoutUtil.getMinusCenter(t);
-//              nodeId = t.getId() + "-";
-//            }
-//          }
-//          case SWITCH -> // As switch has 3 adjacent nodes, depending on the direction
-//            nodeId = getNodeIdForAdjacentSwitch(tile, t);
-//          default -> nodeId = t.getId();
-//        }
-//        Edge e1 = new Edge(node.getId(), nodeId, LayoutUtil.euclideanDistance(tcp, cp));
-//        node.addEdge(e1);
-//        Logger.trace(e1);
-//      }
-//    }
+    buildGraph();
   }
 
   private void addNode(Tile tile) {
@@ -103,10 +69,21 @@ public class GraphBuilder {
           if (tile.canTraverseTo(neighbor)) {
             //When the node is a Switch there is a direction Green or Red...
             Edge edge;
-            if (TileType.SWITCH == tile.getTileType() || TileType.CROSS == tile.getTileType() || TileType.SWITCH == neighbor.getTileType() || TileType.CROSS == neighbor.getTileType()) {
-              Logger.debug((node.isJunction() ? " Tile is Junction" : "") + " " + (neighbor.isJunction() ? " Neighbor is Junction" : "") + ", id: " + neighbor.getId());
+            //if (TileType.SWITCH == tile.getTileType() || TileType.CROSS == tile.getTileType() || TileType.SWITCH == neighbor.getTileType() || TileType.CROSS == neighbor.getTileType()) {
+            if (tile.isJunction() || neighbor.isJunction()) {
+              //Logger.debug((node.isJunction() ? " Tile is Junction" : "") + " " + (neighbor.isJunction() ? " Neighbor is Junction" : "") + ", id: " + neighbor.getId());
               AccessoryValue junctionDir = node.isJunction() ? tile.getSwitchValueTo(neighbor) : neighbor.getSwitchValueTo(tile);
               edge = new Edge(node.getId(), neighbor.getId(), dir, junctionDir);
+            } else if (tile.isBlock() || neighbor.isBlock()) {
+              //Logger.debug((node.isBlock() ? " Tile is Block" : "") + " " + (neighbor.isBlock() ? " Neighbor is Block" : "") + ", id: " + neighbor.getId());
+              String fromSuffix = null, toSuffix = null;
+              if (node.isBlock()) {
+                fromSuffix = tile.getIdSuffix(neighbor);
+              }
+              if (neighbor.isBlock()) {
+                toSuffix = neighbor.getIdSuffix(tile);
+              }
+              edge = new Edge(node.getId(), neighbor.getId(), fromSuffix, toSuffix, dir);
             } else {
               edge = new Edge(node.getId(), neighbor.getId(), dir);
             }
@@ -122,11 +99,43 @@ public class GraphBuilder {
 
   }
 
-  void buildGraph() {
+  private void buildGraph() {
     for (Tile tile : this.tiles.values()) {
       addNode(tile);
     }
+  }
 
+  public Map<String, Node> getGraph() {
+    return graph;
+  }
+
+  public List<List<Node>> getAllBlockToBlockNodes() {
+    List<List<Node>> fromToList = new ArrayList<>();
+
+    Collection<Node> fromNodes = this.graph.values();
+    Collection<Node> toNodes = this.graph.values();
+
+    for (Node from : fromNodes) {
+      boolean fromBlock = from.isBlock();
+      String fromId = from.getId();
+      if (fromBlock) {
+        for (Node to : toNodes) {
+          if (to.isBlock()) {
+            String toId = to.getId();
+
+            if (!fromId.equals(toId)) {
+              List<Node> fromTo = new ArrayList<>();
+              fromTo.add(from);
+              fromTo.add(to);
+              fromToList.add(fromTo);
+              Logger.trace("From: " + fromId + " To: " + toId);
+
+            }
+          }
+        }
+      }
+    }
+    return fromToList;
   }
 
   public static void main(String[] a) {
@@ -134,7 +143,9 @@ public class GraphBuilder {
 
     GraphBuilder gb = new GraphBuilder(tiles);
 
-    gb.buildGraph();
+    gb.getAllBlockToBlockNodes();
+
+    //gb.buildGraph();
   }
 
 }

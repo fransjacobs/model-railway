@@ -520,4 +520,47 @@ public class TileTest {
 
   }
 
+  @Test
+  public void testgetIdSuffix() {
+    System.out.println("getGetIdSuffix");
+    Tile instanceE = TileFactory.createTile(TileType.BLOCK, Orientation.EAST, Direction.CENTER, 220, 220, false);
+    Tile instanceW = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 220, 220, false);
+    Tile instanceN = TileFactory.createTile(TileType.BLOCK, Orientation.NORTH, Direction.CENTER, 220, 220, false);
+    Tile instanceS = TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, Direction.CENTER, 220, 220, false);
+
+    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 140, 220, false);
+    Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 300, 220, false);
+
+    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 140, false);
+    Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 300, false);
+
+    String expResult = "-";
+    String result = instanceE.getIdSuffix(west);
+    assertEquals(expResult, result);
+    result = instanceW.getIdSuffix(east);
+    assertEquals(expResult, result);
+
+    result = instanceN.getIdSuffix(south);
+    assertEquals(expResult, result);
+
+    result = instanceS.getIdSuffix(north);
+    assertEquals(expResult, result);
+
+    expResult = "+";
+    result = instanceE.getIdSuffix(east);
+    assertEquals(expResult, result);
+    result = instanceW.getIdSuffix(west);
+    assertEquals(expResult, result);
+
+    result = instanceN.getIdSuffix(north);
+    assertEquals(expResult, result);
+    result = instanceS.getIdSuffix(south);
+    assertEquals(expResult, result);
+
+//    expResult = "+";
+//    result = instanceE.getIdSuffix(east);
+//    assertEquals(expResult, result);
+//    result = instanceW.getIdSuffix(west);
+//    assertEquals(expResult, result);
+  }
 }
