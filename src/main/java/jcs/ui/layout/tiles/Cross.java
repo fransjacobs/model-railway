@@ -20,12 +20,21 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
+import static jcs.entities.enums.TileType.END;
+import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.tiles.enums.Direction;
 
 public class Cross extends Switch implements Tile {
@@ -95,6 +104,19 @@ public class Cross extends Switch implements Tile {
   @Override
   protected void setIdSeq(int id) {
     idSeq = id;
+  }
+
+  @Override
+  public Map<Orientation, Point> getNeighborPoints() {
+    Map<Orientation, Point> neighbors = new HashMap<>();
+    TileType tiletype = this.getTileType();
+    Orientation orientation = this.getOrientation();
+    Direction direction = this.getDirection();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    //TODO
+    return neighbors;
   }
 
   @Override

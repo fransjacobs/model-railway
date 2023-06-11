@@ -414,7 +414,13 @@ public class LayoutAnalyzer {
     System.setProperty("trackServiceSkipControllerInit", "true");
 
     LayoutAnalyzer la = new LayoutAnalyzer();
+    
+    
     la.buildGraph(LayoutUtil.loadLayout(true, false));
+    
+    
+    
+    
 
     System.exit(0);
   }

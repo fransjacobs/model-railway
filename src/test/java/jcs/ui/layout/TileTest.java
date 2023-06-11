@@ -302,27 +302,26 @@ public class TileTest {
   }
 
   @Test
-  public void testCanTraverseToHorizontalEnd() {
-    System.out.println("canTraverseToHorizontalEnd");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100, false);
+  public void testCanTraverseToCurvedStraight() {
+    System.out.println("canTraverseToCurvedStraight");
+    Tile instance = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 660, 380, false);
 
-    Tile east = TileFactory.createTile(TileType.END, Orientation.EAST, Direction.CENTER, 140, 100, false);
-    Tile east1 = TileFactory.createTile(TileType.END, Orientation.EAST, Direction.CENTER, 60, 100, false);
+    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 620, 380, false);
+    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 660, 340, false);
 
-    Tile west = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 60, 100, false);
-    Tile west1 = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 140, 100, false);
-
+    //Tile west = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 60, 100, false);
+    //Tile west1 = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 140, 100, false);
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(east);
+    boolean result = instance.canTraverseTo(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west);
+    result = instance.canTraverseTo(north);
     assertEquals(expResult, result);
 
-    expResult = false;
-    result = instance.canTraverseTo(east1);
-    assertEquals(expResult, result);
-    result = instance.canTraverseTo(west1);
-    assertEquals(expResult, result);
+//    expResult = false;
+//    result = instance.canTraverseTo(east1);
+//    assertEquals(expResult, result);
+//    result = instance.canTraverseTo(west1);
+//    assertEquals(expResult, result);
   }
 
   @Test

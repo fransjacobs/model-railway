@@ -26,9 +26,12 @@ import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.EAST;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.enums.Direction;
-import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -104,6 +107,66 @@ public class Block extends AbstractTile implements Tile {
   @Override
   public boolean isBlock() {
     return true;
+  }
+
+  @Override
+  public Map<Orientation, Point> getNeighborPoints() {
+    Map<Orientation, Point> neighbors = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    //Horizontal
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
+      neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
+    } else {
+      //Vertical
+      neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
+      neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
+    }
+    return neighbors;
+  }
+
+  public Point getNeighborPoint(String suffix) {
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+    if ("+".equals(suffix)) {
+      return switch (this.getOrientation()) {
+        case WEST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
+      };
+    } else {
+      return switch (this.getOrientation()) {
+        case EAST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
+      };
+    }
+  }
+
+  public Orientation getTravelDirection(String suffix) {
+    if ("+".equals(suffix)) {
+      return this.getOrientation();
+    } else {
+      return switch (this.getOrientation()) {
+        case EAST -> Orientation.WEST;
+        case SOUTH -> Orientation.NORTH;
+        case NORTH -> Orientation.SOUTH;
+        default -> Orientation.EAST;
+      };
+    }
   }
 
   @Override

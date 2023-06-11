@@ -20,13 +20,16 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.HashMap;
+import java.util.Map;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.CROSS;
-import static jcs.entities.enums.TileType.SWITCH;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.ui.layout.tiles.enums.Direction;
 
@@ -59,6 +62,61 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
   protected String getNewId() {
     idSeq++;
     return "sw-" + idSeq;
+  }
+
+  @Override
+  protected void setIdSeq(int id) {
+    idSeq = id;
+  }
+
+  @Override
+  public Map<Orientation, Point> getNeighborPoints() {
+    Map<Orientation, Point> neighbors = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    Direction direction = this.getDirection();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH -> {
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        } else {
+          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        }
+      }
+      case WEST -> {
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        } else {
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        }
+      }
+      case NORTH -> {
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        } else {
+          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        }
+      }
+      default -> {
+        //EAST
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        } else {
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        }
+      }
+    }
+    return neighbors;
   }
 
   public AccessoryValue getAccessoryValue() {
@@ -148,23 +206,18 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
   }
 
   @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
-  }
-
-  @Override
   public void onChange(AccessoryMessageEvent event) {
     if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
       setValue(event.getAccessoryBean().getAccessoryValue());
       repaintTile();
     }
   }
-  
+
   @Override
   public boolean isJunction() {
     return true;
   }
-  
+
   @Override
   public AccessoryValue getSwitchValueTo(Tile other) {
     AccessoryValue switchDirection = AccessoryValue.OFF;

@@ -306,14 +306,14 @@ abstract class AbstractTile extends TileBean implements Tile {
     g2d.setColor(color);
     g2d.fill(new Ellipse2D.Double(dX, dY, size, size));
 
-    if (!getAltPoints().isEmpty()) {
-      //Also draw the alt points
-      Set<Point> alt = new HashSet<>(getAltPoints());
-
-      for (Point ap : alt) {
-        g2d.fill(new Ellipse2D.Double(ap.x, ap.y, size - 1, size - 1));
-      }
-    }
+//    if (!getAltPoints().isEmpty()) {
+//      //Also draw the alt points
+//      Set<Point> alt = new HashSet<>(getAltPoints());
+//
+//      for (Point ap : alt) {
+//        g2d.fill(new Ellipse2D.Double(ap.x, ap.y, size - 1, size - 1));
+//      }
+//    }
   }
 
   @Override
@@ -410,7 +410,6 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  @Deprecated
   public Set<Point> getAltPoints() {
     return Collections.EMPTY_SET;
   }
@@ -721,121 +720,110 @@ abstract class AbstractTile extends TileBean implements Tile {
     return "";
   }
 
-  @Override
-  public Map<Orientation, Point> getNeighborPoints() {
-    Map<Orientation, Point> neighbors = new HashMap<>();
-    TileType tiletype = this.getTileType();
-    Orientation orientation = this.getOrientation();
-    Direction direction = this.getDirection();
-    int cx = this.getCenterX();
-    int cy = this.getCenterY();
-
-    switch (tiletype) {
-      case BLOCK -> {
-        //Horizontal
-        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
-        } else {
-          //Vertical
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
-        }
-        break;
-      }
-      case END -> {
-        switch (orientation) {
-          case SOUTH ->
-            neighbors.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID * 2));
-          case WEST ->
-            neighbors.put(Orientation.WEST, new Point(cx + Tile.GRID * 2, cy));
-          case NORTH ->
-            neighbors.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID * 2));
-          default -> //EAST
-            neighbors.put(Orientation.EAST, new Point(cx - Tile.GRID * 2, cy));
-        }
-      }
-      case CURVED -> {
-        switch (orientation) {
-          case SOUTH -> {
-            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-          }
-          case WEST -> {
-            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-          }
-          case NORTH -> {
-            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          }
-          default -> {
-            //EAST
-            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-          }
-        }
-      }
-      case SWITCH -> {
-        switch (orientation) {
-          case SOUTH -> {
-            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-            if (Direction.LEFT == direction) {
-              neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-            } else {
-              neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-            }
-          }
-          case WEST -> {
-            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-            if (Direction.LEFT == direction) {
-              neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-            } else {
-              neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-            }
-          }
-          case NORTH -> {
-            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-            if (Direction.LEFT == direction) {
-              neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-            } else {
-              neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-            }
-          }
-          default -> {
-            //EAST
-            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-            if (Direction.LEFT == direction) {
-              neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-            } else {
-              neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-            }
-          }
-        }
-      }
-      case CROSS -> {
-        //TODO
-      }
-      default -> {
-        //STRAIGHT, STRAIGHT_DIR, SIGNAL, SENSOR
-        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-          //Horizontal
-          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-        } else {
-          //Vertical
-          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-        }
-      }
-    }
-    return neighbors;
-  }
-
+//      case BLOCK -> {
+//        //Horizontal
+//        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+//          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
+//          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
+//        } else {
+//          //Vertical
+//          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
+//          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
+//        }
+//        break;
+//      }
+//      case END -> {
+//        switch (orientation) {
+//          case SOUTH ->
+//            neighbors.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID * 2));
+//          case WEST ->
+//            neighbors.put(Orientation.WEST, new Point(cx + Tile.GRID * 2, cy));
+//          case NORTH ->
+//            neighbors.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID * 2));
+//          default -> //EAST
+//            neighbors.put(Orientation.EAST, new Point(cx - Tile.GRID * 2, cy));
+//        }
+//      }
+//      case CURVED -> {
+//        switch (orientation) {
+//          case SOUTH -> {
+//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+//          }
+//          case WEST -> {
+//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+//          }
+//          case NORTH -> {
+//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID *2));
+//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+//          }
+//          default -> {
+//            //EAST
+//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+//          }
+//        }
+//      }
+//      case SWITCH -> {
+//        switch (orientation) {
+//          case SOUTH -> {
+//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+//            if (Direction.LEFT == direction) {
+//              neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+//            } else {
+//              neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+//            }
+//          }
+//          case WEST -> {
+//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+//            if (Direction.LEFT == direction) {
+//              neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+//            } else {
+//              neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+//            }
+//          }
+//          case NORTH -> {
+//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+//            if (Direction.LEFT == direction) {
+//              neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+//            } else {
+//              neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+//            }
+//          }
+//          default -> {
+//            //EAST
+//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+//            if (Direction.LEFT == direction) {
+//              neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+//            } else {
+//              neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+//            }
+//          }
+//        }
+//      }
+//      case CROSS -> {
+//        //TODO
+//      }
+//      default -> {
+//        //STRAIGHT, STRAIGHT_DIR, SIGNAL, SENSOR
+//        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+//          //Horizontal
+//          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+//          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+//        } else {
+//          //Vertical
+//          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+//          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+//        }
+//      }
+//    }
+//    return neighbors;
+//  }
   @Override
   public Map<Orientation, Point> getEdgeConnections() {
     Map<Orientation, Point> edgeConnections = new HashMap<>();

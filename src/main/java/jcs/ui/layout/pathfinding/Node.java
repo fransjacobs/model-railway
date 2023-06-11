@@ -19,15 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
-import static jcs.entities.enums.TileType.CURVED;
-import static jcs.entities.enums.TileType.END;
-import static jcs.entities.enums.TileType.SENSOR;
-import static jcs.entities.enums.TileType.SIGNAL;
-import static jcs.entities.enums.TileType.STRAIGHT;
-import static jcs.entities.enums.TileType.STRAIGHT_DIR;
-import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.Tile;
 
 /**
@@ -43,23 +34,27 @@ public class Node {
   private final TileType tileType;
   private final Orientation orientation;
 
+  private final String suffix;
+
   private Node parent;
   private final List<Edge> edges;
 
   public Node(Tile tile) {
+    this(tile, null);
+  }
+
+  public Node(Tile tile, String suffix) {
     this.tile = tile;
     this.tileType = tile.getTileType();
     this.orientation = tile.getOrientation();
-
+    this.suffix = suffix;
     this.edges = new LinkedList<>();
   }
 
-  
   public int getX() {
     return tile.getCenterX();
   }
 
-  
   public int getGridX() {
     return tile.getGridX();
   }
@@ -74,6 +69,10 @@ public class Node {
 
   public boolean isBlock() {
     return TileType.BLOCK == this.tileType;
+  }
+
+  public String getSuffix() {
+    return this.suffix;
   }
 
   public boolean isHorizontal() {
@@ -97,10 +96,17 @@ public class Node {
   }
 
   public boolean canTravelTo(Node other) {
+    if (other == null) {
+      return false;
+    }
     return this.tile.canTraverseTo(other.tile);
   }
 
   public String getId() {
+    return this.tile.getId() + (this.suffix != null ? this.suffix : "");
+  }
+
+  public String getTileId() {
     return this.tile.getId();
   }
 
@@ -141,7 +147,15 @@ public class Node {
 
   @Override
   public String toString() {
-    return "Node{" + "id=" + tile.getId() + '}';
+    StringBuilder sb = new StringBuilder();
+    sb.append("Node: ");
+    sb.append(getId());
+    for (Edge edge : this.edges) {
+      sb.append("; ");
+      sb.append(edge.toString());
+    }
+    return sb.toString();
+    //return "Node{" + "id=" + tile.getId() + '}';
   }
 
 }

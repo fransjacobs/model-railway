@@ -20,9 +20,19 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.HashMap;
+import java.util.Map;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
+import static jcs.entities.enums.TileType.END;
+import static jcs.entities.enums.TileType.SWITCH;
+import jcs.ui.layout.tiles.enums.Direction;
 
 public class End extends AbstractTile implements Tile {
 
@@ -55,6 +65,26 @@ public class End extends AbstractTile implements Tile {
   @Override
   protected void setIdSeq(int id) {
     idSeq = id;
+  }
+
+  @Override
+  public Map<Orientation, Point> getNeighborPoints() {
+    Map<Orientation, Point> neighbors = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH ->
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID * 2));
+      case WEST ->
+        neighbors.put(Orientation.WEST, new Point(cx + Tile.GRID * 2, cy));
+      case NORTH ->
+        neighbors.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID * 2));
+      default -> //EAST
+        neighbors.put(Orientation.EAST, new Point(cx - Tile.GRID * 2, cy));
+    }
+    return neighbors;
   }
 
   protected void renderEnd(Graphics2D g2, Color trackColor, Color backgroundColor) {

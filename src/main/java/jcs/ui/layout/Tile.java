@@ -86,7 +86,10 @@ public interface Tile extends Shape {
 
   void setCenter(Point center);
 
-  @Deprecated
+  /**
+   *
+   * @return a Set of alternative "center" points in case the tile is not a square
+   */
   Set<Point> getAltPoints();
 
   @Deprecated

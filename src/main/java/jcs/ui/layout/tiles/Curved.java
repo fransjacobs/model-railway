@@ -20,8 +20,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.HashMap;
+import java.util.Map;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 
 public class Curved extends AbstractTile implements Tile {
@@ -54,6 +59,35 @@ public class Curved extends AbstractTile implements Tile {
   @Override
   protected void setIdSeq(int id) {
     idSeq = id;
+  }
+
+  @Override
+  public Map<Orientation, Point> getNeighborPoints() {
+    Map<Orientation, Point> neighbors = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH -> {
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+      }
+      case WEST -> {
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+      }
+      case NORTH -> {
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+      }
+      default -> {
+        //EAST
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+      }
+    }
+    return neighbors;
   }
 
   @Override
