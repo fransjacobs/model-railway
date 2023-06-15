@@ -94,14 +94,14 @@ public class BreathFirst {
       Integer elementOrder = i;
 
       //RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
-      RouteElementBean routeElement = new RouteElementBean(null, null, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
+//      RouteElementBean routeElement = new RouteElementBean(null, null, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
 
       //    public RouteElementBean(Long routeId, String nodeId, String tileId, String accessoryValue, Integer elementOrder) {
 
       
-      rel.add(routeElement);
+//      rel.add(routeElement);
 
-      Logger.trace(routeElement);
+  //    Logger.trace(routeElement);
     }
     return rel;
   }
