@@ -71,21 +71,18 @@ public class GraphBuilder {
       if (p != null) {
         //Found a neighbor, is it possible to travel from this tile (side) to the neighbor
         Tile neighbor = this.tilePointMap.get(p);
-        if (tile.canTraverseTo(neighbor)) {
+        if (tile.isTileAdjacent(neighbor)) {
           //When the tile is a Switch there is a Green or Red path...
+          String fromSuffix = tile.getIdSuffix(neighbor);
           Edge edge;
           if (neighbor.isJunction()) {
             AccessoryValue junctionDir = neighbor.getSwitchValueTo(tile);
-            edge = new Edge(node.getId(), neighbor.getId(), ((Block) tile).getTravelDirection(suffix), junctionDir);
+            edge = new Edge(node.getId(), neighbor.getId(), fromSuffix, null, ((Block) tile).getTravelDirection(suffix), junctionDir);
           } else if (neighbor.isBlock()) {
-            String fromSuffix = tile.getIdSuffix(neighbor);
-            String toSuffix = null;
-            if (neighbor.isBlock()) {
-              toSuffix = neighbor.getIdSuffix(tile);
-            }
+            String toSuffix = neighbor.getIdSuffix(tile);
             edge = new Edge(node.getTileId(), neighbor.getId(), fromSuffix, toSuffix, ((Block) tile).getTravelDirection(suffix));
           } else {
-            edge = new Edge(node.getTileId(), neighbor.getId(), ((Block) tile).getTravelDirection(suffix));
+            edge = new Edge(node.getTileId(), neighbor.getId(), fromSuffix, null, ((Block) tile).getTravelDirection(suffix));
           }
           node.addEdge(edge);
           Logger.trace(" ->" + edge);
@@ -117,7 +114,7 @@ public class GraphBuilder {
           if (p != null) {
             //Found a neighbor, is it possible to travel from this tile to the neighbor?
             Tile neighbor = this.tilePointMap.get(p);
-            if (tile.canTraverseTo(neighbor)) {
+            if (tile.isTileAdjacent(neighbor)) {
               cnt--;
               //When the tile is a Switch there is a Green or Red path...
               Edge edge;

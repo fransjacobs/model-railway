@@ -173,7 +173,7 @@ public class Block extends AbstractTile implements Tile {
   public String getIdSuffix(Tile other) {
     String suffix = null;
     Orientation match = null;
-    if (canTraverseTo(other)) {
+    if (isTileAdjacent(other)) {
       Map<Orientation, Point> blockSides = this.getEdgeConnections();
       Map<Orientation, Point> otherSides = other.getEdgeConnections();
 

@@ -1083,10 +1083,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     //Make sure the layout is saved
     this.saveTiles();
 
-    BreathFirst bf = new BreathFirst();
-    bf.buildGraph(this.tiles);
-    bf.routeAll();
-    bf.persistRoutes();
+    //BreathFirst bf = new BreathFirst();
+    //bf.buildGraph(this.tiles);
+    //bf.routeAll();
+    //bf.persistRoutes();
   }
 
   void showRoutesDialog() {

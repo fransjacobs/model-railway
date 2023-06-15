@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.Tile;
@@ -190,7 +193,7 @@ public class LayoutAnalyzer {
           switch (t.getTileType()) {
             case BLOCK:
               //A block has 2 sides ie 2 nodes so get the nearest point which is  bk-n+/-
-              if (LayoutUtil.isPlusAdjacent(t, tcp)) {
+              if (isPlusAdjacent(t, tcp)) {
                 cp = LayoutUtil.getPlusCenter(t);
                 nodeId = t.getId() + "+";
               } else {
@@ -247,10 +250,10 @@ public class LayoutAnalyzer {
       Point adj;
       if (id.contains("+")) {
         tcp = LayoutUtil.getPlusCenter(block);
-        adj = LayoutUtil.getPlusAdjacent(block);
+        adj = getPlusAdjacent(block);
       } else {
         tcp = LayoutUtil.getMinusCenter(block);
-        adj = LayoutUtil.getMinusAdjacent(block);
+        adj = getMinusAdjacent(block);
       }
       if (this.graph.containsKey(id)) {
         node = this.graph.get(id);
@@ -268,7 +271,7 @@ public class LayoutAnalyzer {
         switch (t.getTileType()) {
           case BLOCK -> {
             //A block has 2 sides ie 2 nodes so get the nearest point which is bk-n+/-
-            if (LayoutUtil.isPlusAdjacent(t, tcp)) {
+            if (isPlusAdjacent(t, tcp)) {
               cp = LayoutUtil.getPlusCenter(t);
               nodeId = t.getId() + "+";
             } else {
@@ -308,7 +311,7 @@ public class LayoutAnalyzer {
         switch (t.getTileType()) {
           case BLOCK -> {
             //A block has 2 sides ie 2 nodes so get the nearest point which is  bk-n+/-
-            if (LayoutUtil.isPlusAdjacent(t, tcp)) {
+            if (isPlusAdjacent(t, tcp)) {
               cp = LayoutUtil.getPlusCenter(t);
               nodeId = t.getId() + "+";
             } else {
@@ -318,7 +321,8 @@ public class LayoutAnalyzer {
           }
           case SWITCH -> // As switch has 3 adjacent nodes, depending on the direction
             nodeId = getNodeIdForAdjacentSwitch(tile, t);
-          default -> nodeId = t.getId();
+          default ->
+            nodeId = t.getId();
         }
         Edge e1 = new Edge(node.getId(), nodeId, LayoutUtil.euclideanDistance(tcp, cp));
         node.addEdge(e1);
@@ -410,17 +414,61 @@ public class LayoutAnalyzer {
     return graph;
   }
 
+  private static Point getAdjacentPoint(Tile block, String plusMinus) {
+    int x = block.getCenterX();
+    int y = block.getCenterY();
+    int w = block.getWidth();
+    int h = block.getHeight();
+    Orientation o = block.getOrientation();
+
+    Point neighborPlus, neighborMin;
+    switch (o) {
+      case SOUTH:
+        neighborPlus = new Point(x, y + h / 3 + Tile.GRID * 2);
+        neighborMin = new Point(x, y - h / 3 - Tile.GRID * 2);
+        break;
+      case WEST:
+        neighborPlus = new Point(x - w / 3 - Tile.GRID * 2, y);
+        neighborMin = new Point(x + w / 3 + Tile.GRID * 2, y);
+        break;
+      case NORTH:
+        neighborPlus = new Point(x, y - h / 3 - Tile.GRID * 2);
+        neighborMin = new Point(x, y + h / 3 + Tile.GRID * 2);
+        break;
+      default:
+        //East 
+        neighborPlus = new Point(x + w / 3 + Tile.GRID * 2, y);
+        neighborMin = new Point(x - w / 3 - Tile.GRID * 2, y);
+        break;
+    }
+    if ("+".equals(plusMinus)) {
+      return neighborPlus;
+    } else {
+      return neighborMin;
+    }
+  }
+
+  public static boolean isPlusAdjacent(Tile block, Point point) {
+    Point p = getAdjacentPoint(block, "+");
+    return p.equals(point);
+  }
+
+  public static Point getPlusAdjacent(Tile block) {
+    Point p = getAdjacentPoint(block, "+");
+    return p;
+  }
+
+  public static Point getMinusAdjacent(Tile block) {
+    Point p = getAdjacentPoint(block, "-");
+    return p;
+  }
+
   public static void main(String[] a) {
     System.setProperty("trackServiceSkipControllerInit", "true");
 
     LayoutAnalyzer la = new LayoutAnalyzer();
-    
-    
+
     la.buildGraph(LayoutUtil.loadLayout(true, false));
-    
-    
-    
-    
 
     System.exit(0);
   }

@@ -75,17 +75,17 @@ public class Node {
     return this.suffix;
   }
 
-  public boolean isHorizontal() {
-    return this.tile.isHorizontal();
-  }
+//  public boolean isHorizontal() {
+//    return this.tile.isHorizontal();
+//  }
 
-  public boolean isVertical() {
-    return this.tile.isVertical();
-  }
+//  public boolean isVertical() {
+//    return this.tile.isVertical();
+//  }
 
-  public boolean isDiagonal() {
-    return this.tile.isDiagonal();
-  }
+//  public boolean isDiagonal() {
+//    return this.tile.isDiagonal();
+//  }
 
   public TileType getTileType() {
     return tileType;
@@ -95,11 +95,116 @@ public class Node {
     return orientation;
   }
 
+//  private AccessoryValue getPathDirection(String fromId, String toId) {
+//    for (Edge e : this.edges) {
+//      if (fromId.equals(e.getFromId()) && toId.equals(e.getToId())) {
+//        return e.getPathDirection();
+//      }
+//    }
+//    return null;
+//  }
+
+  private boolean isSwitch(Node other) {
+    //Is other on the switch of the Turnout
+    //There should alway be a parent!
+    int px = this.parent.getGridX();
+    int py = this.parent.getGridY();
+
+    int tx = this.getGridX();
+    int ty = this.getGridY();
+
+    Orientation oo = this.tile.getNeighborOrientations().get(other.tile.getCenter());
+
+    //Determine the traverse direction based on the parent
+    if (px == tx && py != ty) {
+      //vertical, then the other must also be in line so must be on the N or S side
+      return (Orientation.NORTH == oo || Orientation.SOUTH == oo) && this.orientation == oo;
+    } else if (px != tx && py == ty) {
+      //horizontal
+      return (Orientation.WEST == oo || Orientation.EAST == oo) && this.orientation == oo;
+    } else {
+      return false;
+    }
+  }
+
+  private boolean isDiverging(Node other) {
+    //The is other on the diverging side of the turnout
+    //There should alway be a parent!
+    int px = this.parent.getGridX();
+    int py = this.parent.getGridY();
+
+    int tx = this.getGridX();
+    int ty = this.getGridY();
+
+    Orientation oo = this.tile.getNeighborOrientations().get(other.tile.getCenter());
+
+    //Determine the traverse direction based on the parent
+    if (px == tx && py != ty) {
+      //vertical, then the other must not be in line so must be on the E or W side
+      return (Orientation.EAST == oo || Orientation.WEST == oo);
+    } else if (px != tx && py == ty) {
+      //horizontal
+      return (Orientation.NORTH == oo || Orientation.SOUTH == oo);
+    } else {
+      return false;
+    }
+  }
+
+  private boolean isStraight(Node other) {
+    //Is Other on the straight side of the turnout
+    //There should alway be a parent!
+    int px = this.parent.getGridX();
+    int py = this.parent.getGridY();
+
+    int tx = this.getGridX();
+    int ty = this.getGridY();
+
+    Orientation oo = this.tile.getNeighborOrientations().get(other.tile.getCenter());
+
+    if (px == tx && py != ty) {
+      //vertical
+      return (Orientation.NORTH == oo || Orientation.SOUTH == oo) && this.orientation != oo;
+    } else if (px != tx && py == ty) {
+      //horizontal
+      return (Orientation.WEST == oo || Orientation.EAST == oo) && this.orientation != oo;
+    } else {
+      return false;
+    }
+  }
+
   public boolean canTravelTo(Node other) {
     if (other == null) {
       return false;
     }
-    return this.tile.canTraverseTo(other.tile);
+    if (this.tile.isJunction()) {
+      //AccessoryValue pathDir = getPathDirection(getId(), other.getId());
+      //     Logger.trace("Path " + (this.parent != null ? " From: " + parent.getId() + " via " + getId() : "") + " O: " + this.orientation + " " + pathDir + " to " + other.getId());
+      //Check is the full path is possible
+
+      boolean isParentConnectedToSwitch = this.isSwitch(this.parent);
+      boolean isParentConnectedToStraight = this.isStraight(this.parent);
+      //boolean isParentDiverging = this.isDiverging(this.parent);
+
+      //Logger.trace("Parent (from) " + this.parent.getId() + " connected to switch: " + isParentConnectedToSwitch + " connected to straight: " + isParentConnectedToStraight + " diverging: " + isParentDiverging);
+      boolean isOtherConnectedToSwitch = this.isSwitch(other);
+      boolean isOtherConnectedToStraight = this.isStraight(other);
+      boolean isOtherDiverging = this.isDiverging(other);
+
+      //Logger.trace("Other (To) " + other.getId() + " connected to switch: " + isOtherConnectedToSwitch + " connected to straight: " + isOtherConnectedToStraight + " diverging: " + isOtherDiverging);
+      if (isParentConnectedToSwitch && (isOtherDiverging || isOtherConnectedToStraight)) {
+        //       Logger.trace("Route from " + parent.getId()+ " via " + getId()+ " to " + other.getId()+" is possible using "+(isOtherDiverging?AccessoryValue.RED:AccessoryValue.GREEN)+" from edge: "+pathDir );
+
+        return this.tile.isTileAdjacent(other.tile);
+      } else if (isParentConnectedToStraight && isOtherConnectedToSwitch) {
+        //       Logger.trace("Route from " + parent.getId()+ " via " + getId()+ " to " + other.getId()+" is possible using "+(isOtherDiverging?AccessoryValue.RED:AccessoryValue.GREEN)+" from edge: "+pathDir );
+        return this.tile.isTileAdjacent(other.tile);
+      } else {
+        //       Logger.trace("Route from " + parent.getId()+ " via " + getId()+ " to " + other.getId()+" is NOT possible");
+        return false;
+      }
+    } else {
+      return this.tile.isTileAdjacent(other.tile);
+    }
   }
 
   public String getId() {

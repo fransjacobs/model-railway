@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout.pathfinding;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,13 +35,11 @@ public class BreathFirst {
 
   //private final LayoutAnalyzer layoutAnalyzer;
   private GraphBuilder graphBuilder;
-  private final Map<String, Node> nodeCache;
+  //private final Map<String, Node> nodeCache;
   private final Map<String, RouteBean> routes;
 
   public BreathFirst() {
-    this.nodeCache = new HashMap<>();
     this.routes = new HashMap<>();
-    //this.layoutAnalyzer = new LayoutAnalyzer();
   }
 
   private List<Node> constructPath(Node from, Node to) {
@@ -56,13 +53,14 @@ public class BreathFirst {
       to = to.getParent();
     }
 
-    LinkedList<String> elements = buildElementsList(from, path);
+    LinkedList<String> elements = getNodeIdList(from, path);
+
     String first = elements.getFirst();
     String last = elements.getLast();
 
     //TODO!
     //RouteBean route = new RouteBean(null, first, first, last, last, null);
-    //List<RouteElementBean> rel = createRouteElementsFromElements(first, last, elements);
+    //List<RouteElementBean> rel = createRouteElementsFromElements(first, last, nodeIds);
     //route.setRouteElements(rel);
     //public RouteBean(Integer id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
     //String rid = first + first + last + last;
@@ -70,33 +68,37 @@ public class BreathFirst {
     return path;
   }
 
-  private static List<RouteElementBean> createRouteElementsFromElements(String fromTileId, String toTileId, List<String> elementIds) {
+  private static List<RouteElementBean> createRouteElementsFromElements(String fromId, String toId, List<String> elementIds) {
+    
     List<RouteElementBean> rel = new LinkedList<>();
     for (int i = 0; i < elementIds.size(); i++) {
       String nodeId = elementIds.get(i);
 
-      String tileId;
-      if (nodeId.endsWith("-R")) {
-        tileId = nodeId.replace("-R", "");
-      } else if (nodeId.endsWith("-G")) {
-        tileId = nodeId.replace("-G", "");
-      } else if (nodeId.endsWith("-") || nodeId.endsWith("+")) {
-        tileId = nodeId.substring(0, nodeId.length() - 1);
-      } else {
-        tileId = nodeId;
-      }
+//      String tileId;
+//      if (nodeId.endsWith("-R")) {
+//        tileId = nodeId.replace("-R", "");
+//      } else if (nodeId.endsWith("-G")) {
+//        tileId = nodeId.replace("-G", "");
+//      } else if (nodeId.endsWith("-") || nodeId.endsWith("+")) {
+//        tileId = nodeId.substring(0, nodeId.length() - 1);
+//      } else {
+//        tileId = nodeId;
+//      }
 
-      AccessoryValue accessoryValue = AccessoryValue.OFF;
-      if (nodeId.endsWith("-R")) {
-        accessoryValue = AccessoryValue.RED;
-      } else if (nodeId.endsWith("-G")) {
-        accessoryValue = AccessoryValue.GREEN;
-      }
+//      AccessoryValue accessoryValue = AccessoryValue.OFF;
+//      if (nodeId.endsWith("-R")) {
+//        accessoryValue = AccessoryValue.RED;
+//      } else if (nodeId.endsWith("-G")) {
+//        accessoryValue = AccessoryValue.GREEN;
+//      }
       Integer elementOrder = i;
 
       //RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
       RouteElementBean routeElement = new RouteElementBean(null, null, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
 
+      //    public RouteElementBean(Long routeId, String nodeId, String tileId, String accessoryValue, Integer elementOrder) {
+
+      
       rel.add(routeElement);
 
       Logger.trace(routeElement);
@@ -104,33 +106,38 @@ public class BreathFirst {
     return rel;
   }
 
-  //Check if the path is valid
-  private LinkedList<String> buildElementsList(Node from, List<Node> path) {
-    LinkedList<String> elements = new LinkedList<>();
+  private LinkedList<String> getNodeIdList(Node from, List<Node> path) {
+    LinkedList<String> nodeIds = new LinkedList<>();
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("Path: ");
     if (from != null) {
-      elements.add(from.getId());
+      nodeIds.add(from.getId());
+    }
+    for (int i = 0; i < path.size(); i++) {
+      Node t = path.get(i);
+      nodeIds.add(t.getId());
+    }
+    return nodeIds;
+  }
 
+  private String pathToString(Node from, List<Node> path) {
+    StringBuilder sb = new StringBuilder();
+    //sb.append("Route: ");
+    if (from != null) {
       sb.append(from.getId());
       sb.append(" -> ");
     }
     for (int i = 0; i < path.size(); i++) {
       Node t = path.get(i);
-      elements.add(t.getId());
-
       sb.append(t.getId());
       if (i + 1 < path.size()) {
         sb.append(" -> ");
       }
     }
-    Logger.trace(sb);
-    return elements;
+    return sb.toString();
   }
 
   public List<Node> search(Node from, Node to) {
-    Logger.trace("Search from: " + from.getId() + " to: " + to.getId());
+    //Logger.trace("Searching for a route from: " + from.getId() + " to: " + to.getId());
 
     LinkedList<String> visited = new LinkedList<>();
     LinkedList<String> searchList = new LinkedList<>();
@@ -143,7 +150,7 @@ public class BreathFirst {
       String nodeId = searchList.removeFirst();
       if (nodeId.equals(to.getId())) {
         List<Node> route = constructPath(from, to);
-        Logger.trace("Path from " + from.getId() + " to " + nodeId);
+        //Logger.trace("Found a route from " + from.getId() + " to " + nodeId + ": " + pathToString(from, route));
 
         return route;
       } else {
@@ -153,19 +160,20 @@ public class BreathFirst {
 
         for (Edge edge : edges) {
           String tgt = edge.getToId() + (edge.getToSuffix() != null ? edge.getToSuffix() : "");
-
           Node tgtNode = this.graphBuilder.getGraph().get(tgt);
           if (!tgt.equals(fromBk)) {
+            //Logger.trace("Checking " + (node.getParent() != null ? "from: " + node.getParent().getId() + " via " + node.getId() : "") + " to: " + tgtNode.getId());
             if (!visited.contains(tgt) && !searchList.contains(tgt) && node.canTravelTo(tgtNode)) {
               tgtNode.setParent(node);
               searchList.add(tgt);
+              //Logger.trace("Search: " + tgt + " Prev: " + tgtNode.getParent().getId());
             }
           }
         }
       }
     }
 
-    Logger.trace("No path from " + from.getId() + " -> " + to.getId());
+    //Logger.trace("No path from " + from.getId() + " -> " + to.getId());
     return null;
   }
 
@@ -194,9 +202,22 @@ public class BreathFirst {
       Logger.trace("Try to route " + blockToBlockList.size() + " Possible block to block routes");
 
       for (List<Node> fromTo : blockToBlockList) {
+        //List<Node> fromTo = blockToBlockList.get(0);
+
         Node from = fromTo.get(0);
         Node to = fromTo.get(1);
-        search(from, to);
+
+        //if ("bk-1+".equals(from.getId()) && "bk-2+".equals(to.getId())) {
+        //if ("bk-1+".equals(from.getId()) && "bk-3-".equals(to.getId()) || "bk-1+".equals(from.getId()) && "bk-2+".equals(to.getId())) {
+        List<Node> route = search(from, to);
+        if (route != null) {
+          Logger.trace("Found a route from " + from.getId() + " to " + to.getId() + ": " + pathToString(from, route));
+          
+          createRouteElementsFromElements(from.getId(), to.getId() , getNodeIdList(from, route));
+          
+        }
+
+        //}
       }
       Logger.trace("Found " + routes.size() + " routes");
     } else {
@@ -217,7 +238,9 @@ public class BreathFirst {
     bf.setGraphBuilder(gb);
     List<Tile> tiles = TileFactory.convert(PersistenceFactory.getService().getTiles(), false, false);
     gb.buildGraph(tiles);
+    //###~~
 
+    Logger.trace("\n========================================================================================\n");
     bf.routeAll();
 
     //bf.buildGraph(jcs.ui.layout.LayoutUtil.loadLayout(true, false));

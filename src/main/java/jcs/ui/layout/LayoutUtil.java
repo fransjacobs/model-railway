@@ -384,71 +384,59 @@ public class LayoutUtil {
     return adjacent;
   }
 
-  private static Point getAdjacentPoint(Tile block, String plusMinus) {
-    int x = block.getCenterX();
-    int y = block.getCenterY();
-    int w = block.getWidth();
-    int h = block.getHeight();
-    Orientation o = block.getOrientation();
+//  private static Point getAdjacentPoint(Tile block, String plusMinus) {
+//    int x = block.getCenterX();
+//    int y = block.getCenterY();
+//    int w = block.getWidth();
+//    int h = block.getHeight();
+//    Orientation o = block.getOrientation();
+//
+//    Point neighborPlus, neighborMin;
+//    switch (o) {
+//      case SOUTH:
+//        neighborPlus = new Point(x, y + h / 3 + Tile.GRID * 2);
+//        neighborMin = new Point(x, y - h / 3 - Tile.GRID * 2);
+//        break;
+//      case WEST:
+//        neighborPlus = new Point(x - w / 3 - Tile.GRID * 2, y);
+//        neighborMin = new Point(x + w / 3 + Tile.GRID * 2, y);
+//        break;
+//      case NORTH:
+//        neighborPlus = new Point(x, y - h / 3 - Tile.GRID * 2);
+//        neighborMin = new Point(x, y + h / 3 + Tile.GRID * 2);
+//        break;
+//      default:
+//        //East 
+//        neighborPlus = new Point(x + w / 3 + Tile.GRID * 2, y);
+//        neighborMin = new Point(x - w / 3 - Tile.GRID * 2, y);
+//        break;
+//    }
+//    if ("+".equals(plusMinus)) {
+//      return neighborPlus;
+//    } else {
+//      return neighborMin;
+//    }
+//  }
 
-    Point neighborPlus, neighborMin;
-    switch (o) {
-      case SOUTH:
-        neighborPlus = new Point(x, y + h / 3 + Tile.GRID * 2);
-        neighborMin = new Point(x, y - h / 3 - Tile.GRID * 2);
-        break;
-      case WEST:
-        neighborPlus = new Point(x - w / 3 - Tile.GRID * 2, y);
-        neighborMin = new Point(x + w / 3 + Tile.GRID * 2, y);
-        break;
-      case NORTH:
-        neighborPlus = new Point(x, y - h / 3 - Tile.GRID * 2);
-        neighborMin = new Point(x, y + h / 3 + Tile.GRID * 2);
-        break;
-      default:
-        //East 
-        neighborPlus = new Point(x + w / 3 + Tile.GRID * 2, y);
-        neighborMin = new Point(x - w / 3 - Tile.GRID * 2, y);
-        break;
-    }
-    if ("+".equals(plusMinus)) {
-      return neighborPlus;
-    } else {
-      return neighborMin;
-    }
-  }
+//  public static boolean isPlusAdjacent(Tile block, Point point) {
+//    Point p = getAdjacentPoint(block, "+");
+//    return p.equals(point);
+//  }
 
-  /**
-   *
-   * @param block the block to investigate
-   * @param point the adjacent point
-   * @return true when the point is adjacent at the plus (+) side of the Block Tile
-   */
-  public static boolean isPlusAdjacent(Tile block, Point point) {
-    Point p = getAdjacentPoint(block, "+");
-    return p.equals(point);
-  }
+//  public static Point getPlusAdjacent(Tile block) {
+//    Point p = getAdjacentPoint(block, "+");
+//    return p;
+//  }
 
-  public static Point getPlusAdjacent(Tile block) {
-    Point p = getAdjacentPoint(block, "+");
-    return p;
-  }
+//  public static Point getMinusAdjacent(Tile block) {
+//    Point p = getAdjacentPoint(block, "-");
+//    return p;
+//  }
 
-  public static Point getMinusAdjacent(Tile block) {
-    Point p = getAdjacentPoint(block, "-");
-    return p;
-  }
-
-  /**
-   *
-   * @param block the block to investigate
-   * @param point the adjacent point
-   * @return true when the point is adjacent at the minus (-) side of the Block Tile
-   */
-  public static boolean isMinusAdjacent(Tile block, Point point) {
-    Point p = getAdjacentPoint(block, "-");
-    return p.equals(point);
-  }
+//  public static boolean isMinusAdjacent(Tile block, Point point) {
+//    Point p = getAdjacentPoint(block, "-");
+//    return p.equals(point);
+//  }
 
   private static Point getPlusMinus(Tile block, String plusMinus) {
     int x = block.getCenterX();

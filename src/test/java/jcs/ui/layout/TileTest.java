@@ -106,15 +106,15 @@ public class TileTest {
     Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.isTileAdjacent(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.isTileAdjacent(east);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north);
+    result = instance.isTileAdjacent(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.isTileAdjacent(south);
     assertEquals(expResult, result);
   }
 
@@ -143,34 +143,34 @@ public class TileTest {
     Tile south5 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 100, 140, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.isTileAdjacent(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.isTileAdjacent(east);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.isTileAdjacent(south);
     assertEquals(expResult, result);
 
-    result = instance.canTraverseTo(south1);
+    result = instance.isTileAdjacent(south1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west1);
+    result = instance.isTileAdjacent(west1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south2);
+    result = instance.isTileAdjacent(south2);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east1);
+    result = instance.isTileAdjacent(east1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south5);
+    result = instance.isTileAdjacent(south5);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north);
+    result = instance.isTileAdjacent(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south3);
+    result = instance.isTileAdjacent(south3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south4);
+    result = instance.isTileAdjacent(south4);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north1);
+    result = instance.isTileAdjacent(north1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west2);
+    result = instance.isTileAdjacent(west2);
     assertEquals(expResult, result);
 
   }
@@ -186,15 +186,15 @@ public class TileTest {
     Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
 
     boolean expResult = false;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.isTileAdjacent(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.isTileAdjacent(east);
     assertEquals(expResult, result);
 
     expResult = true;
-    result = instance.canTraverseTo(north);
+    result = instance.isTileAdjacent(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.isTileAdjacent(south);
     assertEquals(expResult, result);
   }
 
@@ -207,9 +207,9 @@ public class TileTest {
     Tile east = TileFactory.createTile(TileType.BLOCK, Orientation.EAST, Direction.CENTER, 300, 220, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.isTileAdjacent(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east);
+    result = instance.isTileAdjacent(east);
     assertEquals(expResult, result);
   }
 
@@ -222,9 +222,9 @@ public class TileTest {
     Tile south = TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, Direction.CENTER, 220, 300, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(north);
+    boolean result = instance.isTileAdjacent(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.isTileAdjacent(south);
     assertEquals(expResult, result);
   }
 
@@ -244,23 +244,23 @@ public class TileTest {
     Tile east4 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 140, 100, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west1);
+    boolean result = instance.isTileAdjacent(west1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west2);
+    result = instance.isTileAdjacent(west2);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east1);
+    result = instance.isTileAdjacent(east1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east2);
+    result = instance.isTileAdjacent(east2);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(west3);
+    result = instance.isTileAdjacent(west3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west4);
+    result = instance.isTileAdjacent(west4);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east3);
+    result = instance.isTileAdjacent(east3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east4);
+    result = instance.isTileAdjacent(east4);
     assertEquals(expResult, result);
   }
 
@@ -280,24 +280,24 @@ public class TileTest {
     Tile south4 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(north1);
+    boolean result = instance.isTileAdjacent(north1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north2);
+    result = instance.isTileAdjacent(north2);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south1);
+    result = instance.isTileAdjacent(south1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south2);
+    result = instance.isTileAdjacent(south2);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north3);
+    result = instance.isTileAdjacent(north3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north4);
+    result = instance.isTileAdjacent(north4);
     assertEquals(expResult, result);
 
-    result = instance.canTraverseTo(south3);
+    result = instance.isTileAdjacent(south3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south4);
+    result = instance.isTileAdjacent(south4);
     assertEquals(expResult, result);
   }
 
@@ -312,15 +312,15 @@ public class TileTest {
     //Tile west = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 60, 100, false);
     //Tile west1 = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 140, 100, false);
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west);
+    boolean result = instance.isTileAdjacent(west);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north);
+    result = instance.isTileAdjacent(north);
     assertEquals(expResult, result);
 
 //    expResult = false;
-//    result = instance.canTraverseTo(east1);
+//    result = instance.isTileAdjacent(east1);
 //    assertEquals(expResult, result);
-//    result = instance.canTraverseTo(west1);
+//    result = instance.isTileAdjacent(west1);
 //    assertEquals(expResult, result);
   }
 
@@ -336,15 +336,15 @@ public class TileTest {
     Tile south1 = TileFactory.createTile(TileType.END, Orientation.SOUTH, Direction.CENTER, 100, 60, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(north);
+    boolean result = instance.isTileAdjacent(north);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south);
+    result = instance.isTileAdjacent(south);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north1);
+    result = instance.isTileAdjacent(north1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south1);
+    result = instance.isTileAdjacent(south1);
     assertEquals(expResult, result);
   }
 
@@ -370,36 +370,36 @@ public class TileTest {
     Tile east7 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 260, 220, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(west1);
+    boolean result = instance.isTileAdjacent(west1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west2);
+    result = instance.isTileAdjacent(west2);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west3);
+    result = instance.isTileAdjacent(west3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west4);
+    result = instance.isTileAdjacent(west4);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west5);
+    result = instance.isTileAdjacent(west5);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(west6);
+    result = instance.isTileAdjacent(west6);
     assertEquals(expResult, result);
 
-    result = instance.canTraverseTo(east1);
+    result = instance.isTileAdjacent(east1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east2);
+    result = instance.isTileAdjacent(east2);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east3);
+    result = instance.isTileAdjacent(east3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east4);
+    result = instance.isTileAdjacent(east4);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east5);
+    result = instance.isTileAdjacent(east5);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east6);
+    result = instance.isTileAdjacent(east6);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(west7);
+    result = instance.isTileAdjacent(west7);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(east7);
+    result = instance.isTileAdjacent(east7);
     assertEquals(expResult, result);
   }
 
@@ -425,36 +425,36 @@ public class TileTest {
     Tile south7 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 220, 260, false);
 
     boolean expResult = true;
-    boolean result = instance.canTraverseTo(north1);
+    boolean result = instance.isTileAdjacent(north1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north2);
+    result = instance.isTileAdjacent(north2);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north3);
+    result = instance.isTileAdjacent(north3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north4);
+    result = instance.isTileAdjacent(north4);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north5);
+    result = instance.isTileAdjacent(north5);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(north6);
+    result = instance.isTileAdjacent(north6);
     assertEquals(expResult, result);
 
-    result = instance.canTraverseTo(south1);
+    result = instance.isTileAdjacent(south1);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south2);
+    result = instance.isTileAdjacent(south2);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south3);
+    result = instance.isTileAdjacent(south3);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south4);
+    result = instance.isTileAdjacent(south4);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south5);
+    result = instance.isTileAdjacent(south5);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south6);
+    result = instance.isTileAdjacent(south6);
     assertEquals(expResult, result);
 
     expResult = false;
-    result = instance.canTraverseTo(north7);
+    result = instance.isTileAdjacent(north7);
     assertEquals(expResult, result);
-    result = instance.canTraverseTo(south7);
+    result = instance.isTileAdjacent(south7);
     assertEquals(expResult, result);
   }
 

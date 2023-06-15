@@ -291,65 +291,65 @@ public class LayoutUtilTest {
     /**
      * Test of isPlusAdjacent method, of class LayoutUtil.
      */
-    @Test
-    public void testIsPlusAdjacent() {
-        System.out.println("isPlusAdjacent");
-        // (340,380) ----|+  (420,380)  -|---- (500,380)        
-        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
-
-        Point pointP = new Point(340, 380);
-        Point pointM = new Point(500, 380);
-        boolean expResult = true;
-        boolean result = LayoutUtil.isPlusAdjacent(block, pointP);
-        assertEquals(expResult, result);
-        result = LayoutUtil.isPlusAdjacent(block, pointM);
-        assertEquals(!expResult, result);
-    }
+//    @Test
+//    public void testIsPlusAdjacent() {
+//        System.out.println("isPlusAdjacent");
+//        // (340,380) ----|+  (420,380)  -|---- (500,380)        
+//        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
+//
+//        Point pointP = new Point(340, 380);
+//        Point pointM = new Point(500, 380);
+//        boolean expResult = true;
+//        boolean result = LayoutUtil.isPlusAdjacent(block, pointP);
+//        assertEquals(expResult, result);
+//        result = LayoutUtil.isPlusAdjacent(block, pointM);
+//        assertEquals(!expResult, result);
+//    }
 
     /**
      * Test of getPlusAdjacent method, of class LayoutUtil.
      */
-    @Test
-    public void testGetPlusAdjacent() {
-        System.out.println("getPlusAdjacent");
-        // (340,380) ----|+  (420,380)  -|---- (500,380)        
-        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
-
-        Point expResult = new Point(340, 380);
-        Point result = LayoutUtil.getPlusAdjacent(block);
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testGetPlusAdjacent() {
+//        System.out.println("getPlusAdjacent");
+//        // (340,380) ----|+  (420,380)  -|---- (500,380)        
+//        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
+//
+//        Point expResult = new Point(340, 380);
+//        Point result = LayoutUtil.getPlusAdjacent(block);
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of getMinusAdjacent method, of class LayoutUtil.
      */
-    @Test
-    public void testGetMinusAdjacent() {
-        System.out.println("getMinusAdjacent");
-        // (340,380) ----|+  (420,380)  -|---- (500,380)        
-        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
-        Point expResult = new Point(500, 380);
-        Point result = LayoutUtil.getMinusAdjacent(block);
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testGetMinusAdjacent() {
+//        System.out.println("getMinusAdjacent");
+//        // (340,380) ----|+  (420,380)  -|---- (500,380)        
+//        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
+//        Point expResult = new Point(500, 380);
+//        Point result = LayoutUtil.getMinusAdjacent(block);
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of isMinusAdjacent method, of class LayoutUtil.
      */
-    @Test
-    public void testIsMinusAdjacent() {
-        System.out.println("isMinusAdjacent");
-        // (340,380) ----|+  (420,380)  -|---- (500,380)  
-        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
-
-        Point pointP = new Point(340, 380);
-        Point pointM = new Point(500, 380);
-        boolean expResult = true;
-        boolean result = LayoutUtil.isMinusAdjacent(block, pointM);
-        assertEquals(expResult, result);
-        result = LayoutUtil.isMinusAdjacent(block, pointP);
-        assertEquals(!expResult, result);
-    }
+//    @Test
+//    public void testIsMinusAdjacent() {
+//        System.out.println("isMinusAdjacent");
+//        // (340,380) ----|+  (420,380)  -|---- (500,380)  
+//        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
+//
+//        Point pointP = new Point(340, 380);
+//        Point pointM = new Point(500, 380);
+//        boolean expResult = true;
+//        boolean result = LayoutUtil.isMinusAdjacent(block, pointM);
+//        assertEquals(expResult, result);
+//        result = LayoutUtil.isMinusAdjacent(block, pointP);
+//        assertEquals(!expResult, result);
+//    }
 
     /**
      * Test of getPlusCenter method, of class LayoutUtil.

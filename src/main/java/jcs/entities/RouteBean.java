@@ -29,121 +29,125 @@ import javax.persistence.Transient;
 import org.beryx.awt.color.ColorFactory;
 
 @Table(name = "routes", indexes = {
-    @Index(name = "route_from_to_idx", columnList = "from_tile_id,from_tile_id_site, to_tile_id,to_tile_id_site", unique = true)})
+  @Index(name = "route_from_to_idx", columnList = "from_tile_id,from_tile_id_site, to_tile_id,to_tile_id_site", unique = true)})
 public class RouteBean implements Serializable {
 
-    private Long id;
-    private String fromTileId;
-    private String fromTileSite;
-    private String toTileId;
-    private String toTileSite;
-    private String color;
+  private Long id;
+  private String fromTileId;
+  private String fromTileSite;
+  private String toTileId;
+  private String toTileSite;
+  private String color;
 
-    private List<RouteElementBean> routeElements;
+  private List<RouteElementBean> routeElements;
 
-    public RouteBean() {
+  public RouteBean() {
+  }
+
+  public RouteBean(String fromTileId, String fromSuffix, String toTileId, String toSuffix, String color) {
+    this(null, fromTileId, fromSuffix, toTileId, toSuffix, color, new LinkedList<>());
+  }
+
+  public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
+    this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, new LinkedList<>());
+  }
+
+  public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, List<RouteElementBean> routeElements) {
+    this.id = id;
+    this.fromTileId = fromTileId;
+    this.fromTileSite = fromTileSite;
+    this.toTileId = toTileId;
+    this.toTileSite = toTileSite;
+    this.color = color;
+    this.routeElements = routeElements;
+  }
+
+  @Id
+  @GeneratedValue
+  @Column(name = "id")
+  public Long getId() {
+    return this.id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  @Column(name = "from_tile_id", nullable = false)
+  public String getFromTileId() {
+    return fromTileId;
+  }
+
+  public void setFromTileId(String fromTileId) {
+    this.fromTileId = fromTileId;
+  }
+
+  @Column(name = "from_tile_site", nullable = false)
+  public String getFromTileSite() {
+    return fromTileSite;
+  }
+
+  public void setFromTileSite(String fromTileSite) {
+    this.fromTileSite = fromTileSite;
+  }
+
+  @Column(name = "to_tile_id", nullable = false)
+  public String getToTileId() {
+    return toTileId;
+  }
+
+  public void setToTileId(String toTileId) {
+    this.toTileId = toTileId;
+  }
+
+  @Column(name = "to_tile_site", nullable = false)
+  public String getToTileSite() {
+    return toTileSite;
+  }
+
+  public void setToTileSite(String toTileSite) {
+    this.toTileSite = toTileSite;
+  }
+
+  @Column(name = "route_color", length = 255)
+  public String getRouteColor() {
+    return color;
+  }
+
+  public void setRouteColor(String color) {
+    this.color = color;
+  }
+
+  private Color stringToColor(String colorString) {
+    if (colorString != null) {
+      if (colorString.startsWith("RGB:")) {
+        String rgb = colorString.replaceAll("RGB:", "");
+        return Color.decode(rgb);
+      } else {
+        return ColorFactory.valueOf(colorString);
+      }
+    } else {
+      return null;
     }
+  }
 
-    public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
-        this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, new LinkedList<>());
-    }
+  @Transient
+  public Color getColor() {
+    return stringToColor(this.color);
+  }
 
-    public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, List<RouteElementBean> routeElements) {
-        this.id = id;
-        this.fromTileId = fromTileId;
-        this.fromTileSite = fromTileSite;
-        this.toTileId = toTileId;
-        this.toTileSite = toTileSite;
-        this.color = color;
-        this.routeElements = routeElements;
-    }
+  public void setColor(Color color) {
+    this.color = color.toString();
+  }
 
-    @Id
-    @GeneratedValue
-    @Column(name = "id")
-    public Long getId() {
-        return this.id;
-    }
+  @Transient
+  public List<RouteElementBean> getRouteElements() {
+    return routeElements;
+  }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @Column(name = "from_tile_id", nullable = false)
-    public String getFromTileId() {
-        return fromTileId;
-    }
-
-    public void setFromTileId(String fromTileId) {
-        this.fromTileId = fromTileId;
-    }
-
-    @Column(name = "from_tile_site", nullable = false)
-    public String getFromTileSite() {
-        return fromTileSite;
-    }
-
-    public void setFromTileSite(String fromTileSite) {
-        this.fromTileSite = fromTileSite;
-    }
-
-    @Column(name = "to_tile_id", nullable = false)
-    public String getToTileId() {
-        return toTileId;
-    }
-
-    public void setToTileId(String toTileId) {
-        this.toTileId = toTileId;
-    }
-
-    @Column(name = "to_tile_site", nullable = false)
-    public String getToTileSite() {
-        return toTileSite;
-    }
-
-    public void setToTileSite(String toTileSite) {
-        this.toTileSite = toTileSite;
-    }
-
-    @Column(name = "route_color", length = 255)
-    public String getRouteColor() {
-        return color;
-    }
-
-    public void setRouteColor(String color) {
-        this.color = color;
-    }
-
-    private Color stringToColor(String colorString) {
-        if (colorString != null) {
-            if (colorString.startsWith("RGB:")) {
-                String rgb = colorString.replaceAll("RGB:", "");
-                return Color.decode(rgb);
-            } else {
-                return ColorFactory.valueOf(colorString);
-            }
-        } else {
-            return null;
-        }
-    }
-
-    @Transient
-    public Color getColor() {
-        return stringToColor(this.color);
-    }
-
-    public void setColor(Color color) {
-        this.color = color.toString();
-    }
-
-    @Transient
-    public List<RouteElementBean> getRouteElements() {
-        return routeElements;
-    }
-
-    public void setRouteElements(List<RouteElementBean> routeElements) {
-        this.routeElements = routeElements;
-    }
+  public void setRouteElements(List<RouteElementBean> routeElements) {
+    this.routeElements = routeElements;
+  }
 
 //    private static List<RouteElementBean> createdRouteElementsFromElements(String fromTileId, String toTileId, List<String> elementIds) {
 //        List<RouteElementBean> rel = new LinkedList<>();
@@ -176,79 +180,79 @@ public class RouteBean implements Serializable {
 //        }
 //        return rel;
 //    }
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.id);
-        hash = 79 * hash + Objects.hashCode(this.fromTileId);
-        hash = 79 * hash + Objects.hashCode(this.fromTileSite);
-        hash = 79 * hash + Objects.hashCode(this.toTileId);
-        hash = 79 * hash + Objects.hashCode(this.toTileSite);
-        hash = 79 * hash + Objects.hashCode(this.color);
-        return hash;
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 79 * hash + Objects.hashCode(this.id);
+    hash = 79 * hash + Objects.hashCode(this.fromTileId);
+    hash = 79 * hash + Objects.hashCode(this.fromTileSite);
+    hash = 79 * hash + Objects.hashCode(this.toTileId);
+    hash = 79 * hash + Objects.hashCode(this.toTileSite);
+    hash = 79 * hash + Objects.hashCode(this.color);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RouteBean other = (RouteBean) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.fromTileId, other.fromTileId)) {
-            return false;
-        }
-        if (!Objects.equals(this.fromTileSite, other.fromTileSite)) {
-            return false;
-        }
-        if (!Objects.equals(this.toTileId, other.toTileId)) {
-            return false;
-        }
-        if (!Objects.equals(this.toTileSite, other.toTileSite)) {
-            return false;
-        }
-        return (Objects.equals(this.color, other.color));
+    if (obj == null) {
+      return false;
     }
-
-    @Override
-    public String toString() {
-        return "Route{" + "id=" + id + ", fromTile=" + fromTileId + fromTileSite + ", toTile=" + toTileId + toTileSite + ", color=" + color + "}";
+    if (getClass() != obj.getClass()) {
+      return false;
     }
+    final RouteBean other = (RouteBean) obj;
+    if (!Objects.equals(this.id, other.id)) {
+      return false;
+    }
+    if (!Objects.equals(this.fromTileId, other.fromTileId)) {
+      return false;
+    }
+    if (!Objects.equals(this.fromTileSite, other.fromTileSite)) {
+      return false;
+    }
+    if (!Objects.equals(this.toTileId, other.toTileId)) {
+      return false;
+    }
+    if (!Objects.equals(this.toTileSite, other.toTileSite)) {
+      return false;
+    }
+    return (Objects.equals(this.color, other.color));
+  }
 
-    public String toLogString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Route: ");
-        sb.append(this.id);
-        sb.append(": ");
-        if (this.routeElements != null && !this.routeElements.isEmpty()) {
-            for (RouteElementBean re : this.routeElements) {
-                sb.append(re.getNodeId());
-                if (!re.getNodeId().equals(re.getTileId())) {
-                    sb.append("[");
-                    sb.append(re.getTileId());
-                    sb.append("]");
-                }
+  @Override
+  public String toString() {
+    return "Route{" + "id=" + id + ", fromTile=" + fromTileId + fromTileSite + ", toTile=" + toTileId + toTileSite + ", color=" + color + "}";
+  }
 
-                if (re.getAccessoryValue() != null) {
-                    sb.append("[");
-                    sb.append(re.getAccessoryValue());
-                    sb.append("]");
-                }
-
-                if (!re.getNodeId().equals(this.toTileId)) {
-                    sb.append(" -> ");
-                }
-            }
+  public String toLogString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Route: ");
+    sb.append(this.id);
+    sb.append(": ");
+    if (this.routeElements != null && !this.routeElements.isEmpty()) {
+      for (RouteElementBean re : this.routeElements) {
+        sb.append(re.getNodeId());
+        if (!re.getNodeId().equals(re.getTileId())) {
+          sb.append("[");
+          sb.append(re.getTileId());
+          sb.append("]");
         }
-        return sb.toString();
+
+        if (re.getAccessoryValue() != null) {
+          sb.append("[");
+          sb.append(re.getAccessoryValue());
+          sb.append("]");
+        }
+
+        if (!re.getNodeId().equals(this.toTileId)) {
+          sb.append(" -> ");
+        }
+      }
     }
+    return sb.toString();
+  }
 
 }

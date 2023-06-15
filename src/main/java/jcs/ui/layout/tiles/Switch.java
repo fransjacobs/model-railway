@@ -221,7 +221,7 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
   @Override
   public AccessoryValue getSwitchValueTo(Tile other) {
     AccessoryValue switchDirection = AccessoryValue.OFF;
-    if (canTraverseTo(other)) {
+    if (isTileAdjacent(other)) {
       if (this.isHorizontal() && other.isHorizontal() || this.isVertical() && other.isVertical()) {
         //Both are horizontal or vertical so it is the longes side hence Green
         switchDirection = AccessoryValue.GREEN;

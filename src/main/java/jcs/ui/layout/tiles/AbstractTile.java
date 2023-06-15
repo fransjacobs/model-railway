@@ -306,14 +306,14 @@ abstract class AbstractTile extends TileBean implements Tile {
     g2d.setColor(color);
     g2d.fill(new Ellipse2D.Double(dX, dY, size, size));
 
-//    if (!getAltPoints().isEmpty()) {
-//      //Also draw the alt points
-//      Set<Point> alt = new HashSet<>(getAltPoints());
-//
-//      for (Point ap : alt) {
-//        g2d.fill(new Ellipse2D.Double(ap.x, ap.y, size - 1, size - 1));
-//      }
-//    }
+    if (!getAltPoints().isEmpty()) {
+      //Also draw the alt points
+      Set<Point> alt = new HashSet<>(getAltPoints());
+
+      for (Point ap : alt) {
+        g2d.fill(new Ellipse2D.Double(ap.x, ap.y, size - 1, size - 1));
+      }
+    }
   }
 
   @Override
@@ -720,110 +720,30 @@ abstract class AbstractTile extends TileBean implements Tile {
     return "";
   }
 
-//      case BLOCK -> {
-//        //Horizontal
-//        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-//          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
-//          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
-//        } else {
-//          //Vertical
-//          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
-//          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
-//        }
-//        break;
-//      }
-//      case END -> {
-//        switch (orientation) {
-//          case SOUTH ->
-//            neighbors.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID * 2));
-//          case WEST ->
-//            neighbors.put(Orientation.WEST, new Point(cx + Tile.GRID * 2, cy));
-//          case NORTH ->
-//            neighbors.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID * 2));
-//          default -> //EAST
-//            neighbors.put(Orientation.EAST, new Point(cx - Tile.GRID * 2, cy));
-//        }
-//      }
-//      case CURVED -> {
-//        switch (orientation) {
-//          case SOUTH -> {
-//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-//          }
-//          case WEST -> {
-//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-//          }
-//          case NORTH -> {
-//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID *2));
-//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-//          }
-//          default -> {
-//            //EAST
-//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-//          }
-//        }
-//      }
-//      case SWITCH -> {
-//        switch (orientation) {
-//          case SOUTH -> {
-//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-//            if (Direction.LEFT == direction) {
-//              neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-//            } else {
-//              neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-//            }
-//          }
-//          case WEST -> {
-//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-//            if (Direction.LEFT == direction) {
-//              neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-//            } else {
-//              neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-//            }
-//          }
-//          case NORTH -> {
-//            neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-//            neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-//            if (Direction.LEFT == direction) {
-//              neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-//            } else {
-//              neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-//            }
-//          }
-//          default -> {
-//            //EAST
-//            neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-//            neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-//            if (Direction.LEFT == direction) {
-//              neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-//            } else {
-//              neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-//            }
-//          }
-//        }
-//      }
-//      case CROSS -> {
-//        //TODO
-//      }
-//      default -> {
-//        //STRAIGHT, STRAIGHT_DIR, SIGNAL, SENSOR
-//        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-//          //Horizontal
-//          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-//          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-//        } else {
-//          //Vertical
-//          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-//          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-//        }
-//      }
-//    }
-//    return neighbors;
-//  }
+  @Override
+  public Map<Point, Orientation> getNeighborOrientations() {
+    Map<Point, Orientation> edgeOrientations = new HashMap<>();
+
+    Map<Orientation, Point> neighborPoints = getNeighborPoints();
+
+    for (Orientation o : Orientation.values()) {
+      edgeOrientations.put(neighborPoints.get(o), o);
+    }
+    return edgeOrientations;
+  }
+
+  @Override
+  public Map<Point, Orientation> getEdgeOrientations() {
+    Map<Point, Orientation> edgeOrientations = new HashMap<>();
+
+    Map<Orientation, Point> edgeConnections = getEdgeConnections();
+
+    for (Orientation o : Orientation.values()) {
+      edgeOrientations.put(edgeConnections.get(o), o);
+    }
+    return edgeOrientations;
+  }
+
   @Override
   public Map<Orientation, Point> getEdgeConnections() {
     Map<Orientation, Point> edgeConnections = new HashMap<>();
@@ -940,19 +860,19 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  public boolean canTraverseTo(Tile other) {
-    boolean canTravel = false;
+  public boolean isTileAdjacent(Tile other) {
+    boolean adjacent = false;
 
     for (Point p : this.getEdgeConnections().values()) {
       if (other != null) {
-        canTravel = other.getEdgeConnections().containsValue(p);
-        if (canTravel) {
+        adjacent = other.getEdgeConnections().containsValue(p);
+        if (adjacent) {
           break;
         }
       }
     }
 
-    return canTravel;
+    return adjacent;
   }
 
   @Override

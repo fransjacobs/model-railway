@@ -24,20 +24,12 @@ import jcs.entities.enums.Orientation;
  */
 public class Edge {
 
-  private Node from;
-  private Node to;
-
   private String fromId;
   private String fromSuffix;
   private String toId;
   private String toSuffix;
   private Orientation travelOrientation;
   private AccessoryValue pathDirection;
-
-  public Edge(Node from, Node to) {
-    this.from = from;
-    this.to = to;
-  }
 
   public Edge(String fromId, String toId, double cost) {
     this(fromId, toId, null, null);
@@ -66,11 +58,15 @@ public class Edge {
   }
 
   public String getFromId() {
-    return (from != null ? from.getId() : fromId);
+    return fromId;
   }
 
   public String getToId() {
-    return (to != null ? to.getId() : toId);
+    return toId;
+  }
+
+  public Orientation getTravelOrientation() {
+    return travelOrientation;
   }
 
   public String getFromSuffix() {
@@ -81,9 +77,13 @@ public class Edge {
     return toSuffix;
   }
 
+  public AccessoryValue getPathDirection() {
+    return pathDirection;
+  }
+
   @Override
   public String toString() {
-    return "Edge (" + (from != null ? from.getId() : fromId) + (fromSuffix != null ? fromSuffix : "") + " -> " + (to != null ? to.getId() : toId) + (toSuffix != null ? toSuffix : "") + ") dir: " + travelOrientation + (AccessoryValue.OFF != pathDirection ? " path: " + pathDirection : "");
+    return "Edge (" + fromId + (fromSuffix != null ? fromSuffix : "") + " -> " + toId + (toSuffix != null ? toSuffix : "") + ") dir: " + travelOrientation + (AccessoryValue.OFF != pathDirection ? " path: " + pathDirection : "");
   }
 
 }

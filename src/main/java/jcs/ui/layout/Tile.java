@@ -170,9 +170,13 @@ public interface Tile extends Shape {
 
   Map<Orientation, Point> getNeighborPoints();
 
+  Map<Point, Orientation> getNeighborOrientations();
+
   Map<Orientation, Point> getEdgeConnections();
 
-  boolean canTraverseTo(Tile other);
+  Map<Point, Orientation> getEdgeOrientations();
+
+  boolean isTileAdjacent(Tile other);
 
   String getIdSuffix(Tile other);
 
