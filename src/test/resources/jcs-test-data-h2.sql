@@ -12,7 +12,6 @@ commit;
 alter table sensors alter column id restart with 1;
 alter table locomotive_functions alter column id restart with 1;
 alter table accessories alter column id restart with 1;
-alter table routes alter column id restart with 1;
 alter table route_elements alter column id restart with 1;
 
 insert into jcs_properties(p_key,p_value) values
@@ -85,14 +84,14 @@ insert into tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_
 	 ('sw-1','Switch','West','Left',260,180,null,2,null),
 	 ('sw-2','Switch','East','Right',580,180,null,null,null);
 
-insert into routes (from_tile_id,from_tile_site,to_tile_id, to_tile_site, route_color) values
-   ('bk-1','+','bk-2','-','red'),
-   ('bk-2','-','bk-1','+','yellow');
+insert into routes (id,from_tile_id,from_suffix,to_tile_id, to_suffix, route_color, locked) values
+   ('[bk-1+]->[bk-2-]', 'bk-1','+','bk-2','-','red', 0),
+   ('[bk-2-]->[bk-1+]', 'bk-2','-','bk-1','+','yellow',0);
 
 insert into route_elements (route_id, node_id, tile_id, accessory_value,order_seq) values
-   (2, 'bk-2-','bk-2',null,0),
-   (2, 'ct-2','ct-2',null,1),
-   (2, 'st-1','st-1',null,2),
-   (2, 'bk1+','bk-1',null,3);
+   ('[bk-1+]->[bk-2-]', 'bk-1+','bk-1',null,0),
+   ('[bk-1+]->[bk-2-]', 'ct-2','ct-2',null,1),
+   ('[bk-1+]->[bk-2-]', 'st-1','st-1',null,2),
+   ('[bk-1+]->[bk-2-]', 'bk2-','bk-2',null,3);
 
 commit;

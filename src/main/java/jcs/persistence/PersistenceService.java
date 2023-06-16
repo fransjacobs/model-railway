@@ -26,82 +26,78 @@ import jcs.entities.TileBean;
 import jcs.entities.enums.DecoderType;
 
 /**
- * The Persistence Service takes care of all persistence functionality which is
- * needed within the JCS Application
+ * The Persistence Service takes care of all persistence functionality which is needed within the JCS Application
  *
  * @author frans
  */
 public interface PersistenceService {
 
-    List<JCSPropertyBean> getProperties();
+  List<JCSPropertyBean> getProperties();
 
-    JCSPropertyBean getProperty(String key);
+  JCSPropertyBean getProperty(String key);
 
-    JCSPropertyBean persist(JCSPropertyBean propertyBean);
+  JCSPropertyBean persist(JCSPropertyBean propertyBean);
 
-    void remove(JCSPropertyBean property);
+  void remove(JCSPropertyBean property);
 
-    //Sensors
-    List<SensorBean> getSensors();
+  //Sensors
+  List<SensorBean> getSensors();
 
-    SensorBean getSensor(Long id);
+  SensorBean getSensor(Long id);
 
-    SensorBean getSensor(Integer deviceId, Integer contactId);
+  SensorBean getSensor(Integer deviceId, Integer contactId);
 
-    SensorBean persist(SensorBean sensor);
+  SensorBean persist(SensorBean sensor);
 
-    void remove(SensorBean sensor);
+  void remove(SensorBean sensor);
 
-    //Locomotive 
-    List<LocomotiveBean> getLocomotives();
+  //Locomotive 
+  List<LocomotiveBean> getLocomotives();
 
-    LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
+  LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
 
-    LocomotiveBean getLocomotive(Long id);
+  LocomotiveBean getLocomotive(Long id);
 
-    LocomotiveBean persist(LocomotiveBean locomotive);
+  LocomotiveBean persist(LocomotiveBean locomotive);
 
-    void remove(LocomotiveBean locomotiveBean);
+  void remove(LocomotiveBean locomotiveBean);
 
-    Image getFunctionImage(String imageName);
+  Image getFunctionImage(String imageName);
 
-    //Accessories
-    List<AccessoryBean> getTurnouts();
+  //Accessories
+  List<AccessoryBean> getTurnouts();
 
-    List<AccessoryBean> getSignals();
+  List<AccessoryBean> getSignals();
 
-    AccessoryBean getAccessoryById(Long id);
+  AccessoryBean getAccessoryById(Long id);
 
-    AccessoryBean getAccessory(Integer address);
+  AccessoryBean getAccessory(Integer address);
 
-    AccessoryBean persist(AccessoryBean accessoryBean);
+  AccessoryBean persist(AccessoryBean accessoryBean);
 
-    void remove(AccessoryBean accessoryBean);
+  void remove(AccessoryBean accessoryBean);
 
-    //Tile
-    List<TileBean> getTiles();
+  //Tile
+  List<TileBean> getTiles();
 
-    TileBean getTile(String id);
+  TileBean getTile(String id);
 
-    TileBean getTile(Integer x, Integer y);
+  TileBean getTile(Integer x, Integer y);
 
-    TileBean persist(TileBean tileBean);
+  TileBean persist(TileBean tileBean);
 
-    void persist(List<TileBean> tiles);
+  void persist(List<TileBean> tiles);
 
-    void remove(TileBean tile);
+  void remove(TileBean tile);
 
-    //void removeTile(Integer x, Integer y);
+  List<RouteBean> getRoutes();
 
-    //Routes
-    List<RouteBean> getRoutes();
+  RouteBean getRoute(String id);
 
-    RouteBean getRoute(Integer id);
+  RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix);
 
-    RouteBean getRoute(String fromTileId, String fromTileSite, String toTileId, String toTileSite);
+  RouteBean persist(RouteBean routeBean);
 
-    RouteBean persist(RouteBean routeBean);
-
-    void remove(RouteBean routeBean);
+  void remove(RouteBean routeBean);
 
 }

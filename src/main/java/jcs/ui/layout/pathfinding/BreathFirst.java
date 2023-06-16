@@ -68,11 +68,11 @@ public class BreathFirst {
     return path;
   }
 
-  private static List<RouteElementBean> createRouteElementsFromElements(String fromId, String toId, List<String> elementIds) {
+  private static List<RouteElementBean> createRouteElementsFromElements(Node from, List<Node> path) {
     
-    List<RouteElementBean> rel = new LinkedList<>();
-    for (int i = 0; i < elementIds.size(); i++) {
-      String nodeId = elementIds.get(i);
+//    List<RouteElementBean> rel = new LinkedList<>();
+//    for (int i = 0; i < elementIds.size(); i++) {
+//      String nodeId = elementIds.get(i);
 
 //      String tileId;
 //      if (nodeId.endsWith("-R")) {
@@ -91,7 +91,7 @@ public class BreathFirst {
 //      } else if (nodeId.endsWith("-G")) {
 //        accessoryValue = AccessoryValue.GREEN;
 //      }
-      Integer elementOrder = i;
+//      Integer elementOrder = i;
 
       //RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
 //      RouteElementBean routeElement = new RouteElementBean(null, null, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
@@ -102,8 +102,8 @@ public class BreathFirst {
 //      rel.add(routeElement);
 
   //    Logger.trace(routeElement);
-    }
-    return rel;
+//    }
+    return null;
   }
 
   private LinkedList<String> getNodeIdList(Node from, List<Node> path) {
@@ -213,7 +213,7 @@ public class BreathFirst {
         if (route != null) {
           Logger.trace("Found a route from " + from.getId() + " to " + to.getId() + ": " + pathToString(from, route));
           
-          createRouteElementsFromElements(from.getId(), to.getId() , getNodeIdList(from, route));
+          //createRouteElementsFromElements(from.getId(), to.getId() , getNodeIdList(from, route));
           
         }
 

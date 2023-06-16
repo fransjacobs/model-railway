@@ -352,12 +352,6 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
-//  @Override
-//  public void removeTile(Integer x, Integer y) {
-//    Object[] args = new Object[]{x, y};
-//    database.sql("delete from tiles where x= ? and y = ?", args).execute();
-//  }
-
   @Override
   public void persist(List<TileBean> tiles) {
     int rows = database.sql("delete from tiles").execute().getRowsAffected();
@@ -367,8 +361,8 @@ public class H2PersistenceService implements PersistenceService {
     }
   }
 
-  private List<RouteElementBean> getRouteElements(Long routeId) {
-    List<RouteElementBean> routeElements = database.where("route_id=?", routeId).orderBy("id").results(RouteElementBean.class);
+  private List<RouteElementBean> getRouteElements(String routeId) {
+    List<RouteElementBean> routeElements = database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
     return routeElements;
   }
 
@@ -395,7 +389,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public RouteBean getRoute(Integer id) {
+  public RouteBean getRoute(String id) {
     RouteBean route = database.where("id = ?", id).first(RouteBean.class);
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
@@ -405,9 +399,9 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public RouteBean getRoute(String fromTileId, String fromTileSite, String toTileId, String toTileSite) {
-    Object[] args = new Object[]{fromTileId, fromTileSite, toTileId, toTileSite};
-    RouteBean route = database.where("from_tile_id = ? and from_tile_site = ? and to_tile_id = ? and to_tile_site = ?", args).first(RouteBean.class);
+  public RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
+    Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
+    RouteBean route = database.where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args).first(RouteBean.class);
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
       route.setRouteElements(routeElements);
@@ -426,7 +420,6 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     if (route.getRouteElements() != null && !route.getRouteElements().isEmpty()) {
-      //remove all
       database.sql("delete from route_elements where route_id =?", route.getId()).execute();
 
       List<RouteElementBean> rbl = route.getRouteElements();
@@ -441,7 +434,6 @@ public class H2PersistenceService implements PersistenceService {
       }
       route.setRouteElements(rblr);
     }
-
     return route;
   }
 

@@ -29,47 +29,48 @@ import javax.persistence.Transient;
 import org.beryx.awt.color.ColorFactory;
 
 @Table(name = "routes", indexes = {
-  @Index(name = "route_from_to_idx", columnList = "from_tile_id,from_tile_id_site, to_tile_id,to_tile_id_site", unique = true)})
+  @Index(name = "route_from_to_idx", columnList = "from_tile_id,from_suffix, to_tile_id,to_suffix", unique = true)})
 public class RouteBean implements Serializable {
 
-  private Long id;
+  private String id;
   private String fromTileId;
-  private String fromTileSite;
+  private String fromSuffix;
   private String toTileId;
-  private String toTileSite;
+  private String toSuffix;
   private String color;
+  private boolean locked;
 
   private List<RouteElementBean> routeElements;
 
   public RouteBean() {
   }
 
-  public RouteBean(String fromTileId, String fromSuffix, String toTileId, String toSuffix, String color) {
-    this(null, fromTileId, fromSuffix, toTileId, toSuffix, color, new LinkedList<>());
+  public RouteBean(String id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
+    this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, false, new LinkedList<>());
   }
 
-  public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
-    this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, new LinkedList<>());
+  public RouteBean(String id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, boolean locked) {
+    this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, locked, new LinkedList<>());
   }
 
-  public RouteBean(Long id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, List<RouteElementBean> routeElements) {
+  public RouteBean(String id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, boolean locked, List<RouteElementBean> routeElements) {
     this.id = id;
     this.fromTileId = fromTileId;
-    this.fromTileSite = fromTileSite;
+    this.fromSuffix = fromTileSite;
     this.toTileId = toTileId;
-    this.toTileSite = toTileSite;
+    this.toSuffix = toTileSite;
     this.color = color;
+    this.locked = locked;
     this.routeElements = routeElements;
   }
 
   @Id
-  @GeneratedValue
-  @Column(name = "id")
-  public Long getId() {
+  @Column(name = "id", nullable = false)
+  public String getId() {
     return this.id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -82,13 +83,13 @@ public class RouteBean implements Serializable {
     this.fromTileId = fromTileId;
   }
 
-  @Column(name = "from_tile_site", nullable = false)
-  public String getFromTileSite() {
-    return fromTileSite;
+  @Column(name = "from_suffix", nullable = false)
+  public String getFromSuffix() {
+    return fromSuffix;
   }
 
-  public void setFromTileSite(String fromTileSite) {
-    this.fromTileSite = fromTileSite;
+  public void setFromSuffix(String fromSuffix) {
+    this.fromSuffix = fromSuffix;
   }
 
   @Column(name = "to_tile_id", nullable = false)
@@ -100,13 +101,13 @@ public class RouteBean implements Serializable {
     this.toTileId = toTileId;
   }
 
-  @Column(name = "to_tile_site", nullable = false)
-  public String getToTileSite() {
-    return toTileSite;
+  @Column(name = "to_suffix", nullable = false)
+  public String getToSuffix() {
+    return toSuffix;
   }
 
-  public void setToTileSite(String toTileSite) {
-    this.toTileSite = toTileSite;
+  public void setToSuffix(String toSuffix) {
+    this.toSuffix = toSuffix;
   }
 
   @Column(name = "route_color", length = 255)
@@ -138,6 +139,15 @@ public class RouteBean implements Serializable {
 
   public void setColor(Color color) {
     this.color = color.toString();
+  }
+
+  @Column(name = "locked", nullable = false, columnDefinition = "locked bool default '0'")
+  public boolean isLocked() {
+    return locked;
+  }
+
+  public void setLocked(boolean locked) {
+    this.locked = locked;
   }
 
   @Transient
@@ -185,10 +195,11 @@ public class RouteBean implements Serializable {
     int hash = 7;
     hash = 79 * hash + Objects.hashCode(this.id);
     hash = 79 * hash + Objects.hashCode(this.fromTileId);
-    hash = 79 * hash + Objects.hashCode(this.fromTileSite);
+    hash = 79 * hash + Objects.hashCode(this.fromSuffix);
     hash = 79 * hash + Objects.hashCode(this.toTileId);
-    hash = 79 * hash + Objects.hashCode(this.toTileSite);
+    hash = 79 * hash + Objects.hashCode(this.toSuffix);
     hash = 79 * hash + Objects.hashCode(this.color);
+    hash = 79 * hash + Objects.hashCode(this.locked);
     return hash;
   }
 
@@ -210,21 +221,24 @@ public class RouteBean implements Serializable {
     if (!Objects.equals(this.fromTileId, other.fromTileId)) {
       return false;
     }
-    if (!Objects.equals(this.fromTileSite, other.fromTileSite)) {
+    if (!Objects.equals(this.fromSuffix, other.fromSuffix)) {
       return false;
     }
     if (!Objects.equals(this.toTileId, other.toTileId)) {
       return false;
     }
-    if (!Objects.equals(this.toTileSite, other.toTileSite)) {
+    if (!Objects.equals(this.toSuffix, other.toSuffix)) {
       return false;
     }
-    return (Objects.equals(this.color, other.color));
+    if (!Objects.equals(this.color, other.color)) {
+      return false;
+    }
+    return (Objects.equals(this.locked, other.locked));
   }
 
   @Override
   public String toString() {
-    return "Route{" + "id=" + id + ", fromTile=" + fromTileId + fromTileSite + ", toTile=" + toTileId + toTileSite + ", color=" + color + "}";
+    return "Route{" + "id=" + id + ", fromTile=" + fromTileId + fromSuffix + ", toTile=" + toTileId + toSuffix + ", color=" + color + ", locked=" + locked + "}";
   }
 
   public String toLogString() {
