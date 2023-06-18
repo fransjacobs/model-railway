@@ -78,6 +78,25 @@ public class Straight extends AbstractTile implements Tile {
     return neighbors;
   }
 
+  @Override
+  public Map<Orientation, Point> getEdgePoints() {
+    Map<Orientation, Point> edgeConnections = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      //Horizontal
+      edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+      edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+    } else {
+      //Vertical
+      edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+      edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+    }
+    return edgeConnections;
+  }
+
   protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx, yy, w, h;
     xx = 0;

@@ -46,6 +46,60 @@ public class GraphBuilder {
     this.tileIdMap = new HashMap<>();
   }
 
+  private void addJunctionNode(Tile tile) {
+    Logger.trace("Creating Nodes for tile " + tile.getId() + (tile.isJunction() ? " Junction" : "") + " Checking " + tile.getNeighborPoints().size() + " neighbors...");
+
+    String id = tile.getId();
+    if (graph.containsKey(id)) {
+      Node node = graph.get(id);
+      Logger.trace(node + " allready exists");
+    } else {
+      Node node = new Node(tile);
+
+      //A tile has multitiple edges, depending on the direction
+      //Check all sides of the tile for neighbors
+      int cnt = tile.getNeighborPoints().size();
+
+      Logger.trace("Tile " + id + " has " + cnt + " neighbors" + " CP: " + tile.xyToString());
+
+      for (Orientation dir : Orientation.values()) {
+        Point p = tile.getNeighborPoints().get(dir);
+        if (p != null) {
+          //Found a neighbor
+          Tile neighbor = this.tilePointMap.get(p);
+          Logger.trace("Neighbor " + neighbor.getId() + " CP: " + neighbor.xyToString());
+
+          if (tile.isAdjacent(neighbor)) {
+            cnt--;
+            //When the tile is a Switch there is a Green or Red path...
+            Edge edge;
+            if (tile.isJunction() || neighbor.isJunction()) {
+              Logger.debug((node.isJunction() ? " Tile is Junction" : "") + " " + (neighbor.isJunction() ? " Neighbor is Junction" : "") + ", id: " + neighbor.getId());
+
+              AccessoryValue junctionDir = node.isJunction() ? tile.getSwitchValueTo(neighbor) : neighbor.getSwitchValueTo(tile);
+              edge = new Edge(node.getId(), neighbor.getId(), dir, junctionDir);
+            } else if (neighbor.isBlock()) {
+              //Logger.debug((node.isBlock() ? " Tile is Block" : "") + " " + (neighbor.isBlock() ? " Neighbor is Block" : "") + ", id: " + neighbor.getId());
+              String fromSuffix = null, toSuffix = null;
+              if (neighbor.isBlock()) {
+                toSuffix = neighbor.getIdSuffix(tile);
+              }
+              edge = new Edge(node.getId(), neighbor.getId(), fromSuffix, toSuffix, dir);
+            } else {
+              edge = new Edge(node.getId(), neighbor.getId(), dir);
+            }
+            node.addEdge(edge);
+            Logger.trace(" ->" + edge);
+          }
+        }
+      }
+
+      this.graph.put(id, node);
+
+      Logger.trace("Added " + node + (cnt != 0 ? " Missing an edge!" : ""));
+    }
+  }
+
   private void addBlockNode(Tile tile) {
     Logger.trace("Creating Nodes for tile " + tile.getId() + (tile.isBlock() ? " Block" : "") + " Checking " + tile.getNeighborPoints().size() + " neighbors...");
 
@@ -71,7 +125,7 @@ public class GraphBuilder {
       if (p != null) {
         //Found a neighbor, is it possible to travel from this tile (side) to the neighbor
         Tile neighbor = this.tilePointMap.get(p);
-        if (tile.isTileAdjacent(neighbor)) {
+        if (tile.isAdjacent(neighbor)) {
           //When the tile is a Switch there is a Green or Red path...
           String fromSuffix = tile.getIdSuffix(neighbor);
           Edge edge;
@@ -97,29 +151,31 @@ public class GraphBuilder {
   private void addNode(Tile tile) {
     if (tile.isBlock()) {
       addBlockNode(tile);
+    } else if (tile.isJunction()) {
+      addJunctionNode(tile);
     } else {
       Logger.trace("Creating Node for tile " + tile.getId() + (tile.isJunction() ? " Junction" : "") + (tile.isDiagonal() ? " Diagonal" : "") + " Checking " + tile.getNeighborPoints().size() + " neighbors...");
 
       String id = tile.getId();
-
       if (graph.containsKey(id)) {
         Node node = graph.get(id);
         Logger.trace(node + " allready exists");
       } else {
         Node node = new Node(tile);
-        //Check all sides of the tile fpt neighbors
+
+        //Check all sides of the tile for neighbors
         int cnt = tile.getNeighborPoints().size();
         for (Orientation dir : Orientation.values()) {
           Point p = tile.getNeighborPoints().get(dir);
           if (p != null) {
             //Found a neighbor, is it possible to travel from this tile to the neighbor?
             Tile neighbor = this.tilePointMap.get(p);
-            if (tile.isTileAdjacent(neighbor)) {
+            if (tile.isAdjacent(neighbor)) {
               cnt--;
               //When the tile is a Switch there is a Green or Red path...
               Edge edge;
               if (tile.isJunction() || neighbor.isJunction()) {
-                //Logger.debug((node.isJunction() ? " Tile is Junction" : "") + " " + (neighbor.isJunction() ? " Neighbor is Junction" : "") + ", id: " + neighbor.getId());
+                Logger.debug((node.isJunction() ? " Tile is Junction" : "") + " " + (neighbor.isJunction() ? " Neighbor is Junction" : "") + ", id: " + neighbor.getId());
                 AccessoryValue junctionDir = node.isJunction() ? tile.getSwitchValueTo(neighbor) : neighbor.getSwitchValueTo(tile);
                 edge = new Edge(node.getId(), neighbor.getId(), dir, junctionDir);
               } else if (tile.isBlock() || neighbor.isBlock()) {

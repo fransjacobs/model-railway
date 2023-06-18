@@ -30,6 +30,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,9 +47,6 @@ import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
 import static jcs.entities.enums.TileType.CROSS;
-import static jcs.entities.enums.TileType.CURVED;
-import static jcs.entities.enums.TileType.END;
-import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.Tile;
 import static jcs.ui.layout.Tile.DEFAULT_TRACK_COLOR;
@@ -415,7 +413,6 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  @Deprecated
   public Set<Point> getAllPoints() {
     Set<Point> aps = new HashSet<>();
     aps.add(getCenter());
@@ -736,7 +733,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   public Map<Point, Orientation> getEdgeOrientations() {
     Map<Point, Orientation> edgeOrientations = new HashMap<>();
 
-    Map<Orientation, Point> edgeConnections = getEdgeConnections();
+    Map<Orientation, Point> edgeConnections = getEdgePoints();
 
     for (Orientation o : Orientation.values()) {
       edgeOrientations.put(edgeConnections.get(o), o);
@@ -745,127 +742,21 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  public Map<Orientation, Point> getEdgeConnections() {
-    Map<Orientation, Point> edgeConnections = new HashMap<>();
-    TileType tiletype = this.getTileType();
-    Orientation orientation = this.getOrientation();
-    Direction direction = this.getDirection();
-    int cx = this.getCenterX();
-    int cy = this.getCenterY();
-
-    switch (tiletype) {
-      case BLOCK -> {
-        //Horizontal
-        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 3, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 3, cy));
-        } else {
-          //Vertical
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 3));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 3));
-        }
-        break;
-      }
-      case END -> {
-        switch (orientation) {
-          case SOUTH ->
-            edgeConnections.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID));
-          case WEST ->
-            edgeConnections.put(Orientation.WEST, new Point(cx + Tile.GRID, cy));
-          case NORTH ->
-            edgeConnections.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID));
-          default -> //EAST
-            edgeConnections.put(Orientation.EAST, new Point(cx - Tile.GRID, cy));
-        }
-      }
-      case CURVED -> {
-        switch (orientation) {
-          case SOUTH -> {
-            edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-            edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-          }
-          case WEST -> {
-            edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-            edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-          }
-          case NORTH -> {
-            edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-            edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-          }
-          default -> {
-            //EAST
-            edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-            edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-          }
-        }
-      }
-      case SWITCH -> {
-        switch (orientation) {
-          case SOUTH -> {
-            edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-            edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-            if (Direction.LEFT == direction) {
-              edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-            } else {
-              edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-            }
-          }
-          case WEST -> {
-            edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-            edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-            if (Direction.LEFT == direction) {
-              edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-            } else {
-              edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-            }
-          }
-          case NORTH -> {
-            edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-            edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-            if (Direction.LEFT == direction) {
-              edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-            } else {
-              edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-            }
-          }
-          default -> {
-            //EAST
-            edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-            edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-            if (Direction.LEFT == direction) {
-              edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-            } else {
-              edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-            }
-          }
-        }
-      }
-      case CROSS -> {
-        //TODO
-      }
-      default -> {
-        //STRAIGHT, STRAIGHT_DIR, SIGNAL, SENSOR
-        if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-          //Horizontal
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-        } else {
-          //Vertical
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-        }
-      }
-    }
-    return edgeConnections;
-  }
-
-  @Override
-  public boolean isTileAdjacent(Tile other) {
+  public boolean isAdjacent(Tile other) {
     boolean adjacent = false;
 
-    for (Point p : this.getEdgeConnections().values()) {
-      if (other != null) {
-        adjacent = other.getEdgeConnections().containsValue(p);
+    if (other != null) {
+      Point tc = getCenter();
+      Point oc = other.getCenter();
+
+      Collection<Point> thisEdgePoints = getEdgePoints().values();
+      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+
+      Collection<Point> thisNeighborPoints = getNeighborPoints().values();
+      Collection<Point> otherNeighborPoints = other.getNeighborPoints().values();
+
+      for (Point p : thisEdgePoints) {
+        adjacent = otherEdgePoints.contains(p);
         if (adjacent) {
           break;
         }
@@ -878,6 +769,39 @@ abstract class AbstractTile extends TileBean implements Tile {
   @Override
   public AccessoryValue getSwitchValueTo(Tile other) {
     return AccessoryValue.OFF;
+  }
+
+  /**
+   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the switch side of the Turnout
+   */
+  @Override
+  public boolean isSwitchSide(Tile other) {
+    return false;
+  }
+
+  /**
+   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the diverging side of the Turnout
+   */
+  @Override
+  public boolean isDivergingSide(Tile other) {
+    return false;
+  }
+
+  /**
+   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the straight side of the Turnout
+   */
+  @Override
+  public boolean isStraightSide(Tile other) {
+    return false;
   }
 
 }

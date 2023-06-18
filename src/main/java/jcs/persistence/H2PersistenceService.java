@@ -369,10 +369,10 @@ public class H2PersistenceService implements PersistenceService {
   private RouteElementBean persist(RouteElementBean routeElement) {
     if (database.where("id=?", routeElement.getId()).first(RouteElementBean.class) != null) {
       int rows = database.update(routeElement).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      //Logger.trace(rows + " rows updated");
     } else {
       int rows = database.insert(routeElement).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      //Logger.trace(rows + " rows inserted");
     }
     return routeElement;
   }
@@ -413,10 +413,10 @@ public class H2PersistenceService implements PersistenceService {
   public RouteBean persist(RouteBean route) {
     if (database.where("id=?", route.getId()).first(RouteBean.class) != null) {
       int rows = database.update(route).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      //Logger.trace(rows + " rows updated");
     } else {
       int rows = database.insert(route).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      //Logger.trace(rows + " rows inserted");
     }
 
     if (route.getRouteElements() != null && !route.getRouteElements().isEmpty()) {

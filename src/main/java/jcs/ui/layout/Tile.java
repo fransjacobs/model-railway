@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
@@ -92,7 +93,10 @@ public interface Tile extends Shape {
    */
   Set<Point> getAltPoints();
 
-  @Deprecated
+  /**
+   *
+   * @return All point relevant for the Object on the Canvas
+   */
   Set<Point> getAllPoints();
 
   int getOffsetX();
@@ -172,13 +176,43 @@ public interface Tile extends Shape {
 
   Map<Point, Orientation> getNeighborOrientations();
 
-  Map<Orientation, Point> getEdgeConnections();
+  Map<Orientation, Point> getEdgePoints();
 
   Map<Point, Orientation> getEdgeOrientations();
 
-  boolean isTileAdjacent(Tile other);
+  /**
+   *
+   * @param other a tile to check with this tile
+   * @return true when the other tile is adjacent to this and the "tracks" connect
+   */
+  boolean isAdjacent(Tile other);
 
   String getIdSuffix(Tile other);
 
   AccessoryValue getSwitchValueTo(Tile other);
+
+  /**
+   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the switch side of the Turnout
+   */
+  boolean isSwitchSide(Tile other);
+
+  /**
+   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the diverging side of the Turnout
+   */
+  boolean isDivergingSide(Tile other);
+
+  /**
+   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the straight side of the Turnout
+   */
+  boolean isStraightSide(Tile other);
+
 }

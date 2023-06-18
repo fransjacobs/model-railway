@@ -31,10 +31,6 @@ import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
-import static jcs.entities.enums.TileType.END;
-import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.tiles.enums.Direction;
 
 public class Cross extends Switch implements Tile {
@@ -117,6 +113,19 @@ public class Cross extends Switch implements Tile {
 
     //TODO
     return neighbors;
+  }
+
+  @Override
+  public Map<Orientation, Point> getEdgePoints() {
+    Map<Orientation, Point> edgeConnections = new HashMap<>();
+    TileType tiletype = this.getTileType();
+    Orientation orientation = this.getOrientation();
+    Direction direction = this.getDirection();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    //TODO
+    return edgeConnections;
   }
 
   @Override

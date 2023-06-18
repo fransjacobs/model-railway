@@ -20,6 +20,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
@@ -32,6 +33,7 @@ import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.ui.layout.tiles.enums.Direction;
+import org.tinylog.Logger;
 
 public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
@@ -119,6 +121,95 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
     return neighbors;
   }
 
+  @Override
+  public Map<Orientation, Point> getEdgePoints() {
+    Map<Orientation, Point> edgeConnections = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    Direction direction = this.getDirection();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH -> {
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        } else {
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        }
+      }
+      case WEST -> {
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        } else {
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        }
+      }
+      case NORTH -> {
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        } else {
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        }
+      }
+      default -> {
+        //EAST
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
+        } else {
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        }
+      }
+    }
+    return edgeConnections;
+  }
+
+  @Override
+  public boolean isAdjacent(Tile other) {
+    boolean adjacent = false;
+
+    if (other != null) {
+
+      Point tc = getCenter();
+      Point oc = other.getCenter();
+
+      Collection<Point> thisEdgePoints = getEdgePoints().values();
+      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+
+      Collection<Point> thisNeighborPoints = getNeighborPoints().values();
+      Collection<Point> otherNeighborPoints = other.getNeighborPoints().values();
+
+      for (Point p : thisEdgePoints) {
+        adjacent = otherEdgePoints.contains(p);
+        if (adjacent) {
+          break;
+        }
+      }
+
+//      for (Point p : thisNeighborPoints) {
+//        adjacent = p.equals(oc);
+//        if (adjacent) {
+//          break;
+//        }
+//      }
+//      for (Point p : this.getEdgePoints().values()) {
+//        adjacent = otherEdgePoints.contains(p);
+//        if (adjacent) {
+//          break;
+//        }
+//      }
+    }
+
+    return adjacent;
+  }
+
   public AccessoryValue getAccessoryValue() {
     if (this.accessoryValue == null) {
       return AccessoryValue.OFF;
@@ -129,6 +220,66 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
   public void setValue(AccessoryValue value) {
     this.accessoryValue = value;
+  }
+
+  /**
+   *
+   * @param other A Tile
+   * @return true when other is connected to the switch side of the Turnout
+   */
+  @Override
+  public boolean isSwitchSide(Tile other) {
+    Orientation orientation = this.getOrientation();
+    Point switchSide = this.getNeighborPoints().get(orientation);
+    Logger.trace(other.xyToString());
+    return isAdjacent(other) && switchSide.equals(other.getCenter());
+  }
+
+  /**
+   *
+   * @param other A Tile
+   * @return true when other is connected to the diverging side of the Turnout
+   */
+  @Override
+  public boolean isDivergingSide(Tile other) {
+    Orientation orientation = this.getOrientation();
+
+    if (Orientation.NORTH == orientation || Orientation.SOUTH == orientation) {
+      //Vertical so diverging side is either on the EAST or WEST side
+      Point eastSide = this.getNeighborPoints().get(Orientation.EAST);
+      Point westSide = this.getNeighborPoints().get(Orientation.WEST);
+
+      return isAdjacent(other) && (eastSide.equals(other.getCenter()) || westSide.equals(other.getCenter()));
+    } else {
+      //Horizontal so diverging side is either on the NORTH or SOUTH side
+      Point northSide = this.getNeighborPoints().get(Orientation.NORTH);
+      Point southSide = this.getNeighborPoints().get(Orientation.SOUTH);
+
+      return isAdjacent(other) && (northSide.equals(other.getCenter()) || southSide.equals(other.getCenter()));
+    }
+  }
+
+  /**
+   *
+   * @param other A Tile
+   * @return true when other is connected to the straight side of the Turnout
+   */
+  @Override
+  public boolean isStraightSide(Tile other) {
+    Orientation orientation = this.getOrientation();
+    Point straightSide;
+    straightSide = switch (orientation) {
+      case NORTH ->
+        getNeighborPoints().get(Orientation.SOUTH);
+      case SOUTH ->
+        getNeighborPoints().get(Orientation.NORTH);
+      case WEST ->
+        getNeighborPoints().get(Orientation.EAST);
+      default ->
+        getNeighborPoints().get(Orientation.WEST);
+    };
+
+    return isAdjacent(other) && straightSide.equals(other.getCenter());
   }
 
   public void setRouteValue(AccessoryValue value, Color routeColor) {
@@ -221,7 +372,7 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
   @Override
   public AccessoryValue getSwitchValueTo(Tile other) {
     AccessoryValue switchDirection = AccessoryValue.OFF;
-    if (isTileAdjacent(other)) {
+    if (isAdjacent(other)) {
       if (this.isHorizontal() && other.isHorizontal() || this.isVertical() && other.isVertical()) {
         //Both are horizontal or vertical so it is the longes side hence Green
         switchDirection = AccessoryValue.GREEN;

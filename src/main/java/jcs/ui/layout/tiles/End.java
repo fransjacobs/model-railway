@@ -28,11 +28,6 @@ import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
-import static jcs.entities.enums.TileType.END;
-import static jcs.entities.enums.TileType.SWITCH;
-import jcs.ui.layout.tiles.enums.Direction;
 
 public class End extends AbstractTile implements Tile {
 
@@ -85,6 +80,26 @@ public class End extends AbstractTile implements Tile {
         neighbors.put(Orientation.EAST, new Point(cx - Tile.GRID * 2, cy));
     }
     return neighbors;
+  }
+
+  @Override
+  public Map<Orientation, Point> getEdgePoints() {
+    Map<Orientation, Point> edgeConnections = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH ->
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy - Tile.GRID));
+      case WEST ->
+        edgeConnections.put(Orientation.WEST, new Point(cx + Tile.GRID, cy));
+      case NORTH ->
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy + Tile.GRID));
+      default -> //EAST
+        edgeConnections.put(Orientation.EAST, new Point(cx - Tile.GRID, cy));
+    }
+    return edgeConnections;
   }
 
   protected void renderEnd(Graphics2D g2, Color trackColor, Color backgroundColor) {

@@ -15,16 +15,14 @@
  */
 package jcs.ui.layout;
 
-import jcs.entities.enums.AccessoryValue;
+import java.awt.Point;
+import java.util.HashSet;
+import java.util.Set;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 
 import jcs.ui.layout.tiles.TileFactory;
 import jcs.ui.layout.tiles.enums.Direction;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -37,27 +35,20 @@ public class TileTest {
   public TileTest() {
   }
 
-  @BeforeClass
-  public static void setUpClass() {
-  }
-
-  @AfterClass
-  public static void tearDownClass() {
-  }
-
-  @Before
-  public void setUp() {
-  }
-
-  @After
-  public void tearDown() {
-  }
-
   @Test
   public void testgetCenterX() {
     System.out.println("getCenterX");
     Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 180, 100, false);
     int expResult = 180;
+    int result = instance.getCenterX();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testgetCenterXZero() {
+    System.out.println("getCenterX");
+    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, false);
+    int expResult = 20;
     int result = instance.getCenterX();
     assertEquals(expResult, result);
   }
@@ -87,6 +78,15 @@ public class TileTest {
   }
 
   @Test
+  public void testgetCenterYZero() {
+    System.out.println("getCenterY");
+    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, false);
+    int expResult = 20;
+    int result = instance.getCenterY();
+    assertEquals(expResult, result);
+  }
+
+  @Test
   public void testGetGridY() {
     System.out.println("getGridY");
     Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 100, 140, false);
@@ -96,427 +96,153 @@ public class TileTest {
   }
 
   @Test
-  public void testCanTraverseToHorizontalStraight() {
-    System.out.println("canTraverseToHorizontalStraight");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100, false);
+  public void testGetAllPoints() {
+    System.out.println("getAllPoints");
+    Tile instance = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 220, 220, false);
+    Set<Point> expResult = new HashSet<>();
+    expResult.add(new Point(220, 220));
+    expResult.add(new Point(180, 220));
+    expResult.add(new Point(260, 220));
+
+    Set<Point> result = instance.getAllPoints();
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetAltPoints() {
+    System.out.println("getAltPoints");
+    Tile instance = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 220, 220, false);
+    Set<Point> expResult = new HashSet<>();
+    expResult.add(new Point(180, 220));
+    expResult.add(new Point(260, 220));
+    Set<Point> result = instance.getAltPoints();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testIsAdjacentStraight() {
+    System.out.println("isAdjacentStraight");
+    Tile instanceE = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100, false);
+    Tile instanceN = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 100, false);
 
     Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 60, 100, false);
     Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 140, 100, false);
     Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 60, false);
     Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
 
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(west);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east);
-    assertEquals(expResult, result);
+    assertTrue(instanceE.isAdjacent(west));
+    assertTrue(instanceE.isAdjacent(east));
+    assertFalse(instanceE.isAdjacent(north));
+    assertFalse(instanceE.isAdjacent(south));
 
-    expResult = false;
-    result = instance.isTileAdjacent(north);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south);
-    assertEquals(expResult, result);
+    assertFalse(instanceN.isAdjacent(west));
+    assertFalse(instanceN.isAdjacent(east));
+    assertTrue(instanceN.isAdjacent(north));
+    assertTrue(instanceN.isAdjacent(south));
   }
 
   @Test
-  public void testCanTraverseToHorizontalSwitch() {
-    System.out.println("canTraverseToHorizontalSwitch");
-    Tile instance = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 100, 100, false);
+  public void testIsAdjacentBlock() {
+    System.out.println("isAdjacentBlock");
 
-    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 60, 100, false);
-    Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 140, 100, false);
-    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 60, false);
-    Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
+    Tile instanceE = TileFactory.createTile(TileType.BLOCK, Orientation.EAST, Direction.CENTER, 220, 220, false);
+    Tile instanceW = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 220, 220, false);
 
-    Tile west1 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 60, 100, false);
-    Tile west2 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 60, 100, false);
-    Tile east1 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 140, 100, false);
+    Tile instanceS = TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, Direction.CENTER, 220, 220, false);
+    Tile instanceN = TileFactory.createTile(TileType.BLOCK, Orientation.NORTH, Direction.CENTER, 220, 220, false);
 
-    Tile north1 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 60, false);
+    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 140, 220, false);
+    Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 300, 220, false);
 
-    Tile south1 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 140, false);
-    Tile south2 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 140, false);
+    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 140, false);
+    Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 220, 300, false);
 
-    Tile south3 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 140, false);
-    Tile south4 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
+    assertTrue(instanceE.isAdjacent(west));
+    assertTrue(instanceE.isAdjacent(east));
+    assertTrue(instanceW.isAdjacent(west));
+    assertTrue(instanceW.isAdjacent(east));
 
-    Tile south5 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 100, 140, false);
+    assertTrue(instanceN.isAdjacent(north));
+    assertTrue(instanceN.isAdjacent(south));
+    assertTrue(instanceS.isAdjacent(north));
+    assertTrue(instanceS.isAdjacent(south));
 
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(west);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south);
-    assertEquals(expResult, result);
-
-    result = instance.isTileAdjacent(south1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south2);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south5);
-    assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.isTileAdjacent(north);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south4);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west2);
-    assertEquals(expResult, result);
-
+    assertFalse(instanceE.isAdjacent(south));
+    assertFalse(instanceE.isAdjacent(north));
+    assertFalse(instanceS.isAdjacent(east));
+    assertFalse(instanceS.isAdjacent(west));
   }
 
   @Test
-  public void testCanTraverseToVerticalStraight() {
-    System.out.println("canTraverseToHorizontalStraight");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 100, false);
+  public void testIsAdjacentCurved() {
+    System.out.println("isAdjacentCurved");
+    Tile instanceE = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 860, 140, false);
+    Tile instanceN = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 860, 140, false);
+    Tile instanceW = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 860, 140, false);
+    Tile instanceS = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 860, 140, false);
 
-    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 60, 100, false);
-    Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 140, 100, false);
-    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 60, false);
-    Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
+    Tile straightE = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 900, 140, false);
+    Tile straightN = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 860, 100, false);
+    Tile straightW = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 820, 140, false);
+    Tile straightS = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 860, 180, false);
 
-    boolean expResult = false;
-    boolean result = instance.isTileAdjacent(west);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east);
-    assertEquals(expResult, result);
+    assertTrue(instanceE.isAdjacent(straightE));
+    assertFalse(instanceE.isAdjacent(straightN));
+    assertFalse(instanceE.isAdjacent(straightW));
+    assertTrue(instanceE.isAdjacent(straightS));
 
-    expResult = true;
-    result = instance.isTileAdjacent(north);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south);
-    assertEquals(expResult, result);
+    boolean b = instanceN.isAdjacent(straightE);
+
+    assertTrue(instanceN.isAdjacent(straightE));
+    assertTrue(instanceN.isAdjacent(straightN));
+    assertFalse(instanceN.isAdjacent(straightW));
+    assertFalse(instanceN.isAdjacent(straightS));
+
+    assertFalse(instanceW.isAdjacent(straightE));
+    assertTrue(instanceW.isAdjacent(straightN));
+    assertTrue(instanceW.isAdjacent(straightW));
+    assertFalse(instanceW.isAdjacent(straightS));
+
+    assertFalse(instanceS.isAdjacent(straightE));
+    assertFalse(instanceS.isAdjacent(straightN));
+    assertTrue(instanceS.isAdjacent(straightW));
+    assertTrue(instanceS.isAdjacent(straightS));
   }
 
   @Test
-  public void testCanTraverseToHorizontalBlock() {
-    System.out.println("canTraverseToHorizontalBlock");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220, false);
+  public void testIsAdjacentEnd() {
+    System.out.println("isAdjacentEnd");
 
-    Tile west = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 140, 220, false);
-    Tile east = TileFactory.createTile(TileType.BLOCK, Orientation.EAST, Direction.CENTER, 300, 220, false);
+    Tile instanceE = TileFactory.createTile(TileType.END, Orientation.EAST, Direction.CENTER, 860, 140, false);
+    Tile instanceS = TileFactory.createTile(TileType.END, Orientation.SOUTH, Direction.CENTER, 860, 140, false);
+    Tile instanceW = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 860, 140, false);
+    Tile instanceN = TileFactory.createTile(TileType.END, Orientation.NORTH, Direction.CENTER, 860, 140, false);
 
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(west);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east);
-    assertEquals(expResult, result);
-  }
+    Tile straightE = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 900, 140, false);
+    Tile straightN = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 860, 100, false);
+    Tile straightW = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 820, 140, false);
+    Tile straightS = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 860, 180, false);
 
-  @Test
-  public void testCanTraverseToVerticalBlock() {
-    System.out.println("canTraverseToVerticalBlock");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 220, false);
+    assertFalse(instanceE.isAdjacent(straightE));
+    assertFalse(instanceE.isAdjacent(straightS));
+    assertTrue(instanceE.isAdjacent(straightW));
+    assertFalse(instanceE.isAdjacent(straightN));
 
-    Tile north = TileFactory.createTile(TileType.BLOCK, Orientation.NORTH, Direction.CENTER, 220, 140, false);
-    Tile south = TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, Direction.CENTER, 220, 300, false);
+    assertFalse(instanceS.isAdjacent(straightE));
+    assertFalse(instanceS.isAdjacent(straightS));
+    assertFalse(instanceS.isAdjacent(straightW));
+    assertTrue(instanceS.isAdjacent(straightN));
 
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(north);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south);
-    assertEquals(expResult, result);
-  }
+    assertTrue(instanceW.isAdjacent(straightE));
+    assertFalse(instanceW.isAdjacent(straightS));
+    assertFalse(instanceW.isAdjacent(straightW));
+    assertFalse(instanceW.isAdjacent(straightN));
 
-  @Test
-  public void testCanTraverseToHorizontalCurved() {
-    System.out.println("canTraverseToHorizontalCurved");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100, false);
-
-    Tile west1 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 60, 100, false);
-    Tile west2 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 60, 100, false);
-    Tile west3 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 60, 100, false);
-    Tile west4 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 60, 100, false);
-
-    Tile east1 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 140, 100, false);
-    Tile east2 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 140, 100, false);
-    Tile east3 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 140, 100, false);
-    Tile east4 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 140, 100, false);
-
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(west1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west2);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east2);
-    assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.isTileAdjacent(west3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west4);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east4);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testCanTraverseToVerticalCurved() {
-    System.out.println("canTraverseToVerticalCurved");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 100, 100, false);
-
-    Tile north1 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 60, false);
-    Tile north2 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 60, false);
-    Tile north3 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 60, false);
-    Tile north4 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 60, false);
-
-    Tile south1 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 100, 140, false);
-    Tile south2 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 100, 140, false);
-    Tile south3 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 100, 140, false);
-    Tile south4 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
-
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(north1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north2);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south2);
-    assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.isTileAdjacent(north3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north4);
-    assertEquals(expResult, result);
-
-    result = instance.isTileAdjacent(south3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south4);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testCanTraverseToCurvedStraight() {
-    System.out.println("canTraverseToCurvedStraight");
-    Tile instance = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 660, 380, false);
-
-    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 620, 380, false);
-    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 660, 340, false);
-
-    //Tile west = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 60, 100, false);
-    //Tile west1 = TileFactory.createTile(TileType.END, Orientation.WEST, Direction.CENTER, 140, 100, false);
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(west);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north);
-    assertEquals(expResult, result);
-
-//    expResult = false;
-//    result = instance.isTileAdjacent(east1);
-//    assertEquals(expResult, result);
-//    result = instance.isTileAdjacent(west1);
-//    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testCanTraverseToVerticalEnd() {
-    System.out.println("canTraverseToVerticalEnd");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 100, 100, false);
-
-    Tile north = TileFactory.createTile(TileType.END, Orientation.NORTH, Direction.CENTER, 100, 60, false);
-    Tile north1 = TileFactory.createTile(TileType.END, Orientation.NORTH, Direction.CENTER, 100, 140, false);
-
-    Tile south = TileFactory.createTile(TileType.END, Orientation.SOUTH, Direction.CENTER, 100, 140, false);
-    Tile south1 = TileFactory.createTile(TileType.END, Orientation.SOUTH, Direction.CENTER, 100, 60, false);
-
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(north);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south);
-    assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.isTileAdjacent(north1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south1);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testCanTraverseToHorizontalSwitch2() {
-    System.out.println("canTraverseToHorizontalSwitch2");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220, false);
-
-    Tile west1 = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 180, 220, false);
-    Tile west2 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 180, 220, false);
-    Tile west3 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 180, 220, false);
-    Tile west4 = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 180, 220, false);
-    Tile west5 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 180, 220, false);
-    Tile west6 = TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.RIGHT, 180, 220, false);
-    Tile west7 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 180, 220, false);
-
-    Tile east1 = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 260, 220, false);
-    Tile east2 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 260, 220, false);
-    Tile east3 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 260, 220, false);
-    Tile east4 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 260, 220, false);
-    Tile east5 = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 260, 220, false);
-    Tile east6 = TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.LEFT, 260, 220, false);
-    Tile east7 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 260, 220, false);
-
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(west1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west2);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west4);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west5);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(west6);
-    assertEquals(expResult, result);
-
-    result = instance.isTileAdjacent(east1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east2);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east4);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east5);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east6);
-    assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.isTileAdjacent(west7);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(east7);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testCanTraverseToVerticalSwitch() {
-    System.out.println("canTraverseToVerticalSwitch");
-    Tile instance = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 220, false);
-
-    Tile north1 = TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.LEFT, 220, 180, false);
-    Tile north2 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 220, 180, false);
-    Tile north3 = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 220, 180, false);
-    Tile north4 = TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.RIGHT, 220, 180, false);
-    Tile north5 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 220, 180, false);
-    Tile north6 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 220, 180, false);
-    Tile north7 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 220, 180, false);
-
-    Tile south1 = TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.RIGHT, 220, 260, false);
-    Tile south2 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.RIGHT, 220, 260, false);
-    Tile south3 = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 220, 260, false);
-    Tile south4 = TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.LEFT, 220, 260, false);
-    Tile south5 = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 220, 260, false);
-    Tile south6 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 220, 260, false);
-    Tile south7 = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.RIGHT, 220, 260, false);
-
-    boolean expResult = true;
-    boolean result = instance.isTileAdjacent(north1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north2);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north4);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north5);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(north6);
-    assertEquals(expResult, result);
-
-    result = instance.isTileAdjacent(south1);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south2);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south3);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south4);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south5);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south6);
-    assertEquals(expResult, result);
-
-    expResult = false;
-    result = instance.isTileAdjacent(north7);
-    assertEquals(expResult, result);
-    result = instance.isTileAdjacent(south7);
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testgetSwitchValueToHorizontalStraightCurved() {
-    System.out.println("getSwitchValueToHorizontalStraightCurved");
-    Tile instanceR = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 220, 220, false);
-    Tile instanceL = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 220, 220, false);
-
-    Tile west1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 180, 220, false);
-    Tile east1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 260, 220, false);
-
-    Tile north1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 220, 180, false);
-
-    Tile north2 = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 220, 180, false);
-    Tile north3 = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 220, 180, false);
-
-    Tile north4 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 220, 180, false);
-    Tile north5 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 220, 180, false);
-
-    Tile south1 = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 220, 260, false);
-
-    Tile south2 = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 220, 260, false);
-    Tile south3 = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 220, 260, false);
-
-    AccessoryValue expResult = AccessoryValue.GREEN;
-    AccessoryValue result = instanceR.getSwitchValueTo(west1);
-    assertEquals(expResult, result);
-    result = instanceR.getSwitchValueTo(east1);
-    assertEquals(expResult, result);
-
-    result = instanceL.getSwitchValueTo(west1);
-    assertEquals(expResult, result);
-    result = instanceL.getSwitchValueTo(east1);
-    assertEquals(expResult, result);
-
-    expResult = AccessoryValue.RED;
-    result = instanceR.getSwitchValueTo(north1);
-    assertEquals(expResult, result);
-
-    result = instanceR.getSwitchValueTo(north2);
-    assertEquals(expResult, result);
-
-    result = instanceR.getSwitchValueTo(north3);
-    assertEquals(expResult, result);
-
-    result = instanceL.getSwitchValueTo(south2);
-    assertEquals(expResult, result);
-
-    result = instanceL.getSwitchValueTo(south3);
-    assertEquals(expResult, result);
-
-    expResult = AccessoryValue.OFF;
-    result = instanceR.getSwitchValueTo(south1);
-    assertEquals(expResult, result);
-
-    result = instanceR.getSwitchValueTo(north4);
-    assertEquals(expResult, result);
-
-    result = instanceR.getSwitchValueTo(north5);
-    assertEquals(expResult, result);
-
+    assertFalse(instanceN.isAdjacent(straightE));
+    assertTrue(instanceN.isAdjacent(straightS));
+    assertFalse(instanceN.isAdjacent(straightW));
+    assertFalse(instanceN.isAdjacent(straightN));
   }
 
   @Test
@@ -555,11 +281,127 @@ public class TileTest {
     assertEquals(expResult, result);
     result = instanceS.getIdSuffix(south);
     assertEquals(expResult, result);
-
-//    expResult = "+";
-//    result = instanceE.getIdSuffix(east);
-//    assertEquals(expResult, result);
-//    result = instanceW.getIdSuffix(west);
-//    assertEquals(expResult, result);
   }
+
+  @Test
+  public void testIsAdjacentSwitchL() {
+    System.out.println("isAdjacentSwitchL");
+    Tile instanceE = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.LEFT, 1060, 140, false);
+    Tile instanceS = TileFactory.createTile(TileType.SWITCH, Orientation.SOUTH, Direction.LEFT, 1060, 140, false);
+    Tile instanceW = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, 1060, 140, false);
+    Tile instanceN = TileFactory.createTile(TileType.SWITCH, Orientation.NORTH, Direction.LEFT, 1060, 140, false);
+
+    Tile north = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 1060, 100, false);
+    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 1020, 140, false);
+    Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 1100, 140, false);
+    Tile south = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 1060, 180, false);
+
+    Tile northCS = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 1060, 100, false);
+    Tile northCE = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 1060, 100, false);
+    Tile northCW = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 1060, 100, false);
+    Tile northCN = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 1060, 100, false);
+
+    Tile southCS = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 1060, 180, false);
+    Tile southCE = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 1060, 180, false);
+    Tile southCW = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 1060, 180, false);
+    Tile southCN = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 1060, 180, false);
+
+    assertTrue(instanceE.isAdjacent(west));
+    assertTrue(instanceE.isAdjacent(east));
+    assertFalse(instanceE.isAdjacent(north));
+    assertTrue(instanceE.isAdjacent(south));
+     
+    assertTrue(instanceS.isAdjacent(west));
+    assertFalse(instanceS.isAdjacent(east));
+    assertTrue(instanceS.isAdjacent(north));
+    assertTrue(instanceS.isAdjacent(south));
+
+    assertTrue(instanceW.isAdjacent(west));
+    assertTrue(instanceW.isAdjacent(east));
+    assertTrue(instanceW.isAdjacent(north));
+    assertFalse(instanceW.isAdjacent(south));
+    
+    assertFalse(instanceN.isAdjacent(west));
+    assertTrue(instanceN.isAdjacent(east));
+    assertTrue(instanceN.isAdjacent(north));
+    assertTrue(instanceN.isAdjacent(south));
+    
+    assertFalse(instanceE.isAdjacent(southCS));
+    assertFalse(instanceE.isAdjacent(southCE));
+    assertTrue(instanceE.isAdjacent(southCW));
+    assertTrue(instanceE.isAdjacent(southCN));
+    
+//    assertFalse(instanceS.isAdjacent(southCS));
+//    assertFalse(instanceS.isAdjacent(southCE));
+//    assertTrue(instanceS.isAdjacent(southCW));
+//    assertTrue(instanceS.isAdjacent(southCN));
+    
+    
+    
+    
+    
+  }
+
+  @Test
+  public void testIsAdjacentSwitchR() {
+    System.out.println("isAdjacentSwitchR");
+    Tile instanceER = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 1060, 140, false);
+
+    Tile northS = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 1060, 100, false);
+    Tile west = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 1020, 140, false);
+    Tile east = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 1100, 140, false);
+    Tile southS = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 1060, 180, false);
+
+    Tile northCS = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 1060, 100, false);
+    Tile northCE = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 1060, 100, false);
+    Tile northCW = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 1060, 100, false);
+    Tile northCN = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 1060, 100, false);
+
+    Tile southCS = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 1060, 180, false);
+    Tile southCE = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, 1060, 180, false);
+    Tile southCW = TileFactory.createTile(TileType.CURVED, Orientation.WEST, Direction.CENTER, 1060, 180, false);
+    Tile southCN = TileFactory.createTile(TileType.CURVED, Orientation.NORTH, Direction.CENTER, 1060, 180, false);
+
+    assertTrue(instanceER.isAdjacent(west));
+    assertTrue(instanceER.isAdjacent(east));
+    assertTrue(instanceER.isAdjacent(northS));
+    assertFalse(instanceER.isAdjacent(southS));
+
+    assertTrue(instanceER.isAdjacent(northCS));
+    assertTrue(instanceER.isAdjacent(northCE));
+    assertFalse(instanceER.isAdjacent(northCW));
+    assertFalse(instanceER.isAdjacent(northCN));
+
+  }
+  
+  
+  //@Test
+  public void testIsSwitchSide() {
+    System.out.println("isSwitchSide");
+    Tile instance = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 220, 220, false);
+
+    Tile curvedN = TileFactory.createTile(TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 220, 180, false);
+    Tile straighW = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 180, 220, false);
+
+    Tile straighE = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 260, 220, false);
+
+    boolean expResult = true;
+    boolean result = instance.isAdjacent(straighE);
+    assertTrue(instance.isAdjacent(straighE));
+
+    //assertTrue(instanceE.isSwitchSide(straighE));
+    //assertFalse(instanceE.isSwitchSide(straighW));
+    //assertFalse(instanceE.isSwitchSide(curvedN));
+  }
+
+  //@Test
+  public void testIsDivergingSide() {
+
+  }
+
+  //@Test
+  public void testIsStraightSide() {
+
+  }
+
 }

@@ -20,6 +20,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -128,6 +129,25 @@ public class Block extends AbstractTile implements Tile {
     return neighbors;
   }
 
+  @Override
+  public Map<Orientation, Point> getEdgePoints() {
+    Map<Orientation, Point> edgeConnections = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    //Horizontal
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 3, cy));
+      edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 3, cy));
+    } else {
+      //Vertical
+      edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 3));
+      edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 3));
+    }
+    return edgeConnections;
+  }
+
   public Point getNeighborPoint(String suffix) {
     int cx = this.getCenterX();
     int cy = this.getCenterY();
@@ -161,10 +181,14 @@ public class Block extends AbstractTile implements Tile {
       return this.getOrientation();
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> Orientation.WEST;
-        case SOUTH -> Orientation.NORTH;
-        case NORTH -> Orientation.SOUTH;
-        default -> Orientation.EAST;
+        case EAST ->
+          Orientation.WEST;
+        case SOUTH ->
+          Orientation.NORTH;
+        case NORTH ->
+          Orientation.SOUTH;
+        default ->
+          Orientation.EAST;
       };
     }
   }
@@ -173,9 +197,9 @@ public class Block extends AbstractTile implements Tile {
   public String getIdSuffix(Tile other) {
     String suffix = null;
     Orientation match = null;
-    if (isTileAdjacent(other)) {
-      Map<Orientation, Point> blockSides = this.getEdgeConnections();
-      Map<Orientation, Point> otherSides = other.getEdgeConnections();
+    if (isAdjacent(other)) {
+      Map<Orientation, Point> blockSides = this.getEdgePoints();
+      Map<Orientation, Point> otherSides = other.getEdgePoints();
 
       for (Orientation bo : Orientation.values()) {
         Point bp = blockSides.get(bo);

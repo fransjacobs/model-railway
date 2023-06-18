@@ -57,53 +57,40 @@ public class BreathFirst {
 
     String first = elements.getFirst();
     String last = elements.getLast();
-
-    //TODO!
-    //RouteBean route = new RouteBean(null, first, first, last, last, null);
-    //List<RouteElementBean> rel = createRouteElementsFromElements(first, last, nodeIds);
-    //route.setRouteElements(rel);
-    //public RouteBean(Integer id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
-    //String rid = first + first + last + last;
-    //this.routes.put(rid, route);
     return path;
   }
 
-  private static List<RouteElementBean> createRouteElementsFromElements(Node from, List<Node> path) {
-    
-//    List<RouteElementBean> rel = new LinkedList<>();
-//    for (int i = 0; i < elementIds.size(); i++) {
-//      String nodeId = elementIds.get(i);
+  private static RouteBean createRouteFromPath(Node from, List<Node> path) {
 
-//      String tileId;
-//      if (nodeId.endsWith("-R")) {
-//        tileId = nodeId.replace("-R", "");
-//      } else if (nodeId.endsWith("-G")) {
-//        tileId = nodeId.replace("-G", "");
-//      } else if (nodeId.endsWith("-") || nodeId.endsWith("+")) {
-//        tileId = nodeId.substring(0, nodeId.length() - 1);
-//      } else {
-//        tileId = nodeId;
-//      }
+    String fromId = from.getId();
+    String fromSuffix = from.getSuffix();
+    String fromTileId = from.getTileId();
 
-//      AccessoryValue accessoryValue = AccessoryValue.OFF;
-//      if (nodeId.endsWith("-R")) {
-//        accessoryValue = AccessoryValue.RED;
-//      } else if (nodeId.endsWith("-G")) {
-//        accessoryValue = AccessoryValue.GREEN;
-//      }
-//      Integer elementOrder = i;
+    Node last = path.get(path.size() - 1);
+    String toId = last.getId();
+    String toSuffix = last.getSuffix();
+    String toTileId = last.getTileId();
 
-      //RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
-//      RouteElementBean routeElement = new RouteElementBean(null, null, nodeId, tileId, accessoryValue.getDBValue(), elementOrder);
+    String routeId = "[" + fromId + "]->[" + toId + "]";
 
-      //    public RouteElementBean(Long routeId, String nodeId, String tileId, String accessoryValue, Integer elementOrder) {
+    RouteBean route = new RouteBean(routeId, fromTileId, fromSuffix, toTileId, toSuffix);
 
-      
-//      rel.add(routeElement);
+    Logger.trace("From " + fromId + " to: " + toId + " route id " + routeId + "; " + route);
 
-  //    Logger.trace(routeElement);
-//    }
-    return null;
+    List<RouteElementBean> rel = new LinkedList<>();
+
+    //Start with the first element"
+    rel.add(new RouteElementBean(routeId, fromId, fromTileId, from.getAccessoryState(), 0));
+    int elementOrder = 1;
+    for (Node n : path) {
+      RouteElementBean re = new RouteElementBean(routeId, n.getId(), n.getTileId(), n.getAccessoryState(), elementOrder);
+      elementOrder++;
+      rel.add(re);
+    }
+
+    route.setRouteElements(rel);
+
+    return route;
   }
 
   private LinkedList<String> getNodeIdList(Node from, List<Node> path) {
@@ -162,10 +149,17 @@ public class BreathFirst {
           String tgt = edge.getToId() + (edge.getToSuffix() != null ? edge.getToSuffix() : "");
           Node tgtNode = this.graphBuilder.getGraph().get(tgt);
           if (!tgt.equals(fromBk)) {
-            //Logger.trace("Checking " + (node.getParent() != null ? "from: " + node.getParent().getId() + " via " + node.getId() : "") + " to: " + tgtNode.getId());
+            Logger.trace("Checking " + (node.getParent() != null ? "from: " + node.getParent().getId() + " via " + node.getId() : "") + " to: " + tgtNode.getId());
             if (!visited.contains(tgt) && !searchList.contains(tgt) && node.canTravelTo(tgtNode)) {
               tgtNode.setParent(node);
               searchList.add(tgt);
+
+              if (node.isJunction()) {
+                AccessoryValue as = edge.getPathDirection();
+                node.setAccessoryState(as);
+                Logger.trace((node.getParent() != null ? "from: " + node.getParent().getId() + " via " + node.getId() : "") + " to: " + tgtNode.getId() + " as: " + as);
+              }
+
               //Logger.trace("Search: " + tgt + " Prev: " + tgtNode.getParent().getId());
             }
           }
@@ -208,16 +202,16 @@ public class BreathFirst {
         Node to = fromTo.get(1);
 
         //if ("bk-1+".equals(from.getId()) && "bk-2+".equals(to.getId())) {
-        //if ("bk-1+".equals(from.getId()) && "bk-3-".equals(to.getId()) || "bk-1+".equals(from.getId()) && "bk-2+".equals(to.getId())) {
-        List<Node> route = search(from, to);
-        if (route != null) {
-          Logger.trace("Found a route from " + from.getId() + " to " + to.getId() + ": " + pathToString(from, route));
-          
-          //createRouteElementsFromElements(from.getId(), to.getId() , getNodeIdList(from, route));
-          
-        }
+        if ("bk-2+".equals(from.getId()) && "bk-3-".equals(to.getId())) {
+          //if ("bk-1+".equals(from.getId()) && "bk-3-".equals(to.getId()) || "bk-1+".equals(from.getId()) && "bk-2+".equals(to.getId())) {
+          List<Node> route = search(from, to);
+          if (route != null) {
+            Logger.trace("Found a route from " + from.getId() + " to " + to.getId() + ": " + pathToString(from, route));
 
-        //}
+            RouteBean routeBean = createRouteFromPath(from, route);
+            this.routes.put(routeBean.getId(), routeBean);
+          }
+        }
       }
       Logger.trace("Found " + routes.size() + " routes");
     } else {
@@ -243,6 +237,7 @@ public class BreathFirst {
     Logger.trace("\n========================================================================================\n");
     bf.routeAll();
 
+    //Rood ove wissel werk nog niet!
     //bf.buildGraph(jcs.ui.layout.LayoutUtil.loadLayout(true, false));
 //        List<List<Node>> candidateRoutes = bf.layoutAnalyzer.getAllBlockToBlockNodes();
 //
@@ -262,9 +257,11 @@ public class BreathFirst {
     }
 
     Logger.trace("#########");
-    List<RouteBean> prl = PersistenceFactory.getService().getRoutes();
-    for (RouteBean r : prl) {
-      Logger.trace(r.toLogString());
+    if (false) {
+      List<RouteBean> prl = PersistenceFactory.getService().getRoutes();
+      for (RouteBean r : prl) {
+        Logger.trace(r.toLogString());
+      }
     }
 
     System.exit(0);

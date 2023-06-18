@@ -17,9 +17,11 @@ package jcs.ui.layout.pathfinding;
 
 import java.util.LinkedList;
 import java.util.List;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.Tile;
+import org.tinylog.Logger;
 
 /**
  * A Node is the representation in the Graph of a tile.
@@ -33,6 +35,7 @@ public class Node {
   private final Tile tile;
   private final TileType tileType;
   private final Orientation orientation;
+  private AccessoryValue accessoryState;
 
   private final String suffix;
 
@@ -78,15 +81,12 @@ public class Node {
 //  public boolean isHorizontal() {
 //    return this.tile.isHorizontal();
 //  }
-
 //  public boolean isVertical() {
 //    return this.tile.isVertical();
 //  }
-
 //  public boolean isDiagonal() {
 //    return this.tile.isDiagonal();
 //  }
-
   public TileType getTileType() {
     return tileType;
   }
@@ -95,14 +95,13 @@ public class Node {
     return orientation;
   }
 
-//  private AccessoryValue getPathDirection(String fromId, String toId) {
-//    for (Edge e : this.edges) {
-//      if (fromId.equals(e.getFromId()) && toId.equals(e.getToId())) {
-//        return e.getPathDirection();
-//      }
-//    }
-//    return null;
-//  }
+  public AccessoryValue getAccessoryState() {
+    return accessoryState;
+  }
+
+  public void setAccessoryState(AccessoryValue accessoryState) {
+    this.accessoryState = accessoryState;
+  }
 
   private boolean isSwitch(Node other) {
     //Is other on the switch of the Turnout
@@ -171,14 +170,29 @@ public class Node {
       return false;
     }
   }
+  
+  
+  private AccessoryValue getPathDirection(String fromId, String toId) {
+    for (Edge e : this.edges) {
+      Logger.trace(e);
+    }
+
+
+    for (Edge e : this.edges) {
+      if (fromId.equals(e.getFromId()) && toId.equals(e.getToId())) {
+        return e.getPathDirection();
+      }
+    }
+    return null;
+  }
 
   public boolean canTravelTo(Node other) {
     if (other == null) {
       return false;
     }
     if (this.tile.isJunction()) {
-      //AccessoryValue pathDir = getPathDirection(getId(), other.getId());
-      //     Logger.trace("Path " + (this.parent != null ? " From: " + parent.getId() + " via " + getId() : "") + " O: " + this.orientation + " " + pathDir + " to " + other.getId());
+      AccessoryValue pathDir = getPathDirection(getId(), other.getId());
+      Logger.trace("Path " + (this.parent != null ? " From: " + parent.getId() + " via " + getId() : "") + " O: " + this.orientation + " " + pathDir + " to " + other.getId());
       //Check is the full path is possible
 
       boolean isParentConnectedToSwitch = this.isSwitch(this.parent);
@@ -194,16 +208,16 @@ public class Node {
       if (isParentConnectedToSwitch && (isOtherDiverging || isOtherConnectedToStraight)) {
         //       Logger.trace("Route from " + parent.getId()+ " via " + getId()+ " to " + other.getId()+" is possible using "+(isOtherDiverging?AccessoryValue.RED:AccessoryValue.GREEN)+" from edge: "+pathDir );
 
-        return this.tile.isTileAdjacent(other.tile);
+        return this.tile.isAdjacent(other.tile);
       } else if (isParentConnectedToStraight && isOtherConnectedToSwitch) {
         //       Logger.trace("Route from " + parent.getId()+ " via " + getId()+ " to " + other.getId()+" is possible using "+(isOtherDiverging?AccessoryValue.RED:AccessoryValue.GREEN)+" from edge: "+pathDir );
-        return this.tile.isTileAdjacent(other.tile);
+        return this.tile.isAdjacent(other.tile);
       } else {
         //       Logger.trace("Route from " + parent.getId()+ " via " + getId()+ " to " + other.getId()+" is NOT possible");
         return false;
       }
     } else {
-      return this.tile.isTileAdjacent(other.tile);
+      return this.tile.isAdjacent(other.tile);
     }
   }
 

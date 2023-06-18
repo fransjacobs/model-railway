@@ -45,20 +45,24 @@ public class RouteBean implements Serializable {
   public RouteBean() {
   }
 
-  public RouteBean(String id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color) {
-    this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, false, new LinkedList<>());
+  public RouteBean(String id, String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
+    this(id, fromTileId, fromSuffix, toTileId, toSuffix, null);
   }
 
-  public RouteBean(String id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, boolean locked) {
-    this(id, fromTileId, fromTileSite, toTileId, toTileSite, color, locked, new LinkedList<>());
+  public RouteBean(String id, String fromTileId, String fromSuffix, String toTileId, String toSuffix, String color) {
+    this(id, fromTileId, fromSuffix, toTileId, toSuffix, color, false);
   }
 
-  public RouteBean(String id, String fromTileId, String fromTileSite, String toTileId, String toTileSite, String color, boolean locked, List<RouteElementBean> routeElements) {
+  public RouteBean(String id, String fromTileId, String fromSuffix, String toTileId, String toSuffix, String color, boolean locked) {
+    this(id, fromTileId, fromSuffix, toTileId, toSuffix, color, locked, new LinkedList<>());
+  }
+
+  public RouteBean(String id, String fromTileId, String fromSuffix, String toTileId, String toSuffix, String color, boolean locked, List<RouteElementBean> routeElements) {
     this.id = id;
     this.fromTileId = fromTileId;
-    this.fromSuffix = fromTileSite;
+    this.fromSuffix = fromSuffix;
     this.toTileId = toTileId;
-    this.toSuffix = toTileSite;
+    this.toSuffix = toSuffix;
     this.color = color;
     this.locked = locked;
     this.routeElements = routeElements;
