@@ -752,9 +752,6 @@ abstract class AbstractTile extends TileBean implements Tile {
       Collection<Point> thisEdgePoints = getEdgePoints().values();
       Collection<Point> otherEdgePoints = other.getEdgePoints().values();
 
-      Collection<Point> thisNeighborPoints = getNeighborPoints().values();
-      Collection<Point> otherNeighborPoints = other.getNeighborPoints().values();
-
       for (Point p : thisEdgePoints) {
         adjacent = otherEdgePoints.contains(p);
         if (adjacent) {

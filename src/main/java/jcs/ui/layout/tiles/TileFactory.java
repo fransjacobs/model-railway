@@ -32,6 +32,7 @@ import static jcs.entities.enums.TileType.STRAIGHT_DIR;
 import jcs.ui.layout.Tile;
 
 /**
+ * Factory object to create Tiles
  *
  * @author frans
  */
@@ -41,6 +42,7 @@ public class TileFactory {
 
   }
 
+  //Keep the records of the used id sequence number
   private static int straightIdSeq;
   private static int curvedIdSeq;
   private static int switchIdSeq;
@@ -137,6 +139,16 @@ public class TileFactory {
     return (Tile) tile;
   }
 
+  /**
+   *
+   * @param tileType type of type to create
+   * @param orientation whether the orientation of the Tile is EAST, WEST, NORTH or SOUTH
+   * @param direction drection plays a role with Turnout tiles whether it goes to the Left or Right
+   * @param x the tile center X
+   * @param y the tile center Y
+   * @param drawOutline wheteh the outline of the ile must be rendered
+   * @return a Tile object
+   */
   public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, int x, int y, boolean drawOutline) {
     return createTile(tileType, orientation, direction, new Point(x, y), drawOutline);
   }
