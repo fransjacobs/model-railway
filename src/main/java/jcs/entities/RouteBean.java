@@ -21,7 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
@@ -265,7 +264,7 @@ public class RouteBean implements Serializable {
           sb.append("]");
         }
 
-        if (!re.getNodeId().equals(this.toTileId)) {
+        if (!re.getTileId().equals(this.toTileId)) {
           sb.append(" -> ");
         }
       }
