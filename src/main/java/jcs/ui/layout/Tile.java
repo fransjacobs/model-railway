@@ -20,7 +20,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
@@ -98,7 +97,8 @@ public interface Tile extends Shape {
    * @return All point relevant for the Object on the Canvas
    */
   Set<Point> getAllPoints();
-
+  
+  
   int getOffsetX();
 
   void setOffsetX(int offsetX);

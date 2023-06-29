@@ -63,7 +63,7 @@ import jcs.ui.layout.tiles.enums.Direction;
  * A Tile is rendered to a Buffered Image to speed up the display
  *
  */
-abstract class AbstractTile extends TileBean implements Tile {
+public abstract class AbstractTile extends TileBean implements Tile {
 
   protected int width;
   protected int height;
@@ -746,9 +746,6 @@ abstract class AbstractTile extends TileBean implements Tile {
     boolean adjacent = false;
 
     if (other != null) {
-      Point tc = getCenter();
-      Point oc = other.getCenter();
-
       Collection<Point> thisEdgePoints = getEdgePoints().values();
       Collection<Point> otherEdgePoints = other.getEdgePoints().values();
 
@@ -765,7 +762,11 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public AccessoryValue getSwitchValueTo(Tile other) {
-    return AccessoryValue.OFF;
+    if (other.isJunction()) {
+      return other.getSwitchValueTo(this);
+    } else {
+      return AccessoryValue.OFF;
+    }
   }
 
   /**

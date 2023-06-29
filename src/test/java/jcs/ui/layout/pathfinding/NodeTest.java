@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.pathfinding;
 
+import jcs.ui.layout.pathfinding.breathfirst.Node;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.Tile;

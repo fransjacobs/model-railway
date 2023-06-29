@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.pathfinding;
+package jcs.ui.layout.pathfinding.breathfirst;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
@@ -29,7 +34,7 @@ import jcs.ui.layout.Tile;
  * connection points should match on every connected tile/node
  *
  */
-public class Node {
+public class Node implements Comparable<Node> {
 
   private final Tile tile;
   private final TileType tileType;
@@ -39,7 +44,7 @@ public class Node {
   private final String suffix;
 
   private Node parent;
-  private final List<Edge> edges;
+  private final Set<Edge> edges;
 
   public Node(Tile tile) {
     this(tile, null);
@@ -50,7 +55,7 @@ public class Node {
     this.tileType = tile.getTileType();
     this.orientation = tile.getOrientation();
     this.suffix = suffix;
-    this.edges = new LinkedList<>();
+    this.edges = new HashSet<>();
   }
 
   public int getX() {
@@ -105,8 +110,16 @@ public class Node {
     this.edges.add(edge);
   }
 
-  public List<Edge> getEdges() {
+  public void addEdges(Collection<Edge> edges) {
+    this.edges.addAll(edges);
+  }
+
+  public Set<Edge> getEdges() {
     return edges;
+  }
+
+  public List<Edge> getEdgeList() {
+    return edges.stream().collect(Collectors.toList());
   }
 
   public Node getParent() {
@@ -137,16 +150,55 @@ public class Node {
   }
 
   @Override
+  public int compareTo(Node other) {
+    return this.getId().compareTo(other.getId());
+  }
+
+  public double calculateHeuristic(Node target) {
+    double a = (target.getX() - this.getX());
+    double b = (target.getY() - this.getY());
+    double d = Math.hypot(a, b);
+
+    return d;
+  }
+
+  @Override
   public String toString() {
+    return tile.getId();
+  }
+
+  public String toLogString() {
     StringBuilder sb = new StringBuilder();
     sb.append("Node: ");
     sb.append(getId());
     for (Edge edge : this.edges) {
-      sb.append("; ");
+      sb.append(" ");
       sb.append(edge.toString());
     }
     return sb.toString();
     //return "Node{" + "id=" + tile.getId() + '}';
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 73 * hash + Objects.hashCode(this.tile);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Node other = (Node) obj;
+    return Objects.equals(this.tile, other.tile);
   }
 
 }

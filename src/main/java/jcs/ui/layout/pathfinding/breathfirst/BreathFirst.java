@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.pathfinding;
+package jcs.ui.layout.pathfinding.breathfirst;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -202,7 +202,7 @@ public class BreathFirst {
       } else {
         visited.add(nodeId);
         Node node = this.graphBuilder.getGraph().get(nodeId);
-        List<Edge> edges = node.getEdges();
+        List<Edge> edges = node.getEdgeList();
 
         for (Edge edge : edges) {
           String tgt = edge.getToId() + (edge.getToSuffix() != null ? edge.getToSuffix() : "");

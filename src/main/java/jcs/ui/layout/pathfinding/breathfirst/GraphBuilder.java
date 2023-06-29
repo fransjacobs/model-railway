@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout.pathfinding;
+package jcs.ui.layout.pathfinding.breathfirst;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -59,7 +59,6 @@ public class GraphBuilder {
       //A tile has multitiple edges, depending on the direction
       //Check all sides of the tile for neighbors
       //Logger.trace("Tile " + id + " has " + tile.getNeighborPoints().size() + " neighbors" + " CP: " + tile.xyToString());
-
       for (Orientation dir : Orientation.values()) {
         Point p = tile.getNeighborPoints().get(dir);
         if (p != null && this.tilePointMap.containsKey(p)) {
@@ -76,16 +75,16 @@ public class GraphBuilder {
               //AccessoryValue neighborSwitchStatus = neighbor.getSwitchValueTo(tile);
 
               //Logger.trace("NodeSwitchStatus: " + nodeSwitchStatus + " neighborSwitchStatus: " + neighborSwitchStatus);
-              edge = new Edge(node.getId(), neighbor.getId(), dir, nodeSwitchStatus);
+              edge = new Edge(node.getId(), neighbor.getId(), nodeSwitchStatus);
             } else if (neighbor.isBlock()) {
               //Logger.debug((node.isBlock() ? " Tile is Block" : "") + " " + (neighbor.isBlock() ? " Neighbor is Block" : "") + ", id: " + neighbor.getId());
               String fromSuffix = null, toSuffix = null;
               if (neighbor.isBlock()) {
                 toSuffix = neighbor.getIdSuffix(tile);
               }
-              edge = new Edge(node.getId(), neighbor.getId(), fromSuffix, toSuffix, dir, nodeSwitchStatus);
+              edge = new Edge(node.getId(), neighbor.getId(), fromSuffix, toSuffix, nodeSwitchStatus);
             } else {
-              edge = new Edge(node.getId(), neighbor.getId(), dir,nodeSwitchStatus);
+              edge = new Edge(node.getId(), neighbor.getId(), nodeSwitchStatus);
             }
             node.addEdge(edge);
             Logger.trace(" ->" + edge);
@@ -136,14 +135,13 @@ public class GraphBuilder {
             AccessoryValue pathStatus = neighbor.getSwitchValueTo(tile);
 
             //Logger.trace("Neighbor" + (neighbor.isJunction() ? " is a Junction" : "") + ", id: " + neighbor.getId() + " is via the " + (diverging ? "Red" : "Green") + " path from " + node.getId() + " pathStatus: " + pathStatus);
-
-            edge = new Edge(node.getId(), neighbor.getId(), fromSuffix, null, ((Block) tile).getTravelDirection(suffix), pathStatus);
+            edge = new Edge(node.getId(), neighbor.getId(), fromSuffix, null, pathStatus);
 
           } else if (neighbor.isBlock()) {
             String toSuffix = neighbor.getIdSuffix(tile);
-            edge = new Edge(node.getTileId(), neighbor.getId(), fromSuffix, toSuffix, ((Block) tile).getTravelDirection(suffix));
+            edge = new Edge(node.getTileId(), neighbor.getId(), fromSuffix, toSuffix);
           } else {
-            edge = new Edge(node.getTileId(), neighbor.getId(), fromSuffix, null, ((Block) tile).getTravelDirection(suffix));
+            edge = new Edge(node.getTileId(), neighbor.getId(), fromSuffix, null);
           }
           node.addEdge(edge);
           Logger.trace(" ->" + edge);
@@ -193,15 +191,14 @@ public class GraphBuilder {
                 AccessoryValue pathStatus = neighbor.getSwitchValueTo(tile);
 
                 //Logger.trace("Neighbor" + (neighbor.isJunction() ? " is a Junction" : "") + ", id: " + neighbor.getId() + " is via the " + (diverging ? "Red" : "Green") + " path from " + node.getId() + " pathStatus: " + pathStatus);
-
-                edge = new Edge(node.getId(), neighbor.getId(), dir, pathStatus);
+                edge = new Edge(node.getId(), neighbor.getId(), pathStatus);
               } else if (neighbor.isBlock()) {
                 //A Bloc is connected via the + or - side
                 //Logger.debug((node.isBlock() ? " Tile is Block" : "") + " " + (neighbor.isBlock() ? " Neighbor is Block" : "") + ", id: " + neighbor.getId());
                 String toSuffix = neighbor.getIdSuffix(tile);
-                edge = new Edge(node.getId(), neighbor.getId(), null, toSuffix, dir);
+                edge = new Edge(node.getId(), neighbor.getId(), null, toSuffix);
               } else {
-                edge = new Edge(node.getId(), neighbor.getId(), dir);
+                edge = new Edge(node.getId(), neighbor.getId());
               }
               node.addEdge(edge);
               Logger.trace(" ->" + edge);
@@ -283,6 +280,9 @@ public class GraphBuilder {
 
     GraphBuilder gb = new GraphBuilder();
     gb.buildGraph(tiles);
+    
+    
+ 
 
     //gb.getAllBlockToBlockNodes();
   }

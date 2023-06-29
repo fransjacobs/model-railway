@@ -59,7 +59,7 @@ import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
 import jcs.ui.layout.enums.Mode;
-import jcs.ui.layout.pathfinding.BreathFirst;
+import jcs.ui.layout.pathfinding.breathfirst.BreathFirst;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
@@ -356,6 +356,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private void loadTiles() {
     boolean showValues = Mode.CONTROL.equals(this.mode);
 
+    //TODO, should come from persistence service
     Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid, this, showValues);
     Set<Point> ps = tm.keySet();
     synchronized (tiles) {
