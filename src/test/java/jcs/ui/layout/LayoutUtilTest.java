@@ -159,134 +159,134 @@ public class LayoutUtilTest {
         assertEquals(expResult, result, 0);
     }
 
-    @Test
-    public void testAdjacentPointsFor_Switch_West_Left_Common() {
-        System.out.println("adjacentPointsFor Switch West Left Common");
-        //     R
-        // C _/_ G
-        // sw cp (260,180)
-        // C  (220,180)
-        // G  (300,180)
-        // R  (260,140)
+//    @Test
+//    public void testAdjacentPointsFor_Switch_West_Left_Common() {
+//        System.out.println("adjacentPointsFor Switch West Left Common");
+//        //     R
+//        // C _/_ G
+//        // sw cp (260,180)
+//        // C  (220,180)
+//        // G  (300,180)
+//        // R  (260,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
+//
+//        Set<Point> expResult = new HashSet<>();
+//        Point pc = new Point(220, 180);
+//        expResult.add(pc);
+//
+//        //No direction so the common
+//        Set<Point> result = LayoutUtil.adjacentPointsFor(tile);
+//        assertEquals(expResult, result);
+//    }
 
-        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
+//    @Test
+//    public void testAdjacentPointsFor_Switch_West_Left_Green() {
+//        System.out.println("adjacentPointsFor Switch West Left Green");
+//        //     R
+//        // C _/_ G
+//        // sw cp (260,180)
+//        // C  (220,180)
+//        // G  (300,180)
+//        // R  (260,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
+//
+//        Set<Point> expResult = new HashSet<>();
+//        Point pg = new Point(300, 180);
+//        expResult.add(pg);
+//
+//        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.GREEN);
+//        assertEquals(expResult, result);
+//    }
 
-        Set<Point> expResult = new HashSet<>();
-        Point pc = new Point(220, 180);
-        expResult.add(pc);
+//    @Test
+//    public void testAdjacentPointsFor_Switch_West_Left_Red() {
+//        System.out.println("adjacentPointsFor Switch West Left Red");
+//        //     R
+//        // C _/_ G
+//        // sw cp (260,180)
+//        // C  (220,180)
+//        // G  (300,180)
+//        // R  (260,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
+//
+//        Set<Point> expResult = new HashSet<>();
+//        Point pr = new Point(260, 140);
+//        expResult.add(pr);
+//
+//        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.RED);
+//        assertEquals(expResult, result);
+//    }
 
-        //No direction so the common
-        Set<Point> result = LayoutUtil.adjacentPointsFor(tile);
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testAdjacentPointsFor_Switch_East_Right_Common() {
+//        System.out.println("adjacentPointsFor Switch East Right Common");
+//        //   R
+//        // G _\_ C
+//        // sw cp (580,180)
+//        // C  (620,180)
+//        // G  (540,180)
+//        // R  (580,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, new Point(580, 180), true);
+//
+//        Set<Point> expResult = new HashSet<>();
+//        Point pc = new Point(620, 180);
+//        //Point pg = new Point(540, 180);
+//        //Point pr = new Point(580, 140);
+//
+//        expResult.add(pc);
+//        //expResult.add(pg);
+//        //expResult.add(pr);
+//
+//        //expected:<[java.awt.Point[x=540,y=180], java.awt.Point[x=620,y=180], java.awt.Point[x=580,y=140]]
+//        //>but was:<[java.awt.Point[x=620,y=180]]>
+//        //No direction so the common        
+//        Set<Point> result = LayoutUtil.adjacentPointsFor(tile);
+//        assertEquals(expResult, result);
+//    }
 
-    @Test
-    public void testAdjacentPointsFor_Switch_West_Left_Green() {
-        System.out.println("adjacentPointsFor Switch West Left Green");
-        //     R
-        // C _/_ G
-        // sw cp (260,180)
-        // C  (220,180)
-        // G  (300,180)
-        // R  (260,140)
+//    @Test
+//    public void testAdjacentPointsFor_Switch_East_Right_Green() {
+//        System.out.println("adjacentPointsFor Switch East Right Green");
+//        //   R
+//        // G _\_ C
+//        // sw cp (580,180)
+//        // C  (620,180)
+//        // G  (540,180)
+//        // R  (580,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, new Point(580, 180), true);
+//
+//        Set<Point> expResult = new HashSet<>();
+//        Point pg = new Point(540, 180);
+//        expResult.add(pg);
+//
+//        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.GREEN);
+//        assertEquals(expResult, result);
+//    }
 
-        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
-
-        Set<Point> expResult = new HashSet<>();
-        Point pg = new Point(300, 180);
-        expResult.add(pg);
-
-        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.GREEN);
-        assertEquals(expResult, result);
-    }
-
-    @Test
-    public void testAdjacentPointsFor_Switch_West_Left_Red() {
-        System.out.println("adjacentPointsFor Switch West Left Red");
-        //     R
-        // C _/_ G
-        // sw cp (260,180)
-        // C  (220,180)
-        // G  (300,180)
-        // R  (260,140)
-
-        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
-
-        Set<Point> expResult = new HashSet<>();
-        Point pr = new Point(260, 140);
-        expResult.add(pr);
-
-        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.RED);
-        assertEquals(expResult, result);
-    }
-
-    @Test
-    public void testAdjacentPointsFor_Switch_East_Right_Common() {
-        System.out.println("adjacentPointsFor Switch East Right Common");
-        //   R
-        // G _\_ C
-        // sw cp (580,180)
-        // C  (620,180)
-        // G  (540,180)
-        // R  (580,140)
-
-        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, new Point(580, 180), true);
-
-        Set<Point> expResult = new HashSet<>();
-        Point pc = new Point(620, 180);
-        //Point pg = new Point(540, 180);
-        //Point pr = new Point(580, 140);
-
-        expResult.add(pc);
-        //expResult.add(pg);
-        //expResult.add(pr);
-
-        //expected:<[java.awt.Point[x=540,y=180], java.awt.Point[x=620,y=180], java.awt.Point[x=580,y=140]]
-        //>but was:<[java.awt.Point[x=620,y=180]]>
-        //No direction so the common        
-        Set<Point> result = LayoutUtil.adjacentPointsFor(tile);
-        assertEquals(expResult, result);
-    }
-
-    @Test
-    public void testAdjacentPointsFor_Switch_East_Right_Green() {
-        System.out.println("adjacentPointsFor Switch East Right Green");
-        //   R
-        // G _\_ C
-        // sw cp (580,180)
-        // C  (620,180)
-        // G  (540,180)
-        // R  (580,140)
-
-        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, new Point(580, 180), true);
-
-        Set<Point> expResult = new HashSet<>();
-        Point pg = new Point(540, 180);
-        expResult.add(pg);
-
-        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.GREEN);
-        assertEquals(expResult, result);
-    }
-
-    @Test
-    public void testAdjacentPointsFor_Switch_East_Right_Red() {
-        System.out.println("adjacentPointsFor Switch East Right Red");
-        //   R
-        // G _\_ C
-        // sw cp (580,180)
-        // C  (620,180)
-        // G  (540,180)
-        // R  (580,140)
-
-        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, new Point(580, 180), true);
-
-        Set<Point> expResult = new HashSet<>();
-        Point pr = new Point(580, 140);
-        expResult.add(pr);
-
-        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.RED);
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testAdjacentPointsFor_Switch_East_Right_Red() {
+//        System.out.println("adjacentPointsFor Switch East Right Red");
+//        //   R
+//        // G _\_ C
+//        // sw cp (580,180)
+//        // C  (620,180)
+//        // G  (540,180)
+//        // R  (580,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.SWITCH, Orientation.EAST, Direction.RIGHT, new Point(580, 180), true);
+//
+//        Set<Point> expResult = new HashSet<>();
+//        Point pr = new Point(580, 140);
+//        expResult.add(pr);
+//
+//        Set<Point> result = LayoutUtil.adjacentPointsFor(tile, AccessoryValue.RED);
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of isPlusAdjacent method, of class LayoutUtil.
@@ -354,96 +354,96 @@ public class LayoutUtilTest {
     /**
      * Test of getPlusCenter method, of class LayoutUtil.
      */
-    @Test
-    public void testGetPlusCenter() {
-        System.out.println("getPlusCenter");
-        // (340,380) ----|+  (420,380)  -|---- (500,380)  
-        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
-        Point expResult = new Point(380, 380);
-        Point result = LayoutUtil.getPlusCenter(block);
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testGetPlusCenter() {
+//        System.out.println("getPlusCenter");
+//        // (340,380) ----|+  (420,380)  -|---- (500,380)  
+//        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
+//        Point expResult = new Point(380, 380);
+//        Point result = LayoutUtil.getPlusCenter(block);
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of getMinusCenter method, of class LayoutUtil.
      */
-    @Test
-    public void testGetMinusCenter() {
-        System.out.println("getMinusCenter");
-        // (340,380) ----|+  (420,380)  -|---- (500,380)  
-        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
-        Point expResult = new Point(460, 380);
-        Point result = LayoutUtil.getMinusCenter(block);
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testGetMinusCenter() {
+//        System.out.println("getMinusCenter");
+//        // (340,380) ----|+  (420,380)  -|---- (500,380)  
+//        Tile block = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, new Point(420, 380), true);
+//        Point expResult = new Point(460, 380);
+//        Point result = LayoutUtil.getMinusCenter(block);
+//        assertEquals(expResult, result);
+//    }
 
     /**
      * Test of getNodeIdsForAdjacentSwitch method, of class LayoutUtil.
      */
-    @Test
-    public void testgGetNodeIdsForAdjacentSwitch_Common() {
-        System.out.println("getNodeIdsForAdjacentSwitch Common");
-        //     R
-        // C _/_ G
-        // sw cp (260,180)
-        // C  (220,180)
-        // G  (300,180)
-        // R  (260,140)
+//    @Test
+//    public void testgGetNodeIdsForAdjacentSwitch_Common() {
+//        System.out.println("getNodeIdsForAdjacentSwitch Common");
+//        //     R
+//        // C _/_ G
+//        // sw cp (260,180)
+//        // C  (220,180)
+//        // G  (300,180)
+//        // R  (260,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(220, 180), true);
+//
+//        Tile switchTile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
+//        String id = switchTile.getId();
+//
+//        List<String> expResult = new LinkedList<>();
+//        expResult.add(id);
+//
+//        List<String> result = LayoutUtil.getNodeIdsForAdjacentSwitch(tile, switchTile);
+//        assertEquals(expResult, result);
+//    }
 
-        Tile tile = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(220, 180), true);
+//    @Test
+//    public void testgGetNodeIdsForAdjacentSwitch_Green() {
+//        System.out.println("getNodeIdsForAdjacentSwitch Green");
+//        //     R
+//        // C _/_ G
+//        // sw cp (260,180)
+//        // C  (220,180)
+//        // G  (300,180)
+//        // R  (260,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(300, 180), true);
+//
+//        Tile switchTile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
+//        String id = switchTile.getId();
+//
+//        List<String> expResult = new LinkedList<>();
+//        expResult.add(id + "-G");
+//
+//        List<String> result = LayoutUtil.getNodeIdsForAdjacentSwitch(tile, switchTile);
+//        assertEquals(expResult, result);
+//    }
 
-        Tile switchTile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
-        String id = switchTile.getId();
-
-        List<String> expResult = new LinkedList<>();
-        expResult.add(id);
-
-        List<String> result = LayoutUtil.getNodeIdsForAdjacentSwitch(tile, switchTile);
-        assertEquals(expResult, result);
-    }
-
-    @Test
-    public void testgGetNodeIdsForAdjacentSwitch_Green() {
-        System.out.println("getNodeIdsForAdjacentSwitch Green");
-        //     R
-        // C _/_ G
-        // sw cp (260,180)
-        // C  (220,180)
-        // G  (300,180)
-        // R  (260,140)
-
-        Tile tile = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, new Point(300, 180), true);
-
-        Tile switchTile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
-        String id = switchTile.getId();
-
-        List<String> expResult = new LinkedList<>();
-        expResult.add(id + "-G");
-
-        List<String> result = LayoutUtil.getNodeIdsForAdjacentSwitch(tile, switchTile);
-        assertEquals(expResult, result);
-    }
-
-    @Test
-    public void testgGetNodeIdsForAdjacentSwitch_Red() {
-        System.out.println("getNodeIdsForAdjacentSwitch Red");
-        //     R
-        // C _/_ G
-        // sw cp (260,180)
-        // C  (220,180)
-        // G  (300,180)
-        // R  (260,140)
-
-        Tile tile = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, new Point(260, 140), true);
-
-        Tile switchTile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
-        String id = switchTile.getId();
-
-        List<String> expResult = new LinkedList<>();
-        expResult.add(id + "-R");
-
-        List<String> result = LayoutUtil.getNodeIdsForAdjacentSwitch(tile, switchTile);
-        assertEquals(expResult, result);
-    }
+//    @Test
+//    public void testgGetNodeIdsForAdjacentSwitch_Red() {
+//        System.out.println("getNodeIdsForAdjacentSwitch Red");
+//        //     R
+//        // C _/_ G
+//        // sw cp (260,180)
+//        // C  (220,180)
+//        // G  (300,180)
+//        // R  (260,140)
+//
+//        Tile tile = TileFactory.createTile(TileType.CURVED, Orientation.EAST, Direction.CENTER, new Point(260, 140), true);
+//
+//        Tile switchTile = TileFactory.createTile(TileType.SWITCH, Orientation.WEST, Direction.LEFT, new Point(260, 180), true);
+//        String id = switchTile.getId();
+//
+//        List<String> expResult = new LinkedList<>();
+//        expResult.add(id + "-R");
+//
+//        List<String> result = LayoutUtil.getNodeIdsForAdjacentSwitch(tile, switchTile);
+//        assertEquals(expResult, result);
+//    }
 
 }

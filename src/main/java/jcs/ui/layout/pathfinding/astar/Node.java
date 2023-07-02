@@ -15,27 +15,34 @@
  */
 package jcs.ui.layout.pathfinding.astar;
 
-import java.util.ArrayList;
+import java.awt.Point;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import jcs.entities.enums.AccessoryValue;
 import jcs.ui.layout.Tile;
+import jcs.ui.layout.tiles.Block;
+import org.tinylog.Logger;
 
 public class Node implements Comparable<Node> {
 
-  public static enum State {
-    UNVISITED, OPEN, CLOSED
-  };
-
+  //public static enum State {
+  // UNVISITED, OPEN, CLOSED
+  //};
   private final Tile tile;
-  private State state = State.UNVISITED;
-  //private boolean blocked = false;
 
-  private double cost; // cost
+  //private State state = State.UNVISITED;
+  private String suffix;
+  private AccessoryValue accessoryState;
+
+  private double g; // g
   private double h; // heuristic
-  // f = cost + h
+  // f = g + h
 
   private Node previousNode;
 
-  private final List<Edge> edges = new ArrayList<>();
+  private final Set<Edge> edges = new HashSet<>();
 
   public Node(Tile tile) {
     this.tile = tile;
@@ -57,7 +64,30 @@ public class Node implements Comparable<Node> {
     return this.tile.getCenterY();
   }
 
-  //A block node is a special case 
+  public int getX(String suffix) {
+    if (isBlock()) {
+      return ((Block) this.tile).getNeighborPoint(suffix).x;
+    } else {
+      return getX();
+    }
+  }
+
+  public int getY(String suffix) {
+    if (isBlock()) {
+      return ((Block) this.tile).getNeighborPoint(suffix).y;
+    } else {
+      return getY();
+    }
+  }
+
+  public Point getAltPoint(String suffix) {
+    if (isBlock()) {
+      return ((Block) this.tile).getAltPoint(suffix);
+    } else {
+      return this.tile.getCenter();
+    }
+  }
+
   public boolean isBlock() {
     return this.tile.isBlock();
   }
@@ -66,20 +96,18 @@ public class Node implements Comparable<Node> {
     return this.tile.isJunction();
   }
 
-  public State getState() {
-    return state;
+  //public State getState() {
+  //   return state;
+  // }
+  //void setState(State state) {
+  // this.state = state;
+  //}
+  public double getG() {
+    return g;
   }
 
-  void setState(State state) {
-    this.state = state;
-  }
-
-  public double getCost() {
-    return cost;
-  }
-
-  void setCost(double cost) {
-    this.cost = cost;
+  void setG(double g) {
+    this.g = g;
   }
 
   public double getH() {
@@ -98,17 +126,69 @@ public class Node implements Comparable<Node> {
     this.previousNode = previousNode;
   }
 
-  public List<Edge> getEdges() {
-    return edges;
+  public String getSuffix() {
+    return suffix;
+  }
+
+  public void setSuffix(String suffix) {
+    this.suffix = suffix;
+  }
+
+  public AccessoryValue getAccessoryState() {
+    return accessoryState;
+  }
+
+  public void setAccessoryState(AccessoryValue accessoryState) {
+    this.accessoryState = accessoryState;
+  }
+
+  public Set<Edge> getEdges() {
+    return getEdges(null);
+  }
+
+  public Set<Edge> getEdges(String suffix) {
+    if (suffix != null) {
+      return edges.stream().filter(e -> (suffix.equals(e.getFromSuffix()) || suffix.equals(e.getToSuffix()))).collect(Collectors.toSet());
+    } else {
+      return edges;
+    }
   }
 
   public void addEdge(Edge edge) {
     edges.add(edge);
   }
 
-  // f(n) = cost(n) + h(n) -> cost + heuristic
+  // f(n) = g(n) + h(n) -> g + heuristic
   public double getF() {
-    return cost + h;
+    return g + h;
+  }
+
+  AccessoryValue getAccessoryStatus(Node from, Node to) {
+    if (from == null || to == null) {
+      return AccessoryValue.OFF;
+    }
+    if (from.getPreviousNode() != null && from.getTile().isJunction()) {
+      boolean isParentOnSwitchSide = from.getTile().isSwitchSide(from.getPreviousNode().getTile());
+      boolean isParentOnStraightSide = from.getTile().isStraightSide(from.getPreviousNode().getTile());
+      boolean isParentOnDivergingSide = from.getTile().isDivergingSide(from.getPreviousNode().getTile());
+
+      boolean isToOnSwitchSide = from.getTile().isSwitchSide(to.getTile());
+      boolean isToOnStraightSide = from.getTile().isStraightSide(to.getTile());
+      boolean isToOnDivergingSide = from.getTile().isDivergingSide(to.getTile());
+
+      if (isParentOnSwitchSide && (isToOnDivergingSide || isToOnStraightSide)) {
+        return (isToOnDivergingSide ? AccessoryValue.RED : AccessoryValue.GREEN);
+      } else if (isParentOnStraightSide && isToOnSwitchSide) {
+        return AccessoryValue.GREEN;
+      } else if (isParentOnDivergingSide && isToOnSwitchSide) {
+        return AccessoryValue.RED;
+      } else {
+        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is NOT possible");
+        return AccessoryValue.OFF;
+      }
+    } else {
+      return AccessoryValue.OFF;
+    }
   }
 
   public void retrievePath(List<Node> path) {
@@ -116,6 +196,8 @@ public class Node implements Comparable<Node> {
       previousNode.retrievePath(path);
     }
     path.add(this);
+    Logger.trace("Prev: "+(previousNode!=null?previousNode.getId():"<>")+" This: "+this.getId());
+
   }
 
   @Override
@@ -126,8 +208,9 @@ public class Node implements Comparable<Node> {
 
   @Override
   public String toString() {
-    //return "Node{" + "id=" + getId() + ", state=" + state + ", cost=" + cost + ", h=" + h + ", previousNode=" + (previousNode!=null?previousNode.getId():"") + ", edges=" + edges + "}";
-    return "Node{" + "id=" + getId() + ", state=" + state + ", cost=" + cost + ", h=" + h + ", previousNode=" + (previousNode != null ? previousNode.getId() : "") + "}";
+    //return "Node{" + "id=" + getId() + ", state=" + state + ", g=" + g + ", h=" + h + ", previousNode=" + (previousNode!=null?previousNode.getId():"") + ", edges=" + edges + "}";
+    //return "Node{" + "id=" + getId() + ", state=" + state + ", cost=" + g + ", h=" + h + ", previousNode=" + (previousNode != null ? previousNode.getId() : "") + "}";
+    return "Node{" + "id=" + getId() + ", cost=" + g + ", h=" + h + ", previousNode=" + (previousNode != null ? previousNode.getId() : "") + "}";
   }
 
 }

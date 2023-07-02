@@ -20,7 +20,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -103,6 +102,34 @@ public class Block extends AbstractTile implements Tile {
     }
 
     return alternatives;
+  }
+
+  public Point getAltPoint(String suffix) {
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+    if ("+".equals(suffix)) {
+      return switch (this.getOrientation()) {
+        case WEST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
+      };
+    } else {
+      return switch (this.getOrientation()) {
+        case EAST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
+      };
+    }
   }
 
   @Override

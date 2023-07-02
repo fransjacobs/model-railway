@@ -18,7 +18,10 @@ package jcs.ui.layout.pathfinding.astar;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import jcs.entities.RouteBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
@@ -36,9 +39,11 @@ public class GraphBuilder {
   private final TileCache tileCache;
 
   private final Graph<Tile> graph;
+  private final Map<String, RouteBean> routes;
 
   public GraphBuilder() {
     this.tileCache = new TileCache();
+    this.routes = new HashMap<>();
 
     Heuristic heuristic = new TrackTraveler();
     this.graph = new Graph<>(heuristic);
@@ -48,6 +53,12 @@ public class GraphBuilder {
   public double manhattanDistance(Node from, Node to) {
     int dx = Math.abs(to.getX() - from.getX());
     int dy = Math.abs(to.getY() - from.getY());
+    return dx + dy;
+  }
+
+  public double manhattanDistance(Point from, Point to) {
+    int dx = Math.abs(to.x - from.x);
+    int dy = Math.abs(to.y - from.y);
     return dx + dy;
   }
 
@@ -86,35 +97,92 @@ public class GraphBuilder {
     return fromToList;
   }
 
+  private String pathToString(List<Node> path) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    sb.append(path.get(0).getId());
+    if (path.get(0).isBlock()) {
+      sb.append(path.get(0).getSuffix());
+    }
+    sb.append("]->[");
+    int last = path.size() - 1;
+    sb.append(path.get(last).getId());
+    if (path.get(last).isBlock()) {
+      sb.append(path.get(last).getSuffix());
+    }
+    sb.append("]: ");
+
+    for (int i = 0; i < path.size(); i++) {
+      Node n = path.get(i);
+      sb.append(n.getId());
+      if (n.isBlock()) {
+        sb.append(n.getSuffix());
+        sb.append("[");
+        sb.append(n.getId());
+        sb.append("]");
+      }
+      if (n.isJunction()) {
+        sb.append("[");
+        sb.append(n.getAccessoryState());
+        sb.append("]");
+      }
+      if (i + 1 < path.size()) {
+        sb.append(" -> ");
+      }
+    }
+    return sb.toString();
+  }
+
   public void routeAll() {
-    //this.routes.clear();
+    this.routes.clear();
     List<List<Node>> blockToBlockList = getAllBlockToBlockNodes();
-    Logger.trace("Try to route " + blockToBlockList.size() + " Possible block to block routes");
+    Logger.trace("Try to route " + blockToBlockList.size() * 2 * 2 + " Possible block to block routes");
+    Logger.trace("=============================================================================");
+
+    List<String> paths = new ArrayList<>();
 
     for (List<Node> fromTo : blockToBlockList) {
-      //List<Node> fromTo = blockToBlockList.get(0);
-
       Node from = fromTo.get(0);
       Node to = fromTo.get(1);
+      Set<Edge> fromEdges = from.getEdges();
+      Set<Edge> toEdges = from.getEdges();
 
-      //if ("bk-1+".equals(from.getId()) && "bk-2+".equals(to.getId())) {
-//        if ("bk-3-".equals(from.getId()) && "bk-1+".equals(to.getId()) ) {
-//          if ("bk-2+".equals(from.getId()) && "bk-3-".equals(to.getId()) ||
-//              "bk-3-".equals(from.getId()) && "bk-2+".equals(to.getId()) ||
-//              "bk-3-".equals(from.getId()) && "bk-1+".equals(to.getId()) ||
-//              "bk-1+".equals(from.getId()) && "bk-3-".equals(to.getId())   ) {
-      //List<Node> route = search(from, to);
-      Logger.trace("From " + from.getId() + " -> " + to.getId());
+      for (Edge fromEdge : fromEdges) {
+        if (fromEdge.getFrom().isBlock()) {
+          String fromSuffix = fromEdge.getFromSuffix();
+          for (Edge toEdge : toEdges) {
+            if (toEdge.getFrom().isBlock()) {
+              String toSuffix = toEdge.getFromSuffix();
 
-//        if (route != null) {
-//          Logger.trace("Found a route from " + from.getId() + " to " + to.getId() + ": " + pathToString(from, route));
-//
-//          RouteBean routeBean = createRouteFromPath(from, route);
-//          this.routes.put(routeBean.getId(), routeBean);
-//        }
-//        }
+              String fid = from.getId() + fromSuffix;
+              String tid = to.getId() + toSuffix;
+
+              //[bk-3-]->[bk-1+]
+              //[bk-3-]->[bk-2+]
+              if (("bk-3-".equals(fid) && "bk-2+".equals(tid))
+                      || ("bk-3-".equals(fid) && "bk-1+".equals(tid))) {
+
+                List<Node> path = graph.findPath(from, fromSuffix, to, toSuffix);
+
+                if (path.isEmpty()) {
+                  Logger.debug("No Path from " + fid + " to " + tid);
+                } else {
+                  paths.add(pathToString(path));
+                  //Logger.debug(pathToString(path));
+                }
+
+              }
+            }
+          }
+        }
+      }
     }
-    //Logger.trace("Found " + routes.size() + " routes");
+
+    Logger.trace("Found " + paths.size() + " routes");
+
+    for (String p : paths) {
+      Logger.trace(p);
+    }
 
   }
 
@@ -132,43 +200,47 @@ public class GraphBuilder {
     //Create the links or connection between the Nodes
     for (Node node : graph.getNodes()) {
       Collection<Point> neighborPoints = node.getTile().getNeighborPoints().values();
-      Logger.trace("Current node: " + node.getId() + " has " + neighborPoints.size() + " neighbors " + (node.isBlock() ? "Block" : "") + (node.isJunction() ? "Junction" : ""));
+      Logger.trace("Node: " + node.getId() + " has " + neighborPoints.size() + " neighbors " + (node.isBlock() ? "[Block]" : "") + (node.isJunction() ? "[Junction]" : "") + ":");
 
       for (Point p : neighborPoints) {
         if (tileCache.contains(p)) {
           Node neighbor = graph.getNode(tileCache.getTileId(p));
-          //Logger.trace("Neighbor: " + neighbor.getId());
           if (node.getTile().isAdjacent(neighbor.getTile())) {
-            //Calculate the manhatten distance:
-            double cost = this.manhattanDistance(node, neighbor);
-
-            String fromSuffix = null;
+            double distance;
             if (node.isBlock()) {
-              fromSuffix = node.getTile().getIdSuffix(neighbor.getTile());
+              String fromSuffix = node.getTile().getIdSuffix(neighbor.getTile());
+              Point altPoint = node.getAltPoint(fromSuffix);
+              distance = manhattanDistance(altPoint, neighbor.getAltPoint(null));
+            } else {
+              if (neighbor.isBlock()) {
+                String toSuffix = neighbor.getTile().getIdSuffix(node.getTile());
+                Point altPoint = neighbor.getAltPoint(toSuffix);
+                distance = manhattanDistance(altPoint, node.getAltPoint(null));
+              } else {
+                distance = manhattanDistance(node, neighbor);
+              }
             }
-            String toSuffix = null;
-            if (neighbor.isBlock()) {
-              toSuffix = neighbor.getTile().getIdSuffix(node.getTile());
-            }
+            //Logger.trace("Neighbor: " + neighbor.getId() + " Distance: " + distance);
 
-            Edge edge = new Edge(node, fromSuffix, neighbor, toSuffix, cost);
-            Edge oppositeEdge = new Edge(neighbor, toSuffix, node, fromSuffix, cost);
-            AccessoryValue fromPathStatus = null;
-            if (node.isJunction()) {
-              fromPathStatus = node.getTile().getSwitchValueTo(neighbor.getTile());
-              edge.setAccessoryState(fromPathStatus);
-            }
-            AccessoryValue toPathStatus = null;
-            if (neighbor.isJunction()) {
-              toPathStatus = neighbor.getTile().getSwitchValueTo(node.getTile());
-              oppositeEdge.setAccessoryState(toPathStatus);
-            }
-
-            node.addEdge(edge);
+            Edge edge = this.graph.link(node, neighbor, distance);
             Logger.trace(edge);
 
-            neighbor.addEdge(oppositeEdge);
-            Logger.trace(oppositeEdge);
+//routeAll(): [bk-2+]->[bk-3-]: bk-2+[bk-2] -> se-3 -> st-4 -> ct-1 -> sw-2[RED] -> st-5 -> ct-4 -> st-11 -> st-12 -> st-13 -> st-14 -> ct-6 -> st-20 -> st-19 -> st-18 -> se-6 -> bk-3-[bk-3]
+//     Route: [bk-2+]->[bk-3-]: bk-2+[bk-2] -> se-3 -> st-4 -> ct-1 -> sw-2[RED] -> st-5 -> ct-4 -> st-11 -> st-12 -> st-13 -> st-14 -> ct-6 -> st-20 -> st-19 -> st-18 -> se-6 -> bk-3-[bk-3]
+//routeAll(): [bk-2-]->[bk-3+]: bk-2-[bk-2] -> se-4 -> st-3 -> ct-2 -> sw-1[RED] -> st-6 -> ct-3 -> st-7 -> st-8 -> st-9 -> st-10 -> ct-5 -> st-15 -> st-16 -> st-17 -> se-5 -> bk-3+[bk-3]
+//     Route: [bk-2-]->[bk-3+]: bk-2-[bk-2] -> se-4 -> st-3 -> ct-2 -> sw-1[RED] -> st-6 -> ct-3 -> st-7 -> st-8 -> st-9 -> st-10 -> ct-5 -> st-15 -> st-16 -> st-17 -> se-5 -> bk-3+[bk-3]
+//--routeAll(): [bk-3-]->[bk-2+]: bk-3-[bk-3] -> se-6 -> st-18 -> st-19 -> st-20 -> ct-6 -> st-14 -> st-13 -> st-12 -> st-11 -> ct-4 -> st-5 -> sw-2[GREEN] -> ct-1 -> st-4 -> se-3 -> bk-2+[bk-2]
+//       Route: [bk-3-]->[bk-2+]: bk-3-[bk-3] -> se-6 -> st-18 -> st-19 -> st-20 -> ct-6 -> st-14 -> st-13 -> st-12 -> st-11 -> ct-4 -> st-5 -> sw-2[RED] -> ct-1 -> st-4 -> se-3 -> bk-2+[bk-2]
+//routeAll(): [bk-3+]->[bk-2-]: bk-3+[bk-3] -> se-5 -> st-17 -> st-16 -> st-15 -> ct-5 -> st-10 -> st-9 -> st-8 -> st-7 -> ct-3 -> st-6 -> sw-1[GREEN] -> ct-2 -> st-3 -> se-4 -> bk-2-[bk-2]
+//     Route: [bk-3+]->[bk-2-]: bk-3+[bk-3] -> se-5 -> st-17 -> st-16 -> st-15 -> ct-5 -> st-10 -> st-9 -> st-8 -> st-7 -> ct-3 -> st-6 -> sw-1[GREEN] -> ct-2 -> st-3 -> se-4 -> bk-2-[bk-2]
+//routeAll(): [bk-3-]->[bk-1+]: bk-3-[bk-3] -> se-6 -> st-18 -> st-19 -> st-20 -> ct-6 -> st-14 -> st-13 -> st-12 -> st-11 -> ct-4 -> st-5 -> sw-2[GREEN] -> st-2 -> se-2 -> bk-1+[bk-1]
+//----Route: [bk-3-]->[bk-1+]: bk-3-[bk-3] -> se-6 -> st-18 -> st-19 -> st-20 -> ct-6 -> st-14 -> st-13 -> st-12 -> st-11 -> ct-4 -> st-5 -> sw-2[RED] -> st-2 -> se-2 -> bk-1+[bk-1]
+//routeAll(): [bk-3+]->[bk-1-]: bk-3+[bk-3] -> se-5 -> st-17 -> st-16 -> st-15 -> ct-5 -> st-10 -> st-9 -> st-8 -> st-7 -> ct-3 -> st-6 -> sw-1[GREEN] -> st-1 -> se-1 -> bk-1-[bk-1]
+//     Route: [bk-3+]->[bk-1-]: bk-3+[bk-3] -> se-5 -> st-17 -> st-16 -> st-15 -> ct-5 -> st-10 -> st-9 -> st-8 -> st-7 -> ct-3 -> st-6 -> sw-1[GREEN] -> st-1 -> se-1 -> bk-1-[bk-1]
+//routeAll(): [bk-1-]->[bk-3+]: bk-1-[bk-1] -> se-1 -> st-1 -> sw-1[GREEN] -> st-6 -> ct-3 -> st-7 -> st-8 -> st-9 -> st-10 -> ct-5 -> st-15 -> st-16 -> st-17 -> se-5 -> bk-3+[bk-3]
+//     Route: [bk-1-]->[bk-3+]: bk-1-[bk-1] -> se-1 -> st-1 -> sw-1[GREEN] -> st-6 -> ct-3 -> st-7 -> st-8 -> st-9 -> st-10 -> ct-5 -> st-15 -> st-16 -> st-17 -> se-5 -> bk-3+[bk-3]
+//routeAll(): [bk-1+]->[bk-3-]: bk-1+[bk-1] -> se-2 -> st-2 -> sw-2[GREEN] -> st-5 -> ct-4 -> st-11 -> st-12 -> st-13 -> st-14 -> ct-6 -> st-20 -> st-19 -> st-18 -> se-6 -> bk-3-[bk-3]
+//     Route: [bk-1+]->[bk-3-]: bk-1+[bk-1] -> se-2 -> st-2 -> sw-2[GREEN] -> st-5 -> ct-4 -> st-11 -> st-12 -> st-13 -> st-14 -> ct-6 -> st-20 -> st-19 -> st-18 -> se-6 -> bk-3-[bk-3]
           }
         }
       }
@@ -181,15 +253,10 @@ public class GraphBuilder {
     GraphBuilder gb = new GraphBuilder();
     gb.buildGraph(tiles);
 
-    List<Node> blockList = gb.graph.getBlockNodes();
-    for (Node b : blockList) {
-      Logger.trace(b.getId());
-    }
-
-    
+//    List<Node> blockList = gb.graph.getBlockNodes();
+//    for (Node b : blockList) {
+//      Logger.trace(b.getId());
+//    }
     gb.routeAll();
-    
-    //gb.getAllBlockToBlockNodes();
   }
-
 }

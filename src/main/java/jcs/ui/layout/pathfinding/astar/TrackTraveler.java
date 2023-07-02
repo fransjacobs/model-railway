@@ -24,8 +24,7 @@ import org.tinylog.Logger;
  */
 public class TrackTraveler implements Heuristic {
 
-  
-    boolean canTravelTo(Node from, Node to) {
+  boolean canTravelTo(Node from, Node to) {
     if (from == null || to == null) {
       return false;
     }
@@ -63,8 +62,8 @@ public class TrackTraveler implements Heuristic {
       return from.getTile().isAdjacent(to.getTile());
     }
   }
-  
-   AccessoryValue getAccessoryStatus(Node from, Node to) {
+
+  AccessoryValue getAccessoryStatus(Node from, Node to) {
     if (from == null || to == null) {
       return AccessoryValue.OFF;
     }
@@ -92,12 +91,19 @@ public class TrackTraveler implements Heuristic {
     }
   }
 
-  
-  
   @Override
-  public double calculate(Node from, Node current, Node to) {
+  public double calculate(Node current, Node to) {
+
+    boolean canTravel = this.canTravelTo(current, to);
+
+    AccessoryValue accessoryStatus = this.getAccessoryStatus(current, to);
+
+    int dx = Math.abs(to.getX() - current.getX());
+    int dy = Math.abs(to.getY() - current.getY());
     
-    return 0;
+    Logger.trace("canTravel: "+canTravel+" accessoryStatus: "+accessoryStatus);
+
+    return dx + dy + (canTravel ? 0D : Double.MAX_VALUE);
   }
-  
+
 }

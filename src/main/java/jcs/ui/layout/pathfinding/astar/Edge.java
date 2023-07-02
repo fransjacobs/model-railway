@@ -19,7 +19,7 @@ import jcs.entities.enums.AccessoryValue;
 
 public class Edge<T> {
 
-  private double cost;
+  private double distance;
   private final Node from;
   private String fromSuffix;
   private final Node to;
@@ -27,31 +27,17 @@ public class Edge<T> {
   private AccessoryValue accessoryState;
 
   public Edge(Node from, Node to, double cost) {
-    this(from, null, to, null, cost);
-  }
-
-  public Edge(Node from, String fromSuffix, Node to, double cost) {
-    this(from, fromSuffix, to, null, cost);
-  }
-
-  public Edge(Node from, Node to, String toSuffix, double cost) {
-    this(from, null, to, toSuffix, cost);
-  }
-
-  public Edge(Node from, String fromSuffix, Node to, String toSuffix, double cost) {
     this.from = from;
-    this.fromSuffix = fromSuffix;
     this.to = to;
-    this.toSuffix = toSuffix;
-    this.cost = cost;
+    this.distance = cost;
   }
 
-  public double getCost() {
-    return cost;
+  public double getDistance() {
+    return distance;
   }
 
-  public void setCost(double cost) {
-    this.cost = cost;
+  public void setDistance(double distance) {
+    this.distance = distance;
   }
 
   public Node getFrom() {
@@ -62,12 +48,20 @@ public class Edge<T> {
     return fromSuffix;
   }
 
+  public void setFromSuffix(String fromSuffix) {
+    this.fromSuffix = fromSuffix;
+  }
+
   public Node getTo() {
     return to;
   }
 
   public String getToSuffix() {
     return toSuffix;
+  }
+
+  public void setToSuffix(String toSuffix) {
+    this.toSuffix = toSuffix;
   }
 
   public AccessoryValue getAccessoryState() {
@@ -89,8 +83,8 @@ public class Edge<T> {
 
   @Override
   public String toString() {
-    //return "Edge{" + "cost=" + cost + ", from=" + from + ", to=" + to + (accessoryState != null ? (accessoryState != AccessoryValue.OFF ? accessoryState : "") : "") + "}";
-    return "Edge{from=" + from.getId() + (fromSuffix != null ? fromSuffix : "") + ", to=" + to.getId() + (toSuffix != null ? toSuffix : "") + " cost=" + cost + (accessoryState != null ? (accessoryState != AccessoryValue.OFF ? " via: " + accessoryState : "") : "") + "}";
+    //return "Edge{" + "distance=" + distance + ", from=" + from + ", to=" + to + (accessoryState != null ? (accessoryState != AccessoryValue.OFF ? accessoryState : "") : "") + "}";
+    return "Edge{from=" + from.getId() + (fromSuffix != null ? fromSuffix : "") + ", to=" + to.getId() + (toSuffix != null ? toSuffix : "") + " distance=" + distance + (accessoryState != null ? (accessoryState != AccessoryValue.OFF ? " via: " + accessoryState : "") : "") + "}";
   }
 
 }
