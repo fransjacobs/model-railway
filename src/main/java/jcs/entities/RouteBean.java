@@ -241,7 +241,7 @@ public class RouteBean implements Serializable {
 
   @Override
   public String toString() {
-    return "Route{" + "id=" + id + ", fromTile=" + fromTileId + fromSuffix + ", toTile=" + toTileId + toSuffix + ", color=" + color + ", locked=" + locked + "}";
+    return "Route{" + "id=" + id + ", fromTile=" + fromTileId + "["+fromSuffix + "], toTile=" + toTileId +"["+ toSuffix + "], color=" + color + ", locked=" + locked + "}";
   }
 
   public String toLogString() {

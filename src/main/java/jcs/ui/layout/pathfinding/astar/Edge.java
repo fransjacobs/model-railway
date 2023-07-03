@@ -15,8 +15,6 @@
  */
 package jcs.ui.layout.pathfinding.astar;
 
-import jcs.entities.enums.AccessoryValue;
-
 public class Edge<T> {
 
   private double distance;
@@ -24,12 +22,11 @@ public class Edge<T> {
   private String fromSuffix;
   private final Node to;
   private String toSuffix;
-  private AccessoryValue accessoryState;
 
-  public Edge(Node from, Node to, double cost) {
+  public Edge(Node from, Node to, double distance) {
     this.from = from;
     this.to = to;
-    this.distance = cost;
+    this.distance = distance;
   }
 
   public double getDistance() {
@@ -64,15 +61,7 @@ public class Edge<T> {
     this.toSuffix = toSuffix;
   }
 
-  public AccessoryValue getAccessoryState() {
-    return accessoryState;
-  }
-
-  public void setAccessoryState(AccessoryValue accessoryState) {
-    this.accessoryState = accessoryState;
-  }
-
-  public Node getOppositeNode(Node thisNode) {
+  public Node getOpposite(Node thisNode) {
     if (thisNode == from) {
       return to;
     } else if (thisNode == to) {
@@ -83,8 +72,7 @@ public class Edge<T> {
 
   @Override
   public String toString() {
-    //return "Edge{" + "distance=" + distance + ", from=" + from + ", to=" + to + (accessoryState != null ? (accessoryState != AccessoryValue.OFF ? accessoryState : "") : "") + "}";
-    return "Edge{from=" + from.getId() + (fromSuffix != null ? fromSuffix : "") + ", to=" + to.getId() + (toSuffix != null ? toSuffix : "") + " distance=" + distance + (accessoryState != null ? (accessoryState != AccessoryValue.OFF ? " via: " + accessoryState : "") : "") + "}";
+    return "Edge from:" + from.getId() + (fromSuffix != null ? fromSuffix : "") + ", to: " + to.getId() + (toSuffix != null ? toSuffix : "") + " distance: " + distance;
   }
 
 }

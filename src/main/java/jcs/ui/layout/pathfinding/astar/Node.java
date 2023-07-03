@@ -27,21 +27,14 @@ import org.tinylog.Logger;
 
 public class Node implements Comparable<Node> {
 
-  //public static enum State {
-  // UNVISITED, OPEN, CLOSED
-  //};
   private final Tile tile;
-
-  //private State state = State.UNVISITED;
   private String suffix;
   private AccessoryValue accessoryState;
 
-  private double g; // g
-  private double h; // heuristic
-  // f = g + h
+  private double g;
+  private double h;
 
   private Node previousNode;
-
   private final Set<Edge> edges = new HashSet<>();
 
   public Node(Tile tile) {
@@ -96,12 +89,6 @@ public class Node implements Comparable<Node> {
     return this.tile.isJunction();
   }
 
-  //public State getState() {
-  //   return state;
-  // }
-  //void setState(State state) {
-  // this.state = state;
-  //}
   public double getG() {
     return g;
   }
@@ -158,7 +145,6 @@ public class Node implements Comparable<Node> {
     edges.add(edge);
   }
 
-  // f(n) = g(n) + h(n) -> g + heuristic
   public double getF() {
     return g + h;
   }
@@ -195,9 +181,11 @@ public class Node implements Comparable<Node> {
     if (previousNode != null) {
       previousNode.retrievePath(path);
     }
-    path.add(this);
-    Logger.trace("Prev: "+(previousNode!=null?previousNode.getId():"<>")+" This: "+this.getId());
 
+    path.add(this);
+    if (previousNode != null && previousNode.isJunction()) {
+      previousNode.accessoryState = this.getAccessoryStatus(previousNode, this);
+    }
   }
 
   @Override
@@ -208,9 +196,7 @@ public class Node implements Comparable<Node> {
 
   @Override
   public String toString() {
-    //return "Node{" + "id=" + getId() + ", state=" + state + ", g=" + g + ", h=" + h + ", previousNode=" + (previousNode!=null?previousNode.getId():"") + ", edges=" + edges + "}";
-    //return "Node{" + "id=" + getId() + ", state=" + state + ", cost=" + g + ", h=" + h + ", previousNode=" + (previousNode != null ? previousNode.getId() : "") + "}";
-    return "Node{" + "id=" + getId() + ", cost=" + g + ", h=" + h + ", previousNode=" + (previousNode != null ? previousNode.getId() : "") + "}";
+    return "Node id: " + getId() + ", g: " + g + ", h: " + h + ", prevId: " + (previousNode != null ? previousNode.getId() : "") + (accessoryState != null ? " [" + accessoryState + "]" : "");
   }
 
 }
