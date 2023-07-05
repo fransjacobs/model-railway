@@ -15,35 +15,31 @@ public class Graph {
 
   private final Map<String, Node> nodes;
 
-  public Graph() {
+  Graph() {
     nodes = new HashMap<>();
   }
 
-  public int size() {
+  int size() {
     return this.nodes.size();
   }
 
-  public void addNode(Node node) {
+  void addNode(Node node) {
     nodes.put(node.getId(), node);
   }
 
-  public Node getNode(String id) {
+  Node getNode(String id) {
     return nodes.get(id);
   }
 
-  public boolean contains(String id) {
-    return nodes.containsKey(id);
-  }
-
-  public void clear() {
+  void clear() {
     this.nodes.clear();
   }
 
-  public List<Node> getNodes() {
+  List<Node> getNodes() {
     return nodes.values().stream().collect(Collectors.toList());
   }
 
-  public List<Node> getBlockNodes() {
+  List<Node> getBlockNodes() {
     return nodes.values().stream().filter(n -> n.isBlock()).collect(Collectors.toList());
   }
 
@@ -84,33 +80,25 @@ public class Graph {
     }
   }
 
-  public double calculateHeuristic(Node from, Node to) {
+  double calculateHeuristic(Node from, Node to) {
     boolean canTravel = this.canTravelTo(from, to);
     double h = manhattanDistance(from, to) + (canTravel ? 0D : Double.MAX_VALUE);
-    //Logger.debug(from.getId() + " -> " + to.getId() + " H: " + h);
     return h;
   }
 
-  public static double manhattanDistance(Node from, Node to) {
+  static double manhattanDistance(Node from, Node to) {
     int dx = Math.abs(to.getX() - from.getX());
     int dy = Math.abs(to.getY() - from.getY());
     return dx + dy;
   }
 
-  public static double manhattanDistance(Point from, Point to) {
+  static double manhattanDistance(Point from, Point to) {
     int dx = Math.abs(to.x - from.x);
     int dy = Math.abs(to.y - from.y);
     return dx + dy;
   }
 
-  public static double linearDistance(Node from, Node to) {
-    int dx = to.getX() - from.getX();
-    int dy = to.getY() - from.getY();
-
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  public Edge link(Node from, Node to, double distance) {
+  Edge link(Node from, Node to, double distance) {
     Edge edge = new Edge(from, to, distance);
     from.addEdge(edge);
     to.addEdge(edge);
@@ -127,7 +115,7 @@ public class Graph {
     return edge;
   }
 
-  public List<Node> findPath(Node start, String startSuffix, Node destination, String destSuffix) {
+  List<Node> findPath(Node start, String startSuffix, Node destination, String destSuffix) {
     Logger.trace("Searching for a route from: " + start.getId() + startSuffix + " to: " + destination.getId() + destSuffix);
     List<Node> path = new ArrayList<>();
 

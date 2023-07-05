@@ -61,6 +61,20 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
         Logger.debug("Inserted Test data...");
     }
 
+
+    public void insertSimpleLayoutTestData() {
+        URL url = PersistenceTestHelper.class.getClassLoader().getResource("simple_layout_tiles.sql");
+        String f = url.getFile();
+
+        executeSQLScript(f);
+        
+        H2DatabaseUtil.setProperties(true);
+
+        Logger.debug("Inserted Simple Layout Test data...");
+    }
+
+
+
     public static void main(String[] a) {
         //createDatabaseUsers(true);
 
@@ -68,6 +82,8 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
         PersistenceTestHelper pth = getInstance();
 
         pth.insertTestData();
+        
+        pth.insertSimpleLayoutTestData();
 
         //recreateTest();
     }

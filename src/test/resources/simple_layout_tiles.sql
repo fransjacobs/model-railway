@@ -1,3 +1,8 @@
+delete from route_elements;
+delete from routes;
+delete from tiles;
+commit;
+
 INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('st-3','Straight','East','Center',300,140,NULL,NULL,NULL),
 	 ('ct-1','Curved','South','Center',580,140,NULL,NULL,NULL),
@@ -39,3 +44,6 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('bk-1','Block','East','Center',420,180,NULL,NULL,NULL),
 	 ('st-16','Straight','West','Center',260,380,NULL,NULL,NULL),
 	 ('ct-2','Curved','East','Center',260,140,NULL,NULL,NULL);
+
+
+commit;

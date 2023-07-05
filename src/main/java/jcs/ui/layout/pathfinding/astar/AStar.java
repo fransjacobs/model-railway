@@ -23,16 +23,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
-import jcs.entities.enums.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.Tile;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
- * Build a Graph from the Layout Tiles
+ * Build a Graph from Layout and calculate the paths from Block to block
  *
  * @author frans
  */
@@ -77,7 +77,10 @@ public class AStar {
     return fromToList;
   }
 
-  private String pathToString(List<Node> path) {
+  public String pathToString(List<Node> path) {
+    if (path.isEmpty()) {
+      return "";
+    }
     StringBuilder sb = new StringBuilder();
     sb.append("[");
     sb.append(path.get(0).getId());
@@ -154,13 +157,21 @@ public class AStar {
     return this.routes.get(id);
   }
 
-  public List<RouteBean> getRoutes() {
-    List<RouteBean> rl = new LinkedList<>();
-    rl.addAll(this.routes.values());
-    return rl;
+  public Map<String, RouteBean> getRoutes() {
+    return this.routes;
   }
 
-  public void routeAll() {
+  public List<Node> findPath(String fromNodeId, String fromSuffix, String toNodeId, String toSuffix) {
+    Node from = this.graph.getNode(fromNodeId);
+    Node to = this.graph.getNode(toNodeId);
+    return findPath(from, fromSuffix, to, toSuffix);
+  }
+
+  public List<Node> findPath(Node from, String fromSuffix, Node to, String toSuffix) {
+    return graph.findPath(from, fromSuffix, to, toSuffix);
+  }
+
+  public List<RouteBean> routeAll() {
     this.routes.clear();
     List<List<Node>> blockToBlockList = getAllBlockToBlockNodes();
     Logger.trace("Try to route " + blockToBlockList.size() * 2 * 2 + " Possible block to block routes");
@@ -185,7 +196,7 @@ public class AStar {
               //if (("bk-3-".equals(fid) && "bk-2+".equals(tid))
               //        || ("bk-3-".equals(fid) && "bk-1+".equals(tid))) {
               //if ("bk-2-".equals(fid) && "bk-1-".equals(tid)) {
-              List<Node> path = graph.findPath(from, fromSuffix, to, toSuffix);
+              List<Node> path = findPath(from, fromSuffix, to, toSuffix);
 
               if (path.isEmpty()) {
                 Logger.debug("No Path from " + fid + " to " + tid);
@@ -202,10 +213,12 @@ public class AStar {
     }
 
     Logger.trace("Found " + routes.size() + " routes");
+    return this.routes.values().stream().collect(Collectors.toList());
   }
 
   public void buildGraph(List<Tile> tiles) {
     this.tileCache.reload(tiles);
+    this.graph.clear();
 
     //Every Tile becomes a node
     for (Tile tile : tiles) {
@@ -244,6 +257,10 @@ public class AStar {
         }
       }
     }
+  }
+
+  public List<Node> getNodes() {
+    return this.graph.getNodes();
   }
 
   public static void main(String[] a) {
