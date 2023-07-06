@@ -67,10 +67,13 @@ public final class TileImageCache {
     Orientation orientation = tile.getOrientation();
     Direction direction = tile.getDirection();
     AccessoryValue accessoryValue;
+    AccessoryValue routeValue;
     if (tile instanceof Switch) {
       accessoryValue = ((Switch) tile).getAccessoryValue();
+      routeValue = ((Switch) tile).getRouteValue();
     } else {
       accessoryValue = AccessoryValue.OFF;
+      routeValue = AccessoryValue.OFF;
     }
     SignalType signalType;
     SignalValue signalValue;
@@ -100,6 +103,8 @@ public final class TileImageCache {
     sb.append(direction.getDirection());
     sb.append("~");
     sb.append(accessoryValue.getValue());
+    sb.append("~");
+    sb.append(routeValue.getValue());
     sb.append("~");
     sb.append(signalType.getSignalType());
     sb.append("~");

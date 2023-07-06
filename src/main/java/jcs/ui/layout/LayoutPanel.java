@@ -851,8 +851,6 @@ public class LayoutPanel extends JPanel {
 
     private void routeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
       Logger.debug("Start Routing...");
-      //this.canvas.routeLayout();
-
       this.canvas.showRoutesDialog();
     }//GEN-LAST:event_routeBtnActionPerformed
 

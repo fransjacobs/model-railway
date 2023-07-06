@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -59,6 +60,7 @@ import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
 import jcs.ui.layout.enums.Mode;
+import jcs.ui.layout.pathfinding.astar.AStar;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
@@ -155,7 +157,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         }
 
         if (routeSnapshot.containsKey(tile.getId())) {
-          if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
+          //if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
+          if (tile.isJunction()) {
             RouteElementBean re = routeSnapshot.get(tile.getId());
             AccessoryValue av = re.getAccessoryValue();
             ((Switch) tile).setRouteValue(av, Color.darkGray);
@@ -164,7 +167,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
             tile.setTrackColor(Color.darkGray);
           }
         } else {
-          if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
+          //if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
+          if (tile.isJunction()) {
             ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
           } else {
             tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
@@ -734,7 +738,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.operationsPM.show(this, p.x, p.y);
   }
 
-
   private void formMousePressed(MouseEvent evt) {//GEN-FIRST:event_formMousePressed
     Logger.trace("Press X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
@@ -1075,18 +1078,19 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.executor.execute(() -> repaint());
   }
 
-  void routeLayoutDirect() {
-    routeLayoutWithBreathFirst();
+  void routeLayout() {
+    routeLayoutWithAStar();
+    //this.executor.execute(() -> routeLayoutWithAStar());
   }
 
-  private void routeLayoutWithBreathFirst() {
+  private void routeLayoutWithAStar() {
     //Make sure the layout is saved
     this.saveTiles();
 
-    //BreathFirst bf = new BreathFirst();
-    //bf.buildGraph(this.tiles);
-    //bf.routeAll();
-    //bf.persistRoutes();
+    AStar astar = new AStar();
+    astar.buildGraph(this.tiles.values().stream().collect(Collectors.toList()));
+    astar.routeAll();
+    astar.persistRoutes();
   }
 
   void showRoutesDialog() {
@@ -1100,14 +1104,15 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       for (RouteElementBean re : rel) {
         String id = re.getTileId();
         String nodeId = re.getNodeId();
-        if (id.startsWith("sw-") || id.startsWith("cs-")) {
+        
+        //if (id.startsWith("sw-") || id.startsWith("cs-")) {
           //Switches are 2 times in there, only the one with a value is needed
-          if (!id.equals(nodeId)) {
-            selectedRouteElements.put(id, re);
-          }
-        } else {
+          //if (!id.equals(nodeId)) {
+          //  selectedRouteElements.put(id, re);
+          //}
+        //} else {
           selectedRouteElements.put(id, re);
-        }
+        //}
       }
     }
 

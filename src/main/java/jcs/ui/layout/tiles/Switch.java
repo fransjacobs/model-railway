@@ -178,6 +178,14 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
     }
   }
 
+  public AccessoryValue getRouteValue() {
+    if (this.routeValue == null) {
+      return AccessoryValue.OFF;
+    } else {
+      return routeValue;
+    }
+  }
+
   public void setValue(AccessoryValue value) {
     this.accessoryValue = value;
   }
@@ -324,7 +332,6 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
     }
 
     switch (this.accessoryValue) {
-
       case RED -> {
         renderStraight(g2, trackColor, backgroundColor);
         renderDiagonal(g2, Color.red, backgroundColor);

@@ -441,7 +441,7 @@ public class H2PersistenceService implements PersistenceService {
   public void remove(RouteBean route) {
     if (route.getRouteElements() != null && !route.getRouteElements().isEmpty()) {
       //remove all
-      database.sql("delete from route_elements where route_d =?", route.getId()).execute();
+      database.sql("delete from route_elements where route_id =?", route.getId()).execute();
     }
 
     int rows = this.database.delete(route).getRowsAffected();

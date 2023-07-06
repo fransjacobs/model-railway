@@ -279,7 +279,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
   /**
    * Render a tile image Always starts at (0,0) used the default width and height
    *
-   * @param g2d the Graphic context
+   * @param g2 the Graphic context
    */
   @Override
   public void drawName(Graphics2D g2) {
