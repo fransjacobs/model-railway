@@ -89,6 +89,10 @@ public class Node implements Comparable<Node> {
     return this.tile.isJunction();
   }
 
+  public boolean isDirectional() {
+    return this.tile.isDirectional();
+  }
+
   public double getG() {
     return g;
   }

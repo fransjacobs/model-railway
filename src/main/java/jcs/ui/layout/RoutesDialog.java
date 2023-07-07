@@ -158,8 +158,8 @@ public class RoutesDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void routeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_routeListValueChanged
-      if (!evt.getValueIsAdjusting() && !this.routes.isEmpty() && evt.getFirstIndex() >= 0) {
-        RouteBean selected = this.routes.get(evt.getFirstIndex());
+      if (!evt.getValueIsAdjusting() && !this.routes.isEmpty() && this.routeList.getSelectedIndex() >= 0) {
+        RouteBean selected = this.routes.get(this.routeList.getSelectedIndex());
         Logger.trace("Setting Selected " + selected.toLogString());
         this.layoutCanvas.setSelectRoute(selected);
       }

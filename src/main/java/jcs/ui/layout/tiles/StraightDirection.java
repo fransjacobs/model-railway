@@ -19,9 +19,11 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.Collection;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
+import jcs.ui.layout.Tile;
 
 public class StraightDirection extends Straight {
 
@@ -49,6 +51,29 @@ public class StraightDirection extends Straight {
   @Override
   protected void setIdSeq(int id) {
     idSeq = id;
+  }
+
+  @Override
+  public boolean isDirectional() {
+    return true;
+  }
+
+  /**
+   * A Directional Tile a train can travel in the arrow direction
+   *
+   * @param other A Tile
+   * @return true when other is connected on the arrow pointing side of this tile
+   */
+  @Override
+  public boolean isArrowDirection(Tile other) {
+    boolean arrowDirection = false;
+    if (other != null) {
+      Orientation orientation = getOrientation();
+      Point switchPoint = getEdgePoints().get(orientation);
+      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+      arrowDirection = otherEdgePoints.contains(switchPoint);
+    }
+    return arrowDirection && isAdjacent(other);
   }
 
   private void renderDirectionArrow(Graphics2D g2) {

@@ -75,6 +75,10 @@ public class Graph {
         Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is NOT possible");
         return false;
       }
+    } else if (from.getPreviousNode() != null && from.isDirectional()) {
+      boolean isToOnArrowSide = from.getTile().isArrowDirection(to.getTile());
+      //Logger.trace("From " + from.getId() + " to: " + to.getId() + " isToOnArrowSide: " + isToOnArrowSide);
+      return from.getTile().isAdjacent(to.getTile()) && isToOnArrowSide;
     } else {
       return from.getTile().isAdjacent(to.getTile());
     }

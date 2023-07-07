@@ -694,6 +694,11 @@ public abstract class AbstractTile extends TileBean implements Tile {
     return false;
   }
 
+  @Override
+  public boolean isDirectional() {
+    return false;
+  }
+
   /**
    * The main route of the tile is diagonal
    *
@@ -800,6 +805,17 @@ public abstract class AbstractTile extends TileBean implements Tile {
   @Override
   public boolean isStraightSide(Tile other) {
     return false;
+  }
+
+  /**
+   * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
+   *
+   * @param other A Tile
+   * @return true where other is on the side of this tile where the arrow points to
+   */
+  @Override
+  public boolean isArrowDirection(Tile other) {
+    return true;
   }
 
 }

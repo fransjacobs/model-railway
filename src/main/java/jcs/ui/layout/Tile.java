@@ -97,8 +97,7 @@ public interface Tile extends Shape {
    * @return All point relevant for the Object on the Canvas
    */
   Set<Point> getAllPoints();
-  
-  
+
   int getOffsetX();
 
   void setOffsetX(int offsetX);
@@ -172,6 +171,8 @@ public interface Tile extends Shape {
 
   boolean isBlock();
 
+  boolean isDirectional();
+
   Map<Orientation, Point> getNeighborPoints();
 
   Map<Point, Orientation> getNeighborOrientations();
@@ -214,5 +215,13 @@ public interface Tile extends Shape {
    * @return true when other is connected to the straight side of the Turnout
    */
   boolean isStraightSide(Tile other);
+
+  /**
+   * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
+   *
+   * @param other A Tile
+   * @return true where other is on the side of this tile where the arrow points to
+   */
+  boolean isArrowDirection(Tile other);
 
 }

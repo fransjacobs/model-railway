@@ -193,17 +193,17 @@ public class AStar {
               String fid = from.getId() + fromSuffix;
               String tid = to.getId() + toSuffix;
 
-              //if (("bk-3-".equals(fid) && "bk-2+".equals(tid))
-              //        || ("bk-3-".equals(fid) && "bk-1+".equals(tid))) {
-              //if ("bk-2-".equals(fid) && "bk-1-".equals(tid)) {
-              List<Node> path = findPath(from, fromSuffix, to, toSuffix);
+              //if (("bk-2-".equals(fid) && "bk-3+".equals(tid))
+              //        || ("bk-3+".equals(fid) && "bk-2-".equals(tid))) {
+              //if ("bk-2-".equals(fid) && "bk-3+".equals(tid)) {
+                List<Node> path = findPath(from, fromSuffix, to, toSuffix);
 
-              if (path.isEmpty()) {
-                Logger.debug("No Path from " + fid + " to " + tid);
-              } else {
-                RouteBean routeBean = createRouteBeanFromNodePath(path);
-                this.routes.put(routeBean.getId(), routeBean);
-              }
+                if (path.isEmpty()) {
+                  Logger.debug("No Path from " + fid + " to " + tid);
+                } else {
+                  RouteBean routeBean = createRouteBeanFromNodePath(path);
+                  this.routes.put(routeBean.getId(), routeBean);
+                }
 
               //}
             }
@@ -231,7 +231,7 @@ public class AStar {
     //Create the links or connection between the Nodes
     for (Node node : graph.getNodes()) {
       Collection<Point> neighborPoints = node.getTile().getNeighborPoints().values();
-      Logger.trace("Node: " + node.getId() + " has " + neighborPoints.size() + " neighbors " + (node.isBlock() ? "[Block]" : "") + (node.isJunction() ? "[Junction]" : "") + ":");
+      Logger.trace("Node: " + node.getId() + " has " + neighborPoints.size() + " neighbors " + (node.isBlock() ? "[Block]" : "") + (node.isJunction() ? "[Junction]" : ""));
 
       for (Point p : neighborPoints) {
         if (tileCache.contains(p)) {
@@ -269,16 +269,16 @@ public class AStar {
     AStar gb = new AStar();
     gb.buildGraph(tiles);
 
-    gb.routeAll();
+    List<RouteBean> routes = gb.routeAll();
 
-    gb.persistRoutes();
-
+    //gb.persistRoutes();
     Logger.trace("#########");
-    if (true) {
-      List<RouteBean> prl = PersistenceFactory.getService().getRoutes();
-      for (RouteBean r : prl) {
-        Logger.trace(r.toLogString());
-      }
+    if (1==2) {
+      gb.persistRoutes();
+      routes = PersistenceFactory.getService().getRoutes();
+    }
+    for (RouteBean r : routes) {
+      Logger.trace(r.toLogString());
     }
 
   }

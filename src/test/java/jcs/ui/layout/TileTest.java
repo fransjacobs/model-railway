@@ -453,4 +453,31 @@ public class TileTest {
     assertTrue(instanceS.isStraightSide(curvedN));
   }
 
+  @Test
+  public void testIsArrowSwitchSide() {
+    System.out.println("isArrowSwitchSide");
+    Tile instanceE = TileFactory.createTile(TileType.STRAIGHT_DIR, Orientation.EAST, Direction.RIGHT, 860, 140, false);
+    Tile instanceS = TileFactory.createTile(TileType.STRAIGHT_DIR, Orientation.SOUTH, Direction.RIGHT, 860, 140, false);
+    Tile instanceW = TileFactory.createTile(TileType.STRAIGHT_DIR, Orientation.WEST, Direction.RIGHT, 860, 140, false);
+    Tile instanceN = TileFactory.createTile(TileType.STRAIGHT_DIR, Orientation.NORTH, Direction.RIGHT, 860, 140, false);
+
+    Tile straighE = TileFactory.createTile(TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 900, 140, false);
+    Tile straighS = TileFactory.createTile(TileType.STRAIGHT, Orientation.SOUTH, Direction.CENTER, 860, 180, false);
+    Tile straighW = TileFactory.createTile(TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 820, 140, false);
+    Tile straighN = TileFactory.createTile(TileType.STRAIGHT, Orientation.NORTH, Direction.CENTER, 860, 100, false);
+
+    assertTrue(instanceE.isArrowDirection(straighE));
+    assertFalse(instanceE.isArrowDirection(straighW));
+
+    assertTrue(instanceS.isArrowDirection(straighS));
+    assertFalse(instanceS.isArrowDirection(straighN));
+
+    assertTrue(instanceW.isArrowDirection(straighW));
+    assertFalse(instanceW.isArrowDirection(straighE));
+
+    assertTrue(instanceN.isArrowDirection(straighN));
+    assertFalse(instanceN.isArrowDirection(straighS));
+
+  }
+
 }
