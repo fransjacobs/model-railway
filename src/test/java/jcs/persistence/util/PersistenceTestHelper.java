@@ -26,65 +26,75 @@ import org.tinylog.Logger;
  */
 public class PersistenceTestHelper extends H2DatabaseUtil {
 
-    private static PersistenceTestHelper instance;
+  private static PersistenceTestHelper instance;
 
-    private PersistenceTestHelper() {
-        super(true);
+  private PersistenceTestHelper() {
+    super(true);
+  }
+
+  public static PersistenceTestHelper getInstance() {
+    if (instance == null) {
+      PersistenceTestHelper.test = true;
+      H2DatabaseUtil.test = true;
+      H2DatabaseUtil.setProperties(true);
+      PersistenceFactory.testMode = true;
+
+      createDatabaseUsers(true);
+      createDatabase();
+      instance = new PersistenceTestHelper();
     }
+    return instance;
+  }
 
-    public static PersistenceTestHelper getInstance() {
-        if (instance == null) {
-            PersistenceTestHelper.test = true;
-            H2DatabaseUtil.test = true;
-            H2DatabaseUtil.setProperties(true);
-            PersistenceFactory.testMode = true;
+  public final Database getDatabase() {
+    return this.db;
+  }
 
-            createDatabaseUsers(true);
-            createDatabase();
-            instance = new PersistenceTestHelper();
-        }
-        return instance;
-    }
+  public void insertTestData() {
+    URL url = PersistenceTestHelper.class.getClassLoader().getResource("jcs-test-data-h2.sql");
+    String f = url.getFile();
 
-    public final Database getDatabase() {
-        return this.db;
-    }
+    executeSQLScript(f);
 
-    public void insertTestData() {
-        URL url = PersistenceTestHelper.class.getClassLoader().getResource("jcs-test-data-h2.sql");
-        String f = url.getFile();
+    H2DatabaseUtil.setProperties(true);
 
-        executeSQLScript(f);
-        
-        H2DatabaseUtil.setProperties(true);
+    Logger.debug("Inserted Test data...");
+  }
 
-        Logger.debug("Inserted Test data...");
-    }
+  public void insertSimpleLayoutTestData() {
+    URL url = PersistenceTestHelper.class.getClassLoader().getResource("simple_layout_tiles.sql");
+    String f = url.getFile();
 
+    executeSQLScript(f);
 
-    public void insertSimpleLayoutTestData() {
-        URL url = PersistenceTestHelper.class.getClassLoader().getResource("simple_layout_tiles.sql");
-        String f = url.getFile();
+    H2DatabaseUtil.setProperties(true);
 
-        executeSQLScript(f);
-        
-        H2DatabaseUtil.setProperties(true);
+    Logger.debug("Inserted Simple Layout Test data...");
+  }
 
-        Logger.debug("Inserted Simple Layout Test data...");
-    }
+  public void insertSimpleLayoutDirectionTestData() {
+    URL url = PersistenceTestHelper.class.getClassLoader().getResource("simple_layout_tiles_with_direction.sql");
+    String f = url.getFile();
 
+    executeSQLScript(f);
 
+    H2DatabaseUtil.setProperties(true);
 
-    public static void main(String[] a) {
-        //createDatabaseUsers(true);
+    Logger.debug("Inserted Simple Layout Direction Test data...");
+  }
 
-        //createDatabase();
-        PersistenceTestHelper pth = getInstance();
+  public static void main(String[] a) {
+    //createDatabaseUsers(true);
 
-        pth.insertTestData();
-        
-        pth.insertSimpleLayoutTestData();
+    //createDatabase();
+    PersistenceTestHelper pth = getInstance();
 
-        //recreateTest();
-    }
+    pth.insertTestData();
+
+    pth.insertSimpleLayoutTestData();
+    
+    pth.insertSimpleLayoutDirectionTestData();
+
+    //recreateTest();
+  }
 }

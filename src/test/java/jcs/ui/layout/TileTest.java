@@ -16,7 +16,9 @@
 package jcs.ui.layout;
 
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
@@ -110,14 +112,149 @@ public class TileTest {
   }
 
   @Test
-  public void testGetAltPoints() {
-    System.out.println("getAltPoints");
+  public void testGetAltPointsBlock() {
+    System.out.println("getAltPointsBlock");
     Tile instance = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, Direction.CENTER, 220, 220, false);
     Set<Point> expResult = new HashSet<>();
     expResult.add(new Point(180, 220));
     expResult.add(new Point(260, 220));
     Set<Point> result = instance.getAltPoints();
     assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetAltPointsCross() {
+    System.out.println("getAltPointsCross");
+    Tile instanceE = TileFactory.createTile(TileType.CROSS, Orientation.EAST, Direction.CENTER, 220, 220, false);
+    Tile instanceS = TileFactory.createTile(TileType.CROSS, Orientation.SOUTH, Direction.CENTER, 220, 220, false);
+    Tile instanceW = TileFactory.createTile(TileType.CROSS, Orientation.WEST, Direction.CENTER, 220, 220, false);
+    Tile instanceN = TileFactory.createTile(TileType.CROSS, Orientation.NORTH, Direction.CENTER, 220, 220, false);
+
+    Set<Point> expResultE = new HashSet<>();
+    expResultE.add(new Point(260, 220));
+
+    Set<Point> expResultS = new HashSet<>();
+    expResultS.add(new Point(220, 260));
+
+    Set<Point> expResultW = new HashSet<>();
+    expResultW.add(new Point(180, 220));
+
+    Set<Point> expResultN = new HashSet<>();
+    expResultN.add(new Point(220, 180));
+
+    Set<Point> resultE = instanceE.getAltPoints();
+
+    assertEquals(expResultE.size(), resultE.size());
+    assertEquals(expResultE, resultE);
+
+    Set<Point> resultS = instanceS.getAltPoints();
+    assertEquals(expResultS.size(), resultS.size());
+    assertEquals(expResultS, resultS);
+
+    Set<Point> resultW = instanceW.getAltPoints();
+    assertEquals(expResultW.size(), resultW.size());
+    assertEquals(expResultW, resultW);
+
+    Set<Point> resultN = instanceN.getAltPoints();
+    assertEquals(expResultN.size(), resultN.size());
+    assertEquals(expResultN, resultN);
+  }
+
+  @Test
+  public void testGetNeighborPointsCross() {
+    System.out.println("getNeighborPointsCross");
+    Tile instanceEL = TileFactory.createTile(TileType.CROSS, Orientation.EAST, Direction.LEFT, 220, 220, false);
+    Tile instanceER = TileFactory.createTile(TileType.CROSS, Orientation.EAST, Direction.RIGHT, 220, 220, false);
+
+    Tile instanceWL = TileFactory.createTile(TileType.CROSS, Orientation.WEST, Direction.LEFT, 220, 220, false);
+    Tile instanceWR = TileFactory.createTile(TileType.CROSS, Orientation.WEST, Direction.RIGHT, 220, 220, false);
+
+    Tile instanceSL = TileFactory.createTile(TileType.CROSS, Orientation.SOUTH, Direction.LEFT, 220, 220, false);
+    Tile instanceSR = TileFactory.createTile(TileType.CROSS, Orientation.SOUTH, Direction.RIGHT, 220, 220, false);
+
+    Tile instanceNL = TileFactory.createTile(TileType.CROSS, Orientation.NORTH, Direction.LEFT, 220, 220, false);
+    Tile instanceNR = TileFactory.createTile(TileType.CROSS, Orientation.NORTH, Direction.RIGHT, 220, 220, false);
+
+    Map<Orientation, Point> expResultEL = new HashMap<>();
+    expResultEL.put(Orientation.EAST, new Point(300, 220));
+    expResultEL.put(Orientation.SOUTH, new Point(220, 260));
+    expResultEL.put(Orientation.WEST, new Point(180, 220));
+    expResultEL.put(Orientation.NORTH, new Point(260, 180));
+
+    Map<Orientation, Point> expResultER = new HashMap<>();
+    expResultER.put(Orientation.EAST, new Point(300, 220));
+    expResultER.put(Orientation.SOUTH, new Point(260, 260));
+    expResultER.put(Orientation.WEST, new Point(180, 220));
+    expResultER.put(Orientation.NORTH, new Point(220, 180));
+
+    Map<Orientation, Point> expResultSL = new HashMap<>();
+    expResultSL.put(Orientation.EAST, new Point(260, 260));
+    expResultSL.put(Orientation.SOUTH, new Point(220, 300));
+    expResultSL.put(Orientation.WEST, new Point(180, 220));
+    expResultSL.put(Orientation.NORTH, new Point(220, 180));
+
+    Map<Orientation, Point> expResultSR = new HashMap<>();
+    expResultSR.put(Orientation.EAST, new Point(260, 220));
+    expResultSR.put(Orientation.SOUTH, new Point(220, 300));
+    expResultSR.put(Orientation.WEST, new Point(180, 260));
+    expResultSR.put(Orientation.NORTH, new Point(220, 180));
+
+    Map<Orientation, Point> expResultWL = new HashMap<>();
+    expResultWL.put(Orientation.WEST, new Point(140, 220));
+    expResultWL.put(Orientation.SOUTH, new Point(180, 260));
+    expResultWL.put(Orientation.EAST, new Point(260, 220));
+    expResultWL.put(Orientation.NORTH, new Point(220, 180));
+
+    Map<Orientation, Point> expResultWR = new HashMap<>();
+    expResultWR.put(Orientation.WEST, new Point(140, 220));
+    expResultWR.put(Orientation.SOUTH, new Point(220, 260));
+    expResultWR.put(Orientation.EAST, new Point(260, 220));
+    expResultWR.put(Orientation.NORTH, new Point(180, 180));
+
+    Map<Orientation, Point> expResultNL = new HashMap<>();
+    expResultNL.put(Orientation.EAST, new Point(260, 220));
+    expResultNL.put(Orientation.SOUTH, new Point(220, 260));
+    expResultNL.put(Orientation.WEST, new Point(180, 180));
+    expResultNL.put(Orientation.NORTH, new Point(220, 140));
+
+    Map<Orientation, Point> expResultNR = new HashMap<>();
+    expResultNR.put(Orientation.EAST, new Point(260, 180));
+    expResultNR.put(Orientation.SOUTH, new Point(220, 260));
+    expResultNR.put(Orientation.WEST, new Point(180, 220));
+    expResultNR.put(Orientation.NORTH, new Point(220, 140));
+    
+    Map<Orientation, Point> resultEL = instanceEL.getNeighborPoints();
+    assertEquals(expResultEL.size(), resultEL.size());
+    assertEquals(expResultEL, resultEL);
+
+    Map<Orientation, Point> resultER = instanceER.getNeighborPoints();
+    assertEquals(expResultER.size(), resultER.size());
+    assertEquals(expResultER, resultER);
+
+    Map<Orientation, Point> resultWL = instanceWL.getNeighborPoints();
+    assertEquals(expResultWL.size(), resultWL.size());
+    assertEquals(expResultWL, resultWL);
+
+    Map<Orientation, Point> resultWR = instanceWR.getNeighborPoints();
+    assertEquals(expResultWR.size(), resultWR.size());
+    assertEquals(expResultWR, resultWR);
+
+    Map<Orientation, Point> resultSL = instanceSL.getNeighborPoints();
+    assertEquals(expResultSL.size(), resultSL.size());
+    assertEquals(expResultSL, resultSL);
+
+    Map<Orientation, Point> resultSR = instanceSR.getNeighborPoints();
+    assertEquals(expResultSR.size(), resultSR.size());
+    assertEquals(expResultSR, resultSR);
+
+    Map<Orientation, Point> resultNL = instanceNL.getNeighborPoints();
+    assertEquals(expResultNL.size(), resultNL.size());
+    assertEquals(expResultNL, resultNL);
+
+    Map<Orientation, Point> resultNR = instanceNR.getNeighborPoints();
+    assertEquals(expResultNR.size(), resultNR.size());
+    assertEquals(expResultNR, resultNR);
+
   }
 
   @Test

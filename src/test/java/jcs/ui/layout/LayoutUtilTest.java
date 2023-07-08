@@ -19,16 +19,7 @@
 package jcs.ui.layout;
 
 import java.awt.Point;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.TileFactory;
-import jcs.ui.layout.tiles.enums.Direction;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

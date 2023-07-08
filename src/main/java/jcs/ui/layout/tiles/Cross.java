@@ -20,6 +20,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -103,32 +104,6 @@ public class Cross extends Switch implements Tile {
   }
 
   @Override
-  public Map<Orientation, Point> getNeighborPoints() {
-    Map<Orientation, Point> neighbors = new HashMap<>();
-    TileType tiletype = this.getTileType();
-    Orientation orientation = this.getOrientation();
-    Direction direction = this.getDirection();
-    int cx = this.getCenterX();
-    int cy = this.getCenterY();
-
-    //TODO
-    return neighbors;
-  }
-
-  @Override
-  public Map<Orientation, Point> getEdgePoints() {
-    Map<Orientation, Point> edgeConnections = new HashMap<>();
-    TileType tiletype = this.getTileType();
-    Orientation orientation = this.getOrientation();
-    Direction direction = this.getDirection();
-    int cx = this.getCenterX();
-    int cy = this.getCenterY();
-
-    //TODO
-    return edgeConnections;
-  }
-
-  @Override
   public Set<Point> getAltPoints() {
     int xx = this.x;
     int yy = this.y;
@@ -157,8 +132,223 @@ public class Cross extends Switch implements Tile {
   }
 
   @Override
-  public boolean isJunction() {
-    return true;
+  public Map<Orientation, Point> getNeighborPoints() {
+    Map<Orientation, Point> neighbors = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    Direction direction = this.getDirection();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH -> {
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
+
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
+          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        } else {
+          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+        }
+      }
+      case WEST -> {
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
+
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+        } else {
+          neighbors.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        }
+      }
+      case NORTH -> {
+        neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
+        neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
+        } else {
+          neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        }
+      }
+      default -> {
+        //EAST
+        neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
+        neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+
+        if (Direction.LEFT == direction) {
+          neighbors.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        } else {
+          neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+          neighbors.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
+        }
+      }
+    }
+    return neighbors;
+  }
+
+  @Override
+  public Map<Orientation, Point> getEdgePoints() {
+    Map<Orientation, Point> edgeConnections = new HashMap<>();
+    Orientation orientation = this.getOrientation();
+    Direction direction = this.getDirection();
+    int cx = this.getCenterX();
+    int cy = this.getCenterY();
+
+    switch (orientation) {
+      case SOUTH -> {
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
+
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        } else {
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+        }
+      }
+      case WEST -> {
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
+
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+        } else {
+          edgeConnections.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        }
+      }
+      case NORTH -> {
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
+        } else {
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        }
+      }
+      default -> {
+        //EAST
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+
+        if (Direction.LEFT == direction) {
+          edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        } else {
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
+        }
+      }
+    }
+    return edgeConnections;
+  }
+
+  /**
+   *
+   * @param other A Tile
+   * @return true when other is connected to the switch side of the Turnout
+   */
+  @Override
+  public boolean isSwitchSide(Tile other) {
+    boolean switchSide = false;
+    if (other != null) {
+      Orientation orientation = getOrientation();
+      Point switchPoint = getEdgePoints().get(orientation);
+      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+      switchSide = otherEdgePoints.contains(switchPoint);
+    }
+    return switchSide && isAdjacent(other);
+  }
+
+  /**
+   *
+   * @param other A Tile
+   * @return true when other is connected to the diverging side of the Turnout
+   */
+  @Override
+  public boolean isDivergingSide(Tile other) {
+    boolean divergingSide = false;
+    if (other != null) {
+      Orientation orientation = this.getOrientation();
+      Direction direction = this.getDirection();
+      Point divergingPoint;
+      switch (orientation) {
+        case NORTH -> {
+          if (Direction.LEFT == direction) {
+            divergingPoint = getEdgePoints().get(Orientation.EAST);
+          } else {
+            divergingPoint = getEdgePoints().get(Orientation.WEST);
+          }
+        }
+        case SOUTH -> {
+          if (Direction.LEFT == direction) {
+            divergingPoint = getEdgePoints().get(Orientation.WEST);
+          } else {
+            divergingPoint = getEdgePoints().get(Orientation.EAST);
+          }
+        }
+        case WEST -> {
+          if (Direction.LEFT == direction) {
+            divergingPoint = getEdgePoints().get(Orientation.NORTH);
+          } else {
+            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
+          }
+        }
+        default -> {
+          if (Direction.LEFT == direction) {
+            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
+          } else {
+            divergingPoint = getEdgePoints().get(Orientation.NORTH);
+          }
+        }
+      }
+
+      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+      divergingSide = otherEdgePoints.contains(divergingPoint);
+    }
+    return divergingSide && isAdjacent(other);
+  }
+
+  /**
+   *
+   * @param other A Tile
+   * @return true when other is connected to the straight side of the Turnout
+   */
+  @Override
+  public boolean isStraightSide(Tile other
+  ) {
+    boolean straightSide = false;
+    if (other != null) {
+      Orientation orientation = this.getOrientation();
+      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+
+      Point straightPoint;
+      straightPoint = switch (orientation) {
+        case NORTH ->
+          getEdgePoints().get(Orientation.SOUTH);
+        case SOUTH ->
+          getEdgePoints().get(Orientation.NORTH);
+        case WEST ->
+          getEdgePoints().get(Orientation.EAST);
+        default ->
+          getEdgePoints().get(Orientation.WEST);
+      };
+
+      straightSide = otherEdgePoints.contains(straightPoint);
+    }
+    return straightSide && isAdjacent(other);
   }
 
   @Override
