@@ -203,52 +203,52 @@ public class Cross extends Switch implements Tile {
 
     switch (orientation) {
       case SOUTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 4));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 3));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
         } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy + Tile.GRID * 2));
         }
       }
       case WEST -> {
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 4, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 3, cy));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx - Tile.GRID * 2, cy + Tile.GRID));
         } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.NORTH, new Point(cx - Tile.GRID * 2, cy - Tile.GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
         }
       }
       case NORTH -> {
-        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 4));
-        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+        edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 3));
+        edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy - Tile.GRID * 2));
         } else {
-          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
-          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+          edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy - Tile.GRID * 2));
+          edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
         }
       }
       default -> {
         //EAST
-        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 4, cy));
-        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+        edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID * 3, cy));
+        edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
 
         if (Direction.LEFT == direction) {
-          edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID * 2));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.NORTH, new Point(cx + Tile.GRID * 2, cy - Tile.GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
         } else {
-          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-          edgeConnections.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID * 2));
+          edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+          edgeConnections.put(Orientation.SOUTH, new Point(cx + Tile.GRID * 2, cy + Tile.GRID));
         }
       }
     }
