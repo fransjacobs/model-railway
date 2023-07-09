@@ -44,6 +44,14 @@ public class Cross extends Switch implements Tile {
   public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
   public static final int CROSS_OFFSET = GRID;
 
+  public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
+  public static final Color LIGHT_RED = new Color(255, 51, 51);
+  public static final Color DARK_RED = new Color(204, 0, 0);
+
+  public static final Color VERY_LIGHT_GREEN = new Color(102, 255, 102);
+  public static final Color LIGHT_GREEN = new Color(0, 255, 51);
+  public static final Color DARK_GREEN = new Color(0, 153, 0);
+
   public Cross(TileBean tileBean) {
     super(tileBean);
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
@@ -460,29 +468,28 @@ public class Cross extends Switch implements Tile {
 
     switch (this.accessoryValue) {
       case RED -> {
-        renderStraight2(g2, trackColor, backgroundColor);
-        renderDiagonal(g2, trackColor, backgroundColor);
-
-        renderStraight(g2, Color.red, backgroundColor);
-        renderDiagonal2(g2, Color.red, backgroundColor);
+        renderStraight2(g2, Cross.LIGHT_RED, backgroundColor);
+        renderDiagonal(g2, Cross.LIGHT_RED, backgroundColor);
+        renderStraight(g2, Cross.DARK_RED, backgroundColor);
+        renderDiagonal2(g2, Cross.DARK_RED, backgroundColor);
       }
       case GREEN -> {
-        renderDiagonal(g2, trackColor, backgroundColor);
-        renderDiagonal2(g2, trackColor, backgroundColor);
-        renderStraight(g2, Color.green, backgroundColor);
-        renderStraight2(g2, Color.green, backgroundColor);
+        renderDiagonal(g2, Cross.VERY_LIGHT_GREEN, backgroundColor);
+        renderDiagonal2(g2, Cross.VERY_LIGHT_GREEN, backgroundColor);
+        renderStraight(g2, Cross.DARK_GREEN, backgroundColor);
+        renderStraight2(g2, Cross.DARK_GREEN, backgroundColor);
       }
       default -> {
         switch (this.routeValue) {
           case RED -> {
-            renderStraight2(g2, trackColor, backgroundColor);
-            renderDiagonal(g2, trackColor, backgroundColor);
+            renderStraight2(g2, this.routeColor, backgroundColor);
+            renderDiagonal(g2, this.routeColor, backgroundColor);
             renderStraight(g2, this.routeColor, backgroundColor);
             renderDiagonal2(g2, this.routeColor, backgroundColor);
           }
           case GREEN -> {
-            renderDiagonal(g2, trackColor, backgroundColor);
-            renderDiagonal2(g2, trackColor, backgroundColor);
+            renderDiagonal(g2, this.routeColor, backgroundColor);
+            renderDiagonal2(g2, this.routeColor, backgroundColor);
             renderStraight(g2, this.routeColor, backgroundColor);
             renderStraight2(g2, this.routeColor, backgroundColor);
           }

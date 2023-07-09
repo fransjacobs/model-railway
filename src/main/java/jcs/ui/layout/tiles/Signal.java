@@ -273,6 +273,10 @@ public class Signal extends Straight implements Tile, AccessoryListener {
 
     renderStraight(g2d, trackColor, backgroundColor);
 
+    if (signalType == null) {
+      signalType = SignalType.NONE;
+    }
+
     switch (signalType) {
       case HP012 ->
         renderSignal3(g2d);

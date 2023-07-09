@@ -106,8 +106,14 @@ public final class TileImageCache {
     sb.append("~");
     sb.append(routeValue.getValue());
     sb.append("~");
+    if (signalType == null) {
+      signalType = SignalType.NONE;
+    }
     sb.append(signalType.getSignalType());
     sb.append("~");
+    if (signalValue == null) {
+      signalValue = SignalValue.OFF;
+    }
     sb.append(signalValue.getSignalValue());
     sb.append("~");
     sb.append(active);
