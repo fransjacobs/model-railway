@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
+import static jcs.entities.enums.AccessoryValue.GREEN;
+import static jcs.entities.enums.AccessoryValue.RED;
 import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
@@ -448,6 +450,14 @@ public class Cross extends Switch implements Tile {
       this.accessoryValue = AccessoryValue.OFF;
     }
 
+    if (routeValue == null) {
+      this.routeValue = AccessoryValue.OFF;
+    }
+
+    if (this.routeColor == null) {
+      this.routeColor = trackColor;
+    }
+
     switch (this.accessoryValue) {
       case RED -> {
         renderStraight2(g2, trackColor, backgroundColor);
@@ -463,12 +473,28 @@ public class Cross extends Switch implements Tile {
         renderStraight2(g2, Color.green, backgroundColor);
       }
       default -> {
-        renderStraight(g2, trackColor, backgroundColor);
-        renderStraight2(g2, trackColor, backgroundColor);
-        renderDiagonal(g2, trackColor, backgroundColor);
-        renderDiagonal2(g2, trackColor, backgroundColor);
+        switch (this.routeValue) {
+          case RED -> {
+            renderStraight2(g2, trackColor, backgroundColor);
+            renderDiagonal(g2, trackColor, backgroundColor);
+            renderStraight(g2, this.routeColor, backgroundColor);
+            renderDiagonal2(g2, this.routeColor, backgroundColor);
+          }
+          case GREEN -> {
+            renderDiagonal(g2, trackColor, backgroundColor);
+            renderDiagonal2(g2, trackColor, backgroundColor);
+            renderStraight(g2, this.routeColor, backgroundColor);
+            renderStraight2(g2, this.routeColor, backgroundColor);
+          }
+          default -> {
+            renderStraight(g2, trackColor, backgroundColor);
+            renderStraight2(g2, trackColor, backgroundColor);
+            renderDiagonal(g2, trackColor, backgroundColor);
+            renderDiagonal2(g2, trackColor, backgroundColor);
+          }
+        }
       }
     }
-  }
 
+  }
 }

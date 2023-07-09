@@ -68,7 +68,7 @@ public final class TileImageCache {
     Direction direction = tile.getDirection();
     AccessoryValue accessoryValue;
     AccessoryValue routeValue;
-    if (tile instanceof Switch) {
+    if (tile instanceof Cross || tile instanceof Switch) {
       accessoryValue = ((Switch) tile).getAccessoryValue();
       routeValue = ((Switch) tile).getRouteValue();
     } else {
