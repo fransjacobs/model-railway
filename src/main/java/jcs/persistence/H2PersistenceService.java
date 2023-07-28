@@ -20,8 +20,10 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.SensorBean;
@@ -318,6 +320,8 @@ public class H2PersistenceService implements PersistenceService {
   public List<TileBean> getTiles() {
     List<TileBean> tileBeans = database.results(TileBean.class);
     //TODO add related objects
+
+    Logger.trace("Found " + tileBeans.size() + " TileBeans");
     return tileBeans;
   }
 
@@ -340,6 +344,7 @@ public class H2PersistenceService implements PersistenceService {
   public TileBean persist(TileBean tileBean) {
     if (database.where("id=?", tileBean.getId()).first(TileBean.class) != null) {
       database.update(tileBean).getRowsAffected();
+      Logger.trace("Updated " + tileBean);
     } else {
       database.insert(tileBean).getRowsAffected();
     }
@@ -354,10 +359,14 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public void persist(List<TileBean> tiles) {
+    removeAllRoutes();
+
     int rows = database.sql("delete from tiles").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " to persist: " + tiles.size());
+    rows = 0;
     for (TileBean tb : tiles) {
       persist(tb);
+      rows++;
     }
   }
 
@@ -446,6 +455,12 @@ public class H2PersistenceService implements PersistenceService {
 
     int rows = this.database.delete(route).getRowsAffected();
     Logger.trace(rows + " rows deleted");
+  }
+
+  public void removeAllRoutes() {
+    database.sql("delete from route_elements").execute();
+    int rows = database.sql("delete from routes").execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " routes");
   }
 
   private void setJCSPropertiesAsSystemProperties() {

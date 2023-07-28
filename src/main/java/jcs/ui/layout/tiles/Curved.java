@@ -20,7 +20,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.entities.TileBean;
@@ -31,8 +30,6 @@ import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
 
 public class Curved extends AbstractTile implements Tile {
-
-  private static int idSeq;
 
   public Curved(TileBean tileBean) {
     super(tileBean);
@@ -49,17 +46,6 @@ public class Curved extends AbstractTile implements Tile {
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
     this.type = TileType.CURVED.getTileType();
-  }
-
-  @Override
-  protected final String getNewId() {
-    idSeq++;
-    return "ct-" + idSeq;
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

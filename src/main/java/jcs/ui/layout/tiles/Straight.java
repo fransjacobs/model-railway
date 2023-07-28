@@ -28,8 +28,6 @@ import jcs.entities.enums.TileType;
 
 public class Straight extends AbstractTile implements Tile {
 
-  private static int idSeq;
-
   public Straight(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
@@ -46,17 +44,6 @@ public class Straight extends AbstractTile implements Tile {
     this.type = TileType.STRAIGHT.getTileType();
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
-  }
-
-  @Override
-  protected String getNewId() {
-    idSeq++;
-    return "st-" + idSeq;
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

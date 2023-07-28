@@ -31,8 +31,6 @@ import jcs.entities.enums.TileType;
 
 public class End extends AbstractTile implements Tile {
 
-  private static int idSeq;
-
   public End(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
@@ -49,17 +47,6 @@ public class End extends AbstractTile implements Tile {
     this.type = TileType.END.getTileType();
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
-  }
-
-  @Override
-  protected String getNewId() {
-    idSeq++;
-    return "et-" + idSeq;
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

@@ -362,7 +362,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     //TODO, should come from persistence service
     Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid, this, showValues);
     Set<Point> ps = tm.keySet();
-    synchronized (tiles) {
+    //synchronized (tiles) {
       selectedTiles.clear();
       altTiles.clear();
       tiles.clear();
@@ -377,7 +377,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
             altTiles.put(ap, t);
           }
         }
-      }
+      //}
     }
 
     Logger.debug("Loaded " + this.tiles.size() + " tiles...");

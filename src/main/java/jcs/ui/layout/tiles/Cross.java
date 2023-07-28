@@ -38,8 +38,6 @@ import jcs.ui.layout.tiles.enums.Direction;
 
 public class Cross extends Switch implements Tile {
 
-  private static int idSeq;
-
   public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
   public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
   public static final int CROSS_OFFSET = GRID;
@@ -100,17 +98,6 @@ public class Cross extends Switch implements Tile {
         this.height = DEFAULT_HEIGHT;
       }
     }
-  }
-
-  @Override
-  protected String getNewId() {
-    idSeq++;
-    return "cs-" + idSeq;
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

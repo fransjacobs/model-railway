@@ -29,7 +29,6 @@ import jcs.trackservice.events.SensorListener;
 
 public class Sensor extends Straight implements SensorListener {
 
-  private static int idSeq;
   private boolean active;
 
   public Sensor(TileBean tileBean) {
@@ -43,12 +42,6 @@ public class Sensor extends Straight implements SensorListener {
   public Sensor(Orientation orientation, Point center) {
     super(orientation, center);
     this.type = TileType.SENSOR.getTileType();
-  }
-
-  @Override
-  protected final String getNewId() {
-    idSeq++;
-    return "se-" + idSeq;
   }
 
   public boolean isActive() {
@@ -90,11 +83,6 @@ public class Sensor extends Straight implements SensorListener {
     renderSensor(g2d);
 
     g2d.dispose();
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

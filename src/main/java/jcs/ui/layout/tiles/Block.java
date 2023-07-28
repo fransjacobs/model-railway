@@ -35,8 +35,6 @@ import jcs.ui.layout.tiles.enums.Direction;
 
 public class Block extends AbstractTile implements Tile {
 
-  private static int idSeq;
-
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 
@@ -69,17 +67,6 @@ public class Block extends AbstractTile implements Tile {
       this.height = DEFAULT_HEIGHT * 3;
     }
     this.type = TileType.BLOCK.getTileType();
-  }
-
-  @Override
-  protected final String getNewId() {
-    idSeq++;
-    return "bk-" + idSeq;
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

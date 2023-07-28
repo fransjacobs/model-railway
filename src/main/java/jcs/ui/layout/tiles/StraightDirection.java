@@ -27,8 +27,6 @@ import jcs.ui.layout.Tile;
 
 public class StraightDirection extends Straight {
 
-  private static int idSeq;
-
   public StraightDirection(TileBean tileBean) {
     super(tileBean);
   }
@@ -40,17 +38,6 @@ public class StraightDirection extends Straight {
   public StraightDirection(Orientation orientation, Point center) {
     super(orientation, center);
     this.type = TileType.STRAIGHT_DIR.getTileType();
-  }
-
-  @Override
-  protected final String getNewId() {
-    idSeq++;
-    return "sd-" + idSeq;
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

@@ -109,20 +109,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
     if (this.backgroundColor == null) {
       this.backgroundColor = Color.white;
     }
-    init();
   }
-
-  /**
-   *
-   * @return a new tile specific unique id
-   */
-  protected abstract String getNewId();
-
-  /**
-   *
-   * @param id the last tile specific unique sequence number
-   */
-  abstract void setIdSeq(int id);
 
   protected AbstractTile(TileBean tileBean) {
     copyInto(tileBean);
@@ -163,10 +150,10 @@ public abstract class AbstractTile extends TileBean implements Tile {
     return tb;
   }
 
-  private void init() {
-    this.id = getNewId();
-  }
-
+//  private void init() {
+//    this.id = getNewId();
+//    Logger.trace(this);
+//  }
   @Override
   public Color getTrackColor() {
     return trackColor;

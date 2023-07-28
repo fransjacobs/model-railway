@@ -747,6 +747,31 @@ public class PersistenceServiceTest {
   }
 
   @Test
+  public void testPersistLotsOfTileBeans() {
+    System.out.println("persistLotsOfTileBeans");
+    PersistenceService instance = PersistenceFactory.getService();
+
+    List<TileBean> expected = new ArrayList<>();
+
+    //Create a lot of test tiles
+    int x = 20;
+    int cy = 100;
+    for (int i = 2; i < 1002; i++) {
+      String id = "st-" + i;
+      int cx = x + i * 40;
+
+      TileBean stn = new TileBean(id, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, cx, cy, null, null, null);
+      expected.add(stn);
+    }
+
+    instance.persist(expected);
+
+    List<TileBean> retrieved = instance.getTiles();
+    assertEquals(expected.size(), retrieved.size());
+    assertEquals(expected, retrieved);
+  }
+
+  @Test
   public void testGetRoutes() {
     System.out.println("getRoutes");
     PersistenceService instance = PersistenceFactory.getService();

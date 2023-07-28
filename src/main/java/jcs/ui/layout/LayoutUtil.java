@@ -129,7 +129,7 @@ public class LayoutUtil {
    * @return A Map of tiles, key is the center point of the tile
    */
   public static final Map<Point, Tile> loadLayout(boolean drawGridLines, PropertyChangeListener listener, boolean showValues) {
-    synchronized (LayoutUtil.tiles) {
+    //synchronized (LayoutUtil.tiles) {
       LayoutUtil.tiles.clear();
       LayoutUtil.altTilesLookup.clear();
       LayoutUtil.tileLookup.clear();
@@ -159,9 +159,9 @@ public class LayoutUtil {
 
         Logger.debug("Loaded " + tiles.size() + " Tiles...");
       } else {
-        Logger.error("Can't load tiles, no Trackservice available");
+        Logger.error("Can't load tiles, no PersistenceService available");
       }
-    }
+    //}
     return LayoutUtil.tiles;
   }
 

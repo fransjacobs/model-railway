@@ -35,8 +35,6 @@ import jcs.trackservice.events.AccessoryListener;
 
 public class Signal extends Straight implements Tile, AccessoryListener {
 
-  private static int idSeq;
-
   private SignalValue signalValue;
   private SignalType signalType;
 
@@ -65,12 +63,6 @@ public class Signal extends Straight implements Tile, AccessoryListener {
     this.signalType = signalType;
     this.signalValue = SignalValue.OFF;
     this.type = TileType.SIGNAL.getTileType();
-  }
-
-  @Override
-  protected final String getNewId() {
-    idSeq++;
-    return "si-" + idSeq;
   }
 
   public SignalValue getSignalValue() {

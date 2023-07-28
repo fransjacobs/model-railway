@@ -36,8 +36,6 @@ import jcs.ui.layout.tiles.enums.Direction;
 
 public class Switch extends AbstractTile implements Tile, AccessoryListener {
 
-  private static int idSeq;
-
   protected AccessoryValue accessoryValue;
   protected AccessoryValue routeValue;
   protected Color routeColor;
@@ -57,17 +55,6 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
     this.type = TileType.SWITCH.getTileType();
-  }
-
-  @Override
-  protected String getNewId() {
-    idSeq++;
-    return "sw-" + idSeq;
-  }
-
-  @Override
-  protected void setIdSeq(int id) {
-    idSeq = id;
   }
 
   @Override

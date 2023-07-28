@@ -22,13 +22,18 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
-import org.tinylog.Logger;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
 import static jcs.entities.enums.TileType.CURVED;
+import static jcs.entities.enums.TileType.END;
+import static jcs.entities.enums.TileType.SENSOR;
+import static jcs.entities.enums.TileType.SIGNAL;
+import org.tinylog.Logger;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.STRAIGHT_DIR;
+import static jcs.entities.enums.TileType.SWITCH;
 import jcs.ui.layout.Tile;
 
 /**
@@ -59,6 +64,51 @@ public class TileFactory {
     return idSeq;
   }
 
+  private static String getTileId(TileType tileType) {
+    switch (tileType) {
+      case STRAIGHT -> {
+        straightIdSeq++;
+        return "st-" + straightIdSeq;
+      }
+      case CURVED -> {
+        curvedIdSeq++;
+        return "ct-" + curvedIdSeq;
+      }
+      case SWITCH -> {
+        switchIdSeq++;
+        return "sw-" + switchIdSeq;
+      }
+      case CROSS -> {
+        crossIdSeq++;
+        return "cs-" + crossIdSeq;
+      }
+      case SIGNAL -> {
+        signalIdSeq++;
+        return "si-" + signalIdSeq;
+      }
+      case SENSOR -> {
+        sensorIdSeq++;
+        return "se-" + sensorIdSeq;
+      }
+      case BLOCK -> {
+        blockIdSeq++;
+        return "bk-" + blockIdSeq;
+      }
+      case STRAIGHT_DIR -> {
+        straightDirectionIdSeq++;
+        return "sd-" + straightDirectionIdSeq;
+      }
+      case END -> {
+        endIdSeq++;
+        return "et-" + endIdSeq;
+      }
+      default -> {
+        Logger.warn("Unknown Tile Type " + tileType);
+        return null;
+      }
+    }
+  }
+
   private static int getHeighestIdSeq(int currentId, int newId) {
     if (currentId < newId) {
       return newId;
@@ -78,17 +128,14 @@ public class TileFactory {
       case STRAIGHT -> {
         tile = new Straight(tileBean);
         straightIdSeq = getHeighestIdSeq(straightIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(straightIdSeq);
       }
       case CURVED -> {
         tile = new Curved(tileBean);
         curvedIdSeq = getHeighestIdSeq(curvedIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(curvedIdSeq);
       }
       case SWITCH -> {
         tile = new Switch(tileBean);
         switchIdSeq = getHeighestIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(switchIdSeq);
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Switch) tile).setValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
@@ -96,12 +143,10 @@ public class TileFactory {
       case CROSS -> {
         tile = new Cross(tileBean);
         crossIdSeq = getHeighestIdSeq(crossIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(crossIdSeq);
       }
       case SIGNAL -> {
         tile = new Signal(tileBean);
         signalIdSeq = getHeighestIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(signalIdSeq);
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
@@ -109,7 +154,6 @@ public class TileFactory {
       case SENSOR -> {
         tile = new Sensor(tileBean);
         sensorIdSeq = getHeighestIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(sensorIdSeq);
         if (showValues && tileBean.getSensorBean() != null) {
           ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
         }
@@ -117,17 +161,14 @@ public class TileFactory {
       case BLOCK -> {
         tile = new Block(tileBean);
         blockIdSeq = getHeighestIdSeq(blockIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(blockIdSeq);
       }
       case STRAIGHT_DIR -> {
         tile = new StraightDirection(tileBean);
         straightDirectionIdSeq = getHeighestIdSeq(straightDirectionIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(straightDirectionIdSeq);
       }
       case END -> {
         tile = new End(tileBean);
         endIdSeq = getHeighestIdSeq(endIdSeq, getIdSeq(tileBean.getId()));
-        tile.setIdSeq(endIdSeq);
       }
       default ->
         Logger.warn("Unknown Tile Type " + tileType);
@@ -143,10 +184,10 @@ public class TileFactory {
    *
    * @param tileType type of type to create
    * @param orientation whether the orientation of the Tile is EAST, WEST, NORTH or SOUTH
-   * @param direction drection plays a role with Turnout tiles whether it goes to the Left or Right
+   * @param direction direction plays a role with Turnout tiles whether it goes to the Left or Right
    * @param x the tile center X
    * @param y the tile center Y
-   * @param drawOutline wheteh the outline of the ile must be rendered
+   * @param drawOutline whether the outline of the ile must be rendered
    * @return a Tile object
    */
   public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, int x, int y, boolean drawOutline) {
@@ -156,8 +197,9 @@ public class TileFactory {
   public static Tile createTile(TileType tileType, Orientation orientation, Direction direction, Point center, boolean drawOutline) {
     Tile tile = null;
     switch (tileType) {
-      case STRAIGHT ->
+      case STRAIGHT -> {
         tile = new Straight(orientation, center);
+      }
       case CURVED ->
         tile = new Curved(orientation, center);
       case SWITCH ->
@@ -174,14 +216,15 @@ public class TileFactory {
         tile = new StraightDirection(orientation, center);
       case END ->
         tile = new End(orientation, center);
-
       default ->
         Logger.warn("Unknown Tile Type " + tileType);
     }
 
     if (tile != null) {
       tile.setDrawOutline(drawOutline);
+      tile.setId(getTileId(tileType));
     }
+
     return (Tile) tile;
   }
 
