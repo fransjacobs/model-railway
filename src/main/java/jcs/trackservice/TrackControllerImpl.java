@@ -16,20 +16,15 @@
 package jcs.trackservice;
 
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.JCS;
 import jcs.controller.cs3.events.SensorMessageEvent;
@@ -44,7 +39,6 @@ import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.TileBean;
 import jcs.trackservice.events.SensorListener;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
@@ -55,13 +49,6 @@ import jcs.controller.cs3.events.DirectionMessageEvent;
 import jcs.controller.cs3.events.DirectionMessageEventListener;
 import jcs.controller.cs3.events.FunctionMessageEvent;
 import jcs.controller.cs3.events.PowerEventListener;
-import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
-import static jcs.entities.enums.TileType.CURVED;
-import static jcs.entities.enums.TileType.SENSOR;
-import static jcs.entities.enums.TileType.SIGNAL;
-import static jcs.entities.enums.TileType.STRAIGHT;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
@@ -270,94 +257,44 @@ public class TrackControllerImpl implements TrackController {
     return PersistenceFactory.getService().persist(property);
   }
 
-  @Override
-  public Set<TileBean> getTiles() {
-    Set<TileBean> beans = new HashSet<>();
-    beans.addAll(PersistenceFactory.getService().getTiles());
 
-    return beans;
-  }
-
-  @Override
-  public TileBean getTile(Integer x, Integer y) {
-    return PersistenceFactory.getService().getTile(x, y);
-  }
-
-  @Override
-  public TileBean persist(TileBean tile) {
-
-    if (tile.getAccessoryBean() != null || tile.getSensorBean() != null) {
-      TileType tileType = tile.getTileType();
-
-      switch (tileType) {
-        case STRAIGHT -> {
-        }
-        case CURVED -> {
-        }
-        case SWITCH -> {
-          AccessoryBean turnout = (AccessoryBean) tile.getAccessoryBean();
-          tile.setAccessoryId(PersistenceFactory.getService().persist(turnout).getId());
-        }
-        case CROSS -> {
-          AccessoryBean cross = (AccessoryBean) tile.getAccessoryBean();
-          tile.setAccessoryId(PersistenceFactory.getService().persist(cross).getId());
-        }
-        case SIGNAL -> {
-          AccessoryBean signal = (AccessoryBean) tile.getAccessoryBean();
-          tile.setAccessoryId(PersistenceFactory.getService().persist(signal).getId());
-        }
-        case SENSOR -> {
-          SensorBean sensor = (SensorBean) tile.getSensorBean();
-          tile.setSensorId(PersistenceFactory.getService().persist(sensor).getId());
-        }
-        case BLOCK -> {
-        }
-        default ->
-          Logger.warn("Unknown Tile Type " + tileType);
-      }
-    }
-    PersistenceFactory.getService().persist(tile);
-
-    return tile;
-  }
-
-  @Override
-  public void persist(Set<TileBean> tiles) {
-    //get all existing tiles from database
-    List<TileBean> existing = PersistenceFactory.getService().getTiles();
-
-    Map<Point, TileBean> currentTP = new HashMap<>();
-    Map<Point, TileBean> updatedTP = new HashMap<>();
-
-    for (TileBean tb : existing) {
-      currentTP.put(tb.getCenter(), tb);
-    }
-
-    for (TileBean tb : tiles) {
-      updatedTP.put(tb.getCenter(), tb);
-    }
-
-    //remove the ones which do no longer exists
-    Set<Point> currentPoints = currentTP.keySet();
-    Set<Point> updatedPoints = updatedTP.keySet();
-
-    for (Point p : currentPoints) {
-      if (!updatedPoints.contains(p)) {
-        PersistenceFactory.getService().removeTile(p.x, p.y);
-      }
-    }
-
-    for (TileBean tb : tiles) {
-      if (tb.getId() == null) {
-        //store the layouttile but incase check if it exist based on x and y
-        TileBean tbxy = PersistenceFactory.getService().getTile(tb.getX(), tb.getY());
-        if (tbxy != null) {
-          tb.setId(tbxy.getId());
-        }
-      }
-      persist(tb);
-    }
-  }
+//  @Override
+//  public TileBean persist(TileBean tile) {
+//
+//    if (tile.getAccessoryBean() != null || tile.getSensorBean() != null) {
+//      TileType tileType = tile.getTileType();
+//
+//      switch (tileType) {
+//        case STRAIGHT -> {
+//        }
+//        case CURVED -> {
+//        }
+//        case SWITCH -> {
+//          AccessoryBean turnout = (AccessoryBean) tile.getAccessoryBean();
+//          tile.setAccessoryId(PersistenceFactory.getService().persist(turnout).getId());
+//        }
+//        case CROSS -> {
+//          AccessoryBean cross = (AccessoryBean) tile.getAccessoryBean();
+//          tile.setAccessoryId(PersistenceFactory.getService().persist(cross).getId());
+//        }
+//        case SIGNAL -> {
+//          AccessoryBean signal = (AccessoryBean) tile.getAccessoryBean();
+//          tile.setAccessoryId(PersistenceFactory.getService().persist(signal).getId());
+//        }
+//        case SENSOR -> {
+//          SensorBean sensor = (SensorBean) tile.getSensorBean();
+//          tile.setSensorId(PersistenceFactory.getService().persist(sensor).getId());
+//        }
+//        case BLOCK -> {
+//        }
+//        default ->
+//          Logger.warn("Unknown Tile Type " + tileType);
+//      }
+//    }
+//    PersistenceFactory.getService().persist(tile);
+//
+//    return tile;
+//  }
 
   @Override
   public List<RouteBean> getRoutes() {
@@ -372,11 +309,6 @@ public class TrackControllerImpl implements TrackController {
   @Override
   public void remove(RouteBean route) {
     PersistenceFactory.getService().remove(route);
-  }
-
-  @Override
-  public void remove(TileBean tile) {
-    PersistenceFactory.getService().remove(tile);
   }
 
   @Override

@@ -353,6 +353,7 @@ public class CanMessageFactory implements MarklinCan {
 //    }
     //Mainly for testing....
     public static void main(String[] a) {
+        System.out.println("getMobileAppPingRequest:      " + getMobileAppPingRequest());
         System.out.println("getMemberPing:      " + getMemberPing());
         System.out.println("querySystem:        " + querySystem(1668498828));
         System.out.println("stop:               " + systemStopGo(false, 1668498828));

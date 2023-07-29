@@ -68,7 +68,7 @@ public class PersistenceFactory {
         }
 
         if (persistenceService != null) {
-            Logger.debug("Using " + persistenceService.getClass().getSimpleName() + " as PersistenceService...");
+            Logger.trace("Using " + persistenceService.getClass().getSimpleName() + " as PersistenceService...");
         }
         return persistenceService != null;
     }

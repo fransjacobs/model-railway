@@ -64,8 +64,13 @@ public class CS3ConnectionFactory {
 
       if (lastUsedIp != null) {
         try {
-          this.controllerHost = InetAddress.getByName(lastUsedIp);
-          Logger.trace("Using last used CS IP Address: " + lastUsedIp);
+          if(Ping.IsReachable(lastUsedIp)) {
+            this.controllerHost = InetAddress.getByName(lastUsedIp);
+            Logger.trace("Using last used IP Address: " + lastUsedIp);
+          }
+          else {
+            Logger.trace("Last used IP Address: " + lastUsedIp+" is not reachable");
+          }
         } catch (UnknownHostException ex) {
           Logger.trace("Last used CS IP: " + lastUsedIp + " is invalid!");
           lastUsedIp = null;
@@ -83,8 +88,8 @@ public class CS3ConnectionFactory {
           //Write the last used IP Addres for faster discovery next time
           RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "cs-ip-address", controllerHost.getHostAddress());
         }
-
         Logger.trace("CS3 ip: " + controllerHost.getHostName());
+        
         controllerConnection = new TCPConnection(controllerHost);
       } else {
         Logger.warn("Can't find a Marklin Controller host!");
@@ -142,7 +147,7 @@ public class CS3ConnectionFactory {
       }
 
       try (DatagramSocket responseSocket = new DatagramSocket(CS3Connection.CS3_TX_PORT, localAddress)) {
-        responseSocket.setSoTimeout(3000);
+        responseSocket.setSoTimeout(2000);
 
         DatagramPacket responsePacket = new DatagramPacket(new byte[CanMessage.MESSAGE_SIZE], CanMessage.MESSAGE_SIZE, localAddress, CS3Connection.CS3_TX_PORT);
         responseSocket.receive(responsePacket);

@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.layout;
 
@@ -50,112 +47,112 @@ import org.tinylog.Logger;
  */
 public class LayoutPanel extends JPanel {
 
-    private final boolean readonly;
-    private Mode mode;
-    private TileType tileType;
+  private final boolean readonly;
 
-    public LayoutPanel() {
-      this(false);
+  public LayoutPanel() {
+    this(false);
+  }
+
+  public LayoutPanel(boolean readonly) {
+    this.readonly = readonly;
+    initComponents();
+    postInit();
+  }
+
+  private void postInit() {
+    this.straightBtn.setSelected(true);
+    this.canvas.setTileType(TileType.STRAIGHT);
+    this.setMode(Mode.SELECT);
+
+    if (this.readonly) {
+      this.canvas.setDrawGrid(!readonly);
+
+      this.saveBtn.setEnabled(!readonly);
+      this.saveBtn.setVisible(!readonly);
+      this.toolBar.remove(this.saveBtn);
+
+      this.loadBtn.setEnabled(!readonly);
+      this.loadBtn.setVisible(!readonly);
+      this.toolBar.remove(this.loadBtn);
+
+      this.repaintBtn.setEnabled(readonly);
+      this.repaintBtn.setVisible(readonly);
+
+      this.routeBtn.setEnabled(readonly);
+      this.routeBtn.setVisible(readonly);
+
+      this.selectBtn.setEnabled(!readonly);
+      this.selectBtn.setVisible(!readonly);
+      this.toolBar.remove(this.selectBtn);
+
+      this.addBtn.setEnabled(!readonly);
+      this.addBtn.setVisible(!readonly);
+
+      this.deleteBtn.setEnabled(!readonly);
+      this.deleteBtn.setVisible(!readonly);
+
+      this.gridBtn.setEnabled(!readonly);
+      this.gridBtn.setVisible(!readonly);
+
+      this.straightBtn.setEnabled(!readonly);
+      this.straightBtn.setVisible(!readonly);
+
+      this.curvedBtn.setEnabled(!readonly);
+      this.curvedBtn.setVisible(!readonly);
+
+      this.blockBtn.setEnabled(!readonly);
+      this.blockBtn.setVisible(!readonly);
+
+      this.sensorBtn.setEnabled(!readonly);
+      this.sensorBtn.setVisible(!readonly);
+
+      this.signalBtn.setEnabled(!readonly);
+      this.signalBtn.setVisible(!readonly);
+
+      this.leftSwitchBtn.setEnabled(!readonly);
+      this.leftSwitchBtn.setVisible(!readonly);
+
+      this.rightSwitchBtn.setEnabled(!readonly);
+      this.rightSwitchBtn.setVisible(!readonly);
+
+      this.crossLBtn.setEnabled(!readonly);
+      this.crossLBtn.setVisible(!readonly);
+
+      this.crossRBtn.setEnabled(!readonly);
+      this.crossRBtn.setVisible(!readonly);
+
+      this.endTrackBtn.setEnabled(!readonly);
+      this.endTrackBtn.setVisible(!readonly);
+
+      this.straightDirectionBtn.setEnabled(!readonly);
+      this.straightDirectionBtn.setVisible(!readonly);
+
+      this.moveBtn.setEnabled(!readonly);
+      this.moveBtn.setVisible(!readonly);
+
+      this.flipVerticalBtn.setEnabled(!readonly);
+      this.flipVerticalBtn.setVisible(!readonly);
+
+      this.flipHorizontalBtn.setEnabled(!readonly);
+      this.flipHorizontalBtn.setVisible(!readonly);
+
+      this.rotateBtn.setEnabled(!readonly);
+      this.rotateBtn.setVisible(!readonly);
     }
+  }
 
-    public LayoutPanel(boolean readonly) {
-        this.readonly = readonly;
-        this.mode = Mode.SELECT;
-        this.tileType = TileType.STRAIGHT;
-        initComponents();
-        postInit();
-    }
+  public void saveLayout() {
+    this.canvas.saveLayout();
+  }
 
-    private void postInit() {
-        this.straightBtn.setSelected(true);
-        this.canvas.setTileType(tileType);
-        this.canvas.setMode(mode);
-             
-        if(this.readonly) {
-            this.canvas.setDrawGrid(!readonly);
-            
-            this.saveBtn.setEnabled(!readonly);
-            this.saveBtn.setVisible(!readonly);
-            this.toolBar.remove(this.saveBtn);
-            
-            this.loadBtn.setEnabled(!readonly);
-            this.loadBtn.setVisible(!readonly);
-            this.toolBar.remove(this.loadBtn);
-            
-            this.repaintBtn.setEnabled(readonly);           
-            this.repaintBtn.setVisible(readonly);           
+  public void loadLayout() {
+    this.canvas.loadLayout();
+  }
 
-            this.routeBtn.setEnabled(readonly);
-            this.routeBtn.setVisible(readonly);
-            
-            this.selectBtn.setEnabled(!readonly);
-            this.selectBtn.setVisible(!readonly);
-            this.toolBar.remove(this.selectBtn);
-            
-            this.addBtn.setEnabled(!readonly);
-            this.addBtn.setVisible(!readonly);
-            
-            this.deleteBtn.setEnabled(!readonly);
-            this.deleteBtn.setVisible(!readonly);
-            
-            this.gridBtn.setEnabled(!readonly);
-            this.gridBtn.setVisible(!readonly);
-            
-            this.straightBtn.setEnabled(!readonly);
-            this.straightBtn.setVisible(!readonly);
-            
-            this.curvedBtn.setEnabled(!readonly);                       
-            this.curvedBtn.setVisible(!readonly);                       
-
-            this.blockBtn.setEnabled(!readonly);
-            this.blockBtn.setVisible(!readonly);
-
-            this.sensorBtn.setEnabled(!readonly);
-            this.sensorBtn.setVisible(!readonly);
-
-            this.signalBtn.setEnabled(!readonly);
-            this.signalBtn.setVisible(!readonly);
-
-            this.leftSwitchBtn.setEnabled(!readonly);
-            this.leftSwitchBtn.setVisible(!readonly);
-
-            this.rightSwitchBtn.setEnabled(!readonly);
-            this.rightSwitchBtn.setVisible(!readonly);
-
-            this.crossLBtn.setEnabled(!readonly);
-            this.crossLBtn.setVisible(!readonly);
-
-            this.crossRBtn.setEnabled(!readonly);
-            this.crossRBtn.setVisible(!readonly);
-            
-            this.moveBtn.setEnabled(!readonly);
-            this.moveBtn.setVisible(!readonly);
-
-            this.flipVerticalBtn.setEnabled(!readonly);
-            this.flipVerticalBtn.setVisible(!readonly);
-
-            this.flipHorizontalBtn.setEnabled(!readonly);
-            this.flipHorizontalBtn.setVisible(!readonly);
-
-            this.rotateBtn.setEnabled(!readonly);
-            this.rotateBtn.setVisible(!readonly);
-        }
-    }
-
-    public void saveLayout() {
-        this.canvas.saveLayout();
-    }
-
-    public void loadLayout() {
-        this.canvas.loadLayout();
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -196,6 +193,8 @@ public class LayoutPanel extends JPanel {
         rightSwitchBtn = new JToggleButton();
         crossLBtn = new JToggleButton();
         crossRBtn = new JToggleButton();
+        straightDirectionBtn = new JToggleButton();
+        endTrackBtn = new JToggleButton();
         filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         moveBtn = new JButton();
         flipVerticalBtn = new JButton();
@@ -377,7 +376,7 @@ public class LayoutPanel extends JPanel {
         toolBar.add(routeBtn);
         toolBar.add(filler1);
 
-        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png"))); // NOI18N
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png"))); // NOI18N
         selectBtn.setToolTipText("Select");
         selectBtn.setFocusable(false);
         selectBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -587,6 +586,39 @@ public class LayoutPanel extends JPanel {
             }
         });
         toolBar.add(crossRBtn);
+
+        tileBtnGroup.add(straightDirectionBtn);
+        straightDirectionBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-straightDirection.png"))); // NOI18N
+        straightDirectionBtn.setDoubleBuffered(true);
+        straightDirectionBtn.setFocusable(false);
+        straightDirectionBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        straightDirectionBtn.setMaximumSize(new Dimension(38, 38));
+        straightDirectionBtn.setMinimumSize(new Dimension(38, 38));
+        straightDirectionBtn.setPreferredSize(new Dimension(38, 38));
+        straightDirectionBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straightDirection_Y.png"))); // NOI18N
+        straightDirectionBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        straightDirectionBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                straightDirectionBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(straightDirectionBtn);
+
+        tileBtnGroup.add(endTrackBtn);
+        endTrackBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-end-track.png"))); // NOI18N
+        endTrackBtn.setFocusable(false);
+        endTrackBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        endTrackBtn.setMaximumSize(new Dimension(38, 38));
+        endTrackBtn.setMinimumSize(new Dimension(38, 38));
+        endTrackBtn.setPreferredSize(new Dimension(38, 38));
+        endTrackBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-end-track_Y.png"))); // NOI18N
+        endTrackBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        endTrackBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                endTrackBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(endTrackBtn);
         toolBar.add(filler4);
 
         moveBtn.setIcon(new ImageIcon(getClass().getResource("/media/drag-24.png"))); // NOI18N
@@ -720,7 +752,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_moveMIActionPerformed
 
     private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
-        this.canvas.removeTiles();
+      this.canvas.removeTiles();
     }//GEN-LAST:event_deleteMIActionPerformed
 
     private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
@@ -728,182 +760,160 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_propertiesMIActionPerformed
 
     private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
-        this.saveLayout();
+      this.saveLayout();
     }//GEN-LAST:event_saveBtnActionPerformed
 
     private void loadBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loadBtnActionPerformed
-        this.loadLayout();
+      this.loadLayout();
     }//GEN-LAST:event_loadBtnActionPerformed
 
     private void selectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_selectBtnActionPerformed
-        setMode(Mode.SELECT);
+      setMode(Mode.SELECT);
     }//GEN-LAST:event_selectBtnActionPerformed
 
     private void addBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-        setMode(Mode.ADD);
+      setMode(Mode.ADD);
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
-        setMode(Mode.DELETE);
-        this.canvas.removeTiles();
+      setMode(Mode.DELETE);
+      this.canvas.removeTiles();
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void repaintBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_repaintBtnActionPerformed
-        this.canvas.repaint();
+      this.canvas.repaint();
     }//GEN-LAST:event_repaintBtnActionPerformed
 
     private void straightBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_straightBtnActionPerformed
-        setTileType(TileType.STRAIGHT);
+      setTileType(TileType.STRAIGHT);
     }//GEN-LAST:event_straightBtnActionPerformed
 
     private void curvedBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_curvedBtnActionPerformed
-        setTileType(TileType.CURVED);
+      setTileType(TileType.CURVED);
     }//GEN-LAST:event_curvedBtnActionPerformed
 
     private void blockBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_blockBtnActionPerformed
-        setTileType(TileType.BLOCK);
+      setTileType(TileType.BLOCK);
     }//GEN-LAST:event_blockBtnActionPerformed
 
     private void rotateBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateBtnActionPerformed
-        this.canvas.rotateSelectedTile();
+      this.canvas.rotateSelectedTile();
     }//GEN-LAST:event_rotateBtnActionPerformed
 
     private void flipHorizontalBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipHorizontalBtnActionPerformed
-        this.canvas.flipSelectedTileHorizontal();
+      this.canvas.flipSelectedTileHorizontal();
     }//GEN-LAST:event_flipHorizontalBtnActionPerformed
 
     private void flipVerticalBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipVerticalBtnActionPerformed
-        this.canvas.flipSelectedTileVertical();
+      this.canvas.flipSelectedTileVertical();
     }//GEN-LAST:event_flipVerticalBtnActionPerformed
 
     private void moveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveBtnActionPerformed
-        setMode(Mode.MOVE);
+      setMode(Mode.MOVE);
     }//GEN-LAST:event_moveBtnActionPerformed
 
     private void rightSwitchBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightSwitchBtnActionPerformed
-        this.setTileType(TileType.SWITCH);
-        this.setDirection(Direction.RIGHT);
+      this.setTileType(TileType.SWITCH);
+      this.setDirection(Direction.RIGHT);
     }//GEN-LAST:event_rightSwitchBtnActionPerformed
 
     private void leftSwitchBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftSwitchBtnActionPerformed
-        this.setTileType(TileType.SWITCH);
-        this.setDirection(Direction.LEFT);
+      this.setTileType(TileType.SWITCH);
+      this.setDirection(Direction.LEFT);
     }//GEN-LAST:event_leftSwitchBtnActionPerformed
 
     private void signalBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_signalBtnActionPerformed
-        setTileType(TileType.SIGNAL);
+      setTileType(TileType.SIGNAL);
     }//GEN-LAST:event_signalBtnActionPerformed
 
     private void sensorBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sensorBtnActionPerformed
-        setTileType(TileType.SENSOR);
+      setTileType(TileType.SENSOR);
     }//GEN-LAST:event_sensorBtnActionPerformed
 
     private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
-        this.canvas.setDrawGrid(this.gridBtn.isSelected());
-        this.canvas.repaint();
+      this.canvas.setDrawGrid(this.gridBtn.isSelected());
+      this.canvas.repaint();
     }//GEN-LAST:event_gridBtnActionPerformed
 
     private void formComponentResized(ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-        Logger.debug(evt.getComponent().getSize());// TODO add your handling code here:
+      Logger.debug(evt.getComponent().getSize());// TODO add your handling code here:
     }//GEN-LAST:event_formComponentResized
 
     private void crossLBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossLBtnActionPerformed
-        setTileType(TileType.CROSS);
-        this.setDirection(Direction.LEFT);
+      setTileType(TileType.CROSS);
+      this.setDirection(Direction.LEFT);
     }//GEN-LAST:event_crossLBtnActionPerformed
 
     private void crossRBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossRBtnActionPerformed
-        setTileType(TileType.CROSS);
-        this.setDirection(Direction.RIGHT);
+      setTileType(TileType.CROSS);
+      this.setDirection(Direction.RIGHT);
     }//GEN-LAST:event_crossRBtnActionPerformed
 
     private void routeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
-        Logger.debug("Start Routing...");
-        //this.canvas.routeLayout();
-        
-        this.canvas.showRoutesDialog();
+      Logger.debug("Start Routing...");
+      this.canvas.showRoutesDialog();
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-        Logger.trace("HIDDEN");
-        if (JCS.getParentFrame() != null) {
-            JCS.getParentFrame().hideExtraToolbar(this.toolBar);
-        }
+      Logger.trace("HIDDEN");
+      if (JCS.getParentFrame() != null) {
+        JCS.getParentFrame().hideExtraToolbar(this.toolBar);
+      }
     }//GEN-LAST:event_formComponentHidden
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-        Logger.trace("SHOWN");
-        if (JCS.getParentFrame() != null) {
-            topPanel.remove(this.toolBar);
-            this.remove(topPanel);
-            this.doLayout();
-            JCS.getParentFrame().showExtraToolbar(this.toolBar);
-        }
+      Logger.trace("SHOWN");
+      if (JCS.getParentFrame() != null) {
+        topPanel.remove(this.toolBar);
+        this.remove(topPanel);
+        this.doLayout();
+        JCS.getParentFrame().showExtraToolbar(this.toolBar);
+      }
     }//GEN-LAST:event_formComponentShown
 
-    private void setTileType(TileType tileType) {
-        this.tileType = tileType;
-        this.canvas.setTileType(tileType);
+  private void straightDirectionBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_straightDirectionBtnActionPerformed
+    setTileType(TileType.STRAIGHT_DIR);
+  }//GEN-LAST:event_straightDirectionBtnActionPerformed
+
+  private void endTrackBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_endTrackBtnActionPerformed
+    setTileType(TileType.END);
+  }//GEN-LAST:event_endTrackBtnActionPerformed
+
+  private void setTileType(TileType tileType) {
+    this.canvas.setTileType(tileType);
+  }
+
+  private void setDirection(Direction direction) {
+    this.canvas.setDirection(direction);
+  }
+
+  private void setMode(Mode mode) {
+    switch (mode) {
+      case SELECT -> {
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png")));
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));
+      }
+      case ADD -> {
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24-y.png")));
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));
+      }
+      case DELETE -> {
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24-y.png")));
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
+      }
+      default -> {
+        Logger.warn("Mode setting which should not ever happen " + mode);
+        selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
+        addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
+        deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));
+      }
     }
 
-    private void setDirection(Direction direction) {
-        //this.direction = direction;
-        this.canvas.setDirection(direction);
-    }
-
-    private void setMode(Mode mode) {
-        this.mode = mode;
-        this.canvas.setMode(mode);
-
-//        switch (this.mode) {
-//            case ADD:
-//                straightBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.curvedBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.blockBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.sensorBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.leftSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.rightSwitchBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.signalBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.crossLBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                this.crossRBtn.setBorder(new LineBorder(new Color(153, 153, 153), 1, true));
-//                break;
-//            default:
-//                this.straightBtn.setBorder(null);
-//                this.curvedBtn.setBorder(null);
-//                this.blockBtn.setBorder(null);
-//                this.sensorBtn.setBorder(null);
-//                this.leftSwitchBtn.setBorder(null);
-//                this.rightSwitchBtn.setBorder(null);
-//                this.signalBtn.setBorder(null);
-//                this.crossLBtn.setBorder(null);
-//                this.crossRBtn.setBorder(null);
-//                break;
-//        }
-    }
-
-//    public static void main(String args[]) {
-//        //System.setProperty("trackServiceAlwaysUseDemo", "true");
-//        try {
-//            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-//            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-//            Logger.error(ex);
-//        }
-//
-//        java.awt.EventQueue.invokeLater(() -> {
-//            JFrame f = new JFrame("LayoutCanvas Tester");
-//            LayoutPanel layoutPanel = new LayoutPanel();
-//            f.add(layoutPanel);
-//
-//            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            layoutPanel.loadLayout();
-//            f.pack();
-//
-//            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-//            f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
-//            f.setVisible(true);
-//        });
-//    }
+    this.canvas.setMode(mode);
+  }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -917,6 +927,7 @@ public class LayoutPanel extends JPanel {
     private JPopupMenu curvedPopupMenu;
     private JButton deleteBtn;
     private JMenuItem deleteMI;
+    private JToggleButton endTrackBtn;
     private Box.Filler filler1;
     private Box.Filler filler2;
     private Box.Filler filler3;
@@ -945,6 +956,7 @@ public class LayoutPanel extends JPanel {
     private JToggleButton sensorBtn;
     private JToggleButton signalBtn;
     private JToggleButton straightBtn;
+    private JToggleButton straightDirectionBtn;
     private JPopupMenu straightPopupMenu;
     private ButtonGroup tileBtnGroup;
     private JToolBar toolBar;

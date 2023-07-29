@@ -19,8 +19,11 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.beans.PropertyChangeListener;
+import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.enums.Direction;
@@ -31,90 +34,194 @@ import jcs.ui.layout.tiles.enums.Direction;
  */
 public interface Tile extends Shape {
 
-    public static final int GRID = 20;
-    public static final int DEFAULT_WIDTH = GRID * 2;
-    public static final int DEFAULT_HEIGHT = GRID * 2;
+  public static final int GRID = 20;
+  public static final int DEFAULT_WIDTH = GRID * 2;
+  public static final int DEFAULT_HEIGHT = GRID * 2;
 
-    public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
+  public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
-    Color getTrackColor();
+  Color getTrackColor();
 
-    void setTrackColor(Color trackColor);
+  void setTrackColor(Color trackColor);
 
-    Color getBackgroundColor();
+  Color getBackgroundColor();
 
-    void setBackgroundColor(Color backgroundColor);
+  void setBackgroundColor(Color backgroundColor);
 
-    String getId();
+  String getId();
 
-    void setId(String id);
+  void setId(String id);
 
-    void drawTile(Graphics2D g2d, boolean drawOutline);
+  void drawTile(Graphics2D g2d, boolean drawOutline);
 
-    void renderTile(Graphics2D g2d, Color trackColor, Color backgroundColor);
+  void renderTile(Graphics2D g2d, Color trackColor, Color backgroundColor);
 
-    void drawName(Graphics2D g2);
+  void drawName(Graphics2D g2);
 
-    void drawCenterPoint(Graphics2D g2d);
+  void drawCenterPoint(Graphics2D g2d);
 
-    void drawCenterPoint(Graphics2D g2, Color color);
+  void drawCenterPoint(Graphics2D g2, Color color);
 
-    void drawCenterPoint(Graphics2D g2d, Color color, double size);
+  void drawCenterPoint(Graphics2D g2d, Color color, double size);
 
-    void drawBounds(Graphics2D g2d);
+  void drawBounds(Graphics2D g2d);
 
-    void rotate();
+  void rotate();
 
-    void flipHorizontal();
+  void flipHorizontal();
 
-    void flipVertical();
+  void flipVertical();
 
-    void move(int newX, int newY);
+  void move(int newX, int newY);
 
-    Orientation getOrientation();
+  Orientation getOrientation();
 
-    void setOrientation(Orientation orientation);
+  void setOrientation(Orientation orientation);
 
-    Direction getDirection();
+  Direction getDirection();
 
-    void setDirection(Direction direction);
+  void setDirection(Direction direction);
 
-    Point getCenter();
+  Point getCenter();
 
-    void setCenter(Point center);
+  void setCenter(Point center);
 
-    Set<Point> getAltPoints();
+  /**
+   *
+   * @return a Set of alternative "center" points in case the tile is not a square
+   */
+  Set<Point> getAltPoints();
 
-    Set<Point> getAllPoints();
+  /**
+   *
+   * @return All point relevant for the Object on the Canvas
+   */
+  Set<Point> getAllPoints();
 
-    int getOffsetX();
+  int getOffsetX();
 
-    void setOffsetX(int offsetX);
+  void setOffsetX(int offsetX);
 
-    int getOffsetY();
+  int getOffsetY();
 
-    void setOffsetY(int offsetY);
+  void setOffsetY(int offsetY);
 
-    int getHeight();
+  int getHeight();
 
-    int getWidth();
+  int getWidth();
 
-    int getCenterX();
+  /**
+   *
+   * @return the X (pixel) coordinate of the center of the tile
+   */
+  int getCenterX();
 
-    int getCenterY();
+  /**
+   *
+   * @return then Y (pixel) coordinate of the center of the tile
+   */
+  int getCenterY();
 
-    TileBean getTileBean();
+  TileBean getTileBean();
 
-    void setTileBean(TileBean tileBean);
+  boolean isDrawOutline();
 
-    //boolean isDrawName();
-    //void setDrawName(boolean drawName);
-    boolean isDrawOutline();
+  void setDrawOutline(boolean drawOutline);
 
-    void setDrawOutline(boolean drawOutline);
+  TileType getTileType();
 
-    TileType getTileType();
+  void setPropertyChangeListener(PropertyChangeListener listener);
 
-    void setRepaintListener(RepaintListener listener);
+  String xyToString();
+
+  /**
+   *
+   * @return the X number of the grid square (grid is 40 x 40 pix)
+   */
+  int getGridX();
+
+  /**
+   *
+   * @return the Y number of the grid square (grid is 40 x 40 pix)
+   */
+  int getGridY();
+
+  /**
+   * The main route of the tile is horizontal
+   *
+   * @return true when main route goes from East to West or vv
+   */
+  boolean isHorizontal();
+
+  /**
+   * The main route of the tile is vertical
+   *
+   * @return true when main route goes from North to South or vv
+   */
+  boolean isVertical();
+
+  /**
+   * The main route of the tile is diagonal
+   *
+   * @return true when main route goes from North to East or West to South and vv
+   */
+  boolean isDiagonal();
+
+  boolean isJunction();
+
+  boolean isBlock();
+
+  boolean isDirectional();
+
+  Map<Orientation, Point> getNeighborPoints();
+
+  Map<Point, Orientation> getNeighborOrientations();
+
+  Map<Orientation, Point> getEdgePoints();
+
+  Map<Point, Orientation> getEdgeOrientations();
+
+  /**
+   *
+   * @param other a tile to check with this tile
+   * @return true when the other tile is adjacent to this and the "tracks" connect
+   */
+  boolean isAdjacent(Tile other);
+
+  String getIdSuffix(Tile other);
+
+  AccessoryValue getSwitchValueTo(Tile other);
+
+  /**
+   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the switch side of the Turnout
+   */
+  boolean isSwitchSide(Tile other);
+
+  /**
+   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the diverging side of the Turnout
+   */
+  boolean isDivergingSide(Tile other);
+
+  /**
+   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the straight side of the Turnout
+   */
+  boolean isStraightSide(Tile other);
+
+  /**
+   * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
+   *
+   * @param other A Tile
+   * @return true where other is on the side of this tile where the arrow points to
+   */
+  boolean isArrowDirection(Tile other);
 
 }

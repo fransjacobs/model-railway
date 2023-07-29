@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public enum TileType {
-    STRAIGHT("Straight"), CURVED("Curved"), SWITCH("Switch"), CROSS("Cross"), SIGNAL("Signal"), SENSOR("Sensor"), BLOCK("Block");
+    STRAIGHT("Straight"), STRAIGHT_DIR("StraightDirection"),CURVED("Curved"), SWITCH("Switch"), CROSS("Cross"), SIGNAL("Signal"), SENSOR("Sensor"), BLOCK("Block"), END("End");
 
     private final String tileType;
 
