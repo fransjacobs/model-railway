@@ -212,6 +212,11 @@ public class TileBean implements Serializable, Comparable {
 
   public void setAccessoryBean(AccessoryBean accessoryBean) {
     this.accessoryBean = accessoryBean;
+    if (accessoryBean != null) {
+      this.accessoryId = accessoryBean.getId();
+    } else {
+      this.accessoryId = null;
+    }
   }
 
   @Transient
@@ -221,6 +226,11 @@ public class TileBean implements Serializable, Comparable {
 
   public void setSensorBean(SensorBean sensorBean) {
     this.sensorBean = sensorBean;
+    if (sensorBean != null) {
+      this.sensorId = sensorBean.getId();
+    } else {
+      this.sensorId = null;
+    }
   }
 
   @Override

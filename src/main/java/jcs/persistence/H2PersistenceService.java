@@ -20,10 +20,8 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.SensorBean;
@@ -37,6 +35,7 @@ import org.tinylog.Logger;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
+import jcs.ui.layout.Tile;
 
 public class H2PersistenceService implements PersistenceService {
 
@@ -111,7 +110,10 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public SensorBean persist(SensorBean sensor) {
-    SensorBean prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
+    SensorBean prev = null;
+    if(sensor.getId() != null) {
+      prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
+    }
     if (prev != null) {
       sensor.setId(prev.getId());
       sensor.setName(prev.getName());
@@ -335,18 +337,34 @@ public class H2PersistenceService implements PersistenceService {
   public TileBean getTile(Integer x, Integer y) {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
-    //TODO Add related Objects
+
+    if (tileBean.getAccessoryId() != null) {
+      tileBean.setAccessoryBean(this.getAccessoryById(tileBean.getAccessoryId()));
+    }
+    
+    if(tileBean.getSensorId() != null) {
+      tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
+    }
 
     return tileBean;
   }
 
   @Override
   public TileBean persist(TileBean tileBean) {
-    if (database.where("id=?", tileBean.getId()).first(TileBean.class) != null) {
-      database.update(tileBean).getRowsAffected();
-      Logger.trace("Updated " + tileBean);
+    TileBean tb;
+    if (tileBean instanceof Tile) {
+      tb = ((Tile) tileBean).getTileBean();
     } else {
-      database.insert(tileBean).getRowsAffected();
+      tb = tileBean;
+    }
+
+    if (tb != null && tb.getId() != null) {
+      if (database.where("id=?", tb.getId()).first(TileBean.class) != null) {
+        database.update(tb).getRowsAffected();
+        Logger.trace("Updated " + tileBean);
+      } else {
+        database.insert(tb).getRowsAffected();
+      }
     }
     return tileBean;
   }
