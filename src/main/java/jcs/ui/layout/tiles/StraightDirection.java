@@ -23,7 +23,6 @@ import java.util.Collection;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
-import jcs.ui.layout.Tile;
 
 public class StraightDirection extends Straight {
 

@@ -35,7 +35,7 @@ import org.tinylog.Logger;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
-import jcs.ui.layout.Tile;
+import jcs.ui.layout.tiles.Tile;
 
 public class H2PersistenceService implements PersistenceService {
 
@@ -111,7 +111,7 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public SensorBean persist(SensorBean sensor) {
     SensorBean prev = null;
-    if(sensor.getId() != null) {
+    if (sensor.getId() != null) {
       prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
     }
     if (prev != null) {
@@ -284,14 +284,14 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public AccessoryBean getAccessoryById(Long id) {
+  public AccessoryBean getAccessory(Long id) {
     AccessoryBean accessoryBean = database.where("id=?", id).first(AccessoryBean.class);
 
     return accessoryBean;
   }
 
   @Override
-  public AccessoryBean getAccessory(Integer address) {
+  public AccessoryBean getAccessoryByAddress(Integer address) {
     AccessoryBean accessoryBean = database.where("address=?", address).first(AccessoryBean.class);
 
     return accessoryBean;
@@ -318,31 +318,51 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
-  @Override
-  public List<TileBean> getTiles() {
-    List<TileBean> tileBeans = database.results(TileBean.class);
-    //TODO add related objects
+  private TileBean addReleatedObjects(TileBean tileBean) {
+    if (tileBean.getAccessoryId() != null) {
+      tileBean.setAccessoryBean(this.getAccessory(tileBean.getAccessoryId()));
+    }
 
-    Logger.trace("Found " + tileBeans.size() + " TileBeans");
+    if (tileBean.getSensorId() != null) {
+      tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
+    }
+    return tileBean;
+  }
+
+  private List<TileBean> addReleatedObjects(List<TileBean> tileBeans) {
+
+    for (TileBean tileBean : tileBeans) {
+      addReleatedObjects(tileBean);
+    }
+
     return tileBeans;
   }
 
   @Override
-  public TileBean getTile(String id) {
-    TileBean tileBean = database.where("id=?", id).first(TileBean.class);
-    return tileBean;
+  public List<TileBean> getTileBeans() {
+    List<TileBean> tileBeans = database.results(TileBean.class);
+
+    Logger.trace("Found " + tileBeans.size() + " TileBeans");
+    return addReleatedObjects(tileBeans);
   }
 
   @Override
-  public TileBean getTile(Integer x, Integer y) {
+  public TileBean getTileBean(String id) {
+    TileBean tileBean = database.where("id=?", id).first(TileBean.class);
+
+    return addReleatedObjects(tileBean);
+  }
+
+  @Override
+  public TileBean getTileBean(Integer x, Integer y) {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
 
     if (tileBean != null && tileBean.getAccessoryId() != null) {
-      tileBean.setAccessoryBean(getAccessoryById(tileBean.getAccessoryId()));
+      tileBean.setAccessoryBean(getAccessory(tileBean.getAccessoryId()));
     }
-    
-    if(tileBean != null && tileBean.getSensorId() != null) {
+
+    if (tileBean != null && tileBean.getSensorId() != null) {
       tileBean.setSensorBean(getSensor(tileBean.getSensorId()));
     }
 

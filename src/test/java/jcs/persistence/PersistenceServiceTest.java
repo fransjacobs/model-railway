@@ -570,7 +570,7 @@ public class PersistenceServiceTest {
   }
 
   /**
-   * Test of getAccessoryById method, of class PersistenceService.
+   * Test of getAccessory method, of class PersistenceService.
    */
   @Test
   public void testGetAccessoryById() {
@@ -578,12 +578,12 @@ public class PersistenceServiceTest {
     Long id = 7L;
     PersistenceService instance = PersistenceFactory.getService();
     AccessoryBean expResult = this.signals.get(2);
-    AccessoryBean result = instance.getAccessoryById(id);
+    AccessoryBean result = instance.getAccessory(id);
     assertEquals(expResult, result);
   }
 
   /**
-   * Test of getAccessory method, of class PersistenceService.
+   * Test of getAccessoryByAddress method, of class PersistenceService.
    */
   @Test
   public void testGetAccessory() {
@@ -591,7 +591,7 @@ public class PersistenceServiceTest {
     Integer address = 7;
     PersistenceService instance = PersistenceFactory.getService();
     AccessoryBean expResult = this.turnouts.get(3);
-    AccessoryBean result = instance.getAccessory(address);
+    AccessoryBean result = instance.getAccessoryByAddress(address);
     assertEquals(expResult, result);
   }
 
@@ -611,12 +611,12 @@ public class PersistenceServiceTest {
 
     assertEquals(expResult, result);
 
-    AccessoryBean ab = instance.getAccessoryById(expResult.getId());
+    AccessoryBean ab = instance.getAccessory(expResult.getId());
     assertEquals(accessory, ab);
 
     accessory.setName("WWWWW");
     instance.persist(accessory);
-    ab = instance.getAccessory(expResult.getAddress());
+    ab = instance.getAccessoryByAddress(expResult.getAddress());
     assertEquals(accessory, ab);
   }
 
@@ -634,32 +634,32 @@ public class PersistenceServiceTest {
 
     assertEquals(accessory, result);
 
-    AccessoryBean ab = instance.getAccessory(accessory.getAddress());
+    AccessoryBean ab = instance.getAccessoryByAddress(accessory.getAddress());
 
     assertEquals(accessory, ab);
 
     instance.remove(accessory);
 
-    ab = instance.getAccessoryById(accessory.getId());
+    ab = instance.getAccessory(accessory.getId());
     assertNull(ab);
   }
 
   /**
-   * Test of getTiles method, of class PersistenceService.
+   * Test of getTileBeans method, of class PersistenceService.
    */
   @Test
-  public void testGetTiles() {
+  public void testGetTileBeans() {
     System.out.println("getTiles");
     PersistenceService instance = PersistenceFactory.getService();
 
-    List<TileBean> result = instance.getTiles();
+    List<TileBean> result = instance.getTileBeans();
     List<TileBean> expResult = this.tiles;
 
     assertEquals(expResult, result);
   }
 
   /**
-   * Test of getTile method, of class PersistenceService.
+   * Test of getTileBean method, of class PersistenceService.
    */
   @Test
   public void testGetTile() {
@@ -668,7 +668,7 @@ public class PersistenceServiceTest {
     Integer y = 180;
     PersistenceService instance = PersistenceFactory.getService();
     TileBean expResult = tiles.get(7);
-    TileBean result = instance.getTile(x, y);
+    TileBean result = instance.getTileBean(x, y);
     assertEquals(expResult, result);
   }
 
@@ -684,14 +684,14 @@ public class PersistenceServiceTest {
     TileBean result = instance.persist(sw12);
     assertEquals(sw12, result);
 
-    TileBean tb = instance.getTile("sw-12");
+    TileBean tb = instance.getTileBean("sw-12");
     assertEquals(sw12, tb);
 
     sw12.setDirection(Direction.RIGHT);
     result = instance.persist(sw12);
     assertEquals(sw12, result);
 
-    TileBean tb1 = instance.getTile(50, 50);
+    TileBean tb1 = instance.getTileBean(50, 50);
     assertEquals(sw12, tb1);
   }
 
@@ -704,12 +704,12 @@ public class PersistenceServiceTest {
     TileBean result = instance.persist(sw13);
     assertEquals(sw13, result);
 
-    TileBean tb = instance.getTile("sw-13");
+    TileBean tb = instance.getTileBean("sw-13");
     assertEquals(sw13, tb);
 
     instance.remove(tb);
 
-    TileBean tb1 = instance.getTile(80, 50);
+    TileBean tb1 = instance.getTileBean(80, 50);
     assertNull(tb1);
   }
 
@@ -725,23 +725,23 @@ public class PersistenceServiceTest {
 
     TileBean sw22 = new TileBean("sw-22", TileType.CROSS, Orientation.EAST, Direction.CENTER, 100, 100, null, null, null);
 
-    List<TileBean> current = instance.getTiles();
+    List<TileBean> current = instance.getTileBeans();
 
     //There should be 10 tiles...
     assertEquals(10, current.size());
 
     //tbl.add(sw22);
     //instance.persist(tbl);
-    List<TileBean> current2 = instance.getTiles();
+    List<TileBean> current2 = instance.getTileBeans();
 
     //There should now be 10 tiles...
     assertEquals(10, current2.size());
 
-    //TileBean tb = instance.getTile(100, 100);
+    //TileBean tb = instance.getTileBean(100, 100);
     //assertEquals(sw22, tb);
     //tbl.remove(sw22);
     //instance.persist(tbl);
-    //current2 = instance.getTiles();
+    //current2 = instance.getTileBeans();
     //There should now be 11 tiles...
     //assertEquals(11, current2.size());
   }
@@ -766,7 +766,7 @@ public class PersistenceServiceTest {
 
     instance.persist(expected);
 
-    List<TileBean> retrieved = instance.getTiles();
+    List<TileBean> retrieved = instance.getTileBeans();
     assertEquals(expected.size(), retrieved.size());
     assertEquals(expected, retrieved);
   }

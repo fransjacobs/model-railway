@@ -62,7 +62,7 @@ public class LayoutPanel extends JPanel {
   private void postInit() {
     this.straightBtn.setSelected(true);
     this.canvas.setTileType(TileType.STRAIGHT);
-    this.setMode(Mode.CONTROL);
+    this.setMode(readonly ? Mode.CONTROL : Mode.SELECT);
 
     if (this.readonly) {
       this.canvas.setDrawGrid(!readonly);

@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout;
 
+import jcs.ui.layout.tiles.Tile;
 import java.awt.BasicStroke;
 import jcs.entities.enums.TileType;
 import java.awt.Color;
@@ -56,6 +57,8 @@ import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
+import jcs.trackservice.events.AccessoryListener;
+import jcs.trackservice.events.SensorListener;
 import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
@@ -359,27 +362,53 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private void loadTiles() {
     boolean showValues = Mode.CONTROL.equals(this.mode);
 
-    //TODO, should come from persistence service
-    Map<Point, Tile> tm = LayoutUtil.loadLayout(drawGrid, this, showValues);
-    Set<Point> ps = tm.keySet();
-    //synchronized (tiles) {
-      selectedTiles.clear();
-      altTiles.clear();
-      tiles.clear();
+    List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
-      for (Point p : ps) {
-        Tile t = tm.get(p);
-        tiles.put(t.getCenter(), t);
-        //Alternative point(s) to be able to find all points
-        if (!t.getAltPoints().isEmpty()) {
-          Set<Point> alt = t.getAltPoints();
-          for (Point ap : alt) {
-            altTiles.put(ap, t);
-          }
+    selectedTiles.clear();
+    altTiles.clear();
+    tiles.clear();
+
+    for (TileBean tb : tileBeans) {
+      Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
+      tile.setPropertyChangeListener(this);
+
+      switch (tile.getTileType()) {
+        case SENSOR ->
+          TrackControllerFactory.getTrackController().addSensorListener((SensorListener) tile);
+        case SWITCH ->
+          TrackControllerFactory.getTrackController().addAccessoryListener((AccessoryListener) tile);
+        case SIGNAL ->
+          TrackControllerFactory.getTrackController().addAccessoryListener((AccessoryListener) tile);
+        default -> {
+          //Do nothing
         }
-      //}
-    }
+      }
+      this.tiles.put(tile.getCenter(), tile);
 
+      //Alternative point(s) to be able to find all points
+      if (!tile.getAltPoints().isEmpty()) {
+        Set<Point> alt = tile.getAltPoints();
+        for (Point ap : alt) {
+          altTiles.put(ap, tile);
+        }
+      }
+    }
+    Logger.debug("Loaded " + tiles.size() + " Tiles...");
+
+//    Map<Point, Tile> tm = TileCache.loadLayout(drawGrid, this, showValues);
+//    Set<Point> ps = tm.keySet();
+//
+//    for (Point p : ps) {
+//      Tile t = tm.get(p);
+//      tiles.put(t.getCenter(), t);
+//      //Alternative point(s) to be able to find all points
+//      if (!t.getAltPoints().isEmpty()) {
+//        Set<Point> alt = t.getAltPoints();
+//        for (Point ap : alt) {
+//          altTiles.put(ap, t);
+//        }
+//      }
+//    }
     Logger.debug("Loaded " + this.tiles.size() + " tiles...");
     this.repaint();
   }
@@ -1104,14 +1133,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       for (RouteElementBean re : rel) {
         String id = re.getTileId();
         String nodeId = re.getNodeId();
-        
+
         //if (id.startsWith("sw-") || id.startsWith("cs-")) {
-          //Switches are 2 times in there, only the one with a value is needed
-          //if (!id.equals(nodeId)) {
-          //  selectedRouteElements.put(id, re);
-          //}
+        //Switches are 2 times in there, only the one with a value is needed
+        //if (!id.equals(nodeId)) {
+        //  selectedRouteElements.put(id, re);
+        //}
         //} else {
-          selectedRouteElements.put(id, re);
+        selectedRouteElements.put(id, re);
         //}
       }
     }

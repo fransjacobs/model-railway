@@ -34,7 +34,6 @@ import org.tinylog.Logger;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.STRAIGHT_DIR;
 import static jcs.entities.enums.TileType.SWITCH;
-import jcs.ui.layout.Tile;
 
 /**
  * Factory object to create Tiles

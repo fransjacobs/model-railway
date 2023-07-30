@@ -28,7 +28,6 @@ import jcs.entities.enums.Orientation;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.SignalValue;
-import jcs.ui.layout.Tile;
 import org.tinylog.Logger;
 
 /**

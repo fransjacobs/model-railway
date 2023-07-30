@@ -52,7 +52,6 @@ import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
-import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
@@ -142,46 +141,6 @@ public class TrackControllerImpl implements TrackController {
     this.controllerService = null;
   }
 
-  @Override
-  public List<SensorBean> getSensors() {
-    return PersistenceFactory.getService().getSensors();
-  }
-
-  @Override
-  public SensorBean getSensor(Integer deviceId, Integer contactId) {
-    return PersistenceFactory.getService().getSensor(deviceId, contactId);
-  }
-
-  @Override
-  public SensorBean getSensor(Long id) {
-    return PersistenceFactory.getService().getSensor(id);
-  }
-
-  @Override
-  public SensorBean persist(SensorBean sensor) {
-    return PersistenceFactory.getService().persist(sensor);
-  }
-
-  @Override
-  public void remove(SensorBean sensor) {
-    PersistenceFactory.getService().remove(sensor);
-  }
-
-  @Override
-  public void remove(LocomotiveBean locomotive) {
-    PersistenceFactory.getService().remove(locomotive);
-  }
-
-  @Override
-  public void remove(AccessoryBean accessory) {
-    PersistenceFactory.getService().remove(accessory);
-  }
-
-  @Override
-  public void remove(JCSPropertyBean property) {
-    PersistenceFactory.getService().remove(property);
-  }
-
   public Image getLocomotiveImage(String imageName) {
     Image image = controllerService.getLocomotiveImage(imageName);
     if (image != null) {
@@ -202,113 +161,6 @@ public class TrackControllerImpl implements TrackController {
       Logger.error("Can't store image " + cachePath.getName() + "! ", ex.getMessage());
     }
     Logger.trace("Stored image " + imageName + ".png in the cache");
-  }
-
-//    @Override
-//    public Image getFunctionImage(String imageName) {
-//        if (!functionImageCache.containsKey(imageName)) {
-//            //Try to load the image from the file cache
-//            Image image = readFunctionImage(imageName);
-//            if (image != null) {
-//                int size = 30;
-//                float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-//                this.functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
-//            }
-//        }
-//        return this.functionImageCache.get(imageName);
-//    }
-  @Override
-  public List<AccessoryBean> getTurnouts() {
-    return PersistenceFactory.getService().getTurnouts();
-  }
-
-  @Override
-  public List<AccessoryBean> getSignals() {
-    return PersistenceFactory.getService().getSignals();
-  }
-
-  @Override
-  public AccessoryBean getAccessory(Long id) {
-    return PersistenceFactory.getService().getAccessoryById(id);
-  }
-
-  @Override
-  public AccessoryBean getAccessory(Integer address, String decoderType) {
-    return PersistenceFactory.getService().getAccessory(address);
-  }
-
-  @Override
-  public AccessoryBean persist(AccessoryBean accessory) {
-    return PersistenceFactory.getService().persist(accessory);
-  }
-
-  @Override
-  public List<JCSPropertyBean> getProperties() {
-    return PersistenceFactory.getService().getProperties();
-  }
-
-  @Override
-  public JCSPropertyBean getProperty(String key) {
-    return PersistenceFactory.getService().getProperty(key);
-  }
-
-  @Override
-  public JCSPropertyBean persist(JCSPropertyBean property) {
-    return PersistenceFactory.getService().persist(property);
-  }
-
-
-//  @Override
-//  public TileBean persist(TileBean tile) {
-//
-//    if (tile.getAccessoryBean() != null || tile.getSensorBean() != null) {
-//      TileType tileType = tile.getTileType();
-//
-//      switch (tileType) {
-//        case STRAIGHT -> {
-//        }
-//        case CURVED -> {
-//        }
-//        case SWITCH -> {
-//          AccessoryBean turnout = (AccessoryBean) tile.getAccessoryBean();
-//          tile.setAccessoryId(PersistenceFactory.getService().persist(turnout).getId());
-//        }
-//        case CROSS -> {
-//          AccessoryBean cross = (AccessoryBean) tile.getAccessoryBean();
-//          tile.setAccessoryId(PersistenceFactory.getService().persist(cross).getId());
-//        }
-//        case SIGNAL -> {
-//          AccessoryBean signal = (AccessoryBean) tile.getAccessoryBean();
-//          tile.setAccessoryId(PersistenceFactory.getService().persist(signal).getId());
-//        }
-//        case SENSOR -> {
-//          SensorBean sensor = (SensorBean) tile.getSensorBean();
-//          tile.setSensorId(PersistenceFactory.getService().persist(sensor).getId());
-//        }
-//        case BLOCK -> {
-//        }
-//        default ->
-//          Logger.warn("Unknown Tile Type " + tileType);
-//      }
-//    }
-//    PersistenceFactory.getService().persist(tile);
-//
-//    return tile;
-//  }
-
-  @Override
-  public List<RouteBean> getRoutes() {
-    return PersistenceFactory.getService().getRoutes();
-  }
-
-  @Override
-  public void persist(RouteBean route) {
-    PersistenceFactory.getService().persist(route);
-  }
-
-  @Override
-  public void remove(RouteBean route) {
-    PersistenceFactory.getService().remove(route);
   }
 
   @Override
@@ -563,23 +415,24 @@ public class TrackControllerImpl implements TrackController {
 
   private class SensorMessageEventListener implements SensorMessageListener {
 
-    private final TrackControllerImpl trackService;
+    private final TrackControllerImpl trackController;
 
-    SensorMessageEventListener(TrackControllerImpl trackService) {
-      this.trackService = trackService;
+    SensorMessageEventListener(TrackControllerImpl trackController) {
+      this.trackController = trackController;
     }
 
     @Override
     public void onSensorMessage(SensorMessageEvent event) {
       SensorBean sb = event.getSensorBean();
-      SensorBean dbsb = this.trackService.getSensor(sb.getDeviceId(), sb.getContactId());
+      SensorBean dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
+
       if (dbsb != null) {
         sb.setId(dbsb.getId());
         sb.setName(dbsb.getName());
-        this.trackService.persist(sb);
+        PersistenceFactory.getService().persist(sb);
       }
 
-      for (SensorListener sl : this.trackService.sensorListeners) {
+      for (SensorListener sl : trackController.sensorListeners) {
         sl.onChange(sb);
       }
     }
@@ -598,12 +451,12 @@ public class TrackControllerImpl implements TrackController {
       AccessoryBean ab = event.getAccessoryBean();
 
       int address = ab.getAddress();
-      AccessoryBean dbab = PersistenceFactory.getService().getAccessory(ab.getAddress());
+      AccessoryBean dbab = PersistenceFactory.getService().getAccessoryByAddress(ab.getAddress());
       if (dbab == null) {
         //check if address is even, might be the second address of a signal
         if (address % 2 == 0) {
           address = address - 1;
-          dbab = PersistenceFactory.getService().getAccessory(address);
+          dbab = PersistenceFactory.getService().getAccessoryByAddress(address);
           if (dbab != null && dbab.isSignal() && dbab.getStates() > 2) {
             ab.setAddress(address);
             int p = ab.getPosition() + 2;
@@ -629,7 +482,7 @@ public class TrackControllerImpl implements TrackController {
         if (ab.getSwitchTime() == null) {
           ab.setSwitchTime(dbab.getSwitchTime());
         }
-        this.trackService.persist(ab);
+        PersistenceFactory.getService().persist(ab);
 
         for (AccessoryListener al : this.trackService.accessoryListeners) {
           al.onChange(event);
@@ -722,61 +575,3 @@ public class TrackControllerImpl implements TrackController {
   }
 
 }
-
-//TODO clean this up!
-//    private boolean connectController() {
-//
-//        JCS.logProgress("Connecting to Central Station");
-//        String controllerImpl = System.getProperty("CS3");
-//        if (controllerService == null) {
-//            try {
-//                this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
-//            } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-//                Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
-//            }
-//        }
-//
-//        JCS.logProgress("Obtaining the last state of all items...");
-//
-//        //Configure the sensors
-//        int sensorCount = 0;//controllerService.getControllerInfo().getLinkSxx().getTotalSensors();
-//        List<SensorBean> allSensors = sensDAO.findAll();
-//        if (sensorCount != allSensors.size()) {
-//            Logger.debug("The Sensor count has changed since last run from " + allSensors.size() + " to " + sensorCount + "...");
-//            //remove sensors which are not in the system
-//            if (allSensors.size() > sensorCount) {
-//                for (int contactId = sensorCount; contactId <= allSensors.size(); contactId++) {
-//                    SensorBean s = this.sensDAO.find(contactId);
-//                    if (s == null) {
-//                        //remove the sensor
-//                        sensDAO.remove(s);
-//                    }
-//                }
-//            }
-//            for (int contactId = 1; contactId <= sensorCount; contactId++) {
-//                //is there a sensor in the database?
-//                SensorBean s = this.sensDAO.find(contactId);
-//                if (s == null) {
-//                    String name = "m" + SensorBean.calculateModuleNumber(contactId) + "p" + SensorBean.calculatePortNumber(contactId);
-//                    String description = name;
-//                    //create the sensor
-//                    s = new SensorBean(contactId, name, description, 0, 0, 0, 0);
-//                    if (s.getId() != null) {
-//                        sensDAO.persist(s);
-//                    }
-//                }
-//            }
-//        } else {
-//            Logger.trace("The Sensor count has not changed since last run...");
-//        }
-//        if (controllerService != null) {
-//            this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
-//            this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
-//            this.controllerService.addFunctionMessageEventListener(new FunctionMessageListener(this));
-//            this.controllerService.addDirectionMessageEventListener(new DirectionMessageListener(this));
-//            this.controllerService.addVelocityMessageEventListener(new VelocityMessageListener(this));
-//        }
-//
-//        return this.controllerService != null && this.controllerService.isConnected();
-//
-//    }

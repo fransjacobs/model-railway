@@ -64,7 +64,7 @@ public class SwitchDialog extends javax.swing.JDialog {
 
       AccessoryBean ab = this.turnout.getAccessoryBean();
       if (turnout.getAccessoryId() != null && ab == null) {
-        ab = PersistenceFactory.getService().getAccessoryById(turnout.getAccessoryId());
+        ab = PersistenceFactory.getService().getAccessory(turnout.getAccessoryId());
       }
       if (ab == null) {
         ab = emptyBean;

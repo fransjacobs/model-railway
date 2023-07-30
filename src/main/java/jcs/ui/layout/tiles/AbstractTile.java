@@ -48,8 +48,7 @@ import jcs.entities.enums.TileType;
 import static jcs.entities.enums.TileType.BLOCK;
 import static jcs.entities.enums.TileType.CROSS;
 import jcs.ui.layout.LayoutUtil;
-import jcs.ui.layout.Tile;
-import static jcs.ui.layout.Tile.DEFAULT_TRACK_COLOR;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import jcs.ui.layout.tiles.enums.Direction;
 
 /**
@@ -124,10 +123,14 @@ public abstract class AbstractTile extends TileBean implements Tile {
     this.tileDirection = other.getTileDirection();
     this.x = other.getX();
     this.y = other.getY();
+
     this.setSignalType(other.getSignalType());
     this.accessoryId = other.getAccessoryId();
+    this.signalAccessoryType = other.getSignalAccessoryType();
     this.sensorId = other.getSensorId();
-    //this.neighbours = other.getNeighbours();
+    
+    this.accessoryBean = other.getAccessoryBean();
+    this.sensorBean = other.getSensorBean();
   }
 
   @Override

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.Tile;
+import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
@@ -264,7 +264,7 @@ public class AStar {
   }
 
   public static void main(String[] a) {
-    List<Tile> tiles = TileFactory.convert(PersistenceFactory.getService().getTiles(), false, false);
+    List<Tile> tiles = TileFactory.convert(PersistenceFactory.getService().getTileBeans(), false, false);
 
     AStar gb = new AStar();
     gb.buildGraph(tiles);

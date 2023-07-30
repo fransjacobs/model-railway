@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout;
 
+import jcs.ui.layout.tiles.Tile;
 import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -36,9 +37,9 @@ import org.tinylog.Logger;
  */
 public class LayoutUtil {
 
-  private final static Map<Point, Tile> tiles = new HashMap<>();
-  private final static Map<Point, Tile> altTilesLookup = new HashMap<>();
-  private final static Map<String, Tile> tileLookup = new HashMap<>();
+//  private final static Map<Point, Tile> tiles = new HashMap<>();
+//  private final static Map<Point, Tile> altTilesLookup = new HashMap<>();
+//  private final static Map<String, Tile> tileLookup = new HashMap<>();
 
   private LayoutUtil() {
   }
@@ -78,47 +79,47 @@ public class LayoutUtil {
     return (sy - Tile.GRID) / (Tile.GRID * 2);
   }
 
-  private static void addRelatedBeans(TileBean tileBean) {
-    TileType tileType = tileBean.getTileType();
-    switch (tileType) {
-      case STRAIGHT -> {
-      }
-      case STRAIGHT_DIR -> {
-      }
-      case END -> {
-      }
-      case CURVED -> {
-      }
-      case SWITCH -> {
-        if (tileBean.getAccessoryBean() != null) {
-          tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
-        }
-      }
-      case CROSS -> {
-        if (tileBean.getAccessoryBean() != null) {
-          tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
-        }
-      }
-      case SIGNAL -> {
-        if (tileBean.getAccessoryBean() != null) {
-          tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
-        }
-      }
-      case SENSOR -> {
-        if (tileBean.getSensorId() != null) {
-          tileBean.setSensorBean(PersistenceFactory.getService().getSensor(tileBean.getSensorId()));
-        }
-      }
-      case BLOCK -> {
-      }
-      default ->
-        Logger.warn("Unknown Tile Type " + tileType);
-    }
-  }
+//  private static void addRelatedBeans(TileBean tileBean) {
+//    TileType tileType = tileBean.getTileType();
+//    switch (tileType) {
+//      case STRAIGHT -> {
+//      }
+//      case STRAIGHT_DIR -> {
+//      }
+//      case END -> {
+//      }
+//      case CURVED -> {
+//      }
+//      case SWITCH -> {
+//        if (tileBean.getAccessoryBean() != null) {
+//          tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
+//        }
+//      }
+//      case CROSS -> {
+//        if (tileBean.getAccessoryBean() != null) {
+//          tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
+//        }
+//      }
+//      case SIGNAL -> {
+//        if (tileBean.getAccessoryBean() != null) {
+//          tileBean.setAccessoryBean(PersistenceFactory.getService().getAccessoryById(tileBean.getAccessoryId()));
+//        }
+//      }
+//      case SENSOR -> {
+//        if (tileBean.getSensorId() != null) {
+//          tileBean.setSensorBean(PersistenceFactory.getService().getSensor(tileBean.getSensorId()));
+//        }
+//      }
+//      case BLOCK -> {
+//      }
+//      default ->
+//        Logger.warn("Unknown Tile Type " + tileType);
+//    }
+//  }
 
-  public static final Map<Point, Tile> loadLayout(boolean drawGridLines, boolean showValues) {
-    return loadLayout(drawGridLines, null, showValues);
-  }
+//  public static final Map<Point, Tile> loadLayout(boolean drawGridLines, boolean showValues) {
+//    return loadLayout(drawGridLines, null, showValues);
+//  }
 
   /**
    * Load Tiles from the persistent store
@@ -128,107 +129,108 @@ public class LayoutUtil {
    * @param showValues
    * @return A Map of tiles, key is the center point of the tile
    */
-  public static final Map<Point, Tile> loadLayout(boolean drawGridLines, PropertyChangeListener listener, boolean showValues) {
-    //synchronized (LayoutUtil.tiles) {
-      LayoutUtil.tiles.clear();
-      LayoutUtil.altTilesLookup.clear();
-      LayoutUtil.tileLookup.clear();
-
-      if (PersistenceFactory.getService() != null) {
-        List<TileBean> tbl = PersistenceFactory.getService().getTiles();
-
-        Set<TileBean> beans = new HashSet<>(tbl);
-
-        for (TileBean tb : beans) {
-          addRelatedBeans(tb);
-          Tile tile = TileFactory.createTile(tb, drawGridLines, showValues);
-
-          if (listener != null) {
-            tile.setPropertyChangeListener(listener);
-          }
-
-          registerAsEventListener(tile);
-
-          LayoutUtil.tiles.put(tile.getCenter(), tile);
-          for (Point ap : tile.getAltPoints()) {
-            LayoutUtil.altTilesLookup.put(ap, tile);
-          }
-
-          LayoutUtil.tileLookup.put(tile.getId(), tile);
-        }
-
-        Logger.debug("Loaded " + tiles.size() + " Tiles...");
-      } else {
-        Logger.error("Can't load tiles, no PersistenceService available");
-      }
-    //}
-    return LayoutUtil.tiles;
-  }
-
-  private static void registerAsEventListener(Tile tile) {
-
-//        switch (tile.getTileType()) {
-//            case SENSOR:
-//                TrackServiceFactory.getTrackService().addSensorListener((SensorListener) tile);
-//                break;
-//            case SWITCH:
-//                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
-//                break;
-//            case SIGNAL:
-//                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
-//                break;
+//  public static final Map<Point, Tile> loadLayout(boolean drawGridLines, PropertyChangeListener listener, boolean showValues) {
+//    //synchronized (LayoutUtil.tiles) {
+//      LayoutUtil.tiles.clear();
+//      LayoutUtil.altTilesLookup.clear();
+//      LayoutUtil.tileLookup.clear();
 //
-//            default:
-//                //Do nothing
-//                break;
+//      if (PersistenceFactory.getService() != null) {
+//        List<TileBean> tbl = PersistenceFactory.getService().getTiles();
+//
+//        Set<TileBean> beans = new HashSet<>(tbl);
+//
+//        for (TileBean tb : beans) {
+//          addRelatedBeans(tb);
+//          Tile tile = TileFactory.createTile(tb, drawGridLines, showValues);
+//
+//          if (listener != null) {
+//            tile.setPropertyChangeListener(listener);
+//          }
+//
+//          registerAsEventListener(tile);
+//
+//          LayoutUtil.tiles.put(tile.getCenter(), tile);
+//          for (Point ap : tile.getAltPoints()) {
+//            LayoutUtil.altTilesLookup.put(ap, tile);
+//          }
+//
+//          LayoutUtil.tileLookup.put(tile.getId(), tile);
 //        }
-  }
+//
+//        Logger.debug("Loaded " + tiles.size() + " Tiles...");
+//      } else {
+//        Logger.error("Can't load tiles, no PersistenceService available");
+//      }
+//    //}
+//    return LayoutUtil.tiles;
+//  }
+
+//  private static void registerAsEventListener(Tile tile) {
+//
+////        switch (tile.getTileType()) {
+////            case SENSOR:
+////                TrackServiceFactory.getTrackService().addSensorListener((SensorListener) tile);
+////                break;
+////            case SWITCH:
+////                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
+////                break;
+////            case SIGNAL:
+////                TrackServiceFactory.getTrackService().addAccessoryListener((AccessoryListener) tile);
+////                break;
+////
+////            default:
+////                //Do nothing
+////                break;
+////        }
+//  }
 
 //  private static boolean isNotLoaded() {
 //    return LayoutUtil.tiles == null || LayoutUtil.tiles.isEmpty();
 //  }
-  public static Tile findTile(Point cp) {
-    if (LayoutUtil.tiles == null || LayoutUtil.tiles.isEmpty()) {
-      LayoutUtil.loadLayout(true, false);
-    }
-    Tile result = LayoutUtil.tiles.get(cp);
 
-    if (result == null) {
-      result = LayoutUtil.altTilesLookup.get(cp);
-      if (result != null) {
-      }
-    }
-    return result;
-  }
+//  public static Tile findTile(Point cp) {
+//    if (LayoutUtil.tiles == null || LayoutUtil.tiles.isEmpty()) {
+//      LayoutUtil.loadLayout(true, false);
+//    }
+//    Tile result = LayoutUtil.tiles.get(cp);
+//
+//    if (result == null) {
+//      result = LayoutUtil.altTilesLookup.get(cp);
+//      if (result != null) {
+//      }
+//    }
+//    return result;
+//  }
 
-  public static boolean isTile(Point cp) {
-    return findTile(cp) != null;
-  }
+//  public static boolean isTile(Point cp) {
+//    return findTile(cp) != null;
+//  }
 
-  public static boolean isBlock(Point cp) {
-    Tile t = findTile(cp);
-    if (t == null) {
-      return false;
-    }
-    return TileType.BLOCK.equals(t.getTileType());
-  }
+//  public static boolean isBlock(Point cp) {
+//    Tile t = findTile(cp);
+//    if (t == null) {
+//      return false;
+//    }
+//    return TileType.BLOCK.equals(t.getTileType());
+//  }
 
-  public static boolean isTrack(Point cp) {
-    Tile t = findTile(cp);
-    if (t == null) {
-      return false;
-    }
-    TileType tt = t.getTileType();
-    return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
-  }
+//  public static boolean isTrack(Point cp) {
+//    Tile t = findTile(cp);
+//    if (t == null) {
+//      return false;
+//    }
+//    TileType tt = t.getTileType();
+//    return TileType.CURVED.equals(tt) || TileType.CURVED.equals(tt) || TileType.SENSOR.equals(tt) || TileType.SIGNAL.equals(tt) || TileType.STRAIGHT.equals(tt);
+//  }
 
-  public static final Map<Point, Tile> getTiles() {
-    if (LayoutUtil.tiles == null || LayoutUtil.tiles.isEmpty()) {
-      LayoutUtil.loadLayout(true, false);
-    }
-
-    return LayoutUtil.tiles;
-  }
+//  public static final Map<Point, Tile> getTiles() {
+//    if (LayoutUtil.tiles == null || LayoutUtil.tiles.isEmpty()) {
+//      LayoutUtil.loadLayout(true, false);
+//    }
+//
+//    return LayoutUtil.tiles;
+//  }
 
   /**
    * Returns the euclidean distance of 2 Points

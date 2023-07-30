@@ -19,7 +19,7 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import jcs.ui.layout.Tile;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**

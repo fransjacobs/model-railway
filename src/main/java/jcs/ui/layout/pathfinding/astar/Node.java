@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jcs.entities.enums.AccessoryValue;
-import jcs.ui.layout.Tile;
+import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.Block;
 import org.tinylog.Logger;
 

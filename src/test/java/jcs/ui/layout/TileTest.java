@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout;
 
+import jcs.ui.layout.tiles.Tile;
 import java.awt.Point;
 import java.util.HashMap;
 import java.util.HashSet;

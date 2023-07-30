@@ -69,20 +69,20 @@ public interface PersistenceService {
 
   List<AccessoryBean> getSignals();
 
-  AccessoryBean getAccessoryById(Long id);
+  AccessoryBean getAccessory(Long id);
 
-  AccessoryBean getAccessory(Integer address);
+  AccessoryBean getAccessoryByAddress(Integer address);
 
   AccessoryBean persist(AccessoryBean accessoryBean);
 
   void remove(AccessoryBean accessoryBean);
 
   //Tile
-  List<TileBean> getTiles();
+  List<TileBean> getTileBeans();
 
-  TileBean getTile(String id);
+  TileBean getTileBean(String id);
 
-  TileBean getTile(Integer x, Integer y);
+  TileBean getTileBean(Integer x, Integer y);
 
   TileBean persist(TileBean tileBean);
 

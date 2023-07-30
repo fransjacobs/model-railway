@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import jcs.ui.layout.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
