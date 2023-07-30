@@ -1,9 +1,11 @@
 # Building JCS
 
 ## Requirements
-*JCS is mainly developed using the [Netbeans IDE](https://netbeans.apache.org). 
-*I use the [Adoptium JDK 17](https://adoptium.net/en-GB/).
-*The program is build using [Maven](https://maven.apache.org). 
+JCS is mainly developed using the [Netbeans IDE](https://netbeans.apache.org)
+ 
+I use the [Adoptium JDK 17](https://adoptium.net/en-GB/)
+
+The program is build using [Maven](https://maven.apache.org) 
 
 ## Building 
 Create a folder where you clone the repository.

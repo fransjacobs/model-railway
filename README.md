@@ -42,12 +42,11 @@ So I hope you get inspired!
 Frans
 
 ## License
-[LICENSE.md](LICENSE.md).
+[LICENSE.md](LICENSE.md)
 
 
 ## Build JCS from source
-
-See [BUILDING.md](BUILDING.md).
+[BUILDING.md](BUILDING.md)
 
 ## Contributors
 
