@@ -338,12 +338,12 @@ public class H2PersistenceService implements PersistenceService {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
 
-    if (tileBean.getAccessoryId() != null) {
-      tileBean.setAccessoryBean(this.getAccessoryById(tileBean.getAccessoryId()));
+    if (tileBean != null && tileBean.getAccessoryId() != null) {
+      tileBean.setAccessoryBean(getAccessoryById(tileBean.getAccessoryId()));
     }
     
-    if(tileBean.getSensorId() != null) {
-      tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
+    if(tileBean != null && tileBean.getSensorId() != null) {
+      tileBean.setSensorBean(getSensor(tileBean.getSensorId()));
     }
 
     return tileBean;
