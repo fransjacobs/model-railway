@@ -143,7 +143,11 @@ public class SensorBean implements Serializable {
 
   @Transient
   public boolean isActive() {
-    return this.status > 0;
+    if(status != null) {
+      return this.status > 0;
+    } else {
+      return false;
+    }
   }
 
   public void setActive(boolean active) {
