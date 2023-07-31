@@ -287,21 +287,31 @@ public class TrackControllerImpl implements TrackController {
 
   @Override
   public void synchronizeTurnouts() {
-    List<AccessoryBean> ma = this.controllerService.getSwitches();
+    List<AccessoryBean> csTurnouts = this.controllerService.getSwitches();
 
-    for (AccessoryBean ab : ma) {
-      Logger.trace(ab.toLogString());
-      PersistenceFactory.getService().persist(ab);
+    for (AccessoryBean turnout : csTurnouts) {
+      AccessoryBean dbTurnout = PersistenceFactory.getService().getAccessoryByAddress(turnout.getAddress());
+      if (dbTurnout != null) {
+        turnout.setId(dbTurnout.getId());
+      }
+
+      Logger.trace(turnout.toLogString());
+      PersistenceFactory.getService().persist(turnout);
     }
   }
 
   @Override
   public void synchronizeSignals() {
-    List<AccessoryBean> ma = this.controllerService.getSignals();
+    List<AccessoryBean> csSignals = this.controllerService.getSignals();
 
-    for (AccessoryBean ab : ma) {
-      Logger.trace(ab.toLogString());
-      PersistenceFactory.getService().persist(ab);
+    for (AccessoryBean signal : csSignals) {
+      AccessoryBean dbSignal = PersistenceFactory.getService().getAccessoryByAddress(signal.getAddress());
+      if (dbSignal != null) {
+        signal.setId(dbSignal.getId());
+      }
+
+      Logger.trace(signal.toLogString());
+      PersistenceFactory.getService().persist(signal);
     }
   }
 

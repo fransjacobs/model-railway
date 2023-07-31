@@ -77,6 +77,20 @@ public class Signal extends Straight implements Tile, AccessoryListener {
     this.signalValue = signalValue;
   }
 
+  @Override
+  public void setAccessoryBean(AccessoryBean accessoryBean) {
+    this.accessoryBean = accessoryBean;
+    if (accessoryBean != null) {
+      this.accessoryId = accessoryBean.getId();
+      this.signalValue = accessoryBean.getSignalValue();
+      this.signalType = SignalType.getSignalType(accessoryBean.getType());
+    } else {
+      this.accessoryId = null;
+      this.signalType = SignalType.NONE;
+      this.signalValue = SignalValue.OFF;
+    }
+  }
+
   /**
    * Render a Signal with 2 lights
    *
