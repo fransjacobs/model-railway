@@ -131,25 +131,26 @@ alter table blocks add constraint blck_acce_sig_min_fk foreign key (min_signal_i
 alter table blocks add constraint blck_loco_fk foreign key ( locomotive_id ) references locomotives (id);
 
 create table routes (
-  id                 identity not null,
+  id                 varchar(255) not null,
   from_tile_id       varchar(255) not null,
-  from_tile_site     varchar(255) not null,
+  from_suffix        varchar(255) not null,
   to_tile_id         varchar(255) not null,
-  to_tile_site       varchar(255) not null,
+  to_suffix          varchar(255) not null,
   route_color        varchar(255),
-  constraint rout_pk primary key (id),
-  constraint rout_from_to_un unique (from_tile_id,from_tile_site,to_tile_id,to_tile_site)
+  locked             bool not null default false,
+  constraint rout_pk primary key (id),  
+  constraint rout_from_to_un unique (from_tile_id,from_suffix,to_tile_id,to_suffix)
 );
 
 create unique index rout_pk_idx on routes (id);
-create unique index rout_from_to_un_idx on routes (from_tile_id,from_tile_site,to_tile_id,to_tile_site);
+create unique index rout_from_to_un_idx on routes (from_tile_id,from_suffix,to_tile_id,to_suffix);
 
 alter table routes add constraint rout_tile_from_fk foreign key (from_tile_id) references tiles(id);
 alter table routes add constraint rout_tile_to_fk foreign key (to_tile_id) references tiles(id);
 
 create table route_elements (
   id                 identity not null,
-  route_id           bigint not null,
+  route_id           varchar(255) not null,
   node_id            varchar(255) not null,
   tile_id            varchar(255) not null,
   accessory_value    varchar(255),

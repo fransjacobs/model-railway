@@ -220,8 +220,8 @@ public class H2DatabaseUtil {
             Logger.trace("Found " + files.size() + " files");
             for (Path p : files) {
                 try {
-                    String fn = p.toString();
-                    fn = fn.replaceAll(pathString + "/", "");
+                    Path fnp = p.getFileName();
+                    String fn = fnp.toString();
                     if (fn.contains(".")) {
                         fn = fn.substring(0, fn.indexOf("."));
                     }
@@ -251,15 +251,15 @@ public class H2DatabaseUtil {
         try {
             list = Files.list(jcsPath);
             List<Path> files = list.toList();
-            
+
             for (Path p : files) {
-                String fn = p.toString();
-                fn = fn.replaceAll(pathString + "/", "");
+                Path fnp = p.getFileName();
+                String fn = fnp.toString();
                 if (fn.contains(".")) {
                     fn = fn.substring(0, fn.indexOf("."));
                 }
                 exist = fn.equals(fileName);
-                if(exist) {
+                if (exist) {
                     Logger.trace("Found database file " + p.toString());
                     break;
                 }

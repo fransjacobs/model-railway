@@ -110,6 +110,11 @@ public class RunUtil {
     return os.contains("nix") || os.contains("nux");
   }
 
+  public static boolean isWindows() {
+    String os = System.getProperty("os.name").toLowerCase();
+    return os.contains("windows");
+  }
+
   public static void loadProperties() {
     Properties prop = new Properties();
     InputStream inputStream = RunUtil.class.getClassLoader().getResourceAsStream("jcs.properties");

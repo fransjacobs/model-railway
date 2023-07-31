@@ -111,7 +111,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
       this.locomotivesPanel.loadLocomotives();
       setCS3Properties();
-      feedbackMonitor = new FeedbackMonitor();
+     
 
       this.powerButton.setSelected(TrackControllerFactory.getTrackController().isPowerOn());
       
@@ -834,6 +834,10 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_showKeyboardActionPerformed
 
     private void showSensorMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSensorMonitorActionPerformed
+      if(this.feedbackMonitor == null) {
+        Logger.trace("Creating a Monitor UI");
+         feedbackMonitor = new FeedbackMonitor();
+      }
       this.feedbackMonitor.showMonitor();
     }//GEN-LAST:event_showSensorMonitorActionPerformed
 

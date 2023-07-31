@@ -328,7 +328,6 @@ public class LocomotiveBean implements Serializable {
 
   @Column(name = "show", nullable = false, columnDefinition = "show bool default '1'")
   @ColumnPosition(position = 10)
-
   public boolean isShow() {
     return show;
   }

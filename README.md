@@ -1,52 +1,67 @@
-#Model-railway
+# Model-railway
 
-#Modelrailway control with JCS (Java Central Station)
+## Modelrailway control with JCS (Java Central Station)
 
-My Experiments to automate a model railway.
+## About The Project
+JCS is an application to control a model railway. It is in an early stage of development.
+The project mostly contains my experiments to automate my model railway.
+I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), hence the (current) hardware supported is the Maerklin CS-3 (and probably also the CS-2).
 
-The aim of the program is dashboard for a Marklin CS3 as I find the screen a bit tiny.
-So I am developing screens and functionality for:
+I started this project 2019 as (and still is) a hobby to automate my model rail layout.
+As I am trying to do this project beside my work, family and other hobbies it is a project with very slow pace...
 
-* a Layout overview
-* Controlling locomotives
-* Turnout and Signals overview
-* Sensor overview
-* Diagnostic screen to see what is happening on the track and the communication between the CS3 and the PC.
-* Automatic control of the running trains
+The aim of the program is to automate the running of trains on my layout.
+Currently the following modules are build:
 
-So here is a first screenshot
+* A Screen or edit/display de schematic Layout.
+* Communication layer to "talk" to the Maerklin CS-3, (Included automatic discovery of the CS-3 ip address).
+* A Screen to see Sensor / feedback events from the CS-3
+* Locomotives overview (including automatic downloading of the Locomotive- and function button images) and control.
+* Turnout and Signals overview (Synchronized with the CS-3) and control.
 
-![UI screenshot: locomotive control](assets/mainscreen.png?raw=true)
+So here is a first screenshot of my layout:
+![UI screenshot: My Layout](assets/mylayout.png?raw=true)
 
-Currently the following features are more or less implemented:
- (I started with a CS2 but it died unfortunatly, so bought a CS3. Some thinks are a bit diffrent).
-* Adopted to JDK 17
-* Included automatic discovery of the CS3 ip address
-* React on CS3 events (Currently start/stop only, Feedback events (S88 are visible) 
-* Read the Locomotives from the CS3.
-* Get the locomotive images from the CS3 
-* Get the locomotive functions images from the CS3 
-* Read the Accessories from the CS3
+Currently the following features are under active development:
+* Adapt to JDK 17 (LTS).
+* React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. 
+* Automatically route the Layout.
+* Automatically run trains.
 
-Most of the configuration and layout data is stored in an embedded (H2) database.
-The database files are placed in the $HOME/jcs directory.
-When the database does not exist it is created on startup. 
-
-#TODO's (and there are still a lots of todo's...):
+##TODO's (and there are still a lots of todo's...):
 * Replace the JDBC calls for a tiny ORM library (norm; https://github.com/dieselpoint/norm ).
 * Redesign the Locomotive(s) control so tha it can support 32 functions
 * Configuration screens to edit the Locomotives, Accessories and Sensors.
 * Automatic driving of the trains
 * Add deployment configuration for Windows and Linux and to an App
   (first added is MacOS as that is my main development platform) [Postponed this a while, but basics where done]
-
-I started this project 2019 as (and still is) a hobby to automate my model rail layout.
-As I am trying to do this project beside my work, family and other hobbies it is a project with very slow pace...
-
+* ...
 
 So I hope you get inspired!
 
 Frans
+
+## License
+[LICENSE.md](LICENSE.md)
+
+
+## Build JCS from source
+[BUILDING.md](BUILDING.md)
+
+## Contributors
+
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/fransjacobs">
+            <img src="https://avatars.githubusercontent.com/u/41232225?v=4" width="100;" alt="frans"/>
+            <br />
+            <sub><b>Frans Jacobs</b></sub>
+        </a>
+    </td>
+</tr>
+</table>
+
 
 ** Copyright 2019 - 2023 Frans Jacobs **
 

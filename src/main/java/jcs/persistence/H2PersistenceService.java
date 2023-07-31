@@ -17,14 +17,11 @@ package jcs.persistence;
 
 import com.dieselpoint.norm.Database;
 import java.awt.Image;
-import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.SensorBean;
@@ -38,6 +35,7 @@ import org.tinylog.Logger;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
+import jcs.ui.layout.tiles.Tile;
 
 public class H2PersistenceService implements PersistenceService {
 
@@ -112,7 +110,10 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public SensorBean persist(SensorBean sensor) {
-    SensorBean prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
+    SensorBean prev = null;
+    if (sensor.getId() != null) {
+      prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
+    }
     if (prev != null) {
       sensor.setId(prev.getId());
       sensor.setName(prev.getName());
@@ -268,36 +269,6 @@ public class H2PersistenceService implements PersistenceService {
     return image;
   }
 
-//  private Image readLocomotiveImage(String imageName) {
-//    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
-//    Image image = null;
-//
-//    File imgFile = new File(path + imageName + ".png");
-//    if (imgFile.exists()) {
-//      try {
-//        image = ImageIO.read(imgFile);
-//
-//      } catch (IOException e) {
-//        Logger.trace("Image file " + imageName + ".png does not exists");
-//      }
-//    }
-//    return image;
-//  }
-//  private Image readFunctionImage(String imageName) {
-//    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions" + File.separator;
-//    Image image = null;
-//
-//    File imgFile = new File(path + imageName + ".png");
-//    if (imgFile.exists()) {
-//      try {
-//        image = ImageIO.read(imgFile);
-//
-//      } catch (IOException e) {
-//        Logger.trace("Image file " + imageName + ".png does not exists");
-//      }
-//    }
-//    return image;
-//  }
   @Override
   public List<AccessoryBean> getTurnouts() {
     String typeClause = "%weiche";
@@ -313,14 +284,14 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public AccessoryBean getAccessoryById(Long id) {
+  public AccessoryBean getAccessory(Long id) {
     AccessoryBean accessoryBean = database.where("id=?", id).first(AccessoryBean.class);
 
     return accessoryBean;
   }
 
   @Override
-  public AccessoryBean getAccessory(Integer address) {
+  public AccessoryBean getAccessoryByAddress(Integer address) {
     AccessoryBean accessoryBean = database.where("address=?", address).first(AccessoryBean.class);
 
     return accessoryBean;
@@ -347,33 +318,73 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
-  @Override
-  public List<TileBean> getTiles() {
-    List<TileBean> tileBeans = database.results(TileBean.class);
+  private TileBean addReleatedObjects(TileBean tileBean) {
+    if (tileBean.getAccessoryId() != null) {
+      tileBean.setAccessoryBean(this.getAccessory(tileBean.getAccessoryId()));
+    }
+
+    if (tileBean.getSensorId() != null) {
+      tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
+    }
+    return tileBean;
+  }
+
+  private List<TileBean> addReleatedObjects(List<TileBean> tileBeans) {
+
+    for (TileBean tileBean : tileBeans) {
+      addReleatedObjects(tileBean);
+    }
+
     return tileBeans;
   }
 
   @Override
-  public TileBean getTile(String id) {
-    TileBean tileBean = database.where("id=?", id).first(TileBean.class);
-    return tileBean;
+  public List<TileBean> getTileBeans() {
+    List<TileBean> tileBeans = database.results(TileBean.class);
+
+    Logger.trace("Found " + tileBeans.size() + " TileBeans");
+    return addReleatedObjects(tileBeans);
   }
 
   @Override
-  public TileBean getTile(Integer x, Integer y) {
+  public TileBean getTileBean(String id) {
+    TileBean tileBean = database.where("id=?", id).first(TileBean.class);
+
+    return addReleatedObjects(tileBean);
+  }
+
+  @Override
+  public TileBean getTileBean(Integer x, Integer y) {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
+
+    if (tileBean != null && tileBean.getAccessoryId() != null) {
+      tileBean.setAccessoryBean(getAccessory(tileBean.getAccessoryId()));
+    }
+
+    if (tileBean != null && tileBean.getSensorId() != null) {
+      tileBean.setSensorBean(getSensor(tileBean.getSensorId()));
+    }
+
     return tileBean;
   }
 
   @Override
   public TileBean persist(TileBean tileBean) {
-    if (database.where("id=?", tileBean.getId()).first(TileBean.class) != null) {
-      int rows = database.update(tileBean).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+    TileBean tb;
+    if (tileBean instanceof Tile) {
+      tb = ((Tile) tileBean).getTileBean();
     } else {
-      int rows = database.insert(tileBean).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      tb = tileBean;
+    }
+
+    if (tb != null && tb.getId() != null) {
+      if (database.where("id=?", tb.getId()).first(TileBean.class) != null) {
+        database.update(tb).getRowsAffected();
+        Logger.trace("Updated " + tileBean);
+      } else {
+        database.insert(tb).getRowsAffected();
+      }
     }
     return tileBean;
   }
@@ -385,66 +396,30 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public void removeTile(Integer x, Integer y) {
-    Object[] args = new Object[]{x, y};
-    database.sql("delete from tiles where x= ? and y = ?", args);
-  }
-
-  @Override
   public void persist(List<TileBean> tiles) {
-    //When persisting a whole list of tiles,
-    //check for tiles which have changed position
-    //and check for tiles which have to be removed
-    List<TileBean> existing = database.results(TileBean.class);
+    removeAllRoutes();
 
-    Map<Point, TileBean> currentTP = new HashMap<>();
-    Map<Point, TileBean> updatedTP = new HashMap<>();
-
-    for (TileBean tb : existing) {
-      currentTP.put(tb.getCenter(), tb);
-    }
-
+    int rows = database.sql("delete from tiles").execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " to persist: " + tiles.size());
+    rows = 0;
     for (TileBean tb : tiles) {
-      updatedTP.put(tb.getCenter(), tb);
-    }
-
-    //remove the ones which do no longer exists
-    Set<Point> currentPoints = currentTP.keySet();
-    Set<Point> updatedPoints = updatedTP.keySet();
-
-    for (Point p : currentPoints) {
-      if (!updatedPoints.contains(p)) {
-        TileBean tb = this.getTile(p.x, p.y);
-        this.remove(tb);
-      }
-    }
-
-    for (TileBean tb : tiles) {
-      if (tb.getId() == null) {
-        Integer x = tb.getX();
-        Integer y = tb.getY();
-        TileBean tbxy = this.getTile(x, y);
-
-        if (tbxy != null) {
-          tb.setId(tbxy.getId());
-        }
-      }
       persist(tb);
+      rows++;
     }
   }
 
-  private List<RouteElementBean> getRouteElements(Long routeId) {
-    List<RouteElementBean> routeElements = database.where("route_id=?", routeId).orderBy("id").results(RouteElementBean.class);
+  private List<RouteElementBean> getRouteElements(String routeId) {
+    List<RouteElementBean> routeElements = database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
     return routeElements;
   }
 
   private RouteElementBean persist(RouteElementBean routeElement) {
     if (database.where("id=?", routeElement.getId()).first(RouteElementBean.class) != null) {
       int rows = database.update(routeElement).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      //Logger.trace(rows + " rows updated");
     } else {
       int rows = database.insert(routeElement).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      //Logger.trace(rows + " rows inserted");
     }
     return routeElement;
   }
@@ -461,7 +436,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public RouteBean getRoute(Integer id) {
+  public RouteBean getRoute(String id) {
     RouteBean route = database.where("id = ?", id).first(RouteBean.class);
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
@@ -471,9 +446,9 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public RouteBean getRoute(String fromTileId, String fromTileSite, String toTileId, String toTileSite) {
-    Object[] args = new Object[]{fromTileId, fromTileSite, toTileId, toTileSite};
-    RouteBean route = database.where("from_tile_id = ? and from_tile_site = ? and to_tile_id = ? and to_tile_site = ?", args).first(RouteBean.class);
+  public RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
+    Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
+    RouteBean route = database.where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args).first(RouteBean.class);
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
       route.setRouteElements(routeElements);
@@ -485,14 +460,13 @@ public class H2PersistenceService implements PersistenceService {
   public RouteBean persist(RouteBean route) {
     if (database.where("id=?", route.getId()).first(RouteBean.class) != null) {
       int rows = database.update(route).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      //Logger.trace(rows + " rows updated");
     } else {
       int rows = database.insert(route).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      //Logger.trace(rows + " rows inserted");
     }
 
     if (route.getRouteElements() != null && !route.getRouteElements().isEmpty()) {
-      //remove all
       database.sql("delete from route_elements where route_id =?", route.getId()).execute();
 
       List<RouteElementBean> rbl = route.getRouteElements();
@@ -507,7 +481,6 @@ public class H2PersistenceService implements PersistenceService {
       }
       route.setRouteElements(rblr);
     }
-
     return route;
   }
 
@@ -515,11 +488,17 @@ public class H2PersistenceService implements PersistenceService {
   public void remove(RouteBean route) {
     if (route.getRouteElements() != null && !route.getRouteElements().isEmpty()) {
       //remove all
-      database.sql("delete from route_elements where route_d =?", route.getId()).execute();
+      database.sql("delete from route_elements where route_id =?", route.getId()).execute();
     }
 
     int rows = this.database.delete(route).getRowsAffected();
     Logger.trace(rows + " rows deleted");
+  }
+
+  public void removeAllRoutes() {
+    database.sql("delete from route_elements").execute();
+    int rows = database.sql("delete from routes").execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " routes");
   }
 
   private void setJCSPropertiesAsSystemProperties() {

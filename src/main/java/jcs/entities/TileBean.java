@@ -28,365 +28,296 @@ import javax.persistence.Transient;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
 import jcs.ui.layout.tiles.enums.Direction;
 
 @Table(name = "tiles", indexes = {
-    @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
+  @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
 public class TileBean implements Serializable, Comparable {
 
-    private String id;
-    private Integer x;
-    private Integer y;
-    private String type;
-    private String tileOrientation;
-    private String tileDirection;
-    private String signalAccessoryType;
-    private Long accessoryId;
-    private Long sensorId;
+  protected String id;
+  protected Integer x;
+  protected Integer y;
+  protected String type;
+  protected String tileOrientation;
+  protected String tileDirection;
+  protected String signalAccessoryType;
+  protected Long accessoryId;
+  protected Long sensorId;
 
-    private List<TileBean> neighbours;
+  protected List<TileBean> neighbours;
 
-    private AccessoryBean accessoryBean;
-    private SensorBean sensorBean;
+  protected AccessoryBean accessoryBean;
+  protected SensorBean sensorBean;
 
-    //THe default width and height of a Tile is 40x40 px
-    public static final int DEFAULT_WIDTH = 40;
-    public static final int DEFAULT_HEIGHT = 40;
+  public TileBean() {
+    this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
+  }
 
-    public TileBean() {
-        this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y) {
+    this(id, tileType, orientation, direction, x, y, null, null, null);
+  }
+
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, Long accessoryId, Long sensorId) {
+    this(id, tileType, orientation, direction, center.x, center.y, signalType, null, sensorId);
+  }
+
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, Long accessoryId, Long sensorId) {
+    this.id = id;
+    this.setTileType(tileType);
+    this.tileOrientation = orientation.getOrientation();
+    this.tileDirection = direction.getDirection();
+    this.x = x;
+    this.y = y;
+    this.setSignalType(signalType);
+    this.accessoryId = accessoryId;
+    this.sensorId = sensorId;
+
+    neighbours = new ArrayList<>();
+  }
+
+  @Id
+  @Column(name = "id")
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  @Column(name = "x", nullable = false)
+  public Integer getX() {
+    return this.x;
+  }
+
+  public void setX(Integer x) {
+    this.x = x;
+  }
+
+  @Column(name = "y", nullable = false)
+  public Integer getY() {
+    return this.y;
+  }
+
+  public void setY(Integer y) {
+    this.y = y;
+  }
+
+  @Column(name = "tile_type", length = 255, nullable = false)
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  @Transient
+  public TileType getTileType() {
+    return TileType.get(type);
+  }
+
+  public final void setTileType(TileType tileType) {
+    this.type = tileType.getTileType();
+  }
+
+  @Column(name = "orientation", length = 255, nullable = false)
+  public String getTileOrientation() {
+    return tileOrientation;
+  }
+
+  public void setTileOrientation(String tileOrientation) {
+    this.tileOrientation = tileOrientation;
+  }
+
+  @Transient
+  public Orientation getOrientation() {
+    return Orientation.get(this.tileOrientation);
+  }
+
+  public void setOrientation(Orientation orientation) {
+    this.tileOrientation = orientation.getOrientation();
+  }
+
+  @Column(name = "direction", length = 255, nullable = false)
+  public String getTileDirection() {
+    return tileDirection;
+  }
+
+  public void setTileDirection(String tileDirection) {
+    this.tileDirection = tileDirection;
+  }
+
+  @Transient
+  public Direction getDirection() {
+    return Direction.get(tileDirection);
+  }
+
+  public void setDirection(Direction direction) {
+    this.tileDirection = direction.getDirection();
+  }
+
+  @Column(name = "signal_type", length = 255, nullable = false)
+  public String getSignalAccessoryType() {
+    return signalAccessoryType;
+  }
+
+  public void setSignalAccessoryType(String signalAccessoryType) {
+    this.signalAccessoryType = signalAccessoryType;
+  }
+
+  @Transient
+  public SignalType getSignalType() {
+    return SignalType.get(signalAccessoryType);
+  }
+
+  public final void setSignalType(SignalType signalType) {
+    if (signalType != null) {
+      this.signalAccessoryType = signalType.getSignalType();
     }
+  }
 
-    public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y) {
-        this(id, tileType, orientation, direction, x, y, null, null, null);
+  @Transient
+  public Point getCenter() {
+    return new Point(this.x, this.y);
+  }
+
+  public void setCenter(Point center) {
+    this.x = center.x;
+    this.y = center.y;
+  }
+
+  @Column(name = "accessory_id")
+  public Long getAccessoryId() {
+    return accessoryId;
+  }
+
+  public void setAccessoryId(Long accessoryId) {
+    this.accessoryId = accessoryId;
+  }
+
+  @Column(name = "sensor_id")
+  public Long getSensorId() {
+    return sensorId;
+  }
+
+  public void setSensorId(Long sensorId) {
+    this.sensorId = sensorId;
+  }
+
+  @Transient
+  public AccessoryBean getAccessoryBean() {
+    return accessoryBean;
+  }
+
+  public void setAccessoryBean(AccessoryBean accessoryBean) {
+    this.accessoryBean = accessoryBean;
+    if (accessoryBean != null) {
+      this.accessoryId = accessoryBean.getId();
+    } else {
+      this.accessoryId = null;
     }
+  }
 
-    public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, Long accessoryId, Long sensorId) {
-        this(id, tileType, orientation, direction, center.x, center.y, signalType, null, sensorId);
+  @Transient
+  public SensorBean getSensorBean() {
+    return sensorBean;
+  }
+
+  public void setSensorBean(SensorBean sensorBean) {
+    this.sensorBean = sensorBean;
+    if (sensorBean != null) {
+      this.sensorId = sensorBean.getId();
+    } else {
+      this.sensorId = null;
     }
+  }
 
-    public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, Long accessoryId, Long sensorId) {
-        this.id = id;
-        this.setTileType(tileType);
-        this.setOrientation(orientation);
-        this.setDirection(direction);
-        this.x = x;
-        this.y = y;
-        this.setSignalType(signalType);
-        this.accessoryId = accessoryId;
-        this.sensorId = sensorId;
+  @Override
+  public int compareTo(Object other) {
+    int resx = Integer.compare(this.getX(), ((TileBean) other).getX());
 
-        neighbours = new ArrayList<>();
+    if (resx == 0) {
+      return Integer.compare(this.getY(), ((TileBean) other).getY());
+    } else {
+      return resx;
     }
+  }
 
-    @Id
-    @Column(name = "id")
-    public String getId() {
-        return id;
+  @Override
+  public int hashCode() {
+    int hash = 3;
+    hash = 11 * hash + Objects.hashCode(this.type);
+    hash = 11 * hash + Objects.hashCode(this.tileDirection);
+    hash = 11 * hash + Objects.hashCode(this.tileDirection);
+    hash = 11 * hash + Objects.hashCode(this.signalAccessoryType);
+    hash = 11 * hash + Objects.hashCode(this.x);
+    hash = 11 * hash + Objects.hashCode(this.y);
+    hash = 11 * hash + Objects.hashCode(this.id);
+    hash = 11 * hash + Objects.hashCode(this.accessoryId);
+    hash = 11 * hash + Objects.hashCode(this.sensorId);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
-
-    public void setId(String id) {
-        this.id = id;
+    if (obj == null) {
+      return false;
     }
-
-    @Column(name = "x", nullable = false)
-    public Integer getX() {
-        return this.x;
+    if (getClass() != obj.getClass()) {
+      return false;
     }
-
-    public void setX(Integer x) {
-        this.x = x;
+    final TileBean other = (TileBean) obj;
+    if (!Objects.equals(this.id, other.id)) {
+      return false;
     }
-
-    @Column(name = "y", nullable = false)
-    public Integer getY() {
-        return this.y;
+    if (!Objects.equals(this.type, other.type)) {
+      return false;
     }
-
-    public void setY(Integer y) {
-        this.y = y;
+    if (!Objects.equals(this.tileOrientation, other.tileOrientation)) {
+      return false;
     }
-
-    @Column(name = "tile_type", length = 255, nullable = false)
-    public String getType() {
-        return type;
+    if (!Objects.equals(this.tileDirection, other.tileDirection)) {
+      return false;
     }
-
-    public void setType(String type) {
-        this.type = type;
+    if (!Objects.equals(this.signalAccessoryType, other.signalAccessoryType)) {
+      return false;
     }
-
-    @Transient
-    public TileType getTileType() {
-        return TileType.get(type);
+    if (!Objects.equals(this.x, other.x)) {
+      return false;
     }
-
-    public final void setTileType(TileType tileType) {
-        this.type = tileType.getTileType();
+    if (!Objects.equals(this.y, other.y)) {
+      return false;
     }
-
-    @Column(name = "orientation", length = 255, nullable = false)
-    public String getTileOrientation() {
-        return tileOrientation;
+    if (!Objects.equals(this.accessoryId, other.accessoryId)) {
+      return false;
     }
+    return Objects.equals(this.sensorId, other.sensorId);
+  }
 
-    public void setTileOrientation(String tileOrientation) {
-        this.tileOrientation = tileOrientation;
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("TileBean{id=").append(id);
+    sb.append(", tileType=").append(type);
+    sb.append(", orientation=").append(tileOrientation);
+    sb.append(", direction=").append(tileDirection);
+    sb.append(", center=[(x=").append(x);
+    sb.append(",y=").append(y);
+    sb.append(")]");
+    sb.append(", signalType=").append(this.signalAccessoryType);
+    sb.append(", accessoryId=").append(this.accessoryId);
+    sb.append(", sensorId=").append(this.sensorId);
 
-    @Transient
-    public Orientation getOrientation() {
-        return Orientation.get(this.tileOrientation);
-    }
+    sb.append('}');
+    return sb.toString();
+  }
 
-    public final void setOrientation(Orientation orientation) {
-        this.tileOrientation = orientation.getOrientation();
-    }
-
-    @Column(name = "direction", length = 255, nullable = false)
-    public String getTileDirection() {
-        return tileDirection;
-    }
-
-    public void setTileDirection(String tileDirection) {
-        this.tileDirection = tileDirection;
-    }
-
-    @Transient
-    public Direction getDirection() {
-        return Direction.get(tileDirection);
-    }
-
-    public final void setDirection(Direction direction) {
-        this.tileDirection = direction.getDirection();
-    }
-
-    @Column(name = "signal_type", length = 255, nullable = false)
-    public String getSignalAccessoryType() {
-        return signalAccessoryType;
-    }
-
-    public void setSignalAccessoryType(String signalAccessoryType) {
-        this.signalAccessoryType = signalAccessoryType;
-    }
-
-    @Transient
-    public SignalType getSignalType() {
-        return SignalType.get(signalAccessoryType);
-    }
-
-    public final void setSignalType(SignalType signalType) {
-        if (signalType != null) {
-            this.signalAccessoryType = signalType.getSignalType();
-        }
-    }
-
-    @Transient
-    public Point getCenter() {
-        return new Point(this.x, this.y);
-    }
-
-    public final void setCenter(Point center) {
-        this.x = center.x;
-        this.y = center.y;
-    }
-
-    @Column(name = "accessory_id")
-    public Long getAccessoryId() {
-        return accessoryId;
-    }
-
-    public void setAccessoryId(Long accessoryId) {
-        this.accessoryId = accessoryId;
-    }
-
-    @Column(name = "sensor_id")
-    public Long getSensorId() {
-        return sensorId;
-    }
-
-    public void setSensorId(Long sensorId) {
-        this.sensorId = sensorId;
-    }
-
-    @Transient
-    public AccessoryBean getAccessoryBean() {
-        return accessoryBean;
-    }
-
-    public void setAccessoryBean(AccessoryBean accessoryBean) {
-        this.accessoryBean = accessoryBean;
-    }
-
-    @Transient
-    public SensorBean getSensorBean() {
-        return sensorBean;
-    }
-
-    public void setSensorBean(SensorBean sensorBean) {
-        this.sensorBean = sensorBean;
-    }
-
-    //TODO!
-//    public JCSEntity getEntityBean() {
-//        switch (this.tileType) {
-//            case SENSOR:
-//                return this.sensorBean;
-//            case SIGNAL:
-//                return this.accessoryBean;
-//            case SWITCH:
-//                return this.accessoryBean;
-//            case CROSS:
-//                return this.accessoryBean;
-//
-//            default:
-//                return null;
-//        }
-//    }
-    @Override
-    public int compareTo(Object other) {
-        int resx = Integer.compare(this.getX(), ((TileBean) other).getX());
-
-        if (resx == 0) {
-            return Integer.compare(this.getY(), ((TileBean) other).getY());
-        } else {
-            return resx;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 11 * hash + Objects.hashCode(this.type);
-        hash = 11 * hash + Objects.hashCode(this.tileDirection);
-        hash = 11 * hash + Objects.hashCode(this.tileDirection);
-        hash = 11 * hash + Objects.hashCode(this.signalAccessoryType);
-        hash = 11 * hash + Objects.hashCode(this.x);
-        hash = 11 * hash + Objects.hashCode(this.y);
-        hash = 11 * hash + Objects.hashCode(this.id);
-        hash = 11 * hash + Objects.hashCode(this.accessoryId);
-        hash = 11 * hash + Objects.hashCode(this.sensorId);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TileBean other = (TileBean) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.type, other.type)) {
-            return false;
-        }
-        if (!Objects.equals(this.tileOrientation, other.tileOrientation)) {
-            return false;
-        }
-        if (!Objects.equals(this.tileDirection, other.tileDirection)) {
-            return false;
-        }
-        if (!Objects.equals(this.signalAccessoryType, other.signalAccessoryType)) {
-            return false;
-        }
-        if (!Objects.equals(this.x, other.x)) {
-            return false;
-        }
-        if (!Objects.equals(this.y, other.y)) {
-            return false;
-        }
-        if (!Objects.equals(this.accessoryId, other.accessoryId)) {
-            return false;
-        }
-        return Objects.equals(this.sensorId, other.sensorId);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("TileBean{id=").append(id);
-        sb.append(", tileType=").append(type);
-        sb.append(", orientation=").append(tileOrientation);
-        sb.append(", direction=").append(tileDirection);
-        sb.append(", center=[(x=").append(x);
-        sb.append(",y=").append(y);
-        sb.append(")]");
-        sb.append(", signalType=").append(this.signalAccessoryType);
-        sb.append(", accessoryId=").append(this.accessoryId);
-        sb.append(", sensorId=").append(this.sensorId);
-
-        sb.append('}');
-        return sb.toString();
-    }
-
-    public String toLogString() {
-        return toString();
-    }
-
-    @Transient
-    public int getWidth() {
-        switch (this.getTileType()) {
-            case BLOCK -> {
-                if (Orientation.EAST.equals(this.getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-                    return DEFAULT_WIDTH * 3;
-                } else {
-                    return DEFAULT_WIDTH;
-                }
-            }
-            case CROSS -> {
-                if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-                    return DEFAULT_WIDTH * 2;
-                } else {
-                    return DEFAULT_WIDTH;
-                }
-            }
-            default -> {
-                //Straight,Curved,Sensor,Signal,Switch
-                return DEFAULT_WIDTH;
-            }
-        }
-    }
-
-    @Transient
-    public int getHeight() {
-        switch (this.getTileType()) {
-            case BLOCK -> {
-                if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-                    return DEFAULT_HEIGHT;
-                } else {
-                    return DEFAULT_HEIGHT * 3;
-                }
-            }
-            case CROSS -> {
-                if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-                    return DEFAULT_HEIGHT;
-                } else {
-                    return DEFAULT_HEIGHT * 2;
-                }
-            }
-            default -> {
-                //Straight,Curved,Sensor,Signal,Switch
-                return DEFAULT_HEIGHT;
-            }
-        }
-    }
-
-    @Transient
-    public List<TileBean> getNeighbours() {
-        return neighbours;
-    }
-
-    public void setNeighbours(List<TileBean> neighbours) {
-        this.neighbours = neighbours;
-    }
+  public String toLogString() {
+    return toString();
+  }
 
 }

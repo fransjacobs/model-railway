@@ -16,17 +16,11 @@
 package jcs.trackservice;
 
 import java.beans.PropertyChangeListener;
-import java.util.List;
-import java.util.Set;
 import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.RouteBean;
-import jcs.entities.SensorBean;
-import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.events.AccessoryListener;
@@ -64,22 +58,6 @@ public interface TrackController {
 
   void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
-  //Accessories
-  @Deprecated //use the PersistenService
-  List<AccessoryBean> getTurnouts();
-
-  @Deprecated //use the PersistenService
-  List<AccessoryBean> getSignals();
-
-  @Deprecated //use the PersistenService
-  AccessoryBean getAccessory(Long id);
-
-  @Deprecated //use the PersistenService
-  AccessoryBean getAccessory(Integer address, String decoderTypee);
-
-  @Deprecated //use the PersistenService
-  AccessoryBean persist(AccessoryBean accessory);
-
   void switchAccessory(AccessoryValue value, AccessoryBean accessory);
 
   void addAccessoryListener(AccessoryListener listener);
@@ -89,19 +67,6 @@ public interface TrackController {
   void addSensorListener(SensorListener listener);
 
   void removeSensorListener(SensorListener listener);
-
-  //Sensors
-  @Deprecated //use the PersistenService
-  List<SensorBean> getSensors();
-
-  @Deprecated //use the PersistenService
-  SensorBean getSensor(Long id);
-
-  @Deprecated //use the PersistenService
-  SensorBean getSensor(Integer deviceId, Integer contactId);
-
-  @Deprecated //use the PersistenService
-  SensorBean persist(SensorBean sensor);
 
   void addFunctionListener(FunctionListener listener);
 
@@ -115,18 +80,6 @@ public interface TrackController {
 
   public void removeVelocityListener(VelocityListener listener);
 
-  @Deprecated //use the PersistenService
-  void remove(SensorBean sensor);
-
-  @Deprecated //use the PersistenService
-  void remove(LocomotiveBean locomotive);
-
-  @Deprecated //use the PersistenService
-  void remove(AccessoryBean accessory);
-
-  @Deprecated //use the PersistenService
-  void remove(JCSPropertyBean property);
-
   String getControllerName();
 
   String getControllerSerialNumber();
@@ -135,44 +88,11 @@ public interface TrackController {
 
   LinkSxx getLinkSxx();
 
-  @Deprecated //use the PersistenService
-  List<JCSPropertyBean> getProperties();
-
-  @Deprecated //use the PersistenService
-  JCSPropertyBean getProperty(String key);
-
-  @Deprecated //use the PersistenService
-  JCSPropertyBean persist(JCSPropertyBean property);
-
   void addMessageListener(CanMessageListener listener);
 
   void removeMessageListener(CanMessageListener listener);
 
-  @Deprecated //use the PersistenService
-  Set<TileBean> getTiles();
-
-  @Deprecated //use the PersistenService
-  TileBean getTile(Integer x, Integer y);
-
-  @Deprecated //use the PersistenService
-  TileBean persist(TileBean tile);
-
-  @Deprecated //use the PersistenService
-  void persist(Set<TileBean> tiles);
-
-  @Deprecated //use the PersistenService
-  void remove(TileBean tile);
-
   void synchronizeLocomotivesWithController(PropertyChangeListener progressListener);
-
-  @Deprecated //use the PersistenService
-  List<RouteBean> getRoutes();
-
-  @Deprecated //use the PersistenService
-  void persist(RouteBean route);
-
-  @Deprecated //use the PersistenService
-  void remove(RouteBean route);
 
   void synchronizeTurnouts();
 

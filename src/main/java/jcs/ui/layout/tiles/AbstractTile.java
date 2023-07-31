@@ -21,7 +21,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.PathIterator;
@@ -29,662 +28,784 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
-import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
-import jcs.entities.enums.SignalType;
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
 import jcs.ui.layout.LayoutUtil;
-import jcs.ui.layout.RepaintListener;
-import jcs.ui.layout.Tile;
-import org.tinylog.Logger;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
+import jcs.ui.layout.tiles.enums.Direction;
 
 /**
- * 
- * Basic graphic element to display a track, turnout, etc on the screen. By
- * default the drawing of a Tile is Horizontal from L to R or West to East.
- * Default orientation is East
  *
- * The default size of a Tile is 40 x 40 pixels. The center point of a Tile is
- * stored and always snapped to the nearest grid point. The basic grid is 20x 20
- * pixels.
+ * Basic graphic element to display a track, turnout, etc on the screen. By default the drawing of a Tile is Horizontal from L to R or West to East. Default orientation is East
  *
- * A Tile can be rotated (always clockwise). Rotation will change the
- * orientation from East -> South -> West -> North -> East.
+ * The default size of a Tile is 40 x 40 pixels. The center point of a Tile is stored and always snapped to the nearest grid point. The basic grid is 20x 20 pixels.
+ *
+ * A Tile can be rotated (always clockwise). Rotation will change the orientation from East -> South -> West -> North -> East.
  *
  * A Tile is rendered to a Buffered Image to speed up the display
  *
  */
-abstract class AbstractTile implements Shape, Tile {
+public abstract class AbstractTile extends TileBean implements Tile {
 
-    protected Orientation orientation;
-    protected Direction direction;
+  protected int width;
+  protected int height;
+  protected int offsetX = 0;
+  protected int offsetY = 0;
 
-    protected BufferedImage image;
+  protected Color trackColor;
 
-    protected Point center;
+  protected Color backgroundColor;
+  protected boolean drawName = true;
 
-    protected int width;
-    protected int height;
-    protected int offsetX = 0;
-    protected int offsetY = 0;
+  protected boolean drawOutline = false;
 
-    protected TileBean tileBean;
+  protected PropertyChangeListener propertyChangeListener;
 
-    protected Color trackColor;
+  protected AbstractTile(Point center) {
+    this(Orientation.EAST, Direction.CENTER, center.x, center.y);
+  }
 
-    protected Color backgroundColor;
-    protected boolean drawName = true;
+  protected AbstractTile(Orientation orientation, Point center) {
+    this(orientation, Direction.CENTER, center.x, center.y);
+  }
 
-    protected String id;
+  protected AbstractTile(Orientation orientation, int x, int y) {
+    this(orientation, Direction.CENTER, x, y);
+  }
 
-    protected boolean drawOutline = false;
+  protected AbstractTile(Orientation orientation, Direction direction, int x, int y) {
+    this(orientation, direction, x, y, null);
+  }
 
-    protected RepaintListener repaintListener;
+  protected AbstractTile(Orientation orientation, Direction direction, int x, int y, Color backgroundColor) {
+    this.tileOrientation = orientation.getOrientation();
+    this.tileDirection = direction.getDirection();
 
-    protected AbstractTile(Point center) {
-        this(Orientation.EAST, Direction.CENTER, center);
+    this.x = x;
+    this.y = y;
+    this.width = getDefaultWidth();
+    this.height = getDefaultHeight();
+
+    this.trackColor = DEFAULT_TRACK_COLOR;
+    this.backgroundColor = backgroundColor;
+    if (this.backgroundColor == null) {
+      this.backgroundColor = Color.white;
+    }
+  }
+
+  protected AbstractTile(TileBean tileBean) {
+    copyInto(tileBean);
+    this.trackColor = DEFAULT_TRACK_COLOR;
+    this.backgroundColor = Color.white;
+  }
+
+  private void copyInto(TileBean other) {
+    this.id = other.getId();
+    this.type = other.getType();
+    this.tileOrientation = other.getTileOrientation();
+    this.tileDirection = other.getTileDirection();
+    this.x = other.getX();
+    this.y = other.getY();
+
+    this.setSignalType(other.getSignalType());
+    this.accessoryId = other.getAccessoryId();
+    this.signalAccessoryType = other.getSignalAccessoryType();
+    this.sensorId = other.getSensorId();
+    
+    this.accessoryBean = other.getAccessoryBean();
+    this.sensorBean = other.getSensorBean();
+  }
+
+  @Override
+  public TileBean getTileBean() {
+    TileBean tb = new TileBean();
+
+    tb.setId(this.id);
+    tb.setX(this.x);
+    tb.setY(this.y);
+    tb.setType(this.type);
+    tb.setTileOrientation(this.tileOrientation);
+    tb.setTileDirection(this.tileDirection);
+    tb.setSignalAccessoryType(this.signalAccessoryType);
+    tb.setAccessoryId(this.accessoryId);
+    tb.setSensorId(this.sensorId);
+    //tb.setNeighbours(this.neighbours);
+    tb.setAccessoryBean(this.accessoryBean);
+    tb.setSensorBean(this.sensorBean);
+
+    return tb;
+  }
+
+//  private void init() {
+//    this.id = getNewId();
+//    Logger.trace(this);
+//  }
+  @Override
+  public Color getTrackColor() {
+    return trackColor;
+  }
+
+  @Override
+  public final void setTrackColor(Color trackColor) {
+    if (!Objects.equals(this.trackColor, trackColor)) {
+      this.trackColor = trackColor;
+    }
+  }
+
+  @Override
+  public Color getBackgroundColor() {
+    return backgroundColor;
+  }
+
+  @Override
+  public void setBackgroundColor(Color backgroundColor) {
+    if (!Objects.equals(this.backgroundColor, backgroundColor)) {
+      this.backgroundColor = backgroundColor;
+    }
+  }
+
+  /**
+   * Draw the AbstractTile
+   *
+   * @param g2d The graphics handle
+   * @param drawOutline
+   */
+  @Override
+  public void drawTile(Graphics2D g2d, boolean drawOutline) {
+    //by default and image is rendered in the EAST orientation
+    Orientation o = getOrientation();
+    if (o == null) {
+      o = Orientation.EAST;
     }
 
-    protected AbstractTile(Orientation orientation, Point center) {
-        this(orientation, Direction.CENTER, center);
-    }
+    BufferedImage cbi = TileImageCache.get(this);
+    if (cbi == null) {
+      BufferedImage bi = createImage();
 
-    protected AbstractTile(Orientation orientation, Direction direction, Point center) {
-        this(orientation, direction, center, null);
-    }
+      Graphics2D g2di = bi.createGraphics();
+      g2di.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-    protected AbstractTile(Orientation orientation, Direction direction, Point center, Color backgroundColor) {
-        this.orientation = orientation;
-        this.direction = direction;
-        this.center = center;
-        this.trackColor = DEFAULT_TRACK_COLOR;
+      if (trackColor == null) {
+        trackColor = DEFAULT_TRACK_COLOR;
+      }
 
-        this.backgroundColor = backgroundColor;
-        if (this.backgroundColor == null) {
-            this.backgroundColor = Color.white;
+      if (backgroundColor == null) {
+        backgroundColor = Color.white;
+      }
+
+      AffineTransform backup = g2di.getTransform();
+      AffineTransform trans = new AffineTransform();
+
+      g2di.setBackground(backgroundColor);
+      g2di.clearRect(0, 0, this.getWidth(), this.height);
+
+      int ox = 0, oy = 0;
+
+      switch (o) {
+        case SOUTH -> {
+          trans.rotate(Math.PI / 2, getWidth() / 2, getHeight() / 2);
+          ox = (this.height - this.width) / 2;
+          oy = (this.width - this.height) / 2;
+          trans.translate(-ox, -oy);
         }
-        init();
-    }
-
-    private void init() {
-        this.id = getNewId();
-    }
-
-    protected AbstractTile(TileBean tileBean) {
-        setTileBean(tileBean);
-        this.trackColor = DEFAULT_TRACK_COLOR;
-        this.backgroundColor = Color.white;
-    }
-
-    @Override
-    public Color getTrackColor() {
-        return trackColor;
-    }
-
-    @Override
-    public final void setTrackColor(Color trackColor) {
-        if (!Objects.equals(this.trackColor, trackColor)) {
-            this.trackColor = trackColor;
-            this.image = null;
+        case WEST -> {
+          trans.rotate(Math.PI, getWidth() / 2, getHeight() / 2);
+          trans.translate(ox, oy);
         }
-    }
-
-    @Override
-    public Color getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    @Override
-    public void setBackgroundColor(Color backgroundColor) {
-        if (!Objects.equals(this.backgroundColor, backgroundColor)) {
-            this.backgroundColor = backgroundColor;
-            this.image = null;
+        case NORTH -> {
+          trans.rotate(-Math.PI / 2, getWidth() / 2, getHeight() / 2);
+          ox = (this.height - this.width) / 2;
+          oy = (this.width - this.height) / 2;
+          trans.translate(-ox, -oy);
         }
-    }
-
-    protected abstract String getNewId();
-
-    abstract void setIdSeq(int id);
-
-    @Override
-    public String getId() {
-        return this.id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    /**
-     * Draw the AbstractTile
-     *
-     * @param g2d The graphics handle
-     * @param drawOutline
-     */
-    @Override
-    public void drawTile(Graphics2D g2d, boolean drawOutline) {
-        if (image == null) {
-            BufferedImage bi = createImage();
-
-            Graphics2D g2di = bi.createGraphics();
-            g2di.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            if (trackColor == null) {
-                trackColor = DEFAULT_TRACK_COLOR;
-            }
-
-            if (backgroundColor == null) {
-                backgroundColor = Color.white;
-            }
-
-            AffineTransform backup = g2di.getTransform();
-            AffineTransform trans = new AffineTransform();
-
-            //by default and image is rendered in the EAST orientation
-            Orientation o = orientation;
-            if (o == null) {
-                o = Orientation.EAST;
-            }
-
-            g2di.setBackground(backgroundColor);
-            g2di.clearRect(0, 0, this.width, this.height);
-
-            int ox = 0, oy = 0;
-
-            switch (o) {
-                case SOUTH -> {
-                    trans.rotate(Math.PI / 2, getWidth() / 2, getHeight() / 2);
-                    ox = (this.height - this.width) / 2;
-                    oy = (this.width - this.height) / 2;
-                    trans.translate(-ox, -oy);
-                }
-                case WEST -> {
-                    trans.rotate(Math.PI, getWidth() / 2, getHeight() / 2);
-                    trans.translate(ox, oy);
-                }
-                case NORTH -> {
-                    trans.rotate(-Math.PI / 2, getWidth() / 2, getHeight() / 2);
-                    ox = (this.height - this.width) / 2;
-                    oy = (this.width - this.height) / 2;
-                    trans.translate(-ox, -oy);
-                }
-                default -> {
-                    trans.rotate(0.0, getWidth() / 2, getHeight() / 2);
-                    trans.translate(ox, oy);
-                }
-            }
-
-            g2di.setTransform(trans);
-
-            renderTile(g2di, trackColor, backgroundColor);
-
-            //outline, but only when the (line) grid is on!
-            if (drawOutline) {
-                g2di.setPaint(Color.lightGray);
-                g2di.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                if (this instanceof Block) {
-                    g2di.drawRect(0, 0, LayoutUtil.DEFAULT_WIDTH * 3, DEFAULT_HEIGHT);
-                } else if (this instanceof Cross) {
-                    g2di.drawRect(0, 0, DEFAULT_WIDTH * 2, DEFAULT_HEIGHT);
-                } else {
-                    g2di.drawRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                }
-            }
-
-            image = bi;
-            g2di.setTransform(backup);
-
-            g2di.dispose();
+        default -> {
+          trans.rotate(0.0, getWidth() / 2, getHeight() / 2);
+          trans.translate(ox, oy);
         }
+      }
 
-        g2d.drawImage(image, (center.x - image.getWidth() / 2) + this.offsetX, (center.y - image.getHeight() / 2) + this.offsetY, null);
-    }
+      g2di.setTransform(trans);
 
-    /**
-     * Render a tile image Always starts at (0,0) used the default width and
-     * height
-     *
-     * @param g2d the Graphic context
-     */
-    @Override
-    public void drawName(Graphics2D g2) {
+      renderTile(g2di, trackColor, backgroundColor);
 
-    }
-
-    @Override
-    public void drawCenterPoint(Graphics2D g2d) {
-        drawCenterPoint(g2d, Color.GRAY);
-    }
-
-    @Override
-    public void drawCenterPoint(Graphics2D g2, Color color) {
-        drawCenterPoint(g2, color, 4);
-    }
-
-    @Override
-    public void drawCenterPoint(Graphics2D g2d, Color color, double size) {
-        double x = (this.center.x - size / 2);
-        double y = (this.center.y - size / 2);
-
-        g2d.setColor(color);
-        g2d.fill(new Ellipse2D.Double(x, y, size, size));
-
-        if (!getAltPoints().isEmpty()) {
-            //Also draw the alt points
-            Set<Point> alt = new HashSet<>(getAltPoints());
-
-            for (Point ap : alt) {
-                g2d.fill(new Ellipse2D.Double(ap.x, ap.y, size - 1, size - 1));
-            }
-        }
-    }
-
-    @Override
-    public void drawBounds(Graphics2D g2d) {
-        g2d.setColor(Color.yellow);
-        g2d.draw(getBounds());
-    }
-
-    /**
-     * Rotate the tile clockwise 90 deg
-     */
-    @Override
-    public void rotate() {
-        switch (this.orientation) {
-            case EAST -> setOrientation(Orientation.SOUTH);
-            case SOUTH -> setOrientation(Orientation.WEST);
-            case WEST -> setOrientation(Orientation.NORTH);
-            default -> setOrientation(Orientation.EAST);
-        }
-    }
-
-    @Override
-    public void flipHorizontal() {
-        if (Orientation.NORTH.equals(this.orientation) || Orientation.SOUTH.equals(this.orientation)) {
-            rotate();
-            rotate();
-        }
-    }
-
-    @Override
-    public void flipVertical() {
-        if (Orientation.EAST.equals(this.orientation) || Orientation.WEST.equals(this.orientation)) {
-            rotate();
-            rotate();
-        }
-    }
-
-    @Override
-    public void move(int newX, int newY) {
-        Point cs = LayoutUtil.snapToGrid(newX, newY);
-        this.setCenter(cs);
-    }
-
-    protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
-        g2d.translate((float) x, (float) y);
-        g2d.rotate(Math.toRadians(angle));
-        g2d.drawString(text, 0, 0);
-        g2d.rotate(-Math.toRadians(angle));
-        g2d.translate(-x, -y);
-    }
-
-    public static BufferedImage flipHorizontally(BufferedImage source) {
-        BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
-
-        AffineTransform flip = AffineTransform.getScaleInstance(1, -1);
-        flip.translate(0, -source.getHeight());
-        AffineTransformOp op = new AffineTransformOp(flip, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-
-        op.filter(source, output);
-
-        return output;
-    }
-
-    public static BufferedImage flipVertically(BufferedImage source) {
-        BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
-
-        AffineTransform flip = AffineTransform.getScaleInstance(-1, 1);
-        flip.translate(-source.getWidth(), 0);
-        AffineTransformOp op = new AffineTransformOp(flip, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-
-        op.filter(source, output);
-
-        return output;
-    }
-
-    @Override
-    public Orientation getOrientation() {
-        return orientation;
-    }
-
-    @Override
-    public void setOrientation(Orientation orientation) {
-        if (!this.orientation.equals(orientation)) {
-            //image is cached, so remove will be created again
-            image = null;
-        }
-        this.orientation = orientation;
-    }
-
-    @Override
-    public Direction getDirection() {
-        return direction;
-    }
-
-    @Override
-    public void setDirection(Direction direction) {
-        if (!this.direction.equals(direction)) {
-            //image is cached, so remove will be created again
-            image = null;
-        }
-        this.direction = direction;
-    }
-
-    @Override
-    public Point getCenter() {
-        return this.center;
-    }
-
-    @Override
-    public void setCenter(Point center) {
-        if (!this.center.equals(center)) {
-            //image is cached, so remove will be created again
-            image = null;
-        }
-        this.center = center;
-    }
-
-    @Override
-    public Set<Point> getAltPoints() {
-        return Collections.EMPTY_SET;
-    }
-
-    @Override
-    public Set<Point> getAllPoints() {
-        Set<Point> aps = new HashSet<>();
-        aps.add(center);
-        aps.addAll(this.getAltPoints());
-        return aps;
-    }
-
-    @Override
-    public int getOffsetX() {
-        return offsetX;
-    }
-
-    @Override
-    public void setOffsetX(int offsetX) {
-        this.offsetX = offsetX;
-    }
-
-    @Override
-    public int getOffsetY() {
-        return offsetY;
-    }
-
-    @Override
-    public void setOffsetY(int offsetY) {
-        this.offsetY = offsetY;
-    }
-
-    protected BufferedImage createImage() {
-        return new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
-    }
-
-    @Override
-    public int getHeight() {
-        return this.height;
-    }
-
-    @Override
-    public int getWidth() {
-        return this.width;
-    }
-
-    @Override
-    public int getCenterX() {
-        int cx;
-        if (this.center != null) {
-            cx = this.center.x;
+      //outline, but only when the (line) grid is on!
+      if (drawOutline) {
+        g2di.setPaint(Color.lightGray);
+        g2di.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        if (this instanceof Block) {
+          g2di.drawRect(0, 0, DEFAULT_WIDTH * 3, DEFAULT_HEIGHT);
+        } else if (this instanceof Cross) {
+          g2di.drawRect(0, 0, DEFAULT_WIDTH * 2, DEFAULT_HEIGHT);
         } else {
-            int w;
-            if (this.width > 0) {
-                w = this.width;
-            } else {
-                w = DEFAULT_WIDTH;
-            }
-            cx = w / 2;
+          g2di.drawRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         }
-        return cx;
+      }
+      g2di.setTransform(backup);
+      g2di.dispose();
+      TileImageCache.put(this, bi);
+      cbi = bi;
     }
 
-    @Override
-    public int getCenterY() {
-        int cy;
-        if (this.center != null) {
-            cy = this.center.y;
+    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + this.offsetX, (y - cbi.getHeight() / 2) + this.offsetY, null);
+  }
+
+  /**
+   * Render a tile image Always starts at (0,0) used the default width and height
+   *
+   * @param g2 the Graphic context
+   */
+  @Override
+  public void drawName(Graphics2D g2) {
+
+  }
+
+  @Override
+  public void drawCenterPoint(Graphics2D g2d) {
+    drawCenterPoint(g2d, Color.GRAY);
+  }
+
+  @Override
+  public void drawCenterPoint(Graphics2D g2, Color color) {
+    drawCenterPoint(g2, color, 4);
+  }
+
+  @Override
+  public void drawCenterPoint(Graphics2D g2d, Color color, double size) {
+    double dX = (this.x - size / 2);
+    double dY = (this.y - size / 2);
+
+    g2d.setColor(color);
+    g2d.fill(new Ellipse2D.Double(dX, dY, size, size));
+
+    if (!getAltPoints().isEmpty()) {
+      //Also draw the alt points
+      Set<Point> alt = new HashSet<>(getAltPoints());
+
+      for (Point ap : alt) {
+        g2d.fill(new Ellipse2D.Double(ap.x, ap.y, size - 1, size - 1));
+      }
+    }
+  }
+
+  @Override
+  public void drawBounds(Graphics2D g2d) {
+    g2d.setColor(Color.yellow);
+    g2d.draw(getBounds());
+  }
+
+  /**
+   * Rotate the tile clockwise 90 deg
+   */
+  @Override
+  public void rotate() {
+    switch (getOrientation()) {
+      case EAST ->
+        setOrientation(Orientation.SOUTH);
+      case SOUTH ->
+        setOrientation(Orientation.WEST);
+      case WEST ->
+        setOrientation(Orientation.NORTH);
+      default ->
+        setOrientation(Orientation.EAST);
+    }
+  }
+
+  @Override
+  public void flipHorizontal() {
+    if (Orientation.NORTH.equals(getOrientation()) || Orientation.SOUTH.equals(getOrientation())) {
+      rotate();
+      rotate();
+    }
+  }
+
+  @Override
+  public void flipVertical() {
+    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+      rotate();
+      rotate();
+    }
+  }
+
+  @Override
+  public void move(int newX, int newY) {
+    Point cs = LayoutUtil.snapToGrid(newX, newY);
+    this.setCenter(cs);
+  }
+
+  protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
+    g2d.translate((float) x, (float) y);
+    g2d.rotate(Math.toRadians(angle));
+    g2d.drawString(text, 0, 0);
+    g2d.rotate(-Math.toRadians(angle));
+    g2d.translate(-x, -y);
+  }
+
+  public static BufferedImage flipHorizontally(BufferedImage source) {
+    BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
+
+    AffineTransform flip = AffineTransform.getScaleInstance(1, -1);
+    flip.translate(0, -source.getHeight());
+    AffineTransformOp op = new AffineTransformOp(flip, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+
+    op.filter(source, output);
+
+    return output;
+  }
+
+  public static BufferedImage flipVertically(BufferedImage source) {
+    BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
+
+    AffineTransform flip = AffineTransform.getScaleInstance(-1, 1);
+    flip.translate(-source.getWidth(), 0);
+    AffineTransformOp op = new AffineTransformOp(flip, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+
+    op.filter(source, output);
+
+    return output;
+  }
+
+  @Override
+  public void setOrientation(Orientation orientation) {
+    this.tileOrientation = orientation.getOrientation();
+  }
+
+  @Override
+  public void setDirection(Direction direction) {
+    this.tileDirection = direction.getDirection();
+  }
+
+  @Override
+  public void setCenter(Point center) {
+    this.x = center.x;
+    this.y = center.y;
+  }
+
+  @Override
+  public Set<Point> getAltPoints() {
+    return Collections.EMPTY_SET;
+  }
+
+  @Override
+  public Set<Point> getAllPoints() {
+    Set<Point> aps = new HashSet<>();
+    aps.add(getCenter());
+    aps.addAll(this.getAltPoints());
+    return aps;
+  }
+
+  @Override
+  public int getOffsetX() {
+    return offsetX;
+  }
+
+  @Override
+  public void setOffsetX(int offsetX) {
+    this.offsetX = offsetX;
+  }
+
+  @Override
+  public int getOffsetY() {
+    return offsetY;
+  }
+
+  @Override
+  public void setOffsetY(int offsetY) {
+    this.offsetY = offsetY;
+  }
+
+  protected BufferedImage createImage() {
+    return new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+  }
+
+  @Override
+  public int getCenterX() {
+    if (this.x > 0) {
+      return this.x;
+    } else {
+      return getDefaultWidth() / 2;
+    }
+  }
+
+  @Override
+  public int getCenterY() {
+    if (this.y > 0) {
+      return this.y;
+    } else {
+      return getDefaultHeight() / 2;
+    }
+  }
+
+  public boolean isDrawName() {
+    return drawName;
+  }
+
+  public void setDrawName(boolean drawName) {
+    this.drawName = drawName;
+  }
+
+  @Override
+  public boolean isDrawOutline() {
+    return drawOutline;
+  }
+
+  @Override
+  public void setDrawOutline(boolean drawOutline) {
+    if (this.drawOutline != drawOutline) {
+      this.drawOutline = drawOutline;
+    }
+  }
+
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", center: " + xyToString() + "}";
+  }
+
+  @Override
+  public Rectangle getBounds() {
+    int w, h, cx, cy;
+    if (this.width > 0 & this.height > 0) {
+      w = this.width;
+      h = this.height;
+    } else {
+      w = DEFAULT_WIDTH;
+      h = DEFAULT_HEIGHT;
+    }
+
+    if (this.x > 0 && this.y > 0) {
+      cx = this.x + this.offsetX;
+      cy = this.y + this.offsetY;
+    } else {
+      cx = w / 2;
+      cy = h / 2;
+    }
+
+    int ltx = cx - w / 2;
+    int lty = cy - h / 2;
+    return new Rectangle(ltx, lty, w, h);
+  }
+
+  @Override
+  public Rectangle2D getBounds2D() {
+    return getBounds().getBounds2D();
+  }
+
+  @Override
+  public boolean contains(double x, double y) {
+    int w, h, cx, cy, tlx, tly;
+    if (this.width > 0 & this.height > 0) {
+      w = this.width;
+      h = this.height;
+    } else {
+      w = DEFAULT_WIDTH;
+      h = DEFAULT_HEIGHT;
+    }
+
+    if (this.width > 0 & this.height > 0) {
+      cx = this.x;
+      cy = this.y;
+    } else {
+      cx = w / 2;
+      cy = h / 2;
+    }
+
+    //top left dX and dY
+    tlx = cx - w / 2;
+    tly = cy - h / 2;
+
+    //Check if X and Y range is ok
+    return !(x < tlx || x > (tlx + w) || y < tly || y > (tly + h));
+  }
+
+  @Override
+  public String xyToString() {
+    return "(" + this.x + "," + this.y + ")";
+  }
+
+  @Override
+  public boolean contains(Point2D p) {
+    return this.contains(p.getX(), p.getY());
+  }
+
+  @Override
+  public boolean intersects(double x, double y, double w, double h) {
+    return getBounds().intersects(x, y, w, h);
+  }
+
+  @Override
+  public boolean intersects(Rectangle2D r2d) {
+    return getBounds().intersects(r2d);
+  }
+
+  @Override
+  public boolean contains(double x, double y, double w, double h) {
+    return getBounds().contains(x, y, w, h);
+  }
+
+  @Override
+  public boolean contains(Rectangle2D r2d) {
+    return getBounds().contains(r2d);
+  }
+
+  @Override
+  public PathIterator getPathIterator(AffineTransform at) {
+    return getBounds().getPathIterator(at);
+  }
+
+  @Override
+  public PathIterator getPathIterator(AffineTransform at, double flatness) {
+    return getBounds().getPathIterator(at, flatness);
+  }
+
+  public PropertyChangeListener getPropertyChangeListener() {
+    return this.propertyChangeListener;
+  }
+
+  @Override
+  public void setPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+    this.propertyChangeListener = propertyChangeListener;
+  }
+
+  protected void repaintTile() {
+    if (this.propertyChangeListener != null) {
+      this.propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "repaintTile", this, this));
+    }
+  }
+
+  @Override
+  public int getHeight() {
+    return this.height;
+  }
+
+  @Override
+  public int getWidth() {
+    return this.width;
+  }
+
+  protected final int getDefaultWidth() {
+    switch (this.getTileType()) {
+      case BLOCK -> {
+        if (Orientation.EAST.equals(this.getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_WIDTH * 3;
         } else {
-            int h;
-            if (this.height > 0) {
-                h = this.height;
-            } else {
-                h = DEFAULT_HEIGHT;
-            }
-            cy = h / 2;
+          return DEFAULT_WIDTH;
         }
-        return cy;
-    }
-
-    @Override
-    public TileBean getTileBean() {
-        if (tileBean == null) {
-            Logger.trace("Create new TileBean for: " + getClass().getName());
-            TileType tileType = TileType.get(getClass().getSimpleName());
-            SignalType signalType = null;
-            if (this instanceof Signal signal) {
-                signalType = signal.getSignalType();
-            }
-
-            tileBean = new TileBean(id, tileType, orientation, direction, center, signalType, null, null);
+      }
+      case CROSS -> {
+        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_WIDTH * 2;
         } else {
-            //Synchronize the bean
-            this.tileBean.setOrientation(orientation);
-            this.tileBean.setDirection(direction);
-            this.tileBean.setCenter(center);
-            if (this instanceof Signal signal) {
-                this.tileBean.setSignalType(signal.getSignalType());
-            }
+          return DEFAULT_WIDTH;
         }
-        return tileBean;
+      }
+      default -> {
+        //Straight,Curved,Sensor,Signal,Switch
+        return DEFAULT_WIDTH;
+      }
     }
+  }
 
-    @Override
-    public final void setTileBean(TileBean tileBean) {
-        this.tileBean = tileBean;
-        this.orientation = tileBean.getOrientation();
-        this.direction = tileBean.getDirection();
-        this.center = tileBean.getCenter();
-
-        if (tileBean.getTileType().equals(TileType.SIGNAL)) {
-            ((Signal) this).setSignalType(tileBean.getSignalType());
-        }
-        this.id = tileBean.getId();
-    }
-
-    public boolean isDrawName() {
-        return drawName;
-    }
-
-    public void setDrawName(boolean drawName) {
-        this.drawName = drawName;
-    }
-
-    @Override
-    public boolean isDrawOutline() {
-        return drawOutline;
-    }
-
-    @Override
-    public void setDrawOutline(boolean drawOutline) {
-        if (this.drawOutline != drawOutline) {
-            this.drawOutline = drawOutline;
-            this.image = null;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 59 * hash + Objects.hashCode(this.getClass().getSimpleName());
-        hash = 59 * hash + Objects.hashCode(this.center);
-        hash = 59 * hash + Objects.hashCode(this.id);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!Objects.equals(getClass(), obj.getClass())) {
-            return false;
-        }
-        final AbstractTile other = (AbstractTile) obj;
-        if (this.orientation != other.orientation) {
-            return false;
-        }
-        if (this.direction != other.direction) {
-            return false;
-        }
-        if (Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        return Objects.equals(this.center, other.center);
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + orientation + ", direction: " + direction + ", center: " + center + "}";
-    }
-
-    @Override
-    public Rectangle getBounds() {
-        int w, h, cx, cy;
-        if (this.width > 0 & this.height > 0) {
-            w = this.width;
-            h = this.height;
+  protected final int getDefaultHeight() {
+    switch (this.getTileType()) {
+      case BLOCK -> {
+        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_HEIGHT;
         } else {
-            w = DEFAULT_WIDTH;
-            h = DEFAULT_HEIGHT;
+          return DEFAULT_HEIGHT * 3;
         }
-
-        if (this.center != null) {
-            cx = this.center.x + this.offsetX;
-            cy = this.center.y + this.offsetY;
+      }
+      case CROSS -> {
+        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+          return DEFAULT_HEIGHT;
         } else {
-            cx = w / 2;
-            cy = h / 2;
+          return DEFAULT_HEIGHT * 2;
         }
-
-        int ltx = cx - w / 2;
-        int lty = cy - h / 2;
-        return new Rectangle(ltx, lty, w, h);
+      }
+      default -> {
+        //Straight,Curved,Sensor,Signal,Switch
+        return DEFAULT_HEIGHT;
+      }
     }
+  }
 
-    @Override
-    public Rectangle2D getBounds2D() {
-        return getBounds().getBounds2D();
+  @Override
+  public int getGridX() {
+    return (getCenterX() - Tile.GRID) / (Tile.GRID * 2);
+  }
+
+  @Override
+  public int getGridY() {
+    return (getCenterY() - Tile.GRID) / (Tile.GRID * 2);
+  }
+
+  /**
+   * The main route of the tile is horizontal
+   *
+   * @return true when main route goes from East to West or vv
+   */
+  @Override
+  public boolean isHorizontal() {
+    return (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) && TileType.CURVED != getTileType();
+  }
+
+  /**
+   * The main route of the tile is vertical
+   *
+   * @return true when main route goes from North to South or vv
+   */
+  @Override
+  public boolean isVertical() {
+    return (Orientation.NORTH == getOrientation() || Orientation.SOUTH == getOrientation()) && TileType.CURVED != getTileType();
+  }
+
+  @Override
+  public boolean isJunction() {
+    return false;
+  }
+
+  @Override
+  public boolean isBlock() {
+    return false;
+  }
+
+  @Override
+  public boolean isDirectional() {
+    return false;
+  }
+
+  /**
+   * The main route of the tile is diagonal
+   *
+   * @return true when main route goes from North to East or West to South and vv
+   */
+  @Override
+  public boolean isDiagonal() {
+    return TileType.CURVED == getTileType();
+  }
+
+  public List<TileBean> getNeighbours() {
+    return neighbours;
+  }
+
+  public void setNeighbours(List<TileBean> neighbours) {
+    this.neighbours = neighbours;
+  }
+
+  @Override
+  public String getIdSuffix(Tile other) {
+    return "";
+  }
+
+  @Override
+  public Map<Point, Orientation> getNeighborOrientations() {
+    Map<Point, Orientation> edgeOrientations = new HashMap<>();
+
+    Map<Orientation, Point> neighborPoints = getNeighborPoints();
+
+    for (Orientation o : Orientation.values()) {
+      edgeOrientations.put(neighborPoints.get(o), o);
     }
+    return edgeOrientations;
+  }
 
-    @Override
-    public boolean contains(double x, double y) {
-        int w, h, cx, cy, tlx, tly;
-        if (this.width > 0 & this.height > 0) {
-            w = this.width;
-            h = this.height;
-        } else {
-            w = DEFAULT_WIDTH;
-            h = DEFAULT_HEIGHT;
+  @Override
+  public Map<Point, Orientation> getEdgeOrientations() {
+    Map<Point, Orientation> edgeOrientations = new HashMap<>();
+
+    Map<Orientation, Point> edgeConnections = getEdgePoints();
+
+    for (Orientation o : Orientation.values()) {
+      edgeOrientations.put(edgeConnections.get(o), o);
+    }
+    return edgeOrientations;
+  }
+
+  @Override
+  public boolean isAdjacent(Tile other) {
+    boolean adjacent = false;
+
+    if (other != null) {
+      Collection<Point> thisEdgePoints = getEdgePoints().values();
+      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+
+      for (Point p : thisEdgePoints) {
+        adjacent = otherEdgePoints.contains(p);
+        if (adjacent) {
+          break;
         }
-
-        if (this.center != null) {
-            cx = this.center.x;
-            cy = this.center.y;
-        } else {
-            cx = w / 2;
-            cy = h / 2;
-        }
-
-        //top left x and y
-        tlx = cx - w / 2;
-        tly = cy - h / 2;
-
-        //Check if X and Y range is ok
-        return !(x < tlx || x > (tlx + w) || y < tly || y > (tly + h));
+      }
     }
 
-    @Override
-    public boolean contains(Point2D p) {
-        return this.contains(p.getX(), p.getY());
-    }
+    return adjacent;
+  }
 
-    @Override
-    public boolean intersects(double x, double y, double w, double h) {
-        return getBounds().intersects(x, y, w, h);
+  @Override
+  public AccessoryValue getSwitchValueTo(Tile other) {
+    if (other.isJunction()) {
+      return other.getSwitchValueTo(this);
+    } else {
+      return AccessoryValue.OFF;
     }
+  }
 
-    @Override
-    public boolean intersects(Rectangle2D r2d) {
-        return getBounds().intersects(r2d);
-    }
+  /**
+   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the switch side of the Turnout
+   */
+  @Override
+  public boolean isSwitchSide(Tile other) {
+    return false;
+  }
 
-    @Override
-    public boolean contains(double x, double y, double w, double h) {
-        return getBounds().contains(x, y, w, h);
-    }
+  /**
+   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the diverging side of the Turnout
+   */
+  @Override
+  public boolean isDivergingSide(Tile other) {
+    return false;
+  }
 
-    @Override
-    public boolean contains(Rectangle2D r2d) {
-        return getBounds().contains(r2d);
-    }
+  /**
+   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
+   *
+   * @param other A Tile
+   * @return true when other is connected to the straight side of the Turnout
+   */
+  @Override
+  public boolean isStraightSide(Tile other) {
+    return false;
+  }
 
-    @Override
-    public PathIterator getPathIterator(AffineTransform at) {
-        return getBounds().getPathIterator(at);
-    }
-
-    @Override
-    public PathIterator getPathIterator(AffineTransform at, double flatness) {
-        return getBounds().getPathIterator(at, flatness);
-    }
-
-    @Override
-    public TileType getTileType() {
-        return getTileBean().getTileType();
-    }
-
-    public RepaintListener getRepaintListener() {
-        return repaintListener;
-    }
-
-    @Override
-    public void setRepaintListener(RepaintListener repaintListener) {
-        this.repaintListener = repaintListener;
-    }
-
-    protected void repaintTile() {
-        if (this.repaintListener != null) {
-            this.repaintListener.repaintTile(this);
-        }
-    }
+  /**
+   * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
+   *
+   * @param other A Tile
+   * @return true where other is on the side of this tile where the arrow points to
+   */
+  @Override
+  public boolean isArrowDirection(Tile other) {
+    return true;
+  }
 
 }
