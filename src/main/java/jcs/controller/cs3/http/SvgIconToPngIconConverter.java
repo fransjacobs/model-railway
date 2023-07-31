@@ -22,6 +22,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 import org.h2.util.IOUtils;
 import org.json.JSONObject;
@@ -61,9 +63,15 @@ public class SvgIconToPngIconConverter {
   void convertAndCacheFunctionImage(String imageName, String svg, boolean testMode) throws IOException {
     String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions";
     File cachePath = new File(path);
-    if (cachePath.mkdir()) {
-      Logger.trace("Created new directory " + cachePath);
-      publishProgress("Created new directory " + cachePath);
+    if (cachePath.exists()) {
+      Logger.trace("Path " + cachePath + " exists");
+    } else {
+      if (cachePath.mkdir()) {
+        Logger.trace("Created new directory " + cachePath);
+        publishProgress("Created new directory " + cachePath);
+      } else {
+        Logger.error("Can't create directory " + cachePath);
+      }
     }
 
     //try {
