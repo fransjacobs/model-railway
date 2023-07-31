@@ -63,9 +63,8 @@ public class SvgIconToPngIconConverter {
   void convertAndCacheFunctionImage(String imageName, String svg, boolean testMode) throws IOException {
     String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "functions";
     File cachePath = new File(path);
-    if (cachePath.exists()) {
-      Logger.trace("Path " + cachePath + " exists");
-    } else {
+
+    if (!cachePath.exists()) {
       if (cachePath.mkdir()) {
         Logger.trace("Created new directory " + cachePath);
         publishProgress("Created new directory " + cachePath);
@@ -74,13 +73,16 @@ public class SvgIconToPngIconConverter {
       }
     }
 
-    //try {
     if (testMode) {
       String svgp = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "svg";
       File svgPath = new File(svgp);
-      if (svgPath.mkdir()) {
-        Logger.trace("Created new directory " + svgPath);
-        publishProgress("Created new directory " + svgPath);
+      if (!svgPath.exists()) {
+        if (svgPath.mkdir()) {
+          Logger.trace("Created new directory " + svgPath);
+          publishProgress("Created new directory " + svgPath);
+        } else {
+          Logger.error("Can't create directory " + svgPath);
+        }
       }
 
       //For debug also write the svg's to a file            
@@ -90,6 +92,7 @@ public class SvgIconToPngIconConverter {
       }
     }
 
+    //TODO there are still weird images check later
     if (1 == 1) {
       String svgBlack = svg;
 
