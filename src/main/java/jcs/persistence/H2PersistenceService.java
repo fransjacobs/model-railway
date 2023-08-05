@@ -27,6 +27,7 @@ import jcs.entities.JCSPropertyBean;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.AccessoryBean;
+import jcs.entities.BlockBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
@@ -397,6 +398,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public void persist(List<TileBean> tiles) {
+    removeAllBlocks();
     removeAllRoutes();
 
     int rows = database.sql("delete from tiles").execute().getRowsAffected();
@@ -506,6 +508,62 @@ public class H2PersistenceService implements PersistenceService {
     props.forEach(p -> {
       System.setProperty(p.getKey(), p.getValue());
     });
+  }
+
+  @Override
+  public List<BlockBean> getBlocks() {
+    List<BlockBean> blocks = database.results(BlockBean.class);
+
+    return blocks;
+  }
+
+  /**
+   *
+   * @param id
+   * @return
+   */
+  @Override
+  public BlockBean getBlock(Long id) {
+    BlockBean block = database.where("id = ?", id).first(BlockBean.class);
+
+    return block;
+  }
+
+  @Override
+  public BlockBean getBlockByTileId(String tileId) {
+    BlockBean block = database.where("tile_id = ?", tileId).first(BlockBean.class);
+
+    return block;
+  }
+
+  @Override
+  public BlockBean persist(BlockBean block) {
+    if (block != null && block.getId() == null && block.getTileId() != null) {
+      BlockBean bb = getBlockByTileId(block.getTileId());
+      if (bb != null) {
+        block.setId(bb.getId());
+      }
+    }
+
+    if (block != null && block.getId() != null && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
+      database.update(block).getRowsAffected();
+    } else {
+      database.insert(block).getRowsAffected();
+    }
+
+    return block;
+  }
+
+  @Override
+  public void remove(BlockBean block) {
+    int rows = this.database.delete(block).getRowsAffected();
+    Logger.trace(rows + " rows deleted");
+  }
+
+  @Override
+  public void removeAllBlocks() {
+    int rows = database.sql("delete from blocks").execute().getRowsAffected();
+    Logger.trace("Deleted " + rows + " blocks");
   }
 
 }

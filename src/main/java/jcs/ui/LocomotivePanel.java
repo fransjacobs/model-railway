@@ -57,6 +57,7 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
 
   private void postInit() {
     setEnabled(false);
+    loadLocomotives();
     if (TrackControllerFactory.getTrackController() != null) {
       TrackControllerFactory.getTrackController().addDirectionListener(this);
       TrackControllerFactory.getTrackController().addVelocityListener(this);

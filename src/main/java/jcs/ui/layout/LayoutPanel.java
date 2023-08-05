@@ -139,6 +139,10 @@ public class LayoutPanel extends JPanel {
       this.rotateBtn.setEnabled(!readonly);
       this.rotateBtn.setVisible(!readonly);
     }
+
+    if (readonly) {
+      loadLayout();
+    }
   }
 
   public void saveLayout() {

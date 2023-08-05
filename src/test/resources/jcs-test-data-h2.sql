@@ -1,3 +1,4 @@
+delete from blocks;
 delete from jcs_properties;
 delete from locomotive_functions;
 delete from locomotives;
@@ -13,6 +14,7 @@ alter table sensors alter column id restart with 1;
 alter table locomotive_functions alter column id restart with 1;
 alter table accessories alter column id restart with 1;
 alter table route_elements alter column id restart with 1;
+alter table blocks alter column id restart with 1;
 
 insert into jcs_properties(p_key,p_value) values
 ('CS3', 'jcs.controller.cs3.MarklinCS3'),
@@ -93,5 +95,11 @@ insert into route_elements (route_id, node_id, tile_id, accessory_value,order_se
    ('[bk-1+]->[bk-2-]', 'ct-2','ct-2',null,1),
    ('[bk-1+]->[bk-2-]', 'st-1','st-1',null,2),
    ('[bk-1+]->[bk-2-]', 'bk2-','bk-2',null,3);
+
+commit;
+
+insert into blocks (tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id) values
+  ('bk-1','Block 1',null,null,null,null,null),
+  ('bk-2','Block 2',null,null,null,null,null);
 
 commit;

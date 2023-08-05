@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.PersistenceFactory;
@@ -151,6 +152,15 @@ public class AStar {
     for (RouteBean route : this.routes.values()) {
       PersistenceFactory.getService().persist(route);
     }
+
+    //Now also create the blocks
+    List<Node> blockNodes = this.graph.getBlockNodes();
+
+    for (Node block : blockNodes) {
+      BlockBean bb = new BlockBean(block.getTile().getTileBean());
+      PersistenceFactory.getService().persist(bb);
+    }
+
   }
 
   public RouteBean getRoute(String id) {
@@ -196,14 +206,14 @@ public class AStar {
               //if (("bk-2-".equals(fid) && "bk-3+".equals(tid))
               //        || ("bk-3+".equals(fid) && "bk-2-".equals(tid))) {
               //if ("bk-2-".equals(fid) && "bk-3+".equals(tid)) {
-                List<Node> path = findPath(from, fromSuffix, to, toSuffix);
+              List<Node> path = findPath(from, fromSuffix, to, toSuffix);
 
-                if (path.isEmpty()) {
-                  Logger.debug("No Path from " + fid + " to " + tid);
-                } else {
-                  RouteBean routeBean = createRouteBeanFromNodePath(path);
-                  this.routes.put(routeBean.getId(), routeBean);
-                }
+              if (path.isEmpty()) {
+                Logger.debug("No Path from " + fid + " to " + tid);
+              } else {
+                RouteBean routeBean = createRouteBeanFromNodePath(path);
+                this.routes.put(routeBean.getId(), routeBean);
+              }
 
               //}
             }
@@ -273,7 +283,7 @@ public class AStar {
 
     //gb.persistRoutes();
     Logger.trace("#########");
-    if (1==2) {
+    if (1 == 2) {
       gb.persistRoutes();
       routes = PersistenceFactory.getService().getRoutes();
     }

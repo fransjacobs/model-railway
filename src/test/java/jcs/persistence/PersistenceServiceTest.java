@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.AccessoryBean;
+import jcs.entities.BlockBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
@@ -34,9 +35,11 @@ import jcs.entities.enums.TileType;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.enums.Direction;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.BeforeClass;
 import org.tinylog.Logger;
 
 public class PersistenceServiceTest {
@@ -51,6 +54,7 @@ public class PersistenceServiceTest {
   private final List<AccessoryBean> turnouts;
   private final List<TileBean> tiles;
   private final List<RouteBean> routes;
+  private final List<BlockBean> blocks;
 
   public PersistenceServiceTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
@@ -65,6 +69,15 @@ public class PersistenceServiceTest {
     signals = new LinkedList<>();
     tiles = new ArrayList<>();
     routes = new ArrayList<>();
+    blocks = new ArrayList<>();
+  }
+
+  @BeforeClass
+  public static void setUpClass() throws Exception {
+  }
+
+  @AfterClass
+  public static void tearDownClass() throws Exception {
   }
 
   @Before
@@ -195,6 +208,16 @@ public class PersistenceServiceTest {
     RouteBean bk2mbk1p = new RouteBean("[bk-2-]->[bk-1+]", "bk-2", "-", "bk-1", "+", "yellow", false);
 
     this.routes.add(bk2mbk1p);
+
+    BlockBean block1 = new BlockBean(bk1);
+    block1.setDescription("Block 1");
+    block1.setId(1L);
+    this.blocks.add(block1);
+    BlockBean block2 = new BlockBean(bk2);
+    block2.setDescription("Block 2");
+    block2.setId(2L);
+    this.blocks.add(block2);
+
   }
 
   @After
@@ -857,6 +880,96 @@ public class PersistenceServiceTest {
 
     rb = instance.getRoute("ct-5", "*", "ct-2", "*");
     assertNull(rb);
+  }
+
+  @Test
+  public void testGetBlocks() {
+    System.out.println("getBlocks");
+    PersistenceService instance = PersistenceFactory.getService();
+    List<BlockBean> expResult = this.blocks;
+    List<BlockBean> result = instance.getBlocks();
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetBlock() {
+    System.out.println("getBlock");
+    Long id = 1L;
+    PersistenceService instance = PersistenceFactory.getService();
+    BlockBean expResult = this.blocks.get(0);
+    BlockBean result = instance.getBlock(id);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testGetBlockByTileId() {
+    System.out.println("getBlockByTileId");
+    String tileId = "bk-2";
+    PersistenceService instance = PersistenceFactory.getService();
+    BlockBean expResult = this.blocks.get(1);
+    BlockBean result = instance.getBlockByTileId(tileId);
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testPersist_BlockBean() {
+    System.out.println("persist");
+    BlockBean block = new BlockBean();
+    block.setTileId("st-1");
+    block.setDescription("A Test Block");
+
+    PersistenceService instance = PersistenceFactory.getService();
+
+    BlockBean expResult = block;
+    expResult.setId(3L);
+
+    BlockBean result = instance.persist(block);
+    assertEquals(expResult, result);
+
+    block.setLocomotiveId(2);
+    result = instance.persist(block);
+
+    assertEquals(expResult, result);
+  }
+
+  @Test
+  public void testRemove_BlockBean() {
+    System.out.println("remove");
+    BlockBean block = new BlockBean();
+    block.setTileId("si-3");
+    block.setDescription("A Test Block to remove");
+
+    PersistenceService instance = PersistenceFactory.getService();
+
+    BlockBean result = instance.persist(block);
+    block.setId(3L);
+
+    assertEquals(block, result);
+
+    result = instance.getBlockByTileId("si-3");
+
+    assertEquals(block, result);
+
+    instance.remove(block);
+    result = instance.getBlockByTileId("si-3");
+
+    assertNull(result);
+  }
+
+  @Test
+  public void testRemoveAllBlocks() {
+    System.out.println("removeAllBlocks");
+    PersistenceService instance = PersistenceFactory.getService();
+
+    List<BlockBean> expResult = this.blocks;
+    List<BlockBean> result = instance.getBlocks();
+    assertEquals(expResult, result);
+
+    instance.removeAllBlocks();
+
+    result = instance.getBlocks();
+
+    assertEquals(0, result.size());
   }
 
 }

@@ -1,6 +1,13 @@
 # Model-railway
 
-## Modelrailway control with JCS (Java Central Station)
+## Model railway control with JCS (Java Central Station)
+Experiments wich should eventually lead to automater rail roud control.
+
+# Why?
+To have fun!
+I know there are ready to go products on the market.
+This project is not an attempt to compeat with any of them,
+hence this project is Open Source so anyone can benefit.
 
 ## About The Project
 JCS is an application to control a model railway. It is in an early stage of development.
@@ -19,18 +26,36 @@ Currently the following modules are build:
 * Locomotives overview (including automatic downloading of the Locomotive- and function button images) and control.
 * Turnout and Signals overview (Synchronized with the CS-3) and control.
 
-So here is a first screenshot of my layout:
-![UI screenshot: My Layout](assets/mylayout.png?raw=true)
+So here are a few screenshots of the Project:
+Control mode running a locomotive, turnout and signals can be controlled.
+Sensor activation is shown.
+![UI screenshot: JCS Main Screen](assets/mainscreen_control.png?raw=true)
+
+In Editmode you can draw a layout using pre defined Tiles.
+also the layout can be routed. (it the very first and early step for the preparation of automatic running).
+![UI screenshot: JCS Edit Screen](assets/mainscreen_edit_route.png?raw=true)
+
+Import Locomotives from the CS-3
+![UI screenshot: JCS Preferences Locomotives](assets/prefs_locomotives.png?raw=true)
+
+Import Signals from the CS-3
+![UI screenshot: JCS Preferences Signals](assets/prefs_signals.png?raw=true)
+
+Import Turnout from the CS-3
+![UI screenshot: JCS Preferences Turnouts](assets/prefs_turnouts.png?raw=true)
+
+Sensor Monitor
+![UI screenshot: JCS Sensor Monitor](assets/sensor_monitor.png?raw=true)
+
+## TODO's (and there are still a lots of todo's...):
 
 Currently the following features are under active development:
-* Adapt to JDK 17 (LTS).
-* React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. 
+* Improve communication with the CS
 * Automatically route the Layout.
+* React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. 
 * Automatically run trains.
 
-##TODO's (and there are still a lots of todo's...):
-* Replace the JDBC calls for a tiny ORM library (norm; https://github.com/dieselpoint/norm ).
-* Redesign the Locomotive(s) control so tha it can support 32 functions
+* Redesign the Locomotive(s) control so that it can support 32 functions in a nicer way.
 * Configuration screens to edit the Locomotives, Accessories and Sensors.
 * Automatic driving of the trains
 * Add deployment configuration for Windows and Linux and to an App
