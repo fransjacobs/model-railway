@@ -18,27 +18,32 @@ package jcs.controller.cs3.net;
 import java.net.InetAddress;
 import jcs.controller.cs3.can.CanMessage;
 import jcs.controller.cs3.events.CanMessageListener;
+import jcs.controller.cs3.events.CanPingRequestListener;
 
 /**
  *
- * @author Frans Jacobs 
+ * @author Frans Jacobs
  */
 public interface CS3Connection extends AutoCloseable {
 
-    static final int MAX_ERRORS = 15;
+  static final int MAX_ERRORS = 15;
 
-    static final int CS3_TX_PORT = 15730;
+  static final int CS3_TX_PORT = 15730;
 
-    static final int CS3_RX_PORT = 15731;
+  static final int CS3_RX_PORT = 15731;
 
-    CanMessage sendCanMessage(CanMessage message);
+  CanMessage sendCanMessage(CanMessage message);
 
-    void addCanMessageListener(CanMessageListener listener);
+  void addCanMessageListener(CanMessageListener listener);
 
-    void removeCanMessageListener(CanMessageListener listener);
+  void removeCanMessageListener(CanMessageListener listener);
 
-    InetAddress getControllerAddress();
-    
-    boolean isConnected();
+  void addCanPingRequestListener(CanPingRequestListener listener);
+
+  void removeCanPingRequestListener(CanPingRequestListener listener);
+
+  InetAddress getControllerAddress();
+
+  boolean isConnected();
 
 }

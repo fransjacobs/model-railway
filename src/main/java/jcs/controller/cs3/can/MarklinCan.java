@@ -23,8 +23,11 @@ package jcs.controller.cs3.can;
  */
 public interface MarklinCan {
 
-    public final static int JCS_UID = 0x1800;
-
+    public final static int JCS_UID = 0x1823;
+    public final static int JCS_DEVICE_ID = 0x5850;
+    
+    public final static int JCS_SERIAL = 0xFE5A; 
+ 
     public final static int PRIO_1 = 0x00;  // Priority 1: Stop / go / short message
     public final static int PRIO_2 = 0x01;  // Priority 2: feedback
     public final static int PRIO_3 = 0x02;  // Priority 3: Engine Stop
@@ -104,8 +107,10 @@ public interface MarklinCan {
     public final static int SX1_EVENT = 0x24;
 
     public final static int SW_STATUS_DLC = 0x00;
+    
     public final static int SW_STATUS_REQ = 0x30;
-
+    
+    public final static int SW_STATUS_RESP = 0x31;
     public final static int REQ_PING = 0x31;
 
     //public static final int REQ_PING_DLC_QUERY = 0x00;
@@ -119,6 +124,7 @@ public interface MarklinCan {
     public final static int BOOTLOADER_TRACK_SERVICE = 0x38;
 
     public final static int STATUS_CONFIG = 0x3a;
+    public final static int STATUS_CONFIG_RESP = 0x3b;
     
 //public final static int STATUS_CONFIG_DLC = 0x05;
     

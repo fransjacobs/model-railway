@@ -358,6 +358,10 @@ public class TrackControllerImpl implements TrackController {
     controllerService.switchAccessory(address, val);
   }
 
+  private void sendPingConfirmation() {
+
+  }
+
   @Override
   public void addMessageListener(CanMessageListener listener) {
     if (this.controllerService != null) {
@@ -420,7 +424,6 @@ public class TrackControllerImpl implements TrackController {
   @Override
   public void removeVelocityListener(VelocityListener listener) {
     this.velocityListeners.remove(listener);
-
   }
 
   private class SensorMessageEventListener implements SensorMessageListener {
@@ -583,5 +586,4 @@ public class TrackControllerImpl implements TrackController {
       }
     }
   }
-
 }

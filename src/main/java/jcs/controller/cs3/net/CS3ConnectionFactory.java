@@ -30,8 +30,7 @@ import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
- * Try to connect with a CS 3. A "ping" is send to the broadcast address like the mobile app does. The CS3 response reveals the IP
- * address.
+ * Try to connect with a CS 3. A "ping" is send to the broadcast address like the mobile app does. The CS3 response reveals the IP address.
  *
  * @author Frans Jacobs
  */
@@ -64,12 +63,11 @@ public class CS3ConnectionFactory {
 
       if (lastUsedIp != null) {
         try {
-          if(Ping.IsReachable(lastUsedIp)) {
+          if (Ping.IsReachable(lastUsedIp)) {
             this.controllerHost = InetAddress.getByName(lastUsedIp);
             Logger.trace("Using last used IP Address: " + lastUsedIp);
-          }
-          else {
-            Logger.trace("Last used IP Address: " + lastUsedIp+" is not reachable");
+          } else {
+            Logger.trace("Last used IP Address: " + lastUsedIp + " is not reachable");
           }
         } catch (UnknownHostException ex) {
           Logger.trace("Last used CS IP: " + lastUsedIp + " is invalid!");
@@ -89,7 +87,7 @@ public class CS3ConnectionFactory {
           RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "cs-ip-address", controllerHost.getHostAddress());
         }
         Logger.trace("CS3 ip: " + controllerHost.getHostName());
-        
+
         controllerConnection = new TCPConnection(controllerHost);
       } else {
         Logger.warn("Can't find a Marklin Controller host!");

@@ -48,7 +48,10 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
+import static jcs.controller.cs3.can.CanMessageFactory.getStatusDataConfigResponse;
 import jcs.controller.cs3.can.MarklinCan;
+import static jcs.controller.cs3.can.MarklinCan.JCS_SERIAL;
+import static jcs.controller.cs3.can.MarklinCan.JCS_UID;
 import jcs.controller.cs3.can.parser.ChannelDataParser;
 import jcs.controller.cs3.devices.GFP;
 import jcs.controller.cs3.devices.LinkSxx;
@@ -60,6 +63,7 @@ import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.http.DeviceJSONParser;
 import jcs.controller.cs3.net.CS3Connection;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.cs3.events.CanPingRequestListener;
 import jcs.controller.cs3.events.DirectionMessageEvent;
 import jcs.controller.cs3.events.DirectionMessageEventListener;
 import jcs.controller.cs3.events.FunctionMessageEvent;
@@ -199,7 +203,11 @@ public class MarklinCS3 implements MarklinController {
 
         if (connected) {
           CanMessageEventListener messageListener = new CanMessageEventListener(this);
+          CanPingRequestEventListener pingListener = new CanPingRequestEventListener(this);
+
           this.connection.addCanMessageListener(messageListener);
+          this.connection.addCanPingRequestListener(pingListener);
+
           //Basically the same as above now via CAN
           getMembers();
           Logger.debug("Connected with " + this.cs3Name);
@@ -218,9 +226,8 @@ public class MarklinCS3 implements MarklinController {
   }
 
   /**
-   * The CS3 has a Web App API which is used for the Web GUI. The Internal devices can be obtained calling this API which returns a
-   * JSON string, From this JSON all devices are found. Most important is the GFP which is the heart of the CS 3 most CAN Command
-   * need the GFP UID. This dat can also be obtained using the CAN Member PING command, but The JSON gives a little more detail
+   * The CS3 has a Web App API which is used for the Web GUI. The Internal devices can be obtained calling this API which returns a JSON string, From this JSON all devices are found. Most important is
+   * the GFP which is the heart of the CS 3 most CAN Command need the GFP UID. This dat can also be obtained using the CAN Member PING command, but The JSON gives a little more detail
    *
    * @return
    */
@@ -271,10 +278,9 @@ public class MarklinCS3 implements MarklinController {
   }
 
   /**
-   * Send a "Ping message to all members on the CAN bus Each device responds with the appropriate data. In this way, the
-   * configuration query of all participants that can be reached on the CAN bus is achieved. DLC = 0: Query of all participants on
-   * the bus. DLC = 8: When responding, the UID is replaced by that of the responding device. Thus, the graphical user interface
-   * processor can determine which devices are connected. Version number is an identifier of the software version.
+   * Send a "Ping message to all members on the CAN bus Each device responds with the appropriate data. In this way, the configuration query of all participants that can be reached on the CAN bus is
+   * achieved. DLC = 0: Query of all participants on the bus. DLC = 8: When responding, the UID is replaced by that of the responding device. Thus, the graphical user interface processor can determine
+   * which devices are connected. Version number is an identifier of the software version.
    *
    * @return List with Ping responses from the members
    */
@@ -330,7 +336,7 @@ public class MarklinCS3 implements MarklinController {
     if (this.connected) {
       CanMessage m = sendMessage(CanMessageFactory.querySystem(this.gfpUid));
 
-      Logger.trace("Received " + m.getResponses().size() + " responses. RX:" + m.getResponse());
+      Logger.trace("Received " + m.getResponses().size() + " responses. RX: " + m.getResponse());
       SystemStatusParser ss = new SystemStatusParser(m);
       this.power = ss.isPower();
     } else {
@@ -340,10 +346,9 @@ public class MarklinCS3 implements MarklinController {
   }
 
   /**
-   * System Stop and GO When on = true then the GO command is issued: The track format processor activates the operation and
-   * supplies electrical energy. Any speed levels/functions that may still exist or have been saved will be sent again. when false
-   * the Stop command is issued: Track format processor stops operation on main and programming track. Electrical energy is no
-   * longer supplied. All speed levels/function values and settings are retained.
+   * System Stop and GO When on = true then the GO command is issued: The track format processor activates the operation and supplies electrical energy. Any speed levels/functions that may still exist
+   * or have been saved will be sent again. when false the Stop command is issued: Track format processor stops operation on main and programming track. Electrical energy is no longer supplied. All
+   * speed levels/function values and settings are retained.
    *
    * @param on true Track power On else Off
    * @return true the Track power is On else Off
@@ -381,6 +386,14 @@ public class MarklinCS3 implements MarklinController {
       Logger.error(ex);
     }
     Logger.trace("Disconnected");
+  }
+
+  void getStatusDataConfigCS3() {
+    if (this.connected) {
+      CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(0, cs3Uid));
+      StatusDataConfigParser sdcp = new StatusDataConfigParser(message);
+      Logger.debug(sdcp);
+    }
   }
 
   void getStatusDataConfig() {
@@ -427,8 +440,7 @@ public class MarklinCS3 implements MarklinController {
   }
 
   /**
-   * Blocking call to the message sender thread which send the message and await the response. When there is no response within 1s
-   * the waiting is cancelled
+   * Blocking call to the message sender thread which send the message and await the response. When there is no response within 1s the waiting is cancelled
    *
    * @param canMessage to send
    * @return the CanMessage with responses
@@ -523,6 +535,25 @@ public class MarklinCS3 implements MarklinController {
     //Notify listeners
     AccessoryMessageEvent ae = new AccessoryMessageEvent(message);
     notifyAccessoryEventListeners(ae);
+  }
+
+  private void sendJCSUID() {
+    executor.execute(() -> sendJCSUIDMessage());
+  }
+
+  private void sendJCSUIDMessage() {
+    sendMessage(CanMessageFactory.getMemberPingResponse(MarklinCan.JCS_UID, 1, MarklinCan.JCS_DEVICE_ID));
+  }
+
+  private void sendJCSInformation() {
+    executor.execute(() -> sentJCSInformationMessage());
+  }
+
+  private void sentJCSInformationMessage() {
+    List<CanMessage> messages = getStatusDataConfigResponse(JCS_SERIAL, 0, 0, "JCS", "Java Central Station", JCS_UID);
+    for (CanMessage msg : messages) {
+      sendMessage(msg);
+    }
   }
 
   @Override
@@ -748,6 +779,7 @@ public class MarklinCS3 implements MarklinController {
           VelocityMessageEvent vme = new VelocityMessageEvent(msg);
           controller.notifyVelocityEventListeners(vme);
         }
+
         case MarklinCan.SYSTEM_COMMAND_RESP -> {
           switch (subcmd) {
             case MarklinCan.STOP_SUB_CMD -> {
@@ -777,41 +809,87 @@ public class MarklinCS3 implements MarklinController {
         }
 
         default -> {
+          //Logger.trace("Message: " + msg);
+
         }
       }
       //Logger.trace("Message: " + msg);
     }
   }
 
-//    0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x30 0x00 0x01 0x00 0x00 0x00
-//    0x00 0x17 0x03 0x26 0x06 0x00 0x00 0x30 0x00 0x01 0x00 0x00 0x00
-//Test
-  public static void main(String[] a) {
+  private class CanPingRequestEventListener implements CanPingRequestListener {
 
+    private final MarklinCS3 controller;
+
+    CanPingRequestEventListener(MarklinCS3 controller) {
+      this.controller = controller;
+    }
+
+    @Override
+    public void onCanMessage(CanMessageEvent canEvent) {
+      CanMessage msg = canEvent.getCanMessage();
+      int cmd = msg.getCommand();
+      int dlc = msg.getDlc();
+      int uid = msg.getDeviceUidNumberFromMessage();
+      switch (cmd) {
+        case MarklinCan.SW_STATUS_REQ -> {
+          if (MarklinCan.DLC_0 == dlc) {
+            Logger.trace("CS Requests all nodes to respond. So reply with JCS UID");
+            controller.sendJCSUID();
+          }
+        }
+        case MarklinCan.STATUS_CONFIG -> {
+          if (MarklinCan.JCS_UID == uid && MarklinCan.DLC_5 == dlc) {
+            Logger.trace("CS requests Info so reply with JCS info");
+            controller.sendJCSInformation();
+          }
+          //default -> {
+          //}
+        }
+      }
+    }
+  }
+
+  public static void main(String[] a) {
     MarklinCS3 cs3 = new MarklinCS3(false);
     Logger.debug((cs3.connect() ? "Connected" : "NOT Connected"));
 
     if (cs3.isConnected()) {
       Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
 
+      //cs3.pause(2000);
+      //Logger.trace("getStatusDataConfig CS3");
+      //cs3.getStatusDataConfigCS3();
+      cs3.pause(2000);
+      //Logger.trace("getStatusDataConfig");
+
+      //cs3.getStatusDataConfig();
+      cs3.pause(1000);
+
+      cs3.pause(4000);
+
       //cs3.power(false);
-      //cs3.pause(500);
       //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
       //cs3.power(true);
       //cs3.pause(500);
-      Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
-
+      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+      //cs3.sendJCSInfo();
+      //cs3.pause(500);
+      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+      //cs3.sendJCSInfo();
+      //cs3.pause(500);
+      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+      //cs3.sendJCSInfo();
       //SystemConfiguration data
-      cs3.getStatusDataConfig();
-      Logger.debug("Channel 1: " + cs3.channelData1.getChannel().getHumanValue() + " " + cs3.channelData1.getChannel().getUnit());
-      Logger.debug("Channel 2: " + cs3.channelData2.getChannel().getHumanValue() + " " + cs3.channelData2.getChannel().getUnit());
-      Logger.debug("Channel 3: " + cs3.channelData3.getChannel().getHumanValue() + " " + cs3.channelData3.getChannel().getUnit());
-      Logger.debug("Channel 4: " + cs3.channelData4.getChannel().getHumanValue() + " " + cs3.channelData4.getChannel().getUnit());
+      //cs3.getStatusDataConfig();
+      //Logger.debug("Channel 1: " + cs3.channelData1.getChannel().getHumanValue() + " " + cs3.channelData1.getChannel().getUnit());
+      //Logger.debug("Channel 2: " + cs3.channelData2.getChannel().getHumanValue() + " " + cs3.channelData2.getChannel().getUnit());
+      //Logger.debug("Channel 3: " + cs3.channelData3.getChannel().getHumanValue() + " " + cs3.channelData3.getChannel().getUnit());
+      //Logger.debug("Channel 4: " + cs3.channelData4.getChannel().getHumanValue() + " " + cs3.channelData4.getChannel().getUnit());
 //            cs3.getSystemStatus(1);
 //
 //            Logger.debug("Channel 4....");
 //            cs3.getSystemStatus(4);
-
 //Now get the systemstatus for all devices
 //First the status data config must be called to get the channels
       //cs3.getSystemStatus()
@@ -860,9 +938,9 @@ public class MarklinCS3 implements MarklinController {
     //PingResponse pr2 = cs3.memberPing();
     //Logger.info("Query direction of loc 12");
     //DirectionInfo info = cs3.getDirection(12, DecoderType.MM);
-    cs3.pause(500L);
-    //Logger.debug("Wait for 10m");
-    //cs3.pause(1000 * 60 * 10);
+    //cs3.pause(500L);
+    Logger.debug("Wait for 1m");
+    cs3.pause(1000 * 60 * 1);
 
     cs3.disconnect();
     cs3.pause(100L);
@@ -874,20 +952,3 @@ public class MarklinCS3 implements MarklinController {
   //}
 
 }
-
-//    @Override
-//    public StatusDataConfigParser getControllerInfo() {
-//        if (cs3Device == null) {
-//            HTTPConnection httpCon = CS3ConnectionFactory.getHTTPConnection();
-//            String deviceFile = httpCon.getDeviceFile();
-//            DeviceFileParser dp = new DeviceFileParser();
-//            cs3Device = dp.parseAccessoryFile(deviceFile);
-//        }
-//        return cs3Device;
-//    }
-//    public DirectionInfo getDirection(int address, DecoderType decoderType) {
-//        int la = getLocoAddres(address, decoderType);
-//        DirectionInfo di = new DirectionInfo(sendMessage(CanMessageFactory.queryDirection(la, this.gfpUid)));
-//        Logger.trace(di);
-//        return di;
-//    }

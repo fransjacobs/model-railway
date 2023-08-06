@@ -26,54 +26,54 @@ import jcs.util.ByteUtil;
  */
 public class PingResponseParser implements Serializable {
 
-    private int[] swVersion;
-    private int[] deviceId;
-    private int[] senderDeviceUid;
+  private int[] swVersion;
+  private int[] deviceId;
+  private int[] senderDeviceUid;
 
-    public PingResponseParser(CanMessage message) {
-        parseMessage(message);
+  public PingResponseParser(CanMessage message) {
+    parseMessage(message);
+  }
+
+  private void parseMessage(CanMessage response) {
+    if (response.isResponseMessage() && MarklinCan.REQ_PING == response.getCommand()) {
+      int[] data = response.getData();
+      swVersion = new int[2];
+      deviceId = new int[2];
+      senderDeviceUid = new int[4];
+
+      System.arraycopy(data, 0, senderDeviceUid, 0, senderDeviceUid.length);
+      System.arraycopy(data, 4, swVersion, 0, swVersion.length);
+      System.arraycopy(data, 6, deviceId, 0, deviceId.length);
     }
+  }
 
-    private void parseMessage(CanMessage response) {
-        if (response.isResponseMessage() && MarklinCan.REQ_PING == response.getCommand()) {
-            int[] data = response.getData();
-            swVersion = new int[2];
-            deviceId = new int[2];
-            senderDeviceUid = new int[4];
+  @Override
+  public String toString() {
+    return "Device { " + "senderDeviceUid: " + ByteUtil.toHexString(senderDeviceUid) + " SW version: " + ByteUtil.toHexString(swVersion) + " deviceId: " + ByteUtil.toHexString(deviceId) + " }";
+  }
 
-            System.arraycopy(data, 0, senderDeviceUid, 0, senderDeviceUid.length);
-            System.arraycopy(data, 4, swVersion, 0, swVersion.length);
-            System.arraycopy(data, 6, deviceId, 0, deviceId.length);
-        }
-    }
+  public int[] getSwVersionBytes() {
+    return swVersion;
+  }
 
-    @Override
-    public String toString() {
-        return "Device { " + "senderDeviceUid: " + ByteUtil.toHexString(senderDeviceUid) + " SW version: " + ByteUtil.toHexString(swVersion) + " deviceId: " + ByteUtil.toHexString(deviceId) + " }";
-    }
+  public int getSwVersion() {
+    return ByteUtil.toInt(swVersion);
+  }
 
-    public int[] getSwVersionBytes() {
-        return swVersion;
-    }
+  public int[] getDeviceIdBytes() {
+    return deviceId;
+  }
 
-    public int getSwVersion() {
-        return ByteUtil.toInt(swVersion);
-    }
+  public int getDeviceId() {
+    return ByteUtil.toInt(deviceId);
+  }
 
-    public int[] getDeviceIdBytes() {
-        return deviceId;
-    }
+  public int[] getSenderDeviceUidBytes() {
+    return senderDeviceUid;
+  }
 
-    public int getDeviceId() {
-        return ByteUtil.toInt(deviceId);
-    }
-
-    public int[] getSenderDeviceUidBytes() {
-        return senderDeviceUid;
-    }
-
-    public int getSenderDeviceUid() {
-        return ByteUtil.toInt(senderDeviceUid);
-    }
+  public int getSenderDeviceUid() {
+    return ByteUtil.toInt(senderDeviceUid);
+  }
 
 }

@@ -34,67 +34,67 @@ import jcs.controller.cs3.events.VelocityMessageEventListener;
 
 public interface MarklinController {
 
-    boolean connect();
+  boolean connect();
 
-    boolean isConnected();
+  boolean isConnected();
 
-    void disconnect();
+  void disconnect();
 
-    String getName();
+  String getName();
 
-    String getSerialNumber();
+  String getSerialNumber();
 
-    String getArticleNumber();
+  String getArticleNumber();
 
-    boolean isPower();
+  boolean isPower();
 
-    boolean power(boolean on);
+  boolean power(boolean on);
 
-    void changeDirection(int address, DecoderType protocol, Direction direction);
+  void changeDirection(int address, DecoderType protocol, Direction direction);
 
-    void changeVelocity(int address, DecoderType protocol, int speed);
+  void changeVelocity(int address, DecoderType protocol, int speed);
 
-    void changeFunctionValue(int address, DecoderType protocol, int functionNumber, boolean flag);
+  void changeFunctionValue(int address, DecoderType protocol, int functionNumber, boolean flag);
 
-    void switchAccessory(int address, AccessoryValue value);
+  void switchAccessory(int address, AccessoryValue value);
 
-    void addPowerEventListener(PowerEventListener listener);
+  void addPowerEventListener(PowerEventListener listener);
 
-    void removePowerEventListener(PowerEventListener listener);
+  void removePowerEventListener(PowerEventListener listener);
 
-    void addSensorMessageListener(SensorMessageListener listener);
+  void addSensorMessageListener(SensorMessageListener listener);
 
-    void removeSensorMessageListener(SensorMessageListener listener);
+  void removeSensorMessageListener(SensorMessageListener listener);
 
-    void addAccessoryEventListener(AccessoryMessageEventListener listener);
+  void addAccessoryEventListener(AccessoryMessageEventListener listener);
 
-    void removeAccessoryEventListener(AccessoryMessageEventListener listener);
+  void removeAccessoryEventListener(AccessoryMessageEventListener listener);
 
-    void addFunctionMessageEventListener(FunctionMessageEventListener listener);
+  void addFunctionMessageEventListener(FunctionMessageEventListener listener);
 
-    void removeFunctionMessageEventListener(FunctionMessageEventListener listener);
+  void removeFunctionMessageEventListener(FunctionMessageEventListener listener);
 
-    void addDirectionMessageEventListener(DirectionMessageEventListener listener);
+  void addDirectionMessageEventListener(DirectionMessageEventListener listener);
 
-    void removeDirectionMessageEventListener(DirectionMessageEventListener listener);
+  void removeDirectionMessageEventListener(DirectionMessageEventListener listener);
 
-    void addVelocityMessageEventListener(VelocityMessageEventListener listener);
+  void addVelocityMessageEventListener(VelocityMessageEventListener listener);
 
-    void removeVelocityMessageEventListener(VelocityMessageEventListener listener);
+  void removeVelocityMessageEventListener(VelocityMessageEventListener listener);
 
-    List<LocomotiveBean> getLocomotives();
+  List<LocomotiveBean> getLocomotives();
 
-    void cacheAllFunctionIcons(PropertyChangeListener progressListener);
+  void cacheAllFunctionIcons(PropertyChangeListener progressListener);
 
-    Image getLocomotiveImage(String icon);
+  Image getLocomotiveImage(String icon);
 
-    //List<AccessoryBean> getAccessories();
-    List<AccessoryBean> getSwitches();
+  //List<AccessoryBean> getAccessories();
+  List<AccessoryBean> getSwitches();
 
-    List<AccessoryBean> getSignals();
+  List<AccessoryBean> getSignals();
 
-    GFP getGFP();
+  GFP getGFP();
 
-    LinkSxx getLinkSxx();
+  LinkSxx getLinkSxx();
 
 }
