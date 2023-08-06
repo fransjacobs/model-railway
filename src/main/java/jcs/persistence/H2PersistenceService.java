@@ -118,11 +118,9 @@ public class H2PersistenceService implements PersistenceService {
     if (prev != null) {
       sensor.setId(prev.getId());
       sensor.setName(prev.getName());
-      int rows = database.update(sensor).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      database.update(sensor);
     } else {
-      int rows = database.insert(sensor).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      database.insert(sensor);
     }
     return sensor;
   }
@@ -301,11 +299,9 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public AccessoryBean persist(AccessoryBean accessory) {
     if (database.where("id=?", accessory.getId()).first(AccessoryBean.class) != null) {
-      int rows = database.update(accessory).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      database.update(accessory);
     } else {
-      int rows = database.insert(accessory).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      database.insert(accessory);
     }
     return accessory;
   }
@@ -314,9 +310,8 @@ public class H2PersistenceService implements PersistenceService {
   public void remove(AccessoryBean accessory) {
     //First ensure the linked tile records are decoupled
     database.sql("update tiles set sensor_id = null where accessory_id =?", accessory.getId()).execute();
-
     int rows = database.delete(accessory).getRowsAffected();
-    Logger.trace(rows + " rows deleted");
+    Logger.trace(rows + " Accessories deleted");
   }
 
   private TileBean addReleatedObjects(TileBean tileBean) {
@@ -331,7 +326,6 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private List<TileBean> addReleatedObjects(List<TileBean> tileBeans) {
-
     for (TileBean tileBean : tileBeans) {
       addReleatedObjects(tileBean);
     }
@@ -384,7 +378,7 @@ public class H2PersistenceService implements PersistenceService {
         database.update(tb).getRowsAffected();
         Logger.trace("Updated " + tileBean);
       } else {
-        database.insert(tb).getRowsAffected();
+        database.insert(tb);
       }
     }
     return tileBean;
@@ -393,7 +387,7 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public void remove(TileBean tileBean) {
     int rows = database.delete(tileBean).getRowsAffected();
-    Logger.trace(rows + " rows deleted");
+    Logger.trace(rows + " TileBeans deleted");
   }
 
   @Override
@@ -401,12 +395,9 @@ public class H2PersistenceService implements PersistenceService {
     removeAllBlocks();
     removeAllRoutes();
 
-    int rows = database.sql("delete from tiles").execute().getRowsAffected();
-    Logger.trace("Deleted " + rows + " to persist: " + tiles.size());
-    rows = 0;
+    database.sql("delete from tiles").execute();
     for (TileBean tb : tiles) {
       persist(tb);
-      rows++;
     }
   }
 
@@ -417,11 +408,9 @@ public class H2PersistenceService implements PersistenceService {
 
   private RouteElementBean persist(RouteElementBean routeElement) {
     if (database.where("id=?", routeElement.getId()).first(RouteElementBean.class) != null) {
-      int rows = database.update(routeElement).getRowsAffected();
-      //Logger.trace(rows + " rows updated");
+      database.update(routeElement);
     } else {
-      int rows = database.insert(routeElement).getRowsAffected();
-      //Logger.trace(rows + " rows inserted");
+      database.insert(routeElement);
     }
     return routeElement;
   }
@@ -461,11 +450,9 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public RouteBean persist(RouteBean route) {
     if (database.where("id=?", route.getId()).first(RouteBean.class) != null) {
-      int rows = database.update(route).getRowsAffected();
-      //Logger.trace(rows + " rows updated");
+      database.update(route);
     } else {
-      int rows = database.insert(route).getRowsAffected();
-      //Logger.trace(rows + " rows inserted");
+      database.insert(route);
     }
 
     if (route.getRouteElements() != null && !route.getRouteElements().isEmpty()) {

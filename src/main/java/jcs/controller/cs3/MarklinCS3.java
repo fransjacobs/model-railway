@@ -388,14 +388,6 @@ public class MarklinCS3 implements MarklinController {
     Logger.trace("Disconnected");
   }
 
-  void getStatusDataConfigCS3() {
-    if (this.connected) {
-      CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(0, cs3Uid));
-      StatusDataConfigParser sdcp = new StatusDataConfigParser(message);
-      Logger.debug(sdcp);
-    }
-  }
-
   void getStatusDataConfig() {
     if (this.connected) {
       CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(0, gfpUid));
@@ -797,15 +789,6 @@ public class MarklinCS3 implements MarklinController {
             default -> {
             }
           }
-          //Overload message:
-          //0x00 0x01 0x03 0x26 0x06 0x63 0x73 0x45 0x8c 0x0a 0x01 0x00 0x00
-          //Event power on
-          //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x01 0x00 0x00 0x00
-          //
-          //event power off
-          //0x00 0x01 0x03 0x26 0x05 0x63 0x73 0x45 0x8c 0x00 0x00 0x00 0x00
-          //lok stop
-          //0x00 0x01 0x03 0x26 0x05 0x00 0x00 0x40 0x07 0x03 0x00 0x00 0x00
         }
 
         default -> {
@@ -834,17 +817,13 @@ public class MarklinCS3 implements MarklinController {
       switch (cmd) {
         case MarklinCan.SW_STATUS_REQ -> {
           if (MarklinCan.DLC_0 == dlc) {
-            Logger.trace("CS Requests all nodes to respond. So reply with JCS UID");
             controller.sendJCSUID();
           }
         }
         case MarklinCan.STATUS_CONFIG -> {
           if (MarklinCan.JCS_UID == uid && MarklinCan.DLC_5 == dlc) {
-            Logger.trace("CS requests Info so reply with JCS info");
             controller.sendJCSInformation();
           }
-          //default -> {
-          //}
         }
       }
     }
