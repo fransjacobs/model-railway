@@ -15,9 +15,9 @@
  */
 package jcs.controller.cs3.events;
 
-import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs.can.CanMessage;
 import org.tinylog.Logger;
-import static jcs.controller.cs3.can.MarklinCan.SYSTEM_COMMAND_RESP;
+import static jcs.controller.cs.can.MarklinCan.SYSTEM_COMMAND_RESP;
 
 /**
  *

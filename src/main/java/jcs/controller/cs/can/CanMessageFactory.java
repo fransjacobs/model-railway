@@ -1,0 +1,506 @@
+/*
+ * Copyright 2023 Frans Jacobs.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package jcs.controller.cs.can;
+
+import java.util.ArrayList;
+import java.util.List;
+import jcs.entities.enums.AccessoryValue;
+import jcs.util.ByteUtil;
+
+/**
+ * Factory for creating CAN Messages
+ */
+public class CanMessageFactory implements MarklinCan {
+
+  public static final int FUNCTION_0 = 0;
+  public static final int FUNCTION_1 = 1;
+  public static final int FUNCTION_2 = 2;
+  public static final int FUNCTION_3 = 3;
+  public static final int FUNCTION_4 = 4;
+
+  private static int[] byteToInt(byte[] src) {
+    int[] dest = new int[src.length];
+    for (int i = 0; i < dest.length; i++) {
+      dest[i] = src[i];
+    }
+    return dest;
+  }
+
+  private static List<int[]> stringToData(String txt) {
+    List<int[]> dataList = new ArrayList<>();
+    byte[] buf = txt.getBytes();
+    for (int i = 0; i < buf.length; i = i + CanMessage.DATA_SIZE) {
+      byte[] b = new byte[CanMessage.DATA_SIZE];
+      if (i + b.length < buf.length) {
+        System.arraycopy(buf, i, b, 0, b.length);
+      } else {
+        System.arraycopy(buf, i, b, 0, buf.length - i);
+      }
+      dataList.add(byteToInt(b));
+    }
+    return dataList;
+  }
+
+  /**
+   * System Stop
+   *
+   * Track format processor stops operation on main and programming track.Electrical energy is no longer supplied.All speed levels/function values and settings are retained. As a special form,
+   * attention must be paid to a general stop command, which affects all track format processors.
+   *
+   * @param go true GO, false STOP
+   * @param gfpUid the uid of the GFP
+   * @return CanMessage: 0x00 0x00 0x47 0x11 0x05 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+   */
+  public static CanMessage systemStopGo(boolean go, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      int[] uid = ByteUtil.to4ByteArray(gfpUid);
+      System.arraycopy(uid, 0, data, 0, uid.length);
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+    if (go) {
+      data[SUBCMD_IDX] = GO_SUB_CMD;
+    } else {
+      data[SUBCMD_IDX] = STOP_SUB_CMD;
+    }
+
+    CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, hash, DLC_5, data);
+    return cm;
+  }
+
+  /**
+   * Query the Power Status of the System.Undocumented feature, by by sending query DLC you get an answer which contains the Power Status of the System, but also the GFP UID which is needed for
+   * further processing...
+   *
+   * @param gfpUid UID of the GFP
+   * @return CanMessage: [0x00 0x00 0x07 0x69 0x04 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00] in case the GFP UID is 0
+   */
+  public static CanMessage querySystem(int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      int[] uid = ByteUtil.to4ByteArray(gfpUid);
+      System.arraycopy(uid, 0, data, 0, uid.length);
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    data[SUBCMD_IDX] = STOP_SUB_CMD;
+
+    CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, hash, DLC_4, data, true);
+    return cm;
+  }
+
+  /**
+   * Each device responds with the appropriate data. In this way, the configuration query of all participants that can be reached on the CAN bus is achieved. DLC = 0: Query of all participants on the
+   * bus. DLC = 8: When responding, the UID is replaced by that of the responding device. Thus, the graphical user interface processor can determine which devices are connected. Version number is an
+   * identifier of the software version.
+   *
+   * @return CanMessage: 0x00 0x30 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+   */
+  public static CanMessage getMembersPing() {
+    int[] data = CanMessage.getEmptyData();
+
+    CanMessage m = new CanMessage();
+    m.setPriority(PRIO_1);
+    m.setCommand(PING_REQ);
+    m.setHash(MAGIC_HASH);
+    m.setDlc(DLC_0);
+    m.setData(data);
+
+    return m;
+  }
+
+  public static CanMessage getMemberPingResponse(int uid, int swVersion, int deviceId) {
+    int[] data = CanMessage.getEmptyData();
+
+    CanMessage m = new CanMessage();
+    m.setPriority(PRIO_1);
+    m.setCommand(PING_RESP);
+    m.setHash(CanMessage.generateHash(JCS_UID));
+    m.setDlc(DLC_8);
+
+    int[] deviceUID = ByteUtil.to4ByteArray(JCS_UID);
+    System.arraycopy(deviceUID, 0, data, 0, deviceUID.length);
+    int[] swv = ByteUtil.to2ByteArray(swVersion);
+    System.arraycopy(swv, 0, data, 4, swv.length);
+    int[] dev = ByteUtil.to2ByteArray(JCS_DEVICE_ID);
+    System.arraycopy(dev, 0, data, 6, dev.length);
+    m.setData(data);
+//    m.setExpectResponse(false);
+    return m;
+  }
+
+  public static List<CanMessage> getStatusDataConfigResponse(int serialNumber, int measurementValues, int configChannels, String articleNumber, String deviceName, int uid) {
+    List<CanMessage> statusDataResp = new ArrayList<>();
+    //First message
+    CanMessage m1 = new CanMessage();
+    m1.setPriority(PRIO_1);
+    m1.setCommand(STATUS_CONFIG_RESP);
+    int[] hash = new int[]{0x03, 0x01}; //Packet 1
+    m1.setHash(hash);
+    m1.setDlc(DLC_8);
+
+    //First message contains the number of measument values, the number of config chanels and the the serial number
+    int[] data = CanMessage.getEmptyData();
+    data[0] = measurementValues;
+    data[1] = configChannels;
+
+    int[] ser = ByteUtil.to2ByteArray(serialNumber);
+    System.arraycopy(ser, 0, data, 6, ser.length);
+    m1.setData(data);
+    statusDataResp.add(m1);
+
+    //The next message contain the article number in ASCII max lenght is 8 bytes
+    CanMessage m2 = new CanMessage();
+    m2.setPriority(PRIO_1);
+    m2.setCommand(STATUS_CONFIG_RESP);
+    int[] hash2 = new int[]{0x03, 0x02}; //Packet 2
+    m2.setHash(hash2);
+    m2.setDlc(DLC_8);
+
+    int lenght = articleNumber.length();
+    if (lenght > CanMessage.DATA_SIZE) {
+      lenght = CanMessage.DATA_SIZE;
+    }
+    String an = articleNumber.substring(0, lenght);
+    int[] data2 = stringToData(an).get(0);
+    m2.setData(data2);
+    statusDataResp.add(m2);
+
+    //Next messages contain the device name splitten into message of 8 byte data
+    List<int[]> deviceNameData = stringToData(deviceName);
+    for (int i = 0; i < deviceNameData.size(); i++) {
+      CanMessage mn = new CanMessage();
+      mn.setPriority(PRIO_1);
+      mn.setCommand(STATUS_CONFIG_RESP);
+      int[] hashN = new int[]{0x03, 3 + i}; //Packet n
+      mn.setHash(hashN);
+      mn.setDlc(DLC_8);
+      mn.setData(deviceNameData.get(i));
+      statusDataResp.add(mn);
+    }
+
+    //Last message contains the tagete UID and the number of packets
+    CanMessage last = new CanMessage();
+    last.setPriority(PRIO_1);
+    last.setCommand(STATUS_CONFIG_RESP);
+
+    int[] hashLast = CanMessage.generateHash(JCS_UID);
+    last.setHash(hashLast);
+    last.setDlc(DLC_6);
+
+    int[] lastData = CanMessage.getEmptyData();
+    int[] uida = ByteUtil.to4ByteArray(uid);
+    System.arraycopy(uida, 0, lastData, 0, uida.length);
+    lastData[5] = statusDataResp.size();
+    last.setData(lastData);
+    statusDataResp.add(last);
+
+    return statusDataResp;
+  }
+
+  /**
+   *
+   * @return
+   */
+  public static CanMessage getMobileAppPingRequest() {
+    int[] data = CanMessage.getEmptyData();
+
+    System.arraycopy(MarklinCan.MOBILE_APP_UID, 0, data, 0, MOBILE_APP_UID.length);
+    System.arraycopy(APP_VERSION, 0, data, 4, APP_VERSION.length);
+    System.arraycopy(WIRELESS_DEVICE_ID, 0, data, 6, APP_VERSION.length);
+
+    CanMessage m = new CanMessage();
+    m.setPriority(PRIO_1);
+    m.setCommand(PING_RESP);
+    m.setHash(MOBILE_APP_HASH);
+    m.setDlc(DLC_8);
+    m.setData(data);
+
+    return m;
+  }
+
+  /**
+   *
+   * @param channel the number of the channel to get the measurement value for
+   * @param gfpUid the GFP UID
+   * @return
+   */
+  public static CanMessage systemStatus(int channel, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      int[] uid = ByteUtil.to4ByteArray(gfpUid);
+      System.arraycopy(uid, 0, data, 0, uid.length);
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+    data[SUBCMD_IDX] = SYSTEM_SUB_STATUS;
+
+    data[5] = channel & 0xff;
+
+    CanMessage cm = new CanMessage(PRIO_1, SYSTEM_COMMAND, hash, DLC_6, data);
+    return cm;
+  }
+
+  public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    //TODO support for DCC
+    //localID = address - 1; // GUI-address is 1-based, protocol-address is 0-based
+    //if (protocol == ProtocolDCC) { localID |= 0x3800; } else { localID |= 0x3000;}
+    int[] hash;
+    if (gfpUid > 0) {
+//            int[] uid = ByteUtil.to4ByteArray(gfpUid);
+//            System.arraycopy(uid, 0, data, 0, uid.length);
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    data[ACCESSORY_CAN_ADDRESS_IDX] = ACCESSORY_CAN_ADDRESS;
+    data[ACCESSORY_ADDRESS_IDX] = address - 1;
+    data[ACCESSORY_VALUE_IDX] = AccessoryValue.GREEN.equals(value) ? 1 : 0;
+    data[ACCESSORY_ACTIVE_IDX] = on ? 1 : 0;
+
+    CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, hash, DLC_6, data);
+    return cm;
+  }
+
+  /**
+   * Request the Configuration Data of a Member.
+   *
+   * @param memberUid
+   * @param channel
+   * @return
+   */
+  public static CanMessage statusDataConfig(int memberUid, int channel) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (memberUid > 0) {
+      int[] uid = ByteUtil.to4ByteArray(memberUid);
+      System.arraycopy(uid, 0, data, 0, uid.length);
+      hash = CanMessage.generateHash(memberUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    data[STATUS_CONFIG_INDEX] = channel & 0xFF;
+    CanMessage cm = new CanMessage(PRIO_1, STATUS_CONFIG, hash, DLC_5, data);
+    return cm;
+  }
+
+  public static CanMessage queryFunction(int address, int functionNumber, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    int[] locid = ByteUtil.to4ByteArray(address);
+    System.arraycopy(locid, 0, data, 0, locid.length);
+    data[4] = functionNumber & 0xff;
+    CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, DLC_5, data);
+    return cm;
+  }
+
+  public static CanMessage setFunction(int address, int functionNumber, int value, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    int[] locid = ByteUtil.to4ByteArray(address);
+    System.arraycopy(locid, 0, data, 0, locid.length);
+    data[4] = functionNumber & 0xff;
+    data[5] = value & 0xff;
+    CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, DLC_6, data);
+    return cm;
+  }
+
+  public static CanMessage queryDirection(int address, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    int[] locid = ByteUtil.to4ByteArray(address);
+    System.arraycopy(locid, 0, data, 0, locid.length);
+
+    CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, DLC_4, data);
+    return cm;
+  }
+
+  public static CanMessage setDirection(int address, int cs2direction, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    int[] locid = ByteUtil.to4ByteArray(address);
+    System.arraycopy(locid, 0, data, 0, locid.length);
+    data[LOC_DIRECTION_VALUE_IDX] = cs2direction & 0xff;
+
+    CanMessage cm = new CanMessage(PRIO_1, LOC_DIRECTION, hash, DLC_5, data);
+    return cm;
+  }
+
+  public static CanMessage querySpeed(int address, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+    int[] locid = ByteUtil.to4ByteArray(address);
+    System.arraycopy(locid, 0, data, 0, locid.length);
+
+    CanMessage cm = new CanMessage(PRIO_1, LOC_VELOCITY, hash, DLC_4, data);
+    return cm;
+  }
+
+  public static CanMessage setLocSpeed(int address, int speed, int gfpUid) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+    int[] locid = ByteUtil.to4ByteArray(address);
+    System.arraycopy(locid, 0, data, 0, locid.length);
+    int[] sb = ByteUtil.to2ByteArray(speed);
+    System.arraycopy(sb, 0, data, 4, sb.length);
+
+    CanMessage cm = new CanMessage(PRIO_1, LOC_VELOCITY, hash, DLC_6, data);
+    return cm;
+  }
+
+  /**
+   * Querying the description of the measured value data and the configuration data of a device.
+   *
+   * @param gfpUid
+   * @param dataName
+   * @return
+   */
+  public static CanMessage requestConfigData(int gfpUid, String dataName) {
+    int[] data = CanMessage.getEmptyData();
+    int[] hash;
+    if (gfpUid > 0) {
+      int[] uid = ByteUtil.to4ByteArray(gfpUid);
+      System.arraycopy(uid, 0, data, 0, uid.length);
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    int[] type = stringToData(dataName).get(0);
+    System.arraycopy(type, 0, data, 0, type.length);
+
+    CanMessage cm = new CanMessage(PRIO_1, REQUEST_CONFIG_DATA, hash, DLC_8, data);
+    return cm;
+  }
+
+  //Mainly for testing....
+  public static void main(String[] a) {
+    System.out.println("getMobAppPingReq:   " + getMobileAppPingRequest());
+    System.out.println("getMembersPing:     " + getMembersPing());
+
+    System.out.println("querySystem:        " + querySystem(1668498828));
+    System.out.println("stop:               " + systemStopGo(false, 1668498828));
+    System.out.println("go:                 " + systemStopGo(true, 1668498828));
+    System.out.println();
+    System.out.println("statusDataConfig:   " + statusDataConfig(1668498828,0));
+    System.out.println("systemStatus ch 1:  " + systemStatus(1, 1668498828));
+    System.out.println("systemStatus ch 4:  " + systemStatus(4, 1668498828));
+
+    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.GREEN, true, 1668498828));
+    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.GREEN, false, 1668498828));
+
+    System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.RED, true, 1668498828));
+
+    System.out.println("requestConfigData:  " + requestConfigData(1668498828, "loks"));
+
+    System.out.println("");
+    List<CanMessage> msgs = getStatusDataConfigResponse(2374, 4, 2, "60226", "Central Station 3", 1668498828);
+    for (int i = 0; i < msgs.size(); i++) {
+      System.out.println((i == 0 ? "statusDataConfigRes: " : i + "                    ") + msgs.get(i));
+    }
+
+    System.out.println("");
+    List<CanMessage> msgs1 = getStatusDataConfigResponse(JCS_SERIAL, 0, 0, "JCS", "Java Central Station", JCS_UID);
+    for (int i = 0; i < msgs1.size(); i++) {
+      System.out.println((i == 0 ? "statusDataConfigRes1: " : i + "                    ") + msgs1.get(i));
+    }
+  }
+
+}
+
+//    public static CanMessage requestConfig(String filename) {
+//        int[] data = getEmptyData();
+//
+//        byte[] fba = filename.getBytes();
+//        for (int i = 0; i < fba.length; i++) {
+//            data[i] = fba[i] & 0xff;
+//        }
+//
+//        CanMessage cm = new CanMessage(PRIO_1, REQUEST_CONFIG_DATA, REQUEST_CONFIG_DATA_DLC, data, guiUidNumber);
+//        return cm;
+//    }
+//    public static CanMessage feedbackEvent(int contactId) {
+//        int[] data = getEmptyData();
+//        int[] start = ByteUtil.to2ByteArray(contactId);
+//        System.arraycopy(start, 0, data, 2, start.length);
+//        CanMessage cm = new CanMessage(PRIO_1, S88_EVENT, S88_EVENT_QUERY_DLC, data);
+//        return cm;
+//    }
+//    public static CanMessage querySensor(int contactId) {
+//        int[] data = getEmptyData();
+//        int[] start = ByteUtil.to2ByteArray(contactId);
+//        System.arraycopy(start, 0, data, 2, start.length);
+//        data[4] = PARAM_PIN_WATCH_CHANGE;
+//        //parameter
+//        CanMessage cm = new CanMessage(PRIO_1, S88_EVENT, S88_EVENT_QUERY_PIN_DLC, data);
+//        return cm;
+//    }
+//    public static CanMessage querySensors(int fromContactId, int toContactId) {
+//        int[] data = getEmptyData();
+//        int[] from = ByteUtil.to2ByteArray(fromContactId);
+//        int[] to = ByteUtil.to2ByteArray(toContactId);
+//        System.arraycopy(from, 0, data, 2, from.length);
+//        System.arraycopy(to, 0, data, 4, to.length);
+//        data[6] = PARAM_BROADCAST_ON;
+//        //parameter
+//        CanMessage cm = new CanMessage(PRIO_1, S88_EVENT, S88_EVENT_QUERY_BLOCK_DLC, data);
+//        return cm;
+//    }

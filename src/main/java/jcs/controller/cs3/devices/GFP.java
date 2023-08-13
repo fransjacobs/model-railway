@@ -15,7 +15,7 @@
  */
 package jcs.controller.cs3.devices;
 
-import jcs.controller.cs3.MeasurementChannel;
+import jcs.controller.cs.MeasurementChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;

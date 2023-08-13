@@ -16,8 +16,8 @@
 package jcs.controller.cs3.events;
 
 import java.util.Date;
-import jcs.controller.cs3.can.CanMessage;
-import jcs.controller.cs3.can.MarklinCan;
+import jcs.controller.cs.can.CanMessage;
+import jcs.controller.cs.can.MarklinCan;
 import jcs.entities.SensorBean;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;

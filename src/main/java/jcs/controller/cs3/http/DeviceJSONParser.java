@@ -18,7 +18,7 @@ package jcs.controller.cs3.http;
 import jcs.controller.cs3.devices.CS3;
 import jcs.controller.cs3.devices.SxxBus;
 import jcs.controller.cs3.devices.GFP;
-import jcs.controller.cs3.MeasurementChannel;
+import jcs.controller.cs.MeasurementChannel;
 import jcs.controller.cs3.devices.LinkSxx;
 import org.json.JSONArray;
 import org.json.JSONObject;

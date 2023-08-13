@@ -18,8 +18,9 @@
  */
 package jcs.controller.cs3.can.parser;
 
-import jcs.controller.cs3.MeasurementChannel;
-import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs.can.parser.ChannelDataParser;
+import jcs.controller.cs.MeasurementChannel;
+import jcs.controller.cs.can.CanMessage;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;

@@ -38,9 +38,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
-import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs3.devices.LinkSxx;
-import jcs.controller.cs3.events.CanMessageEvent;
+import jcs.controller.cs.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.widgets.FeedbackPanel;
@@ -191,7 +191,7 @@ public class ControllerPanel extends JPanel {
       sb.append(" ");
       sb.append(canEvent.getSourceAddress().getHostName());
       sb.append(" ");
-      sb.append(canEvent.getCanMessage().getMessageName());
+      //sb.append(canEvent.getCanMessage().getMessageName());
       sb.append(" ");
       sb.append(canEvent.getCanMessage());
       sb.append("\n");
@@ -226,7 +226,7 @@ public class ControllerPanel extends JPanel {
       sb.append(": ");
       sb.append(canEvent.getCanMessage());
       sb.append(", ");
-      sb.append(canEvent.getCanMessage().getMessageName());
+      //sb.append(canEvent.getCanMessage().getMessageName());
       sb.append("\n");
 
       //if (EventQueue.isDispatchThread()) {

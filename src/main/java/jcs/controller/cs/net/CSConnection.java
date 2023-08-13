@@ -13,34 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.cs.net;
 
-import jcs.controller.cs.events.CanMessageEvent;
 import java.net.InetAddress;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
-import org.tinylog.Logger;
+import jcs.controller.cs3.events.CanMessageListener;
+import jcs.controller.cs.events.CanPingListener;
+import jcs.controller.cs.events.FeedbackEventListener;
 
 /**
  *
  * @author Frans Jacobs
  */
-public abstract class DiscoveryResponseListener implements CanMessageListener {
+public interface CSConnection extends AutoCloseable {
 
-    @Override
-    public void onCanMessage(CanMessageEvent canEvent) {
-        CanMessage can = canEvent.getCanMessage();
-        int command = can.getCommand();
+  static final int MAX_ERRORS = 15;
 
-        if (command == MarklinCan.PING_REQ) {
-            Logger.trace("Response Command: " + Integer.toHexString(command));
-            //got response
-            setHost(canEvent.getSourceAddress());
+  static final int CS_TX_PORT = 15730;
 
-            //onResponse();
-        }
-    }
+  static final int CS_RX_PORT = 15731;
 
-    public abstract void setHost(InetAddress hostAddress);
+  CanMessage sendCanMessage(CanMessage message);
+
+  void setCanMessageListener(CanMessageListener listener);
+
+  void setCanPingRequestListener(CanPingListener listener);
+  
+  void setFeedbackEventListener(FeedbackEventListener listener);
+
+  InetAddress getControllerAddress();
+
+  boolean isConnected();
 
 }

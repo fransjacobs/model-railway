@@ -122,6 +122,21 @@ public class ByteUtil {
     return sb.toString();
   }
 
+  public static String bytesToString(int[] data) {
+    List<Byte> bl = new ArrayList<>();
+    for (int i = 0; i < data.length; i++) {
+      if (data[i] > 0) {
+        byte b = (byte) ((byte) data[i] & 0XFF);
+        bl.add(b);
+      }
+    }
+    byte[] bytes = new byte[bl.size()];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = bl.get(i);
+    }
+    return new String(bytes);
+  }
+
   public static String bytesToString(byte[] data) {
     List<Byte> bl = new ArrayList<>();
     for (int i = 0; i < data.length; i++) {

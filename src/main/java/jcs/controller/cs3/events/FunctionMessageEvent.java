@@ -16,8 +16,8 @@
 package jcs.controller.cs3.events;
 
 import java.io.Serializable;
-import jcs.controller.cs3.can.CanMessage;
-import jcs.controller.cs3.can.MarklinCan;
+import jcs.controller.cs.can.CanMessage;
+import jcs.controller.cs.can.MarklinCan;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.util.ByteUtil;

@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.cs.events;
 
-import jcs.controller.cs.events.CanMessageEvent;
+import jcs.controller.cs.can.CanMessage;
 
-public interface CanMessageListener {
+public interface CanPingListener {
 
-    void onCanMessage(CanMessageEvent canEvent);
+  void onCanPingRequest(CanMessage pingRequest);
+
+  void onCanPingResponse(CanMessage pingResponse);
+
+  void onCanStatusConfigRequest(CanMessage statusConfigRequest);
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2023 fransjacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.cs.events;
 
-import jcs.controller.cs.events.CanMessageEvent;
+import jcs.controller.cs.can.CanMessage;
 
-public interface CanMessageListener {
-
-    void onCanMessage(CanMessageEvent canEvent);
-
+/**
+ *
+ * @author fransjacobs
+ */
+public interface AdministrativeMessageListener {
+  
+  void onMessage(CanMessage message);
+  
 }
