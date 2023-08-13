@@ -926,7 +926,7 @@ public class PersistenceServiceTest {
     BlockBean result = instance.persist(block);
     assertEquals(expResult, result);
 
-    block.setLocomotiveId(2);
+    block.setLocomotiveId(2L);
     result = instance.persist(block);
 
     assertEquals(expResult, result);

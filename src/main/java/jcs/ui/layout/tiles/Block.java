@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import jcs.entities.BlockBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.Orientation.EAST;
@@ -34,6 +35,8 @@ import jcs.ui.layout.tiles.enums.Direction;
 
 public class Block extends AbstractTile implements Tile {
 
+  private BlockBean blockBean;
+  
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 

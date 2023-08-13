@@ -19,6 +19,7 @@ import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.trackservice.TrackControllerFactory;
 import jcs.ui.layout.tiles.Sensor;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -33,11 +34,11 @@ public class SensorDialog extends javax.swing.JDialog {
    * Creates new form SensorDialog
    *
    * @param parent
-   * @param sensor
+   * @param tile
    */
-  public SensorDialog(java.awt.Frame parent, Sensor sensor) {
+  public SensorDialog(java.awt.Frame parent, Tile tile) {
     super(parent, true);
-    this.sensor = sensor;
+    this.sensor = (Sensor)tile;
     initComponents();
 
     postInit();

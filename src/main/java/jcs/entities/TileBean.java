@@ -48,6 +48,7 @@ public class TileBean implements Serializable, Comparable {
 
   protected AccessoryBean accessoryBean;
   protected SensorBean sensorBean;
+  protected BlockBean blockBean;
 
   public TileBean() {
     this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
@@ -114,7 +115,11 @@ public class TileBean implements Serializable, Comparable {
 
   @Transient
   public TileType getTileType() {
-    return TileType.get(type);
+    if (type != null) {
+      return TileType.get(type);
+    } else {
+      return null;
+    }
   }
 
   public final void setTileType(TileType tileType) {
@@ -231,6 +236,15 @@ public class TileBean implements Serializable, Comparable {
     } else {
       this.sensorId = null;
     }
+  }
+
+  @Transient
+  public BlockBean getBlockBean() {
+    return blockBean;
+  }
+
+  public void setBlockBean(BlockBean blockBean) {
+    this.blockBean = blockBean;
   }
 
   @Override

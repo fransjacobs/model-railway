@@ -35,6 +35,7 @@ import org.tinylog.Logger;
 
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.entities.enums.TileType;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import jcs.ui.layout.tiles.Tile;
 
@@ -322,6 +323,11 @@ public class H2PersistenceService implements PersistenceService {
     if (tileBean.getSensorId() != null) {
       tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
     }
+
+    if (tileBean.getTileType() != null && TileType.BLOCK == tileBean.getTileType()) {
+      tileBean.setBlockBean(this.getBlockByTileId(tileBean.getId()));
+    }
+
     return tileBean;
   }
 
@@ -329,7 +335,6 @@ public class H2PersistenceService implements PersistenceService {
     for (TileBean tileBean : tileBeans) {
       addReleatedObjects(tileBean);
     }
-
     return tileBeans;
   }
 
@@ -344,7 +349,6 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public TileBean getTileBean(String id) {
     TileBean tileBean = database.where("id=?", id).first(TileBean.class);
-
     return addReleatedObjects(tileBean);
   }
 
@@ -352,16 +356,7 @@ public class H2PersistenceService implements PersistenceService {
   public TileBean getTileBean(Integer x, Integer y) {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
-
-    if (tileBean != null && tileBean.getAccessoryId() != null) {
-      tileBean.setAccessoryBean(getAccessory(tileBean.getAccessoryId()));
-    }
-
-    if (tileBean != null && tileBean.getSensorId() != null) {
-      tileBean.setSensorBean(getSensor(tileBean.getSensorId()));
-    }
-
-    return tileBean;
+    return addReleatedObjects(tileBean);
   }
 
   @Override
@@ -501,7 +496,37 @@ public class H2PersistenceService implements PersistenceService {
   public List<BlockBean> getBlocks() {
     List<BlockBean> blocks = database.results(BlockBean.class);
 
-    return blocks;
+    return addBlockReleatedObjects(blocks);
+  }
+
+  private List<BlockBean> addBlockReleatedObjects(List<BlockBean> blockBeans) {
+    for (BlockBean bb : blockBeans) {
+      addReleatedObjects(bb);
+    }
+    return blockBeans;
+  }
+
+  private BlockBean addReleatedObjects(BlockBean blockBean) {
+    if (blockBean.getLocomotiveId() != null) {
+      blockBean.setLocomotive(this.getLocomotive(blockBean.getLocomotiveId()));
+    }
+
+    if (blockBean.getPlusSensorBean() != null) {
+      blockBean.setPlusSensorBean(this.getSensor(blockBean.getPlusSensorId()));
+    }
+
+    if (blockBean.getMinSensorBean() != null) {
+      blockBean.setMinSensorBean(this.getSensor(blockBean.getMinSensorId()));
+    }
+
+    if (blockBean.getPlusSignalId() != null) {
+      blockBean.setPlusSignal(this.getAccessory(blockBean.getPlusSignalId()));
+    }
+
+    if (blockBean.getMinSignalId() != null) {
+      blockBean.setMinSignal(this.getAccessory(blockBean.getMinSignalId()));
+    }
+    return blockBean;
   }
 
   /**
@@ -513,14 +538,14 @@ public class H2PersistenceService implements PersistenceService {
   public BlockBean getBlock(Long id) {
     BlockBean block = database.where("id = ?", id).first(BlockBean.class);
 
-    return block;
+    return addReleatedObjects(block);
   }
 
   @Override
   public BlockBean getBlockByTileId(String tileId) {
     BlockBean block = database.where("tile_id = ?", tileId).first(BlockBean.class);
 
-    return block;
+    return addReleatedObjects(block);
   }
 
   @Override

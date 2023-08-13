@@ -59,11 +59,13 @@ import static jcs.entities.enums.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
 import jcs.trackservice.events.AccessoryListener;
 import jcs.trackservice.events.SensorListener;
+import jcs.ui.layout.dialogs.BlockDialog;
 import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
 import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.astar.AStar;
+import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
@@ -690,21 +692,20 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           showDelete = true;
         }
         case SENSOR -> {
-          SensorDialog fbd = new SensorDialog(getParentFrame(), (Sensor) tile);
+          SensorDialog fbd = new SensorDialog(getParentFrame(), tile);
           fbd.setVisible(true);
         }
         case SIGNAL -> {
-          SignalDialog sd = new SignalDialog(getParentFrame(), (Signal) tile);
+          SignalDialog sd = new SignalDialog(getParentFrame(), tile);
           sd.setVisible(true);
         }
         case SWITCH -> {
-          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
+          SwitchDialog td = new SwitchDialog(getParentFrame(), tile);
           td.setVisible(true);
         }
         case BLOCK -> {
-//                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
-//                    osd.setVisible(true);
-//                    break;
+          BlockDialog bd = new BlockDialog(getParentFrame(), tile);
+          bd.setVisible(true);
         }
         default -> {
         }
