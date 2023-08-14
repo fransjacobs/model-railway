@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import jcs.util.ByteUtil;
 import static jcs.util.ByteUtil.toInt;
-import org.tinylog.Logger;
 
 /**
  * CS 2/3 CAN message.
