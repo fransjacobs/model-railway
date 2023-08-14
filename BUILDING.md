@@ -1,5 +1,7 @@
 # Building JCS
 
+[README](README.md)
+
 ## Requirements
 JCS is mainly developed using the [Netbeans IDE](https://netbeans.apache.org)
  
@@ -35,22 +37,24 @@ It is possble to connect to the embedded JCS database using an SQL tool like
 Ensure you are using the same driver version as JCS so use the one from the
 maven repository like so:
  
-Squirrel:
+### Squirrel:
 ![UI screenshot: Squirrel H2 driver settings](assets/squirrel_driver_settings.png?raw=true) 
-DBeaver:
+
+### DBeaver:
 ![UI screenshot: DBeaver H2 driver settings](assets/dbeaver_driver_settings.png?raw=true) 
 
 ### Database connection
-Squirrel:
+#### Squirrel:
 ![UI screenshot: Squirrel jcs schema connection](assets/squirrel_connection_jcs.png?raw=true) 
 
 ![UI screenshot: Squirrel SA schema connection](assets/squirrel_connection_sa.png?raw=true) 
-DBeaver
+
+#### DBeaver
 ![UI screenshot: DBeaver jcs schema connection](assets/dbeaver_connection_jcs.png?raw=true) 
 
 ![UI screenshot: DBeaver SA schema connection](assets/dbeaver_connection_sa.png?raw=true) 
 
-### JDBC URLs
+#### JDBC URLs
 
 JCS: jdbc:h2:/<home folder>/jcs/jcs-db;AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE;SCHEMA=jcs
 User: jcs pass: repo

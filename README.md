@@ -67,11 +67,11 @@ So I hope you get inspired!
 Frans
 
 ## License
-[LICENSE.md](LICENSE.md)
+[LICENSE](LICENSE.md)
 
 
 ## Build JCS from source
-[BUILDING.md](BUILDING.md)
+[BUILDING](BUILDING.md)
 
 ## Contributors
 
