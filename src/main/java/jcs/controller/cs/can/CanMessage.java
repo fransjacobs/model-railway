@@ -18,7 +18,6 @@ package jcs.controller.cs.can;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import jcs.util.ByteUtil;
@@ -29,28 +28,16 @@ import static jcs.util.ByteUtil.toInt;
  */
 public class CanMessage implements MarklinCan, Serializable {
 
-  public static final int MESSAGE_SIZE = 13;
-
-  public static final int HASH_SIZE = 2;
-  public static final int DATA_SIZE = 8;
-
-  private static final int PRIO_IDX = 0;
-  private static final int CMD_IDX = 1;
-  private static final int SUB_CMD_IDX = 9;
-  private static final int HASH_IDX = 2;
-  private static final int PACKAGE_IDX = 3;
-  private static final int DLC_IDX = 4;
-  private static final int DATA_IDX = 5;
 
   private final int[] message;
+//TODO replace the 13 int array by the normal properties
+//  private int priority;
+//  private int command;
+//  private short hash;
+//  private int dlc;
+//  private int[] data;
 
   private final List<CanMessage> responses;
-
-  //private boolean expectResponse;
-  public CanMessage() {
-    this.message = getEmptyMessage();
-    this.responses = new LinkedList<>();
-  }
 
   public CanMessage(byte[] message) {
     this.message = getEmptyMessage();
@@ -60,38 +47,22 @@ public class CanMessage implements MarklinCan, Serializable {
     }
   }
 
-  public CanMessage(int[] message) {
-    this.message = getEmptyMessage();
-    this.responses = new ArrayList<>();
-    System.arraycopy(message, 0, this.message, 0, message.length);
-  }
-
-  public static CanMessage get(int[] message) {
-    return new CanMessage(message);
+  public CanMessage(int priority, int command, int hash, int dlc, int[] data) {
+    this(priority, command, ByteUtil.to2ByteArray(hash), dlc, data);
   }
 
   public CanMessage(int priority, int command, int[] hash, int dlc, int[] data) {
-    this(priority, command, hash, dlc, data, true);
-  }
-
-  public CanMessage(int priority, int command, int hash, int dlc, int[] data) {
-    this(priority, command, ByteUtil.to2ByteArray(hash), dlc, data, false);
-  }
-
-  public CanMessage(int priority, int command, int[] hash, int dlc, int[] data, boolean expectResponse) {
     this.message = getEmptyMessage();
     this.responses = new ArrayList<>();
-//    this.expectResponse = expectResponse;
-    this.setPriority(priority);
-    this.setCommand(command);
-    this.setDlc(dlc);
-    this.setData(data);
-
+    this.message[PRIO_IDX] = priority;
+    this.message[CMD_IDX] = command;
     if (hash == null) {
-      setHash(MarklinCan.MAGIC_HASH);
+      System.arraycopy(MarklinCan.MAGIC_HASH, 0, this.message, HASH_IDX, MarklinCan.MAGIC_HASH.length);
     } else {
-      this.setHash(hash);
+      System.arraycopy(hash, 0, this.message, HASH_IDX, hash.length);
     }
+    this.message[DLC_IDX] = dlc;
+    System.arraycopy(data, 0, this.message, DATA_IDX, data.length);
   }
 
   public int getLength() {
@@ -109,7 +80,6 @@ public class CanMessage implements MarklinCan, Serializable {
   public void addResponse(CanMessage reply) {
     if (reply != null) {
       this.responses.add(reply);
-      //Logger.trace("Resp# " + this.responses.size() + " last Added " + reply);
     }
   }
 
@@ -121,7 +91,7 @@ public class CanMessage implements MarklinCan, Serializable {
     if (idx < this.responses.size()) {
       return this.responses.get(idx);
     } else {
-      return new CanMessage();
+      return null;
     }
   }
 
@@ -155,20 +125,8 @@ public class CanMessage implements MarklinCan, Serializable {
     return bytes;
   }
 
-  public void setMessage(int[] message) {
-    System.arraycopy(message, 0, this.message, 0, message.length);
-  }
-
-  public final void setPriority(int priority) {
-    this.message[PRIO_IDX] = priority;
-  }
-
   public int getPriority() {
     return this.message[PRIO_IDX];
-  }
-
-  public final void setCommand(int command) {
-    this.message[CMD_IDX] = command;
   }
 
   public int getCommand() {
@@ -180,13 +138,9 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public int[] getHash() {
-    int[] hash = new int[HASH_SIZE];
-    System.arraycopy(message, HASH_IDX, hash, 0, HASH_SIZE);
-    return hash;
-  }
-
-  public final void setHash(int[] hash) {
-    System.arraycopy(hash, 0, this.message, HASH_IDX, hash.length);
+    int[] h = new int[HASH_SIZE];
+    System.arraycopy(message, HASH_IDX, h, 0, HASH_SIZE);
+    return h;
   }
 
   public int getDlc() {
@@ -202,34 +156,26 @@ public class CanMessage implements MarklinCan, Serializable {
 
   }
 
-  public final void setDlc(int dlc) {
-    this.message[DLC_IDX] = dlc;
-  }
-
   public int[] getData() {
-    int[] data = new int[DATA_SIZE];
-    System.arraycopy(message, DATA_IDX, data, 0, DATA_SIZE);
-    return data;
+    int[] dt = new int[DATA_SIZE];
+    System.arraycopy(message, DATA_IDX, dt, 0, DATA_SIZE);
+    return dt;
   }
 
   public byte[] getDataBytes() {
-    int[] data = this.getData();
-    byte[] db = new byte[data.length];
-    for (int i = 0; i < data.length; i++) {
-      byte b = (byte) (data[i] & 0xFF);
+    int[] dt = this.getData();
+    byte[] db = new byte[dt.length];
+    for (int i = 0; i < dt.length; i++) {
+      byte b = (byte) (dt[i] & 0xFF);
       db[i] = b;
     }
     return db;
   }
 
-  public final void setData(int[] data) {
-    System.arraycopy(data, 0, this.message, DATA_IDX, data.length);
-  }
-
   public boolean isResponseMessage() {
-    int command = getCommand();
-    command = command & 0x01;
-    return command == 1;
+    int cmd = getCommand();
+    cmd = cmd & 0x01;
+    return cmd == 1;
   }
 
   public boolean isAdministrativeMessage() {
@@ -339,27 +285,10 @@ public class CanMessage implements MarklinCan, Serializable {
     return this.getCommand() == S88_EVENT_RESP;
   }
 
-//  public boolean expectsResponse() {
-//    return this.expectResponse;
-//  }
   public boolean isStatusDataConfigMessage() {
     return getCommand() == STATUS_CONFIG | getCommand() == STATUS_CONFIG + 1;
   }
 
-//  public boolean isEvent() {
-//    return !(getPriority() == PRIO_IGNORE
-//            | getCommand() == BOOTLOADER_CAN
-//            | getCommand() == PING_RESP
-//            | getCommand() == PING_REQ
-//            | getCommand() == PING_RESP
-//            | getCommand() == STATUS_CONFIG
-//            | (getCommand() == SYSTEM_COMMAND && getSubCommand() == SYSTEM_SUB_MFX_SEEK));
-//  }
-//
-//  public boolean isSofwareStatusRequest() {
-//    return (getCommand() == PING_REQ | getCommand() == PING_RESP || getCommand() == STATUS_CONFIG);
-//  }
-//}
   public boolean hasValidResponse() {
     if (this.responses == null || this.responses.isEmpty()) {
       return false;
@@ -380,12 +309,12 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public int getUidInt() {
-    int[] data = getData();
+    int[] dt = getData();
 
-    return ((data[0] & 0xFF) << 24)
-            | ((data[1] & 0xFF) << 16)
-            | ((data[2] & 0xFF) << 8)
-            | (data[3] & 0xFF);
+    return ((dt[0] & 0xFF) << 24)
+            | ((dt[1] & 0xFF) << 16)
+            | ((dt[2] & 0xFF) << 8)
+            | (dt[3] & 0xFF);
   }
 
   public int[] getDeviceUidFromMessage() {
@@ -402,12 +331,6 @@ public class CanMessage implements MarklinCan, Serializable {
     return this.responses.get(0).toString();
   }
 
-//  public boolean isExpectResponse() {
-//    return expectResponse;
-//  }
-//  public void setExpectResponse(boolean expectResponse) {
-//    this.expectResponse = expectResponse;
-//  }
   public boolean isResponseComplete() {
     int cmd = getCommand();
 
@@ -434,12 +357,8 @@ public class CanMessage implements MarklinCan, Serializable {
                 int dataLength = lenm.getDeviceUidNumberFromMessage();
                 int rspMessages = dataLength / 8;
                 rspMessages = rspMessages + 2;
-
-                if (this.responses.size() == rspMessages) {
-                  return true;
-                } else {
-                  return false;
-                }
+                int respSize = this.responses.size();
+                return respSize == rspMessages;
               }
               return false;
             } else {
@@ -458,144 +377,7 @@ public class CanMessage implements MarklinCan, Serializable {
     }
     return false;
   }
-//    switch (cmd) {
-//      case STATUS_CONFIG -> {
-//        if (!responses.isEmpty()) {
-//          int idx = this.responses.size() - 1;
-//          CanMessage m = this.responses.get(idx);
-//          return m.getDlc() == DLC_6;
-//        } else {
-//          return false;
-//        }
-//      }
-//      case REQUEST_CONFIG_DATA -> {
-//        if (!responses.isEmpty()) {
-//          int idx = this.responses.size() - 1;
-//          CanMessage m = this.responses.get(idx);
-//          return m.getDlc() == DLC_6;
-//        } else {
-//          return false;
-//        }
-//      }
-//      default -> {
-//        if (expectResponse) {
-//          return !this.responses.isEmpty();
-//        } else {
-//          return true;
-//        }
-//      }
-//    }
-  //case CONFIG_DATA_STREAM:
-  //    //TODO check
-  //    return this.responses.size() > 0;
-  //case CON_60128_DATA_STREAM:
-  //    //TODO check
-  //    return this.responses.size() > 0;
-//  }
 
-//  public String print() {
-//    StringBuilder sb = new StringBuilder();
-//    sb.append(getMessageName());
-//    sb.append(", RB: ");
-//    sb.append((this.isResponseMessage() ? "1" : "0"));
-//    sb.append(": ");
-//    sb.append(toString());
-//    return sb.toString();
-//  }
-//  //TODO: NEEDS FIXING
-//  public String getMessageName() {
-//    int cmd = getCommand();
-//    switch (cmd) {
-//      case MarklinCan.SYSTEM_COMMAND:
-//        int subcmd = this.getSubCommand();
-//        switch (subcmd) {
-//          case MarklinCan.STOP_SUB_CMD:
-//            int dlc = this.getDlc();
-//            if (dlc == MarklinCan.DLC_4) {
-//              return "Query System";
-//            } else {
-//              return "Stop";
-//            }
-//          case MarklinCan.GO_SUB_CMD:
-//            return "Go";
-//          case MarklinCan.HALT_SUB_CMD:
-//            return "Halt";
-//          case MarklinCan.LOC_STOP_SUB_CMD:
-//            return "loc emergency stop";
-//          case MarklinCan.SYSTEM_SUB_LOC_CYCLE_STOP:
-//            return "loc cycle stop";
-//          case MarklinCan.SYSTEM_SUB_LOC_PROTOCOL:
-//            return "loc data protocol";
-//          case MarklinCan.SYSTEM_SUB_SWITCH_TIME_ACCESSORY:
-//            return "Accessory switch time";
-//          case MarklinCan.SYSTEM_SUB_MFX_FAST_READ:
-//            return "MFX Fast read";
-//          case MarklinCan.SYSTEM_SUB_UNLOCK_TRACK_PROTOCOL:
-//            return "Unlock Track Protocol";
-//          case MarklinCan.SYSTEM_SUB_MFX_REG_CNT:
-//            return "MFX Reg count";
-//          case MarklinCan.OVERLOAD_SUB_CMD:
-//            return "System overload";
-//          case MarklinCan.SYSTEM_SUB_SYSTEM_ID:
-//            return "System ID";
-//          case MarklinCan.SYSTEM_SUB_MFX_SEEK:
-//            return "MFX Seek";
-//          case MarklinCan.SYSTEM_SUB_SYSTEM_RESET:
-//            return "System Reset";
-//          default:
-//            return "Unknown " + cmd + ", " + subcmd;
-//        }
-//      case MarklinCan.LOC_DISCOVERY_COMMAND:
-//        return "Loc Discovery";
-//      case MarklinCan.MFX_BIND_COMMAND:
-//        return "Loc Discovery";
-//      case MarklinCan.MFX_VERIFY_COMMAND:
-//        return "MFX Verify";
-//      case MarklinCan.LOC_VELOCITY:
-//        return "Loc Velocity";
-//      case MarklinCan.LOC_DIRECTION:
-//        return "Loc Direction";
-//      case MarklinCan.LOC_FUNCTION:
-//        return "Loc Function";
-//      case MarklinCan.READ_CONFIG:
-//        return "Read Config";
-//      case MarklinCan.WRITE_CONFIG:
-//        return "Write Config";
-//      case MarklinCan.ACCESSORY_SWITCHING:
-//        return "Switch Accessory";
-//      case MarklinCan.ACCESSORY_CONFIG:
-//        return "Accessory Config";
-//      case MarklinCan.S88_EVENT:
-//        return "S88 Event";
-//      case MarklinCan.S88_EVENT_RESPONSE:
-//        return "S88 Event Response";
-//      case MarklinCan.SX1_EVENT:
-//        return "SX1 Event";
-//      case MarklinCan.PING_REQ:
-//        return "Member Ping";
-//      case MarklinCan.REQ_PING:
-//        return "Member Ping response";
-//      case MarklinCan.UPDATE_OFFER:
-//        return "Update offer";
-//      case MarklinCan.READ_CONFIG_DATA:
-//        return "Read Config data";
-//      case MarklinCan.BOOTLOADER_CAN_SERVICE:
-//        return "CAN Bootloader";
-//      case MarklinCan.BOOTLOADER_TRACK_SERVICE:
-//        return "Track Bootloader";
-//      case MarklinCan.STATUS_CONFIG:
-//        return "Status Config";
-//      case MarklinCan.REQUEST_CONFIG_DATA:
-//        return "Config data request";
-//      case MarklinCan.CONFIG_DATA_STREAM:
-//        return "Config data stream";
-//      case MarklinCan.CON_60128_DATA_STREAM:
-//        return "60128 data stream";
-//
-//      default:
-//        return "Unknown: " + cmd;
-//    }
-//  }
   @Override
   public String toString() {
     return ByteUtil.toHexString(this.message);
@@ -704,167 +486,106 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 }
 
-// Can probaly all cleaned up
-//
-//    public static final int generateHashInt(int[] gfpUid) {
-//        if (gfpUid.length == 4) {
-//            int[] h = new int[2];
-//            int[] l = new int[2];
-//            System.arraycopy(gfpUid, 0, h, 0, 2);
-//            System.arraycopy(gfpUid, 2, l, 0, 2);
-//
-//            int hint = ByteUtil.toInt(h);
-//            int lint = ByteUtil.toInt(l);
-//
-//            //Xor
-//            int xor = hint ^ lint;
-//
-//            int msb = xor >> 16;
-//            int lsb = xor & 0xffff;
-//            int hash = msb ^ lsb;
-//            hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);
-//            return hash;
-//        } else {
-//            int uid = ByteUtil.toInt(gfpUid);
-//            int msb = uid >> 16;
-//            int lsb = uid & 0xffff;
-//            int hash = msb ^ lsb;
-//            hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);
-//            return hash;
+//  public String print() {
+//    StringBuilder sb = new StringBuilder();
+//    sb.append(getMessageName());
+//    sb.append(", RB: ");
+//    sb.append((this.isResponseMessage() ? "1" : "0"));
+//    sb.append(": ");
+//    sb.append(toString());
+//    return sb.toString();
+//  }
+//  //TODO: NEEDS FIXING
+//  public String getMessageName() {
+//    int cmd = getCommand();
+//    switch (cmd) {
+//      case MarklinCan.SYSTEM_COMMAND:
+//        int subcmd = this.getSubCommand();
+//        switch (subcmd) {
+//          case MarklinCan.STOP_SUB_CMD:
+//            int dlc = this.getDlc();
+//            if (dlc == MarklinCan.DLC_4) {
+//              return "Query System";
+//            } else {
+//              return "Stop";
+//            }
+//          case MarklinCan.GO_SUB_CMD:
+//            return "Go";
+//          case MarklinCan.HALT_SUB_CMD:
+//            return "Halt";
+//          case MarklinCan.LOC_STOP_SUB_CMD:
+//            return "loc emergency stop";
+//          case MarklinCan.SYSTEM_SUB_LOC_CYCLE_STOP:
+//            return "loc cycle stop";
+//          case MarklinCan.SYSTEM_SUB_LOC_PROTOCOL:
+//            return "loc data protocol";
+//          case MarklinCan.SYSTEM_SUB_SWITCH_TIME_ACCESSORY:
+//            return "Accessory switch time";
+//          case MarklinCan.SYSTEM_SUB_MFX_FAST_READ:
+//            return "MFX Fast read";
+//          case MarklinCan.SYSTEM_SUB_UNLOCK_TRACK_PROTOCOL:
+//            return "Unlock Track Protocol";
+//          case MarklinCan.SYSTEM_SUB_MFX_REG_CNT:
+//            return "MFX Reg count";
+//          case MarklinCan.OVERLOAD_SUB_CMD:
+//            return "System overload";
+//          case MarklinCan.SYSTEM_SUB_SYSTEM_ID:
+//            return "System ID";
+//          case MarklinCan.SYSTEM_SUB_MFX_SEEK:
+//            return "MFX Seek";
+//          case MarklinCan.SYSTEM_SUB_SYSTEM_RESET:
+//            return "System Reset";
+//          default:
+//            return "Unknown " + cmd + ", " + subcmd;
 //        }
+//      case MarklinCan.LOC_DISCOVERY_COMMAND:
+//        return "Loc Discovery";
+//      case MarklinCan.MFX_BIND_COMMAND:
+//        return "Loc Discovery";
+//      case MarklinCan.MFX_VERIFY_COMMAND:
+//        return "MFX Verify";
+//      case MarklinCan.LOC_VELOCITY:
+//        return "Loc Velocity";
+//      case MarklinCan.LOC_DIRECTION:
+//        return "Loc Direction";
+//      case MarklinCan.LOC_FUNCTION:
+//        return "Loc Function";
+//      case MarklinCan.READ_CONFIG:
+//        return "Read Config";
+//      case MarklinCan.WRITE_CONFIG:
+//        return "Write Config";
+//      case MarklinCan.ACCESSORY_SWITCHING:
+//        return "Switch Accessory";
+//      case MarklinCan.ACCESSORY_CONFIG:
+//        return "Accessory Config";
+//      case MarklinCan.S88_EVENT:
+//        return "S88 Event";
+//      case MarklinCan.S88_EVENT_RESPONSE:
+//        return "S88 Event Response";
+//      case MarklinCan.SX1_EVENT:
+//        return "SX1 Event";
+//      case MarklinCan.PING_REQ:
+//        return "Member Ping";
+//      case MarklinCan.REQ_PING:
+//        return "Member Ping response";
+//      case MarklinCan.UPDATE_OFFER:
+//        return "Update offer";
+//      case MarklinCan.READ_CONFIG_DATA:
+//        return "Read Config data";
+//      case MarklinCan.BOOTLOADER_CAN_SERVICE:
+//        return "CAN Bootloader";
+//      case MarklinCan.BOOTLOADER_TRACK_SERVICE:
+//        return "Track Bootloader";
+//      case MarklinCan.STATUS_CONFIG:
+//        return "Status Config";
+//      case MarklinCan.REQUEST_CONFIG_DATA:
+//        return "Config data request";
+//      case MarklinCan.CONFIG_DATA_STREAM:
+//        return "Config data stream";
+//      case MarklinCan.CON_60128_DATA_STREAM:
+//        return "60128 data stream";
 //
+//      default:
+//        return "Unknown: " + cmd;
 //    }
-//
-//    public static int[] to2ByteArray(int value) {
-//        int[] bts = new int[]{
-//            (value >> 8) & 0xFF,
-//            value & 0XFF};
-//
-//        return bts;
-//    }
-//    public final int generateHashInt() {
-//        int uid;
-//        if (this.deviceUidNumber > 0) {
-//            uid = this.deviceUidNumber;
-//        } else {
-//            uid = this.getUidInt();
-//        }
-//        return generateHashInt(uid);
-//    }
-//    public final int[] generateHash() {
-//        int gh = generateHashInt();
-//        int[] hash = to2ByteArray(gh);
-//        return hash;
-//    }
-//    public final int getHashInt() {
-//        int[] h = this.getHash();
-//
-//        return ((h[0] & 0xFF) << 8)
-//                | ((h[1] & 0xFF));
-//    }
-//    public static int toInt(int[] value) {
-//        int val;
-//        switch (value.length) {
-//            case 2:
-//                val = ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
-//                break;
-//            case 4:
-//                val = ((value[0] & 0xFF) << 24)
-//                        | ((value[1] & 0xFF) << 16)
-//                        | ((value[2] & 0xFF) << 8)
-//                        | (value[3] & 0xFF);
-//                break;
-//            default:
-//                val = 0;
-//                break;
-//        }
-//        return val;
-//    }
-//    public static int[] to4ByteArray(int value) {
-//        int[] bts = new int[]{
-//            (value >> 24) & 0xFF,
-//            (value >> 16) & 0xFF,
-//            (value >> 8) & 0xFF,
-//            value & 0XFF};
-//
-//        return bts;
-//    }
-//    private static String toHexString(int b) {
-//        String h = Integer.toHexString((b & 0xff));
-//        if (h.length() == 1) {
-//            h = "0" + h;
-//        }
-//        return h;
-//    }
-//
-//
-//The CS2 response in my case with: "00 01 CB 13 05 43 53 9A 40 01 00 00 00".
-//Notice the second byte should be 01 as a response and the first 4 data bytes hold the UID in my case "43 53 9A 40".
-//I store the UID as an int so in my case: 1129552448.
-//I calculate the hash as follows:
-//int msb = uid >> 16;
-//int lsb = uid & 0xffff;
-//int hash = msb ^ lsb;
-//hash = (((hash << 3) & 0xFF00) | 0x0300) | (hash & 0x7F);   
-//
-//  public static void main(String[] a) {
-//
-//    int[] gfp = new int[]{0x63, 0x73, 0x45, 0x8c};
-//    int uid = ByteUtil.toInt(gfp);
-//    int[] gfpHash = new int[]{0x03, 0x26};
-//
-//    int[] gui = new int[]{0x63, 0x73, 0x45, 0x8d};
-//    int[] guiHash = new int[]{0x37, 0x7e};
-//
-//    int highword = uid >> 16;
-//    int lowword = uid & 0xFFFF;
-//
-//    System.out.println("gfp hash: " + ByteUtil.toInt(gfpHash) + " " + ByteUtil.toHexString(gfpHash));
-//    //System.out.println("highword: " + highword + " lowword: " + lowword);
-//
-//    int hash = highword ^ lowword;
-//    hash = hash & 0xFFFF;
-//    hash = hash & 0x1f7f;
-//    hash = hash >> 3;
-//
-//    hash = hash & 0x1f7f;
-//    hash = hash | 0x0300;
-//
-//    System.out.println("S hash: " + hash + " " + ByteUtil.toHexString(ByteUtil.to2ByteArray(hash)));
-//
-//    hash = highword ^ lowword;
-//    hash = hash & 0xFFFF;
-//
-//    System.out.println("^hash: " + hash + " " + ByteUtil.toHexString(ByteUtil.to2ByteArray(hash)));
-//
-//    int[] hh = ByteUtil.to2ByteArray(hash);
-//    System.out.println("hh: " + hash + " " + ByteUtil.toHexString(hh));
-//
-//    //int msb = hh[0];
-//    //int lsb = hh[1];
-//    int msb = hash & 0xff00;
-//    int lsb = hash & 0x00ff;
-//
-//    System.out.println("msb: " + ByteUtil.toHexString(msb) + " lsb: " + ByteUtil.toHexString(lsb));
-//
-//    msb = msb & 0x1f;
-//    msb = msb >> 3;
-//    msb = msb | 0x03;  //msb is ok
-//
-//    lsb = lsb & 0x7f;
-//    lsb = lsb >> 1;
-//    //lsb = lsb | 0x00;
-//    lsb = lsb & 0x7f;
-//
-//    System.out.println("a msb: " + ByteUtil.toHexString(msb) + " lsb: " + ByteUtil.toHexString(lsb));
-//
-//    hash = hash & 0x1f7f;
-//    hash = hash >> 3;
-//    hash = hash & 0x1fff;
-//    hash = hash | 0x0300; //msb is now ok lsb not
-//
-//    //int[] hh = ByteUtil.to2ByteArray(hash);
-//    //System.out.println("hh: " + hash + " " + ByteUtil.toHexString(hh));
-//    hash = hash & 0x1f7f;
-//    hash = hash | 0x0300;
 //  }

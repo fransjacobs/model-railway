@@ -64,6 +64,15 @@ public class ByteUtil {
     return (int) toLong(value);
   }
 
+  public static byte[] toByteArray(int[] intArray) {
+    byte[] buf = new byte[intArray.length];
+
+    for (int i = 0; i < buf.length; i++) {
+      buf[i] = (byte) ((byte) intArray[i] & 0xFF);
+    }
+    return buf;
+  }
+
   public static int[] to2ByteArray(int value) {
     int[] bts = new int[]{
       (value >> 8) & 0xFF,

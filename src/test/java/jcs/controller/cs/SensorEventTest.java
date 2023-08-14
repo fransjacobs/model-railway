@@ -1,54 +1,48 @@
 /*
- * Copyright (C) 2020 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.controller.cs;
 
-import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs.can.CanMessage;
+import jcs.util.ByteUtil;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
  * @author fransjacobs
  */
 public class SensorEventTest {
-    
-    private CanMessage message;
 
-    public SensorEventTest() {
-    }
-    
-    
-    @Before
-    public void setUp() {
-        message = new CanMessage(new int[] { 0x00, 0x23, 0xcb, 0x12, 0x08, 0x00, 0x00, 0x00, 0x30, 0x00, 0x01, 0x0f,0x59 } );
-    }
-    
-    @After
-    public void tearDown() {
-    }
+  private CanMessage message;
 
-    /**
-     * Test of isNewValue method, of class FeedbackEventStatus.
-     */
+  public SensorEventTest() {
+  }
+
+  @Before
+  public void setUp() {
+    message = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x23, 0xcb, 0x12, 0x08, 0x00, 0x00, 0x00, 0x30, 0x00, 0x01, 0x0f, 0x59}));
+  }
+
+  @After
+  public void tearDown() {
+  }
+
+  /**
+   * Test of isNewValue method, of class FeedbackEventStatus.
+   */
 //    @Test
 //    public void testIsNewValue() {
 //        System.out.println("isNewValue");
@@ -57,10 +51,9 @@ public class SensorEventTest {
 //        boolean result = instance.isNewValue();
 //        assertEquals(expResult, result);
 //    }
-
-    /**
-     * Test of isOldValue method, of class FeedbackEventStatus.
-     */
+  /**
+   * Test of isOldValue method, of class FeedbackEventStatus.
+   */
 //    @Test
 //    public void testIsOldValue() {
 //        System.out.println("isOldValue");
@@ -69,10 +62,9 @@ public class SensorEventTest {
 //        boolean result = instance.isOldValue();
 //        assertEquals(expResult, result);
 //    }
-
-    /**
-     * Test of getContactId method, of class FeedbackEventStatus.
-     */
+  /**
+   * Test of getContactId method, of class FeedbackEventStatus.
+   */
 //    @Test
 //    public void testGetContactId() {
 //        System.out.println("getContactId");
@@ -81,10 +73,9 @@ public class SensorEventTest {
 //        int result = instance.getContactId();
 //        assertEquals(expResult, result);
 //    }
-
-    /**
-     * Test of getDeviceId method, of class FeedbackEventStatus.
-     */
+  /**
+   * Test of getDeviceId method, of class FeedbackEventStatus.
+   */
 //    @Test
 //    public void testGetDeviceId() {
 //        System.out.println("getDeviceId");
@@ -93,10 +84,9 @@ public class SensorEventTest {
 //        int result = instance.getDeviceId();
 //        assertEquals(expResult, result);
 //    }
-
-    /**
-     * Test of getMillis method, of class FeedbackEventStatus.
-     */
+  /**
+   * Test of getMillis method, of class FeedbackEventStatus.
+   */
 //    @Test
 //    public void testGetMillis() {
 //        System.out.println("getMillis");
@@ -105,10 +95,9 @@ public class SensorEventTest {
 //        int result = instance.getMillis();
 //        assertEquals(expResult, result);
 //    }
-
-    /**
-     * Test of toString method, of class FeedbackEventStatus.
-     */
+  /**
+   * Test of toString method, of class FeedbackEventStatus.
+   */
 //    @Test
 //    public void testToString() {
 //        System.out.println("toString");
@@ -117,5 +106,4 @@ public class SensorEventTest {
 //        String result = instance.toString();
 //        assertEquals(expResult, result);
 //    }
-
 }

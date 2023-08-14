@@ -153,6 +153,7 @@ public class CSConnectionFactory {
         responseSocket.receive(responsePacket);
 
         InetAddress replyHost = InetAddress.getByName(responsePacket.getAddress().getHostAddress());
+        
         CanMessage response = new CanMessage(responsePacket.getData());
 
         Logger.trace("Received: " + response + " from: " + replyHost.getHostAddress());
