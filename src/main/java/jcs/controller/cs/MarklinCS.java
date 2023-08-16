@@ -28,8 +28,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.controller.cs3.events.CanMessageListener;
-import jcs.controller.cs3.http.AccessoryBeanParser;
-import jcs.controller.cs3.http.LocomotiveBeanParser;
+import jcs.controller.cs.can.parser.AccessoryBeanParser;
+import jcs.controller.cs.can.parser.LocomotiveBeanParser;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
@@ -43,6 +43,7 @@ import jcs.controller.cs.can.CanMessageFactory;
 import static jcs.controller.cs.can.CanMessageFactory.getStatusDataConfigResponse;
 import jcs.controller.cs.can.MarklinCan;
 import jcs.controller.cs.can.parser.ChannelDataParser;
+import jcs.controller.cs.can.parser.MessageInflator;
 import jcs.controller.cs.can.parser.StatusDataConfigParser;
 import jcs.controller.cs.can.parser.SystemStatusParser;
 import jcs.controller.cs.events.CanMessageEvent;
@@ -556,12 +557,26 @@ public class MarklinCS implements MarklinController {
     }
   }
 
+  public List<LocomotiveBean> getLocomotivesViaCAN() {
+    CanMessage message = CanMessageFactory.requestConfigData(gfpUid, "loks");
+    this.connection.sendCanMessage(message);
+    String lokomotive = MessageInflator.inflateConfigDataStream(message);
+
+    LocomotiveBeanParser lp = new LocomotiveBeanParser();
+    return lp.parseLocomotivesFile(lokomotive);
+  }
+
+  public List<LocomotiveBean> getLocomotivesViaHttp() {
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    String csLocos = httpCon.getLocomotivesFile();
+    LocomotiveBeanParser lp = new LocomotiveBeanParser();
+    return lp.parseLocomotivesFile(csLocos);
+  }
+
   @Override
   public List<LocomotiveBean> getLocomotives() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
-    String cs3Locos = httpCon.getLocomotivesFile();
-    LocomotiveBeanParser lp = new LocomotiveBeanParser();
-    return lp.parseLocomotivesFile(cs3Locos);
+    //TODO: Use a property to choose the loc retrieval method
+    return getLocomotivesViaCAN();
   }
 
   @Override
@@ -578,12 +593,20 @@ public class MarklinCS implements MarklinController {
     svgp.convertAndCacheAllFunctionsSvgIcons(json);
   }
 
-  //@Override
-  public List<AccessoryBean> getAccessories() {
+  public List<AccessoryBean> getAccessoriesViaHttp() {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String magnetartikelCs2 = httpCon.getAccessoriesFile();
     AccessoryBeanParser ap = new AccessoryBeanParser();
     return ap.parseAccessoryFile(magnetartikelCs2);
+  }
+
+  public List<AccessoryBean> getAccessoriesViaCan() {
+    CanMessage message = CanMessageFactory.requestConfigData(gfpUid, "mags");
+    this.connection.sendCanMessage(message);
+    String magnetartikel = MessageInflator.inflateConfigDataStream(message);
+
+    AccessoryBeanParser ap = new AccessoryBeanParser();
+    return ap.parseAccessoryFile(magnetartikel);
   }
 
   @Override
@@ -889,11 +912,13 @@ public class MarklinCS implements MarklinController {
   }
 
   public static void main(String[] a) {
-    MarklinCS cs3 = new MarklinCS(false);
-    Logger.debug((cs3.connect() ? "Connected" : "NOT Connected"));
+    MarklinCS cs = new MarklinCS(false);
+    Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
-    if (cs3.isConnected()) {
-      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+    if (cs.isConnected()) {
+      //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
+
+      cs.getLocomotivesViaCAN();
 
       //cs3.pause(2000);
       //Logger.trace("getStatusDataConfig CS3");
@@ -904,86 +929,86 @@ public class MarklinCS implements MarklinController {
       //cs3.pause(1000);
       //cs3.pause(4000);
       //cs3.power(false);
-      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+      //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.power(true);
       //cs3.pause(500);
-      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+      //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.sendJCSInfo();
       //cs3.pause(500);
-      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+      //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.sendJCSInfo();
       //cs3.pause(500);
-      //Logger.debug("Power is " + (cs3.isPower() ? "ON" : "Off"));
+      //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.sendJCSInfo();
       //SystemConfiguration data
       //cs3.getStatusDataConfig();
-      //Logger.debug("Channel 1: " + cs3.channelData1.getChannel().getHumanValue() + " " + cs3.channelData1.getChannel().getUnit());
-      //Logger.debug("Channel 2: " + cs3.channelData2.getChannel().getHumanValue() + " " + cs3.channelData2.getChannel().getUnit());
-      //Logger.debug("Channel 3: " + cs3.channelData3.getChannel().getHumanValue() + " " + cs3.channelData3.getChannel().getUnit());
-      //Logger.debug("Channel 4: " + cs3.channelData4.getChannel().getHumanValue() + " " + cs3.channelData4.getChannel().getUnit());
-//            cs3.getSystemStatus(1);
+      //Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
+      //Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
+      //Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());
+      //Logger.debug("Channel 4: " + cs.channelData4.getChannel().getHumanValue() + " " + cs.channelData4.getChannel().getUnit());
+//            cs.getSystemStatus(1);
 //
 //            Logger.debug("Channel 4....");
-//            cs3.getSystemStatus(4);
+//            cs.getSystemStatus(4);
 //Now get the systemstatus for all devices
 //First the status data config must be called to get the channels
       //cs3.getSystemStatus()
-      //            SystemStatusParser ss = cs3.getSystemStatus();
+      //            SystemStatusParser ss = cs.getSystemStatus();
       //            Logger.debug("1: "+ss);
       //
       //
-      //            ss = cs3.power(true);
+      //            ss = cs.power(true);
       //            Logger.debug("3: "+ss);
       //
-      //            cs3.pause(1000);
-      //            ss = cs3.power(false);
+      //            cs.pause(1000);
+      //            ss = cs.power(false);
       //            Logger.debug("4: "+ss);
-      //            List<SensorMessageEvent> sml = cs3.querySensors(48);
+      //            List<SensorMessageEvent> sml = cs.querySensors(48);
       //            for (SensorMessageEvent sme : sml) {
       //                Sensor s = new Sensor(sme.getContactId(), sme.isNewValue() ? 1 : 0, sme.isOldValue() ? 1 : 0, sme.getDeviceIdBytes(), sme.getMillis(), new Date());
       //                Logger.debug(s.toLogString());
       //            }
-      //List<AccessoryBean> asl = cs3.getAccessoryStatuses();
+      //List<AccessoryBean> asl = cs.getAccessoryStatuses();
       //for (AccessoryStatus as : asl) {
       //    Logger.debug(as.toString());
       //}
       //            for (int i = 0; i < 30; i++) {
-      //                cs3.sendIdle();
+      //                cs.sendIdle();
       //                pause(500);
       //            }
       //            Logger.debug("Sending  member ping\n");
-      //            List<PingResponse> prl = cs3.membersPing();
+      //            List<PingResponse> prl = cs.membersPing();
       //            //Logger.info("Query direction of loc 12");
-      //            //DirectionInfo info = cs3.getDirection(12, DecoderType.MM);
+      //            //DirectionInfo info = cs.getDirection(12, DecoderType.MM);
       //            Logger.debug("got " + prl.size() + " responses");
       //            for (PingResponseParser device : prl) {
       //                Logger.debug(device);
       //            }
-      //            List<SensorMessageEvent> sel = cs3.querySensors(48);
+      //            List<SensorMessageEvent> sel = cs.querySensors(48);
       //
       //            for (SensorMessageEvent se : sel) {
       //                Logger.debug(se.toString());
       //            }
       //            FeedbackModule fm2 = new FeedbackModule(2);
-      //            cs3.queryAllPorts(fm2);
+      //            cs.queryAllPorts(fm2);
       //            Logger.debug(fm2.toLogString());
       //cs2.querySensor(1);
     }
 
-    //PingResponse pr2 = cs3.memberPing();
+    //PingResponse pr2 = cs.memberPing();
     //Logger.info("Query direction of loc 12");
-    //DirectionInfo info = cs3.getDirection(12, DecoderType.MM);
+    //DirectionInfo info = cs.getDirection(12, DecoderType.MM);
     //cs3.pause(500L);
     Logger.debug("Wait for 1m");
-    cs3.pause(1000 * 60 * 1);
+    cs.pause(1000 * 60 * 1);
 
-    cs3.disconnect();
-    cs3.pause(100L);
+    cs.disconnect();
+    cs.pause(100L);
     Logger.debug("DONE");
     //System.exit(0);
   }
   //for (int i = 0; i < 16; i++) {
-  //    cs3.requestFeedbackEvents(i + 1);
+  //    cs.requestFeedbackEvents(i + 1);
   //}
 
 }

@@ -99,6 +99,22 @@ public class ByteUtil {
     return h;
   }
 
+  public static String toHexString(Integer[] bytes) {
+    if (bytes == null) {
+      return "";
+    }
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < bytes.length; i++) {
+      sb.append("0x");
+      sb.append(toHexString(bytes[i]));
+      if (i + 1 < bytes.length) {
+        sb.append(" ");
+      }
+    }
+    return sb.toString();
+  }
+
   public static String toHexString(byte[] bytes) {
     if (bytes == null) {
       return "";
@@ -136,6 +152,22 @@ public class ByteUtil {
     for (int i = 0; i < data.length; i++) {
       if (data[i] > 0) {
         byte b = (byte) ((byte) data[i] & 0XFF);
+        bl.add(b);
+      }
+    }
+    byte[] bytes = new byte[bl.size()];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = bl.get(i);
+    }
+    return new String(bytes);
+  }
+
+  public static String bytesToString(Integer[] data) {
+    List<Byte> bl = new ArrayList<>();
+    for (int i = 0; i < data.length; i++) {
+      if (data[i] > 0) {
+        int d = data[i];
+        byte b = (byte) ((byte) d & 0XFF);
         bl.add(b);
       }
     }

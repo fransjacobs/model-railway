@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.http;
+package jcs.controller.cs.can.parser;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -182,38 +182,4 @@ public class AccessoryBeanParser {
         return new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
     }
 
-//    private SignalBean createSignal(Map<String, String> accessoryProps, String type, int lightImages) {
-//        SignalBean s = new SignalBean();
-//        s.setDescription(type);
-//        s.setLightImages(lightImages);
-//
-//        String d = accessoryProps.get(STELLUNG);
-//
-//        if ("1".equals(d)) {
-//            s.setGreen();
-//            if (lightImages > 2) {
-//                s.setGreen2();
-//            }
-//        } else {
-//            s.setRed();
-//            if (lightImages > 2) {
-//                s.setRed2();
-//            }
-//        }
-//
-//        return s;
-//    }
-//    private SwitchBean createTurnout(Map<String, String> accessoryProps, String type) {
-//        SwitchBean t = new SwitchBean();
-//        t.setDescription(type);
-//        String d = accessoryProps.get(STELLUNG);
-//
-//        if ("1".equals(d)) {
-//            t.setStraight();
-//        } else {
-//            t.setCurved();
-//        }
-//
-//        return t;
-//    }
 }

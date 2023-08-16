@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2020 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.controller.cs.net;
 
@@ -27,6 +24,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import jcs.controller.cs3.http.AccessoryJSONParser;
 import jcs.entities.AccessoryBean;
@@ -38,7 +36,7 @@ import org.tinylog.Logger;
  */
 public class HTTPConnection {
 
-    private final InetAddress cs3Address;
+    private final InetAddress csAddress;
 
     private final static String HTTP = "http://";
     private final static String CONFIG = "/config/";
@@ -46,8 +44,10 @@ public class HTTPConnection {
     private final static String MAGNETARTIKEL = "magnetartikel.cs2";
     private final static String ACCESSORIES_URL = "/app/api/mags";
     private final static String DEVICE = "geraet.vrs";
-    private final static String IMAGE_FOLDER = "/app/assets/lok/";
-    //private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
+    private final static String IMAGE_FOLDER_CS3 = "/app/assets/lok/";
+    private final static String IMAGE_FOLDER_CS2 = "/icons/";
+    
+    private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
     private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
 
     private final static String DEVICES = "/app/api/devs";
@@ -57,11 +57,11 @@ public class HTTPConnection {
     //  http://cs3host/app/api/loks
     //  http://cs3host/app/api/mags
     HTTPConnection(InetAddress cs3Address) {
-        this.cs3Address = cs3Address;
+        this.csAddress = cs3Address;
     }
 
     public boolean isConnected() {
-        return cs3Address != null && cs3Address.getHostAddress() != null;
+        return csAddress != null && csAddress.getHostAddress() != null;
     }
 
     private static String fixURL(String url) {
@@ -71,7 +71,7 @@ public class HTTPConnection {
     public String getLocomotivesFile() {
         StringBuilder locs = new StringBuilder();
         try {
-            URL cs2 = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + LOCOMOTIVE);
+            URL cs2 = new URL(HTTP + csAddress.getHostAddress() + CONFIG + LOCOMOTIVE);
             URLConnection lc = cs2.openConnection();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
@@ -91,7 +91,7 @@ public class HTTPConnection {
     public String getAccessoriesFile() {
         StringBuilder locs = new StringBuilder();
         try {
-            URL url = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + MAGNETARTIKEL);
+            URL url = new URL(HTTP + csAddress.getHostAddress() + CONFIG + MAGNETARTIKEL);
             URLConnection lc = url.openConnection();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
@@ -111,7 +111,7 @@ public class HTTPConnection {
     public String getDeviceFile() {
         StringBuilder device = new StringBuilder();
         try {
-            URL url = new URL(HTTP + cs3Address.getHostAddress() + CONFIG + DEVICE);
+            URL url = new URL(HTTP + csAddress.getHostAddress() + CONFIG + DEVICE);
             URLConnection lc = url.openConnection();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
@@ -132,7 +132,7 @@ public class HTTPConnection {
     public String getAllFunctionsSvgJSON() {
         StringBuilder device = new StringBuilder();
         try {
-            URL url = new URL(HTTP + cs3Address.getHostAddress() + FUNCTION_SVG_URL);
+            URL url = new URL(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL);
             URLConnection lc = url.openConnection();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
@@ -152,7 +152,7 @@ public class HTTPConnection {
     public String getAccessoriesJSON() {
         StringBuilder mags = new StringBuilder();
         try {
-            URL url = new URL(HTTP + cs3Address.getHostAddress() + ACCESSORIES_URL);
+            URL url = new URL(HTTP + csAddress.getHostAddress() + ACCESSORIES_URL);
             URLConnection lc = url.openConnection();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                 String inputLine;
@@ -172,7 +172,7 @@ public class HTTPConnection {
     public Image getLocomotiveImage(String imageName) {
         BufferedImage image = null;
         try {
-            URL url = new URL(fixURL(HTTP + cs3Address.getHostAddress() + IMAGE_FOLDER + imageName + ".png"));
+            URL url = new URL(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS3 + imageName + ".png"));
             image = ImageIO.read(url);
         } catch (MalformedURLException ex) {
             Logger.error(ex);
@@ -182,29 +182,30 @@ public class HTTPConnection {
         return image;
     }
 
-//    public Image getFunctionImage(String imageName) {
-//        BufferedImage image = null;
-//        String iurl = fixURL(HTTP + cs3Address.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
-//
-//        try {
-//            Logger.trace("Try to fetch: " + iurl);
-//            URL url = new URL(iurl);
-//            image = ImageIO.read(url);
-//        } catch (IIOException iio) {
-//            //Image not avalable
-//            //Logger.trace("Image: " + iurl + " is not available");
-//        } catch (MalformedURLException ex) {
-//            Logger.error(ex);
-//        } catch (IOException ex) {
-//            Logger.error(ex);
-//        }
-//        return image;
-//    }
+    public Image getFunctionImageCS2(String imageName) {
+        BufferedImage image = null;
+        String iurl = fixURL(HTTP + csAddress.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
+
+        try {
+            Logger.trace("Try to fetch: " + iurl);
+            URL url = new URL(iurl);
+            image = ImageIO.read(url);
+        } catch (IIOException iio) {
+            //Image not avalable
+            //Logger.trace("Image: " + iurl + " is not available");
+        } catch (MalformedURLException ex) {
+            Logger.error(ex);
+        } catch (IOException ex) {
+            Logger.error(ex);
+        }
+        return image;
+    }
+
     public String getDevicesJSON() {
         StringBuilder device = new StringBuilder();
-        if (this.cs3Address != null && cs3Address.getHostAddress() != null) {
+        if (this.csAddress != null && csAddress.getHostAddress() != null) {
             try {
-                URL url = new URL(HTTP + cs3Address.getHostAddress() + DEVICES);
+                URL url = new URL(HTTP + csAddress.getHostAddress() + DEVICES);
                 URLConnection lc = url.openConnection();
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
                     String inputLine;
