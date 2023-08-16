@@ -21,7 +21,7 @@ import java.net.UnknownHostException;
 import org.tinylog.Logger;
 
 /**
- * Net work ping test to check the availability of the CS
+ * Network ping test to check the availability of the CS
  *
  * @author Frans Jacobs
  */
