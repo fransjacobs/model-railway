@@ -64,33 +64,6 @@ public class ByteUtil {
     return (int) toLong(value);
   }
 
-  public static byte[] toByteArray(int[] intArray) {
-    byte[] buf = new byte[intArray.length];
-
-    for (int i = 0; i < buf.length; i++) {
-      buf[i] = (byte) ((byte) intArray[i] & 0xFF);
-    }
-    return buf;
-  }
-
-  public static int[] to2ByteArray(int value) {
-    int[] bts = new int[]{
-      (value >> 8) & 0xFF,
-      value & 0XFF};
-
-    return bts;
-  }
-
-  public static int[] to4ByteArray(int value) {
-    int[] bts = new int[]{
-      (value >> 24) & 0xFF,
-      (value >> 16) & 0xFF,
-      (value >> 8) & 0xFF,
-      value & 0XFF};
-
-    return bts;
-  }
-
   public static String toHexString(int b) {
     String h = Integer.toHexString((b & 0xff));
     if (h.length() == 1) {
@@ -145,37 +118,6 @@ public class ByteUtil {
       }
     }
     return sb.toString();
-  }
-
-  public static String bytesToString(int[] data) {
-    List<Byte> bl = new ArrayList<>();
-    for (int i = 0; i < data.length; i++) {
-      if (data[i] > 0) {
-        byte b = (byte) ((byte) data[i] & 0XFF);
-        bl.add(b);
-      }
-    }
-    byte[] bytes = new byte[bl.size()];
-    for (int i = 0; i < bytes.length; i++) {
-      bytes[i] = bl.get(i);
-    }
-    return new String(bytes);
-  }
-
-  public static String bytesToString(Integer[] data) {
-    List<Byte> bl = new ArrayList<>();
-    for (int i = 0; i < data.length; i++) {
-      if (data[i] > 0) {
-        int d = data[i];
-        byte b = (byte) ((byte) d & 0XFF);
-        bl.add(b);
-      }
-    }
-    byte[] bytes = new byte[bl.size()];
-    for (int i = 0; i < bytes.length; i++) {
-      bytes[i] = bl.get(i);
-    }
-    return new String(bytes);
   }
 
   public static String bytesToString(byte[] data) {

@@ -21,5 +21,5 @@ package jcs.controller.cs3.events;
  */
 public interface PowerEventListener {
 
-    void onPowerChange(PowerEvent event);
+  void onPowerChange(PowerEvent event);
 }

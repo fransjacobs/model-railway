@@ -30,9 +30,7 @@ import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
- * Try to connect with a Marklin CS 2/3.
- * A "ping" is send to the broadcast address like the mobile app does.
- * The CS 2/3 response reveals the IP address.
+ * Try to connect with a Marklin CS 2/3. A "ping" is send to the broadcast address like the mobile app does. The CS 2/3 response reveals the IP address.
  *
  * @author Frans Jacobs
  */
@@ -142,7 +140,7 @@ public class CSConnectionFactory {
 
       try (DatagramSocket requestSocket = new DatagramSocket()) {
         Logger.trace("Sending: " + ping);
-        DatagramPacket requestPacket = new DatagramPacket(ping.getBytes(), ping.getLength(), broadcastAddress, CSConnection.CS_RX_PORT);
+        DatagramPacket requestPacket = new DatagramPacket(ping.getMessage(), ping.getLength(), broadcastAddress, CSConnection.CS_RX_PORT);
         requestSocket.send(requestPacket);
       }
 
@@ -153,7 +151,7 @@ public class CSConnectionFactory {
         responseSocket.receive(responsePacket);
 
         InetAddress replyHost = InetAddress.getByName(responsePacket.getAddress().getHostAddress());
-        
+
         CanMessage response = new CanMessage(responsePacket.getData());
 
         Logger.trace("Received: " + response + " from: " + replyHost.getHostAddress());

@@ -28,106 +28,106 @@ import org.tinylog.Logger;
  */
 public class StatusDataConfigParser implements Serializable {
 
-    private String serialNumber;
-    private String articleNumber;
-    private String deviceName;
+  private String serialNumber;
+  private String articleNumber;
+  private String deviceName;
 
-    private int measurementCount;
-    private int channelCount;
+  private int measurementCount;
+  private int channelCount;
 
-    private int index;
-    private int packetCount;
+  private int index;
+  private int packetCount;
 
-    public StatusDataConfigParser(CanMessage message) {
-        parseMessageIndex(message);
-    }
+  public StatusDataConfigParser(CanMessage message) {
+    parseMessageIndex(message);
+  }
 
-    private void parseMessageIndex(CanMessage statusRequest) {
-        List<CanMessage> responses = statusRequest.getResponses();
-        if (!responses.isEmpty()) {
-            CanMessage r0 = responses.get(0);
-            int[] data1 = r0.getData();
-            int[] sn = new int[2];
-            System.arraycopy(data1, 6, sn, 0, sn.length);
-            int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
-            if (this.serialNumber == null) {
-                this.serialNumber = serial + "";
-            }
-            measurementCount = data1[0];
-            channelCount = data1[1];
+  private void parseMessageIndex(CanMessage statusRequest) {
+    List<CanMessage> responses = statusRequest.getResponses();
+    if (!responses.isEmpty()) {
+      CanMessage r0 = responses.get(0);
+      byte[] data1 = r0.getData();
+      int[] sn = new int[2];
+      System.arraycopy(data1, 6, sn, 0, sn.length);
+      int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
+      if (this.serialNumber == null) {
+        this.serialNumber = serial + "";
+      }
+      measurementCount = data1[0];
+      channelCount = data1[1];
 
-            if (responses.size() > 1) {
-                byte[] data2 = responses.get(1).getDataBytes();
-                articleNumber = ByteUtil.bytesToString(data2);
-            }
+      if (responses.size() > 1) {
+        byte[] data2 = responses.get(1).getData();
+        articleNumber = ByteUtil.bytesToString(data2);
+      }
 
-            if (responses.size() > 2) {
-                byte[] data3 = responses.get(2).getDataBytes();
-                deviceName = ByteUtil.bytesToString(data3);
-            }
+      if (responses.size() > 2) {
+        byte[] data3 = responses.get(2).getData();
+        deviceName = ByteUtil.bytesToString(data3);
+      }
 
-            if (responses.size() > 3) {
-                byte[] data4 = responses.get(3).getDataBytes();
-                deviceName = deviceName + ByteUtil.bytesToString(data4);
-            }
+      if (responses.size() > 3) {
+        byte[] data4 = responses.get(3).getData();
+        deviceName = deviceName + ByteUtil.bytesToString(data4);
+      }
 
-            if (responses.size() > 3) {
-                byte[] data5 = responses.get(4).getDataBytes();
-                deviceName = deviceName + ByteUtil.bytesToString(data5);
-                deviceName = deviceName.trim();
-            }
+      if (responses.size() > 3) {
+        byte[] data5 = responses.get(4).getData();
+        deviceName = deviceName + ByteUtil.bytesToString(data5);
+        deviceName = deviceName.trim();
+      }
 
-            if (responses.size() > 4) {
-                //Fifth is the confimation and channels
-                if (responses.get(5).getDlc() == MarklinCan.DLC_6) {
-                    //Have the last packet
-                    byte[] data6 = responses.get(5).getDataBytes();
-                    index = data6[MarklinCan.STATUS_CONFIG_INDEX];
-                    packetCount = data6[MarklinCan.STATUS_CONFIG_PACKET_COUNT];
-                }
-            }
-
-            if (responses.size() - 1 != packetCount) {
-                Logger.warn("Config Data Invalid");
-            }
+      if (responses.size() > 4) {
+        //Fifth is the confimation and channels
+        if (responses.get(5).getDlc() == MarklinCan.DLC_6) {
+          //Have the last packet
+          byte[] data6 = responses.get(5).getData();
+          index = data6[MarklinCan.STATUS_CONFIG_INDEX];
+          packetCount = data6[MarklinCan.STATUS_CONFIG_PACKET_COUNT];
         }
-    }
+      }
 
-    public String getSerialNumber() {
-        return serialNumber;
+      if (responses.size() - 1 != packetCount) {
+        Logger.warn("Config Data Invalid");
+      }
     }
+  }
 
-    public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
-    }
+  public String getSerialNumber() {
+    return serialNumber;
+  }
 
-    public String getArticleNumber() {
-        return articleNumber;
-    }
+  public void setSerialNumber(String serialNumber) {
+    this.serialNumber = serialNumber;
+  }
 
-    public void setArticleNumber(String articleNumber) {
-        this.articleNumber = articleNumber;
-    }
+  public String getArticleNumber() {
+    return articleNumber;
+  }
 
-    public String getDeviceName() {
-        return deviceName;
-    }
+  public void setArticleNumber(String articleNumber) {
+    this.articleNumber = articleNumber;
+  }
 
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
-    }
+  public String getDeviceName() {
+    return deviceName;
+  }
 
-    public int getMeasurementCount() {
-        return measurementCount;
-    }
+  public void setDeviceName(String deviceName) {
+    this.deviceName = deviceName;
+  }
 
-    public int getChannelCount() {
-        return channelCount;
-    }
+  public int getMeasurementCount() {
+    return measurementCount;
+  }
 
-    @Override
-    public String toString() {
-        return "StatusDataConfigParser{" + "serialNumber=" + serialNumber + ", articleNumber=" + articleNumber + ", deviceName=" + deviceName + ", measurementCount=" + measurementCount + ", channelCount=" + channelCount + ", index=" + index + ", packetCount=" + packetCount + '}';
-    }
+  public int getChannelCount() {
+    return channelCount;
+  }
+
+  @Override
+  public String toString() {
+    return "StatusDataConfigParser{" + "serialNumber=" + serialNumber + ", articleNumber=" + articleNumber + ", deviceName=" + deviceName + ", measurementCount=" + measurementCount + ", channelCount=" + channelCount + ", index=" + index + ", packetCount=" + packetCount + '}';
+  }
 
 }

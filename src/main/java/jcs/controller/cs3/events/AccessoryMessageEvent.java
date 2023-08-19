@@ -28,44 +28,44 @@ import org.tinylog.Logger;
  */
 public class AccessoryMessageEvent implements Serializable {
 
-    private AccessoryBean accessoryBean;
+  private AccessoryBean accessoryBean;
 
-    public AccessoryMessageEvent(AccessoryBean accessoryBean) {
-        this.accessoryBean = accessoryBean;
+  public AccessoryMessageEvent(AccessoryBean accessoryBean) {
+    this.accessoryBean = accessoryBean;
+  }
+
+  public AccessoryMessageEvent(CanMessage message) {
+    parseMessage(message);
+  }
+
+  private void parseMessage(CanMessage message) {
+    CanMessage resp;
+    if (!message.isResponseMessage()) {
+      resp = message.getResponse();
+    } else {
+      resp = message;
     }
 
-    public AccessoryMessageEvent(CanMessage message) {
-        parseMessage(message);
-    }
+    if (resp.isResponseMessage() && MarklinCan.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
+      byte[] data = resp.getData();
+      Integer address = data[3] & 0xff;
+      Integer position = data[4] & 0xff;
+      //CS is zero based
+      address = address + 1;
 
-    private void parseMessage(CanMessage message) {
-        CanMessage resp;
-        if (!message.isResponseMessage()) {
-            resp = message.getResponse();
-        } else {
-            resp = message;
-        }
+      long id = address;
 
-        if (resp.isResponseMessage() && MarklinCan.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
-            int[] data = resp.getData();
-            Integer address = data[3] & 0xff;
-            Integer position = data[4] & 0xff;
-            //CS is zero based
-            address = address + 1;
-            
-            long id = address;
-            
-            this.accessoryBean = new AccessoryBean(id,address, null, null, position, null, null, null);
-            if (resp.getDlc() == MarklinCan.DLC_8) {
-                Integer switchTime = ByteUtil.toInt(new int[]{data[6], data[7]});
-                this.accessoryBean.setSwitchTime(switchTime);
-            }
-        } else {
-            Logger.warn("Can't parse message, not an Accessory Response! " + resp);
-        }
+      this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null);
+      if (resp.getDlc() == MarklinCan.DLC_8) {
+        Integer switchTime = ByteUtil.toInt(new int[]{data[6], data[7]});
+        this.accessoryBean.setSwitchTime(switchTime);
+      }
+    } else {
+      Logger.warn("Can't parse message, not an Accessory Response! " + resp);
     }
+  }
 
-    public AccessoryBean getAccessoryBean() {
-        return accessoryBean;
-    }
+  public AccessoryBean getAccessoryBean() {
+    return accessoryBean;
+  }
 }

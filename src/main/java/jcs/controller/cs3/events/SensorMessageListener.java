@@ -17,6 +17,6 @@ package jcs.controller.cs3.events;
 
 public interface SensorMessageListener {
 
-    void onSensorMessage(SensorMessageEvent sensorMessageEvent);
+  void onSensorMessage(SensorMessageEvent sensorMessageEvent);
 
 }

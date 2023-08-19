@@ -28,66 +28,66 @@ import org.tinylog.Logger;
  */
 public class VelocityMessageEvent implements Serializable {
 
-    private LocomotiveBean locomotiveBean;
+  private LocomotiveBean locomotiveBean;
 
-    private Integer updatedFunctionNumber;
+  private Integer updatedFunctionNumber;
 
-    public VelocityMessageEvent(LocomotiveBean locomotiveBean) {
-        this.locomotiveBean = locomotiveBean;
+  public VelocityMessageEvent(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
+  }
+
+  public VelocityMessageEvent(CanMessage message) {
+    parseMessage(message);
+  }
+
+  private void parseMessage(CanMessage message) {
+    CanMessage resp;
+    if (!message.isResponseMessage()) {
+      resp = message.getResponse();
+    } else {
+      resp = message;
     }
 
-    public VelocityMessageEvent(CanMessage message) {
-        parseMessage(message);
+    if (resp.isResponseMessage() && MarklinCan.SYSTEM_COMMAND == resp.getCommand() && MarklinCan.LOC_STOP_SUB_CMD == resp.getSubCommand() && MarklinCan.DLC_5 == resp.getDlc()) {
+      //Loc halt command could be issued due to a direction change.
+      byte[] data = resp.getData();
+      Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+
+      LocomotiveBean lb = new LocomotiveBean();
+      lb.setId(id);
+      lb.setVelocity(0);
+
+      if (lb.getId() != null && lb.getVelocity() != null) {
+        this.locomotiveBean = lb;
+      }
+    } else if (resp.isResponseMessage() && MarklinCan.LOC_VELOCITY_RESP == resp.getCommand()) {
+      byte[] data = resp.getData();
+      Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+
+      Integer velocity = ByteUtil.toInt(new int[]{data[4], data[5]});
+
+      LocomotiveBean lb = new LocomotiveBean();
+      lb.setId(id);
+      lb.setVelocity(velocity);
+
+      if (lb.getId() != null && lb.getVelocity() != null) {
+        this.locomotiveBean = lb;
+      }
+    } else {
+      Logger.warn("Can't parse message, not an Locomotive Velocity or a Locomotive emergency stop Response! " + resp);
     }
+  }
 
-    private void parseMessage(CanMessage message) {
-        CanMessage resp;
-        if (!message.isResponseMessage()) {
-            resp = message.getResponse();
-        } else {
-            resp = message;
-        }
+  public LocomotiveBean getLocomotiveBean() {
+    return locomotiveBean;
+  }
 
-        if (resp.isResponseMessage() && MarklinCan.SYSTEM_COMMAND == resp.getCommand() && MarklinCan.LOC_STOP_SUB_CMD == resp.getSubCommand() && MarklinCan.DLC_5 == resp.getDlc()) {
-            //Loc halt command could be issued due to a direction change.
-            int[] data = resp.getData();
-            Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
+  }
 
-            LocomotiveBean lb = new LocomotiveBean();
-            lb.setId(id);
-            lb.setVelocity(0);
-
-            if (lb.getId() != null && lb.getVelocity() != null) {
-                this.locomotiveBean = lb;
-            }
-        } else if (resp.isResponseMessage() && MarklinCan.LOC_VELOCITY_RESP == resp.getCommand()) {
-            int[] data = resp.getData();
-            Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
-
-            Integer velocity = ByteUtil.toInt(new int[]{data[4], data[5]});
-
-            LocomotiveBean lb = new LocomotiveBean();
-            lb.setId(id);
-            lb.setVelocity(velocity);
-
-            if (lb.getId() != null && lb.getVelocity() != null) {
-                this.locomotiveBean = lb;
-            }
-        } else {
-            Logger.warn("Can't parse message, not an Locomotive Velocity or a Locomotive emergency stop Response! " + resp);
-        }
-    }
-
-    public LocomotiveBean getLocomotiveBean() {
-        return locomotiveBean;
-    }
-
-    public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-        this.locomotiveBean = locomotiveBean;
-    }
-
-    public Integer getUpdatedFunctionNumber() {
-        return updatedFunctionNumber;
-    }
+  public Integer getUpdatedFunctionNumber() {
+    return updatedFunctionNumber;
+  }
 
 }

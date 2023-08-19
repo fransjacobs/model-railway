@@ -18,51 +18,111 @@ package jcs.controller.cs.can;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import jcs.util.ByteUtil;
-import static jcs.util.ByteUtil.toInt;
 
 /**
  * CS 2/3 CAN message.
  */
 public class CanMessage implements MarklinCan, Serializable {
 
-
-  private final int[] message;
-//TODO replace the 13 int array by the normal properties
-//  private int priority;
-//  private int command;
-//  private short hash;
-//  private int dlc;
-//  private int[] data;
+  private int priority;
+  private int command;
+  private short hash;
+  private int dlc;
+  private byte[] data;
 
   private final List<CanMessage> responses;
 
   public CanMessage(byte[] message) {
-    this.message = getEmptyMessage();
-    this.responses = new ArrayList<>();
-    for (int i = 0; i < this.message.length; i++) {
-      this.message[i] = message[i] & 0xFF;
+    this.data = new byte[DATA_SIZE];
+    this.responses = new LinkedList<>();
+    if (message != null && message.length == MESSAGE_SIZE) {
+      this.priority = message[0];
+      this.command = message[1];
+      byte[] h = new byte[HASH_SIZE];
+      h[0] = message[2];
+      h[1] = message[3];
+      this.hash = (short) toInt(h);
+      this.dlc = message[4];
+      System.arraycopy(message, 5, data, 0, DATA_SIZE);
     }
   }
 
-  public CanMessage(int priority, int command, int hash, int dlc, int[] data) {
-    this(priority, command, ByteUtil.to2ByteArray(hash), dlc, data);
+  public CanMessage(int priority, int command, int hash, int dlc, byte[] data) {
+    this(priority, command, to2Bytes(hash), dlc, data);
   }
 
-  public CanMessage(int priority, int command, int[] hash, int dlc, int[] data) {
-    this.message = getEmptyMessage();
-    this.responses = new ArrayList<>();
-    this.message[PRIO_IDX] = priority;
-    this.message[CMD_IDX] = command;
+  public CanMessage(int priority, int command, byte[] hash, int dlc, byte[] data) {
+    this.responses = new LinkedList<>();
+    this.priority = priority;
+    this.command = command;
+
     if (hash == null) {
-      System.arraycopy(MarklinCan.MAGIC_HASH, 0, this.message, HASH_IDX, MarklinCan.MAGIC_HASH.length);
+      this.hash = (short) toInt(MAGIC_HASH);
     } else {
-      System.arraycopy(hash, 0, this.message, HASH_IDX, hash.length);
+      this.hash = (short) toInt(hash);
     }
-    this.message[DLC_IDX] = dlc;
-    System.arraycopy(data, 0, this.message, DATA_IDX, data.length);
+    this.dlc = dlc;
+
+    this.data = new byte[DATA_SIZE];
+
+    if (data != null && data.length == DATA_SIZE) {
+      this.data = data;
+    } else if (data != null) {
+      System.arraycopy(data, 0, this.data, 0, DATA_SIZE);
+    }
+  }
+
+  public static final int toInt(byte[] value) {
+    int val = -1;
+    if (value != null) {
+      val = switch (value.length) {
+        case 2 ->
+          ((value[0] & 0xFF) << 8) | (value[1] & 0xFF);
+        case 4 ->
+          ((value[0] & 0xFF) << 24)
+          | ((value[1] & 0xFF) << 16)
+          | ((value[2] & 0xFF) << 8)
+          | (value[3] & 0xFF);
+        default ->
+          0;
+      };
+    }
+    return val;
+  }
+
+  public static String toString(byte[] data) {
+//    List<Byte> bl = new ArrayList<>();
+//    for (int i = 0; i < data.length; i++) {
+//      if (data[i] > 0) {
+//        bl.add(data[i]);
+//      }
+//    }
+//    byte[] bytes = new byte[bl.size()];
+//    for (int i = 0; i < bytes.length; i++) {
+//      bytes[i] = bl.get(i);
+//    }
+    return new String(data);
+  }
+
+  public static final byte[] to2Bytes(int value) {
+    byte[] bts = new byte[]{
+      (byte) ((value >> 8) & 0xFF),
+      (byte) (value & 0XFF)};
+
+    return bts;
+  }
+
+  public static final byte[] to4Bytes(int value) {
+    byte[] bts = new byte[]{
+      (byte) ((value >> 24) & 0xFF),
+      (byte) ((value >> 16) & 0xFF),
+      (byte) ((value >> 8) & 0xFF),
+      (byte) (value & 0XFF)};
+
+    return bts;
   }
 
   public int getLength() {
@@ -73,8 +133,17 @@ public class CanMessage implements MarklinCan, Serializable {
     return DATA_SIZE;
   }
 
-  public int[] getMessage() {
-    return this.message;
+  public byte[] getMessage() {
+    byte[] msg = new byte[MESSAGE_SIZE];
+
+    msg[0] = (byte) this.priority;
+    msg[1] = (byte) this.command;
+    byte[] h = to2Bytes(this.hash);
+    msg[2] = h[0];
+    msg[3] = h[1];
+    msg[4] = (byte) this.dlc;
+    System.arraycopy(this.data, 0, msg, DATA_IDX, this.data.length);
+    return msg;
   }
 
   public void addResponse(CanMessage reply) {
@@ -112,64 +181,50 @@ public class CanMessage implements MarklinCan, Serializable {
         return resp;
       }
     }
-
     return this.getResponse(0);
   }
 
-  public byte[] getBytes() {
-    byte[] bytes = new byte[MESSAGE_SIZE];
-    for (int i = 0; i < bytes.length; i++) {
-      byte b = (byte) (this.message[i] & 0xFF);
-      bytes[i] = b;
-    }
-    return bytes;
-  }
-
   public int getPriority() {
-    return this.message[PRIO_IDX];
+    return this.priority; // this.message[PRIO_IDX];
   }
 
   public int getCommand() {
-    return this.message[CMD_IDX];
+    return this.command; // this.message[CMD_IDX];
   }
 
   public int getSubCommand() {
-    return this.message[SUB_CMD_IDX];
+//    return this.message[SUB_CMD_IDX];
+    return data[SUB_CMD_IDX];
   }
 
-  public int[] getHash() {
-    int[] h = new int[HASH_SIZE];
-    System.arraycopy(message, HASH_IDX, h, 0, HASH_SIZE);
-    return h;
+  public byte[] getHash() {
+//    int[] h = new int[HASH_SIZE];
+//    System.arraycopy(message, HASH_IDX, h, 0, HASH_SIZE);
+//    return h;
+
+    return to2Bytes(this.hash);
   }
 
   public int getDlc() {
-    return this.message[DLC_IDX];
+    return this.dlc; //this.message[DLC_IDX];
   }
 
-  public final int getDataByte(int position) {
-    return this.message[DATA_IDX + position];
+  public final byte getDataByte(int position) {
+    return this.data[position]; // this.message[DATA_IDX + position];
   }
 
   public int getPackageNumber() {
-    return this.message[PACKAGE_IDX];
-
-  }
-
-  public int[] getData() {
-    int[] dt = new int[DATA_SIZE];
-    System.arraycopy(message, DATA_IDX, dt, 0, DATA_SIZE);
-    return dt;
-  }
-
-  public byte[] getDataBytes() {
-    int[] dt = this.getData();
-    byte[] db = new byte[dt.length];
-    for (int i = 0; i < dt.length; i++) {
-      byte b = (byte) (dt[i] & 0xFF);
-      db[i] = b;
+    //return this.message[PACKAGE_IDX];
+    if (STATUS_CONFIG_RESP == this.command) {
+      byte[] h = CanMessage.to2Bytes(this.hash);
+      return h[1];
+    } else {
+      return 0;
     }
-    return db;
+  }
+
+  public byte[] getData() {
+    return this.data;
   }
 
   public boolean isResponseMessage() {
@@ -255,20 +310,19 @@ public class CanMessage implements MarklinCan, Serializable {
     }
   }
 
-  public boolean isAcknowledgeFor(CanMessage other) {
-    if (isResponseFor(other)) {
-      int[] base = new int[CanMessage.MESSAGE_SIZE];
-      System.arraycopy(other.getMessage(), 0, base, 0, base.length);
-
-      int[] ackm = new int[CanMessage.MESSAGE_SIZE];
-      System.arraycopy(this.message, 0, ackm, 0, ackm.length);
-
-      ackm[CMD_IDX] = base[CMD_IDX];
-      return Objects.deepEquals(ackm, base);
-    }
-    return false;
-  }
-
+//  public boolean isAcknowledgeFor(CanMessage other) {
+//    if (isResponseFor(other)) {
+//      int[] base = new int[CanMessage.MESSAGE_SIZE];
+//      System.arraycopy(other.getMessage(), 0, base, 0, base.length);
+//
+//      int[] ackm = new int[CanMessage.MESSAGE_SIZE];
+//      System.arraycopy(this.message, 0, ackm, 0, ackm.length);
+//
+//      ackm[CMD_IDX] = base[CMD_IDX];
+//      return Objects.deepEquals(ackm, base);
+//    }
+//    return false;
+//  }
   public boolean isPingResponse() {
     return this.getCommand() == PING_RESP;
   }
@@ -303,23 +357,20 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public boolean isDeviceUidValid() {
-    int[] uid = getDeviceUidFromMessage();
+    byte[] uid = getDeviceUidFromMessage();
     int did = toInt(uid);
     return did > 0;
   }
 
-  public int getUidInt() {
-    int[] dt = getData();
-
-    return ((dt[0] & 0xFF) << 24)
-            | ((dt[1] & 0xFF) << 16)
-            | ((dt[2] & 0xFF) << 8)
-            | (dt[3] & 0xFF);
-  }
-
-  public int[] getDeviceUidFromMessage() {
-    int[] uid = new int[4]; //UID is 4 bytes long
-    System.arraycopy(this.message, DATA_IDX, uid, 0, uid.length);
+//  public int getUidInt() {
+//    return ((data[0] & 0xFF) << 24)
+//            | ((data[1] & 0xFF) << 16)
+//            | ((data[2] & 0xFF) << 8)
+//            | (data[3] & 0xFF);
+//  }
+  public byte[] getDeviceUidFromMessage() {
+    byte[] uid = new byte[4]; //UID is 4 bytes long
+    System.arraycopy(this.data, 0, uid, 0, uid.length);
     return uid;
   }
 
@@ -380,15 +431,15 @@ public class CanMessage implements MarklinCan, Serializable {
 
   @Override
   public String toString() {
-    return ByteUtil.toHexString(this.message);
+    return ByteUtil.toHexString(this.getMessage());
   }
 
   public int getNumberOfMeasurementValues() {
     if (this.isResponseMessage()) {
-      int command = this.getCommand();
-      if ((command & 0xFe) == MarklinCan.STATUS_CONFIG) {
+      //int cmd = this.getCommand();
+      if ((command & 0xFe) == STATUS_CONFIG) {
         //get the 1st data byte
-        return this.getData()[0];
+        return this.data[0];
       }
     }
     return -1;
@@ -422,9 +473,9 @@ public class CanMessage implements MarklinCan, Serializable {
    * @param uid the UID as an int array of 4 bytes
    * @return an int array of 2 bytes
    */
-  public static int[] calcHash(int[] uid) {
+  public static byte[] calcHash(int[] uid) {
     int hash = calcHash(ByteUtil.toInt(uid));
-    return ByteUtil.to2ByteArray(hash);
+    return to2Bytes(hash);
   }
 
   /**
@@ -432,15 +483,14 @@ public class CanMessage implements MarklinCan, Serializable {
    *
    * @return and Array of int[8] filled with 0 in each position
    */
-  public static int[] getEmptyData() {
-    int[] data = new int[CanMessage.DATA_SIZE];
-    //Enshure it is filled with 0x00
-    for (int i = 0; i < data.length; i++) {
-      data[i] = 0;
-    }
-    return data;
-  }
-
+//  public static int[] getEmptyData() {
+//    int[] data = new int[CanMessage.DATA_SIZE];
+//    //Enshure it is filled with 0x00
+//    for (int i = 0; i < data.length; i++) {
+//      data[i] = 0;
+//    }
+//    return data;
+//  }
   public static final int generateHashInt(int gfpUid) {
     int msb = gfpUid >> 16;
     int lsb = gfpUid & 0xffff;
@@ -449,25 +499,28 @@ public class CanMessage implements MarklinCan, Serializable {
     return hash;
   }
 
-  public static final int[] generateHash(int gfpUid) {
+  public static final byte[] generateHash(int gfpUid) {
     int hash = generateHashInt(gfpUid);
-    return ByteUtil.to2ByteArray(hash);
+    return to2Bytes(hash);
   }
 
-  private static int[] getEmptyMessage() {
-    int[] msg = new int[MESSAGE_SIZE];
-    //Enshure it is filled with 0x00
-    for (int i = 0; i < msg.length; i++) {
-      msg[i] = 0;
-    }
-    return msg;
-  }
-
+//  private static byte[] getEmptyMessage() {
+//    byte[] msg = new byte[MESSAGE_SIZE];
+//    //Enshure it is filled with 0x00
+//    for (int i = 0; i < msg.length; i++) {
+//      msg[i] = 0;
+//    }
+//    return msg;
+//  }
   @Override
   public int hashCode() {
-    int hash = 5;
-    hash = 47 * hash + Arrays.hashCode(this.message);
-    return hash;
+    int h = 5;
+    h = 19 * h + this.priority;
+    h = 19 * h + this.command;
+    h = 19 * h + this.hash;
+    h = 19 * h + this.dlc;
+    h = 19 * h + Arrays.hashCode(this.data);
+    return h;
   }
 
   @Override
@@ -482,8 +535,21 @@ public class CanMessage implements MarklinCan, Serializable {
       return false;
     }
     final CanMessage other = (CanMessage) obj;
-    return Arrays.equals(this.message, other.message);
+    if (this.priority != other.priority) {
+      return false;
+    }
+    if (this.command != other.command) {
+      return false;
+    }
+    if (this.hash != other.hash) {
+      return false;
+    }
+    if (this.dlc != other.dlc) {
+      return false;
+    }
+    return Arrays.equals(this.data, other.data);
   }
+
 }
 
 //  public String print() {

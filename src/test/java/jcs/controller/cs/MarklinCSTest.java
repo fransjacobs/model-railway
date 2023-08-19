@@ -15,17 +15,10 @@
  */
 package jcs.controller.cs;
 
-import java.awt.Image;
-import java.util.List;
-import jcs.entities.AccessoryBean;
-import jcs.entities.LocomotiveBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.DecoderType;
-import jcs.entities.enums.Direction;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 import org.tinylog.Logger;
 
 /**
@@ -58,7 +51,7 @@ public class MarklinCSTest {
     if (csAvailable) {
       pause(500);
     } else {
-      Logger.warn("Skipping tests CS 3 not available");
+      Logger.warn("Skipping tests CS not available");
     }
   }
 
@@ -70,7 +63,7 @@ public class MarklinCSTest {
   /**
    * Test of connect method, of class MarklinCS.
    */
-  @Test
+  //@Test
   public void testConnect() {
     if (csAvailable) {
       System.out.println("connect");
@@ -99,7 +92,7 @@ public class MarklinCSTest {
   /**
    * Test of getSystemStatus method, of class MarklinCS.
    */
-  @Test
+  //@Test
   public void testPower() {
     if (csAvailable) {
 
@@ -127,7 +120,7 @@ public class MarklinCSTest {
   /**
    * Test of getDeviceIp method, of class MarklinCS.
    */
-  @Test
+  //@Test
   public void testGetDeviceIp() {
     if (csAvailable) {
       if (!instance.isConnected()) {

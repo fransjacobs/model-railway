@@ -86,7 +86,7 @@ public interface TrackController {
 
   String getControllerArticleNumber();
 
-  LinkSxx getLinkSxx();
+  //LinkSxx getLinkSxx();
 
   void addMessageListener(CanMessageListener listener);
 

@@ -37,7 +37,7 @@ public class PingResponseParser implements Serializable {
 
   private void parseMessage(CanMessage response) {
     if (response.isResponseMessage() && MarklinCan.PING_RESP == response.getCommand()) {
-      int[] data = response.getData();
+      byte[] data = response.getData();
       swVersion = new int[2];
       deviceId = new int[2];
       senderDeviceUid = new int[4];

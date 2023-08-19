@@ -26,15 +26,15 @@ import jcs.controller.cs.can.CanMessage;
  */
 public class LocomotiveInfo implements Serializable {
 
-    public LocomotiveInfo(CanMessage statusRequest) {
-        parseMessage(statusRequest);
-    }
+  public LocomotiveInfo(CanMessage statusRequest) {
+    parseMessage(statusRequest);
+  }
 
-    public LocomotiveInfo(String serialNumber, String catalogNumber, String description) {
+  public LocomotiveInfo(String serialNumber, String catalogNumber, String description) {
 //    this.serialNumber = serialNumber;
 //    this.catalogNumber = catalogNumber;
 //    this.description = description;
-    }
+  }
 
 //  void ProtocolMaerklinCAN::ParseCommandConfigData(const unsigned char* const buffer)
 //	{
@@ -97,52 +97,52 @@ public class LocomotiveInfo implements Serializable {
 //	 	canFileData = nullptr;
 //	 	canFileDataPointer = nullptr;
 //	}
-    private void parseMessage(CanMessage statusRequest) {
-        //First byte holde the serial
-        int[] data1 = statusRequest.getResponse(0).getData();
-        int[] sn = new int[2];
-        System.arraycopy(data1, 6, sn, 0, sn.length);
+  private void parseMessage(CanMessage statusRequest) {
+    //First byte holde the serial
+    byte[] data1 = statusRequest.getResponse(0).getData();
+    byte[] sn = new byte[2];
+    System.arraycopy(data1, 6, sn, 0, sn.length);
 
-        int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
+    int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
 //    this.serialNumber = serial + "";
 
-        if (statusRequest.getResponses().size() > 1) {
-            //Second holds the catalog numer is asci
-            byte[] data2 = statusRequest.getResponse(1).getDataBytes();
-            //catalogNumber = Base64.getEncoder().encodeToString(data2);
+    if (statusRequest.getResponses().size() > 1) {
+      //Second holds the catalog numer is asci
+      byte[] data2 = statusRequest.getResponse(1).getData();
+      //catalogNumber = Base64.getEncoder().encodeToString(data2);
 //      catalogNumber = dataToString(data2);
-        }
+    }
 
-        if (statusRequest.getResponses().size() > 2) {
-            //Third is description
-            byte[] data3 = statusRequest.getResponse(2).getDataBytes();
-            //description = Base64.getEncoder().encodeToString(data3);
+    if (statusRequest.getResponses().size() > 2) {
+      //Third is description
+      byte[] data3 = statusRequest.getResponse(2).getData();
+      //description = Base64.getEncoder().encodeToString(data3);
 //      description = dataToString(data3);
-        }
+    }
 
-        if (statusRequest.getResponses().size() > 3) {
-            //Fourth is description
-            byte[] data4 = statusRequest.getResponse(3).getDataBytes();
-            //description = description + Base64.getEncoder().encodeToString(data4);
+    if (statusRequest.getResponses().size() > 3) {
+      //Fourth is description
+      byte[] data4 = statusRequest.getResponse(3).getData();
+      //description = description + Base64.getEncoder().encodeToString(data4);
 //      description = description + dataToString(data4);
-        }
-        //uid is in the request
+    }
+    //uid is in the request
 //    uid = statusRequest.getUidInt();
-    }
+  }
 
-    private static String dataToString(byte[] data) {
-        //filter out 0 bytes
-        List<Byte> bl = new ArrayList<>();
-        for (int i = 0; i < data.length; i++) {
-            if (data[i] > 0) {
-                bl.add(data[i]);
-            }
-        }
-        byte[] bytes = new byte[bl.size()];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = bl.get(i);
-        }
-        return new String(bytes);
+  private static String dataToString(byte[] data) {
+    //filter out 0 bytes
+    List<Byte> bl = new ArrayList<>();
+    for (int i = 0; i < data.length; i++) {
+      if (data[i] > 0) {
+        bl.add(data[i]);
+      }
     }
+    byte[] bytes = new byte[bl.size()];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = bl.get(i);
+    }
+    return new String(bytes);
+  }
 
 }

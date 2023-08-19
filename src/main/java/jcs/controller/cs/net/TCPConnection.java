@@ -42,7 +42,6 @@ class TCPConnection implements CSConnection {
 
   private ClientMessageReceiver messageReceiver;
 
-  private static final long NO_TIMEOUT = 0L;
   private static final long SHORT_TIMEOUT = 500L;
   private static final long LONG_TIMEOUT = 4000L;
 
@@ -97,7 +96,7 @@ class TCPConnection implements CSConnection {
       this.messageReceiver.setCanMessage(message);
 
       try {
-        byte[] bytes = message.getBytes();
+        byte[] bytes = message.getMessage();
         //Send the message
         dos.write(bytes);
         dos.flush();
@@ -254,9 +253,10 @@ class TCPConnection implements CSConnection {
           int dlc = din.readUnsignedByte();
           //read the data
           int dataIdx = 0;
-          int[] data = new int[CanMessage.DATA_SIZE];
+          byte[] data = new byte[CanMessage.DATA_SIZE];
           while (dataIdx < CanMessage.DATA_SIZE) {
-            data[dataIdx] = din.readUnsignedByte();
+            //data[dataIdx] = din.readUnsignedByte();
+            data[dataIdx] = din.readByte();
             dataIdx++;
           }
           CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);

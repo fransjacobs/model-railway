@@ -57,7 +57,7 @@ public class MessageInflator {
             } else {
               dataLength = lenResp.getDeviceUidNumberFromMessage();
               int[] crca = new int[2];
-              int[] dt = lenResp.getData();
+              byte[] dt = lenResp.getData();
               System.arraycopy(dt, 4, crca, 0, crca.length);
               int crc = ByteUtil.toInt(crca);
               //For now the CRC is ignored as the Inflate will fail anyway whet the message contains errors
@@ -70,7 +70,7 @@ public class MessageInflator {
             if (dataResp.getCommand() != CanMessage.CONFIG_DATA_STREAM && dataResp.getDlc() != CanMessage.DLC_8) {
               Logger.error("Wrong data response: " + dataResp + " skipping");
             } else {
-              byte[] dataPart = dataResp.getDataBytes();
+              byte[] dataPart = dataResp.getData();
               dataPackets.add(dataPart);
             }
           }

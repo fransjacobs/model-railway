@@ -28,54 +28,54 @@ import org.tinylog.Logger;
  */
 public class DirectionMessageEvent implements Serializable {
 
-    private LocomotiveBean locomotiveBean;
+  private LocomotiveBean locomotiveBean;
 
-    private Integer updatedFunctionNumber;
+  private Integer updatedFunctionNumber;
 
-    public DirectionMessageEvent(LocomotiveBean locomotiveBean) {
-        this.locomotiveBean = locomotiveBean;
+  public DirectionMessageEvent(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
+  }
+
+  public DirectionMessageEvent(CanMessage message) {
+    parseMessage(message);
+  }
+
+  private void parseMessage(CanMessage message) {
+    CanMessage resp;
+    if (!message.isResponseMessage()) {
+      resp = message.getResponse();
+    } else {
+      resp = message;
     }
 
-    public DirectionMessageEvent(CanMessage message) {
-        parseMessage(message);
+    if (resp.isResponseMessage() && MarklinCan.LOC_DIRECTION_RESP == resp.getCommand()) {
+      byte[] data = resp.getData();
+      Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+
+      Integer richtung = data[4] & 0xff;
+      LocomotiveBean lb = new LocomotiveBean();
+
+      lb.setId(id);
+      lb.setRichtung(richtung);
+
+      if (lb.getId() != null && lb.getRichtung() != null) {
+        this.locomotiveBean = lb;
+      }
+    } else {
+      Logger.warn("Can't parse message, not an Locomotive Direction Response! " + resp);
     }
+  }
 
-    private void parseMessage(CanMessage message) {
-        CanMessage resp;
-        if (!message.isResponseMessage()) {
-            resp = message.getResponse();
-        } else {
-            resp = message;
-        }
+  public LocomotiveBean getLocomotiveBean() {
+    return locomotiveBean;
+  }
 
-        if (resp.isResponseMessage() && MarklinCan.LOC_DIRECTION_RESP == resp.getCommand()) {
-            int[] data = resp.getData();
-            Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
+  }
 
-            Integer richtung = data[4] & 0xff;
-            LocomotiveBean lb = new LocomotiveBean();
-
-            lb.setId(id);
-            lb.setRichtung(richtung);
-
-            if (lb.getId() != null && lb.getRichtung() != null) {
-                this.locomotiveBean = lb;
-            }
-        } else {
-            Logger.warn("Can't parse message, not an Locomotive Direction Response! " + resp);
-        }
-    }
-
-    public LocomotiveBean getLocomotiveBean() {
-        return locomotiveBean;
-    }
-
-    public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-        this.locomotiveBean = locomotiveBean;
-    }
-
-    public Integer getUpdatedFunctionNumber() {
-        return updatedFunctionNumber;
-    }
+  public Integer getUpdatedFunctionNumber() {
+    return updatedFunctionNumber;
+  }
 
 }

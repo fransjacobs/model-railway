@@ -28,11 +28,13 @@ public interface MarklinCan {
   public static final int HASH_SIZE = 2;
   public static final int DATA_SIZE = 8;
 
-  public static final int PRIO_IDX = 0;
-  public static final int CMD_IDX = 1;
-  public static final int SUB_CMD_IDX = 9;
+  //public static final int PRIO_IDX = 0;
+  //public static final int CMD_IDX = 1;
+  //public static final int SUB_CMD_IDX = 9;
+  public static final int SUB_CMD_IDX = 4;
   public static final int HASH_IDX = 2;
   public static final int PACKAGE_IDX = 3;
+
   public static final int DLC_IDX = 4;
   public static final int DATA_IDX = 5;
 
@@ -109,7 +111,7 @@ public interface MarklinCan {
 
   public final static int SX1_EVENT = 0x24;
 
-  public final static int S88_EVENT_QUERY_DLC = 0x04;
+  //public final static int S88_EVENT_QUERY_DLC = 0x04;
   public final static int S88_EVENT_RESPONSE = 0x23;
 
   public final static int PARAM_PIN_RESET = 0x00;
@@ -168,14 +170,14 @@ public interface MarklinCan {
   public static final int SYSTEM_SUB_SYSTEM_RESET = (byte) 0x80;
 
   //The UID of the phone app for disovery
-  public static final int[] MOBILE_APP_UID = new int[]{0x4f, 0x59, 0x10, 0xdf};
+  public static final byte[] MOBILE_APP_UID = new byte[]{(byte) 0x4f, (byte) 0x59, (byte) 0x10, (byte) 0xdf};
   //Wireless device
-  public static final int[] WIRELESS_DEVICE_ID = new int[]{0xee, 0xee};
+  public static final byte[] WIRELESS_DEVICE_ID = new byte[]{(byte) 0xee, (byte) 0xee};
   //Mobile app version 1.4.2
-  public static final int[] APP_VERSION = new int[]{0x01, 0x04};
+  public static final byte[] APP_VERSION = new byte[]{0x01, 0x04};
   //HASH send by mobile APP
-  public static final int[] MOBILE_APP_HASH = new int[]{0x47, 0x11};
+  public static final byte[] MOBILE_APP_HASH = new byte[]{0x47, 0x11};
   //Magic hash which will result is getting device ids 
-  public static final int[] MAGIC_HASH = new int[]{0x07, 0x69};
+  public static final byte[] MAGIC_HASH = new byte[]{0x07, 0x69};
 
 }

@@ -16,7 +16,6 @@
 package jcs.controller.cs;
 
 import jcs.controller.cs.can.CanMessage;
-import jcs.util.ByteUtil;
 import org.junit.After;
 import org.junit.Before;
 
@@ -33,7 +32,7 @@ public class SensorEventTest {
 
   @Before
   public void setUp() {
-    message = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x23, 0xcb, 0x12, 0x08, 0x00, 0x00, 0x00, 0x30, 0x00, 0x01, 0x0f, 0x59}));
+    message = new CanMessage(new byte[]{0x00, 0x23, (byte)0xcb, 0x12, 0x08, 0x00, 0x00, 0x00, 0x30, 0x00, 0x01, 0x0f, 0x59});
   }
 
   @After

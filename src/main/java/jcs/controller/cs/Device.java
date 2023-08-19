@@ -18,13 +18,12 @@ package jcs.controller.cs;
 import java.util.List;
 import java.util.Objects;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
+ * A Device is a Component which lives on the CAN Bus It can be a Central Station or GFP or Link-S88, etc
  *
- * @author fransjacobs
  */
 public class Device {
 
@@ -33,7 +32,7 @@ public class Device {
   private int version;
   private String serialNumber;
   private String articleNumber;
-  private String deviceName;
+  private String deviceName = "";
   private int measureChannels;
   private int configChannels;
 
@@ -45,17 +44,29 @@ public class Device {
     buildFromMessage(message);
   }
 
-  private void buildFromMessage(CanMessage message) {
-    if (message.getDlc() == MarklinCan.DLC_8) {
-      int[] uida = new int[4];
-      int[] vera = new int[2];
-      int[] deva = new int[2];
-      System.arraycopy(message.getData(), 0, uida, 0, uida.length);
-      System.arraycopy(message.getData(), 4, vera, 0, vera.length);
-      System.arraycopy(message.getData(), 6, deva, 0, deva.length);
-      this.uid = ByteUtil.toInt(uida);
-      this.version = ByteUtil.toInt(vera);
-      this.deviceId = ByteUtil.toInt(deva);
+  final void buildFromMessage(CanMessage message) {
+    CanMessage resp;
+    if (!message.isResponseMessage() && !message.getResponses().isEmpty()) {
+      resp = message.getResponse();
+    } else {
+      resp = message;
+    }
+
+    if (CanMessage.PING_RESP == resp.getCommand() && CanMessage.DLC_8 == resp.getDlc()) {
+      byte[] data = resp.getData();
+
+      byte[] uida = new byte[4];
+      System.arraycopy(data, 0, uida, 0, uida.length);
+
+      byte[] vera = new byte[2];
+      System.arraycopy(data, 4, vera, 0, vera.length);
+
+      byte[] deva = new byte[2];
+      System.arraycopy(data, 6, deva, 0, deva.length);
+
+      this.uid = resp.getDeviceUidNumberFromMessage();
+      this.version = CanMessage.toInt(vera);
+      this.deviceId = CanMessage.toInt(deva);
     }
   }
 
@@ -65,97 +76,60 @@ public class Device {
       //The last response has the total response messages
       int packets = 0;
       CanMessage last = responses.get(responses.size() - 1);
-      Logger.trace("Last: " + last);
       if (last.getDlc() == CanMessage.DLC_6) {
         packets = last.getDataByte(5);
       } else if (last.getDlc() == CanMessage.DLC_5) {
         //CS-2 lets assume the number packets to be the size
         packets = responses.size() - 1;
       }
-      Logger.trace("Last: " + last + " Packets: " + packets);
+      if (responses.size() - 1 != packets) {
+        Logger.warn("Config Data might be invalid. Packges expepected: " + packets + " received: " + (responses.size() - 1));
+      }
 
       for (int i = 0; i < responses.size(); i++) {
-        CanMessage rsp = responses.get(i);
-        int pkgIdx = rsp.getPackageNumber();
-        int[] data = rsp.getData();
+        CanMessage msg = responses.get(i);
+        byte[] data = msg.getData();
+        int packageNr = msg.getPackageNumber();
 
-        if (pkgIdx == 1) {
-          //Serial number and channels
-          int[] sn = new int[2];
-          System.arraycopy(data, 6, sn, 0, sn.length);
-          int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
-          serialNumber = serial + "";
-          measureChannels = data[0];
-          configChannels = data[1];
-        } else if (pkgIdx == 2) {
-          //Article
-          articleNumber = ByteUtil.bytesToString(data);
-          articleNumber = articleNumber.trim();
-        } else if (pkgIdx > 2 && rsp.getDlc() == MarklinCan.DLC_8) {
-          // Device name
-          if (deviceName == null) {
-            deviceName = "";
+        switch (i) {
+          case 0 -> {
+            if (CanMessage.DLC_5 == msg.getDlc()) {
+            } else if (CanMessage.DLC_8 == msg.getDlc()) {
+              //first packet?
+              if (packageNr == 1) {
+                measureChannels = data[0];
+                configChannels = data[1];
+                byte[] sn = new byte[2];
+                System.arraycopy(data, 6, sn, 0, sn.length);
+                int serial = ((sn[0]) << 8) | (sn[1]);
+                serialNumber = serial + "";
+              }
+            }
           }
-          deviceName = deviceName + ByteUtil.bytesToString(data);
-        } else {
-          //should be the last
-          deviceName = deviceName.trim();
-
-          if (responses.size() - 1 != packets) {
-            Logger.warn("Config Data Invalid");
+          case 1 -> {
+            if (CanMessage.DLC_8 == msg.getDlc()) {
+              if (packageNr == 2) {
+                //Article
+                articleNumber = ByteUtil.bytesToString(data);
+                articleNumber = articleNumber.trim();
+              }
+            }
           }
+          default -> {
+            if (CanMessage.DLC_8 == msg.getDlc()) {
+              String s = CanMessage.toString(data);
+              if (s != null && s.length() > 0) {
+                deviceName = deviceName + s;
+              }
 
+              if (packageNr == packets) {
+                deviceName = deviceName.trim();
+              }
+            }
+          }
         }
       }
     }
-//      CanMessage r0 = responses.get(0);
-//      int[] data1 = r0.getData();
-//      int[] sn = new int[2];
-//      System.arraycopy(data1, 6, sn, 0, sn.length);
-//      int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
-//      if (this.serialNumber == null) {
-//        this.serialNumber = serial + "";
-//      }
-//      measureChannels = data1[0];
-//      configChannels = data1[1];
-//
-//      if (responses.size() > 1) {
-//        byte[] data2 = responses.get(1).getDataBytes();
-//        articleNumber = ByteUtil.bytesToString(data2);
-//      }
-//
-//      
-//      if (responses.size() > 2) {
-//        byte[] data3 = responses.get(2).getDataBytes();
-//        deviceName = ByteUtil.bytesToString(data3);
-//      }
-//
-//      if (responses.size() > 3) {
-//        byte[] data4 = responses.get(3).getDataBytes();
-//        deviceName = deviceName + ByteUtil.bytesToString(data4);
-//      }
-//
-//      if (responses.size() > 3) {
-//        byte[] data5 = responses.get(4).getDataBytes();
-//        deviceName = deviceName + ByteUtil.bytesToString(data5);
-//        deviceName = deviceName.trim();
-//      }
-//
-//      int packetCount = 0;
-//      if (responses.size() > 4) {
-//        //Fifth is the confimation and channels
-//        if (responses.get(5).getDlc() == MarklinCan.DLC_6) {
-//          //Have the last packet
-//          byte[] data6 = responses.get(5).getDataBytes();
-//          int index = data6[MarklinCan.STATUS_CONFIG_INDEX];
-//          packetCount = data6[MarklinCan.STATUS_CONFIG_PACKET_COUNT];
-//        }
-//      }
-//
-//      if (responses.size() - 1 != packetCount) {
-//        Logger.warn("Config Data Invalid");
-//      }
-//    }
   }
 
   public int getUid() {
@@ -199,7 +173,7 @@ public class Device {
   }
 
   public boolean isDataComplete() {
-    return this.deviceName != null;
+    return this.deviceName != null && this.articleNumber != null && this.deviceName.length() > 10 && this.articleNumber.length() > 4;
   }
 
   public String getDevice() {
@@ -212,6 +186,8 @@ public class Device {
         "Connect 6021 Art-Nr.60128";
       case 0x0030 ->
         "MS 2 60653, Txxxxx";
+      case 0x0040 ->
+        "Link-S88";
       case 0xffe0 ->
         "Wireless Devices";
       case 0xffff ->
@@ -273,7 +249,7 @@ public class Device {
 
   @Override
   public String toString() {
-    return "Device{" + "uid=" + uid + ", deviceId=" + deviceId + ", version=" + version + ", serialNumber=" + serialNumber + ", articleNumber=" + articleNumber + ", deviceName=" + deviceName + ", measureChannels=" + measureChannels + ", configChannels=" + configChannels + "}";
+    return "Device{articleNumber=" + articleNumber + ", deviceName=" + (!"".equals(deviceName)?deviceName:getDevice()) + ", uid=" + uid + ", serialNumber=" + serialNumber + ", version=" + version + ", deviceId=" + deviceId + ", measureChannels=" + measureChannels + ", configChannels=" + configChannels + "}";
   }
 
 }

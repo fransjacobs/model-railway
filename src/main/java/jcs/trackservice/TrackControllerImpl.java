@@ -166,7 +166,7 @@ public class TrackControllerImpl implements TrackController {
   @Override
   public String getControllerName() {
     if (this.controllerService != null) {
-      return this.controllerService.getName();
+      return this.controllerService.getDevice().getDeviceName();
     } else {
       return null;
     }
@@ -175,7 +175,7 @@ public class TrackControllerImpl implements TrackController {
   @Override
   public String getControllerSerialNumber() {
     if (this.controllerService != null) {
-      return this.controllerService.getSerialNumber();
+      return this.controllerService.getDevice().getSerialNumber();
     } else {
       return null;
     }
@@ -184,20 +184,20 @@ public class TrackControllerImpl implements TrackController {
   @Override
   public String getControllerArticleNumber() {
     if (this.controllerService != null) {
-      return this.controllerService.getArticleNumber();
+      return this.controllerService.getDevice().getArticleNumber();
     } else {
       return null;
     }
   }
 
-  @Override
-  public LinkSxx getLinkSxx() {
-    if (this.controllerService != null) {
-      return this.controllerService.getLinkSxx();
-    } else {
-      return null;
-    }
-  }
+//  @Override
+//  public LinkSxx getLinkSxx() {
+//    if (this.controllerService != null) {
+//      return this.controllerService.getLinkSxx();
+//    } else {
+//      return null;
+//    }
+//  }
 
   @Override
   public void addPowerEventListener(PowerEventListener listener) {

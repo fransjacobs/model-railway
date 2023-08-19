@@ -28,39 +28,39 @@ import org.tinylog.Logger;
  */
 public class SensorMessageEvent {
 
-    private SensorBean sensor;
+  private SensorBean sensor;
 
-    public SensorMessageEvent(CanMessage message, Date eventDate) {
-        parseMessage(message, eventDate);
+  public SensorMessageEvent(CanMessage message, Date eventDate) {
+    parseMessage(message, eventDate);
+  }
+
+  private void parseMessage(CanMessage message, Date eventDate) {
+    CanMessage resp;
+    if (!message.isResponseMessage()) {
+      resp = message.getResponse();
+    } else {
+      resp = message;
     }
 
-    private void parseMessage(CanMessage message, Date eventDate) {
-        CanMessage resp;
-        if (!message.isResponseMessage()) {
-            resp = message.getResponse();
-        } else {
-            resp = message;
-        }
+    if (resp.isResponseMessage() && MarklinCan.S88_EVENT_RESPONSE == resp.getCommand()) {
+      byte[] data = resp.getData();
 
-        if (resp.isResponseMessage() && MarklinCan.S88_EVENT_RESPONSE == resp.getCommand()) {
-            int[] data = resp.getData();
+      Integer deviceId = ByteUtil.toInt(new byte[]{data[0], data[1]});
+      Integer contactId = ByteUtil.toInt(new byte[]{data[2], data[3]});
 
-            Integer deviceId = ByteUtil.toInt(new int[]{data[0], data[1]});
-            Integer contactId = ByteUtil.toInt(new int[]{data[2], data[3]});
+      int previousStatus = data[4];
+      int status = data[5];
 
-            Integer previousStatus = data[4];
-            Integer status = data[5];
+      Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
 
-            Integer millis = ByteUtil.toInt(new int[]{data[6], data[7]}) * 10;
-
-            this.sensor = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
-        } else {
-            Logger.warn("Can't parse message, not a Sensor Response! " + resp);
-        }
+      this.sensor = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
+    } else {
+      Logger.warn("Can't parse message, not a Sensor Response! " + resp);
     }
+  }
 
-    public SensorBean getSensorBean() {
-        return sensor;
-    }
+  public SensorBean getSensorBean() {
+    return sensor;
+  }
 
 }

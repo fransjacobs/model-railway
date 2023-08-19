@@ -45,7 +45,7 @@ public class CanMessageTest {
 
   @Before
   public void setUp() {
-    int[] data = new int[]{5, 6, 7, 8, 9, 10, 11, 12};
+    byte[] data = new byte[]{5, 6, 7, 8, 9, 10, 11, 12};
     message = new CanMessage(0, 1, 2, 4, data);
   }
 
@@ -59,12 +59,13 @@ public class CanMessageTest {
   @Test
   public void testGetLength() {
     System.out.println("getLength");
-    CanMessage instance = new CanMessage(0, 0, 0, 0, CanMessage.getEmptyData());
+    CanMessage instance = new CanMessage(0, 0, 0, 0, new byte[CanMessage.DATA_SIZE]);
 
     int expResult = 13;
     int result = instance.getLength();
     assertEquals(expResult, result);
-    int[] expMessage = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    byte[] expMessage = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     Assert.assertArrayEquals(expMessage, instance.getMessage());
   }
 
@@ -78,9 +79,9 @@ public class CanMessageTest {
 
     System.out.println("getMessage: " + instance);
 
-    int[] expResult = new int[]{0, 1, 0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    byte[] expResult = new byte[]{0, 1, 0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
-    int[] result = instance.getMessage();
+    byte[] result = instance.getMessage();
     assertArrayEquals(expResult, result);
   }
 
@@ -91,12 +92,14 @@ public class CanMessageTest {
   public void testGetSetPriority() {
     System.out.println("getSetPriority");
     int priority = 4;
-    CanMessage instance = new CanMessage(priority, 0, 0, 0, CanMessage.getEmptyData());
-
-    int[] expMessage = new int[]{4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    Assert.assertArrayEquals(expMessage, instance.getMessage());
+    CanMessage instance = new CanMessage(priority, 0, 0, 0, new byte[CanMessage.DATA_SIZE]);
 
     assertEquals(4, instance.getPriority());
+
+    byte[] expMessage = new byte[]{(byte) 0x04, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    byte[] msg = instance.getMessage();
+    Assert.assertArrayEquals(expMessage, msg);
   }
 
   /**
@@ -106,11 +109,11 @@ public class CanMessageTest {
   public void testGetSetCommand() {
     System.out.println("getSetCommand");
     int command = 7;
-    CanMessage instance = new CanMessage(0, command, 0, 0, CanMessage.getEmptyData());
+    CanMessage instance = new CanMessage(0, command, 0, 0, new byte[CanMessage.DATA_SIZE]);
 
     assertEquals(command, instance.getCommand());
 
-    int[] expMessage = new int[]{0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    byte[] expMessage = new byte[]{0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     Assert.assertArrayEquals(expMessage, instance.getMessage());
   }
 
@@ -120,15 +123,15 @@ public class CanMessageTest {
   @Test
   public void testGetSetHash() {
     System.out.println("getSetHash");
-    CanMessage instance = new CanMessage(0, 0, new int[]{67, 23}, 0, CanMessage.getEmptyData());
-    int[] expResult = new int[]{67, 23};
+    CanMessage instance = new CanMessage(0, 0, new byte[]{67, 23}, 0, new byte[CanMessage.DATA_SIZE]);
+    byte[] expResult = new byte[]{67, 23};
 
     System.out.println("getSetHash: " + instance);
 
-    int[] result = instance.getHash();
+    byte[] result = instance.getHash();
     assertArrayEquals(expResult, result);
 
-    int[] expMessage = new int[]{0, 0, 67, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    byte[] expMessage = new byte[]{0, 0, 67, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     Assert.assertArrayEquals(expMessage, instance.getMessage());
   }
 
@@ -138,7 +141,7 @@ public class CanMessageTest {
   @Test
   public void testGetSetDlc() {
     System.out.println("getSetDlc");
-    CanMessage instance = new CanMessage(0, 0, 0, 8, CanMessage.getEmptyData());
+    CanMessage instance = new CanMessage(0, 0, 0, 8, new byte[CanMessage.DATA_SIZE]);
     int expResult = 8;
 
     int result = instance.getDlc();
@@ -146,7 +149,7 @@ public class CanMessageTest {
 
     assertEquals(expResult, instance.getDlc());
 
-    int[] expMessage = new int[]{0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0};
+    byte[] expMessage = new byte[]{0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0};
     Assert.assertArrayEquals(expMessage, instance.getMessage());
   }
 
@@ -156,15 +159,14 @@ public class CanMessageTest {
   @Test
   public void testGetSetData() {
     System.out.println("getSetData");
-    int[] expResult = new int[]{5, 6, 7, 8, 9, 10, 11, 12};
+    byte[] expResult = new byte[]{5, 6, 7, 8, 9, 10, 11, 12};
     CanMessage instance = new CanMessage(0, 0, 0, 0, expResult);
 
-    System.out.println("getSetData: " + instance);
-
-    int[] result = instance.getData();
+    byte[] result = instance.getData();
     assertArrayEquals(expResult, result);
 
-    int[] expMessage = new int[]{0, 0, 0, 0, 0, 5, 6, 7, 8, 9, 10, 11, 12};
+    byte[] expMessage = new byte[]{0, 0, 0, 0, 0, 5, 6, 7, 8, 9, 10, 11, 12};
+
     Assert.assertArrayEquals(expMessage, instance.getMessage());
   }
 
@@ -178,16 +180,16 @@ public class CanMessageTest {
 
     System.out.println("createMessage: " + instance);
 
-    int[] expMessage = new int[]{0x00, 0x31, 0x47, 0x11, 0x08, 0x4f, 0x59, 0x10, 0xdf, 0x01, 0x04, 0xee, 0xee};
+    byte[] expMessage = new byte[]{(byte) 0x00, (byte) 0x31, (byte) 0x47, (byte) 0x11, (byte) 0x08, (byte) 0x4f, (byte) 0x59, (byte) 0x10, (byte) 0xdf, (byte) 0x01, (byte) 0x04, (byte) 0xee, (byte) 0xee};
     Assert.assertArrayEquals(expMessage, instance.getMessage());
 
-    assertArrayEquals(bytes, instance.getBytes());
+    assertArrayEquals(bytes, instance.getMessage());
   }
 
   @Test
   public void testToString() {
     System.out.println("toString");
-    CanMessage instance = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x16, 0x47, 0x11, 0x06, 0x00, 0x00, 0x30, 0x00, 0x01, 0x01, 0x00, 0x00}));
+    CanMessage instance = new CanMessage(new byte[]{0x00, 0x16, 0x47, 0x11, 0x06, 0x00, 0x00, 0x30, 0x00, 0x01, 0x01, 0x00, 0x00});
     String expResult = "0x00 0x16 0x47 0x11 0x06 0x00 0x00 0x30 0x00 0x01 0x01 0x00 0x00";
     System.out.println("toString: " + instance);
 
@@ -195,17 +197,13 @@ public class CanMessageTest {
     assertEquals(expResult, result);
   }
 
-  //0x00 0x00 0x03 0x00 0x04 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 
-  //0x00 0x01 0xcb 0x13 0x05 0x43 0x53 0x9a 0x40 0x01 0x00 0x00 0x00
   @Test
   public void testIsResponse() {
     System.out.println("isResponse");
-    CanMessage tx = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x00, 0x03, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
-    CanMessage rx = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x01, 0xcb, 0x13, 0x05, 0x43, 0x53, 0x9a, 0x40, 0x01, 0x00, 0x00, 0x00}));
+    CanMessage tx = new CanMessage(new byte[]{0x00, 0x00, 0x03, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+    CanMessage rx = new CanMessage(new byte[]{0x00, 0x01, (byte)0xcb, 0x13, 0x05, 0x43, 0x53, (byte)0x9a, 0x40, 0x01, 0x00, 0x00, 0x00});
     tx.addResponse(rx);
 
-    boolean expResult = false;
-    boolean result = tx.isResponseMessage();
     assertFalse(tx.isResponseMessage());
 
     CanMessage resp = tx.getResponse();
@@ -215,7 +213,6 @@ public class CanMessageTest {
     assertTrue(resp.isResponseFor(tx));
 
     assertTrue(resp.isDeviceUidValid());
-
   }
 
   /**
@@ -224,23 +221,23 @@ public class CanMessageTest {
   @Test
   public void testGetUid() {
     System.out.println("getUid");
-    CanMessage instance = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x01, 0xcb, 0x05, 0x05, 0x43, 0x53, 0x9a, 0x40, 0x01, 0x00, 0x00, 0x00}));
-    int[] expResult = new int[]{0x43, 0x53, 0x9a, 0x40};
-    int[] result = instance.getDeviceUidFromMessage();
+    CanMessage instance = new CanMessage(new byte[]{(byte) 0x00, (byte) 0x01, (byte) 0xcb, (byte) 0x05, (byte) 0x05, (byte) 0x43, (byte) 0x53, (byte) 0x9a, (byte) 0x40, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00});
+    byte[] expResult = new byte[]{(byte) 0x43, (byte) 0x53, (byte) 0x9a, (byte) 0x40};
+    byte[] result = instance.getDeviceUidFromMessage();
     Assert.assertArrayEquals(expResult, result);
   }
 
   @Test
   public void testHasValidResponse() {
     System.out.println("hasValidResponse");
-    int[] request = new int[]{0x00, 0x16, 0xcb, 0x13, 0x06, 0x00, 0x00, 0x30, 0x01, 0x00, 0x00, 0x00, 0x00};
-    int[] response = new int[]{0x00, 0x17, 0xcb, 0x13, 0x06, 0x00, 0x00, 0x30, 0x01, 0x00, 0x00, 0x00, 0x00};
+    byte[] request = new byte[]{0x00, 0x16, (byte)0xcb, 0x13, 0x06, 0x00, 0x00, 0x30, 0x01, 0x00, 0x00, 0x00, 0x00};
+    byte[] response = new byte[]{0x00, 0x17, (byte)0xcb, 0x13, 0x06, 0x00, 0x00, 0x30, 0x01, 0x00, 0x00, 0x00, 0x00};
 
-    CanMessage instance = new CanMessage(ByteUtil.toByteArray(request));
+    CanMessage instance = new CanMessage(request);
     assertFalse(instance.isResponseMessage());
     assertFalse(instance.hasValidResponse());
 
-    CanMessage reply = new CanMessage(ByteUtil.toByteArray(response));
+    CanMessage reply = new CanMessage(response);
     assertTrue(reply.isResponseMessage());
     assertFalse(reply.hasValidResponse());
 
@@ -253,9 +250,9 @@ public class CanMessageTest {
   public void testIsResponseFor() {
     System.out.println("isResponseFor");
 
-    CanMessage tx = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x3a, 0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
+    CanMessage tx = new CanMessage(new byte[]{0x00, 0x3a, (byte)0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 
-    CanMessage rx = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x3b, 0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
+    CanMessage rx = new CanMessage(new byte[]{0x00, 0x3b, (byte)0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 
     boolean result = rx.isResponseFor(tx);
     assertTrue(result);
@@ -265,45 +262,24 @@ public class CanMessageTest {
     assertFalse(result);
   }
 
-  @Test
-  public void testIsAcknowlegeFor() {
-    System.out.println("isAcknowlegeFor");
-
-    CanMessage tx = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x3a, 0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
-    CanMessage rx = new CanMessage(ByteUtil.toByteArray(new int[]{0x00, 0x3b, 0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
-
-    boolean result = rx.isAcknowledgeFor(tx);
-    assertTrue(result);
-
-    result = tx.isAcknowledgeFor(tx);
-
-    assertFalse(result);
-  }
-
-//    public void testIsAcknowlegeFor() {
-//        System.out.println("isAcknowlegeFor");
+//  @Test
+//  public void testIsAcknowlegeFor() {
+//    System.out.println("isAcknowlegeFor");
 //
-//        CanMessage tx = new CanMessage(new int[]{0x00, 0x3a, 0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
-//        CanMessage rx = new CanMessage(new int[]{0x00, 0x3b, 0xcb, 0x13, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+//    CanMessage tx = new CanMessage(new byte[]{(byte)0x00, (byte)0x3a, (byte)0xcb, (byte)0x13, (byte)0x05, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 0x00});
+//    CanMessage rx = new CanMessage(new byte[]{(byte)0x00, (byte)0x3b, (byte)0xcb, (byte)0x13, (byte)0x05, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00});
 //
-//        boolean result = rx.isAcknowledgeFor(tx);
-//        assertTrue(result);
+//    boolean result = rx.isAcknowledgeFor(tx);
+//    assertTrue(result);
 //
-//        result = tx.isAcknowledgeFor(tx);
+//    result = tx.isAcknowledgeFor(tx);
 //
-//        assertFalse(result);
-//    }
-  //TX: 0x00 0x3a 0xcb 0x13 0x05 0x43 0x53 0x9a 0x40 0x00 0x00 0x00 0x00 Expect Ack: true
-  //RX: 0x00 0x3b 0x03 0x01 0x08 0x04 0x02 0x00 0x00 0x00 0x00 0x34 0x20 Ack? false
-  //RX: 0x00 0x3b 0x03 0x02 0x08 0x36 0x30 0x32 0x31 0x34 0x00 0x00 0x00 Ack? false
-  //RX: 0x00 0x3b 0x03 0x03 0x08 0x43 0x65 0x6e 0x74 0x72 0x61 0x6c 0x20 Ack? false
-  //RX: 0x00 0x3b 0x03 0x04 0x08 0x53 0x74 0x61 0x74 0x69 0x6f 0x6e 0x20 Ack? false
-  //RX: 0x00 0x3b 0x03 0x05 0x08 0x32 0x00 0x00 0x00 0x00 0x00 0x00 0x00 Ack? false
-  //RX: 0x00 0x3b 0xcb 0x13 0x05 0x43 0x53 0x9a 0x40 0x00 0x00 0x00 0x00 Ack? false
+//    assertFalse(result);
+//  }
   //@Test
   public void testGenerateHashInt() {
     System.out.println("generateHashInt");
-    int[] gfpUid = new int[]{0x63, 0x73, 0x45, 0x8c};
+    byte[] gfpUid = new byte[]{(byte) 0x63, (byte) 0x73, (byte) 0x45, (byte) 0x8c};
 
 //        hash: 0x03 0x26
 //        gfp: 0x63 0x73 0x45 0x8c

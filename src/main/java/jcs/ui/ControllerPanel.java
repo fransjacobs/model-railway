@@ -111,66 +111,68 @@ public class ControllerPanel extends JPanel {
     }
   }
 
+  
+  //TODO !
   private void postInit() {
     //Find the number of feedback modules from the Controller LinkS88 busses
-    if (TrackControllerFactory.getTrackController() != null && TrackControllerFactory.getTrackController().getLinkSxx() != null) {
-
-      LinkSxx linkSxx = TrackControllerFactory.getTrackController().getLinkSxx();
-      int deviceId = linkSxx.getDeviceId();
-      //For now support only a max of 4 modules per bus, which
-      //should be sufficient for most tracks ;)
-      this.csModule1Panel.setContactIdOffset(0);
-      this.csModule1Panel.setDeviceId(deviceId);
-
-      this.csModule2Panel.setContactIdOffset(0);
-      this.csModule2Panel.setDeviceId(deviceId);
-
-      this.csModule3Panel.setContactIdOffset(0);
-      this.csModule3Panel.setDeviceId(deviceId);
-
-      this.csModule4Panel.setContactIdOffset(0);
-      this.csModule4Panel.setDeviceId(deviceId);
-
-      int bus1Offset = linkSxx.getContactIdOffset(1);
-      this.bus1Module1Panel.setContactIdOffset(bus1Offset);
-      this.bus1Module1Panel.setDeviceId(deviceId);
-
-      this.bus1Module2Panel.setContactIdOffset(bus1Offset);
-      this.bus1Module2Panel.setDeviceId(deviceId);
-
-      this.bus1Module3Panel.setContactIdOffset(bus1Offset);
-      this.bus1Module3Panel.setDeviceId(deviceId);
-
-      this.bus1Module4Panel.setContactIdOffset(bus1Offset);
-      this.bus1Module4Panel.setDeviceId(deviceId);
-
-      int bus2Offset = linkSxx.getContactIdOffset(2);
-      this.bus2Module1Panel.setContactIdOffset(bus2Offset);
-      this.bus2Module1Panel.setDeviceId(deviceId);
-
-      this.bus2Module2Panel.setContactIdOffset(bus2Offset);
-      this.bus2Module2Panel.setDeviceId(deviceId);
-      this.bus2Module2Panel.registerSensorListeners();
-
-      this.bus2Module3Panel.setContactIdOffset(bus2Offset);
-      this.bus2Module3Panel.setDeviceId(deviceId);
-
-      this.bus2Module4Panel.setContactIdOffset(bus2Offset);
-      this.bus2Module4Panel.setDeviceId(deviceId);
-
-      int bus3Offset = linkSxx.getContactIdOffset(3);
-      this.bus3Module1Panel.setContactIdOffset(bus3Offset);
-      this.bus3Module1Panel.setDeviceId(deviceId);
-
-      this.bus3Module2Panel.setContactIdOffset(bus3Offset);
-      this.bus3Module2Panel.setDeviceId(deviceId);
-
-      this.bus3Module3Panel.setContactIdOffset(bus3Offset);
-      this.bus3Module3Panel.setDeviceId(deviceId);
-
-      this.bus3Module4Panel.setContactIdOffset(bus3Offset);
-      this.bus3Module4Panel.setDeviceId(deviceId);
-    }
+//    if (TrackControllerFactory.getTrackController() != null && TrackControllerFactory.getTrackController().getLinkSxx() != null) {
+// 
+//      LinkSxx linkSxx = TrackControllerFactory.getTrackController().getLinkSxx();
+//      int deviceId = linkSxx.getDeviceId();
+//      //For now support only a max of 4 modules per bus, which
+//      //should be sufficient for most tracks ;)
+//      this.csModule1Panel.setContactIdOffset(0);
+//      this.csModule1Panel.setDeviceId(deviceId);
+//
+//      this.csModule2Panel.setContactIdOffset(0);
+//      this.csModule2Panel.setDeviceId(deviceId);
+//
+//      this.csModule3Panel.setContactIdOffset(0);
+//      this.csModule3Panel.setDeviceId(deviceId);
+//
+//      this.csModule4Panel.setContactIdOffset(0);
+//      this.csModule4Panel.setDeviceId(deviceId);
+//
+//      int bus1Offset = linkSxx.getContactIdOffset(1);
+//      this.bus1Module1Panel.setContactIdOffset(bus1Offset);
+//      this.bus1Module1Panel.setDeviceId(deviceId);
+//
+//      this.bus1Module2Panel.setContactIdOffset(bus1Offset);
+//      this.bus1Module2Panel.setDeviceId(deviceId);
+//
+//      this.bus1Module3Panel.setContactIdOffset(bus1Offset);
+//      this.bus1Module3Panel.setDeviceId(deviceId);
+//
+//      this.bus1Module4Panel.setContactIdOffset(bus1Offset);
+//      this.bus1Module4Panel.setDeviceId(deviceId);
+//
+//      int bus2Offset = linkSxx.getContactIdOffset(2);
+//      this.bus2Module1Panel.setContactIdOffset(bus2Offset);
+//      this.bus2Module1Panel.setDeviceId(deviceId);
+//
+//      this.bus2Module2Panel.setContactIdOffset(bus2Offset);
+//      this.bus2Module2Panel.setDeviceId(deviceId);
+//      this.bus2Module2Panel.registerSensorListeners();
+//
+//      this.bus2Module3Panel.setContactIdOffset(bus2Offset);
+//      this.bus2Module3Panel.setDeviceId(deviceId);
+//
+//      this.bus2Module4Panel.setContactIdOffset(bus2Offset);
+//      this.bus2Module4Panel.setDeviceId(deviceId);
+//
+//      int bus3Offset = linkSxx.getContactIdOffset(3);
+//      this.bus3Module1Panel.setContactIdOffset(bus3Offset);
+//      this.bus3Module1Panel.setDeviceId(deviceId);
+//
+//      this.bus3Module2Panel.setContactIdOffset(bus3Offset);
+//      this.bus3Module2Panel.setDeviceId(deviceId);
+//
+//      this.bus3Module3Panel.setContactIdOffset(bus3Offset);
+//      this.bus3Module3Panel.setDeviceId(deviceId);
+//
+//      this.bus3Module4Panel.setContactIdOffset(bus3Offset);
+//      this.bus3Module4Panel.setDeviceId(deviceId);
+//    }
   }
 
   private class MessageListener implements CanMessageListener {

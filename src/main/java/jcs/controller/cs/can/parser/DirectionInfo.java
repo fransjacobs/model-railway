@@ -20,37 +20,33 @@ import jcs.controller.cs.can.CanMessage;
 import jcs.entities.enums.Direction;
 import org.tinylog.Logger;
 
-/**
- *
- * @author Frans Jacobs
- */
 public class DirectionInfo implements Serializable {
 
-    private Direction direction;
+  private Direction direction;
 
-    public DirectionInfo(Direction direction) {
-        this.direction = direction;
-    }
+  public DirectionInfo(Direction direction) {
+    this.direction = direction;
+  }
 
-    public DirectionInfo(CanMessage locDirection) {
-        parseMessage(locDirection);
-    }
+  public DirectionInfo(CanMessage locDirection) {
+    parseMessage(locDirection);
+  }
 
-    private void parseMessage(CanMessage locDirection) {
-        Logger.debug(locDirection);
-        int[] data = locDirection.getResponse(0).getData();
-        int dir = data[4];
+  private void parseMessage(CanMessage locDirection) {
+    Logger.debug(locDirection);
+    byte[] data = locDirection.getResponse(0).getData();
+    int dir = data[4];
 
-        this.direction = Direction.getDirection(dir);
-    }
+    this.direction = Direction.getDirection(dir);
+  }
 
-    @Override
-    public String toString() {
-        return "DirectionInfo{" + "direction=" + direction + '}';
-    }
+  @Override
+  public String toString() {
+    return "DirectionInfo{" + "direction=" + direction + '}';
+  }
 
-    public Direction getDirection() {
-        return direction;
-    }
+  public Direction getDirection() {
+    return direction;
+  }
 
 }

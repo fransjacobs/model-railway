@@ -56,7 +56,7 @@ class UDPConnection implements CSConnection {
       InetAddress localAddress = InetAddress.getByName("0.0.0.0");
 
       try (DatagramSocket requestSocket = new DatagramSocket()) {
-        DatagramPacket requestPacket = new DatagramPacket(message.getBytes(), message.getLength(), cs2Address, CSConnection.CS_RX_PORT);
+        DatagramPacket requestPacket = new DatagramPacket(message.getMessage(), message.getLength(), cs2Address, CSConnection.CS_RX_PORT);
         requestSocket.send(requestPacket);
       }
 

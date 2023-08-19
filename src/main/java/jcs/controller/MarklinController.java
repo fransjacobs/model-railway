@@ -18,8 +18,7 @@ package jcs.controller;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import jcs.controller.cs3.devices.GFP;
-import jcs.controller.cs3.devices.LinkSxx;
+import jcs.controller.cs.Device;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
@@ -40,12 +39,9 @@ public interface MarklinController {
 
   void disconnect();
 
-  String getName();
-
-  String getSerialNumber();
-
-  String getArticleNumber();
-
+  //String getName();
+  //String getSerialNumber();
+  //String getArticleNumber();
   boolean isPower();
 
   boolean power(boolean on);
@@ -93,8 +89,10 @@ public interface MarklinController {
 
   List<AccessoryBean> getSignals();
 
-  GFP getGFP();
+  Device getDevice();
 
-  LinkSxx getLinkSxx();
+  List<Device> getDevices();
 
+  //GFP getGFP();
+  //LinkSxx getLinkSxx();
 }

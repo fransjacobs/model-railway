@@ -29,55 +29,55 @@ import org.tinylog.Logger;
  */
 public class FunctionMessageEvent implements Serializable {
 
-    private LocomotiveBean locomotiveBean;
+  private LocomotiveBean locomotiveBean;
 
-    private Integer updatedFunctionNumber;
+  private Integer updatedFunctionNumber;
 
-    public FunctionMessageEvent(LocomotiveBean locomotiveBean) {
-        this.locomotiveBean = locomotiveBean;
+  public FunctionMessageEvent(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
+  }
+
+  public FunctionMessageEvent(CanMessage message) {
+    parseMessage(message);
+  }
+
+  private void parseMessage(CanMessage message) {
+    CanMessage resp;
+    if (!message.isResponseMessage()) {
+      resp = message.getResponse();
+    } else {
+      resp = message;
     }
 
-    public FunctionMessageEvent(CanMessage message) {
-        parseMessage(message);
+    if (resp.isResponseMessage() && MarklinCan.LOC_FUNCTION_RESP == resp.getCommand()) {
+      byte[] data = resp.getData();
+      Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+
+      Integer functionNumber = data[4] & 0xff;
+      Integer functionValue = data[5] & 0xff;
+      this.locomotiveBean = new LocomotiveBean();
+
+      FunctionBean function = new FunctionBean(functionNumber, id);
+      function.setValue(functionValue);
+
+      this.locomotiveBean.setId(id);
+      this.locomotiveBean.addFunction(function);
+      this.updatedFunctionNumber = functionNumber;
+    } else {
+      Logger.warn("Can't parse message, not an Locomotive Function Response! " + resp);
     }
+  }
 
-    private void parseMessage(CanMessage message) {
-        CanMessage resp;
-        if (!message.isResponseMessage()) {
-            resp = message.getResponse();
-        } else {
-            resp = message;
-        }
+  public LocomotiveBean getLocomotiveBean() {
+    return locomotiveBean;
+  }
 
-        if (resp.isResponseMessage() && MarklinCan.LOC_FUNCTION_RESP == resp.getCommand()) {
-            int[] data = resp.getData();
-            Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
+  }
 
-            Integer functionNumber = data[4] & 0xff;
-            Integer functionValue = data[5] & 0xff;
-            this.locomotiveBean = new LocomotiveBean();
-
-            FunctionBean function = new FunctionBean(functionNumber, id);
-            function.setValue(functionValue);
-
-            this.locomotiveBean.setId(id);
-            this.locomotiveBean.addFunction(function);
-            this.updatedFunctionNumber = functionNumber;
-        } else {
-            Logger.warn("Can't parse message, not an Locomotive Function Response! " + resp);
-        }
-    }
-
-    public LocomotiveBean getLocomotiveBean() {
-        return locomotiveBean;
-    }
-
-    public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-        this.locomotiveBean = locomotiveBean;
-    }
-
-    public Integer getUpdatedFunctionNumber() {
-        return updatedFunctionNumber;
-    }
+  public Integer getUpdatedFunctionNumber() {
+    return updatedFunctionNumber;
+  }
 
 }
