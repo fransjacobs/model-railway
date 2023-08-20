@@ -16,7 +16,6 @@
 package jcs.trackservice;
 
 import java.beans.PropertyChangeListener;
-import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.entities.AccessoryBean;

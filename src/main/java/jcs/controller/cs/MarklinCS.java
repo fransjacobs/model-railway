@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.controller.cs3.events.CanMessageListener;
@@ -51,9 +52,6 @@ import jcs.controller.cs.events.CanMessageEvent;
 import jcs.controller.cs.net.CSConnection;
 import jcs.controller.cs.net.HTTPConnection;
 import jcs.controller.cs.net.CSConnectionFactory;
-import jcs.controller.cs3.devices.GFP;
-import jcs.controller.cs3.devices.LinkSxx;
-import jcs.controller.cs3.devices.SxxBus;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.controller.cs3.events.PowerEvent;
 import jcs.controller.cs3.events.PowerEventListener;
@@ -69,6 +67,7 @@ import jcs.controller.cs3.events.VelocityMessageEventListener;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.FeedbackEventListener;
 import jcs.controller.cs3.events.SensorMessageListener;
+import jcs.util.ByteUtil;
 
 /**
  *
@@ -81,17 +80,7 @@ public class MarklinCS implements MarklinController {
 
   private final Map<Integer, Device> devices;
   private Device mainDevice;
-
-  //Central Station properties
-  private GFP gfp;
-  private int gfpUid;
-
-  private LinkSxx linkSxx;
-  private int linkSxxUid;
-
   private int csUid;
-  private String csArticle;
-  private String csName;
 
   private ChannelDataParser channelData1;
   private ChannelDataParser channelData2;
@@ -109,6 +98,7 @@ public class MarklinCS implements MarklinController {
   private final List<VelocityMessageEventListener> velocityMessageEventListeners;
 
   private ExecutorService executor;
+  private ScheduledExecutorService scheduledExecutor;
   private boolean power;
 
   public MarklinCS() {
@@ -126,14 +116,11 @@ public class MarklinCS implements MarklinController {
     velocityMessageEventListeners = new LinkedList<>();
 
     executor = Executors.newCachedThreadPool();
+    scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     if (autoConnect) {
       connect();
     }
-  }
-
-  int getGfpUid() {
-    return gfpUid;
   }
 
   int getCsUid() {
@@ -141,7 +128,7 @@ public class MarklinCS implements MarklinController {
   }
 
   public boolean isCS3() {
-    return !"60214".equals(this.csArticle);
+    return this.mainDevice != null && !"60214".equals(this.mainDevice.getArticleNumber());
   }
 
   public String getIp() {
@@ -187,11 +174,12 @@ public class MarklinCS implements MarklinController {
           now = System.currentTimeMillis();
           timeout = now + 6000L;
           //need to wait until devices are queried...
-          while (this.csName == null && now < timeout) {
+          String devName = null;
+          while (devName == null && now < timeout) {
             synchronized (this.devices) {
               for (Device d : this.devices.values()) {
                 if (d.isDataComplete()) {
-                  this.csName = d.getDeviceName();
+                  devName = d.getDeviceName();
                 }
               }
             }
@@ -203,22 +191,26 @@ public class MarklinCS implements MarklinController {
             if (d.isDataComplete()) {
               if ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber())) {
                 csUid = d.getUid();
-                csArticle = d.getArticleNumber();
                 this.mainDevice = d;
               }
             }
           }
-          Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
-          JCS.logProgress("Connected with " + this.csName);
 
-          if (this.isCS3()) {
-            getAppDevicesCs3();
+          if (this.mainDevice != null) {
+            Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
+            JCS.logProgress("Connected with " + this.mainDevice.getDeviceName());
+
+            if (this.isCS3()) {
+              getAppDevicesCs3();
+            }
+
+            this.power = this.isPower();
+            JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
+
+          } else {
+            Logger.warn("No Main Device found. Resetting connection");
+            this.disconnect();
           }
-
-          this.gfpUid = this.csUid;
-
-          this.power = this.isPower();
-          JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
         }
       } else {
         Logger.warn("Can't connect with Central Station!");
@@ -246,25 +238,25 @@ public class MarklinCS implements MarklinController {
       //TODO update the devices ...
       //this.csUid = Integer.parseInt(dp.getCs3().getUid().substring(2), 16);
       //this.csName = dp.getCs3().getName();
-      this.gfp = dp.getGfp();
-      this.gfpUid = Integer.parseInt(this.gfp.getUid().substring(2), 16);
-      this.linkSxx = dp.getLinkSxx();
-      this.linkSxxUid = Integer.parseInt(this.linkSxx.getUid().substring(2), 16);
+      //this.gfp = dp.getGfp();
+      String gfpUid = ByteUtil.toHexString(dp.getGfp().getUid());  //Integer.parseInt(this.gfp.getUid().substring(2), 16);
+      //this.linkSxx = dp.getLinkSxx();
+      String linkSxxUid = ByteUtil.toHexString(dp.getLinkSxx().getUid()); //   Integer.parseInt(this.linkSxx.getUid().substring(2), 16);
 
       Logger.trace("CS3 uid: " + dp.getCs3().getUid());
-      Logger.trace("CS3: " + this.csName);
-      Logger.trace("GFP uid: " + this.gfp.getUid());
-      Logger.trace("GFP Article: " + this.gfp.getArticleNumber());
-      Logger.trace("GFP version: " + this.gfp.getVersion());
-      Logger.trace("GFP Serial: " + this.gfp.getSerial());
-      Logger.trace("GFP id: " + this.gfp.getIdentifier());
+      Logger.trace("CS3: " + dp.getCs3().getDeviceName());
+      Logger.trace("GFP uid: " + dp.getGfp().getUid());
+      Logger.trace("GFP Article: " + dp.getGfp().getArticleNumber());
+      Logger.trace("GFP version: " + dp.getGfp().getVersion());
+      Logger.trace("GFP Serial: " + dp.getGfp().getSerialNumber());
+      Logger.trace("GFP id: " + dp.getGfp().getIdentifier());
 
-      Logger.trace("LinkSxx uid: " + this.linkSxx.getUid());
-      Logger.trace("LinkSxx id: " + this.linkSxx.getIdentifier() + " deviceId: " + this.linkSxx.getDeviceId());
-      Logger.trace("LinkSxx serial: " + this.linkSxx.getSerialNumber());
-      Logger.trace("LinkSxx version: " + this.linkSxx.getVersion());
+      Logger.trace("LinkSxx uid: " + dp.getLinkSxx().getUid());
+      Logger.trace("LinkSxx id: " + dp.getLinkSxx().getIdentifier() + " deviceId: " + dp.getLinkSxx().getDeviceId());
+      Logger.trace("LinkSxx serial: " + dp.getLinkSxx().getSerialNumber());
+      Logger.trace("LinkSxx version: " + dp.getLinkSxx().getVersion());
 
-      for (SxxBus b : this.linkSxx.getSxxBusses().values()) {
+      for (SxxBus b : dp.getLinkSxx().getSxxBusses().values()) {
         Logger.trace(b);
       }
     } else {
@@ -290,7 +282,7 @@ public class MarklinCS implements MarklinController {
   @Override
   public boolean isPower() {
     if (this.connected) {
-      CanMessage m = sendMessage(CanMessageFactory.querySystem(this.gfpUid));
+      CanMessage m = sendMessage(CanMessageFactory.querySystem(this.csUid));
 
       Logger.trace("Received " + m.getResponses().size() + " responses. RX: " + m.getResponse());
       SystemStatusParser ss = new SystemStatusParser(m);
@@ -313,7 +305,7 @@ public class MarklinCS implements MarklinController {
   public boolean power(boolean on
   ) {
     if (this.connected) {
-      SystemStatusParser ss = new SystemStatusParser(sendMessage(CanMessageFactory.systemStopGo(on, gfpUid)));
+      SystemStatusParser ss = new SystemStatusParser(sendMessage(CanMessageFactory.systemStopGo(on, csUid)));
       this.power = ss.isPower();
       return power;
     } else {
@@ -390,21 +382,21 @@ public class MarklinCS implements MarklinController {
 
   void getStatusDataConfig() {
     if (this.connected) {
-      CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(gfpUid, 0));
+      CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 0));
       StatusDataConfigParser sdcp = new StatusDataConfigParser(message);
 
       Logger.debug(sdcp);
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(gfpUid, 1));
+      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 1));
       channelData1 = new ChannelDataParser(message);
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(gfpUid, 2));
+      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 2));
       channelData2 = new ChannelDataParser(message);
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(gfpUid, 3));
+      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 3));
       channelData3 = new ChannelDataParser(message);
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(gfpUid, 4));
+      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 4));
       channelData4 = new ChannelDataParser(message);
 
       updateChannelStatuses();
@@ -413,19 +405,19 @@ public class MarklinCS implements MarklinController {
 
   void updateChannelStatuses() {
     if (this.connected) {
-      CanMessage message = sendMessage(CanMessageFactory.systemStatus(1, gfpUid));
+      CanMessage message = sendMessage(CanMessageFactory.systemStatus(1, csUid));
       channelData1.parseMessage(message);
       Logger.trace(channelData1);
 
-      message = sendMessage(CanMessageFactory.systemStatus(2, gfpUid));
+      message = sendMessage(CanMessageFactory.systemStatus(2, csUid));
       channelData2.parseMessage(message);
       Logger.trace(channelData2);
 
-      message = sendMessage(CanMessageFactory.systemStatus(3, gfpUid));
+      message = sendMessage(CanMessageFactory.systemStatus(3, csUid));
       channelData3.parseMessage(message);
       Logger.trace(channelData3);
 
-      message = sendMessage(CanMessageFactory.systemStatus(4, gfpUid));
+      message = sendMessage(CanMessageFactory.systemStatus(4, csUid));
       channelData4.parseMessage(message);
       Logger.trace(channelData1);
     }
@@ -470,7 +462,7 @@ public class MarklinCS implements MarklinController {
     if (this.power) {
       int la = getLocoAddres(address, decoderType);
       Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType + " Dir Mar: " + direction.getMarklinValue());
-      CanMessage message = sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.gfpUid));
+      CanMessage message = sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.csUid));
       DirectionMessageEvent dme = new DirectionMessageEvent(message);
       this.notifyDirectionEventListeners(dme);
     }
@@ -480,7 +472,7 @@ public class MarklinCS implements MarklinController {
   public void changeVelocity(int address, DecoderType decoderType, int speed) {
     if (this.power) {
       int la = getLocoAddres(address, decoderType);
-      CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.gfpUid));
+      CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.csUid));
       VelocityMessageEvent vme = new VelocityMessageEvent(message);
       this.notifyVelocityEventListeners(vme);
     }
@@ -491,7 +483,7 @@ public class MarklinCS implements MarklinController {
     if (this.power) {
       int value = flag ? MarklinCan.FUNCTION_ON : MarklinCan.FUNCTION_OFF;
       int la = getLocoAddres(address, decoderType);
-      CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.gfpUid));
+      CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.csUid));
 
       this.notifyFunctionEventListeners(new FunctionMessageEvent(message));
     }
@@ -520,10 +512,10 @@ public class MarklinCS implements MarklinController {
   }
 
   private void switchAccessoryOnOff(int address, AccessoryValue value) {
-    CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, true, this.gfpUid));
+    CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, true, this.csUid));
     //TODO: dynamic setting of time or messageQueue it
     wait200ms();
-    sendMessage(CanMessageFactory.switchAccessory(address, value, false, this.gfpUid));
+    sendMessage(CanMessageFactory.switchAccessory(address, value, false, this.csUid));
     //Notify listeners
     AccessoryMessageEvent ae = new AccessoryMessageEvent(message);
     notifyAccessoryEventListeners(ae);
@@ -549,7 +541,7 @@ public class MarklinCS implements MarklinController {
   }
 
   public List<LocomotiveBean> getLocomotivesViaCAN() {
-    CanMessage message = CanMessageFactory.requestConfigData(gfpUid, "loks");
+    CanMessage message = CanMessageFactory.requestConfigData(csUid, "loks");
     this.connection.sendCanMessage(message);
     String lokomotive = MessageInflator.inflateConfigDataStream(message);
 
@@ -592,7 +584,7 @@ public class MarklinCS implements MarklinController {
   }
 
   public List<AccessoryBean> getAccessoriesViaCan() {
-    CanMessage message = CanMessageFactory.requestConfigData(gfpUid, "mags");
+    CanMessage message = CanMessageFactory.requestConfigData(csUid, "mags");
     this.connection.sendCanMessage(message);
     String magnetartikel = MessageInflator.inflateConfigDataStream(message);
 
@@ -932,12 +924,12 @@ public class MarklinCS implements MarklinController {
       //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.sendJCSInfo();
       //SystemConfiguration data
-      //cs3.getStatusDataConfig();
-      //Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
-      //Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
-      //Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());
-      //Logger.debug("Channel 4: " + cs.channelData4.getChannel().getHumanValue() + " " + cs.channelData4.getChannel().getUnit());
-//            cs.getSystemStatus(1);
+      cs.getStatusDataConfig();
+      Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
+      Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
+      Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());
+      Logger.debug("Channel 4: " + cs.channelData4.getChannel().getHumanValue() + " " + cs.channelData4.getChannel().getUnit());
+      //cs.getSystemStatus(1);
 //
 //            Logger.debug("Channel 4....");
 //            cs.getSystemStatus(4);

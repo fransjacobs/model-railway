@@ -64,10 +64,12 @@ public class ChannelDataParser implements Serializable {
     CanMessage last = responses.get(lastIdx);
 
     if (last.getDlc() == CanMessage.DLC_6) {
-      packets = last.getData()[5];
+      packets = last.getDataByte(5);
+    } else if (last.getDlc() == CanMessage.DLC_5) {
+      //CS-2 lets assume the number packets to be the size
+      packets = responses.size() - 1;
     }
     Logger.trace("Responses: " + responses.size() + " lastIdx: " + lastIdx + " packets: " + packets);
-
     return packets;
   }
 
@@ -182,9 +184,9 @@ public class ChannelDataParser implements Serializable {
       CanMessage response = message.getResponse();
       byte[] data = response.getData();
 
-      int number = Byte.toUnsignedInt(data[5]);
+      int number = data[5];
 
-      int value = ByteUtil.toInt(new byte[]{data[6], data[7]});
+      int value = CanMessage.toInt(new byte[]{data[6], data[7]});
       Logger.trace("Channel Measurement response for channel " + number + " raw value: " + value);
 
       if (this.channel.getNumber() == number) {

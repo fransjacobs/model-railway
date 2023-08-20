@@ -18,7 +18,6 @@ package jcs.controller.cs;
 import org.junit.After;
 import org.junit.Before;
 import static org.junit.Assert.*;
-import org.junit.Test;
 import org.tinylog.Logger;
 
 /**
@@ -101,8 +100,8 @@ public class MarklinCSTest {
       }
       System.out.println("isPower");
       //The gfpUid should not be 0 when connected to a real CS..
-      int gfpuid = instance.getGfpUid();
-      assertTrue(gfpuid != 0);
+      int csUid = instance.getCsUid();
+      assertTrue(csUid != 0);
 
       boolean expResult = instance.power(true);
       pause(500);

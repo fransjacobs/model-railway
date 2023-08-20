@@ -47,9 +47,9 @@ public class StatusDataConfigParser implements Serializable {
     if (!responses.isEmpty()) {
       CanMessage r0 = responses.get(0);
       byte[] data1 = r0.getData();
-      int[] sn = new int[2];
+      byte[] sn = new byte[2];
       System.arraycopy(data1, 6, sn, 0, sn.length);
-      int serial = ((sn[0] & 0xFF) << 8) | (sn[1] & 0xFF);
+      int serial = (sn[0] << 8 | sn[1]);
       if (this.serialNumber == null) {
         this.serialNumber = serial + "";
       }
@@ -58,22 +58,22 @@ public class StatusDataConfigParser implements Serializable {
 
       if (responses.size() > 1) {
         byte[] data2 = responses.get(1).getData();
-        articleNumber = ByteUtil.bytesToString(data2);
+        articleNumber = CanMessage.toString(data2);
       }
 
       if (responses.size() > 2) {
         byte[] data3 = responses.get(2).getData();
-        deviceName = ByteUtil.bytesToString(data3);
+        deviceName = CanMessage.toString(data3);
       }
 
       if (responses.size() > 3) {
         byte[] data4 = responses.get(3).getData();
-        deviceName = deviceName + ByteUtil.bytesToString(data4);
+        deviceName = deviceName + CanMessage.toString(data4);
       }
 
       if (responses.size() > 3) {
         byte[] data5 = responses.get(4).getData();
-        deviceName = deviceName + ByteUtil.bytesToString(data5);
+        deviceName = deviceName + CanMessage.toString(data5);
         deviceName = deviceName.trim();
       }
 

@@ -42,7 +42,6 @@ import jcs.entities.LocomotiveBean;
 import jcs.trackservice.events.SensorListener;
 import org.tinylog.Logger;
 import jcs.controller.MarklinController;
-import jcs.controller.cs3.devices.LinkSxx;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
 import jcs.controller.cs3.events.DirectionMessageEvent;

@@ -15,7 +15,9 @@
  */
 package jcs.controller.cs;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import jcs.controller.cs.can.CanMessage;
 import jcs.util.ByteUtil;
@@ -29,19 +31,46 @@ public class Device {
 
   private int uid;
   private int deviceId;
-  private int version;
+  private String version;
   private String serialNumber;
   private String articleNumber;
   private String deviceName = "";
   private int measureChannels;
   private int configChannels;
 
-  public Device() {
+  //private String uid;
+  private String name;
+  private String typeName;
+  private String identifier;
+  //private Integer type;
+  //private String articleNumber;
+  //private String serial;
+  private Integer queryInterval;
+  //private String version;
+  private boolean present;
 
+  private final Map<String, MeasurementChannel> channels;
+  private final Map<Integer, SxxBus> sxxBusses;
+
+  public static final String MAIN = "MAIN";
+  public static final String PROG = "PROG";
+  public static final String VOLT = "VOLT";
+  public static final String TEMP = "TEMP";
+
+  public static final String BUS1 = "Länge Bus 1 (RJ45-1)";
+  public static final String BUS2 = "Länge Bus 2 (RJ45-2)";
+  public static final String BUS3 = "Länge Bus 3 (6-Polig)";
+
+  public Device() {
+    this(null);
   }
 
   public Device(CanMessage message) {
-    buildFromMessage(message);
+    channels = new HashMap<>();
+    sxxBusses = new HashMap<>();
+    if (message != null) {
+      buildFromMessage(message);
+    }
   }
 
   final void buildFromMessage(CanMessage message) {
@@ -65,7 +94,7 @@ public class Device {
       System.arraycopy(data, 6, deva, 0, deva.length);
 
       this.uid = resp.getDeviceUidNumberFromMessage();
-      this.version = CanMessage.toInt(vera);
+      this.version = "" + CanMessage.toInt(vera);
       this.deviceId = CanMessage.toInt(deva);
     }
   }
@@ -148,16 +177,28 @@ public class Device {
     this.deviceId = deviceId;
   }
 
-  public int getVersion() {
+  public String getVersion() {
     return version;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
   }
 
   public String getArticleNumber() {
     return articleNumber;
   }
 
+  public void setArticleNumber(String articleNumber) {
+    this.articleNumber = articleNumber;
+  }
+
   public String getDeviceName() {
     return deviceName;
+  }
+
+  public void setDeviceName(String deviceName) {
+    this.deviceName = deviceName;
   }
 
   public int getMeasureChannels() {
@@ -172,8 +213,52 @@ public class Device {
     return serialNumber;
   }
 
+  public void setSerialNumber(String serialNumber) {
+    this.serialNumber = serialNumber;
+  }
+
   public boolean isDataComplete() {
     return this.deviceName != null && this.articleNumber != null && this.deviceName.length() > 10 && this.articleNumber.length() > 4;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getTypeName() {
+    return typeName;
+  }
+
+  public void setTypeName(String typeName) {
+    this.typeName = typeName;
+  }
+
+  public String getIdentifier() {
+    return identifier;
+  }
+
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
+
+  public Integer getQueryInterval() {
+    return queryInterval;
+  }
+
+  public void setQueryInterval(Integer queryInterval) {
+    this.queryInterval = queryInterval;
+  }
+
+  public boolean isPresent() {
+    return present;
+  }
+
+  public void setPresent(boolean present) {
+    this.present = present;
   }
 
   public String getDevice() {
@@ -197,12 +282,83 @@ public class Device {
     };
   }
 
+  public void setChannel(MeasurementChannel channel) {
+    if (channel == null) {
+      return;
+    }
+    switch (channel.getName()) {
+      case MAIN ->
+        this.channels.put(MAIN, channel);
+      case PROG ->
+        this.channels.put(PROG, channel);
+      case VOLT ->
+        this.channels.put(VOLT, channel);
+      case TEMP ->
+        this.channels.put(TEMP, channel);
+      default -> {
+      }
+    }
+  }
+
+  public void addSxxBus(SxxBus bus) {
+    if (bus == null) {
+      return;
+    }
+    switch (bus.getName()) {
+      case BUS1 ->
+        this.sxxBusses.put(1, bus);
+      case BUS2 ->
+        this.sxxBusses.put(2, bus);
+      case BUS3 ->
+        this.sxxBusses.put(3, bus);
+      default -> {
+      }
+    }
+    //do nothing;
+  }
+
+  public Map<Integer, SxxBus> getSxxBusses() {
+    return this.sxxBusses;
+  }
+
+  public int getBusLength(Integer busNr) {
+    if (busNr == 0) {
+      //the LinkSxx self is 1
+      return 1;
+    } else if (this.sxxBusses.containsKey(busNr)) {
+      SxxBus bus = sxxBusses.get(busNr);
+      if (bus.getLength() == null) {
+        return 0;
+      } else {
+        return bus.getLength();
+      }
+    } else {
+      return 0;
+    }
+  }
+
+  public Integer getContactIdOffset(Integer busNr) {
+    if (busNr == 0) {
+      //the LinkSxx self is 0
+      return 0;
+    } else if (this.sxxBusses.containsKey(busNr)) {
+      SxxBus bus = sxxBusses.get(busNr);
+      if (bus.getLength() == null) {
+        return 0;
+      } else {
+        return bus.getContactIdOffset();
+      }
+    } else {
+      return 0;
+    }
+  }
+
   @Override
   public int hashCode() {
     int hash = 3;
     hash = 97 * hash + this.uid;
     hash = 97 * hash + this.deviceId;
-    hash = 97 * hash + this.version;
+    hash = 97 * hash + Objects.hashCode(this.version);
     hash = 97 * hash + Objects.hashCode(this.serialNumber);
     hash = 97 * hash + Objects.hashCode(this.articleNumber);
     hash = 97 * hash + Objects.hashCode(this.deviceName);
@@ -229,7 +385,7 @@ public class Device {
     if (this.deviceId != other.deviceId) {
       return false;
     }
-    if (this.version != other.version) {
+    if (!Objects.equals(this.version, other.version)) {
       return false;
     }
     if (this.measureChannels != other.measureChannels) {
@@ -249,7 +405,7 @@ public class Device {
 
   @Override
   public String toString() {
-    return "Device{articleNumber=" + articleNumber + ", deviceName=" + (!"".equals(deviceName)?deviceName:getDevice()) + ", uid=" + uid + ", serialNumber=" + serialNumber + ", version=" + version + ", deviceId=" + deviceId + ", measureChannels=" + measureChannels + ", configChannels=" + configChannels + "}";
+    return "Device{articleNumber=" + articleNumber + ", deviceName=" + (!"".equals(deviceName) ? deviceName : getDevice()) + ", uid=" + uid + ", serialNumber=" + serialNumber + ", version=" + version + ", deviceId=" + deviceId + ", measureChannels=" + measureChannels + ", configChannels=" + configChannels + "}";
   }
 
 }
