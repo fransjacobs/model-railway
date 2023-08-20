@@ -172,7 +172,8 @@ public class MarklinCS implements MarklinController {
           getMembers();
 
           now = System.currentTimeMillis();
-          timeout = now + 6000L;
+          //Wait max 2 cycles from the CS itself
+          timeout = now + 13000L;
           //need to wait until devices are queried...
           String devName = null;
           while (devName == null && now < timeout) {
@@ -183,6 +184,7 @@ public class MarklinCS implements MarklinController {
                 }
               }
             }
+            now = System.currentTimeMillis();
           }
 
           Logger.trace("Found " + this.devices.size() + " devices");
@@ -200,9 +202,10 @@ public class MarklinCS implements MarklinController {
             Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
             JCS.logProgress("Connected with " + this.mainDevice.getDeviceName());
 
-            if (this.isCS3()) {
-              getAppDevicesCs3();
-            }
+            //Is this still needed?
+            //if (this.isCS3()) {
+            //  getAppDevicesCs3();
+            //}
 
             this.power = this.isPower();
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
@@ -235,7 +238,7 @@ public class MarklinCS implements MarklinController {
       DeviceJSONParser dp = new DeviceJSONParser();
       dp.parseDevices(deviceJSON);
 
-      //TODO update the devices ...
+      //TODO update the devices ?...
       //this.csUid = Integer.parseInt(dp.getCs3().getUid().substring(2), 16);
       //this.csName = dp.getCs3().getName();
       //this.gfp = dp.getGfp();
@@ -244,7 +247,6 @@ public class MarklinCS implements MarklinController {
       String linkSxxUid = ByteUtil.toHexString(dp.getLinkSxx().getUid()); //   Integer.parseInt(this.linkSxx.getUid().substring(2), 16);
 
       Logger.trace("CS3 uid: " + dp.getCs3().getUid());
-      Logger.trace("CS3: " + dp.getCs3().getDeviceName());
       Logger.trace("GFP uid: " + dp.getGfp().getUid());
       Logger.trace("GFP Article: " + dp.getGfp().getArticleNumber());
       Logger.trace("GFP version: " + dp.getGfp().getVersion());
@@ -326,7 +328,9 @@ public class MarklinCS implements MarklinController {
         connected = false;
       }
 
-      executor.shutdown();
+      if (executor != null) {
+        executor.shutdown();
+      }
       executor = null;
       connection = null;
 

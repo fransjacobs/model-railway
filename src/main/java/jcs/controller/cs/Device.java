@@ -24,8 +24,7 @@ import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
- * A Device is a Component which lives on the CAN Bus It can be a Central Station or GFP or Link-S88, etc
- *
+ * A Device is a Component which lives on the CAN Bus. It can be a Central Station or GFP or Link-S88, etc Devices respond to the Ping Request.
  */
 public class Device {
 
@@ -38,15 +37,10 @@ public class Device {
   private int measureChannels;
   private int configChannels;
 
-  //private String uid;
   private String name;
   private String typeName;
   private String identifier;
-  //private Integer type;
-  //private String articleNumber;
-  //private String serial;
   private Integer queryInterval;
-  //private String version;
   private boolean present;
 
   private final Map<String, MeasurementChannel> channels;
@@ -276,7 +270,7 @@ public class Device {
       case 0xffe0 ->
         "Wireless Devices";
       case 0xffff ->
-        "CS2-GUI (Master)";
+        "CS2/3-GUI (Master)";
       default ->
         "Unknown " + this.deviceName;
     };
