@@ -17,9 +17,9 @@ package jcs.controller.cs.net;
 
 import java.net.InetAddress;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.FeedbackEventListener;
+import jcs.controller.cs.events.SystemEventListener;
 
 /**
  *
@@ -35,12 +35,14 @@ public interface CSConnection extends AutoCloseable {
 
   CanMessage sendCanMessage(CanMessage message);
 
-  void setCanMessageListener(CanMessageListener listener);
+  //void setCanMessageListener(CanMessageListener listener);
 
   void setCanPingRequestListener(CanPingListener listener);
   
   void setFeedbackEventListener(FeedbackEventListener listener);
 
+  void setSystemEventListener(SystemEventListener systemEventListener);
+  
   InetAddress getControllerAddress();
 
   boolean isConnected();

@@ -30,6 +30,7 @@ import jcs.controller.cs3.events.CanMessageListener;
 import org.tinylog.Logger;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.FeedbackEventListener;
+import jcs.controller.cs.events.SystemEventListener;
 
 /**
  *
@@ -87,11 +88,10 @@ class UDPConnection implements CSConnection {
     return response;
   }
 
-  @Override
-  public void setCanMessageListener(CanMessageListener listener) {
-    this.listeners.add(listener);
-  }
-
+//  @Override
+//  public void setCanMessageListener(CanMessageListener listener) {
+//    this.listeners.add(listener);
+//  }
   @Override
   public void setCanPingRequestListener(CanPingListener listener) {
     throw new UnsupportedOperationException("Not supported");
@@ -99,6 +99,11 @@ class UDPConnection implements CSConnection {
 
   @Override
   public void setFeedbackEventListener(FeedbackEventListener listener) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void setSystemEventListener(SystemEventListener systemEventListener) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

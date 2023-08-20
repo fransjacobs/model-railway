@@ -118,10 +118,6 @@ public class JCSFrame extends JFrame implements UICallback {
       if (ControllerFactory.getController().isConnected()) {
         this.locomotivesPanel.loadLocomotives();
         setControllerProperties();
-        this.connectButton.setSelected(true);
-        this.powerButton.setSelected(ControllerFactory.getController().isPowerOn());
-      } else {
-        this.connectButton.setSelected(false);
       }
 
       //Show the default panel
@@ -214,10 +210,13 @@ public class JCSFrame extends JFrame implements UICallback {
         this.controllerCatalogNumberLbl.setText(ControllerFactory.getController().getControllerArticleNumber());
         this.controllerSerialNumberLbl.setText(ControllerFactory.getController().getControllerSerialNumber());
         this.controllerHostNameLbl.setText("CS-" + ControllerFactory.getController().getControllerSerialNumber());
+        this.powerButton.setSelected(ControllerFactory.getController().isPowerOn());
       } else {
         this.connectButton.setSelected(false);
         this.controllerHostNameLbl.setText("Not Connected");
+        this.powerButton.setSelected(false);
       }
+
     }
   }
 

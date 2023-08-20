@@ -23,11 +23,11 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.CanMessageFactory;
 import jcs.controller.cs3.events.CanMessageListener;
 import org.tinylog.Logger;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.FeedbackEventListener;
+import jcs.controller.cs.events.SystemEventListener;
 
 /**
  *
@@ -143,12 +143,12 @@ class TCPConnection implements CSConnection {
     return message;
   }
 
-  @Override
-  public void setCanMessageListener(CanMessageListener listener) {
-    if (messageReceiver != null) {
-      this.messageReceiver.setCanMessageListener(listener);
-    }
-  }
+//  @Override
+//  public void setCanMessageListener(CanMessageListener listener) {
+//    if (messageReceiver != null) {
+//      this.messageReceiver.setCanMessageListener(listener);
+//    }
+//  }
 
   @Override
   public void setCanPingRequestListener(CanPingListener pingListener) {
@@ -161,6 +161,13 @@ class TCPConnection implements CSConnection {
   public void setFeedbackEventListener(FeedbackEventListener feedbackListener) {
     if (messageReceiver != null) {
       this.messageReceiver.setFeedbackEventListener(feedbackListener);
+    }
+  }
+
+  @Override
+  public void setSystemEventListener(SystemEventListener systemEventListener) {
+    if (messageReceiver != null) {
+      this.messageReceiver.setSystemEventListener(systemEventListener);
     }
   }
 
@@ -195,6 +202,8 @@ class TCPConnection implements CSConnection {
 
     private CanPingListener pingListener;
     private FeedbackEventListener feedbackListener;
+    private SystemEventListener systemEventListener;
+
     private CanMessageListener listener;
 
     public ClientMessageReceiver(Socket socket) {
@@ -217,6 +226,10 @@ class TCPConnection implements CSConnection {
 
     void setFeedbackEventListener(FeedbackEventListener feedbackListener) {
       this.feedbackListener = feedbackListener;
+    }
+
+    void setSystemEventListener(SystemEventListener systemEventListener) {
+      this.systemEventListener = systemEventListener;
     }
 
     synchronized void quit() {
@@ -272,6 +285,8 @@ class TCPConnection implements CSConnection {
             this.pingListener.onCanStatusConfigRequest(rx);
           } else if (rx.isSensorResponse() && feedbackListener != null) {
             this.feedbackListener.onFeedbackResponseEvent(rx);
+          } else if (rx.isSystemMessage() && systemEventListener != null) {
+            this.systemEventListener.onSystemEvent(rx);
           } else {
             Logger.trace("#RX: " + rx);
           }
@@ -290,31 +305,5 @@ class TCPConnection implements CSConnection {
         Logger.error(ex);
       }
     }
-  }
-
-  public static void main(String[] a) throws Exception {
-    boolean useCS2 = false;
-    int cs2Uid = 0x43539a40;
-    int cs3Uid = 0x6373458c;
-
-    TCPConnection cs2 = new TCPConnection(InetAddress.getByName("192.168.178.87"));
-    TCPConnection cs3 = new TCPConnection(InetAddress.getByName("192.168.178.180"));
-
-    int uid;
-    TCPConnection activeConnection;
-    if (useCS2) {
-      activeConnection = cs2;
-      uid = cs2Uid;
-    } else {
-      activeConnection = cs3;
-      uid = cs3Uid;
-    }
-
-    //CanMessage msgPing = CanMessageFactory.getMembersPing();
-    //activeConnection.sendCanMessage(msgPing);
-    //CanMessage msgStatDataConfig = CanMessageFactory.statusDataConfig(uid, 0);
-    //activeConnection.sendCanMessage(msgStatDataConfig);
-    CanMessage msgConfigDataLoks = CanMessageFactory.requestConfigData(uid, "loks");
-    activeConnection.sendCanMessage(msgConfigDataLoks);
   }
 }

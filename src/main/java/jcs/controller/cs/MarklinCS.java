@@ -65,6 +65,7 @@ import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.FeedbackEventListener;
+import jcs.controller.cs.events.SystemEventListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.util.ByteUtil;
 
@@ -158,14 +159,15 @@ public class MarklinCS implements MarklinController {
         if (connected) {
           //Prepare the observers (listeners) whic need to react on certain messages
           //from the Central Station
-          CanMessageEventListener messageListener = new CanMessageEventListener(this);
+          //CanMessageEventListener messageListener = new CanMessageEventListener(this);
 
           CanPingListener pingListener = new CanPingRequestMessageListener(this);
           CanFeedbackEventListener feedbackListener = new CanFeedbackEventListener(this);
-
-          this.connection.setCanMessageListener(messageListener);
+          CanSystemEventListener systemEventListener = new CanSystemEventListener(this);
+          //this.connection.setCanMessageListener(messageListener);
           this.connection.setCanPingRequestListener(pingListener);
           this.connection.setFeedbackEventListener(feedbackListener);
+          this.connection.setSystemEventListener(systemEventListener);
 
           JCS.logProgress("Obtaining Device information...");
           getMembers();
@@ -205,7 +207,6 @@ public class MarklinCS implements MarklinController {
             //if (this.isCS3()) {
             //  getAppDevicesCs3();
             //}
-
             this.power = this.isPower();
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
 
@@ -303,8 +304,7 @@ public class MarklinCS implements MarklinController {
    * @return true the Track power is On else Off
    */
   @Override
-  public boolean power(boolean on
-  ) {
+  public boolean power(boolean on) {
     if (this.connected) {
       SystemStatusParser ss = new SystemStatusParser(sendMessage(CanMessageFactory.systemStopGo(on, csUid)));
       this.power = ss.isPower();
@@ -690,6 +690,7 @@ public class MarklinCS implements MarklinController {
   }
 
   private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
+    this.power = powerEvent.isPower();
     for (PowerEventListener listener : powerEventListeners) {
       listener.onPowerChange(powerEvent);
     }
@@ -790,25 +791,24 @@ public class MarklinCS implements MarklinController {
           controller.notifyVelocityEventListeners(vme);
         }
 
-        case MarklinCan.SYSTEM_COMMAND_RESP -> {
-          switch (subcmd) {
-            case MarklinCan.STOP_SUB_CMD -> {
-              PowerEvent spe = new PowerEvent(msg);
-              controller.notifyPowerEventListeners(spe);
-            }
-            case MarklinCan.GO_SUB_CMD -> {
-              PowerEvent gpe = new PowerEvent(msg);
-              controller.notifyPowerEventListeners(gpe);
-            }
-            case MarklinCan.LOC_STOP_SUB_CMD -> {
-              VelocityMessageEvent vmeh = new VelocityMessageEvent(msg);
-              controller.notifyVelocityEventListeners(vmeh);
-            }
-            default -> {
-            }
-          }
-        }
-
+//        case MarklinCan.SYSTEM_COMMAND_RESP -> {
+//          switch (subcmd) {
+//            case MarklinCan.STOP_SUB_CMD -> {
+//              PowerEvent spe = new PowerEvent(msg);
+//              controller.notifyPowerEventListeners(spe);
+//            }
+//            case MarklinCan.GO_SUB_CMD -> {
+//              PowerEvent gpe = new PowerEvent(msg);
+//              controller.notifyPowerEventListeners(gpe);
+//            }
+//            case MarklinCan.LOC_STOP_SUB_CMD -> {
+//              VelocityMessageEvent vmeh = new VelocityMessageEvent(msg);
+//              controller.notifyVelocityEventListeners(vmeh);
+//            }
+//            default -> {
+//            }
+//          }
+//        }
         default -> {
           //Logger.trace("Message: " + msg);
 
@@ -851,11 +851,10 @@ public class MarklinCS implements MarklinController {
     }
 
     @Override
-    public void onCanPingRequest(final CanMessage message
-    ) {
+    public void onCanPingRequest(final CanMessage message) {
       int cmd = message.getCommand();
       int dlc = message.getDlc();
-      int uid = message.getDeviceUidNumberFromMessage();
+      //int uid = message.getDeviceUidNumberFromMessage();
       switch (cmd) {
         case MarklinCan.PING_REQ -> {
           if (MarklinCan.DLC_0 == dlc) {
@@ -871,7 +870,7 @@ public class MarklinCS implements MarklinController {
     ) {
       int cmd = message.getCommand();
       int dlc = message.getDlc();
-      int uid = message.getDeviceUidNumberFromMessage();
+      //int uid = message.getDeviceUidNumberFromMessage();
       switch (cmd) {
         case MarklinCan.PING_RESP -> {
           if (MarklinCan.DLC_8 == dlc) {
@@ -896,6 +895,51 @@ public class MarklinCS implements MarklinController {
       }
     }
   }
+
+  private class CanSystemEventListener implements SystemEventListener {
+
+    private final MarklinCS controller;
+
+    CanSystemEventListener(MarklinCS controller) {
+      this.controller = controller;
+    }
+
+    @Override
+    public void onSystemEvent(CanMessage message) {
+      int cmd = message.getCommand();
+      int subcmd = message.getSubCommand();
+
+      switch (cmd) {
+        case CanMessage.SYSTEM_COMMAND_RESP -> {
+          switch (subcmd) {
+            case CanMessage.STOP_SUB_CMD -> {
+              PowerEvent spe = new PowerEvent(message);
+              controller.notifyPowerEventListeners(spe);
+            }
+            case CanMessage.GO_SUB_CMD -> {
+              PowerEvent gpe = new PowerEvent(message);
+              controller.notifyPowerEventListeners(gpe);
+            }
+            case CanMessage.HALT_SUB_CMD -> {
+              PowerEvent gpe = new PowerEvent(message);
+              controller.notifyPowerEventListeners(gpe);
+            }
+            case CanMessage.LOC_STOP_SUB_CMD -> {
+              PowerEvent gpe = new PowerEvent(message);
+              controller.notifyPowerEventListeners(gpe);
+            }
+            case CanMessage.OVERLOAD_SUB_CMD -> {
+              PowerEvent gpe = new PowerEvent(message);
+              controller.notifyPowerEventListeners(gpe);
+            }
+            default -> {
+            }
+          }
+        }
+      }
+    }
+  }
+//  
 
   public static void main(String[] a) {
     MarklinCS cs = new MarklinCS(false);
@@ -927,11 +971,11 @@ public class MarklinCS implements MarklinController {
       //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.sendJCSInfo();
       //SystemConfiguration data
-      cs.getStatusDataConfig();
-      Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
-      Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
-      Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());
-      Logger.debug("Channel 4: " + cs.channelData4.getChannel().getHumanValue() + " " + cs.channelData4.getChannel().getUnit());
+//      cs.getStatusDataConfig();
+//      Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
+//      Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
+//      Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());
+//      Logger.debug("Channel 4: " + cs.channelData4.getChannel().getHumanValue() + " " + cs.channelData4.getChannel().getUnit());
       //cs.getSystemStatus(1);
 //
 //            Logger.debug("Channel 4....");
@@ -987,7 +1031,7 @@ public class MarklinCS implements MarklinController {
     //cs3.pause(500L);
     //Logger.debug("Wait for 1m");
     //cs.pause(1000 * 60 * 1);
-    cs.pause(1000);
+    cs.pause(20000);
     cs.disconnect();
     cs.pause(100L);
     Logger.debug("DONE");

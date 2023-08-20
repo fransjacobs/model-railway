@@ -193,15 +193,10 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public int getSubCommand() {
-//    return this.message[SUB_CMD_IDX];
     return data[SUB_CMD_IDX];
   }
 
   public byte[] getHash() {
-//    int[] h = new int[HASH_SIZE];
-//    System.arraycopy(message, HASH_IDX, h, 0, HASH_SIZE);
-//    return h;
-
     return to2Bytes(this.hash);
   }
 
@@ -259,6 +254,11 @@ public class CanMessage implements MarklinCan, Serializable {
   public boolean isSwitchingMessage() {
     int cmd = getCommand();
     return cmd == ACCESSORY_SWITCHING || cmd == ACCESSORY_SWITCHING_RESP;
+  }
+
+  public boolean isSystemMessage() {
+    int cmd = getCommand();
+    return cmd == SYSTEM_COMMAND || cmd == SYSTEM_COMMAND_RESP;
   }
 
   public boolean isUpdateMessage() {
