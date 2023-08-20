@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.trackservice;
+package jcs.controller;
 
 import java.beans.PropertyChangeListener;
 import jcs.controller.cs3.events.CanMessageListener;
@@ -34,7 +34,7 @@ import jcs.trackservice.events.VelocityListener;
  *
  * @author frans
  */
-public interface TrackController {
+public interface Controller {
 
   void switchPower(boolean on);
 
@@ -48,7 +48,7 @@ public interface TrackController {
 
   void addPowerEventListener(PowerEventListener listener);
 
-  void removePowerEventListener(PowerEventListener listener);
+  //void removePowerEventListener(PowerEventListener listener);
 
   //Image getFunctionImage(String imageName);
   void changeDirection(Direction direction, LocomotiveBean locomotive);
@@ -69,15 +69,15 @@ public interface TrackController {
 
   void addFunctionListener(FunctionListener listener);
 
-  void removeFunctionListener(FunctionListener listener);
+  //void removeFunctionListener(FunctionListener listener);
 
   void addDirectionListener(DirectionListener listener);
 
-  void removeDirectionListener(DirectionListener listener);
+  //void removeDirectionListener(DirectionListener listener);
 
   void addVelocityListener(VelocityListener listener);
 
-  public void removeVelocityListener(VelocityListener listener);
+  //void removeVelocityListener(VelocityListener listener);
 
   String getControllerName();
 
@@ -85,11 +85,10 @@ public interface TrackController {
 
   String getControllerArticleNumber();
 
-  //LinkSxx getLinkSxx();
-
+  
   void addMessageListener(CanMessageListener listener);
 
-  void removeMessageListener(CanMessageListener listener);
+  //void removeMessageListener(CanMessageListener listener);
 
   void synchronizeLocomotivesWithController(PropertyChangeListener progressListener);
 

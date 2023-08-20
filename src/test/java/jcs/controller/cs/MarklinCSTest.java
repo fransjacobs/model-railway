@@ -28,6 +28,8 @@ public class MarklinCSTest {
 
   private static MarklinCS instance;
   private static boolean csAvailable = false;
+  
+  //controller.skip.init
 
   public MarklinCSTest() {
     try {
@@ -41,7 +43,7 @@ public class MarklinCSTest {
         }
       }
     } catch (Exception e) {
-      Logger.warn("CS 3 not available skipping tests");
+      Logger.warn("CS not available skipping tests");
     }
   }
 

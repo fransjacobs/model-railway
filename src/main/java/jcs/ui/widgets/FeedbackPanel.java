@@ -28,7 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import jcs.entities.SensorBean;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.SensorListener;
 
 /**
@@ -117,46 +117,46 @@ public class FeedbackPanel extends JPanel {
     }
 
     public void registerSensorListeners() {
-        if (TrackControllerFactory.getTrackController() != null) {
+        if (ControllerFactory.getController() != null) {
             initSensorListeners();
 
-            TrackControllerFactory.getTrackController().addSensorListener(p1);
-            TrackControllerFactory.getTrackController().addSensorListener(p2);
-            TrackControllerFactory.getTrackController().addSensorListener(p3);
-            TrackControllerFactory.getTrackController().addSensorListener(p4);
-            TrackControllerFactory.getTrackController().addSensorListener(p5);
-            TrackControllerFactory.getTrackController().addSensorListener(p6);
-            TrackControllerFactory.getTrackController().addSensorListener(p7);
-            TrackControllerFactory.getTrackController().addSensorListener(p8);
-            TrackControllerFactory.getTrackController().addSensorListener(p9);
-            TrackControllerFactory.getTrackController().addSensorListener(p10);
-            TrackControllerFactory.getTrackController().addSensorListener(p11);
-            TrackControllerFactory.getTrackController().addSensorListener(p12);
-            TrackControllerFactory.getTrackController().addSensorListener(p13);
-            TrackControllerFactory.getTrackController().addSensorListener(p14);
-            TrackControllerFactory.getTrackController().addSensorListener(p15);
-            TrackControllerFactory.getTrackController().addSensorListener(p16);
+            ControllerFactory.getController().addSensorListener(p1);
+            ControllerFactory.getController().addSensorListener(p2);
+            ControllerFactory.getController().addSensorListener(p3);
+            ControllerFactory.getController().addSensorListener(p4);
+            ControllerFactory.getController().addSensorListener(p5);
+            ControllerFactory.getController().addSensorListener(p6);
+            ControllerFactory.getController().addSensorListener(p7);
+            ControllerFactory.getController().addSensorListener(p8);
+            ControllerFactory.getController().addSensorListener(p9);
+            ControllerFactory.getController().addSensorListener(p10);
+            ControllerFactory.getController().addSensorListener(p11);
+            ControllerFactory.getController().addSensorListener(p12);
+            ControllerFactory.getController().addSensorListener(p13);
+            ControllerFactory.getController().addSensorListener(p14);
+            ControllerFactory.getController().addSensorListener(p15);
+            ControllerFactory.getController().addSensorListener(p16);
         }
     }
 
     public void removeSensorListeners() {
-        if (TrackControllerFactory.getTrackController() != null) {
-            TrackControllerFactory.getTrackController().removeSensorListener(p1);
-            TrackControllerFactory.getTrackController().removeSensorListener(p2);
-            TrackControllerFactory.getTrackController().removeSensorListener(p3);
-            TrackControllerFactory.getTrackController().removeSensorListener(p4);
-            TrackControllerFactory.getTrackController().removeSensorListener(p5);
-            TrackControllerFactory.getTrackController().removeSensorListener(p6);
-            TrackControllerFactory.getTrackController().removeSensorListener(p7);
-            TrackControllerFactory.getTrackController().removeSensorListener(p8);
-            TrackControllerFactory.getTrackController().removeSensorListener(p9);
-            TrackControllerFactory.getTrackController().removeSensorListener(p10);
-            TrackControllerFactory.getTrackController().removeSensorListener(p11);
-            TrackControllerFactory.getTrackController().removeSensorListener(p12);
-            TrackControllerFactory.getTrackController().removeSensorListener(p13);
-            TrackControllerFactory.getTrackController().removeSensorListener(p14);
-            TrackControllerFactory.getTrackController().removeSensorListener(p15);
-            TrackControllerFactory.getTrackController().removeSensorListener(p16);
+        if (ControllerFactory.getController() != null) {
+            ControllerFactory.getController().removeSensorListener(p1);
+            ControllerFactory.getController().removeSensorListener(p2);
+            ControllerFactory.getController().removeSensorListener(p3);
+            ControllerFactory.getController().removeSensorListener(p4);
+            ControllerFactory.getController().removeSensorListener(p5);
+            ControllerFactory.getController().removeSensorListener(p6);
+            ControllerFactory.getController().removeSensorListener(p7);
+            ControllerFactory.getController().removeSensorListener(p8);
+            ControllerFactory.getController().removeSensorListener(p9);
+            ControllerFactory.getController().removeSensorListener(p10);
+            ControllerFactory.getController().removeSensorListener(p11);
+            ControllerFactory.getController().removeSensorListener(p12);
+            ControllerFactory.getController().removeSensorListener(p13);
+            ControllerFactory.getController().removeSensorListener(p14);
+            ControllerFactory.getController().removeSensorListener(p15);
+            ControllerFactory.getController().removeSensorListener(p16);
 
             this.p1 = null;
             this.p2 = null;

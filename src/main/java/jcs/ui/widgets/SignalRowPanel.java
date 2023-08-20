@@ -29,7 +29,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;
 
@@ -273,7 +273,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
     }
 
     private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
-        if (TrackControllerFactory.getTrackController() != null) {
+        if (ControllerFactory.getController() != null) {
             //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
         }
     }
@@ -317,7 +317,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
             SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
             f.add(signalRowPanel);
 
-            TrackControllerFactory.getTrackController().addAccessoryListener(signalRowPanel);
+            ControllerFactory.getController().addAccessoryListener(signalRowPanel);
         }
 
         f.pack();

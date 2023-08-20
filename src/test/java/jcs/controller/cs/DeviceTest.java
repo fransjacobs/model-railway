@@ -86,7 +86,7 @@ public class DeviceTest {
     System.out.println(instance);
 
     assertEquals(1129552448, instance.getUid());
-    assertEquals(853, instance.getVersion());
+    assertEquals("853", instance.getVersion());
     assertEquals(0, instance.getDeviceId());
   }
 
@@ -99,7 +99,7 @@ public class DeviceTest {
     System.out.println(instance);
 
     assertEquals(1129552449, instance.getUid());
-    assertEquals(1027, instance.getVersion());
+    assertEquals("1027", instance.getVersion());
     assertEquals(65535, instance.getDeviceId());
   }
 

@@ -20,7 +20,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.layout.tiles.Signal;
 import org.tinylog.Logger;
 
@@ -68,7 +68,7 @@ public class SignalDialog extends javax.swing.JDialog {
 
       this.accessoryComboBoxModel.setSelectedItem(ab);
       //Unregister is properties might change
-      TrackControllerFactory.getTrackController().removeAccessoryListener(signal);
+      ControllerFactory.getController().removeAccessoryListener(signal);
     }
   }
 
@@ -160,7 +160,7 @@ public class SignalDialog extends javax.swing.JDialog {
       if (this.signal != null && this.signal.getAccessoryBean() != null) {
         if (this.signal.getAccessoryBean().getName() != null) {
           PersistenceFactory.getService().persist((signal));
-          TrackControllerFactory.getTrackController().addAccessoryListener(signal);
+          ControllerFactory.getController().addAccessoryListener(signal);
         } else {
           this.signal.setAccessoryBean(null);
           PersistenceFactory.getService().persist((signal));

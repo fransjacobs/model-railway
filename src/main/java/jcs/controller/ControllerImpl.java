@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.trackservice;
+package jcs.controller;
 
+import jcs.controller.cs.MarklinController;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -24,12 +25,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import javax.imageio.ImageIO;
 import jcs.JCS;
 import jcs.controller.cs3.events.SensorMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
-import jcs.entities.JCSPropertyBean;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
@@ -41,7 +40,6 @@ import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.trackservice.events.SensorListener;
 import org.tinylog.Logger;
-import jcs.controller.MarklinController;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.controller.cs3.events.AccessoryMessageEventListener;
 import jcs.controller.cs3.events.DirectionMessageEvent;
@@ -56,9 +54,13 @@ import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
 import jcs.trackservice.events.VelocityListener;
 
-public class TrackControllerImpl implements TrackController {
+/**
+ * The Controller Implementation is the implementation of the Controller Interface. Its purpose is to serve as an abstraction layer for Controllers so that in the future more Controllers can be
+ * implemented
+ */
+public class ControllerImpl implements Controller {
 
-  private MarklinController controllerService;
+  private MarklinController vendorController;
 
   private final List<SensorListener> sensorListeners;
   private final List<AccessoryListener> accessoryListeners;
@@ -67,81 +69,67 @@ public class TrackControllerImpl implements TrackController {
   private final List<DirectionListener> directionListeners;
   private final List<VelocityListener> velocityListeners;
 
-  private final Properties jcsProperties;
-
-  public TrackControllerImpl() {
-    this(true);
+  public ControllerImpl() {
+    this("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true")));
   }
 
-  private TrackControllerImpl(boolean aquireControllerService) {
-    jcsProperties = new Properties();
-
+  private ControllerImpl(boolean autoConnectController) {
     sensorListeners = new LinkedList<>();
     accessoryListeners = new LinkedList<>();
     functionListeners = new LinkedList<>();
     directionListeners = new LinkedList<>();
     velocityListeners = new LinkedList<>();
 
-    retrieveJCSProperties();
-
-    if (aquireControllerService) {
-      if (System.getProperty("trackServiceSkipControllerInit", "false").equals("true")) {
-        Logger.info("Skipping controller initialization...");
-      } else {
-        connect();
-        Logger.trace(controllerService != null ? "Aquired " + controllerService.getClass().getSimpleName() : "Could not aquire a Controller Service!");
-      }
+    if (autoConnectController) {
+      connect();
+      Logger.trace(vendorController != null ? "Aquired " + vendorController.getClass().getSimpleName() : "Could not aquire a Vendor Controller Service! " + (vendorController.isConnected() ? "Connected" : "NOT Connected"));
     }
-  }
-
-  private void retrieveJCSProperties() {
-    JCS.logProgress("Obtain properties from Persistent store");
-    List<JCSPropertyBean> props = PersistenceFactory.getService().getProperties();
-    props.forEach(p -> {
-      jcsProperties.setProperty(p.getKey(), p.getValue());
-      System.setProperty(p.getKey(), p.getValue());
-    });
   }
 
   @Override
   public final boolean connect() {
-    JCS.logProgress("Connecting to Central Station");
-    String controllerImpl = System.getProperty("CS3");
+    if (vendorController != null && vendorController.isConnected()) {
+      return vendorController.isConnected();
+    }
+    JCS.logProgress("Connecting to Vendor Controller");
+    String controllerImplClassName = System.getProperty("vendorController");
 
-    if (controllerService == null) {
+    if (vendorController == null) {
       try {
-        this.controllerService = (MarklinController) Class.forName(controllerImpl).getDeclaredConstructor().newInstance();
+        //TODO make the interface more abstract..
+        this.vendorController = (MarklinController) Class.forName(controllerImplClassName).getDeclaredConstructor().newInstance();
       } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-        Logger.error("Can't instantiate a '" + controllerImpl + "' " + ex.getMessage());
+        Logger.error("Can't instantiate a '" + controllerImplClassName + "' " + ex.getMessage());
       }
     }
 
-    if (controllerService != null) {
-      this.controllerService.addSensorMessageListener(new SensorMessageEventListener(this));
-      this.controllerService.addAccessoryEventListener(new AccessoryMessageListener(this));
-      this.controllerService.addFunctionMessageEventListener(new FunctionMessageListener(this));
-      this.controllerService.addDirectionMessageEventListener(new DirectionMessageListener(this));
-      this.controllerService.addVelocityMessageEventListener(new VelocityMessageListener(this));
+    if (vendorController != null && vendorController.connect()) {
+      this.vendorController.addSensorMessageListener(new SensorMessageEventListener(this));
+      this.vendorController.addAccessoryEventListener(new AccessoryMessageListener(this));
+      this.vendorController.addFunctionMessageEventListener(new FunctionMessageListener(this));
+      this.vendorController.addDirectionMessageEventListener(new DirectionMessageListener(this));
+      this.vendorController.addVelocityMessageEventListener(new VelocityMessageListener(this));
     }
 
+    //TODO implement get the day end i.e. the current stata of all Objects on track
     JCS.logProgress("Obtaining the last state of all items...");
 
-    return this.controllerService != null && this.controllerService.isConnected();
+    return this.vendorController != null && this.vendorController.isConnected();
   }
 
   @Override
   public boolean isConnected() {
-    return this.controllerService.isConnected();
+    return this.vendorController.isConnected();
   }
 
   @Override
   public void disconnect() {
-    this.controllerService.disconnect();
-    this.controllerService = null;
+    this.vendorController.disconnect();
+    this.vendorController = null;
   }
 
   public Image getLocomotiveImage(String imageName) {
-    Image image = controllerService.getLocomotiveImage(imageName);
+    Image image = vendorController.getLocomotiveImage(imageName);
     if (image != null) {
       storeImage(image, imageName);
     }
@@ -149,7 +137,7 @@ public class TrackControllerImpl implements TrackController {
   }
 
   private void storeImage(Image image, String imageName) {
-    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache";
+    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + vendorController.getDevice().getArticleNumber();
     File cachePath = new File(path);
     if (cachePath.mkdir()) {
       Logger.trace("Created new directory " + cachePath);
@@ -164,8 +152,8 @@ public class TrackControllerImpl implements TrackController {
 
   @Override
   public String getControllerName() {
-    if (this.controllerService != null) {
-      return this.controllerService.getDevice().getDeviceName();
+    if (this.vendorController != null) {
+      return this.vendorController.getDevice().getDeviceName();
     } else {
       return null;
     }
@@ -173,8 +161,8 @@ public class TrackControllerImpl implements TrackController {
 
   @Override
   public String getControllerSerialNumber() {
-    if (this.controllerService != null) {
-      return this.controllerService.getDevice().getSerialNumber();
+    if (this.vendorController != null) {
+      return this.vendorController.getDevice().getSerialNumber();
     } else {
       return null;
     }
@@ -182,49 +170,39 @@ public class TrackControllerImpl implements TrackController {
 
   @Override
   public String getControllerArticleNumber() {
-    if (this.controllerService != null) {
-      return this.controllerService.getDevice().getArticleNumber();
+    if (this.vendorController != null) {
+      return this.vendorController.getDevice().getArticleNumber();
     } else {
       return null;
     }
   }
 
-//  @Override
-//  public LinkSxx getLinkSxx() {
-//    if (this.controllerService != null) {
-//      return this.controllerService.getLinkSxx();
-//    } else {
-//      return null;
-//    }
-//  }
-
   @Override
   public void addPowerEventListener(PowerEventListener listener) {
-    if (this.controllerService != null) {
-      this.controllerService.addPowerEventListener(listener);
+    if (this.vendorController != null) {
+      this.vendorController.addPowerEventListener(listener);
     }
   }
 
-  @Override
-  public void removePowerEventListener(PowerEventListener listener) {
-    if (this.controllerService != null) {
-      this.controllerService.removePowerEventListener(listener);
-    }
-  }
-
+//  @Override
+//  public void removePowerEventListener(PowerEventListener listener) {
+//    if (this.vendorController != null) {
+//      this.vendorController.removePowerEventListener(listener);
+//    }
+//  }
   @Override
   public void switchPower(boolean on) {
     Logger.trace("Switch Power " + (on ? "On" : "Off"));
-    if (this.controllerService != null) {
-      this.controllerService.power(on);
+    if (this.vendorController != null) {
+      this.vendorController.power(on);
     }
   }
 
   @Override
   public boolean isPowerOn() {
     boolean power = false;
-    if (this.controllerService != null) {
-      power = controllerService.isPower();
+    if (this.vendorController != null) {
+      power = vendorController.isPower();
     }
 
     return power;
@@ -232,7 +210,7 @@ public class TrackControllerImpl implements TrackController {
 
   @Override
   public void synchronizeLocomotivesWithController(PropertyChangeListener progressListener) {
-    List<LocomotiveBean> fromController = this.controllerService.getLocomotives();
+    List<LocomotiveBean> fromController = this.vendorController.getLocomotives();
 
     if (progressListener != null) {
       PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Controller reports " + fromController.size() + " Locomotives");
@@ -281,12 +259,12 @@ public class TrackControllerImpl implements TrackController {
     }
 
     //Also cache the function Icons
-    this.controllerService.cacheAllFunctionIcons(progressListener);
+    this.vendorController.cacheAllFunctionIcons(progressListener);
   }
 
   @Override
   public void synchronizeTurnouts() {
-    List<AccessoryBean> csTurnouts = this.controllerService.getSwitches();
+    List<AccessoryBean> csTurnouts = this.vendorController.getSwitches();
 
     for (AccessoryBean turnout : csTurnouts) {
       AccessoryBean dbTurnout = PersistenceFactory.getService().getAccessoryByAddress(turnout.getAddress());
@@ -301,7 +279,7 @@ public class TrackControllerImpl implements TrackController {
 
   @Override
   public void synchronizeSignals() {
-    List<AccessoryBean> csSignals = this.controllerService.getSignals();
+    List<AccessoryBean> csSignals = this.vendorController.getSignals();
 
     for (AccessoryBean signal : csSignals) {
       AccessoryBean dbSignal = PersistenceFactory.getService().getAccessoryByAddress(signal.getAddress());
@@ -326,20 +304,20 @@ public class TrackControllerImpl implements TrackController {
     DecoderType decoderType = locomotive.getDecoderType();
 
     //Issue a halt or stop for the loc
-    controllerService.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), 0);
-    controllerService.changeDirection(address, decoderType, newDirection);
+    vendorController.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), 0);
+    vendorController.changeDirection(address, decoderType, newDirection);
   }
 
   @Override
   public void changeVelocity(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
-    controllerService.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), newVelocity);
+    vendorController.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), newVelocity);
   }
 
   @Override
   public void changeFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
-    controllerService.changeFunctionValue(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), functionNumber, newValue);
+    vendorController.changeFunctionValue(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), functionNumber, newValue);
   }
 
   @Override
@@ -354,27 +332,22 @@ public class TrackControllerImpl implements TrackController {
     }
 
     Logger.trace("Change accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
-    controllerService.switchAccessory(address, val);
-  }
-
-  private void sendPingConfirmation() {
-
+    vendorController.switchAccessory(address, val);
   }
 
   @Override
   public void addMessageListener(CanMessageListener listener) {
-    if (this.controllerService != null) {
-      //this.controllerService.addCanMessageListener(listener);
+    if (this.vendorController != null) {
+      //this.vendorController.addCanMessageListener(listener);
     }
   }
 
-  @Override
-  public void removeMessageListener(CanMessageListener listener) {
-    if (this.controllerService != null) {
-      //this.controllerService.removeCanMessageListener(listener);
-    }
-  }
-
+//  @Override
+//  public void removeMessageListener(CanMessageListener listener) {
+//    if (this.vendorController != null) {
+//      //this.vendorController.removeCanMessageListener(listener);
+//    }
+//  }
   @Override
   public void addSensorListener(SensorListener listener) {
     this.sensorListeners.add(listener);
@@ -400,36 +373,33 @@ public class TrackControllerImpl implements TrackController {
     this.functionListeners.add(listener);
   }
 
-  @Override
-  public void removeFunctionListener(FunctionListener listener) {
-    this.functionListeners.remove(listener);
-  }
-
+//  @Override
+//  public void removeFunctionListener(FunctionListener listener) {
+//    this.functionListeners.remove(listener);
+//  }
   @Override
   public void addDirectionListener(DirectionListener listener) {
     this.directionListeners.add(listener);
   }
 
-  @Override
-  public void removeDirectionListener(DirectionListener listener) {
-    this.directionListeners.remove(listener);
-  }
-
+//  @Override
+//  public void removeDirectionListener(DirectionListener listener) {
+//    this.directionListeners.remove(listener);
+//  }
   @Override
   public void addVelocityListener(VelocityListener listener) {
     this.velocityListeners.add(listener);
   }
 
-  @Override
-  public void removeVelocityListener(VelocityListener listener) {
-    this.velocityListeners.remove(listener);
-  }
-
+//  @Override
+//  public void removeVelocityListener(VelocityListener listener) {
+//    this.velocityListeners.remove(listener);
+//  }
   private class SensorMessageEventListener implements SensorMessageListener {
 
-    private final TrackControllerImpl trackController;
+    private final ControllerImpl trackController;
 
-    SensorMessageEventListener(TrackControllerImpl trackController) {
+    SensorMessageEventListener(ControllerImpl trackController) {
       this.trackController = trackController;
     }
 
@@ -452,9 +422,9 @@ public class TrackControllerImpl implements TrackController {
 
   private class AccessoryMessageListener implements AccessoryMessageEventListener {
 
-    private final TrackControllerImpl trackService;
+    private final ControllerImpl trackService;
 
-    AccessoryMessageListener(TrackControllerImpl trackService) {
+    AccessoryMessageListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
@@ -505,9 +475,9 @@ public class TrackControllerImpl implements TrackController {
 
   private class FunctionMessageListener implements FunctionMessageEventListener {
 
-    private final TrackControllerImpl trackService;
+    private final ControllerImpl trackService;
 
-    FunctionMessageListener(TrackControllerImpl trackService) {
+    FunctionMessageListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
@@ -532,9 +502,9 @@ public class TrackControllerImpl implements TrackController {
 
   private class DirectionMessageListener implements DirectionMessageEventListener {
 
-    private final TrackControllerImpl trackService;
+    private final ControllerImpl trackService;
 
-    DirectionMessageListener(TrackControllerImpl trackService) {
+    DirectionMessageListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
@@ -559,9 +529,9 @@ public class TrackControllerImpl implements TrackController {
 
   private class VelocityMessageListener implements VelocityMessageEventListener {
 
-    private final TrackControllerImpl trackService;
+    private final ControllerImpl trackService;
 
-    VelocityMessageListener(TrackControllerImpl trackService) {
+    VelocityMessageListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
@@ -585,4 +555,15 @@ public class TrackControllerImpl implements TrackController {
       }
     }
   }
+
+  //For direct testing
+  public static void main(String[] a) {
+    Controller c = ControllerFactory.getController();
+
+    Logger.info("Controller Name " + c.getControllerName());
+    Logger.info("Controller Article " + c.getControllerArticleNumber());
+    Logger.info("Controller Serial " + c.getControllerSerialNumber());
+
+  }
+
 }

@@ -50,7 +50,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.options.table.SignalTableModel;
 import org.tinylog.Logger;
 
@@ -505,7 +505,7 @@ public class SignalPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    TrackControllerFactory.getTrackController().synchronizeSignals();
+    ControllerFactory.getController().synchronizeSignals();
     refresh();
   }
 

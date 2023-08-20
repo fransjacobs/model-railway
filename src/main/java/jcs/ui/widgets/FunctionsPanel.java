@@ -30,7 +30,7 @@ import jcs.controller.cs3.events.FunctionMessageEvent;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.FunctionListener;
 import org.tinylog.Logger;
 
@@ -98,8 +98,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
 
         setEnabled(false);
 
-        if (TrackControllerFactory.getTrackController() != null) {
-            TrackControllerFactory.getTrackController().addFunctionListener(this);
+        if (ControllerFactory.getController() != null) {
+            ControllerFactory.getController().addFunctionListener(this);
         }
     }
 
@@ -186,8 +186,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     }
 
     private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
-        if (TrackControllerFactory.getTrackController() != null && this.locomotive != null) {
-            TrackControllerFactory.getTrackController().changeFunction(newValue, functionNumber, locomotiveBean);
+        if (ControllerFactory.getController() != null && this.locomotive != null) {
+            ControllerFactory.getController().changeFunction(newValue, functionNumber, locomotiveBean);
         }
     }
 
@@ -688,10 +688,10 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
             testFrame.pack();
             testFrame.setLocationRelativeTo(null);
 
-            if (TrackControllerFactory.getTrackController() != null) {
+            if (ControllerFactory.getController() != null) {
 
-                //LocomotiveBean loc = TrackControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
-                //LocomotiveBean loc = TrackControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
+                //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
+                //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
                 LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16391L);
 
                 testPanel.setLocomotive(loc);

@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller;
+package jcs.controller.cs;
 
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import jcs.controller.cs.Device;
 import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
@@ -39,9 +38,6 @@ public interface MarklinController {
 
   void disconnect();
 
-  //String getName();
-  //String getSerialNumber();
-  //String getArticleNumber();
   boolean isPower();
 
   boolean power(boolean on);
@@ -93,6 +89,4 @@ public interface MarklinController {
 
   List<Device> getDevices();
 
-  //GFP getGFP();
-  //LinkSxx getLinkSxx();
 }

@@ -32,7 +32,7 @@ import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.VelocityListener;
 import org.tinylog.Logger;
@@ -58,9 +58,9 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
   private void postInit() {
     setEnabled(false);
     loadLocomotives();
-    if (TrackControllerFactory.getTrackController() != null) {
-      TrackControllerFactory.getTrackController().addDirectionListener(this);
-      TrackControllerFactory.getTrackController().addVelocityListener(this);
+    if (ControllerFactory.getController() != null) {
+      ControllerFactory.getController().addDirectionListener(this);
+      ControllerFactory.getController().addVelocityListener(this);
     }
   }
 
@@ -389,8 +389,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
     }//GEN-LAST:event_velocitySliderStateChanged
 
   private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
-    if (TrackControllerFactory.getTrackController() != null) {
-      TrackControllerFactory.getTrackController().changeVelocity(newVelocity, locomotiveBean);
+    if (ControllerFactory.getController() != null) {
+      ControllerFactory.getController().changeVelocity(newVelocity, locomotiveBean);
     }
   }
 
@@ -461,8 +461,8 @@ public class LocomotivePanel extends javax.swing.JPanel implements DirectionList
   }
 
   private void changeDirection(Direction newDirection, LocomotiveBean locomotiveBean) {
-    if (TrackControllerFactory.getTrackController() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
-      TrackControllerFactory.getTrackController().changeDirection(newDirection, locomotiveBean);
+    if (ControllerFactory.getController() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+      ControllerFactory.getController().changeDirection(newDirection, locomotiveBean);
     }
   }
 

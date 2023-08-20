@@ -51,7 +51,7 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.TileType.STRAIGHT;
@@ -374,11 +374,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       switch (tile.getTileType()) {
         case SENSOR ->
-          TrackControllerFactory.getTrackController().addSensorListener((SensorListener) tile);
+          ControllerFactory.getController().addSensorListener((SensorListener) tile);
         case SWITCH ->
-          TrackControllerFactory.getTrackController().addAccessoryListener((AccessoryListener) tile);
+          ControllerFactory.getController().addAccessoryListener((AccessoryListener) tile);
         case SIGNAL ->
-          TrackControllerFactory.getTrackController().addAccessoryListener((AccessoryListener) tile);
+          ControllerFactory.getController().addAccessoryListener((AccessoryListener) tile);
         default -> {
           //Do nothing
         }
@@ -642,7 +642,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
-      TrackControllerFactory.getTrackController().switchAccessory(ab.getAccessoryValue(), ab);
+      ControllerFactory.getController().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
@@ -654,7 +654,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       ab.toggle();
       Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
 
-      TrackControllerFactory.getTrackController().switchAccessory(ab.getAccessoryValue(), ab);
+      ControllerFactory.getController().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }

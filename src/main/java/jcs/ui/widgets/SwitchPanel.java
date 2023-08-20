@@ -23,7 +23,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.controller.cs3.events.AccessoryMessageEvent;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;
 
@@ -110,7 +110,7 @@ public class SwitchPanel extends JPanel {
     button.setActionCommand((button.getText()));
     Integer address = Integer.valueOf(button.getActionCommand());
 
-    if (TrackControllerFactory.getTrackController() != null) {
+    if (ControllerFactory.getController() != null) {
       AccessoryBean ab = PersistenceFactory.getService().getAccessoryByAddress(address);
       if (ab != null) {
         button.setForeground(new Color(0, 153, 0));
@@ -120,7 +120,7 @@ public class SwitchPanel extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      TrackControllerFactory.getTrackController().addAccessoryListener(asl);
+      ControllerFactory.getController().addAccessoryListener(asl);
     }
   }
 
@@ -418,9 +418,9 @@ public class SwitchPanel extends JPanel {
     AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
     Logger.trace("ID: " + id + " Value: " + value);
 
-    if (TrackControllerFactory.getTrackController() != null) {
+    if (ControllerFactory.getController() != null) {
       AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
-      TrackControllerFactory.getTrackController().switchAccessory(value, a);
+      ControllerFactory.getController().switchAccessory(value, a);
     }
   }
 

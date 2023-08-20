@@ -39,7 +39,6 @@ import jcs.controller.cs3.http.SvgIconToPngIconConverter;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
-import jcs.controller.MarklinController;
 import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs.can.CanMessageFactory;
 import static jcs.controller.cs.can.CanMessageFactory.getStatusDataConfigResponse;
