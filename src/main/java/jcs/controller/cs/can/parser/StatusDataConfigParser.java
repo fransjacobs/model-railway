@@ -18,8 +18,6 @@ package jcs.controller.cs.can.parser;
 import java.io.Serializable;
 import java.util.List;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
-import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
@@ -79,11 +77,11 @@ public class StatusDataConfigParser implements Serializable {
 
       if (responses.size() > 4) {
         //Fifth is the confimation and channels
-        if (responses.get(5).getDlc() == MarklinCan.DLC_6) {
+        if (responses.get(5).getDlc() == CanMessage.DLC_6) {
           //Have the last packet
           byte[] data6 = responses.get(5).getData();
-          index = data6[MarklinCan.STATUS_CONFIG_INDEX];
-          packetCount = data6[MarklinCan.STATUS_CONFIG_PACKET_COUNT];
+          index = data6[CanMessage.STATUS_CONFIG_INDEX];
+          packetCount = data6[CanMessage.STATUS_CONFIG_PACKET_COUNT];
         }
       }
 

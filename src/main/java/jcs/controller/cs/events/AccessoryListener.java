@@ -21,8 +21,8 @@ import jcs.controller.cs.can.CanMessage;
  *
  * @author fransjacobs
  */
-public interface GuiInformationMessageListener {
+public interface AccessoryListener {
 
-  void onMessage(CanMessage message);
+  void onAccessoryMessage(CanMessage message);
 
 }

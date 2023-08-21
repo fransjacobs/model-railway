@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs.events;
+package jcs.controller.events;
 
-import jcs.controller.cs.can.CanMessage;
+import jcs.controller.events.SensorEvent;
 
-/**
- *
- * @author fransjacobs
- */
-public interface AdministrativeMessageListener {
-  
-  void onMessage(CanMessage message);
-  
+public interface SensorEventListener {
+
+  void onSensorMessage(SensorEvent sensorMessageEvent);
+
 }

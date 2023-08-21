@@ -15,6 +15,7 @@
  */
 package jcs.controller.cs.net;
 
+import jcs.util.Ping;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -24,7 +25,6 @@ import java.net.UnknownHostException;
 import jcs.JCS;
 import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs.can.CanMessageFactory;
-import jcs.controller.cs.can.MarklinCan;
 import jcs.util.NetworkUtil;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -156,13 +156,13 @@ public class CSConnectionFactory {
 
         Logger.trace("Received: " + response + " from: " + replyHost.getHostAddress());
 
-        if (response.getCommand() == MarklinCan.PING_REQ) {
+        if (response.getCommand() == CanMessage.PING_REQ) {
           if (this.controllerHost == null) {
             this.controllerHost = replyHost;
           }
           JCS.logProgress("Found a Central Station in the network with IP: " + replyHost.getHostAddress());
         } else {
-          Logger.debug("Received wrong command: " + response.getCommand() + " != " + MarklinCan.PING_REQ + "...");
+          Logger.debug("Received wrong command: " + response.getCommand() + " != " + CanMessage.PING_REQ + "...");
         }
       }
     } catch (SocketTimeoutException ste) {

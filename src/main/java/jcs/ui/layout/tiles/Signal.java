@@ -19,7 +19,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
@@ -297,7 +297,7 @@ public class Signal extends Straight implements Tile, AccessoryListener {
   }
 
   @Override
-  public void onChange(AccessoryMessageEvent event) {
+  public void onChange(AccessoryEvent event) {
     if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
       this.setSignalValue(event.getAccessoryBean().getSignalValue());
       repaintTile();

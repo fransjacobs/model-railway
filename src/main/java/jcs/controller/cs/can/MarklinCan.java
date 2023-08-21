@@ -21,16 +21,13 @@ package jcs.controller.cs.can;
  * @see http://medienpdb.maerklin.de/digital22008/files/cs2CAN-Protokoll-2_0.pdf or on the Central Station 2: http://<central station 2>/can/index.html
  *
  */
-public interface MarklinCan {
+interface MarklinCan {
 
   public static final int MESSAGE_SIZE = 13;
 
   public static final int HASH_SIZE = 2;
   public static final int DATA_SIZE = 8;
 
-  //public static final int PRIO_IDX = 0;
-  //public static final int CMD_IDX = 1;
-  //public static final int SUB_CMD_IDX = 9;
   public static final int SUB_CMD_IDX = 4;
   public static final int HASH_IDX = 2;
   public static final int PACKAGE_IDX = 3;

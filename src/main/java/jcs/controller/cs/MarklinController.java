@@ -18,17 +18,17 @@ package jcs.controller.cs;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.List;
-import jcs.controller.cs3.events.PowerEventListener;
-import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
-import jcs.controller.cs3.events.AccessoryMessageEventListener;
 import jcs.controller.cs3.events.DirectionMessageEventListener;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.PowerEventListener;
+import jcs.controller.events.SensorEventListener;
 
 public interface MarklinController {
 
@@ -54,13 +54,15 @@ public interface MarklinController {
 
   void removePowerEventListener(PowerEventListener listener);
 
-  void addSensorMessageListener(SensorMessageListener listener);
+  void addSensorEventListener(SensorEventListener listener);
 
-  void removeSensorMessageListener(SensorMessageListener listener);
+  void removeSensorEventListener(SensorEventListener listener);
 
-  void addAccessoryEventListener(AccessoryMessageEventListener listener);
+  void addAccessoryEventListener(AccessoryEventListener listener);
 
-  void removeAccessoryEventListener(AccessoryMessageEventListener listener);
+  void removeAccessoryEventListener(AccessoryEventListener listener);
+  
+  
 
   void addFunctionMessageEventListener(FunctionMessageEventListener listener);
 

@@ -28,7 +28,7 @@ import javax.swing.JPanel;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
 import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;
@@ -241,7 +241,7 @@ public class SignalRowPanel extends JPanel implements AccessoryListener {
     }
 
     @Override
-    public void onChange(AccessoryMessageEvent event) {
+    public void onChange(AccessoryEvent event) {
         //if (this.signal != null && event.isEventFor(this.signal)) {
         //    signal.setSignalValue(event.getSignalValue());
         //    setButtonStatus();

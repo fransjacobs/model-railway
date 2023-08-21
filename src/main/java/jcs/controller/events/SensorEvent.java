@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.events;
 
 import java.util.Date;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
 import jcs.entities.SensorBean;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -26,11 +25,11 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class SensorMessageEvent {
+public class SensorEvent {
 
   private SensorBean sensor;
 
-  public SensorMessageEvent(CanMessage message, Date eventDate) {
+  public SensorEvent(CanMessage message, Date eventDate) {
     parseMessage(message, eventDate);
   }
 
@@ -42,7 +41,7 @@ public class SensorMessageEvent {
       resp = message;
     }
 
-    if (resp.isResponseMessage() && MarklinCan.S88_EVENT_RESPONSE == resp.getCommand()) {
+    if (resp.isResponseMessage() && CanMessage.S88_EVENT_RESPONSE == resp.getCommand()) {
       byte[] data = resp.getData();
 
       Integer deviceId = ByteUtil.toInt(new byte[]{data[0], data[1]});

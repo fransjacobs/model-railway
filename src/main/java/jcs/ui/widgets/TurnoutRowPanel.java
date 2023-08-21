@@ -29,7 +29,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import static jcs.entities.enums.AccessoryValue.GREEN;
 import static jcs.entities.enums.AccessoryValue.RED;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
 import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.AccessoryListener;
 import org.tinylog.Logger;
@@ -201,7 +201,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
     }
 
     @Override
-    public void onChange(AccessoryMessageEvent event) {
+    public void onChange(AccessoryEvent event) {
         //if (event.isEventFor(turnout)) {
         //    this.turnout.setValue(event.getValue());
         //}

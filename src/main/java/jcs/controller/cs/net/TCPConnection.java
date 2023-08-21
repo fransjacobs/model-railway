@@ -26,8 +26,9 @@ import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs3.events.CanMessageListener;
 import org.tinylog.Logger;
 import jcs.controller.cs.events.CanPingListener;
-import jcs.controller.cs.events.FeedbackEventListener;
-import jcs.controller.cs.events.SystemEventListener;
+import jcs.controller.cs.events.AccessoryListener;
+import jcs.controller.cs.events.FeedbackListener;
+import jcs.controller.cs.events.SystemListener;
 
 /**
  *
@@ -149,25 +150,31 @@ class TCPConnection implements CSConnection {
 //      this.messageReceiver.setCanMessageListener(listener);
 //    }
 //  }
-
   @Override
-  public void setCanPingRequestListener(CanPingListener pingListener) {
+  public void setCanPingListener(CanPingListener pingListener) {
     if (messageReceiver != null) {
       this.messageReceiver.setCanPingRequestListener(pingListener);
     }
   }
 
   @Override
-  public void setFeedbackEventListener(FeedbackEventListener feedbackListener) {
+  public void setFeedbackListener(FeedbackListener feedbackListener) {
     if (messageReceiver != null) {
       this.messageReceiver.setFeedbackEventListener(feedbackListener);
     }
   }
 
   @Override
-  public void setSystemEventListener(SystemEventListener systemEventListener) {
+  public void setSystemListener(SystemListener systemEventListener) {
     if (messageReceiver != null) {
       this.messageReceiver.setSystemEventListener(systemEventListener);
+    }
+  }
+
+  @Override
+  public void setAccessoryListener(AccessoryListener accessoryEventListener) {
+    if (messageReceiver != null) {
+      this.messageReceiver.setAccessoryEventListener(accessoryEventListener);
     }
   }
 
@@ -201,10 +208,11 @@ class TCPConnection implements CSConnection {
     private CanMessage message;
 
     private CanPingListener pingListener;
-    private FeedbackEventListener feedbackListener;
-    private SystemEventListener systemEventListener;
+    private FeedbackListener feedbackListener;
+    private SystemListener systemEventListener;
+    private AccessoryListener accessoryEventListener;
 
-    private CanMessageListener listener;
+    //private CanMessageListener listener;
 
     public ClientMessageReceiver(Socket socket) {
       try {
@@ -216,20 +224,24 @@ class TCPConnection implements CSConnection {
       }
     }
 
-    void setCanMessageListener(CanMessageListener listener) {
-      this.listener = listener;
-    }
+    //void setCanMessageListener(CanMessageListener listener) {
+    //  this.listener = listener;
+    //}
 
     void setCanPingRequestListener(CanPingListener pingListener) {
       this.pingListener = pingListener;
     }
 
-    void setFeedbackEventListener(FeedbackEventListener feedbackListener) {
+    void setFeedbackEventListener(FeedbackListener feedbackListener) {
       this.feedbackListener = feedbackListener;
     }
 
-    void setSystemEventListener(SystemEventListener systemEventListener) {
+    void setSystemEventListener(SystemListener systemEventListener) {
       this.systemEventListener = systemEventListener;
+    }
+
+    void setAccessoryEventListener(AccessoryListener accessoryEventListener) {
+      this.accessoryEventListener = accessoryEventListener;
     }
 
     synchronized void quit() {
@@ -278,15 +290,17 @@ class TCPConnection implements CSConnection {
             this.message.addResponse(rx);
             //Logger.trace("RX: " + rx + " Response count " + this.message.getResponses().size());
           } else if (rx.isPingResponse() && pingListener != null) {
-            this.pingListener.onCanPingResponse(rx);
+            this.pingListener.onCanPingResponseMessage(rx);
           } else if (rx.isPingRequest() && pingListener != null) {
-            this.pingListener.onCanPingRequest(rx);
+            this.pingListener.onCanPingRequestMessage(rx);
           } else if (rx.isStatusConfigRequest() && pingListener != null) {
-            this.pingListener.onCanStatusConfigRequest(rx);
+            this.pingListener.onCanStatusConfigRequestMessage(rx);
           } else if (rx.isSensorResponse() && feedbackListener != null) {
-            this.feedbackListener.onFeedbackResponseEvent(rx);
+            this.feedbackListener.onFeedbackMessage(rx);
           } else if (rx.isSystemMessage() && systemEventListener != null) {
-            this.systemEventListener.onSystemEvent(rx);
+            this.systemEventListener.onSystemMessage(rx);
+          } else if (rx.isAccessoryMessage() && accessoryEventListener != null) {
+            this.accessoryEventListener.onAccessoryMessage(rx);
           } else {
             Logger.trace("#RX: " + rx);
           }

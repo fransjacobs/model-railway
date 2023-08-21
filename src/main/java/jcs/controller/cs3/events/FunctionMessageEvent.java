@@ -17,7 +17,6 @@ package jcs.controller.cs3.events;
 
 import java.io.Serializable;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.util.ByteUtil;
@@ -49,7 +48,7 @@ public class FunctionMessageEvent implements Serializable {
       resp = message;
     }
 
-    if (resp.isResponseMessage() && MarklinCan.LOC_FUNCTION_RESP == resp.getCommand()) {
+    if (resp.isResponseMessage() && CanMessage.LOC_FUNCTION_RESP == resp.getCommand()) {
       byte[] data = resp.getData();
       Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
 

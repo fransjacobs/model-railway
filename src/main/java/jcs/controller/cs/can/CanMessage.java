@@ -223,76 +223,55 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public boolean isResponseMessage() {
-    int cmd = getCommand();
+    int cmd = this.command;
     cmd = cmd & 0x01;
     return cmd == 1;
   }
 
-  public boolean isAdministrativeMessage() {
-    int cmd = getCommand();
-    return cmd == DISCOVERY_COMMAND_ID
-            || cmd == MFX_BIND_COMMAND || cmd == MFX_VERIFY_COMMAND
-            || cmd == LOC_VELOCITY || cmd == LOC_VELOCITY_RESP
-            || cmd == LOC_DIRECTION || cmd == LOC_DIRECTION_RESP
-            || cmd == LOC_FUNCTION || cmd == LOC_FUNCTION_RESP
-            || cmd == LOC_DECODER_READ || cmd == LOC_DECODER_READ_RESP
-            || cmd == LOC_DECODER_WRITE || cmd == LOC_DECODER_WRITE_RESP;
-  }
-
+//  public boolean isAdministrativeMessage() {
+//    int cmd = getCommand();
+//    return cmd == DISCOVERY_COMMAND_ID
+//            || cmd == MFX_BIND_COMMAND || cmd == MFX_VERIFY_COMMAND
+//            || cmd == LOC_VELOCITY || cmd == LOC_VELOCITY_RESP
+//            || cmd == LOC_DIRECTION || cmd == LOC_DIRECTION_RESP
+//            || cmd == LOC_FUNCTION || cmd == LOC_FUNCTION_RESP
+//            || cmd == LOC_DECODER_READ || cmd == LOC_DECODER_READ_RESP
+//            || cmd == LOC_DECODER_WRITE || cmd == LOC_DECODER_WRITE_RESP;
+//  }
   public boolean isGuiInfoMessage() {
-    int cmd = getCommand();
-    return cmd == REQUEST_CONFIG_DATA || cmd == REQUEST_CONFIG_DATA_RESP
-            || cmd == CONFIG_DATA_STREAM
-            || cmd == CON_60128_DATA_STREAM;
-  }
-
-  public boolean isSensorMessage() {
-    int cmd = getCommand();
-    return cmd == S88_EVENT || cmd == SX1_EVENT;
-  }
-
-  public boolean isSwitchingMessage() {
-    int cmd = getCommand();
-    return cmd == ACCESSORY_SWITCHING || cmd == ACCESSORY_SWITCHING_RESP;
-  }
-
-  public boolean isSystemMessage() {
-    int cmd = getCommand();
-    return cmd == SYSTEM_COMMAND || cmd == SYSTEM_COMMAND_RESP;
+    return this.command == REQUEST_CONFIG_DATA || this.command == REQUEST_CONFIG_DATA_RESP
+            || this.command == CONFIG_DATA_STREAM
+            || this.command == CON_60128_DATA_STREAM;
   }
 
   public boolean isUpdateMessage() {
-    int cmd = getCommand();
-    return cmd == PING_REQ || cmd == PING_RESP
-            || cmd == UPDATE_OFFER || cmd == UPDATE_OFFER_RESP
-            || cmd == READ_CONFIG_DATA || cmd == READ_CONFIG_DATA_RESP
-            || cmd == BOOTLOADER_CAN || cmd == BOOTLOADER_LOC
-            || cmd == LOC_FUNCTION || cmd == LOC_FUNCTION_RESP
-            || cmd == STATUS_CONFIG || cmd == STATUS_CONFIG_RESP;
+    return this.command == PING_REQ || this.command == PING_RESP
+            || this.command == UPDATE_OFFER || this.command == UPDATE_OFFER_RESP
+            || this.command == READ_CONFIG_DATA || this.command == READ_CONFIG_DATA_RESP
+            || this.command == BOOTLOADER_CAN || this.command == BOOTLOADER_LOC
+            || this.command == LOC_FUNCTION || this.command == LOC_FUNCTION_RESP
+            || this.command == STATUS_CONFIG || this.command == STATUS_CONFIG_RESP;
   }
 
   public boolean expectsAcknowledge() {
-    int cmd = this.getCommand();
-
-    return cmd == SYSTEM_COMMAND
-            || cmd == MFX_BIND_COMMAND
-            || cmd == MFX_VERIFY_COMMAND
-            || cmd == LOC_VELOCITY
-            || cmd == LOC_DIRECTION
-            || cmd == LOC_FUNCTION
-            || cmd == LOC_DECODER_READ
-            || cmd == LOC_DECODER_WRITE
-            || cmd == ACCESSORY_SWITCHING
-            || cmd == S88_EVENT
-            || cmd == PING_REQ
-            || cmd == STATUS_CONFIG
-            || cmd == REQUEST_CONFIG_DATA;
+    return this.command == SYSTEM_COMMAND
+            || this.command == MFX_BIND_COMMAND
+            || this.command == MFX_VERIFY_COMMAND
+            || this.command == LOC_VELOCITY
+            || this.command == LOC_DIRECTION
+            || this.command == LOC_FUNCTION
+            || this.command == LOC_DECODER_READ
+            || this.command == LOC_DECODER_WRITE
+            || this.command == ACCESSORY_SWITCHING
+            || this.command == S88_EVENT
+            || this.command == PING_REQ
+            || this.command == STATUS_CONFIG
+            || this.command == REQUEST_CONFIG_DATA;
   }
 
   public boolean expectsLargeResponse() {
-    int cmd = this.getCommand();
-    return cmd == STATUS_CONFIG
-            || cmd == REQUEST_CONFIG_DATA;
+    return this.command == STATUS_CONFIG
+            || this.command == REQUEST_CONFIG_DATA;
   }
 
   public boolean isResponseFor(CanMessage other) {
@@ -310,37 +289,36 @@ public class CanMessage implements MarklinCan, Serializable {
     }
   }
 
-//  public boolean isAcknowledgeFor(CanMessage other) {
-//    if (isResponseFor(other)) {
-//      int[] base = new int[CanMessage.MESSAGE_SIZE];
-//      System.arraycopy(other.getMessage(), 0, base, 0, base.length);
-//
-//      int[] ackm = new int[CanMessage.MESSAGE_SIZE];
-//      System.arraycopy(this.message, 0, ackm, 0, ackm.length);
-//
-//      ackm[CMD_IDX] = base[CMD_IDX];
-//      return Objects.deepEquals(ackm, base);
-//    }
-//    return false;
-//  }
   public boolean isPingResponse() {
-    return this.getCommand() == PING_RESP;
+    return this.command == PING_RESP;
   }
 
   public boolean isPingRequest() {
-    return this.getCommand() == PING_REQ;
+    return this.command == PING_REQ;
   }
 
   public boolean isStatusConfigRequest() {
-    return this.getCommand() == STATUS_CONFIG;
+    return this.command == STATUS_CONFIG;
   }
 
   public boolean isSensorResponse() {
-    return this.getCommand() == S88_EVENT_RESP;
+    return this.command == S88_EVENT_RESP;
   }
 
   public boolean isStatusDataConfigMessage() {
-    return getCommand() == STATUS_CONFIG | getCommand() == STATUS_CONFIG + 1;
+    return this.command == STATUS_CONFIG | this.command == STATUS_CONFIG + 1;
+  }
+
+  public boolean isSensorMessage() {
+    return this.command == S88_EVENT || this.command == SX1_EVENT;
+  }
+
+  public boolean isAccessoryMessage() {
+    return this.command == ACCESSORY_SWITCHING || this.command == ACCESSORY_SWITCHING_RESP;
+  }
+
+  public boolean isSystemMessage() {
+    return this.command == SYSTEM_COMMAND || this.command == SYSTEM_COMMAND_RESP;
   }
 
   public boolean hasValidResponse() {

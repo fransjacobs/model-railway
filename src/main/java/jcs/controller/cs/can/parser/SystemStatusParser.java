@@ -18,7 +18,6 @@ package jcs.controller.cs.can.parser;
 import java.io.Serializable;
 import java.util.List;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
@@ -56,7 +55,7 @@ public class SystemStatusParser implements Serializable {
           resp = message;
         }
 
-        if (MarklinCan.SYSTEM_COMMAND_RESP == resp.getCommand() && resp.isDeviceUidValid()) {
+        if (CanMessage.SYSTEM_COMMAND_RESP == resp.getCommand() && resp.isDeviceUidValid()) {
           byte[] data = resp.getData();
           gfpUid = resp.getDeviceUidFromMessage();
           int status = data[4];

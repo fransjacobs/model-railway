@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs.events;
-
-import jcs.controller.cs.can.CanMessage;
+package jcs.controller.cs3.events;
 
 /**
  *
- * @author fransjacobs
+ * @author Frans Jacobs
  */
-public interface UpdateMessageListener {
-  
-  void onMessage(CanMessage message);
-  
+public interface HeartbeatListener {
+
+  void sample();
+
 }

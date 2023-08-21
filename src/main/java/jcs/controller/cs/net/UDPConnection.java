@@ -25,12 +25,13 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.events.CanMessageEvent;
+import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import org.tinylog.Logger;
 import jcs.controller.cs.events.CanPingListener;
-import jcs.controller.cs.events.FeedbackEventListener;
-import jcs.controller.cs.events.SystemEventListener;
+import jcs.controller.cs.events.AccessoryListener;
+import jcs.controller.cs.events.FeedbackListener;
+import jcs.controller.cs.events.SystemListener;
 
 /**
  *
@@ -93,17 +94,22 @@ class UDPConnection implements CSConnection {
 //    this.listeners.add(listener);
 //  }
   @Override
-  public void setCanPingRequestListener(CanPingListener listener) {
+  public void setCanPingListener(CanPingListener listener) {
     throw new UnsupportedOperationException("Not supported");
   }
 
   @Override
-  public void setFeedbackEventListener(FeedbackEventListener listener) {
+  public void setFeedbackListener(FeedbackListener listener) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void setSystemEventListener(SystemEventListener systemEventListener) {
+  public void setSystemListener(SystemListener systemEventListener) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void setAccessoryListener(AccessoryListener accessoryEventListener) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

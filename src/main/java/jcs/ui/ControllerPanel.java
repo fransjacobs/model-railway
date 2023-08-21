@@ -39,7 +39,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.events.CanMessageEvent;
+import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.ControllerFactory;
 import jcs.ui.widgets.FeedbackPanel;

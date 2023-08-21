@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.events;
 
-public interface AccessoryMessageEventListener {
+/**
+ *
+ * @author frans
+ */
+public interface PowerEventListener {
 
-    void onAccessoryMessage(AccessoryMessageEvent accessoryEvent);
-
+  void onPowerChange(PowerEvent event);
 }

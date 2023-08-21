@@ -17,7 +17,6 @@ package jcs.controller.cs3.events;
 
 import java.io.Serializable;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
 import jcs.entities.LocomotiveBean;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -48,7 +47,7 @@ public class VelocityMessageEvent implements Serializable {
       resp = message;
     }
 
-    if (resp.isResponseMessage() && MarklinCan.SYSTEM_COMMAND == resp.getCommand() && MarklinCan.LOC_STOP_SUB_CMD == resp.getSubCommand() && MarklinCan.DLC_5 == resp.getDlc()) {
+    if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND == resp.getCommand() && CanMessage.LOC_STOP_SUB_CMD == resp.getSubCommand() && CanMessage.DLC_5 == resp.getDlc()) {
       //Loc halt command could be issued due to a direction change.
       byte[] data = resp.getData();
       Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
@@ -60,7 +59,7 @@ public class VelocityMessageEvent implements Serializable {
       if (lb.getId() != null && lb.getVelocity() != null) {
         this.locomotiveBean = lb;
       }
-    } else if (resp.isResponseMessage() && MarklinCan.LOC_VELOCITY_RESP == resp.getCommand()) {
+    } else if (resp.isResponseMessage() && CanMessage.LOC_VELOCITY_RESP == resp.getCommand()) {
       byte[] data = resp.getData();
       Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
 

@@ -27,25 +27,22 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import jcs.JCS;
-import jcs.controller.cs3.events.SensorMessageEvent;
+import jcs.controller.events.SensorEvent;
 import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
 import jcs.trackservice.events.AccessoryListener;
-import jcs.controller.cs3.events.SensorMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.trackservice.events.SensorListener;
 import org.tinylog.Logger;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
-import jcs.controller.cs3.events.AccessoryMessageEventListener;
+import jcs.controller.events.AccessoryEvent;
 import jcs.controller.cs3.events.DirectionMessageEvent;
 import jcs.controller.cs3.events.DirectionMessageEventListener;
 import jcs.controller.cs3.events.FunctionMessageEvent;
-import jcs.controller.cs3.events.PowerEventListener;
 import jcs.controller.cs3.events.FunctionMessageEventListener;
 import jcs.controller.cs3.events.VelocityMessageEvent;
 import jcs.controller.cs3.events.VelocityMessageEventListener;
@@ -53,6 +50,9 @@ import jcs.persistence.PersistenceFactory;
 import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
 import jcs.trackservice.events.VelocityListener;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.PowerEventListener;
+import jcs.controller.events.SensorEventListener;
 
 /**
  * The Controller Implementation is the implementation of the Controller Interface. Its purpose is to serve as an abstraction layer for Controllers so that in the future more Controllers can be
@@ -104,7 +104,7 @@ public class ControllerImpl implements Controller {
     }
 
     if (vendorController != null && vendorController.connect()) {
-      this.vendorController.addSensorMessageListener(new SensorMessageEventListener(this));
+      this.vendorController.addSensorEventListener(new SensorMessageEventListener(this));
       this.vendorController.addAccessoryEventListener(new AccessoryMessageListener(this));
       this.vendorController.addFunctionMessageEventListener(new FunctionMessageListener(this));
       this.vendorController.addDirectionMessageEventListener(new DirectionMessageListener(this));
@@ -178,7 +178,7 @@ public class ControllerImpl implements Controller {
   }
 
   @Override
-  public void addPowerEventListener(PowerEventListener listener) {
+  public void addPowerListener(PowerEventListener listener) {
     if (this.vendorController != null) {
       this.vendorController.addPowerEventListener(listener);
     }
@@ -335,12 +335,12 @@ public class ControllerImpl implements Controller {
     vendorController.switchAccessory(address, val);
   }
 
-  @Override
-  public void addMessageListener(CanMessageListener listener) {
-    if (this.vendorController != null) {
-      //this.vendorController.addCanMessageListener(listener);
-    }
-  }
+//  @Override
+//  public void addMessageListener(CanMessageListener listener) {
+//    if (this.vendorController != null) {
+//      //this.vendorController.addCanMessageListener(listener);
+//    }
+//  }
 
 //  @Override
 //  public void removeMessageListener(CanMessageListener listener) {
@@ -395,7 +395,7 @@ public class ControllerImpl implements Controller {
 //  public void removeVelocityListener(VelocityListener listener) {
 //    this.velocityListeners.remove(listener);
 //  }
-  private class SensorMessageEventListener implements SensorMessageListener {
+  private class SensorMessageEventListener implements SensorEventListener {
 
     private final ControllerImpl trackController;
 
@@ -404,7 +404,7 @@ public class ControllerImpl implements Controller {
     }
 
     @Override
-    public void onSensorMessage(SensorMessageEvent event) {
+    public void onSensorMessage(SensorEvent event) {
       SensorBean sb = event.getSensorBean();
       SensorBean dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
 
@@ -420,7 +420,7 @@ public class ControllerImpl implements Controller {
     }
   }
 
-  private class AccessoryMessageListener implements AccessoryMessageEventListener {
+  private class AccessoryMessageListener implements AccessoryEventListener {
 
     private final ControllerImpl trackService;
 
@@ -429,7 +429,7 @@ public class ControllerImpl implements Controller {
     }
 
     @Override
-    public void onAccessoryMessage(AccessoryMessageEvent event) {
+    public void onAccessoryMessage(AccessoryEvent event) {
       AccessoryBean ab = event.getAccessoryBean();
 
       int address = ab.getAddress();

@@ -19,10 +19,10 @@ import jcs.controller.cs.can.CanMessage;
 
 public interface CanPingListener {
 
-  void onCanPingRequest(CanMessage pingRequest);
+  void onCanPingRequestMessage(CanMessage pingRequest);
 
-  void onCanPingResponse(CanMessage pingResponse);
+  void onCanPingResponseMessage(CanMessage pingResponse);
 
-  void onCanStatusConfigRequest(CanMessage statusConfigRequest);
+  void onCanStatusConfigRequestMessage(CanMessage statusConfigRequest);
 
 }

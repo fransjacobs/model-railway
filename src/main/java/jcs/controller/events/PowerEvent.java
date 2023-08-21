@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.events;
 
 import jcs.controller.cs.can.CanMessage;
 import org.tinylog.Logger;
-import static jcs.controller.cs.can.MarklinCan.SYSTEM_COMMAND_RESP;
 
 /**
  *
@@ -42,7 +41,7 @@ public class PowerEvent {
         int cmd = message.getCommand();
         int subCmd = message.getSubCommand();
 
-        if (resp.isResponseMessage() && SYSTEM_COMMAND_RESP == cmd && (subCmd == 0 | subCmd == 1)) {
+        if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND_RESP == cmd && (subCmd == 0 | subCmd == 1)) {
 
             this.power = subCmd == 1;
         } else {

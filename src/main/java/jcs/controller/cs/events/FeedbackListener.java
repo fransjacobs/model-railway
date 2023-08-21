@@ -21,8 +21,8 @@ import jcs.controller.cs.can.CanMessage;
  *
  * @author fransjacobs
  */
-public interface SystemEventListener {
-
-  void onSystemEvent(CanMessage message);
-
+public interface FeedbackListener {
+  
+  void onFeedbackMessage(CanMessage message);
+  
 }

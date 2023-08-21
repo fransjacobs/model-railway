@@ -21,8 +21,7 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.cs3.events.PowerEvent;
-import jcs.controller.cs3.events.PowerEventListener;
+import jcs.controller.events.PowerEvent;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
@@ -34,6 +33,7 @@ import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 import jcs.controller.Controller;
+import jcs.controller.events.PowerEventListener;
 
 /**
  *
@@ -208,7 +208,7 @@ public class JCS extends Thread {
             boolean power = trackController.isPowerOn();
             logProgress("Track Power is " + (power ? "on" : "off"));
             Logger.info("Track Power is " + (power ? "on" : "off"));
-            trackController.addPowerEventListener(new JCS.Powerlistener());
+            trackController.addPowerListener(new JCS.Powerlistener());
           } else {
             logProgress("Could NOT connect with Track Controller...");
           }

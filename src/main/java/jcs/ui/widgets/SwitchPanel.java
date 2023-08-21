@@ -21,7 +21,7 @@ import javax.swing.JToggleButton;
 import javax.swing.border.TitledBorder;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
 import jcs.trackservice.events.AccessoryListener;
@@ -510,7 +510,7 @@ public class SwitchPanel extends JPanel {
     }
 
     @Override
-    public void onChange(AccessoryMessageEvent event) {
+    public void onChange(AccessoryEvent event) {
       if (event.getAccessoryBean().getAddress().equals(address)) {
         this.button.setSelected(AccessoryValue.RED.equals(event.getAccessoryBean().getAccessoryValue()));
       }

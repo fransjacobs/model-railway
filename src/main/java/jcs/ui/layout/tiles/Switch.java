@@ -22,7 +22,7 @@ import java.awt.Point;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
@@ -346,7 +346,7 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
   }
 
   @Override
-  public void onChange(AccessoryMessageEvent event) {
+  public void onChange(AccessoryEvent event) {
     if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
       setValue(event.getAccessoryBean().getAccessoryValue());
       repaintTile();

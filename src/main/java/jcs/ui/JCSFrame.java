@@ -56,7 +56,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import jcs.JCS;
-import jcs.controller.cs3.events.PowerEvent;
+import jcs.controller.events.PowerEvent;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
 import jcs.ui.layout.LayoutPanel;
@@ -794,7 +794,7 @@ public class JCSFrame extends JFrame implements UICallback {
         this.controllerSerialNumberLbl.setText(ControllerFactory.getController().getControllerSerialNumber());
         this.controllerHostNameLbl.setText("CS3-" + ControllerFactory.getController().getControllerSerialNumber());
 
-        //TrackControllerFactory.getTrackController().addPowerEventListener(new Powerlistener(this));
+        //TrackControllerFactory.getTrackController().addPowerListener(new Powerlistener(this));
         this.connectMI.setText("Disconnect");
       } else {
         ControllerFactory.getController().disconnect();

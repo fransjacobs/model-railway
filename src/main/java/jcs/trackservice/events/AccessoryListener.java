@@ -15,7 +15,7 @@
  */
 package jcs.trackservice.events;
 
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
 
 /**
  *
@@ -23,6 +23,6 @@ import jcs.controller.cs3.events.AccessoryMessageEvent;
  */
 public interface AccessoryListener {
 
-    void onChange(AccessoryMessageEvent event);
+    void onChange(AccessoryEvent event);
 
 }

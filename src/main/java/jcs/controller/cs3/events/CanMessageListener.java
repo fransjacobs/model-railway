@@ -15,8 +15,6 @@
  */
 package jcs.controller.cs3.events;
 
-import jcs.controller.cs.events.CanMessageEvent;
-
 public interface CanMessageListener {
 
     void onCanMessage(CanMessageEvent canEvent);

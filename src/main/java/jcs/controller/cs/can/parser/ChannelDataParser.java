@@ -19,9 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 import jcs.controller.cs.MeasurementChannel;
 import jcs.controller.cs.can.CanMessage;
-import static jcs.controller.cs.can.MarklinCan.STATUS_CONFIG;
-import static jcs.controller.cs.can.MarklinCan.SYSTEM_COMMAND;
-import static jcs.controller.cs.can.MarklinCan.SYSTEM_SUB_STATUS;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
@@ -74,7 +71,7 @@ public class ChannelDataParser implements Serializable {
   }
 
   public final void parseMessage(CanMessage message) {
-    if (message.getCommand() == STATUS_CONFIG) {
+    if (message.getCommand() == CanMessage.STATUS_CONFIG) {
       List<CanMessage> responses = message.getResponses();
       int packets = getNumberOfPackets(message);
       Logger.trace("Channel Configuration responses count " + responses.size() + " packet size: " + packets);
@@ -180,7 +177,7 @@ public class ChannelDataParser implements Serializable {
       } else {
         Logger.warn("Config packet data Invalid");
       }
-    } else if (message.getCommand() == SYSTEM_COMMAND && message.getSubCommand() == SYSTEM_SUB_STATUS) {
+    } else if (message.getCommand() == CanMessage.SYSTEM_COMMAND && message.getSubCommand() == CanMessage.SYSTEM_SUB_STATUS) {
       CanMessage response = message.getResponse();
       byte[] data = response.getData();
 

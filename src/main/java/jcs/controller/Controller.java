@@ -16,8 +16,7 @@
 package jcs.controller;
 
 import java.beans.PropertyChangeListener;
-import jcs.controller.cs3.events.CanMessageListener;
-import jcs.controller.cs3.events.PowerEventListener;
+//import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
@@ -27,6 +26,7 @@ import jcs.trackservice.events.DirectionListener;
 import jcs.trackservice.events.FunctionListener;
 import jcs.trackservice.events.SensorListener;
 import jcs.trackservice.events.VelocityListener;
+import jcs.controller.events.PowerEventListener;
 
 /**
  * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For
@@ -46,9 +46,7 @@ public interface Controller {
 
   void disconnect();
 
-  void addPowerEventListener(PowerEventListener listener);
-
-  //void removePowerEventListener(PowerEventListener listener);
+  void addPowerListener(PowerEventListener listener);
 
   //Image getFunctionImage(String imageName);
   void changeDirection(Direction direction, LocomotiveBean locomotive);
@@ -86,7 +84,7 @@ public interface Controller {
   String getControllerArticleNumber();
 
   
-  void addMessageListener(CanMessageListener listener);
+  //void addMessageListener(CanMessageListener listener);
 
   //void removeMessageListener(CanMessageListener listener);
 

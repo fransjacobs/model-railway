@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.events;
 
 import java.io.Serializable;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs.can.MarklinCan;
 import jcs.entities.AccessoryBean;
-import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
-/**
- *
- * @author Frans Jacobs
- */
-public class AccessoryMessageEvent implements Serializable {
+public class AccessoryEvent implements Serializable {
 
   private AccessoryBean accessoryBean;
 
-  public AccessoryMessageEvent(AccessoryBean accessoryBean) {
+  public AccessoryEvent(AccessoryBean accessoryBean) {
     this.accessoryBean = accessoryBean;
   }
 
-  public AccessoryMessageEvent(CanMessage message) {
+  public AccessoryEvent(CanMessage message) {
     parseMessage(message);
   }
 
@@ -46,18 +40,17 @@ public class AccessoryMessageEvent implements Serializable {
       resp = message;
     }
 
-    if (resp.isResponseMessage() && MarklinCan.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
+    if (resp.isResponseMessage() && CanMessage.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
       byte[] data = resp.getData();
-      Integer address = data[3] & 0xff;
-      Integer position = data[4] & 0xff;
+      int address = data[3];
+      int position = data[4];
       //CS is zero based
       address = address + 1;
-
       long id = address;
 
       this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null);
-      if (resp.getDlc() == MarklinCan.DLC_8) {
-        Integer switchTime = ByteUtil.toInt(new int[]{data[6], data[7]});
+      if (resp.getDlc() == CanMessage.DLC_8) {
+        int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
         this.accessoryBean.setSwitchTime(switchTime);
       }
     } else {
@@ -68,4 +61,9 @@ public class AccessoryMessageEvent implements Serializable {
   public AccessoryBean getAccessoryBean() {
     return accessoryBean;
   }
+
+  public boolean isKnownAccessory() {
+    return this.accessoryBean != null && this.accessoryBean.getAddress() != null;
+  }
+
 }
