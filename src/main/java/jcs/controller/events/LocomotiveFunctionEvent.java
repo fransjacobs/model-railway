@@ -13,29 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.events;
 
 import java.io.Serializable;
 import jcs.controller.cs.can.CanMessage;
+import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
-import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class VelocityMessageEvent implements Serializable {
+public class LocomotiveFunctionEvent implements Serializable {
 
   private LocomotiveBean locomotiveBean;
 
   private Integer updatedFunctionNumber;
 
-  public VelocityMessageEvent(LocomotiveBean locomotiveBean) {
+  public LocomotiveFunctionEvent(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
   }
 
-  public VelocityMessageEvent(CanMessage message) {
+  public LocomotiveFunctionEvent(CanMessage message) {
     parseMessage(message);
   }
 
@@ -47,33 +47,22 @@ public class VelocityMessageEvent implements Serializable {
       resp = message;
     }
 
-    if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND == resp.getCommand() && CanMessage.LOC_STOP_SUB_CMD == resp.getSubCommand() && CanMessage.DLC_5 == resp.getDlc()) {
-      //Loc halt command could be issued due to a direction change.
+    if (resp.isResponseMessage() && CanMessage.LOC_FUNCTION_RESP == resp.getCommand()) {
       byte[] data = resp.getData();
-      Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+      long id = CanMessage.toInt(new byte[]{data[0], data[1], data[2], data[3]});
 
-      LocomotiveBean lb = new LocomotiveBean();
-      lb.setId(id);
-      lb.setVelocity(0);
+      int functionNumber = data[4];
+      int functionValue = data[5];
+      this.locomotiveBean = new LocomotiveBean();
 
-      if (lb.getId() != null && lb.getVelocity() != null) {
-        this.locomotiveBean = lb;
-      }
-    } else if (resp.isResponseMessage() && CanMessage.LOC_VELOCITY_RESP == resp.getCommand()) {
-      byte[] data = resp.getData();
-      Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+      FunctionBean function = new FunctionBean(functionNumber, id);
+      function.setValue(functionValue);
 
-      Integer velocity = ByteUtil.toInt(new int[]{data[4], data[5]});
-
-      LocomotiveBean lb = new LocomotiveBean();
-      lb.setId(id);
-      lb.setVelocity(velocity);
-
-      if (lb.getId() != null && lb.getVelocity() != null) {
-        this.locomotiveBean = lb;
-      }
+      this.locomotiveBean.setId(id);
+      this.locomotiveBean.addFunction(function);
+      this.updatedFunctionNumber = functionNumber;
     } else {
-      Logger.warn("Can't parse message, not an Locomotive Velocity or a Locomotive emergency stop Response! " + resp);
+      Logger.warn("Can't parse message, not an Locomotive Function Message! " + resp);
     }
   }
 
@@ -87,6 +76,14 @@ public class VelocityMessageEvent implements Serializable {
 
   public Integer getUpdatedFunctionNumber() {
     return updatedFunctionNumber;
+  }
+
+  public boolean isValid() {
+    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
+  }
+
+  public boolean isEventFor(LocomotiveBean locomotive) {
+    return this.locomotiveBean.getId().equals(locomotive.getId());
   }
 
 }

@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import jcs.JCS;
-import jcs.controller.cs3.events.CanMessageListener;
 import jcs.controller.cs.can.parser.AccessoryBeanParser;
 import jcs.controller.cs.can.parser.LocomotiveBeanParser;
 import jcs.entities.enums.AccessoryValue;
@@ -46,29 +45,29 @@ import jcs.controller.cs.can.parser.ChannelDataParser;
 import jcs.controller.cs.can.parser.MessageInflator;
 import jcs.controller.cs.can.parser.StatusDataConfigParser;
 import jcs.controller.cs.can.parser.SystemStatusParser;
-import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs.net.CSConnection;
 import jcs.controller.cs.net.HTTPConnection;
 import jcs.controller.cs.net.CSConnectionFactory;
 import jcs.controller.events.PowerEvent;
 import jcs.controller.cs3.http.DeviceJSONParser;
 
-import jcs.controller.cs3.events.DirectionMessageEvent;
-import jcs.controller.cs3.events.DirectionMessageEventListener;
-import jcs.controller.cs3.events.FunctionMessageEvent;
+import jcs.controller.events.LocomotiveDirectionEvent;
+import jcs.controller.events.LocomotiveFunctionEvent;
 import jcs.controller.cs3.http.AccessoryJSONParser;
-import jcs.controller.cs3.events.FunctionMessageEventListener;
-import jcs.controller.cs3.events.VelocityMessageEvent;
-import jcs.controller.cs3.events.VelocityMessageEventListener;
+import jcs.controller.events.LocomotiveSpeedEvent;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.AccessoryListener;
 import jcs.controller.events.AccessoryEvent;
 import jcs.util.ByteUtil;
 import jcs.controller.cs.events.FeedbackListener;
+import jcs.controller.cs.events.LocomotiveListener;
 import jcs.controller.cs.events.SystemListener;
 import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
+import jcs.controller.events.LocomotiveSpeedEventListener;
 
 /**
  *
@@ -87,15 +86,14 @@ public class MarklinCS implements MarklinController {
   private ChannelDataParser channelData2;
   private ChannelDataParser channelData3;
   private ChannelDataParser channelData4;
-  //private AccessoryJSONParser accessoryParser;
 
   private final List<PowerEventListener> powerEventListeners;
   private final List<AccessoryEventListener> accessoryEventListeners;
   private final List<SensorEventListener> sensorEventListeners;
 
-  private final List<FunctionMessageEventListener> functionMessageEventListeners;
-  private final List<DirectionMessageEventListener> directionMessageEventListeners;
-  private final List<VelocityMessageEventListener> velocityMessageEventListeners;
+  private final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
+  private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
+  private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
   private ExecutorService executor;
   private ScheduledExecutorService scheduledExecutor;
@@ -111,9 +109,10 @@ public class MarklinCS implements MarklinController {
     powerEventListeners = new LinkedList<>();
     sensorEventListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
-    functionMessageEventListeners = new LinkedList<>();
-    directionMessageEventListeners = new LinkedList<>();
-    velocityMessageEventListeners = new LinkedList<>();
+
+    locomotiveFunctionEventListeners = new LinkedList<>();
+    locomotiveDirectionEventListeners = new LinkedList<>();
+    locomotiveSpeedEventListeners = new LinkedList<>();
 
     executor = Executors.newCachedThreadPool();
     scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -128,7 +127,9 @@ public class MarklinCS implements MarklinController {
   }
 
   public boolean isCS3() {
-    return this.mainDevice != null && !"60214".equals(this.mainDevice.getArticleNumber());
+    String article = this.mainDevice.getArticleNumber();
+    boolean cs2 = "60213".equals(article) || "60214".equals(article) || "60215".equals(article);
+    return this.mainDevice != null && !cs2;
   }
 
   public String getIp() {
@@ -157,20 +158,18 @@ public class MarklinCS implements MarklinController {
         }
 
         if (connected) {
-          //Prepare the observers (listeners) whic need to react on certain messages
-          //from the Central Station
-          //CanMessageEventListener messageListener = new CanMessageEventListener(this);
-
+          //Prepare the observers (listeners) which need to react on message events from the Central Station
           CanPingMessageListener pingListener = new CanPingMessageListener(this);
           CanFeedbackMessageListener feedbackListener = new CanFeedbackMessageListener(this);
           CanSystemMessageListener systemEventListener = new CanSystemMessageListener(this);
           CanAccessoryMessageListener accessoryListener = new CanAccessoryMessageListener(this);
+          CanLocomotiveMessageListener locomotiveListener = new CanLocomotiveMessageListener(this);
 
-          //this.connection.setCanMessageListener(messageListener);
           this.connection.setCanPingListener(pingListener);
           this.connection.setFeedbackListener(feedbackListener);
           this.connection.setSystemListener(systemEventListener);
           this.connection.setAccessoryListener(accessoryListener);
+          this.connection.setLocomotiveListener(locomotiveListener);
 
           JCS.logProgress("Obtaining Device information...");
           getMembers();
@@ -469,8 +468,8 @@ public class MarklinCS implements MarklinController {
       int la = getLocoAddres(address, decoderType);
       Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType + " Dir Mar: " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.csUid));
-      DirectionMessageEvent dme = new DirectionMessageEvent(message);
-      this.notifyDirectionEventListeners(dme);
+      LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(message);
+      this.notifyLocomotiveDirectionEventListeners(dme);
     }
   }
 
@@ -479,8 +478,8 @@ public class MarklinCS implements MarklinController {
     if (this.power) {
       int la = getLocoAddres(address, decoderType);
       CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.csUid));
-      VelocityMessageEvent vme = new VelocityMessageEvent(message);
-      this.notifyVelocityEventListeners(vme);
+      LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(message);
+      this.notifyLocomotiveSpeedEventListeners(vme);
     }
   }
 
@@ -490,8 +489,7 @@ public class MarklinCS implements MarklinController {
       int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
       int la = getLocoAddres(address, decoderType);
       CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.csUid));
-
-      this.notifyFunctionEventListeners(new FunctionMessageEvent(message));
+      this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
     }
   }
 
@@ -654,33 +652,33 @@ public class MarklinCS implements MarklinController {
   }
 
   @Override
-  public void addFunctionMessageEventListener(FunctionMessageEventListener listener) {
-    this.functionMessageEventListeners.add(listener);
+  public void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
+    this.locomotiveFunctionEventListeners.add(listener);
   }
 
   @Override
-  public void removeFunctionMessageEventListener(FunctionMessageEventListener listener) {
-    this.functionMessageEventListeners.remove(listener);
+  public void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
+    this.locomotiveFunctionEventListeners.remove(listener);
   }
 
   @Override
-  public void addDirectionMessageEventListener(DirectionMessageEventListener listener) {
-    this.directionMessageEventListeners.add(listener);
+  public void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
+    this.locomotiveDirectionEventListeners.add(listener);
   }
 
   @Override
-  public void removeDirectionMessageEventListener(DirectionMessageEventListener listener) {
-    this.directionMessageEventListeners.remove(listener);
+  public void removeLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
+    this.locomotiveDirectionEventListeners.remove(listener);
   }
 
   @Override
-  public void addVelocityMessageEventListener(VelocityMessageEventListener listener) {
-    this.velocityMessageEventListeners.add(listener);
+  public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
+    this.locomotiveSpeedEventListeners.add(listener);
   }
 
   @Override
-  public void removeVelocityMessageEventListener(VelocityMessageEventListener listener) {
-    this.velocityMessageEventListeners.remove(listener);
+  public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
+    this.locomotiveSpeedEventListeners.remove(listener);
   }
 
   private void notifyPowerEventListeners(final PowerEvent powerEvent) {
@@ -697,7 +695,7 @@ public class MarklinCS implements MarklinController {
 
   private void fireAllSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
-      listener.onSensorMessage(sensorEvent);
+      listener.onSensorChange(sensorEvent);
     }
   }
 
@@ -707,7 +705,7 @@ public class MarklinCS implements MarklinController {
 
   private void fireAllAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
     for (AccessoryEventListener listener : this.accessoryEventListeners) {
-      listener.onAccessoryMessage(accessoryEvent);
+      listener.onAccessoryChange(accessoryEvent);
     }
   }
 
@@ -715,106 +713,40 @@ public class MarklinCS implements MarklinController {
     executor.execute(() -> fireAllAccessoryEventListeners(accessoryEvent));
   }
 
-  private void fireAllFunctionEventListeners(final FunctionMessageEvent functionEvent) {
-    for (FunctionMessageEventListener listener : this.functionMessageEventListeners) {
-      listener.onFunctionMessage(functionEvent);
+  private void fireAllFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
+    if (functionEvent.isValid()) {
+      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+        listener.onFunctionChange(functionEvent);
+      }
     }
   }
 
-  private void notifyFunctionEventListeners(final FunctionMessageEvent functionEvent) {
+  private void notifyLocomotiveFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
     executor.execute(() -> fireAllFunctionEventListeners(functionEvent));
   }
 
-  private void fireAllDirectionEventListeners(final DirectionMessageEvent directionEvent) {
-    for (DirectionMessageEventListener listener : this.directionMessageEventListeners) {
-      listener.onDirectionMessage(directionEvent);
+  private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
+    if (directionEvent.isValid()) {
+      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+        listener.onDirectionChange(directionEvent);
+      }
     }
   }
 
-  private void notifyDirectionEventListeners(final DirectionMessageEvent directionEvent) {
+  private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
     executor.execute(() -> fireAllDirectionEventListeners(directionEvent));
   }
 
-  private void fireAllVelocityEventListeners(final VelocityMessageEvent velocityEvent) {
-    for (VelocityMessageEventListener listener : this.velocityMessageEventListeners) {
-      listener.onVelocityMessage(velocityEvent);
-    }
-  }
-
-  private void notifyVelocityEventListeners(final VelocityMessageEvent velocityEvent) {
-    executor.execute(() -> fireAllVelocityEventListeners(velocityEvent));
-
-  }
-
-  private class CanMessageEventListener implements CanMessageListener {
-
-    private final MarklinCS controller;
-
-    CanMessageEventListener(MarklinCS controller) {
-      this.controller = controller;
-    }
-
-    @Override
-    public void onCanMessage(CanMessageEvent canEvent) {
-      CanMessage msg = canEvent.getCanMessage();
-      int cmd = msg.getCommand();
-      int subcmd = msg.getSubCommand();
-
-      switch (cmd) {
-//        case MarklinCan.S88_EVENT_RESPONSE -> {
-//          SensorEvent sme = new SensorEvent(msg, canEvent.getEventDate());
-//          if (sme.getSensorBean() != null) {
-//            controller.notifySensorEventListeners(sme);
-//          }
-//        }
-//        case CanMessage.ACCESSORY_SWITCHING_RESP -> {
-//          AccessoryEvent ae = new AccessoryEvent(msg);
-//          if (ae.getAccessoryBean() != null && ae.getAccessoryBean().getAddress() != null) {
-//            controller.notifyAccessoryEventListeners(ae);
-//          }
-//        }
-        case CanMessage.LOC_FUNCTION_RESP -> {
-          FunctionMessageEvent lfe = new FunctionMessageEvent(msg);
-          if (lfe.getLocomotiveBean() != null && lfe.getLocomotiveBean().getId() != null) {
-            controller.notifyFunctionEventListeners(lfe);
-          }
-        }
-        case CanMessage.LOC_DIRECTION_RESP -> {
-          DirectionMessageEvent dme = new DirectionMessageEvent(msg);
-          if (dme.getLocomotiveBean() != null && dme.getLocomotiveBean().getId() != null) {
-            controller.notifyDirectionEventListeners(dme);
-          }
-        }
-        case CanMessage.LOC_VELOCITY_RESP -> {
-          VelocityMessageEvent vme = new VelocityMessageEvent(msg);
-          controller.notifyVelocityEventListeners(vme);
-        }
-
-//        case MarklinCan.SYSTEM_COMMAND_RESP -> {
-//          switch (subcmd) {
-//            case MarklinCan.STOP_SUB_CMD -> {
-//              PowerEvent spe = new PowerEvent(msg);
-//              controller.notifyPowerEventListeners(spe);
-//            }
-//            case MarklinCan.GO_SUB_CMD -> {
-//              PowerEvent gpe = new PowerEvent(msg);
-//              controller.notifyPowerEventListeners(gpe);
-//            }
-//            case MarklinCan.LOC_STOP_SUB_CMD -> {
-//              VelocityMessageEvent vmeh = new VelocityMessageEvent(msg);
-//              controller.notifyVelocityEventListeners(vmeh);
-//            }
-//            default -> {
-//            }
-//          }
-//        }
-        default -> {
-          //Logger.trace("Message: " + msg);
-
-        }
+  private void fireAllLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
+    if (speedEvent.isValid()) {
+      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+        listener.onSpeedChange(speedEvent);
       }
-      //Logger.trace("Message: " + msg);
     }
+  }
+
+  private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent locomotiveEvent) {
+    executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
   }
 
   private class CanFeedbackMessageListener implements FeedbackListener {
@@ -957,6 +889,28 @@ public class MarklinCS implements MarklinController {
             controller.notifyAccessoryEventListeners(ae);
           }
         }
+      }
+    }
+  }
+
+  private class CanLocomotiveMessageListener implements LocomotiveListener {
+
+    private final MarklinCS controller;
+
+    CanLocomotiveMessageListener(MarklinCS controller) {
+      this.controller = controller;
+    }
+
+    @Override
+    public void onLocomotiveMessage(CanMessage message) {
+      int cmd = message.getCommand();
+      switch (cmd) {
+        case CanMessage.LOC_FUNCTION_RESP ->
+          controller.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
+        case CanMessage.LOC_DIRECTION_RESP ->
+          controller.notifyLocomotiveDirectionEventListeners(new LocomotiveDirectionEvent(message));
+        case CanMessage.LOC_VELOCITY_RESP ->
+          controller.notifyLocomotiveSpeedEventListeners(new LocomotiveSpeedEvent(message));
       }
     }
   }

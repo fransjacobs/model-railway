@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.trackservice.events;
+package jcs.controller.events;
 
-import jcs.controller.cs3.events.DirectionMessageEvent;
+public interface LocomotiveFunctionEventListener {
 
-/**
- *
- * @author frans
- */
-public interface DirectionListener {
-
-    void onDirectionChange(DirectionMessageEvent event);
+  void onFunctionChange(LocomotiveFunctionEvent locomotiveFunctionEvent);
 
 }

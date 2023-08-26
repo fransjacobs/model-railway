@@ -18,6 +18,8 @@ package jcs.controller.events;
 import java.io.Serializable;
 import jcs.controller.cs.can.CanMessage;
 import jcs.entities.AccessoryBean;
+import jcs.entities.enums.AccessoryValue;
+import jcs.entities.enums.SignalValue;
 import org.tinylog.Logger;
 
 public class AccessoryEvent implements Serializable {
@@ -64,6 +66,18 @@ public class AccessoryEvent implements Serializable {
 
   public boolean isKnownAccessory() {
     return this.accessoryBean != null && this.accessoryBean.getAddress() != null;
+  }
+
+  public boolean isEventFor(AccessoryBean accessory) {
+    return this.accessoryBean.getAddress().equals(accessory.getAddress());
+  }
+
+  public SignalValue getSignalValue() {
+    return this.accessoryBean.getSignalValue();
+  }
+
+  public AccessoryValue getValue() {
+    return this.accessoryBean.getAccessoryValue();
   }
 
 }

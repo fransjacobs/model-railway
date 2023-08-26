@@ -16,7 +16,6 @@
 package jcs.ui.monitor;
 
 import com.formdev.flatlaf.util.SystemInfo;
-import static com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
@@ -150,7 +149,7 @@ public class FeedbackMonitor extends JFrame {
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
       if (ControllerFactory.getController() != null) {
-        ControllerFactory.getController().removeSensorListener(sensorTableModel);
+        ControllerFactory.getController().removeSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Removed sensor listener");
       }
       this.sensorTableModel.clear();
@@ -158,7 +157,7 @@ public class FeedbackMonitor extends JFrame {
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
       if (ControllerFactory.getController() != null) {
-        ControllerFactory.getController().addSensorListener(sensorTableModel);
+        ControllerFactory.getController().addSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Added sensor listener");
       }
     }//GEN-LAST:event_formWindowActivated

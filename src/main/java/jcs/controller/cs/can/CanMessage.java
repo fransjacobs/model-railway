@@ -317,6 +317,12 @@ public class CanMessage implements MarklinCan, Serializable {
     return this.command == ACCESSORY_SWITCHING || this.command == ACCESSORY_SWITCHING_RESP;
   }
 
+  public boolean isLocomotiveMessage() {
+    return this.command == LOC_VELOCITY || this.command == LOC_VELOCITY_RESP
+            || this.command == LOC_DIRECTION || this.command == LOC_DIRECTION_RESP
+            || this.command == LOC_FUNCTION || this.command == LOC_FUNCTION_RESP;
+  }
+
   public boolean isSystemMessage() {
     return this.command == SYSTEM_COMMAND || this.command == SYSTEM_COMMAND_RESP;
   }

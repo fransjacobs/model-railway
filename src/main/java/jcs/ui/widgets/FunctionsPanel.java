@@ -26,177 +26,175 @@ import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.cs3.events.FunctionMessageEvent;
+import jcs.controller.events.LocomotiveFunctionEvent;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
-import jcs.trackservice.events.FunctionListener;
+import jcs.controller.events.LocomotiveFunctionEventListener;
 import org.tinylog.Logger;
 
 /**
  *
  * @author fransjacobs
  */
-public class FunctionsPanel extends javax.swing.JPanel implements FunctionListener {
+public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunctionEventListener {
 
-    private final Map<Integer, JToggleButton> buttons;
-    private LocomotiveBean locomotive;
-    private final ExecutorService executor;
+  private final Map<Integer, JToggleButton> buttons;
+  private LocomotiveBean locomotive;
+  private final ExecutorService executor;
 
-    private final String IMG_PREFIX = "fkticon_";
-    private final String IMG_A = "a_";
-    private final String IMG_YELLOW = "ge_";
-    private final String IMG_BLACK = "sw_";
-    private final String NMB_FORMAT = "%03d";
+  private final String IMG_PREFIX = "fkticon_";
+  private final String IMG_A = "a_";
+  private final String IMG_YELLOW = "ge_";
+  private final String IMG_BLACK = "sw_";
+  private final String NMB_FORMAT = "%03d";
 
-    /**
-     * Creates new form FunctionsPanel
-     */
-    public FunctionsPanel() {
-        buttons = new HashMap<>();
-        executor = Executors.newCachedThreadPool();
+  /**
+   * Creates new form FunctionsPanel
+   */
+  public FunctionsPanel() {
+    buttons = new HashMap<>();
+    executor = Executors.newCachedThreadPool();
 
-        initComponents();
-        mapButtons();
+    initComponents();
+    mapButtons();
+  }
+
+  private void mapButtons() {
+    buttons.put(0, f0TB);
+    buttons.put(1, f1TB);
+    buttons.put(2, f2TB);
+    buttons.put(3, f3TB);
+    buttons.put(4, f4TB);
+    buttons.put(5, f5TB);
+    buttons.put(6, f6TB);
+    buttons.put(7, f7TB);
+    buttons.put(8, f8TB);
+    buttons.put(9, f9TB);
+    buttons.put(10, f10TB);
+    buttons.put(11, f11TB);
+    buttons.put(12, f12TB);
+    buttons.put(13, f13TB);
+    buttons.put(14, f14TB);
+    buttons.put(15, f15TB);
+
+    buttons.put(16, f16TB);
+    buttons.put(17, f17TB);
+    buttons.put(18, f18TB);
+    buttons.put(19, f19TB);
+    buttons.put(20, f20TB);
+    buttons.put(21, f21TB);
+    buttons.put(22, f22TB);
+    buttons.put(23, f23TB);
+    buttons.put(24, f24TB);
+    buttons.put(25, f25TB);
+    buttons.put(26, f26TB);
+    buttons.put(27, f27TB);
+    buttons.put(28, f28TB);
+    buttons.put(29, f29TB);
+    buttons.put(30, f30TB);
+    buttons.put(31, f31TB);
+
+    setEnabled(false);
+
+    if (ControllerFactory.getController() != null) {
+      ControllerFactory.getController().addLocomotiveFunctionEventListener(this);
     }
+  }
 
-    private void mapButtons() {
-        buttons.put(0, f0TB);
-        buttons.put(1, f1TB);
-        buttons.put(2, f2TB);
-        buttons.put(3, f3TB);
-        buttons.put(4, f4TB);
-        buttons.put(5, f5TB);
-        buttons.put(6, f6TB);
-        buttons.put(7, f7TB);
-        buttons.put(8, f8TB);
-        buttons.put(9, f9TB);
-        buttons.put(10, f10TB);
-        buttons.put(11, f11TB);
-        buttons.put(12, f12TB);
-        buttons.put(13, f13TB);
-        buttons.put(14, f14TB);
-        buttons.put(15, f15TB);
+  @Override
+  public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+    for (int i = 0; i < 32; i++) {
+      JToggleButton button = this.buttons.get(i);
+      button.setEnabled(enabled);
+    }
+    this.buttonsTP.setEnabled(enabled);
+  }
 
-        buttons.put(16, f16TB);
-        buttons.put(17, f17TB);
-        buttons.put(18, f18TB);
-        buttons.put(19, f19TB);
-        buttons.put(20, f20TB);
-        buttons.put(21, f21TB);
-        buttons.put(22, f22TB);
-        buttons.put(23, f23TB);
-        buttons.put(24, f24TB);
-        buttons.put(25, f25TB);
-        buttons.put(26, f26TB);
-        buttons.put(27, f27TB);
-        buttons.put(28, f28TB);
-        buttons.put(29, f29TB);
-        buttons.put(30, f30TB);
-        buttons.put(31, f31TB);
+  @Override
+  public void onFunctionChange(LocomotiveFunctionEvent event) {
+    if (this.locomotive != null && this.locomotive.getId().equals(event.getLocomotiveBean().getId())) {
+      Integer updatedFunction = event.getUpdatedFunctionNumber();
+      FunctionBean fb = event.getLocomotiveBean().getFunctionBean(updatedFunction);
+      if (fb != null) {
+        this.buttons.get(updatedFunction).setSelected(fb.isOn());
+      } else {
+        Logger.trace("Function for number " + updatedFunction + " not found");
+      }
+    }
+  }
 
-        setEnabled(false);
+  public void setLocomotive(LocomotiveBean locomotive) {
+    if (PersistenceFactory.getService() != null && locomotive != null) {
+      this.locomotive = locomotive;
+      Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
-        if (ControllerFactory.getController() != null) {
-            ControllerFactory.getController().addFunctionListener(this);
+      for (int i = 0; i < 32; i++) {
+        JToggleButton button = this.buttons.get(i);
+
+        if (functions.containsKey(i)) {
+          //Logger.trace("Button " + i);
+          FunctionBean fb = functions.get(i);
+
+          int type = fb.getFunctionType();
+          boolean val = fb.getValue() == 1;
+
+          String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
+          String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
+
+          Image iconOff = PersistenceFactory.getService().getFunctionImage(functionOff);
+          if (iconOff == null) {
+            button.setText("F" + i);
+            Logger.trace("Missing icon " + functionOff);
+
+          } else {
+            button.setText("");
+            button.setIcon(new ImageIcon(iconOff));
+          }
+
+          Image iconOn = PersistenceFactory.getService().getFunctionImage(functionOn);
+          if (iconOn == null) {
+          } else {
+            button.setText("");
+            button.setSelectedIcon(new ImageIcon(iconOn));
+          }
+
+          button.setSelected(val);
+          button.setActionCommand("F" + i);
+          button.setEnabled(true);
+        } else {
+          button.setIcon(null);
+          button.setText("");
+          button.setEnabled(false);
         }
+      }
     }
+  }
 
-    @Override
-    public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
-        for (int i = 0; i < 32; i++) {
-            JToggleButton button = this.buttons.get(i);
-            button.setEnabled(enabled);
-        }
-        this.buttonsTP.setEnabled(enabled);
+  public LocomotiveBean getLocomotive() {
+    return locomotive;
+  }
+
+  private void buttonActionPerformed(ActionEvent evt) {
+    JToggleButton src = (JToggleButton) evt.getSource();
+    boolean value = src.isSelected();
+    Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
+    Integer functionNumber = Integer.parseInt(evt.getActionCommand().replace("F", ""));
+    executor.execute(() -> changeFunction(value, functionNumber, locomotive));
+  }
+
+  private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
+    if (ControllerFactory.getController() != null && this.locomotive != null) {
+      ControllerFactory.getController().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
     }
+  }
 
-    @Override
-    public void onFunctionChange(FunctionMessageEvent event) {
-        if (this.locomotive != null && this.locomotive.getId().equals(event.getLocomotiveBean().getId())) {
-            Integer updatedFunction = event.getUpdatedFunctionNumber();
-            FunctionBean fb = event.getLocomotiveBean().getFunctionBean(updatedFunction);
-            if (fb != null) {
-                this.buttons.get(updatedFunction).setSelected(fb.isOn());
-            } else {
-                Logger.trace("Function for number " + updatedFunction + " not found");
-            }
-        }
-    }
-
-    public void setLocomotive(LocomotiveBean locomotive) {
-        if (PersistenceFactory.getService() != null && locomotive != null) {
-            this.locomotive = locomotive;
-            Map<Integer, FunctionBean> functions = locomotive.getFunctions();
-
-            for (int i = 0; i < 32; i++) {
-                JToggleButton button = this.buttons.get(i);
-
-                if (functions.containsKey(i)) {
-                    //Logger.trace("Button " + i);
-                    FunctionBean fb = functions.get(i);
-
-                    int type = fb.getFunctionType();
-                    boolean val = fb.getValue() == 1;
-
-                    String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
-                    String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
-
-                    Image iconOff = PersistenceFactory.getService().getFunctionImage(functionOff);
-                    if (iconOff == null) {
-                        button.setText("F" + i);
-                        Logger.trace("Missing icon " + functionOff);
-
-                    } else {
-                        button.setText("");
-                        button.setIcon(new ImageIcon(iconOff));
-                    }
-
-                    Image iconOn = PersistenceFactory.getService().getFunctionImage(functionOn);
-                    if (iconOn == null) {
-                    } else {
-                        button.setText("");
-                        button.setSelectedIcon(new ImageIcon(iconOn));
-                    }
-
-                    button.setSelected(val);
-                    button.setActionCommand("F" + i);
-                    button.setEnabled(true);
-                } else {
-                    button.setIcon(null);
-                    button.setText("");
-                    button.setEnabled(false);
-                }
-            }
-        }
-    }
-
-    public LocomotiveBean getLocomotive() {
-        return locomotive;
-    }
-
-    private void buttonActionPerformed(ActionEvent evt) {
-        JToggleButton src = (JToggleButton) evt.getSource();
-        boolean value = src.isSelected();
-        Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
-        Integer functionNumber = Integer.parseInt(evt.getActionCommand().replace("F", ""));
-        executor.execute(() -> changeFunction(value, functionNumber, locomotive));
-    }
-
-    private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
-        if (ControllerFactory.getController() != null && this.locomotive != null) {
-            ControllerFactory.getController().changeFunction(newValue, functionNumber, locomotiveBean);
-        }
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -595,112 +593,112 @@ public class FunctionsPanel extends javax.swing.JPanel implements FunctionListen
     }// </editor-fold>//GEN-END:initComponents
 
     private void f12TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f12TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f12TBActionPerformed
 
     private void f16TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f16TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f16TBActionPerformed
 
     private void f28TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f28TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f28TBActionPerformed
 
     private void f0TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f0TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f0TBActionPerformed
 
     private void f1TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f1TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f1TBActionPerformed
 
     private void f2TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f2TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f2TBActionPerformed
 
     private void f3TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f3TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f3TBActionPerformed
 
     private void f4TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f4TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f4TBActionPerformed
 
     private void f5TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f5TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f5TBActionPerformed
 
     private void f6TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f6TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f6TBActionPerformed
 
     private void f7TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f7TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f7TBActionPerformed
 
     private void f8TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f8TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f8TBActionPerformed
 
     private void f9TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f9TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f9TBActionPerformed
 
     private void f10TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f10TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f10TBActionPerformed
 
     private void f11TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f11TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f11TBActionPerformed
 
     private void f13TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f13TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f13TBActionPerformed
 
     private void f14TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f14TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f14TBActionPerformed
 
     private void f15TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f15TBActionPerformed
-        buttonActionPerformed(evt);
+      buttonActionPerformed(evt);
     }//GEN-LAST:event_f15TBActionPerformed
 
-    public static void main(String args[]) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.error("Can't set the LookAndFeel: " + ex);
-        }
-        java.awt.EventQueue.invokeLater(() -> {
-
-            FunctionsPanel testPanel = new FunctionsPanel();
-            JFrame testFrame = new JFrame("FunctionsPanel Tester");
-
-            testFrame.add(testPanel);
-
-            testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-                @Override
-                public void windowClosing(java.awt.event.WindowEvent e) {
-                    System.exit(0);
-                }
-            });
-            testFrame.pack();
-            testFrame.setLocationRelativeTo(null);
-
-            if (ControllerFactory.getController() != null) {
-
-                //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
-                //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
-                LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16391L);
-
-                testPanel.setLocomotive(loc);
-
-            }
-
-            testFrame.setVisible(true);
-        });
+  public static void main(String args[]) {
+    try {
+      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.error("Can't set the LookAndFeel: " + ex);
     }
+    java.awt.EventQueue.invokeLater(() -> {
+
+      FunctionsPanel testPanel = new FunctionsPanel();
+      JFrame testFrame = new JFrame("FunctionsPanel Tester");
+
+      testFrame.add(testPanel);
+
+      testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+        @Override
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          System.exit(0);
+        }
+      });
+      testFrame.pack();
+      testFrame.setLocationRelativeTo(null);
+
+      if (ControllerFactory.getController() != null) {
+
+        //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
+        //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16391L);
+
+        testPanel.setLocomotive(loc);
+
+      }
+
+      testFrame.setVisible(true);
+    });
+  }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

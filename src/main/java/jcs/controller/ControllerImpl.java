@@ -28,31 +28,25 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import jcs.JCS;
 import jcs.controller.events.SensorEvent;
-import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
 import jcs.entities.enums.Direction;
-import jcs.trackservice.events.AccessoryListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
-import jcs.trackservice.events.SensorListener;
 import org.tinylog.Logger;
 import jcs.controller.events.AccessoryEvent;
-import jcs.controller.cs3.events.DirectionMessageEvent;
-import jcs.controller.cs3.events.DirectionMessageEventListener;
-import jcs.controller.cs3.events.FunctionMessageEvent;
-import jcs.controller.cs3.events.FunctionMessageEventListener;
-import jcs.controller.cs3.events.VelocityMessageEvent;
-import jcs.controller.cs3.events.VelocityMessageEventListener;
+import jcs.controller.events.LocomotiveDirectionEvent;
+import jcs.controller.events.LocomotiveFunctionEvent;
+import jcs.controller.events.LocomotiveSpeedEvent;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.events.DirectionListener;
-import jcs.trackservice.events.FunctionListener;
-import jcs.trackservice.events.VelocityListener;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
+import jcs.controller.events.LocomotiveFunctionEventListener;
+import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveSpeedEventListener;
 
 /**
  * The Controller Implementation is the implementation of the Controller Interface. Its purpose is to serve as an abstraction layer for Controllers so that in the future more Controllers can be
@@ -62,23 +56,23 @@ public class ControllerImpl implements Controller {
 
   private MarklinController vendorController;
 
-  private final List<SensorListener> sensorListeners;
-  private final List<AccessoryListener> accessoryListeners;
-  private final List<FunctionListener> functionListeners;
+  private final List<SensorEventListener> sensorEventListeners;
+  private final List<AccessoryEventListener> accessoryEventListeners;
+  private final List<LocomotiveFunctionEventListener> LocomotiveFunctionEventListeners;
 
-  private final List<DirectionListener> directionListeners;
-  private final List<VelocityListener> velocityListeners;
+  private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
+  private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
   public ControllerImpl() {
     this("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true")));
   }
 
   private ControllerImpl(boolean autoConnectController) {
-    sensorListeners = new LinkedList<>();
-    accessoryListeners = new LinkedList<>();
-    functionListeners = new LinkedList<>();
-    directionListeners = new LinkedList<>();
-    velocityListeners = new LinkedList<>();
+    sensorEventListeners = new LinkedList<>();
+    accessoryEventListeners = new LinkedList<>();
+    LocomotiveFunctionEventListeners = new LinkedList<>();
+    locomotiveDirectionEventListeners = new LinkedList<>();
+    locomotiveSpeedEventListeners = new LinkedList<>();
 
     if (autoConnectController) {
       connect();
@@ -104,11 +98,11 @@ public class ControllerImpl implements Controller {
     }
 
     if (vendorController != null && vendorController.connect()) {
-      this.vendorController.addSensorEventListener(new SensorMessageEventListener(this));
-      this.vendorController.addAccessoryEventListener(new AccessoryMessageListener(this));
-      this.vendorController.addFunctionMessageEventListener(new FunctionMessageListener(this));
-      this.vendorController.addDirectionMessageEventListener(new DirectionMessageListener(this));
-      this.vendorController.addVelocityMessageEventListener(new VelocityMessageListener(this));
+      this.vendorController.addSensorEventListener(new SensorChangeEventListener(this));
+      this.vendorController.addAccessoryEventListener(new AccessoryChangeEventListener(this));
+      this.vendorController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
+      this.vendorController.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
+      this.vendorController.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
     }
 
     //TODO implement get the day end i.e. the current stata of all Objects on track
@@ -178,18 +172,12 @@ public class ControllerImpl implements Controller {
   }
 
   @Override
-  public void addPowerListener(PowerEventListener listener) {
+  public void addPowerEventListener(PowerEventListener listener) {
     if (this.vendorController != null) {
       this.vendorController.addPowerEventListener(listener);
     }
   }
 
-//  @Override
-//  public void removePowerEventListener(PowerEventListener listener) {
-//    if (this.vendorController != null) {
-//      this.vendorController.removePowerEventListener(listener);
-//    }
-//  }
   @Override
   public void switchPower(boolean on) {
     Logger.trace("Switch Power " + (on ? "On" : "Off"));
@@ -263,7 +251,7 @@ public class ControllerImpl implements Controller {
   }
 
   @Override
-  public void synchronizeTurnouts() {
+  public void synchronizeTurnoutsWithController() {
     List<AccessoryBean> csTurnouts = this.vendorController.getSwitches();
 
     for (AccessoryBean turnout : csTurnouts) {
@@ -278,7 +266,7 @@ public class ControllerImpl implements Controller {
   }
 
   @Override
-  public void synchronizeSignals() {
+  public void synchronizeSignalsWithController() {
     List<AccessoryBean> csSignals = this.vendorController.getSignals();
 
     for (AccessoryBean signal : csSignals) {
@@ -293,29 +281,23 @@ public class ControllerImpl implements Controller {
   }
 
   @Override
-  public void updateGuiStatuses() {
-    //updateAccessoryStatuses();
-  }
-
-  @Override
-  public void changeDirection(Direction newDirection, LocomotiveBean locomotive) {
+  public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
     Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.toLogString());
     Integer address = locomotive.getAddress();
     DecoderType decoderType = locomotive.getDecoderType();
 
-    //Issue a halt or stop for the loc
     vendorController.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), 0);
     vendorController.changeDirection(address, decoderType, newDirection);
   }
 
   @Override
-  public void changeVelocity(Integer newVelocity, LocomotiveBean locomotive) {
+  public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
     vendorController.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), newVelocity);
   }
 
   @Override
-  public void changeFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
+  public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
     vendorController.changeFunctionValue(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), functionNumber, newValue);
   }
@@ -335,76 +317,66 @@ public class ControllerImpl implements Controller {
     vendorController.switchAccessory(address, val);
   }
 
-//  @Override
-//  public void addMessageListener(CanMessageListener listener) {
-//    if (this.vendorController != null) {
-//      //this.vendorController.addCanMessageListener(listener);
-//    }
-//  }
-
-//  @Override
-//  public void removeMessageListener(CanMessageListener listener) {
-//    if (this.vendorController != null) {
-//      //this.vendorController.removeCanMessageListener(listener);
-//    }
-//  }
   @Override
-  public void addSensorListener(SensorListener listener) {
-    this.sensorListeners.add(listener);
+  public void addSensorEventListener(SensorEventListener listener) {
+    this.sensorEventListeners.add(listener);
   }
 
   @Override
-  public void removeSensorListener(SensorListener listener) {
-    this.sensorListeners.remove(listener);
+  public void removeSensorEventListener(SensorEventListener listener) {
+    this.sensorEventListeners.remove(listener);
   }
 
   @Override
-  public void addAccessoryListener(AccessoryListener listener) {
-    this.accessoryListeners.add(listener);
+  public void addAccessoryEventListener(AccessoryEventListener listener) {
+    this.accessoryEventListeners.add(listener);
   }
 
   @Override
-  public void removeAccessoryListener(AccessoryListener listener) {
-    this.accessoryListeners.remove(listener);
+  public void removeAccessoryEventListener(AccessoryEventListener listener) {
+    this.accessoryEventListeners.remove(listener);
   }
 
   @Override
-  public void addFunctionListener(FunctionListener listener) {
-    this.functionListeners.add(listener);
+  public void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
+    this.LocomotiveFunctionEventListeners.add(listener);
   }
 
-//  @Override
-//  public void removeFunctionListener(FunctionListener listener) {
-//    this.functionListeners.remove(listener);
-//  }
   @Override
-  public void addDirectionListener(DirectionListener listener) {
-    this.directionListeners.add(listener);
+  public void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
+    this.LocomotiveFunctionEventListeners.remove(listener);
   }
 
-//  @Override
-//  public void removeDirectionListener(DirectionListener listener) {
-//    this.directionListeners.remove(listener);
-//  }
   @Override
-  public void addVelocityListener(VelocityListener listener) {
-    this.velocityListeners.add(listener);
+  public void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
+    this.locomotiveDirectionEventListeners.add(listener);
   }
 
-//  @Override
-//  public void removeVelocityListener(VelocityListener listener) {
-//    this.velocityListeners.remove(listener);
-//  }
-  private class SensorMessageEventListener implements SensorEventListener {
+  @Override
+  public void removeLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
+    this.locomotiveDirectionEventListeners.remove(listener);
+  }
+
+  @Override
+  public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
+    this.locomotiveSpeedEventListeners.add(listener);
+  }
+
+  @Override
+  public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
+    this.locomotiveSpeedEventListeners.remove(listener);
+  }
+
+  private class SensorChangeEventListener implements SensorEventListener {
 
     private final ControllerImpl trackController;
 
-    SensorMessageEventListener(ControllerImpl trackController) {
+    SensorChangeEventListener(ControllerImpl trackController) {
       this.trackController = trackController;
     }
 
     @Override
-    public void onSensorMessage(SensorEvent event) {
+    public void onSensorChange(SensorEvent event) {
       SensorBean sb = event.getSensorBean();
       SensorBean dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
 
@@ -414,22 +386,22 @@ public class ControllerImpl implements Controller {
         PersistenceFactory.getService().persist(sb);
       }
 
-      for (SensorListener sl : trackController.sensorListeners) {
-        sl.onChange(sb);
+      for (SensorEventListener sl : trackController.sensorEventListeners) {
+        sl.onSensorChange(event);
       }
     }
   }
 
-  private class AccessoryMessageListener implements AccessoryEventListener {
+  private class AccessoryChangeEventListener implements AccessoryEventListener {
 
     private final ControllerImpl trackService;
 
-    AccessoryMessageListener(ControllerImpl trackService) {
+    AccessoryChangeEventListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
     @Override
-    public void onAccessoryMessage(AccessoryEvent event) {
+    public void onAccessoryChange(AccessoryEvent event) {
       AccessoryBean ab = event.getAccessoryBean();
 
       int address = ab.getAddress();
@@ -466,23 +438,23 @@ public class ControllerImpl implements Controller {
         }
         PersistenceFactory.getService().persist(ab);
 
-        for (AccessoryListener al : this.trackService.accessoryListeners) {
-          al.onChange(event);
+        for (AccessoryEventListener al : this.trackService.accessoryEventListeners) {
+          al.onAccessoryChange(event);
         }
       }
     }
   }
 
-  private class FunctionMessageListener implements FunctionMessageEventListener {
+  private class LocomotiveFunctionChangeEventListener implements LocomotiveFunctionEventListener {
 
     private final ControllerImpl trackService;
 
-    FunctionMessageListener(ControllerImpl trackService) {
+    LocomotiveFunctionChangeEventListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
     @Override
-    public void onFunctionMessage(FunctionMessageEvent functionEvent) {
+    public void onFunctionChange(LocomotiveFunctionEvent functionEvent) {
       LocomotiveBean lb = functionEvent.getLocomotiveBean();
       LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
@@ -493,23 +465,23 @@ public class ControllerImpl implements Controller {
           PersistenceFactory.getService().persist(dblb);
           functionEvent.setLocomotiveBean(dblb);
         }
-        for (FunctionListener fl : trackService.functionListeners) {
+        for (LocomotiveFunctionEventListener fl : trackService.LocomotiveFunctionEventListeners) {
           fl.onFunctionChange(functionEvent);
         }
       }
     }
   }
 
-  private class DirectionMessageListener implements DirectionMessageEventListener {
+  private class LocomotiveDirectionChangeEventListener implements LocomotiveDirectionEventListener {
 
     private final ControllerImpl trackService;
 
-    DirectionMessageListener(ControllerImpl trackService) {
+    LocomotiveDirectionChangeEventListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
     @Override
-    public void onDirectionMessage(DirectionMessageEvent directionEvent) {
+    public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
       LocomotiveBean lb = directionEvent.getLocomotiveBean();
       LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
@@ -519,25 +491,24 @@ public class ControllerImpl implements Controller {
         PersistenceFactory.getService().persist(dblb);
         directionEvent.setLocomotiveBean(dblb);
 
-        for (DirectionListener dl : this.trackService.directionListeners) {
+        for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {
           dl.onDirectionChange(directionEvent);
         }
       }
     }
-
   }
 
-  private class VelocityMessageListener implements VelocityMessageEventListener {
+  private class LocomotiveSpeedChangeEventListener implements LocomotiveSpeedEventListener {
 
     private final ControllerImpl trackService;
 
-    VelocityMessageListener(ControllerImpl trackService) {
+    LocomotiveSpeedChangeEventListener(ControllerImpl trackService) {
       this.trackService = trackService;
     }
 
     @Override
-    public void onVelocityMessage(VelocityMessageEvent velocityEvent) {
-      LocomotiveBean lb = velocityEvent.getLocomotiveBean();
+    public void onSpeedChange(LocomotiveSpeedEvent speedEvent) {
+      LocomotiveBean lb = speedEvent.getLocomotiveBean();
       if (lb != null && lb.getId() != null) {
         LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
@@ -546,24 +517,14 @@ public class ControllerImpl implements Controller {
           dblb.setVelocity(velocity);
           PersistenceFactory.getService().persist(dblb);
 
-          velocityEvent.setLocomotiveBean(dblb);
+          speedEvent.setLocomotiveBean(dblb);
 
-          for (VelocityListener dl : this.trackService.velocityListeners) {
-            dl.onVelocityChange(velocityEvent);
+          for (LocomotiveSpeedEventListener dl : this.trackService.locomotiveSpeedEventListeners) {
+            dl.onSpeedChange(speedEvent);
           }
         }
       }
     }
-  }
-
-  //For direct testing
-  public static void main(String[] a) {
-    Controller c = ControllerFactory.getController();
-
-    Logger.info("Controller Name " + c.getControllerName());
-    Logger.info("Controller Article " + c.getControllerArticleNumber());
-    Logger.info("Controller Serial " + c.getControllerSerialNumber());
-
   }
 
 }

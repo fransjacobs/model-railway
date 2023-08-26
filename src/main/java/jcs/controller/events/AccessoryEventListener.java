@@ -15,10 +15,8 @@
  */
 package jcs.controller.events;
 
-import jcs.controller.events.AccessoryEvent;
-
 public interface AccessoryEventListener {
 
-    void onAccessoryMessage(AccessoryEvent accessoryEvent);
+    void onAccessoryChange(AccessoryEvent accessoryEvent);
 
 }

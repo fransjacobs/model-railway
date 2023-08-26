@@ -21,13 +21,14 @@ import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.geom.Ellipse2D;
+import jcs.controller.events.SensorEvent;
+import jcs.controller.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
 import jcs.entities.enums.TileType;
-import jcs.trackservice.events.SensorListener;
 
-public class Sensor extends Straight implements SensorListener {
+public class Sensor extends Straight implements SensorEventListener {
 
   private boolean active;
 
@@ -72,7 +73,6 @@ public class Sensor extends Straight implements SensorListener {
     }
 
     g2.fill(new Ellipse2D.Double(xx, yy, 0.5f * radius, 0.5f * radius));
-
   }
 
   @Override
@@ -86,7 +86,8 @@ public class Sensor extends Straight implements SensorListener {
   }
 
   @Override
-  public void onChange(SensorBean sensor) {
+  public void onSensorChange(SensorEvent event) {
+    SensorBean sensor = event.getSensorBean();
     if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
       this.setActive(sensor.isActive());
       repaintTile();

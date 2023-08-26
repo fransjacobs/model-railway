@@ -16,21 +16,21 @@
 package jcs.controller;
 
 import java.beans.PropertyChangeListener;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEventListener;
+import jcs.controller.events.LocomotiveSpeedEventListener;
 //import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
-import jcs.trackservice.events.AccessoryListener;
-import jcs.trackservice.events.DirectionListener;
-import jcs.trackservice.events.FunctionListener;
-import jcs.trackservice.events.SensorListener;
-import jcs.trackservice.events.VelocityListener;
 import jcs.controller.events.PowerEventListener;
+import jcs.controller.events.SensorEventListener;
 
 /**
- * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For
- * future use the implementation of the Repository could be changed to an other storage provider
+ * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For future use the implementation of the Repository could be changed to
+ * an other storage provider
  *
  * @author frans
  */
@@ -46,36 +46,35 @@ public interface Controller {
 
   void disconnect();
 
-  void addPowerListener(PowerEventListener listener);
+  void addPowerEventListener(PowerEventListener listener);
 
-  //Image getFunctionImage(String imageName);
-  void changeDirection(Direction direction, LocomotiveBean locomotive);
+  void changeLocomotiveDirection(Direction direction, LocomotiveBean locomotive);
 
-  void changeVelocity(Integer speed, LocomotiveBean locomotive);
+  void changeLocomotiveSpeed(Integer speed, LocomotiveBean locomotive);
 
-  void changeFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
+  void changeLocomotiveFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
   void switchAccessory(AccessoryValue value, AccessoryBean accessory);
 
-  void addAccessoryListener(AccessoryListener listener);
+  void addAccessoryEventListener(AccessoryEventListener listener);
 
-  void removeAccessoryListener(AccessoryListener listener);
+  void removeAccessoryEventListener(AccessoryEventListener listener);
 
-  void addSensorListener(SensorListener listener);
+  void addSensorEventListener(SensorEventListener listener);
 
-  void removeSensorListener(SensorListener listener);
+  void removeSensorEventListener(SensorEventListener listener);
 
-  void addFunctionListener(FunctionListener listener);
+  void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener);
 
-  //void removeFunctionListener(FunctionListener listener);
+  void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener);
 
-  void addDirectionListener(DirectionListener listener);
+  void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener);
 
-  //void removeDirectionListener(DirectionListener listener);
+  void removeLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener);
 
-  void addVelocityListener(VelocityListener listener);
+  void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
-  //void removeVelocityListener(VelocityListener listener);
+  void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
   String getControllerName();
 
@@ -83,16 +82,15 @@ public interface Controller {
 
   String getControllerArticleNumber();
 
-  
-  //void addMessageListener(CanMessageListener listener);
-
-  //void removeMessageListener(CanMessageListener listener);
-
   void synchronizeLocomotivesWithController(PropertyChangeListener progressListener);
 
-  void synchronizeTurnouts();
+  void synchronizeTurnoutsWithController();
 
-  void synchronizeSignals();
+  void synchronizeSignalsWithController();
 
-  void updateGuiStatuses();
+    //Image getFunctionImage(String imageName);
+
+  
+  
+  //void updateGuiStatuses();
 }

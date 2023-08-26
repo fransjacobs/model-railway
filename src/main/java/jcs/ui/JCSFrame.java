@@ -794,7 +794,7 @@ public class JCSFrame extends JFrame implements UICallback {
         this.controllerSerialNumberLbl.setText(ControllerFactory.getController().getControllerSerialNumber());
         this.controllerHostNameLbl.setText("CS3-" + ControllerFactory.getController().getControllerSerialNumber());
 
-        //TrackControllerFactory.getTrackController().addPowerListener(new Powerlistener(this));
+        //TrackControllerFactory.getTrackController().addPowerEventListener(new Powerlistener(this));
         this.connectMI.setText("Disconnect");
       } else {
         ControllerFactory.getController().disconnect();

@@ -20,6 +20,7 @@ import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.AccessoryListener;
 import jcs.controller.cs.events.FeedbackListener;
+import jcs.controller.cs.events.LocomotiveListener;
 import jcs.controller.cs.events.SystemListener;
 
 /**
@@ -43,6 +44,8 @@ public interface CSConnection extends AutoCloseable {
   void setSystemListener(SystemListener systemListener);
 
   void setAccessoryListener(AccessoryListener accessoryListener);
+
+  void setLocomotiveListener(LocomotiveListener locomotiveListener);
 
   InetAddress getControllerAddress();
 

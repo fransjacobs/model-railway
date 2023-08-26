@@ -23,10 +23,10 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
-import jcs.controller.cs3.events.DirectionMessageEventListener;
-import jcs.controller.cs3.events.FunctionMessageEventListener;
-import jcs.controller.cs3.events.VelocityMessageEventListener;
 import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEventListener;
+import jcs.controller.events.LocomotiveSpeedEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
 
@@ -61,20 +61,18 @@ public interface MarklinController {
   void addAccessoryEventListener(AccessoryEventListener listener);
 
   void removeAccessoryEventListener(AccessoryEventListener listener);
-  
-  
 
-  void addFunctionMessageEventListener(FunctionMessageEventListener listener);
+  void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener);
 
-  void removeFunctionMessageEventListener(FunctionMessageEventListener listener);
+  void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener);
 
-  void addDirectionMessageEventListener(DirectionMessageEventListener listener);
+  void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener);
 
-  void removeDirectionMessageEventListener(DirectionMessageEventListener listener);
+  void removeLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener);
 
-  void addVelocityMessageEventListener(VelocityMessageEventListener listener);
+  void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
-  void removeVelocityMessageEventListener(VelocityMessageEventListener listener);
+  void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
   List<LocomotiveBean> getLocomotives();
 

@@ -15,10 +15,8 @@
  */
 package jcs.controller.events;
 
-import jcs.controller.events.SensorEvent;
-
 public interface SensorEventListener {
 
-  void onSensorMessage(SensorEvent sensorMessageEvent);
+  void onSensorChange(SensorEvent sensorEvent);
 
 }

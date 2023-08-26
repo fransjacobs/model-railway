@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.trackservice.events;
+package jcs.controller.events;
 
-import jcs.entities.SensorBean;
+public interface LocomotiveDirectionEventListener {
 
-public interface SensorListener {
-
-    void onChange(SensorBean sensor);
+    void onDirectionChange(LocomotiveDirectionEvent directionMessageEvent);
 
 }

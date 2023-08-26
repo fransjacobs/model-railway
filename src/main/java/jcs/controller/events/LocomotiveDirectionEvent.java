@@ -13,30 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.events;
 
 import java.io.Serializable;
 import jcs.controller.cs.can.CanMessage;
-import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
-import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class FunctionMessageEvent implements Serializable {
+public class LocomotiveDirectionEvent implements Serializable {
 
   private LocomotiveBean locomotiveBean;
 
-  private Integer updatedFunctionNumber;
-
-  public FunctionMessageEvent(LocomotiveBean locomotiveBean) {
+  public LocomotiveDirectionEvent(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
   }
 
-  public FunctionMessageEvent(CanMessage message) {
+  public LocomotiveDirectionEvent(CanMessage message) {
     parseMessage(message);
   }
 
@@ -48,22 +44,21 @@ public class FunctionMessageEvent implements Serializable {
       resp = message;
     }
 
-    if (resp.isResponseMessage() && CanMessage.LOC_FUNCTION_RESP == resp.getCommand()) {
+    if (resp.isResponseMessage() && CanMessage.LOC_DIRECTION_RESP == resp.getCommand()) {
       byte[] data = resp.getData();
-      Long id = ByteUtil.toLong(new int[]{data[0], data[1], data[2], data[3]});
+      long id = CanMessage.toInt(new byte[]{data[0], data[1], data[2], data[3]});
 
-      Integer functionNumber = data[4] & 0xff;
-      Integer functionValue = data[5] & 0xff;
-      this.locomotiveBean = new LocomotiveBean();
+      int richtung = data[4];
+      LocomotiveBean lb = new LocomotiveBean();
 
-      FunctionBean function = new FunctionBean(functionNumber, id);
-      function.setValue(functionValue);
+      lb.setId(id);
+      lb.setRichtung(richtung);
 
-      this.locomotiveBean.setId(id);
-      this.locomotiveBean.addFunction(function);
-      this.updatedFunctionNumber = functionNumber;
+      if (lb.getId() != null && lb.getRichtung() != null) {
+        this.locomotiveBean = lb;
+      }
     } else {
-      Logger.warn("Can't parse message, not an Locomotive Function Response! " + resp);
+      Logger.warn("Can't parse message, not a Locomotive Direction Message! " + resp);
     }
   }
 
@@ -75,8 +70,12 @@ public class FunctionMessageEvent implements Serializable {
     this.locomotiveBean = locomotiveBean;
   }
 
-  public Integer getUpdatedFunctionNumber() {
-    return updatedFunctionNumber;
+  public boolean isValid() {
+    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
+  }
+
+  public boolean isEventFor(LocomotiveBean locomotive) {
+    return this.locomotiveBean.getId().equals(locomotive.getId());
   }
 
 }

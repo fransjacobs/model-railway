@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2023 fransjacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.events;
+package jcs.controller.events;
 
-public interface VelocityMessageEventListener {
+/**
+ *
+ * @author fransjacobs
+ */
+public interface LocomotiveSpeedEventListener {
 
-    void onVelocityMessage(VelocityMessageEvent velocityMessageEvent);
+  void onSpeedChange(LocomotiveSpeedEvent velocityEvent);
 
 }

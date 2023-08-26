@@ -23,11 +23,11 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import jcs.controller.cs.can.CanMessage;
-import jcs.controller.cs3.events.CanMessageListener;
 import org.tinylog.Logger;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.AccessoryListener;
 import jcs.controller.cs.events.FeedbackListener;
+import jcs.controller.cs.events.LocomotiveListener;
 import jcs.controller.cs.events.SystemListener;
 
 /**
@@ -35,22 +35,22 @@ import jcs.controller.cs.events.SystemListener;
  * @author Frans Jacobs
  */
 class TCPConnection implements CSConnection {
-
+  
   private final InetAddress centralStationAddress;
-
+  
   private Socket clientSocket;
   private DataOutputStream dos;
-
+  
   private ClientMessageReceiver messageReceiver;
-
+  
   private static final long SHORT_TIMEOUT = 500L;
   private static final long LONG_TIMEOUT = 4000L;
-
+  
   TCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     checkConnection();
   }
-
+  
   private void checkConnection() {
     try {
       if (clientSocket == null || !clientSocket.isConnected()) {
@@ -58,7 +58,7 @@ class TCPConnection implements CSConnection {
         clientSocket.setKeepAlive(true);
         clientSocket.setTcpNoDelay(true);
         dos = new DataOutputStream(clientSocket.getOutputStream());
-
+        
         messageReceiver = new ClientMessageReceiver(clientSocket);
         messageReceiver.start();
       }
@@ -68,7 +68,7 @@ class TCPConnection implements CSConnection {
       Logger.trace(ex);
     }
   }
-
+  
   private void disconnect() {
     this.messageReceiver.quit();
     if (dos != null) {
@@ -88,14 +88,14 @@ class TCPConnection implements CSConnection {
       }
     }
   }
-
+  
   @Override
   public CanMessage sendCanMessage(CanMessage message) {
-
+    
     if (message != null) {
       //set the message as a call-back for the reciever Thread
       this.messageReceiver.setCanMessage(message);
-
+      
       try {
         byte[] bytes = message.getMessage();
         //Send the message
@@ -121,12 +121,12 @@ class TCPConnection implements CSConnection {
       while ((now < timeout) && !responseComplete) {
         synchronized (message) {
           responseComplete = message.isResponseComplete();
-
+          
         }
         now = System.currentTimeMillis();
         pause(5);
       }
-
+      
       if (responseComplete) {
         if (message.expectsLargeResponse()) {
           Logger.trace("Got Large Response in " + (now - start) + " ms");
@@ -143,51 +143,52 @@ class TCPConnection implements CSConnection {
     }
     return message;
   }
-
-//  @Override
-//  public void setCanMessageListener(CanMessageListener listener) {
-//    if (messageReceiver != null) {
-//      this.messageReceiver.setCanMessageListener(listener);
-//    }
-//  }
+  
   @Override
   public void setCanPingListener(CanPingListener pingListener) {
     if (messageReceiver != null) {
-      this.messageReceiver.setCanPingRequestListener(pingListener);
+      this.messageReceiver.setCanPingListener(pingListener);
     }
   }
-
+  
   @Override
   public void setFeedbackListener(FeedbackListener feedbackListener) {
     if (messageReceiver != null) {
-      this.messageReceiver.setFeedbackEventListener(feedbackListener);
+      this.messageReceiver.setFeedbackListener(feedbackListener);
     }
   }
-
+  
   @Override
   public void setSystemListener(SystemListener systemEventListener) {
     if (messageReceiver != null) {
-      this.messageReceiver.setSystemEventListener(systemEventListener);
+      this.messageReceiver.setSystemListener(systemEventListener);
     }
   }
-
+  
   @Override
   public void setAccessoryListener(AccessoryListener accessoryEventListener) {
     if (messageReceiver != null) {
-      this.messageReceiver.setAccessoryEventListener(accessoryEventListener);
+      this.messageReceiver.setAccessoryListener(accessoryEventListener);
     }
   }
-
+  
+  @Override
+  public void setLocomotiveListener(LocomotiveListener locomotiveListener) {
+    if (messageReceiver != null) {
+      this.messageReceiver.setLocomotiveListener(locomotiveListener);
+    }
+  }
+  
   @Override
   public void close() throws Exception {
     disconnect();
   }
-
+  
   @Override
   public InetAddress getControllerAddress() {
     return centralStationAddress;
   }
-
+  
   private static void pause(long millis) {
     try {
       Thread.sleep(millis);
@@ -195,25 +196,24 @@ class TCPConnection implements CSConnection {
       Logger.error(ex);
     }
   }
-
+  
   @Override
   public boolean isConnected() {
     return this.messageReceiver != null && this.messageReceiver.isRunning();
   }
-
+  
   private class ClientMessageReceiver extends Thread {
-
+    
     private boolean quit = false;
     private DataInputStream din;
     private CanMessage message;
-
+    
     private CanPingListener pingListener;
     private FeedbackListener feedbackListener;
-    private SystemListener systemEventListener;
-    private AccessoryListener accessoryEventListener;
-
-    //private CanMessageListener listener;
-
+    private SystemListener systemListener;
+    private AccessoryListener accessoryListener;
+    private LocomotiveListener locomotiveListener;
+    
     public ClientMessageReceiver(Socket socket) {
       try {
         BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
@@ -223,35 +223,35 @@ class TCPConnection implements CSConnection {
         this.quit = true;
       }
     }
-
-    //void setCanMessageListener(CanMessageListener listener) {
-    //  this.listener = listener;
-    //}
-
-    void setCanPingRequestListener(CanPingListener pingListener) {
+    
+    void setCanPingListener(CanPingListener pingListener) {
       this.pingListener = pingListener;
     }
-
-    void setFeedbackEventListener(FeedbackListener feedbackListener) {
+    
+    void setFeedbackListener(FeedbackListener feedbackListener) {
       this.feedbackListener = feedbackListener;
     }
-
-    void setSystemEventListener(SystemListener systemEventListener) {
-      this.systemEventListener = systemEventListener;
+    
+    void setSystemListener(SystemListener systemListener) {
+      this.systemListener = systemListener;
     }
-
-    void setAccessoryEventListener(AccessoryListener accessoryEventListener) {
-      this.accessoryEventListener = accessoryEventListener;
+    
+    void setAccessoryListener(AccessoryListener accessoryListener) {
+      this.accessoryListener = accessoryListener;
     }
-
+    
+    void setLocomotiveListener(LocomotiveListener locomotiveListener) {
+      this.locomotiveListener = locomotiveListener;
+    }
+    
     synchronized void quit() {
       this.quit = true;
     }
-
+    
     synchronized boolean isRunning() {
       return !this.quit;
     }
-
+    
     private void pause() {
       try {
         Thread.sleep(10);
@@ -264,12 +264,12 @@ class TCPConnection implements CSConnection {
     synchronized void setCanMessage(CanMessage message) {
       this.message = message;
     }
-
+    
     @Override
     public void run() {
       Thread.currentThread().setName("CAN-RX");
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + "...");
-
+      
       while (isRunning()) {
         try {
           int prio = din.readUnsignedByte();
@@ -285,7 +285,7 @@ class TCPConnection implements CSConnection {
             dataIdx++;
           }
           CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);
-
+          
           if (this.message != null && rx.isResponseFor(message)) {
             this.message.addResponse(rx);
             //Logger.trace("RX: " + rx + " Response count " + this.message.getResponses().size());
@@ -297,10 +297,12 @@ class TCPConnection implements CSConnection {
             this.pingListener.onCanStatusConfigRequestMessage(rx);
           } else if (rx.isSensorResponse() && feedbackListener != null) {
             this.feedbackListener.onFeedbackMessage(rx);
-          } else if (rx.isSystemMessage() && systemEventListener != null) {
-            this.systemEventListener.onSystemMessage(rx);
-          } else if (rx.isAccessoryMessage() && accessoryEventListener != null) {
-            this.accessoryEventListener.onAccessoryMessage(rx);
+          } else if (rx.isSystemMessage() && systemListener != null) {
+            this.systemListener.onSystemMessage(rx);
+          } else if (rx.isAccessoryMessage() && accessoryListener != null) {
+            this.accessoryListener.onAccessoryMessage(rx);
+          } else if (rx.isLocomotiveMessage() && locomotiveListener != null) {
+            this.locomotiveListener.onLocomotiveMessage(rx);
           } else {
             Logger.trace("#RX: " + rx);
           }
@@ -311,7 +313,7 @@ class TCPConnection implements CSConnection {
         }
         //pause();
       }
-
+      
       Logger.trace("Stop receiving");
       try {
         din.close();

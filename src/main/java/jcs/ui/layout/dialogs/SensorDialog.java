@@ -60,7 +60,7 @@ public class SensorDialog extends javax.swing.JDialog {
       } else {
         if (ControllerFactory.getController() != null) {
           //Unregister is properties might change
-          ControllerFactory.getController().removeSensorListener(this.sensor);
+          ControllerFactory.getController().removeSensorEventListener(this.sensor);
         }
       }
 
@@ -191,7 +191,7 @@ public class SensorDialog extends javax.swing.JDialog {
           PersistenceFactory.getService().persist(sensorBean);
 
           PersistenceFactory.getService().persist((sensor));
-          ControllerFactory.getController().addSensorListener(sensor);
+          ControllerFactory.getController().addSensorEventListener(sensor);
         }
       } else if (this.sensor != null && this.sensor.getSensorBean() == null) {
         SensorBean sensorBean = new SensorBean(this.nameTF.getText(), (Integer) this.deviceIdSpinner.getValue(), (Integer) contactIdSpinner.getValue());
@@ -203,7 +203,7 @@ public class SensorDialog extends javax.swing.JDialog {
           Logger.trace("Created " + sensorBean);
 
           PersistenceFactory.getService().persist((sensor));
-          ControllerFactory.getController().addSensorListener(sensor);
+          ControllerFactory.getController().addSensorEventListener(sensor);
 
         }
       }

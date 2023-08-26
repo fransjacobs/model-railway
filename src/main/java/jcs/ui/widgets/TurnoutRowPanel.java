@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 Frans Jacobs <frans.jacobs@gmail.com>.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.widgets;
 
@@ -31,77 +28,75 @@ import static jcs.entities.enums.AccessoryValue.GREEN;
 import static jcs.entities.enums.AccessoryValue.RED;
 import jcs.controller.events.AccessoryEvent;
 import jcs.controller.ControllerFactory;
-import jcs.trackservice.events.AccessoryListener;
+import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
 /**
  *
  * @author Frans Jacobs <frans.jacobs@gmail.com>
  */
-public class TurnoutRowPanel extends JPanel implements AccessoryListener {
+public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
 
-    private AccessoryBean turnout;
+  private AccessoryBean turnout;
 
-    private static final String TURNOUT_L = "/media/turnout-l.png";
-    private static final String TURNOUT_L_S = "/media/turnout-l-s.png";
-    private static final String TURNOUT_L_C = "/media/turnout-l-c.png";
+  private static final String TURNOUT_L = "/media/turnout-l.png";
+  private static final String TURNOUT_L_S = "/media/turnout-l-s.png";
+  private static final String TURNOUT_L_C = "/media/turnout-l-c.png";
 
-    private static final String TURNOUT_R = "/media/turnout-r.png";
-    private static final String TURNOUT_R_S = "/media/turnout-r-s.png";
-    private static final String TURNOUT_R_C = "/media/turnout-r-c.png";
+  private static final String TURNOUT_R = "/media/turnout-r.png";
+  private static final String TURNOUT_R_S = "/media/turnout-r-s.png";
+  private static final String TURNOUT_R_C = "/media/turnout-r-c.png";
 
-    private static final String TURNOUT_X = "/media/turnout-x.png";
-    private static final String TURNOUT_X_S = "/media/turnout-x-s.png";
-    private static final String TURNOUT_X_C = "/media/turnout-x-c.png";
+  private static final String TURNOUT_X = "/media/turnout-x.png";
+  private static final String TURNOUT_X_S = "/media/turnout-x-s.png";
+  private static final String TURNOUT_X_C = "/media/turnout-x-c.png";
 
-    public static final int X_AXIS = BoxLayout.X_AXIS;
-    public static final int Y_AXIS = BoxLayout.Y_AXIS;
+  public static final int X_AXIS = BoxLayout.X_AXIS;
+  public static final int Y_AXIS = BoxLayout.Y_AXIS;
 
-    private final int axis;
+  private final int axis;
 
-    public TurnoutRowPanel() {
-        this(null);
+  public TurnoutRowPanel() {
+    this(null);
+  }
+
+  public TurnoutRowPanel(AccessoryBean turnout) {
+    this(turnout, X_AXIS);
+  }
+
+  /**
+   * Creates new form TurnoutRowPanel
+   *
+   * @param turnout
+   * @param axis
+   */
+  public TurnoutRowPanel(AccessoryBean turnout, int axis) {
+    this.turnout = turnout;
+    this.axis = axis;
+
+    initComponents();
+
+    postInit();
+  }
+
+  private void postInit() {
+    setLayout(new javax.swing.BoxLayout(this, axis));
+
+    if (Y_AXIS == this.axis) {
+      setMinimumSize(new java.awt.Dimension(55, 175));
+      setPreferredSize(new java.awt.Dimension(55, 175));
     }
-
-    public TurnoutRowPanel(AccessoryBean turnout) {
-        this(turnout, X_AXIS);
+    if (turnout != null) {
+      //setButtonImages(turnout.getDescription());
+      rowLbl.setText(turnout.getName());
+      setButtonStatus();
     }
+  }
 
-    /**
-     * Creates new form TurnoutRowPanel
-     *
-     * @param turnout
-     * @param axis
-     */
-    public TurnoutRowPanel(AccessoryBean turnout, int axis) {
-        this.turnout = turnout;
-        this.axis = axis;
-
-        initComponents();
-
-        postInit();
-    }
-
-    private void postInit() {
-        setLayout(new javax.swing.BoxLayout(this, axis));
-
-        if (Y_AXIS == this.axis) {
-            setMinimumSize(new java.awt.Dimension(55, 175));
-            setPreferredSize(new java.awt.Dimension(55, 175));
-        }
-        if (turnout != null) {
-            //setButtonImages(turnout.getDescription());
-            rowLbl.setText(turnout.getName());
-            setButtonStatus();
-        }
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -153,96 +148,89 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
     }// </editor-fold>//GEN-END:initComponents
 
   private void btnStraightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStraightActionPerformed
-      switchTurnout(this.btnStraight.isSelected() ? AccessoryValue.GREEN : AccessoryValue.OFF);
+    switchTurnout(this.btnStraight.isSelected() ? AccessoryValue.GREEN : AccessoryValue.OFF);
   }//GEN-LAST:event_btnStraightActionPerformed
 
   private void btnCurvedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCurvedActionPerformed
-      switchTurnout(this.btnCurved.isSelected() ? AccessoryValue.RED : AccessoryValue.OFF);
+    switchTurnout(this.btnCurved.isSelected() ? AccessoryValue.RED : AccessoryValue.OFF);
   }//GEN-LAST:event_btnCurvedActionPerformed
 
-    private void setButtonImages(String type) {
-        switch (type) {
-            case "X":
-                btnStraight.setIcon(new ImageIcon(getClass().getResource(TURNOUT_X)));
-                btnStraight.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_X_S)));
+  private void setButtonImages(String type) {
+    switch (type) {
+      case "X" -> {
+        btnStraight.setIcon(new ImageIcon(getClass().getResource(TURNOUT_X)));
+        btnStraight.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_X_S)));
 
-                btnCurved.setIcon(new ImageIcon(getClass().getResource(TURNOUT_X)));
-                btnCurved.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_X_C)));
-                break;
-            case "L":
-                btnStraight.setIcon(new ImageIcon(getClass().getResource(TURNOUT_L)));
-                btnStraight.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_L_S)));
+        btnCurved.setIcon(new ImageIcon(getClass().getResource(TURNOUT_X)));
+        btnCurved.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_X_C)));
+      }
+      case "L" -> {
+        btnStraight.setIcon(new ImageIcon(getClass().getResource(TURNOUT_L)));
+        btnStraight.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_L_S)));
 
-                btnCurved.setIcon(new ImageIcon(getClass().getResource(TURNOUT_L)));
-                btnCurved.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_L_C)));
-                break;
-            default:
-                btnStraight.setIcon(new ImageIcon(getClass().getResource(TURNOUT_R)));
-                btnStraight.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_R_S)));
+        btnCurved.setIcon(new ImageIcon(getClass().getResource(TURNOUT_L)));
+        btnCurved.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_L_C)));
+      }
+      default -> {
+        btnStraight.setIcon(new ImageIcon(getClass().getResource(TURNOUT_R)));
+        btnStraight.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_R_S)));
 
-                btnCurved.setIcon(new ImageIcon(getClass().getResource(TURNOUT_R)));
-                btnCurved.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_R_C)));
-                break;
-        }
+        btnCurved.setIcon(new ImageIcon(getClass().getResource(TURNOUT_R)));
+        btnCurved.setSelectedIcon(new ImageIcon(getClass().getResource(TURNOUT_R_C)));
+      }
     }
+  }
 
-    public AccessoryBean getTurnout() {
-        return turnout;
+  public AccessoryBean getTurnout() {
+    return turnout;
+  }
+
+  public void setTurnout(AccessoryBean turnout) {
+    this.turnout = turnout;
+
+    if (turnout != null) {
+      //setButtonImages(turnout.getLightImages(), turnout.getDescription());
+      rowLbl.setText(turnout.getName());
+      setButtonStatus();
     }
+  }
 
-    public void setTurnout(AccessoryBean turnout) {
-        this.turnout = turnout;
-
-        if (turnout != null) {
-            //setButtonImages(turnout.getLightImages(), turnout.getDescription());
-            rowLbl.setText(turnout.getName());
-            setButtonStatus();
-        }
+  @Override
+  public void onAccessoryChange(AccessoryEvent event) {
+    if (event.isEventFor(turnout)) {
+      this.turnout.setAccessoryValue(event.getValue());
     }
+    setButtonStatus();
+  }
 
-    @Override
-    public void onChange(AccessoryEvent event) {
-        //if (event.isEventFor(turnout)) {
-        //    this.turnout.setValue(event.getValue());
-        //}
-        setButtonStatus();
+  private void switchTurnout(AccessoryValue value) {
+    Logger.trace("Setting Value: " + value);
+    if (this.turnout != null) {
+      switch (value) {
+        case RED ->
+          ControllerFactory.getController().switchAccessory(AccessoryValue.RED, turnout);
+        case GREEN ->
+          ControllerFactory.getController().switchAccessory(AccessoryValue.GREEN, turnout);
+      }
     }
+  }
 
-    private void switchTurnout(AccessoryValue value) {
-        Logger.trace("Setting Value: " + value);
-        if (this.turnout != null) {
-            switch (value) {
-                case RED:
-                    //TrackServiceFactory.getTrackService().switchAccessory(AccessoryValue.RED, turnout, false);
-                    break;
-                case GREEN:
-                    //TrackServiceFactory.getTrackService().switchAccessory(AccessoryValue.GREEN, turnout, false);
-                    break;
-                default:
-                    break;
-            }
-        }
+  private void setButtonStatus() {
+    if (this.turnout != null) {
+      //Logger.trace("Turnout: " + turnout);
+
+      switch (turnout.getAccessoryValue()) {
+        case RED ->
+          this.btnCurved.setSelected(true);
+        //Logger.trace("Button Curved: selected -> true.");
+        case GREEN ->
+          this.btnStraight.setSelected(true);
+        //Logger.trace("Button Straight: selected -> true.");
+        default ->
+          Logger.trace("Default called; Value: " + turnout.getPosition());
+      }
     }
-
-    private void setButtonStatus() {
-        if (this.turnout != null) {
-            //Logger.trace("Turnout: " + turnout);
-
-            switch (turnout.getPosition()) {
-//                case RED:
-//                    this.btnCurved.setSelected(true);
-//                    //Logger.trace("Button Curved: selected -> true.");
-//                    break;
-//                case GREEN:
-//                    this.btnStraight.setSelected(true);
-//                    //Logger.trace("Button Straight: selected -> true.");
-//                    break;
-                default:
-                    Logger.trace("Default called; Value: " + turnout.getPosition());
-                    break;
-            }
-        }
-    }
+  }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton btnCurved;
@@ -251,23 +239,23 @@ public class TurnoutRowPanel extends JPanel implements AccessoryListener {
     private javax.swing.ButtonGroup signalBG;
     // End of variables declaration//GEN-END:variables
 
-    public static void main(String args[]) {
-        JFrame f = new JFrame("SignalRowPanel Tester");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+  public static void main(String args[]) {
+    JFrame f = new JFrame("SignalRowPanel Tester");
+    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        List<AccessoryBean> turnouts = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSwitches();
-        f.setLayout(new GridLayout(turnouts.size(), 1));
+    List<AccessoryBean> turnouts = Collections.EMPTY_LIST; //TrackServiceFactory.getTrackService().getSwitches();
+    f.setLayout(new GridLayout(turnouts.size(), 1));
 
-        for (AccessoryBean turnout : turnouts) {
-            TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
-            f.add(signalRowPanel);
+    for (AccessoryBean turnout : turnouts) {
+      TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
+      f.add(signalRowPanel);
 
-            ControllerFactory.getController().addAccessoryListener(signalRowPanel);
+      ControllerFactory.getController().addAccessoryEventListener(signalRowPanel);
 
-        }
-
-        f.pack();
-        f.setVisible(true);
     }
+
+    f.pack();
+    f.setVisible(true);
+  }
 
 }

@@ -24,7 +24,7 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.controller.events.AccessoryEvent;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
-import jcs.trackservice.events.AccessoryListener;
+import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -120,7 +120,7 @@ public class SwitchPanel extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      ControllerFactory.getController().addAccessoryListener(asl);
+      ControllerFactory.getController().addAccessoryEventListener(asl);
     }
   }
 
@@ -499,7 +499,7 @@ public class SwitchPanel extends JPanel {
     return panelNumber;
   }
 
-  private class AccessoryStatusListener implements AccessoryListener {
+  private class AccessoryStatusListener implements AccessoryEventListener {
 
     private final JToggleButton button;
     private final Integer address;
@@ -510,7 +510,7 @@ public class SwitchPanel extends JPanel {
     }
 
     @Override
-    public void onChange(AccessoryEvent event) {
+    public void onAccessoryChange(AccessoryEvent event) {
       if (event.getAccessoryBean().getAddress().equals(address)) {
         this.button.setSelected(AccessoryValue.RED.equals(event.getAccessoryBean().getAccessoryValue()));
       }

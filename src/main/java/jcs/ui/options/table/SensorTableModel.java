@@ -21,15 +21,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import jcs.controller.events.SensorEvent;
+import jcs.controller.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.events.SensorListener;
 
 /**
  *
  * @author frans
  */
-public class SensorTableModel extends BeanTableModel<SensorBean> implements SensorListener {
+public class SensorTableModel extends BeanTableModel<SensorBean> implements SensorEventListener {
 
   private Map<Integer, SensorBean> sensorBeanCache;
 
@@ -60,7 +61,8 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
   }
 
   @Override
-  public void onChange(SensorBean sensor) {
+  public void onSensorChange(SensorEvent event) {
+    SensorBean sensor = event.getSensorBean();
     Integer key = sensor.getDeviceId() + sensor.getContactId();
     if (this.sensorBeanCache.containsKey(key)) {
       SensorBean csb = this.sensorBeanCache.get(key);

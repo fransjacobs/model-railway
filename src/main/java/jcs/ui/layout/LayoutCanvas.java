@@ -52,13 +52,13 @@ import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.controller.ControllerFactory;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.SensorEventListener;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.events.AccessoryListener;
-import jcs.trackservice.events.SensorListener;
 import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
@@ -374,11 +374,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       switch (tile.getTileType()) {
         case SENSOR ->
-          ControllerFactory.getController().addSensorListener((SensorListener) tile);
+          ControllerFactory.getController().addSensorEventListener((SensorEventListener) tile);
         case SWITCH ->
-          ControllerFactory.getController().addAccessoryListener((AccessoryListener) tile);
+          ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
-          ControllerFactory.getController().addAccessoryListener((AccessoryListener) tile);
+          ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         default -> {
           //Do nothing
         }

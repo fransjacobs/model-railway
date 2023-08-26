@@ -208,7 +208,7 @@ public class JCS extends Thread {
             boolean power = trackController.isPowerOn();
             logProgress("Track Power is " + (power ? "on" : "off"));
             Logger.info("Track Power is " + (power ? "on" : "off"));
-            trackController.addPowerListener(new JCS.Powerlistener());
+            trackController.addPowerEventListener(new JCS.Powerlistener());
           } else {
             logProgress("Could NOT connect with Track Controller...");
           }

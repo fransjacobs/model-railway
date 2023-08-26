@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2023 fransjacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.trackservice.events;
+package jcs.controller.cs.events;
 
-import jcs.controller.cs3.events.FunctionMessageEvent;
+import jcs.controller.cs.can.CanMessage;
 
 /**
  *
- * @author frans
+ * @author fransjacobs
  */
-public interface FunctionListener {
+public interface LocomotiveListener {
 
-    void onFunctionChange(FunctionMessageEvent event);
+  void onLocomotiveMessage(CanMessage message);
 
 }
