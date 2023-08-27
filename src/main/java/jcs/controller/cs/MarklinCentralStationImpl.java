@@ -68,12 +68,13 @@ import jcs.controller.events.LocomotiveFunctionEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
 import jcs.controller.events.LocomotiveSpeedEventListener;
+import jcs.util.RunUtil;
 
 /**
  *
  * @author Frans Jacobs
  */
-public class MarklinCS implements MarklinController {
+public class MarklinCentralStationImpl implements MarklinCentralStation {
 
   private CSConnection connection;
   private boolean connected = false;
@@ -99,11 +100,11 @@ public class MarklinCS implements MarklinController {
   private ScheduledExecutorService scheduledExecutor;
   private boolean power;
 
-  public MarklinCS() {
+  public MarklinCentralStationImpl() {
     this(true);
   }
 
-  private MarklinCS(boolean autoConnect) {
+  private MarklinCentralStationImpl(boolean autoConnect) {
     devices = new HashMap<>();
 
     powerEventListeners = new LinkedList<>();
@@ -127,9 +128,11 @@ public class MarklinCS implements MarklinController {
   }
 
   public boolean isCS3() {
-    String article = this.mainDevice.getArticleNumber();
-    boolean cs2 = "60213".equals(article) || "60214".equals(article) || "60215".equals(article);
-    return this.mainDevice != null && !cs2;
+    if (this.mainDevice != null) {
+      return this.mainDevice.isCS3();
+    } else {
+      return false;
+    }
   }
 
   public String getIp() {
@@ -172,33 +175,19 @@ public class MarklinCS implements MarklinController {
           this.connection.setLocomotiveListener(locomotiveListener);
 
           JCS.logProgress("Obtaining Device information...");
+          //request all member to give a response
           getMembers();
 
           now = System.currentTimeMillis();
-          //Wait max 2 cycles from the CS itself
-          timeout = now + 13000L;
-          //need to wait until devices are queried...
-          String devName = null;
-          while (devName == null && now < timeout) {
-            synchronized (this.devices) {
-              for (Device d : this.devices.values()) {
-                if (d.isDataComplete()) {
-                  devName = d.getDeviceName();
-                }
-              }
-            }
+          timeout = now + 30000L;
+          while (this.mainDevice == null && now < timeout) {
+            pause(100);
             now = System.currentTimeMillis();
           }
 
-          Logger.trace("Found " + this.devices.size() + " devices");
+          Logger.trace("Found " + this.devices.size() + " devices.");
           for (Device d : this.devices.values()) {
             Logger.trace(d);
-            if (d.isDataComplete()) {
-              if ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber())) {
-                csUid = d.getUid();
-                this.mainDevice = d;
-              }
-            }
           }
 
           if (this.mainDevice != null) {
@@ -213,8 +202,8 @@ public class MarklinCS implements MarklinController {
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
 
           } else {
-            Logger.warn("No Main Device found. Resetting connection");
-            this.disconnect();
+            Logger.warn("No Main Device found yet...");
+            //this.disconnect();
           }
         }
       } else {
@@ -234,7 +223,7 @@ public class MarklinCS implements MarklinController {
    *
    */
   protected void getAppDevicesCs3() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     if (httpCon.isConnected()) {
       String deviceJSON = httpCon.getDevicesJSON();
       DeviceJSONParser dp = new DeviceJSONParser();
@@ -345,42 +334,63 @@ public class MarklinCS implements MarklinController {
   void getMembers() {
     CanMessage msg = CanMessageFactory.getMembersPing();
     this.connection.sendCanMessage(msg);
-    if (msg.hasValidResponse()) {
-      Device d = new Device(msg);
-      this.devices.put(d.getUid(), d);
-    }
-    //Wait a while for all devices to respond
-    pause(200);
-    // For the incomplete devices ask the status config
-    synchronized (this.devices) {
-      for (Device d : this.devices.values()) {
-        if (!d.isDataComplete()) {
-          msg = sendMessage(CanMessageFactory.statusDataConfig(d.getUid(), 0));
-          d.updateFromMessage(msg);
-        }
+
+    for (CanMessage r : msg.getResponses()) {
+      Device d = new Device(r);
+      if (!this.devices.containsKey(d.getUid())) {
+        this.devices.put(d.getUid(), d);
       }
     }
   }
 
   private void updateMember(CanMessage message) {
-    executor.execute(() -> updateMemberIfNecessary(message));
+    executor.execute(() -> updateDevice(message));
   }
 
-  private void updateMemberIfNecessary(final CanMessage message) {
+  private void updateDevice(final CanMessage message) {
     //Logger.trace(message);
-    int uid = message.getDeviceUidNumberFromMessage();
-    Device device;
-    synchronized (this.devices) {
+    if (CanMessage.PING_RESP == message.getCommand()) {
+      int uid = message.getDeviceUidNumberFromMessage();
+
+      Device device;
       if (this.devices.containsKey(uid)) {
         device = this.devices.get(uid);
       } else {
         device = new Device(message);
         this.devices.put(device.getUid(), device);
       }
+
       if (!device.isDataComplete()) {
         CanMessage msg = sendMessage(CanMessageFactory.statusDataConfig(device.getUid(), 0));
         device.updateFromMessage(msg);
         Logger.trace("Updated: " + device);
+
+        //Can the main device be set from the avaliable data
+        for (Device d : this.devices.values()) {
+          if (d.isDataComplete() && ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()))) {
+            this.csUid = d.getUid();
+            this.mainDevice = d;
+            Logger.trace("Main Device: " + d);
+            //TODO Callback to UI whet the Main Device is set at a later state 
+            
+          }
+        }
+      }
+
+      if (this.mainDevice == null) {
+        //Lets send a ping again
+        getMembers();
+      } else {
+        if (this.mainDevice != null && this.mainDevice.isDataComplete()) {
+          if (System.getProperty("cs.article") == null) {
+            System.setProperty("cs.article", this.mainDevice.getArticleNumber());
+            System.setProperty("cs.serial", this.mainDevice.getSerialNumber());
+            System.setProperty("cs.name", this.mainDevice.getDeviceName());
+            System.setProperty("cs.cs3", (this.mainDevice.isCS3() ? "true" : "false"));
+
+            Logger.trace("CS " + (mainDevice.isCS3() ? "3" : "2") + " Device: " + device);
+          }
+        }
       }
     }
   }
@@ -544,7 +554,7 @@ public class MarklinCS implements MarklinController {
     }
   }
 
-  public List<LocomotiveBean> getLocomotivesViaCAN() {
+  List<LocomotiveBean> getLocomotivesViaCAN() {
     CanMessage message = CanMessageFactory.requestConfigData(csUid, "loks");
     this.connection.sendCanMessage(message);
     String lokomotive = MessageInflator.inflateConfigDataStream(message);
@@ -553,8 +563,8 @@ public class MarklinCS implements MarklinController {
     return lp.parseLocomotivesFile(lokomotive);
   }
 
-  public List<LocomotiveBean> getLocomotivesViaHttp() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+  List<LocomotiveBean> getLocomotivesViaHttp() {
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String csLocos = httpCon.getLocomotivesFile();
     LocomotiveBeanParser lp = new LocomotiveBeanParser();
     return lp.parseLocomotivesFile(csLocos);
@@ -562,13 +572,16 @@ public class MarklinCS implements MarklinController {
 
   @Override
   public List<LocomotiveBean> getLocomotives() {
-    //TODO: Use a property to choose the loc retrieval method
-    return getLocomotivesViaCAN();
+    if (System.getProperty("locomotive.list.via", "can").equalsIgnoreCase("http")) {
+      return getLocomotivesViaHttp();
+    } else {
+      return getLocomotivesViaCAN();
+    }
   }
 
   @Override
   public void cacheAllFunctionIcons(PropertyChangeListener progressListener) {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String json = httpCon.getAllFunctionsSvgJSON();
 
     if (progressListener != null) {
@@ -581,7 +594,7 @@ public class MarklinCS implements MarklinController {
   }
 
   public List<AccessoryBean> getAccessoriesViaHttp() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String magnetartikelCs2 = httpCon.getAccessoriesFile();
     AccessoryBeanParser ap = new AccessoryBeanParser();
     return ap.parseAccessoryFile(magnetartikelCs2);
@@ -599,7 +612,7 @@ public class MarklinCS implements MarklinController {
   @Override
   public List<AccessoryBean> getSwitches() {
     AccessoryJSONParser accessoryParser = new AccessoryJSONParser();
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String json = httpCon.getAccessoriesJSON();
     accessoryParser.parseAccessories(json);
     return accessoryParser.getTurnouts();
@@ -608,7 +621,7 @@ public class MarklinCS implements MarklinController {
   @Override
   public List<AccessoryBean> getSignals() {
     AccessoryJSONParser accessoryParser = new AccessoryJSONParser();
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String json = httpCon.getAccessoriesJSON();
     accessoryParser.parseAccessories(json);
     return accessoryParser.getSignals();
@@ -616,7 +629,7 @@ public class MarklinCS implements MarklinController {
 
   @Override
   public Image getLocomotiveImage(String icon) {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     Image locIcon = httpCon.getLocomotiveImage(icon);
     return locIcon;
   }
@@ -751,9 +764,9 @@ public class MarklinCS implements MarklinController {
 
   private class CanFeedbackMessageListener implements FeedbackListener {
 
-    private final MarklinCS controller;
+    private final MarklinCentralStationImpl controller;
 
-    CanFeedbackMessageListener(MarklinCS controller) {
+    CanFeedbackMessageListener(MarklinCentralStationImpl controller) {
       this.controller = controller;
     }
 
@@ -775,9 +788,9 @@ public class MarklinCS implements MarklinController {
 
   private class CanPingMessageListener implements CanPingListener {
 
-    private final MarklinCS controller;
+    private final MarklinCentralStationImpl controller;
 
-    CanPingMessageListener(MarklinCS controller) {
+    CanPingMessageListener(MarklinCentralStationImpl controller) {
       this.controller = controller;
     }
 
@@ -788,9 +801,12 @@ public class MarklinCS implements MarklinController {
       //int uid = message.getDeviceUidNumberFromMessage();
       switch (cmd) {
         case CanMessage.PING_REQ -> {
-          if (CanMessage.DLC_0 == dlc) {
-            //broadcast  
-            controller.sendJCSUID();
+          //Lets do the when we know all of the CS
+          if (controller.mainDevice != null) {
+            if (CanMessage.DLC_0 == dlc) {
+              //broadcast  
+              controller.sendJCSUID();
+            }
           }
         }
       }
@@ -829,9 +845,9 @@ public class MarklinCS implements MarklinController {
 
   private class CanSystemMessageListener implements SystemListener {
 
-    private final MarklinCS controller;
+    private final MarklinCentralStationImpl controller;
 
-    CanSystemMessageListener(MarklinCS controller) {
+    CanSystemMessageListener(MarklinCentralStationImpl controller) {
       this.controller = controller;
     }
 
@@ -873,9 +889,9 @@ public class MarklinCS implements MarklinController {
 
   private class CanAccessoryMessageListener implements AccessoryListener {
 
-    private final MarklinCS controller;
+    private final MarklinCentralStationImpl controller;
 
-    CanAccessoryMessageListener(MarklinCS controller) {
+    CanAccessoryMessageListener(MarklinCentralStationImpl controller) {
       this.controller = controller;
     }
 
@@ -895,9 +911,9 @@ public class MarklinCS implements MarklinController {
 
   private class CanLocomotiveMessageListener implements LocomotiveListener {
 
-    private final MarklinCS controller;
+    private final MarklinCentralStationImpl controller;
 
-    CanLocomotiveMessageListener(MarklinCS controller) {
+    CanLocomotiveMessageListener(MarklinCentralStationImpl controller) {
       this.controller = controller;
     }
 
@@ -917,7 +933,8 @@ public class MarklinCS implements MarklinController {
 
 //  
   public static void main(String[] a) {
-    MarklinCS cs = new MarklinCS(false);
+    RunUtil.loadExternalProperties();
+    MarklinCentralStationImpl cs = new MarklinCentralStationImpl(false);
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     if (cs.isConnected()) {
@@ -1006,6 +1023,11 @@ public class MarklinCS implements MarklinController {
     //cs3.pause(500L);
     //Logger.debug("Wait for 1m");
     //cs.pause(1000 * 60 * 1);
+    List<LocomotiveBean> locs = cs.getLocomotives();
+    for (LocomotiveBean loc : locs) {
+      Logger.trace(loc);
+    }
+
     cs.pause(40000);
     cs.disconnect();
     cs.pause(100L);

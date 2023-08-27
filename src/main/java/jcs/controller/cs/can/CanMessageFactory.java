@@ -18,7 +18,6 @@ package jcs.controller.cs.can;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.enums.AccessoryValue;
-import jcs.util.ByteUtil;
 
 /**
  * Factory for creating CAN Messages
@@ -109,6 +108,7 @@ public class CanMessageFactory implements MarklinCan {
    */
   public static CanMessage getMembersPing() {
     byte[] data = new byte[CanMessage.DATA_SIZE];
+
     CanMessage m = new CanMessage(PRIO_1, PING_REQ, MAGIC_HASH, DLC_0, data);
     return m;
   }

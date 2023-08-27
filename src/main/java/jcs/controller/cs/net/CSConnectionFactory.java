@@ -111,18 +111,18 @@ public class CSConnectionFactory {
     instance.httpConnection = null;
   }
 
-  HTTPConnection getHTTPConnectionImpl() {
+  HTTPConnection getHTTPConnectionImpl(boolean cs3) {
     if (controllerConnection == null) {
       getConnectionImpl();
     }
     if (httpConnection == null) {
-      httpConnection = new HTTPConnection(controllerHost);
+      httpConnection = new HTTPConnection(controllerHost, cs3);
     }
     return this.httpConnection;
   }
 
-  public static HTTPConnection getHTTPConnection() {
-    return getInstance().getHTTPConnectionImpl();
+  public static HTTPConnection getHTTPConnection(boolean cs3) {
+    return getInstance().getHTTPConnectionImpl(cs3);
   }
 
   void sendMobileAppPing() {

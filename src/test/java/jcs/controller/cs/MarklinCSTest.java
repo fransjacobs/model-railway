@@ -26,7 +26,7 @@ import org.tinylog.Logger;
  */
 public class MarklinCSTest {
 
-  private static MarklinCS instance;
+  private static MarklinCentralStationImpl instance;
   private static boolean csAvailable = false;
   
   //controller.skip.init
@@ -34,7 +34,7 @@ public class MarklinCSTest {
   public MarklinCSTest() {
     try {
       if (instance == null) {
-        instance = new MarklinCS();
+        instance = new MarklinCentralStationImpl();
         pause(500);
         csAvailable = instance.connect();
 
@@ -62,7 +62,7 @@ public class MarklinCSTest {
   }
 
   /**
-   * Test of connect method, of class MarklinCS.
+   * Test of connect method, of class MarklinCentralStationImpl.
    */
   //@Test
   public void testConnect() {
@@ -91,7 +91,7 @@ public class MarklinCSTest {
   }
 
   /**
-   * Test of getSystemStatus method, of class MarklinCS.
+   * Test of getSystemStatus method, of class MarklinCentralStationImpl.
    */
   //@Test
   public void testPower() {
@@ -119,7 +119,7 @@ public class MarklinCSTest {
   }
 
   /**
-   * Test of getDeviceIp method, of class MarklinCS.
+   * Test of getDeviceIp method, of class MarklinCentralStationImpl.
    */
   //@Test
   public void testGetDeviceIp() {

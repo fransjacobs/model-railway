@@ -28,8 +28,10 @@ import org.tinylog.Logger;
 public class SensorEvent {
 
   private SensorBean sensor;
+  private final CanMessage message;
 
   public SensorEvent(CanMessage message, Date eventDate) {
+    this.message = message;
     parseMessage(message, eventDate);
   }
 
@@ -60,6 +62,10 @@ public class SensorEvent {
 
   public SensorBean getSensorBean() {
     return sensor;
+  }
+
+  public CanMessage getMessage() {
+    return this.message;
   }
 
 }

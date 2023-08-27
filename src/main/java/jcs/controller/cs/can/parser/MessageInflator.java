@@ -15,6 +15,11 @@
  */
 package jcs.controller.cs.can.parser;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -56,7 +61,7 @@ public class MessageInflator {
               break;
             } else {
               dataLength = lenResp.getDeviceUidNumberFromMessage();
-              int[] crca = new int[2];
+              byte[] crca = new byte[2];
               byte[] dt = lenResp.getData();
               System.arraycopy(dt, 4, crca, 0, crca.length);
               int crc = ByteUtil.toInt(crca);
@@ -93,11 +98,22 @@ public class MessageInflator {
       System.arraycopy(databuf, 0, uclb, 0, uclb.length);
       int uncompressedLength = ByteUtil.toInt(uclb);
 
-      Logger.trace("uncompressedLength: " + uncompressedLength + " dataLength: " + dataLength + " databuf.length: " + databuf.length);
-
       //Create a new buffer skip the first 4 bytes
       byte[] compressedBuffer = new byte[dataLength];
       System.arraycopy(databuf, 4, compressedBuffer, 0, dataLength - 4);
+
+      if (System.getProperty("locomotive.list.debug", "false").equalsIgnoreCase("true")) {
+        Logger.debug("uncompressedLength: " + uncompressedLength + " dataLength: " + dataLength + " databuf.length: " + databuf.length);
+
+        //Write to a file for debug when set in property
+        Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotives.bin");
+        try {
+          Files.write(path, compressedBuffer);
+          Logger.debug("Saved raw (zipped) locomotives file to: " + path.toString());
+        } catch (IOException ex) {
+          Logger.error("Can't write raw (zipped) locomotives file to " + path.toString());
+        }
+      }
 
       //Inflate
       Inflater inflator = new Inflater();
@@ -108,8 +124,22 @@ public class MessageInflator {
       inflator.inflate(inflaterbuf);
       inflator.end();
 
-      Logger.trace(ByteUtil.bytesToString(inflaterbuf));
-      return ByteUtil.bytesToString(inflaterbuf);
+      String loksFile = CanMessage.toString(inflaterbuf);
+
+      if (System.getProperty("locomotive.list.debug", "false").equalsIgnoreCase("true")) {
+        Logger.trace(loksFile);
+
+        //Write to a file for debug when set in property
+        Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotives.cs2");
+        try {
+          Files.writeString(path, loksFile);
+          Logger.debug("Saved unzipped locomotives file to: " + path.toString());
+        } catch (IOException ex) {
+          Logger.error("Can't write unzipped locomotives file to " + path.toString());
+        }
+      }
+
+      return loksFile;
     } catch (DataFormatException ex) {
       Logger.error(ex);
     }

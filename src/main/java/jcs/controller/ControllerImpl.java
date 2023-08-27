@@ -15,7 +15,6 @@
  */
 package jcs.controller;
 
-import jcs.controller.cs.MarklinController;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -47,6 +46,7 @@ import jcs.controller.events.SensorEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveSpeedEventListener;
+import jcs.controller.cs.MarklinCentralStation;
 
 /**
  * The Controller Implementation is the implementation of the Controller Interface. Its purpose is to serve as an abstraction layer for Controllers so that in the future more Controllers can be
@@ -54,7 +54,7 @@ import jcs.controller.events.LocomotiveSpeedEventListener;
  */
 public class ControllerImpl implements Controller {
 
-  private MarklinController vendorController;
+  private MarklinCentralStation vendorController;
 
   private final List<SensorEventListener> sensorEventListeners;
   private final List<AccessoryEventListener> accessoryEventListeners;
@@ -91,7 +91,7 @@ public class ControllerImpl implements Controller {
     if (vendorController == null) {
       try {
         //TODO make the interface more abstract..
-        this.vendorController = (MarklinController) Class.forName(controllerImplClassName).getDeclaredConstructor().newInstance();
+        this.vendorController = (MarklinCentralStation) Class.forName(controllerImplClassName).getDeclaredConstructor().newInstance();
       } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
         Logger.error("Can't instantiate a '" + controllerImplClassName + "' " + ex.getMessage());
       }
@@ -146,7 +146,7 @@ public class ControllerImpl implements Controller {
 
   @Override
   public String getControllerName() {
-    if (this.vendorController != null) {
+    if (this.vendorController != null && this.vendorController.getDevice() != null) {
       return this.vendorController.getDevice().getDeviceName();
     } else {
       return null;
@@ -155,7 +155,7 @@ public class ControllerImpl implements Controller {
 
   @Override
   public String getControllerSerialNumber() {
-    if (this.vendorController != null) {
+    if (this.vendorController != null && this.vendorController.getDevice() != null) {
       return this.vendorController.getDevice().getSerialNumber();
     } else {
       return null;
@@ -164,7 +164,7 @@ public class ControllerImpl implements Controller {
 
   @Override
   public String getControllerArticleNumber() {
-    if (this.vendorController != null) {
+    if (this.vendorController != null && this.vendorController.getDevice() != null) {
       return this.vendorController.getDevice().getArticleNumber();
     } else {
       return null;

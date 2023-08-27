@@ -15,6 +15,10 @@
  */
 package jcs.controller.cs.can.parser;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -34,7 +38,7 @@ public class LocomotiveBeanParser {
 
   private static final String LOCOMOTIVES_START = "[lokomotive]";
   private static final String VERSION = "version";
-  private static final String MINOR = ".minor";
+  //private static final String MINOR = ".minor";
   private static final String SESSION = "session";
   private static final String ID = ".id";
   private static final String LOCOMOTIVE = "lokomotive";
@@ -74,7 +78,9 @@ public class LocomotiveBeanParser {
     FunctionBean locoFunction = null;
     boolean functions = false;
 
+    String ps = "";
     for (String s : items) {
+      s = s.trim();
       switch (s) {
         case LOCOMOTIVES_START -> {
         }
@@ -114,6 +120,10 @@ public class LocomotiveBeanParser {
             String key = kp[0];
             String val = kp[1];
 
+            if (VERSION.equals(ps)) {
+              Logger.trace("Version = " + val);
+            }
+
             if (functions) {
               if (NR.equals(key) || TYP.equals(key) || WERT.equals(key)) {
                 if (locoFunction != null) {
@@ -136,6 +146,7 @@ public class LocomotiveBeanParser {
           }
         }
       }
+      ps = s;
     }
     // parse the last loc
     if (lm.containsKey(
@@ -215,4 +226,19 @@ public class LocomotiveBeanParser {
     }
     return lb;
   }
+
+  public static void main(String[] a) throws Exception {
+    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotives.cs2");
+
+    String loksFile = Files.readString(path);
+
+    LocomotiveBeanParser lp = new LocomotiveBeanParser();
+    List<LocomotiveBean> locs = lp.parseLocomotivesFile(loksFile);
+
+    for (LocomotiveBean loc : locs) {
+      Logger.trace(loc);
+    }
+
+  }
+
 }

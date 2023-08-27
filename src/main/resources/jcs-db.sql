@@ -173,6 +173,6 @@ create table jcs_properties (
 
 create unique index prop_pk_idx on jcs_properties (p_key);
 
-insert into jcs_properties (p_key,p_value) values ('vendorController','jcs.controller.cs.MarklinCS');
+insert into jcs_properties (p_key,p_value) values ('vendorController','jcs.controller.cs.MarklinCentralStationImpl');
 
 commit;

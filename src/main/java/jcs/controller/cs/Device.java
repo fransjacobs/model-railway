@@ -15,6 +15,7 @@
  */
 package jcs.controller.cs;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,11 +95,19 @@ public class Device {
   }
 
   public void updateFromMessage(CanMessage message) {
-    List<CanMessage> responses = message.getResponses();
+    //Filter the responses
+    List<CanMessage> responses = new ArrayList<>(message.getResponses().size());
+    for (CanMessage resp : message.getResponses()) {
+      if (CanMessage.STATUS_CONFIG_RESP == resp.getCommand()) {
+        responses.add(resp);
+      }
+    }
+
     if (!responses.isEmpty()) {
       //The last response has the total response messages
-      int packets = 0;
       CanMessage last = responses.get(responses.size() - 1);
+      int packets = 0;
+
       if (last.getDlc() == CanMessage.DLC_6) {
         packets = last.getDataByte(5);
       } else if (last.getDlc() == CanMessage.DLC_5) {
@@ -106,7 +115,14 @@ public class Device {
         packets = responses.size() - 1;
       }
       if (responses.size() - 1 != packets) {
-        Logger.warn("Config Data might be invalid. Packges expepected: " + packets + " received: " + (responses.size() - 1));
+        Logger.warn("Config Data might be invalid. Packages expected: " + packets + " received: " + (responses.size() - 1));
+        Logger.trace(message);
+        for (CanMessage m : responses) {
+          Logger.trace(m);
+        }
+      } else {
+        //Reset the device name
+        deviceName = "";
       }
 
       for (int i = 0; i < responses.size(); i++) {
@@ -212,7 +228,7 @@ public class Device {
   }
 
   public boolean isDataComplete() {
-    return this.deviceName != null && this.articleNumber != null && this.deviceName.length() > 10 && this.articleNumber.length() > 4;
+    return this.deviceName != null && this.articleNumber != null && this.articleNumber.length() > 4;
   }
 
   public String getName() {
@@ -253,6 +269,10 @@ public class Device {
 
   public void setPresent(boolean present) {
     this.present = present;
+  }
+
+  public boolean isCS3() {
+    return !("60213".equals(this.articleNumber) || "60214".equals(this.articleNumber) || "60215".equals(this.articleNumber));
   }
 
   public String getDevice() {

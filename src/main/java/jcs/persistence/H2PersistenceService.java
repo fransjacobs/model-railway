@@ -252,6 +252,8 @@ public class H2PersistenceService implements PersistenceService {
     Image image = null;
     String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
 
+    
+    
     if (function) {
       path = path + "functions" + File.separator;
     }

@@ -30,7 +30,7 @@ import jcs.controller.events.LocomotiveSpeedEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
 
-public interface MarklinController {
+public interface MarklinCentralStation {
 
   boolean connect();
 

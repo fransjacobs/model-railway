@@ -16,7 +16,6 @@
 package jcs.controller.cs.can;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -367,8 +366,6 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public boolean isResponseComplete() {
-    int cmd = getCommand();
-
     if (!(this.expectsLargeResponse() || this.expectsAcknowledge())) {
       return true;
     } else if (this.responses.isEmpty()) {
@@ -376,12 +373,12 @@ public class CanMessage implements MarklinCan, Serializable {
     } else {
       if (this.expectsLargeResponse()) {
         //depending on the message
-        if (cmd == STATUS_CONFIG) {
+        if (this.command == STATUS_CONFIG) {
           //Should have at least 5 responses and the last response has dlc 6 (cs3) or dlc 5 (cs2) 
           CanMessage r = this.responses.get(this.responses.size() - 1);
           int rdlc = r.getDlc();
           return rdlc == DLC_5 || rdlc == DLC_6;
-        } else if (cmd == REQUEST_CONFIG_DATA) {
+        } else if (this.command == REQUEST_CONFIG_DATA) {
           if (!this.responses.isEmpty()) {
             //Get the ack
             CanMessage ackm = this.responses.get(0);
@@ -402,10 +399,12 @@ public class CanMessage implements MarklinCan, Serializable {
           } else {
             return false;
           }
+        } else if (this.command == PING_REQ) {
+          return this.responses.size() >= 2;
         }
       } else if (this.expectsAcknowledge()) {
         CanMessage r = this.responses.get(0);
-        return cmd == r.getCommand() - 1;
+        return this.command == r.getCommand() - 1;
       } else {
         return false;
       }
@@ -462,19 +461,6 @@ public class CanMessage implements MarklinCan, Serializable {
     return to2Bytes(hash);
   }
 
-  /**
-   * Create an empty data array of 8 bytes filled with zeros
-   *
-   * @return and Array of int[8] filled with 0 in each position
-   */
-//  public static int[] getEmptyData() {
-//    int[] data = new int[CanMessage.DATA_SIZE];
-//    //Enshure it is filled with 0x00
-//    for (int i = 0; i < data.length; i++) {
-//      data[i] = 0;
-//    }
-//    return data;
-//  }
   public static final int generateHashInt(int gfpUid) {
     int msb = gfpUid >> 16;
     int lsb = gfpUid & 0xffff;
@@ -488,14 +474,6 @@ public class CanMessage implements MarklinCan, Serializable {
     return to2Bytes(hash);
   }
 
-//  private static byte[] getEmptyMessage() {
-//    byte[] msg = new byte[MESSAGE_SIZE];
-//    //Enshure it is filled with 0x00
-//    for (int i = 0; i < msg.length; i++) {
-//      msg[i] = 0;
-//    }
-//    return msg;
-//  }
   @Override
   public int hashCode() {
     int h = 5;
