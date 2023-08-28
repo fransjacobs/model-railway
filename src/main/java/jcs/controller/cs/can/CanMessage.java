@@ -93,16 +93,6 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public static String toString(byte[] data) {
-//    List<Byte> bl = new ArrayList<>();
-//    for (int i = 0; i < data.length; i++) {
-//      if (data[i] > 0) {
-//        bl.add(data[i]);
-//      }
-//    }
-//    byte[] bytes = new byte[bl.size()];
-//    for (int i = 0; i < bytes.length; i++) {
-//      bytes[i] = bl.get(i);
-//    }
     return new String(data);
   }
 
@@ -184,11 +174,11 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public int getPriority() {
-    return this.priority; // this.message[PRIO_IDX];
+    return this.priority;
   }
 
   public int getCommand() {
-    return this.command; // this.message[CMD_IDX];
+    return this.command;
   }
 
   public int getSubCommand() {
@@ -200,15 +190,14 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public int getDlc() {
-    return this.dlc; //this.message[DLC_IDX];
+    return this.dlc;
   }
 
   public final byte getDataByte(int position) {
-    return this.data[position]; // this.message[DATA_IDX + position];
+    return this.data[position];
   }
 
   public int getPackageNumber() {
-    //return this.message[PACKAGE_IDX];
     if (STATUS_CONFIG_RESP == this.command) {
       byte[] h = CanMessage.to2Bytes(this.hash);
       return h[1];
@@ -237,22 +226,20 @@ public class CanMessage implements MarklinCan, Serializable {
 //            || cmd == LOC_DECODER_READ || cmd == LOC_DECODER_READ_RESP
 //            || cmd == LOC_DECODER_WRITE || cmd == LOC_DECODER_WRITE_RESP;
 //  }
-  public boolean isGuiInfoMessage() {
-    return this.command == REQUEST_CONFIG_DATA || this.command == REQUEST_CONFIG_DATA_RESP
-            || this.command == CONFIG_DATA_STREAM
-            || this.command == CON_60128_DATA_STREAM;
-  }
-
-  public boolean isUpdateMessage() {
-    return this.command == PING_REQ || this.command == PING_RESP
-            || this.command == UPDATE_OFFER || this.command == UPDATE_OFFER_RESP
-            || this.command == READ_CONFIG_DATA || this.command == READ_CONFIG_DATA_RESP
-            || this.command == BOOTLOADER_CAN || this.command == BOOTLOADER_LOC
-            || this.command == LOC_FUNCTION || this.command == LOC_FUNCTION_RESP
-            || this.command == STATUS_CONFIG || this.command == STATUS_CONFIG_RESP;
-  }
-
-  public boolean expectsAcknowledge() {
+//  public boolean isGuiInfoMessage() {
+//    return this.command == REQUEST_CONFIG_DATA || this.command == REQUEST_CONFIG_DATA_RESP
+//            || this.command == CONFIG_DATA_STREAM
+//            || this.command == CON_60128_DATA_STREAM;
+//  }
+//  public boolean isUpdateMessage() {
+//    return this.command == PING_REQ || this.command == PING_RESP
+//            || this.command == UPDATE_OFFER || this.command == UPDATE_OFFER_RESP
+//            || this.command == READ_CONFIG_DATA || this.command == READ_CONFIG_DATA_RESP
+//            || this.command == BOOTLOADER_CAN || this.command == BOOTLOADER_LOC
+//            || this.command == LOC_FUNCTION || this.command == LOC_FUNCTION_RESP
+//            || this.command == STATUS_CONFIG || this.command == STATUS_CONFIG_RESP;
+//  }
+  public boolean expectsResponse() {
     return this.command == SYSTEM_COMMAND
             || this.command == MFX_BIND_COMMAND
             || this.command == MFX_VERIFY_COMMAND
@@ -345,12 +332,6 @@ public class CanMessage implements MarklinCan, Serializable {
     return did > 0;
   }
 
-//  public int getUidInt() {
-//    return ((data[0] & 0xFF) << 24)
-//            | ((data[1] & 0xFF) << 16)
-//            | ((data[2] & 0xFF) << 8)
-//            | (data[3] & 0xFF);
-//  }
   public byte[] getDeviceUidFromMessage() {
     byte[] uid = new byte[4]; //UID is 4 bytes long
     System.arraycopy(this.data, 0, uid, 0, uid.length);
@@ -366,50 +347,59 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public boolean isResponseComplete() {
-    if (!(this.expectsLargeResponse() || this.expectsAcknowledge())) {
+    if (!(this.expectsLargeResponse() || this.expectsResponse())) {
       return true;
     } else if (this.responses.isEmpty()) {
       return false;
     } else {
       if (this.expectsLargeResponse()) {
         //depending on the message
-        if (this.command == STATUS_CONFIG) {
-          //Should have at least 5 responses and the last response has dlc 6 (cs3) or dlc 5 (cs2) 
-          CanMessage r = this.responses.get(this.responses.size() - 1);
-          int rdlc = r.getDlc();
-          return rdlc == DLC_5 || rdlc == DLC_6;
-        } else if (this.command == REQUEST_CONFIG_DATA) {
-          if (!this.responses.isEmpty()) {
-            //Get the ack
-            CanMessage ackm = this.responses.get(0);
-            boolean ack = REQUEST_CONFIG_DATA_RESP == ackm.getCommand();
-            if (ack && this.responses.size() > 2) {
-              CanMessage lenm = this.responses.get(1);
-              if (CONFIG_DATA_STREAM == lenm.getCommand() && DLC_6 == lenm.getDlc()) {
-                int dataLength = lenm.getDeviceUidNumberFromMessage();
-                int rspMessages = dataLength / 8;
-                rspMessages = rspMessages + 2;
-                int respSize = this.responses.size();
-                return respSize == rspMessages;
+        switch (this.command) {
+          case STATUS_CONFIG -> {
+            //Should have at least 5 responses and the last response has dlc 6 (cs3) or dlc 5 (cs2) 
+            CanMessage r = this.responses.get(this.responses.size() - 1);
+            int rdlc = r.getDlc();
+            return rdlc == DLC_5 || rdlc == DLC_6;
+          }
+          case REQUEST_CONFIG_DATA -> {
+            if (!this.responses.isEmpty()) {
+              //Get the ack
+              CanMessage ackm = this.responses.get(0);
+              boolean ack = REQUEST_CONFIG_DATA_RESP == ackm.getCommand();
+              if (ack && this.responses.size() > 2) {
+                CanMessage lenm = this.responses.get(1);
+                if (CONFIG_DATA_STREAM == lenm.getCommand() && DLC_6 == lenm.getDlc()) {
+                  int dataLength = lenm.getDeviceUidNumberFromMessage();
+                  int rspMessages = dataLength / 8;
+                  rspMessages = rspMessages + 2;
+                  int respSize = this.responses.size();
+                  return respSize == rspMessages;
+                } else {
+                  return false;
+                }
+              } else {
+                return false;
               }
-              return false;
             } else {
               return false;
             }
-          } else {
-            return false;
           }
-        } else if (this.command == PING_REQ) {
-          return this.responses.size() >= 2;
+          case PING_REQ -> {
+            return this.responses.size() >= 2;
+          }
+          default -> {
+            if (this.expectsResponse()) {
+              CanMessage r0 = this.responses.get(0);
+              return this.command == r0.getCommand() - 1;
+            } else {
+              return true;
+            }
+          }
+
         }
-      } else if (this.expectsAcknowledge()) {
-        CanMessage r = this.responses.get(0);
-        return this.command == r.getCommand() - 1;
-      } else {
-        return false;
       }
+      return false;
     }
-    return false;
   }
 
   @Override

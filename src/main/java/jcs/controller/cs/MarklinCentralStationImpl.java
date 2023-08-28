@@ -341,6 +341,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
         this.devices.put(d.getUid(), d);
       }
     }
+    Logger.trace("Aquired "+this.devices.size()+" devices");
   }
 
   private void updateMember(CanMessage message) {
@@ -1023,10 +1024,10 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     //cs3.pause(500L);
     //Logger.debug("Wait for 1m");
     //cs.pause(1000 * 60 * 1);
-    List<LocomotiveBean> locs = cs.getLocomotives();
-    for (LocomotiveBean loc : locs) {
-      Logger.trace(loc);
-    }
+    //List<LocomotiveBean> locs = cs.getLocomotives();
+    //for (LocomotiveBean loc : locs) {
+   //   Logger.trace(loc);
+   // }
 
     cs.pause(40000);
     cs.disconnect();
