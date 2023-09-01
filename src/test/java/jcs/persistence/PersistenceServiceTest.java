@@ -418,7 +418,7 @@ public class PersistenceServiceTest {
   public void testGetLocomotive_Integer_DecoderType() {
     System.out.println("getLocomotive");
     Integer address = 8;
-    DecoderType decoderType = DecoderType.MM;
+    DecoderType decoderType = DecoderType.MM_PRG;
 
     PersistenceService instance = PersistenceFactory.getService();
     LocomotiveBean expResult = this.locomotives.get(1);

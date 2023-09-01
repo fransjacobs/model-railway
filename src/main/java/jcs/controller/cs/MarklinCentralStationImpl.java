@@ -193,7 +193,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
           if (this.mainDevice != null) {
             Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
             JCS.logProgress("Connected with " + this.mainDevice.getDeviceName());
-            
+
             this.power = this.isPower();
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
 
@@ -337,7 +337,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
         this.devices.put(d.getUid(), d);
       }
     }
-    Logger.trace("Aquired "+this.devices.size()+" devices");
+    Logger.trace("Aquired " + this.devices.size() + " devices");
   }
 
   private void updateMember(CanMessage message) {
@@ -368,7 +368,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
             this.mainDevice = d;
             Logger.trace("Main Device: " + d);
             //TODO Callback to UI whet the Main Device is set at a later state 
-            
+
           }
         }
       }
@@ -459,8 +459,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
         0xC000 + address;
       case SX1 ->
         0x0800 + address;
-      case MM ->
-        address;
       default ->
         address;
     };
@@ -577,17 +575,17 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 
   @Override
   public void cacheAllFunctionIcons(PropertyChangeListener progressListener) {
-    if(1==2) {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
-    String json = httpCon.getAllFunctionsSvgJSON();
+    if (1 == 2) {
+      HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+      String json = httpCon.getAllFunctionsSvgJSON();
 
-    if (progressListener != null) {
-      PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Getting all function Icons...");
-      progressListener.propertyChange(pce);
-    }
+      if (progressListener != null) {
+        PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Getting all function Icons...");
+        progressListener.propertyChange(pce);
+      }
 
-    SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter(progressListener);
-    svgp.convertAndCacheAllFunctionsSvgIcons(json);
+      SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter(progressListener);
+      svgp.convertAndCacheAllFunctionsSvgIcons(json);
     }
   }
 
@@ -1024,7 +1022,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     List<LocomotiveBean> locs = cs.getLocomotives();
     for (LocomotiveBean loc : locs) {
       Logger.trace(loc);
-   }
+    }
 
     cs.pause(40000);
     cs.disconnect();
