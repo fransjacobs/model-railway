@@ -89,7 +89,9 @@ public class Device {
       System.arraycopy(data, 6, deva, 0, deva.length);
 
       this.uid = resp.getDeviceUidNumberFromMessage();
+      //TODO: Version is not same displayed in the CS
       this.version = "" + CanMessage.toInt(vera);
+      //TODO: in case of a Link S88 it is offset by 1 so device ID + 1
       this.deviceId = CanMessage.toInt(deva);
     }
   }
@@ -102,6 +104,11 @@ public class Device {
         responses.add(resp);
       }
     }
+
+//    Logger.trace(message);
+//    for (CanMessage r : responses) {
+//      Logger.trace(r);
+//    }
 
     if (!responses.isEmpty()) {
       //The last response has the total response messages

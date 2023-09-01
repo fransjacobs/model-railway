@@ -92,16 +92,25 @@ public class MessageInflator {
           System.arraycopy(p, 0, databuf, (i * 8), p.length);
         }
       }
+      
+      Logger.trace("All Packets in Buffer " + databuf.length);
+      
 
       //The First 4 byte represent the uncompressed length of the file
       byte[] uclb = new byte[4];
       System.arraycopy(databuf, 0, uclb, 0, uclb.length);
       int uncompressedLength = ByteUtil.toInt(uclb);
+      
+      Logger.trace("Uncompressed length: "+uncompressedLength+" Compressed legth "+dataLength);
+      
 
       //Create a new buffer skip the first 4 bytes
-      byte[] compressedBuffer = new byte[dataLength];
-      System.arraycopy(databuf, 4, compressedBuffer, 0, dataLength - 4);
-
+      //byte[] compressedBuffer = new byte[dataLength];
+      byte[] compressedBuffer = new byte[databuf.length-4];
+      Logger.trace("Removed first 4 bytes length: "+compressedBuffer.length);
+      
+      System.arraycopy(databuf, 4, compressedBuffer, 0, compressedBuffer.length);
+      
       if (System.getProperty("locomotive.list.debug", "false").equalsIgnoreCase("true")) {
         Logger.debug("uncompressedLength: " + uncompressedLength + " dataLength: " + dataLength + " databuf.length: " + databuf.length);
 
@@ -125,9 +134,11 @@ public class MessageInflator {
       inflator.end();
 
       String loksFile = CanMessage.toString(inflaterbuf);
+      
+      Logger.trace("Real Uncompressed length "+loksFile.length());
 
       if (System.getProperty("locomotive.list.debug", "false").equalsIgnoreCase("true")) {
-        Logger.trace(loksFile);
+        Logger.trace("\n"+loksFile);
 
         //Write to a file for debug when set in property
         Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotives.cs2");

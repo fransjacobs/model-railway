@@ -347,12 +347,13 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public boolean isResponseComplete() {
-    if (!(this.expectsLargeResponse() || this.expectsResponse())) {
+    boolean expectResponse = this.expectsLargeResponse() || this.expectsResponse();
+    if (!(expectResponse)) {
       return true;
     } else if (this.responses.isEmpty()) {
       return false;
     } else {
-      if (this.expectsLargeResponse()) {
+      if (expectResponse) {
         //depending on the message
         switch (this.command) {
           case STATUS_CONFIG -> {

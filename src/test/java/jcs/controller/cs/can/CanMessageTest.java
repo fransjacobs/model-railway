@@ -15,7 +15,6 @@
  */
 package jcs.controller.cs.can;
 
-import jcs.util.ByteUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -262,20 +261,29 @@ public class CanMessageTest {
     assertFalse(result);
   }
 
-//  @Test
-//  public void testIsAcknowlegeFor() {
-//    System.out.println("isAcknowlegeFor");
-//
-//    CanMessage tx = new CanMessage(new byte[]{(byte)0x00, (byte)0x3a, (byte)0xcb, (byte)0x13, (byte)0x05, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, 0x00});
-//    CanMessage rx = new CanMessage(new byte[]{(byte)0x00, (byte)0x3b, (byte)0xcb, (byte)0x13, (byte)0x05, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00});
-//
-//    boolean result = rx.isAcknowledgeFor(tx);
-//    assertTrue(result);
-//
-//    result = tx.isAcknowledgeFor(tx);
-//
-//    assertFalse(result);
-//  }
+  @Test
+  public void testIsResponseComplete() {
+    System.out.println("issResponseComplete");
+
+    CanMessage tx = new CanMessage(new byte[]{0x00, 0x00, 0x37, 0x7f, 0x04, 0x63, 0x73, 0x45, (byte)0x8c, 0x00, 0x00, 0x00, 0x00});
+    CanMessage rx1 = new CanMessage(new byte[]{0x00, 0x01, 0x03, 0x26, 0x05, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00});
+    CanMessage rx2 = new CanMessage(new byte[]{0x00, 0x01, 0x03, 0x26, 0x05, 0x63, 0x73, 0x45, (byte)0x8c, 0x01, 0x00, 0x00, 0x00});
+    
+    tx.addResponse(rx1);
+    
+    boolean result = tx.isResponseComplete();
+    assertTrue(result);
+    tx.addResponse(rx2);
+
+    result = tx.isResponseComplete();
+    
+    assertTrue(result);
+
+    //assertFalse(result);
+  }
+  
+  
+  
   //@Test
   public void testGenerateHashInt() {
     System.out.println("generateHashInt");

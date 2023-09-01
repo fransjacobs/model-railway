@@ -193,11 +193,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
           if (this.mainDevice != null) {
             Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
             JCS.logProgress("Connected with " + this.mainDevice.getDeviceName());
-
-            //Is this still needed?
-            //if (this.isCS3()) {
-            //  getAppDevicesCs3();
-            //}
+            
             this.power = this.isPower();
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
 
@@ -349,7 +345,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   }
 
   private void updateDevice(final CanMessage message) {
-    //Logger.trace(message);
     if (CanMessage.PING_RESP == message.getCommand()) {
       int uid = message.getDeviceUidNumberFromMessage();
 
@@ -582,6 +577,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 
   @Override
   public void cacheAllFunctionIcons(PropertyChangeListener progressListener) {
+    if(1==2) {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String json = httpCon.getAllFunctionsSvgJSON();
 
@@ -592,6 +588,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 
     SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter(progressListener);
     svgp.convertAndCacheAllFunctionsSvgIcons(json);
+    }
   }
 
   public List<AccessoryBean> getAccessoriesViaHttp() {
@@ -1024,10 +1021,10 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     //cs3.pause(500L);
     //Logger.debug("Wait for 1m");
     //cs.pause(1000 * 60 * 1);
-    //List<LocomotiveBean> locs = cs.getLocomotives();
-    //for (LocomotiveBean loc : locs) {
-   //   Logger.trace(loc);
-   // }
+    List<LocomotiveBean> locs = cs.getLocomotives();
+    for (LocomotiveBean loc : locs) {
+      Logger.trace(loc);
+   }
 
     cs.pause(40000);
     cs.disconnect();

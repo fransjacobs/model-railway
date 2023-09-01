@@ -244,7 +244,7 @@ public class HTTPConnection {
   }
 
   public static void main(String[] args) throws Exception {
-    boolean cs3 = true;
+    boolean cs3 = false;
 
     InetAddress inetAddr;
     if (cs3) {

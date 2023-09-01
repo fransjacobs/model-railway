@@ -230,7 +230,7 @@ class TCPConnection implements CSConnection {
 
   private class ClientMessageReceiver extends Thread {
 
-    private boolean quit = false;
+    private boolean quit = true;
     private DataInputStream din;
 
     private CanPingListener pingListener;
@@ -247,7 +247,6 @@ class TCPConnection implements CSConnection {
         din = new DataInputStream(bis);
       } catch (IOException ex) {
         Logger.error(ex);
-        this.quit = true;
       }
     }
 
@@ -290,6 +289,8 @@ class TCPConnection implements CSConnection {
     @Override
     public void run() {
       Thread.currentThread().setName("CAN-RX");
+
+      this.quit = false;
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + "...");
 
       while (isRunning()) {
@@ -307,6 +308,7 @@ class TCPConnection implements CSConnection {
           }
           CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);
 
+          //Logger.trace("RX: "+rx);
           if (this.callBack != null && this.callBack.isSubscribedfor(cmd)) {
             this.callBack.addResponse(rx);
           } else if (rx.isPingResponse() && pingListener != null) {
@@ -344,4 +346,45 @@ class TCPConnection implements CSConnection {
       }
     }
   }
+
+  public static void main(String[] a) throws UnknownHostException {
+    boolean cs3 = true;
+
+    InetAddress inetAddr;
+    if (cs3) {
+      inetAddr = InetAddress.getByName("192.168.178.180");
+    } else {
+      inetAddr = InetAddress.getByName("192.168.178.86");
+    }
+
+    int uid;
+    if (cs3) {
+      uid = 1668498828;
+    } else {
+      uid = 1129552448;
+    }
+
+    TCPConnection c = new TCPConnection(inetAddr);
+
+    while (!c.messageReceiver.isRunning()) {
+
+    }
+
+    //CanMessage m = c.sendCanMessage(CanMessageFactory.getMembersPing());
+    CanMessage m = c.sendCanMessage(CanMessageFactory.querySystem(uid));
+
+    Logger.trace("TX: " + m);
+    for (CanMessage r : m.getResponses()) {
+      Logger.trace("RSP: " + r);
+    }
+
+    CanMessage m2 = c.sendCanMessage(CanMessageFactory.querySystem(uid));
+
+    Logger.trace("TX: " + m2);
+    for (CanMessage r : m2.getResponses()) {
+      Logger.trace("RSP: " + r);
+    }
+
+  }
+
 }

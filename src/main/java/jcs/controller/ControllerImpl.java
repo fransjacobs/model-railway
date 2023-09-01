@@ -22,6 +22,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -131,15 +134,17 @@ public class ControllerImpl implements Controller {
   }
 
   private void storeImage(Image image, String imageName) {
-    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + vendorController.getDevice().getArticleNumber();
-    File cachePath = new File(path);
-    if (cachePath.mkdir()) {
-      Logger.trace("Created new directory " + cachePath);
-    }
+    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + vendorController.getDevice().getSerialNumber());
+    File imageFile = new File(path + File.separator + imageName + ".png");
+
     try {
-      ImageIO.write((BufferedImage) image, "png", new File(path + File.separator + imageName + ".png"));
+      if (!Files.exists(path)) {
+        Files.createDirectories(path);
+        Logger.trace("Created new directory " + path);
+      }
+      ImageIO.write((BufferedImage) image, "png", imageFile);
     } catch (IOException ex) {
-      Logger.error("Can't store image " + cachePath.getName() + "! ", ex.getMessage());
+      Logger.error("Can't store image " + imageFile + "! ", ex.getMessage());
     }
     Logger.trace("Stored image " + imageName + ".png in the cache");
   }
