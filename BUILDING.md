@@ -25,6 +25,25 @@ When the database does not exist it is created on startup.
 Run the jcs.JCS class an database should be created on first run.
 
 ## Debugging
+JCS has some extra properties which can control the program.
+These properties have to be stored in a properties file in the user.home/jcs
+folder and is called jcs.properties.
+
+The following properties are supported
+
+Retrieval of the locomotives either via CAN (default) or http works on both CS-2 and 3
+locomotive.list.via=can / http default is can
+
+Accessories retrieval via CAN, http or JSON. the ltter only works on a CS-3
+accessory.list.via=can / http / JSON
+
+Debug of the zlib inflator. When files are retrive via CAN this controls
+the debugging of the inflation. When true the raw and decompressed files are
+written to the file system  
+inflate.debug=true (default false)
+
+
+## Debugging data
 JCS uses an embedded [H2](https://h2database.com/html/main.html) database.
 On de first startup, when ther are no files in the jcs home directory (~/jcs)
 database is created. The database is created as user SA (pass jcs) this user

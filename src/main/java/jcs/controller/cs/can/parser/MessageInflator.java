@@ -34,18 +34,24 @@ import org.tinylog.Logger;
  */
 public class MessageInflator {
 
-  public static String inflateConfigDataStream(CanMessage message) {
+  public static String inflateConfigDataStream(CanMessage message, String filename) {
+    boolean debug = System.getProperty("inflate.debug", "false").equalsIgnoreCase("true");
+
     try {
       List<CanMessage> responses = message.getResponses();
-      Logger.trace("There are " + responses.size() + " response messages");
-
-      //Ccreate the compressesed (zlib) datafile
+      if (debug) {
+        Logger.trace("There are " + responses.size() + " responses");
+      }
+      //Create the decompressesed (zlib) datafile from CAN message responses
       //First response is the acknowledges, second response contains the file length and the CRC
+      //For now I have chosen not to check the CRC as my assumption is that the zlib inflation will fail
+      //when the response is not ok
       int dataLength = 0;
 
       List<byte[]> dataPackets = new ArrayList<>(responses.size());
 
       for (int i = 0; i < message.getResponses().size(); i++) {
+        //Logger.trace("i: "+i+"; "+responses.get(i));
         switch (i) {
           case 0 -> {
             CanMessage ack = responses.get(i);
@@ -65,7 +71,7 @@ public class MessageInflator {
               byte[] dt = lenResp.getData();
               System.arraycopy(dt, 4, crca, 0, crca.length);
               int crc = ByteUtil.toInt(crca);
-              //For now the CRC is ignored as the Inflate will fail anyway whet the message contains errors
+              //For now the CRC is ignored as the Inflate will probaby fail when the message contains errors
               Logger.error("Data length: " + dataLength + " CRC: " + crc);
             }
           }
@@ -84,43 +90,51 @@ public class MessageInflator {
 
       //Reconstruct the data parts in one buffer
       byte[] databuf = new byte[dataPackets.size() * 8];
-      Logger.trace("Packets: " + dataPackets.size() + " Buffer " + databuf.length);
+      if (debug) {
+        Logger.trace("Data Packets: " + dataPackets.size() + " raw buffer length:" + databuf.length);
+      }
+      if (databuf.length < dataLength) {
+        Logger.warn("Received less data bytes [" + databuf.length + "] then specified [" + dataLength + "]...");
+      }
 
+      int bufIdx;
       for (int i = 0; i < dataPackets.size(); i++) {
+        bufIdx = i * 8;
         byte[] p = dataPackets.get(i);
-        if ((i * 8) < databuf.length) {
-          System.arraycopy(p, 0, databuf, (i * 8), p.length);
+        if (bufIdx < databuf.length) {
+          System.arraycopy(p, 0, databuf, bufIdx, p.length);
         }
       }
-      
-      Logger.trace("All Packets in Buffer " + databuf.length);
-      
 
+      if (debug) {
+        Logger.trace("All Packets in Buffer " + databuf.length);
+      }
       //The First 4 byte represent the uncompressed length of the file
       byte[] uclb = new byte[4];
       System.arraycopy(databuf, 0, uclb, 0, uclb.length);
       int uncompressedLength = ByteUtil.toInt(uclb);
-      
-      Logger.trace("Uncompressed length: "+uncompressedLength+" Compressed legth "+dataLength);
-      
 
+      if (debug) {
+        Logger.trace("Uncompressed length: " + uncompressedLength + " Compressed length " + dataLength);
+      }
       //Create a new buffer skip the first 4 bytes
       //byte[] compressedBuffer = new byte[dataLength];
-      byte[] compressedBuffer = new byte[databuf.length-4];
-      Logger.trace("Removed first 4 bytes length: "+compressedBuffer.length);
-      
+      byte[] compressedBuffer = new byte[databuf.length - 4];
+      if (debug) {
+        Logger.trace("Removed first 4 bytes length: " + compressedBuffer.length);
+      }
       System.arraycopy(databuf, 4, compressedBuffer, 0, compressedBuffer.length);
-      
-      if (System.getProperty("locomotive.list.debug", "false").equalsIgnoreCase("true")) {
+
+      if (debug) {
         Logger.debug("uncompressedLength: " + uncompressedLength + " dataLength: " + dataLength + " databuf.length: " + databuf.length);
 
         //Write to a file for debug when set in property
-        Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotives.bin");
+        Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + filename + ".bin");
         try {
           Files.write(path, compressedBuffer);
-          Logger.debug("Saved raw (zipped) locomotives file to: " + path.toString());
+          Logger.debug("Saved raw (zipped) " + filename + " file to: " + path.toString());
         } catch (IOException ex) {
-          Logger.error("Can't write raw (zipped) locomotives file to " + path.toString());
+          Logger.error("Can't write raw (zipped) " + filename + " file to " + path.toString());
         }
       }
 
@@ -129,28 +143,27 @@ public class MessageInflator {
       inflator.setInput(compressedBuffer);
       byte[] inflaterbuf = new byte[uncompressedLength];
 
-      Logger.trace("Compressed length: " + compressedBuffer.length + " Temp inflate buf: " + inflaterbuf.length);
       inflator.inflate(inflaterbuf);
       inflator.end();
 
-      String loksFile = CanMessage.toString(inflaterbuf);
-      
-      Logger.trace("Real Uncompressed length "+loksFile.length());
+      String inflatedFile = CanMessage.toString(inflaterbuf);
 
-      if (System.getProperty("locomotive.list.debug", "false").equalsIgnoreCase("true")) {
-        Logger.trace("\n"+loksFile);
+      if (debug) {
+        Logger.trace("Real Uncompressed length " + inflatedFile.length());
+
+        Logger.trace("\n" + inflatedFile);
 
         //Write to a file for debug when set in property
-        Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotives.cs2");
+        Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + filename + ".cs2");
         try {
-          Files.writeString(path, loksFile);
-          Logger.debug("Saved unzipped locomotives file to: " + path.toString());
+          Files.writeString(path, inflatedFile);
+          Logger.debug("Saved unzipped " + filename + " file to: " + path.toString());
         } catch (IOException ex) {
-          Logger.error("Can't write unzipped locomotives file to " + path.toString());
+          Logger.error("Can't write unzipped " + filename + " file to " + path.toString());
         }
       }
 
-      return loksFile;
+      return inflatedFile;
     } catch (DataFormatException ex) {
       Logger.error(ex);
     }

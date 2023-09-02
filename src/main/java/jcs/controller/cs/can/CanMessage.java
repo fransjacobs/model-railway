@@ -372,6 +372,10 @@ public class CanMessage implements MarklinCan, Serializable {
                 if (CONFIG_DATA_STREAM == lenm.getCommand() && DLC_6 == lenm.getDlc()) {
                   int dataLength = lenm.getDeviceUidNumberFromMessage();
                   int rspMessages = dataLength / 8;
+                  if (dataLength % 8 > 0) {
+                    rspMessages = rspMessages + 1;
+                  }
+
                   rspMessages = rspMessages + 2;
                   int respSize = this.responses.size();
                   return respSize == rspMessages;

@@ -183,8 +183,7 @@ public class LocomotiveBeanParser {
       ps = s;
     }
     // parse the last loc
-    if (lm.containsKey(
-            ".uid")) {
+    if (lm.containsKey(".uid")) {
       LocomotiveBean loc = createLoco(lm, locoFunctions, configRegister);
       locs.add(loc);
     }

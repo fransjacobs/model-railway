@@ -551,7 +551,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   List<LocomotiveBean> getLocomotivesViaCAN() {
     CanMessage message = CanMessageFactory.requestConfigData(csUid, "loks");
     this.connection.sendCanMessage(message);
-    String lokomotive = MessageInflator.inflateConfigDataStream(message);
+    String lokomotive = MessageInflator.inflateConfigDataStream(message, "locomotive");
 
     LocomotiveBeanParser lp = new LocomotiveBeanParser();
     return lp.parseLocomotivesFile(lokomotive);
@@ -589,38 +589,54 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     }
   }
 
-  public List<AccessoryBean> getAccessoriesViaHttp() {
+  List<AccessoryBean> getAccessoriesViaHttp() {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String magnetartikelCs2 = httpCon.getAccessoriesFile();
     AccessoryBeanParser ap = new AccessoryBeanParser();
     return ap.parseAccessoryFile(magnetartikelCs2);
   }
 
-  public List<AccessoryBean> getAccessoriesViaCan() {
+  List<AccessoryBean> getAccessoriesViaCan() {
     CanMessage message = CanMessageFactory.requestConfigData(csUid, "mags");
     this.connection.sendCanMessage(message);
-    String magnetartikel = MessageInflator.inflateConfigDataStream(message);
+    String magnetartikel = MessageInflator.inflateConfigDataStream(message, "magnetartikel");
 
     AccessoryBeanParser ap = new AccessoryBeanParser();
     return ap.parseAccessoryFile(magnetartikel);
   }
 
+  public List<AccessoryBean> getAccessories() {
+    List<AccessoryBean> accessories;
+    if (System.getProperty("accessory.list.via", "can").equalsIgnoreCase("http")) {
+      if (isCS3() && System.getProperty("accessory.list.via", "JSON").equalsIgnoreCase("JSON")) {
+        HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+        String json = httpCon.getAccessoriesJSON();
+        AccessoryJSONParser accessoryParser = new AccessoryJSONParser();
+        accessoryParser.parseAccessories(json);
+        accessories = accessoryParser.getAccessories();
+      } else {
+        accessories = getAccessoriesViaHttp();
+      }
+    } else {
+      accessories = getAccessoriesViaCan();
+    }
+    return accessories;
+  }
+
   @Override
   public List<AccessoryBean> getSwitches() {
-    AccessoryJSONParser accessoryParser = new AccessoryJSONParser();
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
-    String json = httpCon.getAccessoriesJSON();
-    accessoryParser.parseAccessories(json);
-    return accessoryParser.getTurnouts();
+    List<AccessoryBean> accessories = this.getAccessories();
+    List<AccessoryBean> turnouts = accessories.stream().filter(t -> !t.isSignal()).collect(Collectors.toList());
+
+    return turnouts;
   }
 
   @Override
   public List<AccessoryBean> getSignals() {
-    AccessoryJSONParser accessoryParser = new AccessoryJSONParser();
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
-    String json = httpCon.getAccessoriesJSON();
-    accessoryParser.parseAccessories(json);
-    return accessoryParser.getSignals();
+    List<AccessoryBean> accessories = this.getAccessories();
+    List<AccessoryBean> signals = accessories.stream().filter(t -> t.isSignal()).collect(Collectors.toList());
+
+    return signals;
   }
 
   @Override
@@ -1019,11 +1035,15 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     //cs3.pause(500L);
     //Logger.debug("Wait for 1m");
     //cs.pause(1000 * 60 * 1);
-    List<LocomotiveBean> locs = cs.getLocomotives();
-    for (LocomotiveBean loc : locs) {
-      Logger.trace(loc);
+    List<AccessoryBean> accessories = cs.getAccessoriesViaCan();
+    for (AccessoryBean accessory : accessories) {
+      Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
     }
 
+//    List<LocomotiveBean> locs = cs.getLocomotives();
+//    for (LocomotiveBean loc : locs) {
+//      Logger.trace(loc);
+//    }
     cs.pause(40000);
     cs.disconnect();
     cs.pause(100L);

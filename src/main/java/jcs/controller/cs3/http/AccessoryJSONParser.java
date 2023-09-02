@@ -22,63 +22,72 @@ import org.json.JSONArray;
 import org.tinylog.Logger;
 
 /**
- *
- * @author fransjacobs
+ * CS-3 only a JSON file is available (undocumented)
  */
 public class AccessoryJSONParser {
 
-    private final List<AccessoryBean> turnouts;
-    private final List<AccessoryBean> signals;
+  private final List<AccessoryBean> turnouts;
+  private final List<AccessoryBean> signals;
 
-    public AccessoryJSONParser() {
-        turnouts = new LinkedList<>();
-        signals = new LinkedList<>();
-    }
+  public AccessoryJSONParser() {
+    turnouts = new LinkedList<>();
+    signals = new LinkedList<>();
+  }
 
-    public void parseAccessories(String json) {
-        this.signals.clear();
-        this.turnouts.clear();
+  public void parseAccessories(String json) {
+    this.signals.clear();
+    this.turnouts.clear();
 
-        JSONArray accArray = new JSONArray(json);
-        for (int i = 0; i < accArray.length(); i++) {
-            AccessoryBean ab = new AccessoryBean();
+    JSONArray accArray = new JSONArray(json);
+    for (int i = 0; i < accArray.length(); i++) {
+      AccessoryBean ab = new AccessoryBean();
 
-            ab.setName(accArray.getJSONObject(i).getString("name"));
-            ab.setId(accArray.getJSONObject(i).getLong("id"));
-            ab.setAddress(accArray.getJSONObject(i).getInt("address"));
-            ab.setIcon(accArray.getJSONObject(i).getString("icon"));
-            ab.setIconFile(accArray.getJSONObject(i).getString("iconFile"));
-            ab.setType(accArray.getJSONObject(i).getString("typ"));
-            ab.setGroup(accArray.getJSONObject(i).getString("group"));
-            ab.setSwitchTime(accArray.getJSONObject(i).getInt("schaltzeit"));
-            ab.setStates(accArray.getJSONObject(i).getInt("states"));
-            ab.setPosition(accArray.getJSONObject(i).getInt("state"));
+      ab.setName(accArray.getJSONObject(i).getString("name"));
+      ab.setId(accArray.getJSONObject(i).getLong("id"));
+      ab.setAddress(accArray.getJSONObject(i).getInt("address"));
+      ab.setIcon(accArray.getJSONObject(i).getString("icon"));
+      ab.setIconFile(accArray.getJSONObject(i).getString("iconFile"));
+      ab.setType(accArray.getJSONObject(i).getString("typ"));
+      ab.setGroup(accArray.getJSONObject(i).getString("group"));
+      ab.setSwitchTime(accArray.getJSONObject(i).getInt("schaltzeit"));
+      ab.setStates(accArray.getJSONObject(i).getInt("states"));
+      ab.setPosition(accArray.getJSONObject(i).getInt("state"));
 
-            if (accArray.getJSONObject(i).has("prot")) {
-                ab.setDecoderType(accArray.getJSONObject(i).getString("prot"));
-            }
-            if (accArray.getJSONObject(i).has("dectyp")) {
-                ab.setDecoder(accArray.getJSONObject(i).getString("dectyp"));
-            }
+      if (accArray.getJSONObject(i).has("prot")) {
+        ab.setDecoderType(accArray.getJSONObject(i).getString("prot"));
+      }
+      if (accArray.getJSONObject(i).has("dectyp")) {
+        ab.setDecoder(accArray.getJSONObject(i).getString("dectyp"));
+      }
 
-            if (null == ab.getGroup()) {
-                Logger.trace("Unknown Accessory: " + ab.toLogString());
-            } else {
-                switch (ab.getGroup()) {
-                    case "weichen" -> this.turnouts.add(ab);
-                    case "lichtsignale" -> this.signals.add(ab);
-                    default -> Logger.trace("Unknown Accessory: " + ab.toLogString());
-                }
-            }
+      if (null == ab.getGroup()) {
+        Logger.trace("Unknown Accessory: " + ab.toLogString());
+      } else {
+        switch (ab.getGroup()) {
+          case "weichen" ->
+            this.turnouts.add(ab);
+          case "lichtsignale" ->
+            this.signals.add(ab);
+          default ->
+            Logger.trace("Unknown Accessory: " + ab.toLogString());
         }
+      }
     }
+  }
 
-    public List<AccessoryBean> getTurnouts() {
-        return turnouts;
-    }
+  public List<AccessoryBean> getTurnouts() {
+    return turnouts;
+  }
 
-    public List<AccessoryBean> getSignals() {
-        return signals;
-    }
+  public List<AccessoryBean> getSignals() {
+    return signals;
+  }
+
+  public List<AccessoryBean> getAccessories() {
+    List<AccessoryBean> accessories = new LinkedList<>();
+    accessories.addAll(signals);
+    accessories.addAll(turnouts);
+    return accessories;
+  }
 
 }
