@@ -27,6 +27,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.JCS;
 import jcs.controller.events.SensorEvent;
@@ -128,13 +130,29 @@ public class ControllerImpl implements Controller {
   public Image getLocomotiveImage(String imageName) {
     Image image = vendorController.getLocomotiveImage(imageName);
     if (image != null) {
-      storeImage(image, imageName);
+      storeImage(image, imageName, true);
     }
     return image;
   }
 
-  private void storeImage(Image image, String imageName) {
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + vendorController.getDevice().getSerialNumber());
+  public Image getLocomotiveFunctionImage(String imageName) {
+    Image image = vendorController.getLocomotiveFunctionImage(imageName);
+    if (image != null) {
+      storeImage(image, imageName, false);
+    }
+    return image;
+  }
+
+  private void storeImage(Image image, String imageName, boolean locomotive) {
+    Path path;
+    String basePath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + vendorController.getDevice().getSerialNumber();
+
+    if (locomotive) {
+      path = Paths.get(basePath);
+    } else {
+      path = Paths.get(basePath + File.separator + "functions");
+    }
+
     File imageFile = new File(path + File.separator + imageName + ".png");
 
     try {
@@ -246,13 +264,21 @@ public class ControllerImpl implements Controller {
         }
         getLocomotiveImage(loco.getIcon());
 
+        //Function icons
+        Set<FunctionBean> functions = loco.getFunctions().values().stream().collect(Collectors.toSet());
+
+        for (FunctionBean fb : functions) {
+          String aIcon = fb.getActiveIcon();
+          String iIcon = fb.getInActiveIcon();
+
+          getLocomotiveFunctionImage(aIcon);
+          getLocomotiveFunctionImage(iIcon);
+        }
+
       } catch (Exception e) {
         Logger.error(e);
       }
     }
-
-    //Also cache the function Icons
-    this.vendorController.cacheAllFunctionIcons(progressListener);
   }
 
   @Override

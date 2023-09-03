@@ -645,6 +645,13 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     Image locIcon = httpCon.getLocomotiveImage(icon);
     return locIcon;
   }
+  
+  @Override
+  public Image getLocomotiveFunctionImage(String icon) {
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    Image locIcon = httpCon.getFunctionImageCS2(icon);
+    return locIcon;
+  }
 
   @Override
   public void addPowerEventListener(PowerEventListener listener) {
@@ -1035,15 +1042,15 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     //cs3.pause(500L);
     //Logger.debug("Wait for 1m");
     //cs.pause(1000 * 60 * 1);
-    List<AccessoryBean> accessories = cs.getAccessoriesViaCan();
-    for (AccessoryBean accessory : accessories) {
-      Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
-    }
-
-//    List<LocomotiveBean> locs = cs.getLocomotives();
-//    for (LocomotiveBean loc : locs) {
-//      Logger.trace(loc);
+//    List<AccessoryBean> accessories = cs.getAccessoriesViaCan();
+//    for (AccessoryBean accessory : accessories) {
+//      Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
 //    }
+
+    List<LocomotiveBean> locs = cs.getLocomotives();
+    for (LocomotiveBean loc : locs) {
+      Logger.trace(loc);
+    }
     cs.pause(40000);
     cs.disconnect();
     cs.pause(100L);

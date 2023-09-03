@@ -15,7 +15,6 @@
  */
 package jcs.persistence;
 
-import java.awt.Image;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -548,21 +547,6 @@ public class PersistenceServiceTest {
     loco = instance.getLocomotive(70L);
 
     assertNull(loco);
-  }
-
-  /**
-   * Test of getFunctionImage method, of class PersistenceService.
-   */
-  //@Test
-  public void testGetFunctionImage() {
-    System.out.println("getFunctionImage");
-    String imageName = "";
-    PersistenceService instance = PersistenceFactory.getService();
-    Image expResult = null;
-    Image result = instance.getFunctionImage(imageName);
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
 
   /**

@@ -30,8 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
-import jcs.controller.cs3.http.AccessoryJSONParser;
-import jcs.entities.AccessoryBean;
+import jcs.entities.FunctionBean;
 import org.tinylog.Logger;
 
 /**
@@ -210,7 +209,7 @@ public class HTTPConnection {
       image = ImageIO.read(url);
     } catch (IIOException iio) {
       //Image not avalable
-      //Logger.trace("Image: " + iurl + " is not available");
+      Logger.warn("Image: " + iurl + " is not available");
     } catch (MalformedURLException ex) {
       Logger.error(ex);
     } catch (IOException ex) {
@@ -244,7 +243,7 @@ public class HTTPConnection {
   }
 
   public static void main(String[] args) throws Exception {
-    boolean cs3 = false;
+    boolean cs3 = true;
 
     InetAddress inetAddr;
     if (cs3) {
@@ -260,23 +259,41 @@ public class HTTPConnection {
     } else {
       serial = "13344";
     }
-    String imageName = "RRF 272 001-9";
 
-    Image locImage = hc.getLocomotiveImage(imageName);
+//    String imageName = "RRF 272 001-9";
+//    Image locImage = hc.getLocomotiveImage(imageName);
+//   Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial);
+    //String imageName = "FktIcon_a_ge_42";
 
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial);
+    FunctionBean fb = new FunctionBean();
+    fb.setNumber(0);
+    fb.setFunctionType(1);
 
+    String activeImage = fb.getActiveIcon();
+    String inActiveImage = fb.getInActiveIcon();
+
+    Logger.trace("activeImage: " + activeImage + " inActiveImage: " + inActiveImage);
+
+    Image activeFunctionImage = hc.getFunctionImageCS2(activeImage);
+    Image inActiveFunctionImage = hc.getFunctionImageCS2(inActiveImage);
+
+    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator + "functions");
     if (!Files.exists(path)) {
       Files.createDirectories(path);
       Logger.trace("Created new directory " + path);
     }
-
     try {
-      ImageIO.write((BufferedImage) locImage, "png", new File(path + File.separator + imageName + ".png"));
+      //ImageIO.write((BufferedImage) locImage, "png", new File(path + File.separator + imageName + ".png"));
+      ImageIO.write((BufferedImage) activeFunctionImage, "png", new File(path + File.separator + activeImage + ".png"));
+      Logger.trace("Stored image " + activeImage + ".png in the cache: " + path);
+
+      ImageIO.write((BufferedImage) inActiveFunctionImage, "png", new File(path + File.separator + inActiveImage + ".png"));
+      Logger.trace("Stored image " + inActiveImage + ".png in the cache: " + path);
+      
+      
     } catch (IOException ex) {
       Logger.error("Can't store image " + path + "! ", ex.getMessage());
     }
-    Logger.trace("Stored image " + imageName + ".png in the cache: " + path);
 
 //    
 //        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + vendorController.getDevice().getArticleNumber();

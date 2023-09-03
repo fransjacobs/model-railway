@@ -73,6 +73,9 @@ public class LocomotiveBeanParser {
   private static final String WERT = "..wert";
   private static final String ADRESSE_2 = "..adresse";
   private static final String NAME_2 = "..name";
+  
+  //..dauer=0
+ //Auslösedauer, 0: Dauerfunktion, -1 Momentfunktion, sonst Zeitfunktion
 
   public List<LocomotiveBean> parseLocomotivesFile(String locofile) {
     List<LocomotiveBean> locs = new LinkedList<>();
@@ -155,6 +158,7 @@ public class LocomotiveBeanParser {
                   if (WERT.equals(key)) {
                     locoFunction.setValue(val);
                   }
+                  
                 }
               }
             }

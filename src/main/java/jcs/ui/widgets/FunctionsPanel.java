@@ -125,51 +125,92 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       }
     }
   }
+  
+  private void resetButtons() {
+     for(JToggleButton btn :  this.buttons.values()) {
+       btn.setIcon(null);
+       btn.setSelectedIcon(null);
+       btn.setText("");
+       btn.setEnabled(false);
+     }     
+  }
 
   public void setLocomotive(LocomotiveBean locomotive) {
     if (PersistenceFactory.getService() != null && locomotive != null) {
       this.locomotive = locomotive;
+      
+      resetButtons();
+      
       Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
-      for (int i = 0; i < 32; i++) {
-        JToggleButton button = this.buttons.get(i);
+      Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
 
-        if (functions.containsKey(i)) {
-          //Logger.trace("Button " + i);
-          FunctionBean fb = functions.get(i);
+      for (FunctionBean fb : functions.values()) {
+        Integer fnr = fb.getNumber();
+        JToggleButton btn = this.buttons.get(fnr);
+        
+        Logger.trace("Function: "+fb.getNumber()+" Type: "+fb.getFunctionType()+" Value: "+fb.getValue()+" isMomentary: "+fb.isMomentary());
 
-          int type = fb.getFunctionType();
-          boolean val = fb.getValue() == 1;
-
-          String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
-          String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
-
-          Image iconOff = PersistenceFactory.getService().getFunctionImage(functionOff);
-          if (iconOff == null) {
-            button.setText("F" + i);
-            Logger.trace("Missing icon " + functionOff);
-
-          } else {
-            button.setText("");
-            button.setIcon(new ImageIcon(iconOff));
-          }
-
-          Image iconOn = PersistenceFactory.getService().getFunctionImage(functionOn);
-          if (iconOn == null) {
-          } else {
-            button.setText("");
-            button.setSelectedIcon(new ImageIcon(iconOn));
-          }
-
-          button.setSelected(val);
-          button.setActionCommand("F" + i);
-          button.setEnabled(true);
+        if (fb.getInActiveIconImage() != null) {
+          btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
         } else {
-          button.setIcon(null);
-          button.setText("");
-          button.setEnabled(false);
+          btn.setText("F" + fb.getNumber());
+          Logger.trace("Missing Icon: " + fb.getInActiveIcon());
         }
+        
+        if (fb.getActiveIconImage() != null) {
+          btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
+        } else {
+          btn.setText("F" + fb.getNumber());
+          Logger.trace("Missing Icon: " + fb.getActiveIcon());
+        }
+
+        boolean val = fb.getValue() == 1;
+        btn.setSelected(val);
+        btn.setActionCommand("F" + fb.getNumber());
+        btn.setEnabled(true);
       }
+
+//      for (int i = 0; i < 32; i++) {
+//
+//        JToggleButton button = this.buttons.get(i);
+//
+//        if (functions.containsKey(i)) {
+//          //Logger.trace("Button " + i);
+//          FunctionBean fb = functions.get(i);
+//
+//          int type = fb.getFunctionType();
+//          boolean val = fb.getValue() == 1;
+//
+//          String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
+//          String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
+//
+//          Image iconOff = PersistenceFactory.getService().getFunctionImage(functionOff);
+//          if (iconOff == null) {
+//            button.setText("F" + i);
+//            Logger.trace("Missing icon " + functionOff);
+//
+//          } else {
+//            button.setText("");
+//            button.setIcon(new ImageIcon(iconOff));
+//          }
+//
+//          Image iconOn = PersistenceFactory.getService().getFunctionImage(functionOn);
+//          if (iconOn == null) {
+//          } else {
+//            button.setText("");
+//            button.setSelectedIcon(new ImageIcon(iconOn));
+//          }
+//
+//          button.setSelected(val);
+//          button.setActionCommand("F" + i);
+//          button.setEnabled(true);
+//        } else {
+//          button.setIcon(null);
+//          button.setText("");
+//          button.setEnabled(false);
+//        }
+//      }
     }
   }
 
@@ -690,7 +731,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
         //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
         //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16391L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16394L);
+        Logger.debug(loc);
 
         testPanel.setLocomotive(loc);
 

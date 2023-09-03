@@ -134,11 +134,17 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
-  private LocomotiveBean getLocomotiveFunctionsAndImage(LocomotiveBean locomotive) {
+  private LocomotiveBean getLocomotiveFunctionsAndImages(LocomotiveBean locomotive) {
     if (locomotive != null) {
       Long locomotiveId = locomotive.getId();
       List<FunctionBean> locFunctions = database.where("locomotive_id=?", locomotiveId).orderBy("f_number").results(FunctionBean.class);
-      locomotive.replaceAllFunctions(locFunctions);
+
+      for (FunctionBean fb : locFunctions) {
+        fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
+        fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
+      }
+
+      locomotive.setFunctions(locFunctions);
       locomotive.setLocIcon(getLocomotiveImage(locomotive.getIcon()));
     }
     return locomotive;
@@ -147,7 +153,7 @@ public class H2PersistenceService implements PersistenceService {
   private List<LocomotiveBean> getLocomotiveFunctions(List<LocomotiveBean> locomotives) {
     List<LocomotiveBean> locs = new LinkedList<>();
     for (LocomotiveBean lb : locomotives) {
-      lb = getLocomotiveFunctionsAndImage(lb);
+      lb = getLocomotiveFunctionsAndImages(lb);
       locs.add(lb);
     }
     return locs;
@@ -156,19 +162,24 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
     Object[] args = new Object[]{address, decoderType.getDecoderType()};
-    LocomotiveBean loco = getLocomotiveFunctionsAndImage(database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class));
+    LocomotiveBean loco = getLocomotiveFunctionsAndImages(database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class));
     return loco;
   }
 
   @Override
   public LocomotiveBean getLocomotive(Long id) {
-    LocomotiveBean loco = getLocomotiveFunctionsAndImage(database.where("id=?", id).first(LocomotiveBean.class));
+    LocomotiveBean loco = getLocomotiveFunctionsAndImages(database.where("id=?", id).first(LocomotiveBean.class));
     return loco;
   }
 
   @Override
   public List<LocomotiveBean> getLocomotives() {
     List<LocomotiveBean> locos = H2PersistenceService.this.getLocomotiveFunctions(database.orderBy("id").results(LocomotiveBean.class));
+
+    for (LocomotiveBean loco : locos) {
+      this.getLocomotiveFunctionsAndImages(loco);
+    }
+
     return locos;
   }
 
@@ -207,7 +218,7 @@ public class H2PersistenceService implements PersistenceService {
     //remove the current functions
     database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
     persistFunctionBeans(functions);
-    locomotive.replaceAllFunctions(functions);
+    locomotive.setFunctions(functions);
 
     return locomotive;
   }
@@ -234,7 +245,6 @@ public class H2PersistenceService implements PersistenceService {
     return this.imageCache.get(imageName);
   }
 
-  @Override
   public Image getFunctionImage(String imageName) {
     if (!functionImageCache.containsKey(imageName)) {
       //Try to load the image from the file cache
@@ -250,12 +260,13 @@ public class H2PersistenceService implements PersistenceService {
 
   private Image readImage(String imageName, boolean function) {
     Image image = null;
-    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
 
-    
-    
+    String serial = System.getProperty("cs.serial", "");
+
+    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial;
+
     if (function) {
-      path = path + "functions" + File.separator;
+      path = path + File.separator + "functions" + File.separator;
     }
 
     File imgFile = new File(path + imageName + ".png");

@@ -367,7 +367,7 @@ public class LocomotiveBean implements Serializable {
     }
   }
 
-  public void replaceAllFunctions(List<FunctionBean> functions) {
+  public void setFunctions(List<FunctionBean> functions) {
     this.functions.clear();
     for (FunctionBean function : functions) {
       this.functions.put(function.getNumber(), function);
