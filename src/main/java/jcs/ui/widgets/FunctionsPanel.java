@@ -15,7 +15,6 @@
  */
 package jcs.ui.widgets;
 
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +25,8 @@ import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import jcs.controller.events.LocomotiveFunctionEvent;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
@@ -44,12 +45,11 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   private LocomotiveBean locomotive;
   private final ExecutorService executor;
 
-  private final String IMG_PREFIX = "fkticon_";
-  private final String IMG_A = "a_";
-  private final String IMG_YELLOW = "ge_";
-  private final String IMG_BLACK = "sw_";
-  private final String NMB_FORMAT = "%03d";
-
+//  private final String IMG_PREFIX = "fkticon_";
+//  private final String IMG_A = "a_";
+//  private final String IMG_YELLOW = "ge_";
+//  private final String IMG_BLACK = "sw_";
+//  private final String NMB_FORMAT = "%03d";
   /**
    * Creates new form FunctionsPanel
    */
@@ -98,6 +98,16 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     setEnabled(false);
 
+    this.buttonsTP.addChangeListener(new ChangeListener() {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        int selectedIndex = buttonsTP.getSelectedIndex();
+
+        Logger.trace("Selected idx:" + selectedIndex);
+
+      }
+    });
+
     if (ControllerFactory.getController() != null) {
       ControllerFactory.getController().addLocomotiveFunctionEventListener(this);
     }
@@ -118,6 +128,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     if (this.locomotive != null && this.locomotive.getId().equals(event.getLocomotiveBean().getId())) {
       Integer updatedFunction = event.getUpdatedFunctionNumber();
       FunctionBean fb = event.getLocomotiveBean().getFunctionBean(updatedFunction);
+
       if (fb != null) {
         this.buttons.get(updatedFunction).setSelected(fb.isOn());
       } else {
@@ -125,22 +136,20 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       }
     }
   }
-  
+
   private void resetButtons() {
-     for(JToggleButton btn :  this.buttons.values()) {
-       btn.setIcon(null);
-       btn.setSelectedIcon(null);
-       btn.setText("");
-       btn.setEnabled(false);
-     }     
+    for (JToggleButton btn : this.buttons.values()) {
+      btn.setIcon(null);
+      btn.setSelectedIcon(null);
+      btn.setText("");
+      btn.setEnabled(false);
+    }
   }
 
   public void setLocomotive(LocomotiveBean locomotive) {
     if (PersistenceFactory.getService() != null && locomotive != null) {
       this.locomotive = locomotive;
-      
       resetButtons();
-      
       Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
       Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
@@ -148,8 +157,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       for (FunctionBean fb : functions.values()) {
         Integer fnr = fb.getNumber();
         JToggleButton btn = this.buttons.get(fnr);
-        
-        Logger.trace("Function: "+fb.getNumber()+" Type: "+fb.getFunctionType()+" Value: "+fb.getValue()+" isMomentary: "+fb.isMomentary());
+
+        Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
 
         if (fb.getInActiveIconImage() != null) {
           btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
@@ -157,7 +166,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
           btn.setText("F" + fb.getNumber());
           Logger.trace("Missing Icon: " + fb.getInActiveIcon());
         }
-        
+
         if (fb.getActiveIconImage() != null) {
           btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
         } else {
@@ -169,48 +178,12 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
         btn.setSelected(val);
         btn.setActionCommand("F" + fb.getNumber());
         btn.setEnabled(true);
-      }
 
-//      for (int i = 0; i < 32; i++) {
-//
-//        JToggleButton button = this.buttons.get(i);
-//
-//        if (functions.containsKey(i)) {
-//          //Logger.trace("Button " + i);
-//          FunctionBean fb = functions.get(i);
-//
-//          int type = fb.getFunctionType();
-//          boolean val = fb.getValue() == 1;
-//
-//          String functionOff = IMG_PREFIX + IMG_A + IMG_BLACK + String.format(NMB_FORMAT, type);
-//          String functionOn = IMG_PREFIX + IMG_A + IMG_YELLOW + String.format(NMB_FORMAT, type);
-//
-//          Image iconOff = PersistenceFactory.getService().getFunctionImage(functionOff);
-//          if (iconOff == null) {
-//            button.setText("F" + i);
-//            Logger.trace("Missing icon " + functionOff);
-//
-//          } else {
-//            button.setText("");
-//            button.setIcon(new ImageIcon(iconOff));
-//          }
-//
-//          Image iconOn = PersistenceFactory.getService().getFunctionImage(functionOn);
-//          if (iconOn == null) {
-//          } else {
-//            button.setText("");
-//            button.setSelectedIcon(new ImageIcon(iconOn));
-//          }
-//
-//          button.setSelected(val);
-//          button.setActionCommand("F" + i);
-//          button.setEnabled(true);
-//        } else {
-//          button.setIcon(null);
-//          button.setText("");
-//          button.setEnabled(false);
-//        }
-//      }
+        //if (fnr > 15) {
+        //  this.f16f31Panel.setEnabled(true);
+        //}
+      }
+      this.buttonsTP.setEnabled(true);
     }
   }
 
@@ -222,13 +195,27 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     JToggleButton src = (JToggleButton) evt.getSource();
     boolean value = src.isSelected();
     Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
-    Integer functionNumber = Integer.parseInt(evt.getActionCommand().replace("F", ""));
+    Integer functionNumber = Integer.decode(evt.getActionCommand().replace("F", ""));
+
+    FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
+    Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
+
     executor.execute(() -> changeFunction(value, functionNumber, locomotive));
+
   }
 
   private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
     if (ControllerFactory.getController() != null && this.locomotive != null) {
+      FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
+      Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " new Value: " + newValue + " Momentary: " + fb.isMomentary());
+      //TODO: when momentary do no store the value
       ControllerFactory.getController().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
+
+      if (fb.isMomentary() && newValue) {
+        JToggleButton tb = this.buttons.get(fb.getNumber());
+        tb.doClick();
+      }
+
     }
   }
 
@@ -236,402 +223,468 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
    * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
    */
   @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+  private void initComponents() {
 
-        buttonsTP = new javax.swing.JTabbedPane();
-        f0f15Panel = new javax.swing.JPanel();
-        f0TB = new javax.swing.JToggleButton();
-        f1TB = new javax.swing.JToggleButton();
-        f2TB = new javax.swing.JToggleButton();
-        f3TB = new javax.swing.JToggleButton();
-        f4TB = new javax.swing.JToggleButton();
-        f5TB = new javax.swing.JToggleButton();
-        f6TB = new javax.swing.JToggleButton();
-        f7TB = new javax.swing.JToggleButton();
-        f8TB = new javax.swing.JToggleButton();
-        f9TB = new javax.swing.JToggleButton();
-        f10TB = new javax.swing.JToggleButton();
-        f11TB = new javax.swing.JToggleButton();
-        f12TB = new javax.swing.JToggleButton();
-        f13TB = new javax.swing.JToggleButton();
-        f14TB = new javax.swing.JToggleButton();
-        f15TB = new javax.swing.JToggleButton();
-        f16f31Panel = new javax.swing.JPanel();
-        f16TB = new javax.swing.JToggleButton();
-        f17TB = new javax.swing.JToggleButton();
-        f18TB = new javax.swing.JToggleButton();
-        f19TB = new javax.swing.JToggleButton();
-        f20TB = new javax.swing.JToggleButton();
-        f21TB = new javax.swing.JToggleButton();
-        f22TB = new javax.swing.JToggleButton();
-        f23TB = new javax.swing.JToggleButton();
-        f24TB = new javax.swing.JToggleButton();
-        f25TB = new javax.swing.JToggleButton();
-        f26TB = new javax.swing.JToggleButton();
-        f27TB = new javax.swing.JToggleButton();
-        f28TB = new javax.swing.JToggleButton();
-        f29TB = new javax.swing.JToggleButton();
-        f30TB = new javax.swing.JToggleButton();
-        f31TB = new javax.swing.JToggleButton();
+    buttonsTP = new javax.swing.JTabbedPane();
+    f0f15Panel = new javax.swing.JPanel();
+    f0TB = new javax.swing.JToggleButton();
+    f1TB = new javax.swing.JToggleButton();
+    f2TB = new javax.swing.JToggleButton();
+    f3TB = new javax.swing.JToggleButton();
+    f4TB = new javax.swing.JToggleButton();
+    f5TB = new javax.swing.JToggleButton();
+    f6TB = new javax.swing.JToggleButton();
+    f7TB = new javax.swing.JToggleButton();
+    f8TB = new javax.swing.JToggleButton();
+    f9TB = new javax.swing.JToggleButton();
+    f10TB = new javax.swing.JToggleButton();
+    f11TB = new javax.swing.JToggleButton();
+    f12TB = new javax.swing.JToggleButton();
+    f13TB = new javax.swing.JToggleButton();
+    f14TB = new javax.swing.JToggleButton();
+    f15TB = new javax.swing.JToggleButton();
+    f16f31Panel = new javax.swing.JPanel();
+    f16TB = new javax.swing.JToggleButton();
+    f17TB = new javax.swing.JToggleButton();
+    f18TB = new javax.swing.JToggleButton();
+    f19TB = new javax.swing.JToggleButton();
+    f20TB = new javax.swing.JToggleButton();
+    f21TB = new javax.swing.JToggleButton();
+    f22TB = new javax.swing.JToggleButton();
+    f23TB = new javax.swing.JToggleButton();
+    f24TB = new javax.swing.JToggleButton();
+    f25TB = new javax.swing.JToggleButton();
+    f26TB = new javax.swing.JToggleButton();
+    f27TB = new javax.swing.JToggleButton();
+    f28TB = new javax.swing.JToggleButton();
+    f29TB = new javax.swing.JToggleButton();
+    f30TB = new javax.swing.JToggleButton();
+    f31TB = new javax.swing.JToggleButton();
 
-        setMinimumSize(new java.awt.Dimension(200, 235));
-        setName("Form"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(200, 235));
-        java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 1, 1);
-        flowLayout1.setAlignOnBaseline(true);
-        setLayout(flowLayout1);
+    setMinimumSize(new java.awt.Dimension(200, 235));
+    setName("Form"); // NOI18N
+    setPreferredSize(new java.awt.Dimension(200, 235));
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 1, 1);
+    flowLayout1.setAlignOnBaseline(true);
+    setLayout(flowLayout1);
 
-        buttonsTP.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
-        buttonsTP.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
-        buttonsTP.setMinimumSize(new java.awt.Dimension(200, 230));
-        buttonsTP.setName("buttonsTP"); // NOI18N
-        buttonsTP.setPreferredSize(new java.awt.Dimension(200, 230));
+    buttonsTP.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+    buttonsTP.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+    buttonsTP.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
+    buttonsTP.setDoubleBuffered(true);
+    buttonsTP.setMinimumSize(new java.awt.Dimension(200, 230));
+    buttonsTP.setName("buttonsTP"); // NOI18N
+    buttonsTP.setPreferredSize(new java.awt.Dimension(200, 230));
 
-        f0f15Panel.setName("f0f15Panel"); // NOI18N
-        f0f15Panel.setPreferredSize(new java.awt.Dimension(165, 165));
-        f0f15Panel.setLayout(new java.awt.GridLayout(4, 4));
+    f0f15Panel.setName("f0f15Panel"); // NOI18N
+    f0f15Panel.setPreferredSize(new java.awt.Dimension(165, 165));
+    f0f15Panel.setLayout(new java.awt.GridLayout(4, 4, 1, 1));
 
-        f0TB.setText("F0");
-        f0TB.setDoubleBuffered(true);
-        f0TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f0TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f0TB.setName("f0TB"); // NOI18N
-        f0TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f0TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f0TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f0TB);
+    f0TB.setBackground(new java.awt.Color(204, 204, 204));
+    f0TB.setText("F0");
+    f0TB.setDoubleBuffered(true);
+    f0TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f0TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f0TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f0TB.setName("f0TB"); // NOI18N
+    f0TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f0TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f0TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f0TB);
 
-        f1TB.setText("F2");
-        f1TB.setActionCommand("F1");
-        f1TB.setDoubleBuffered(true);
-        f1TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f1TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f1TB.setName("f1TB"); // NOI18N
-        f1TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f1TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f1TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f1TB);
+    f1TB.setBackground(new java.awt.Color(204, 204, 204));
+    f1TB.setText("F2");
+    f1TB.setActionCommand("F1");
+    f1TB.setDoubleBuffered(true);
+    f1TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f1TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f1TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f1TB.setName("f1TB"); // NOI18N
+    f1TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f1TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f1TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f1TB);
 
-        f2TB.setText("F2");
-        f2TB.setDoubleBuffered(true);
-        f2TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f2TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f2TB.setName("f2TB"); // NOI18N
-        f2TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f2TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f2TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f2TB);
+    f2TB.setBackground(new java.awt.Color(204, 204, 204));
+    f2TB.setText("F2");
+    f2TB.setDoubleBuffered(true);
+    f2TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f2TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f2TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f2TB.setName("f2TB"); // NOI18N
+    f2TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f2TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f2TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f2TB);
 
-        f3TB.setText("F3");
-        f3TB.setDoubleBuffered(true);
-        f3TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f3TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f3TB.setName("f3TB"); // NOI18N
-        f3TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f3TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f3TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f3TB);
+    f3TB.setBackground(new java.awt.Color(204, 204, 204));
+    f3TB.setText("F3");
+    f3TB.setDoubleBuffered(true);
+    f3TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f3TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f3TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f3TB.setName("f3TB"); // NOI18N
+    f3TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f3TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f3TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f3TB);
 
-        f4TB.setText("F4");
-        f4TB.setDoubleBuffered(true);
-        f4TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f4TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f4TB.setName("f4TB"); // NOI18N
-        f4TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f4TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f4TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f4TB);
+    f4TB.setBackground(new java.awt.Color(204, 204, 204));
+    f4TB.setText("F4");
+    f4TB.setDoubleBuffered(true);
+    f4TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f4TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f4TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f4TB.setName("f4TB"); // NOI18N
+    f4TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f4TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f4TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f4TB);
 
-        f5TB.setText("F5");
-        f5TB.setDoubleBuffered(true);
-        f5TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f5TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f5TB.setName("f5TB"); // NOI18N
-        f5TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f5TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f5TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f5TB);
+    f5TB.setBackground(new java.awt.Color(204, 204, 204));
+    f5TB.setText("F5");
+    f5TB.setDoubleBuffered(true);
+    f5TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f5TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f5TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f5TB.setName("f5TB"); // NOI18N
+    f5TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f5TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f5TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f5TB);
 
-        f6TB.setText("F6");
-        f6TB.setDoubleBuffered(true);
-        f6TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f6TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f6TB.setName("f6TB"); // NOI18N
-        f6TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f6TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f6TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f6TB);
+    f6TB.setBackground(new java.awt.Color(204, 204, 204));
+    f6TB.setText("F6");
+    f6TB.setDoubleBuffered(true);
+    f6TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f6TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f6TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f6TB.setName("f6TB"); // NOI18N
+    f6TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f6TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f6TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f6TB);
 
-        f7TB.setText("F7");
-        f7TB.setDoubleBuffered(true);
-        f7TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f7TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f7TB.setName("f7TB"); // NOI18N
-        f7TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f7TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f7TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f7TB);
+    f7TB.setBackground(new java.awt.Color(204, 204, 204));
+    f7TB.setText("F7");
+    f7TB.setDoubleBuffered(true);
+    f7TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f7TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f7TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f7TB.setName("f7TB"); // NOI18N
+    f7TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f7TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f7TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f7TB);
 
-        f8TB.setText("F8");
-        f8TB.setDoubleBuffered(true);
-        f8TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f8TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f8TB.setName("f8TB"); // NOI18N
-        f8TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f8TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f8TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f8TB);
+    f8TB.setBackground(new java.awt.Color(204, 204, 204));
+    f8TB.setText("F8");
+    f8TB.setDoubleBuffered(true);
+    f8TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f8TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f8TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f8TB.setName("f8TB"); // NOI18N
+    f8TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f8TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f8TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f8TB);
 
-        f9TB.setText("F9");
-        f9TB.setDoubleBuffered(true);
-        f9TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f9TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f9TB.setName("f9TB"); // NOI18N
-        f9TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f9TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f9TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f9TB);
+    f9TB.setBackground(new java.awt.Color(204, 204, 204));
+    f9TB.setText("F9");
+    f9TB.setDoubleBuffered(true);
+    f9TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f9TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f9TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f9TB.setName("f9TB"); // NOI18N
+    f9TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f9TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f9TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f9TB);
 
-        f10TB.setText("F10");
-        f10TB.setDoubleBuffered(true);
-        f10TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f10TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f10TB.setName("f10TB"); // NOI18N
-        f10TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f10TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f10TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f10TB);
+    f10TB.setBackground(new java.awt.Color(204, 204, 204));
+    f10TB.setText("F10");
+    f10TB.setDoubleBuffered(true);
+    f10TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f10TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f10TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f10TB.setName("f10TB"); // NOI18N
+    f10TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f10TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f10TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f10TB);
 
-        f11TB.setText("F11");
-        f11TB.setDoubleBuffered(true);
-        f11TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f11TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f11TB.setName("f11TB"); // NOI18N
-        f11TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f11TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f11TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f11TB);
+    f11TB.setBackground(new java.awt.Color(204, 204, 204));
+    f11TB.setText("F11");
+    f11TB.setDoubleBuffered(true);
+    f11TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f11TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f11TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f11TB.setName("f11TB"); // NOI18N
+    f11TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f11TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f11TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f11TB);
 
-        f12TB.setText("F12");
-        f12TB.setDoubleBuffered(true);
-        f12TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f12TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f12TB.setName("f12TB"); // NOI18N
-        f12TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f12TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f12TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f12TB);
+    f12TB.setBackground(new java.awt.Color(204, 204, 204));
+    f12TB.setText("F12");
+    f12TB.setDoubleBuffered(true);
+    f12TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f12TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f12TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f12TB.setName("f12TB"); // NOI18N
+    f12TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f12TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f12TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f12TB);
 
-        f13TB.setText("F13");
-        f13TB.setDoubleBuffered(true);
-        f13TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f13TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f13TB.setName("f13TB"); // NOI18N
-        f13TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f13TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f13TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f13TB);
+    f13TB.setBackground(new java.awt.Color(204, 204, 204));
+    f13TB.setText("F13");
+    f13TB.setDoubleBuffered(true);
+    f13TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f13TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f13TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f13TB.setName("f13TB"); // NOI18N
+    f13TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f13TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f13TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f13TB);
 
-        f14TB.setText("F14");
-        f14TB.setDoubleBuffered(true);
-        f14TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f14TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f14TB.setName("f14TB"); // NOI18N
-        f14TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f14TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f14TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f14TB);
+    f14TB.setBackground(new java.awt.Color(204, 204, 204));
+    f14TB.setText("F14");
+    f14TB.setDoubleBuffered(true);
+    f14TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f14TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f14TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f14TB.setName("f14TB"); // NOI18N
+    f14TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f14TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f14TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f14TB);
 
-        f15TB.setText("F15");
-        f15TB.setDoubleBuffered(true);
-        f15TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f15TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f15TB.setName("f15TB"); // NOI18N
-        f15TB.setPreferredSize(new java.awt.Dimension(40, 40));
-        f15TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f15TBActionPerformed(evt);
-            }
-        });
-        f0f15Panel.add(f15TB);
+    f15TB.setBackground(new java.awt.Color(204, 204, 204));
+    f15TB.setText("F15");
+    f15TB.setDoubleBuffered(true);
+    f15TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f15TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f15TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f15TB.setName("f15TB"); // NOI18N
+    f15TB.setPreferredSize(new java.awt.Dimension(40, 40));
+    f15TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f15TBActionPerformed(evt);
+      }
+    });
+    f0f15Panel.add(f15TB);
 
-        buttonsTP.addTab("F0 - F15", f0f15Panel);
+    buttonsTP.addTab("F0 - F15", f0f15Panel);
 
-        f16f31Panel.setName("f16f31Panel"); // NOI18N
-        f16f31Panel.setLayout(new java.awt.GridLayout(4, 4, 1, 1));
+    f16f31Panel.setName("f16f31Panel"); // NOI18N
+    f16f31Panel.setLayout(new java.awt.GridLayout(4, 4, 1, 1));
 
-        f16TB.setText("F16");
-        f16TB.setDoubleBuffered(true);
-        f16TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f16TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f16TB.setName("f16TB"); // NOI18N
-        f16TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f16TBActionPerformed(evt);
-            }
-        });
-        f16f31Panel.add(f16TB);
+    f16TB.setBackground(new java.awt.Color(204, 204, 204));
+    f16TB.setText("F16");
+    f16TB.setDoubleBuffered(true);
+    f16TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f16TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f16TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f16TB.setName("f16TB"); // NOI18N
+    f16TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f16TBActionPerformed(evt);
+      }
+    });
+    f16f31Panel.add(f16TB);
 
-        f17TB.setText("F17");
-        f17TB.setDoubleBuffered(true);
-        f17TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f17TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f17TB.setName("f17TB"); // NOI18N
-        f16f31Panel.add(f17TB);
+    f17TB.setBackground(new java.awt.Color(204, 204, 204));
+    f17TB.setText("F17");
+    f17TB.setDoubleBuffered(true);
+    f17TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f17TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f17TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f17TB.setName("f17TB"); // NOI18N
+    f16f31Panel.add(f17TB);
 
-        f18TB.setText("F18");
-        f18TB.setDoubleBuffered(true);
-        f18TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f18TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f18TB.setName("f18TB"); // NOI18N
-        f16f31Panel.add(f18TB);
+    f18TB.setBackground(new java.awt.Color(204, 204, 204));
+    f18TB.setText("F18");
+    f18TB.setDoubleBuffered(true);
+    f18TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f18TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f18TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f18TB.setName("f18TB"); // NOI18N
+    f16f31Panel.add(f18TB);
 
-        f19TB.setText("F19");
-        f19TB.setDoubleBuffered(true);
-        f19TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f19TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f19TB.setName("f19TB"); // NOI18N
-        f16f31Panel.add(f19TB);
+    f19TB.setBackground(new java.awt.Color(204, 204, 204));
+    f19TB.setText("F19");
+    f19TB.setDoubleBuffered(true);
+    f19TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f19TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f19TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f19TB.setName("f19TB"); // NOI18N
+    f16f31Panel.add(f19TB);
 
-        f20TB.setText("F20");
-        f20TB.setDoubleBuffered(true);
-        f20TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f20TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f20TB.setName("f20TB"); // NOI18N
-        f16f31Panel.add(f20TB);
+    f20TB.setBackground(new java.awt.Color(204, 204, 204));
+    f20TB.setText("F20");
+    f20TB.setDoubleBuffered(true);
+    f20TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f20TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f20TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f20TB.setName("f20TB"); // NOI18N
+    f16f31Panel.add(f20TB);
 
-        f21TB.setText("F21");
-        f21TB.setDoubleBuffered(true);
-        f21TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f21TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f21TB.setName("f21TB"); // NOI18N
-        f16f31Panel.add(f21TB);
+    f21TB.setBackground(new java.awt.Color(204, 204, 204));
+    f21TB.setText("F21");
+    f21TB.setDoubleBuffered(true);
+    f21TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f21TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f21TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f21TB.setName("f21TB"); // NOI18N
+    f16f31Panel.add(f21TB);
 
-        f22TB.setText("F22");
-        f22TB.setDoubleBuffered(true);
-        f22TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f22TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f22TB.setName("f22TB"); // NOI18N
-        f16f31Panel.add(f22TB);
+    f22TB.setBackground(new java.awt.Color(204, 204, 204));
+    f22TB.setText("F22");
+    f22TB.setDoubleBuffered(true);
+    f22TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f22TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f22TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f22TB.setName("f22TB"); // NOI18N
+    f16f31Panel.add(f22TB);
 
-        f23TB.setText("F23");
-        f23TB.setDoubleBuffered(true);
-        f23TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f23TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f23TB.setName("f23TB"); // NOI18N
-        f16f31Panel.add(f23TB);
+    f23TB.setBackground(new java.awt.Color(204, 204, 204));
+    f23TB.setText("F23");
+    f23TB.setDoubleBuffered(true);
+    f23TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f23TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f23TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f23TB.setName("f23TB"); // NOI18N
+    f16f31Panel.add(f23TB);
 
-        f24TB.setText("F24");
-        f24TB.setDoubleBuffered(true);
-        f24TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f24TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f24TB.setName("f24TB"); // NOI18N
-        f16f31Panel.add(f24TB);
+    f24TB.setBackground(new java.awt.Color(204, 204, 204));
+    f24TB.setText("F24");
+    f24TB.setDoubleBuffered(true);
+    f24TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f24TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f24TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f24TB.setName("f24TB"); // NOI18N
+    f16f31Panel.add(f24TB);
 
-        f25TB.setText("F25");
-        f25TB.setDoubleBuffered(true);
-        f25TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f25TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f25TB.setName("f25TB"); // NOI18N
-        f16f31Panel.add(f25TB);
+    f25TB.setBackground(new java.awt.Color(204, 204, 204));
+    f25TB.setText("F25");
+    f25TB.setDoubleBuffered(true);
+    f25TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f25TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f25TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f25TB.setName("f25TB"); // NOI18N
+    f16f31Panel.add(f25TB);
 
-        f26TB.setText("F26");
-        f26TB.setDoubleBuffered(true);
-        f26TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f26TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f26TB.setName("f26TB"); // NOI18N
-        f16f31Panel.add(f26TB);
+    f26TB.setBackground(new java.awt.Color(204, 204, 204));
+    f26TB.setText("F26");
+    f26TB.setDoubleBuffered(true);
+    f26TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f26TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f26TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f26TB.setName("f26TB"); // NOI18N
+    f16f31Panel.add(f26TB);
 
-        f27TB.setText("F27");
-        f27TB.setDoubleBuffered(true);
-        f27TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f27TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f27TB.setName("f27TB"); // NOI18N
-        f16f31Panel.add(f27TB);
+    f27TB.setBackground(new java.awt.Color(204, 204, 204));
+    f27TB.setText("F27");
+    f27TB.setDoubleBuffered(true);
+    f27TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f27TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f27TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f27TB.setName("f27TB"); // NOI18N
+    f16f31Panel.add(f27TB);
 
-        f28TB.setText("F28");
-        f28TB.setDoubleBuffered(true);
-        f28TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f28TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f28TB.setName("f28TB"); // NOI18N
-        f28TB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                f28TBActionPerformed(evt);
-            }
-        });
-        f16f31Panel.add(f28TB);
+    f28TB.setBackground(new java.awt.Color(204, 204, 204));
+    f28TB.setText("F28");
+    f28TB.setDoubleBuffered(true);
+    f28TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f28TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f28TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f28TB.setName("f28TB"); // NOI18N
+    f28TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f28TBActionPerformed(evt);
+      }
+    });
+    f16f31Panel.add(f28TB);
 
-        f29TB.setText("F29");
-        f29TB.setDoubleBuffered(true);
-        f29TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f29TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f29TB.setName("f29TB"); // NOI18N
-        f16f31Panel.add(f29TB);
+    f29TB.setBackground(new java.awt.Color(204, 204, 204));
+    f29TB.setText("F29");
+    f29TB.setDoubleBuffered(true);
+    f29TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f29TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f29TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f29TB.setName("f29TB"); // NOI18N
+    f16f31Panel.add(f29TB);
 
-        f30TB.setText("F30");
-        f30TB.setDoubleBuffered(true);
-        f30TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f30TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f30TB.setName("f30TB"); // NOI18N
-        f16f31Panel.add(f30TB);
+    f30TB.setBackground(new java.awt.Color(204, 204, 204));
+    f30TB.setText("F30");
+    f30TB.setDoubleBuffered(true);
+    f30TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f30TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f30TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f30TB.setName("f30TB"); // NOI18N
+    f16f31Panel.add(f30TB);
 
-        f31TB.setText("F31");
-        f31TB.setDoubleBuffered(true);
-        f31TB.setMaximumSize(new java.awt.Dimension(40, 40));
-        f31TB.setMinimumSize(new java.awt.Dimension(40, 40));
-        f31TB.setName("f31TB"); // NOI18N
-        f16f31Panel.add(f31TB);
+    f31TB.setBackground(new java.awt.Color(204, 204, 204));
+    f31TB.setText("F31");
+    f31TB.setDoubleBuffered(true);
+    f31TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    f31TB.setMaximumSize(new java.awt.Dimension(40, 40));
+    f31TB.setMinimumSize(new java.awt.Dimension(40, 40));
+    f31TB.setName("f31TB"); // NOI18N
+    f16f31Panel.add(f31TB);
 
-        buttonsTP.addTab("F16 - F31", f16f31Panel);
+    buttonsTP.addTab("F16 - F31", f16f31Panel);
 
-        add(buttonsTP);
-    }// </editor-fold>//GEN-END:initComponents
+    add(buttonsTP);
+  }// </editor-fold>//GEN-END:initComponents
 
     private void f12TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f12TBActionPerformed
       buttonActionPerformed(evt);
@@ -707,7 +760,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
   public static void main(String args[]) {
     try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error("Can't set the LookAndFeel: " + ex);
     }
@@ -743,41 +796,41 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   }
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JTabbedPane buttonsTP;
-    javax.swing.JToggleButton f0TB;
-    javax.swing.JPanel f0f15Panel;
-    javax.swing.JToggleButton f10TB;
-    javax.swing.JToggleButton f11TB;
-    javax.swing.JToggleButton f12TB;
-    javax.swing.JToggleButton f13TB;
-    javax.swing.JToggleButton f14TB;
-    javax.swing.JToggleButton f15TB;
-    javax.swing.JToggleButton f16TB;
-    javax.swing.JPanel f16f31Panel;
-    javax.swing.JToggleButton f17TB;
-    javax.swing.JToggleButton f18TB;
-    javax.swing.JToggleButton f19TB;
-    javax.swing.JToggleButton f1TB;
-    javax.swing.JToggleButton f20TB;
-    javax.swing.JToggleButton f21TB;
-    javax.swing.JToggleButton f22TB;
-    javax.swing.JToggleButton f23TB;
-    javax.swing.JToggleButton f24TB;
-    javax.swing.JToggleButton f25TB;
-    javax.swing.JToggleButton f26TB;
-    javax.swing.JToggleButton f27TB;
-    javax.swing.JToggleButton f28TB;
-    javax.swing.JToggleButton f29TB;
-    javax.swing.JToggleButton f2TB;
-    javax.swing.JToggleButton f30TB;
-    javax.swing.JToggleButton f31TB;
-    javax.swing.JToggleButton f3TB;
-    javax.swing.JToggleButton f4TB;
-    javax.swing.JToggleButton f5TB;
-    javax.swing.JToggleButton f6TB;
-    javax.swing.JToggleButton f7TB;
-    javax.swing.JToggleButton f8TB;
-    javax.swing.JToggleButton f9TB;
-    // End of variables declaration//GEN-END:variables
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  javax.swing.JTabbedPane buttonsTP;
+  javax.swing.JToggleButton f0TB;
+  javax.swing.JPanel f0f15Panel;
+  javax.swing.JToggleButton f10TB;
+  javax.swing.JToggleButton f11TB;
+  javax.swing.JToggleButton f12TB;
+  javax.swing.JToggleButton f13TB;
+  javax.swing.JToggleButton f14TB;
+  javax.swing.JToggleButton f15TB;
+  javax.swing.JToggleButton f16TB;
+  javax.swing.JPanel f16f31Panel;
+  javax.swing.JToggleButton f17TB;
+  javax.swing.JToggleButton f18TB;
+  javax.swing.JToggleButton f19TB;
+  javax.swing.JToggleButton f1TB;
+  javax.swing.JToggleButton f20TB;
+  javax.swing.JToggleButton f21TB;
+  javax.swing.JToggleButton f22TB;
+  javax.swing.JToggleButton f23TB;
+  javax.swing.JToggleButton f24TB;
+  javax.swing.JToggleButton f25TB;
+  javax.swing.JToggleButton f26TB;
+  javax.swing.JToggleButton f27TB;
+  javax.swing.JToggleButton f28TB;
+  javax.swing.JToggleButton f29TB;
+  javax.swing.JToggleButton f2TB;
+  javax.swing.JToggleButton f30TB;
+  javax.swing.JToggleButton f31TB;
+  javax.swing.JToggleButton f3TB;
+  javax.swing.JToggleButton f4TB;
+  javax.swing.JToggleButton f5TB;
+  javax.swing.JToggleButton f6TB;
+  javax.swing.JToggleButton f7TB;
+  javax.swing.JToggleButton f8TB;
+  javax.swing.JToggleButton f9TB;
+  // End of variables declaration//GEN-END:variables
 }

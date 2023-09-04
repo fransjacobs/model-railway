@@ -238,7 +238,6 @@ public class PropertiesPanel extends JPanel {
   public static void main(String args[]) {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-      //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.warn("Can't set the LookAndFeel: " + ex);
     }
