@@ -34,7 +34,7 @@ import jcs.controller.cs.can.parser.LocomotiveBeanParser;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
-import jcs.controller.cs3.http.SvgIconToPngIconConverter;
+import jcs.controller.cs.http.parser.CS3FunctionSvgToImageConverter;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
@@ -99,6 +99,8 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private ExecutorService executor;
   private ScheduledExecutorService scheduledExecutor;
   private boolean power;
+
+  private CS3FunctionSvgToImageConverter svgToImage;
 
   public MarklinCentralStationImpl() {
     this(true);
@@ -573,22 +575,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     }
   }
 
-  @Override
-  public void cacheAllFunctionIcons(PropertyChangeListener progressListener) {
-    if (1 == 2) {
-      HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
-      String json = httpCon.getAllFunctionsSvgJSON();
-
-      if (progressListener != null) {
-        PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Getting all function Icons...");
-        progressListener.propertyChange(pce);
-      }
-
-      SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter(progressListener);
-      svgp.convertAndCacheAllFunctionsSvgIcons(json);
-    }
-  }
-
   List<AccessoryBean> getAccessoriesViaHttp() {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
     String magnetartikelCs2 = httpCon.getAccessoriesFile();
@@ -645,12 +631,21 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     Image locIcon = httpCon.getLocomotiveImage(icon);
     return locIcon;
   }
-  
+
   @Override
   public Image getLocomotiveFunctionImage(String icon) {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
-    Image locIcon = httpCon.getFunctionImageCS2(icon);
-    return locIcon;
+    Image functionIcon = httpCon.getFunctionImageCS2(icon);
+    if (functionIcon == null && this.isCS3()) {
+      //Lets try if we can get the image via the JSON fcticons.json file on the CS3
+      if (this.svgToImage == null) {
+        this.svgToImage = new CS3FunctionSvgToImageConverter();
+        this.svgToImage.loadSvgCache(httpCon.getFunctionsSvgJSON());
+      }
+      functionIcon = this.svgToImage.getFunctionImage(icon);
+    }
+
+    return functionIcon;
   }
 
   @Override
@@ -1046,7 +1041,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 //    for (AccessoryBean accessory : accessories) {
 //      Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
 //    }
-
     List<LocomotiveBean> locs = cs.getLocomotives();
     for (LocomotiveBean loc : locs) {
       Logger.trace(loc);

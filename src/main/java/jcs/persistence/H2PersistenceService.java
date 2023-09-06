@@ -273,10 +273,12 @@ public class H2PersistenceService implements PersistenceService {
     if (imgFile.exists()) {
       try {
         image = ImageIO.read(imgFile);
-
       } catch (IOException e) {
         Logger.trace("Image file " + imageName + ".png does not exists");
       }
+    } else {
+      //should we attempt to obatian it now and cache it when available, but also when it is not avaliable put a marker so tha we are not trying over and over again...
+      //who should be responsable for the cache.. the vendor controller this class or?
     }
     return image;
   }

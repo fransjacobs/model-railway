@@ -139,7 +139,7 @@ public class HTTPConnection {
     return device.toString();
   }
 
-  public String getAllFunctionsSvgJSON() {
+  public String getFunctionsSvgJSON() {
     StringBuilder device = new StringBuilder();
     try {
       URL url = new URL(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL);
@@ -204,7 +204,7 @@ public class HTTPConnection {
     String iurl = fixURL(HTTP + csAddress.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
 
     try {
-      Logger.trace("Try to fetch: " + iurl);
+      //Logger.trace("Try to fetch: " + iurl);
       URL url = new URL(iurl);
       image = ImageIO.read(url);
     } catch (IIOException iio) {
@@ -260,41 +260,35 @@ public class HTTPConnection {
       serial = "13344";
     }
 
-//    String imageName = "RRF 272 001-9";
-//    Image locImage = hc.getLocomotiveImage(imageName);
-//   Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial);
-    //String imageName = "FktIcon_a_ge_42";
-
-    FunctionBean fb = new FunctionBean();
-    fb.setNumber(0);
-    fb.setFunctionType(1);
-
-    String activeImage = fb.getActiveIcon();
-    String inActiveImage = fb.getInActiveIcon();
-
-    Logger.trace("activeImage: " + activeImage + " inActiveImage: " + inActiveImage);
-
-    Image activeFunctionImage = hc.getFunctionImageCS2(activeImage);
-    Image inActiveFunctionImage = hc.getFunctionImageCS2(inActiveImage);
-
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator + "functions");
-    if (!Files.exists(path)) {
-      Files.createDirectories(path);
-      Logger.trace("Created new directory " + path);
-    }
-    try {
-      //ImageIO.write((BufferedImage) locImage, "png", new File(path + File.separator + imageName + ".png"));
-      ImageIO.write((BufferedImage) activeFunctionImage, "png", new File(path + File.separator + activeImage + ".png"));
-      Logger.trace("Stored image " + activeImage + ".png in the cache: " + path);
-
-      ImageIO.write((BufferedImage) inActiveFunctionImage, "png", new File(path + File.separator + inActiveImage + ".png"));
-      Logger.trace("Stored image " + inActiveImage + ".png in the cache: " + path);
-      
-      
-    } catch (IOException ex) {
-      Logger.error("Can't store image " + path + "! ", ex.getMessage());
-    }
-
+//    FunctionBean fb = new FunctionBean();
+//    fb.setNumber(0);
+//    fb.setFunctionType(1);
+//
+//    String activeImage = fb.getActiveIcon();
+//    String inActiveImage = fb.getInActiveIcon();
+//
+//    Logger.trace("activeImage: " + activeImage + " inActiveImage: " + inActiveImage);
+//
+//    Image activeFunctionImage = hc.getFunctionImageCS2(activeImage);
+//    Image inActiveFunctionImage = hc.getFunctionImageCS2(inActiveImage);
+//
+//    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator + "functions");
+//    if (!Files.exists(path)) {
+//      Files.createDirectories(path);
+//      Logger.trace("Created new directory " + path);
+//    }
+//    try {
+//      //ImageIO.write((BufferedImage) locImage, "png", new File(path + File.separator + imageName + ".png"));
+//      ImageIO.write((BufferedImage) activeFunctionImage, "png", new File(path + File.separator + activeImage + ".png"));
+//      Logger.trace("Stored image " + activeImage + ".png in the cache: " + path);
+//
+//      ImageIO.write((BufferedImage) inActiveFunctionImage, "png", new File(path + File.separator + inActiveImage + ".png"));
+//      Logger.trace("Stored image " + inActiveImage + ".png in the cache: " + path);
+//      
+//      
+//    } catch (IOException ex) {
+//      Logger.error("Can't store image " + path + "! ", ex.getMessage());
+//    }
 //    
 //        String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + vendorController.getDevice().getArticleNumber();
 //    File cachePath = new File(path);
@@ -345,12 +339,15 @@ public class HTTPConnection {
 //        for (AccessoryStatus as : acsList) {
 //            System.out.println(as.toString());
 //        }
+    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator + "functions" + File.separator + "fcticons.json");
+
+    String json = hc.getFunctionsSvgJSON();
+
+    Files.writeString(path, json);
+
+//         SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
+//         svgp.convertAndCacheAllFunctionsSvgIcons(json);
     /*
-         String json = hc.getAllFunctionsSvgJSON();
-         SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
-         svgp.convertAndCacheAllFunctionsSvgIcons(json);
-     */
- /*
         String json = hc.getDevicesJSON();
         DeviceJSONParser dp = new DeviceJSONParser();
         dp.parseAccessories(json);

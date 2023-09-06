@@ -76,7 +76,7 @@ public interface MarklinCentralStation {
 
   List<LocomotiveBean> getLocomotives();
 
-  void cacheAllFunctionIcons(PropertyChangeListener progressListener);
+  //void cacheAllFunctionIcons(PropertyChangeListener progressListener);
 
   Image getLocomotiveImage(String icon);
   

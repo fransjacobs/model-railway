@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -161,6 +162,11 @@ public class ControllerImpl implements Controller {
         Logger.trace("Created new directory " + path);
       }
       ImageIO.write((BufferedImage) image, "png", imageFile);
+      
+      //    ImageIO.write((BufferedImage) imgg, "PNG", new File(test + File.separator + "FktIcon_a_ge_116" + ".png"));
+
+      
+      
     } catch (IOException ex) {
       Logger.error("Can't store image " + imageFile + "! ", ex.getMessage());
     }
@@ -223,6 +229,8 @@ public class ControllerImpl implements Controller {
   public void synchronizeLocomotivesWithController(PropertyChangeListener progressListener) {
     List<LocomotiveBean> fromController = this.vendorController.getLocomotives();
 
+    Set<String> functionImageNames = new HashSet<>();
+
     if (progressListener != null) {
       PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Controller reports " + fromController.size() + " Locomotives");
       progressListener.propertyChange(pce);
@@ -264,20 +272,24 @@ public class ControllerImpl implements Controller {
         }
         getLocomotiveImage(loco.getIcon());
 
-        //Function icons
+        //Function icons...
         Set<FunctionBean> functions = loco.getFunctions().values().stream().collect(Collectors.toSet());
-
         for (FunctionBean fb : functions) {
           String aIcon = fb.getActiveIcon();
           String iIcon = fb.getInActiveIcon();
-
-          getLocomotiveFunctionImage(aIcon);
-          getLocomotiveFunctionImage(iIcon);
+          functionImageNames.add(aIcon);
+          functionImageNames.add(iIcon);
         }
-
       } catch (Exception e) {
         Logger.error(e);
       }
+    }
+
+    //Now get all the function images in one batch
+    Logger.trace("Trying to get " + functionImageNames.size() + " function images");
+    for (String functionImage : functionImageNames) {
+      boolean available = getLocomotiveFunctionImage(functionImage) != null;
+      Logger.trace("Function Image " + functionImage + " is " + (available ? "available" : "NOT available"));
     }
   }
 
