@@ -95,6 +95,7 @@ class TCPConnection implements CSConnection {
   private class ResponseCallback {
 
     private final CanMessage tx;
+    private boolean done = false; 
 
     ResponseCallback(final CanMessage tx) {
       this.tx = tx;
@@ -110,13 +111,14 @@ class TCPConnection implements CSConnection {
       }
     }
 
-    public void addResponse(CanMessage rx) {
+    public void addResponse(CanMessage rx, int moreAvailable) {
       this.tx.addResponse(rx);
+      this.done = moreAvailable == 0;
     }
 
     public boolean isResponseComplete() {
-      //Most of the messages will have just one response but ther are some which have more
-      return tx.isResponseComplete();
+      //Most of the messages will have just one response but there are some which have more
+      return tx.isResponseComplete() && this.done;
     }
   }
 
@@ -308,9 +310,9 @@ class TCPConnection implements CSConnection {
           }
           CanMessage rx = new CanMessage(prio, cmd, hash, dlc, data);
 
-          //Logger.trace("RX: "+rx);
+          //Logger.trace("RX: "+rx +"; "+ din.available());
           if (this.callBack != null && this.callBack.isSubscribedfor(cmd)) {
-            this.callBack.addResponse(rx);
+            this.callBack.addResponse(rx, din.available());
           } else if (rx.isPingResponse() && pingListener != null) {
             this.pingListener.onCanPingResponseMessage(rx);
           } else if (rx.isPingRequest() && pingListener != null) {

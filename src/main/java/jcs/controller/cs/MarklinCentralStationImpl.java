@@ -187,10 +187,10 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
             now = System.currentTimeMillis();
           }
 
-          Logger.trace("Found " + this.devices.size() + " devices.");
-          for (Device d : this.devices.values()) {
-            Logger.trace(d);
-          }
+//          Logger.trace("Found " + this.devices.size() + " devices.");
+//          for (Device d : this.devices.values()) {
+//            Logger.trace(d);
+//          }
 
           if (this.mainDevice != null) {
             Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
@@ -339,7 +339,22 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
         this.devices.put(d.getUid(), d);
       }
     }
-    Logger.trace("Aquired " + this.devices.size() + " devices");
+    Logger.trace("Found " + this.devices.size() + " devices");
+
+    for (Device d : this.getDevices()) {
+      CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUid(), 0));
+      d.updateFromMessage(updateMessage);
+    }
+
+    for (Device d : this.getDevices()) {
+      if (d.isDataComplete() && ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()))) {
+        this.csUid = d.getUid();
+        this.mainDevice = d;
+        Logger.trace("Main Device: " + d);
+      } else {
+        Logger.trace(d);
+      }
+    }
   }
 
   private void updateMember(CanMessage message) {
@@ -819,7 +834,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
           if (controller.mainDevice != null) {
             if (CanMessage.DLC_0 == dlc) {
               //broadcast  
-              controller.sendJCSUID();
+              //controller.sendJCSUID();
             }
           }
         }
@@ -835,22 +850,21 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
       switch (cmd) {
         case CanMessage.PING_RESP -> {
           if (CanMessage.DLC_8 == dlc) {
-            controller.updateMember(message);
+//            controller.updateMember(message);
           }
         }
       }
     }
 
     @Override
-    public void onCanStatusConfigRequestMessage(final CanMessage message
-    ) {
+    public void onCanStatusConfigRequestMessage(final CanMessage message) {
       int cmd = message.getCommand();
       int dlc = message.getDlc();
       int uid = message.getDeviceUidNumberFromMessage();
       switch (cmd) {
         case CanMessage.STATUS_CONFIG -> {
           if (CanMessage.JCS_UID == uid && CanMessage.DLC_5 == dlc) {
-            controller.sendJCSInformation();
+//            controller.sendJCSInformation();
           }
         }
       }
@@ -952,7 +966,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     if (cs.isConnected()) {
-      //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
+      Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
 
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
@@ -1041,10 +1055,10 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 //    for (AccessoryBean accessory : accessories) {
 //      Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
 //    }
-    List<LocomotiveBean> locs = cs.getLocomotives();
-    for (LocomotiveBean loc : locs) {
-      Logger.trace(loc);
-    }
+//    List<LocomotiveBean> locs = cs.getLocomotives();
+//    for (LocomotiveBean loc : locs) {
+//      Logger.trace(loc);
+//    }
     cs.pause(40000);
     cs.disconnect();
     cs.pause(100L);
