@@ -1,5 +1,6 @@
 delete from route_elements;
 delete from routes;
+delete from blocks;
 delete from tiles;
 commit;
 
