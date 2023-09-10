@@ -45,14 +45,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   private LocomotiveBean locomotive;
   private final ExecutorService executor;
 
-//  private final String IMG_PREFIX = "fkticon_";
-//  private final String IMG_A = "a_";
-//  private final String IMG_YELLOW = "ge_";
-//  private final String IMG_BLACK = "sw_";
-//  private final String NMB_FORMAT = "%03d";
-  /**
-   * Creates new form FunctionsPanel
-   */
   public FunctionsPanel() {
     buttons = new HashMap<>();
     executor = Executors.newCachedThreadPool();
@@ -97,17 +89,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     buttons.put(31, f31TB);
 
     setEnabled(false);
-
-    this.buttonsTP.addChangeListener(new ChangeListener() {
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        int selectedIndex = buttonsTP.getSelectedIndex();
-
-        Logger.trace("Selected idx:" + selectedIndex);
-
-      }
-    });
-
     if (ControllerFactory.getController() != null) {
       ControllerFactory.getController().addLocomotiveFunctionEventListener(this);
     }
@@ -125,15 +106,11 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
   @Override
   public void onFunctionChange(LocomotiveFunctionEvent event) {
-    if (this.locomotive != null && this.locomotive.getId().equals(event.getLocomotiveBean().getId())) {
-      Integer updatedFunction = event.getUpdatedFunctionNumber();
-      FunctionBean fb = event.getLocomotiveBean().getFunctionBean(updatedFunction);
-
-      if (fb != null) {
-        this.buttons.get(updatedFunction).setSelected(fb.isOn());
-      } else {
-        Logger.trace("Function for number " + updatedFunction + " not found");
-      }
+    if (this.locomotive != null && this.locomotive.getId().equals(event.getFunctionBean().getLocomotiveId())) {
+      FunctionBean fb = event.getFunctionBean();
+      this.buttons.get(fb.getNumber()).setSelected(fb.isOn());
+    } else {
+      Logger.trace("Function button for LocomotiveId "+event.getFunctionBean().getLocomotiveId()+" and number " + event.getFunctionBean().getNumber() + " not found");
     }
   }
 
@@ -178,10 +155,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
         btn.setSelected(val);
         btn.setActionCommand("F" + fb.getNumber());
         btn.setEnabled(true);
-
-        //if (fnr > 15) {
-        //  this.f16f31Panel.setEnabled(true);
-        //}
       }
       this.buttonsTP.setEnabled(true);
     }
@@ -208,14 +181,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     if (ControllerFactory.getController() != null && this.locomotive != null) {
       FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " new Value: " + newValue + " Momentary: " + fb.isMomentary());
-      //TODO: when momentary do no store the value
+
       ControllerFactory.getController().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
 
       if (fb.isMomentary() && newValue) {
         JToggleButton tb = this.buttons.get(fb.getNumber());
         tb.doClick();
       }
-
     }
   }
 
@@ -284,7 +256,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f0TB.setBackground(new java.awt.Color(204, 204, 204));
     f0TB.setText("F0");
     f0TB.setDoubleBuffered(true);
-    f0TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f0TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f0TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f0TB.setName("f0TB"); // NOI18N
@@ -300,7 +271,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f1TB.setText("F2");
     f1TB.setActionCommand("F1");
     f1TB.setDoubleBuffered(true);
-    f1TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f1TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f1TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f1TB.setName("f1TB"); // NOI18N
@@ -315,7 +285,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f2TB.setBackground(new java.awt.Color(204, 204, 204));
     f2TB.setText("F2");
     f2TB.setDoubleBuffered(true);
-    f2TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f2TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f2TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f2TB.setName("f2TB"); // NOI18N
@@ -330,7 +299,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f3TB.setBackground(new java.awt.Color(204, 204, 204));
     f3TB.setText("F3");
     f3TB.setDoubleBuffered(true);
-    f3TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f3TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f3TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f3TB.setName("f3TB"); // NOI18N
@@ -345,7 +313,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f4TB.setBackground(new java.awt.Color(204, 204, 204));
     f4TB.setText("F4");
     f4TB.setDoubleBuffered(true);
-    f4TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f4TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f4TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f4TB.setName("f4TB"); // NOI18N
@@ -360,7 +327,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f5TB.setBackground(new java.awt.Color(204, 204, 204));
     f5TB.setText("F5");
     f5TB.setDoubleBuffered(true);
-    f5TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f5TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f5TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f5TB.setName("f5TB"); // NOI18N
@@ -375,7 +341,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f6TB.setBackground(new java.awt.Color(204, 204, 204));
     f6TB.setText("F6");
     f6TB.setDoubleBuffered(true);
-    f6TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f6TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f6TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f6TB.setName("f6TB"); // NOI18N
@@ -390,7 +355,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f7TB.setBackground(new java.awt.Color(204, 204, 204));
     f7TB.setText("F7");
     f7TB.setDoubleBuffered(true);
-    f7TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f7TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f7TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f7TB.setName("f7TB"); // NOI18N
@@ -405,7 +369,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f8TB.setBackground(new java.awt.Color(204, 204, 204));
     f8TB.setText("F8");
     f8TB.setDoubleBuffered(true);
-    f8TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f8TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f8TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f8TB.setName("f8TB"); // NOI18N
@@ -420,7 +383,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f9TB.setBackground(new java.awt.Color(204, 204, 204));
     f9TB.setText("F9");
     f9TB.setDoubleBuffered(true);
-    f9TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f9TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f9TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f9TB.setName("f9TB"); // NOI18N
@@ -435,7 +397,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f10TB.setBackground(new java.awt.Color(204, 204, 204));
     f10TB.setText("F10");
     f10TB.setDoubleBuffered(true);
-    f10TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f10TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f10TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f10TB.setName("f10TB"); // NOI18N
@@ -450,7 +411,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f11TB.setBackground(new java.awt.Color(204, 204, 204));
     f11TB.setText("F11");
     f11TB.setDoubleBuffered(true);
-    f11TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f11TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f11TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f11TB.setName("f11TB"); // NOI18N
@@ -465,7 +425,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f12TB.setBackground(new java.awt.Color(204, 204, 204));
     f12TB.setText("F12");
     f12TB.setDoubleBuffered(true);
-    f12TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f12TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f12TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f12TB.setName("f12TB"); // NOI18N
@@ -480,7 +439,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f13TB.setBackground(new java.awt.Color(204, 204, 204));
     f13TB.setText("F13");
     f13TB.setDoubleBuffered(true);
-    f13TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f13TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f13TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f13TB.setName("f13TB"); // NOI18N
@@ -495,7 +453,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f14TB.setBackground(new java.awt.Color(204, 204, 204));
     f14TB.setText("F14");
     f14TB.setDoubleBuffered(true);
-    f14TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f14TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f14TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f14TB.setName("f14TB"); // NOI18N
@@ -510,7 +467,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f15TB.setBackground(new java.awt.Color(204, 204, 204));
     f15TB.setText("F15");
     f15TB.setDoubleBuffered(true);
-    f15TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f15TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f15TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f15TB.setName("f15TB"); // NOI18N
@@ -530,7 +486,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f16TB.setBackground(new java.awt.Color(204, 204, 204));
     f16TB.setText("F16");
     f16TB.setDoubleBuffered(true);
-    f16TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f16TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f16TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f16TB.setName("f16TB"); // NOI18N
@@ -544,106 +499,149 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f17TB.setBackground(new java.awt.Color(204, 204, 204));
     f17TB.setText("F17");
     f17TB.setDoubleBuffered(true);
-    f17TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f17TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f17TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f17TB.setName("f17TB"); // NOI18N
+    f17TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f17TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f17TB);
 
     f18TB.setBackground(new java.awt.Color(204, 204, 204));
     f18TB.setText("F18");
     f18TB.setDoubleBuffered(true);
-    f18TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f18TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f18TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f18TB.setName("f18TB"); // NOI18N
+    f18TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f18TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f18TB);
 
     f19TB.setBackground(new java.awt.Color(204, 204, 204));
     f19TB.setText("F19");
     f19TB.setDoubleBuffered(true);
-    f19TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f19TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f19TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f19TB.setName("f19TB"); // NOI18N
+    f19TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f19TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f19TB);
 
     f20TB.setBackground(new java.awt.Color(204, 204, 204));
     f20TB.setText("F20");
     f20TB.setDoubleBuffered(true);
-    f20TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f20TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f20TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f20TB.setName("f20TB"); // NOI18N
+    f20TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f20TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f20TB);
 
     f21TB.setBackground(new java.awt.Color(204, 204, 204));
     f21TB.setText("F21");
     f21TB.setDoubleBuffered(true);
-    f21TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f21TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f21TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f21TB.setName("f21TB"); // NOI18N
+    f21TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f21TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f21TB);
 
     f22TB.setBackground(new java.awt.Color(204, 204, 204));
     f22TB.setText("F22");
     f22TB.setDoubleBuffered(true);
-    f22TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f22TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f22TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f22TB.setName("f22TB"); // NOI18N
+    f22TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f22TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f22TB);
 
     f23TB.setBackground(new java.awt.Color(204, 204, 204));
     f23TB.setText("F23");
     f23TB.setDoubleBuffered(true);
-    f23TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f23TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f23TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f23TB.setName("f23TB"); // NOI18N
+    f23TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f23TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f23TB);
 
     f24TB.setBackground(new java.awt.Color(204, 204, 204));
     f24TB.setText("F24");
     f24TB.setDoubleBuffered(true);
-    f24TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f24TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f24TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f24TB.setName("f24TB"); // NOI18N
+    f24TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f24TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f24TB);
 
     f25TB.setBackground(new java.awt.Color(204, 204, 204));
     f25TB.setText("F25");
     f25TB.setDoubleBuffered(true);
-    f25TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f25TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f25TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f25TB.setName("f25TB"); // NOI18N
+    f25TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f25TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f25TB);
 
     f26TB.setBackground(new java.awt.Color(204, 204, 204));
     f26TB.setText("F26");
     f26TB.setDoubleBuffered(true);
-    f26TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f26TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f26TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f26TB.setName("f26TB"); // NOI18N
+    f26TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f26TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f26TB);
 
     f27TB.setBackground(new java.awt.Color(204, 204, 204));
     f27TB.setText("F27");
     f27TB.setDoubleBuffered(true);
-    f27TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f27TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f27TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f27TB.setName("f27TB"); // NOI18N
+    f27TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f27TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f27TB);
 
     f28TB.setBackground(new java.awt.Color(204, 204, 204));
     f28TB.setText("F28");
     f28TB.setDoubleBuffered(true);
-    f28TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f28TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f28TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f28TB.setName("f28TB"); // NOI18N
@@ -657,28 +655,40 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f29TB.setBackground(new java.awt.Color(204, 204, 204));
     f29TB.setText("F29");
     f29TB.setDoubleBuffered(true);
-    f29TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f29TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f29TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f29TB.setName("f29TB"); // NOI18N
+    f29TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f29TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f29TB);
 
     f30TB.setBackground(new java.awt.Color(204, 204, 204));
     f30TB.setText("F30");
     f30TB.setDoubleBuffered(true);
-    f30TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f30TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f30TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f30TB.setName("f30TB"); // NOI18N
+    f30TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f30TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f30TB);
 
     f31TB.setBackground(new java.awt.Color(204, 204, 204));
     f31TB.setText("F31");
     f31TB.setDoubleBuffered(true);
-    f31TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f31TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f31TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f31TB.setName("f31TB"); // NOI18N
+    f31TB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        f31TBActionPerformed(evt);
+      }
+    });
     f16f31Panel.add(f31TB);
 
     buttonsTP.addTab("F16 - F31", f16f31Panel);
@@ -757,6 +767,62 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     private void f15TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f15TBActionPerformed
       buttonActionPerformed(evt);
     }//GEN-LAST:event_f15TBActionPerformed
+
+  private void f17TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f17TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f17TBActionPerformed
+
+  private void f18TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f18TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f18TBActionPerformed
+
+  private void f19TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f19TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f19TBActionPerformed
+
+  private void f20TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f20TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f20TBActionPerformed
+
+  private void f21TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f21TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f21TBActionPerformed
+
+  private void f22TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f22TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f22TBActionPerformed
+
+  private void f23TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f23TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f23TBActionPerformed
+
+  private void f24TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f24TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f24TBActionPerformed
+
+  private void f25TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f25TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f25TBActionPerformed
+
+  private void f26TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f26TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f26TBActionPerformed
+
+  private void f27TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f27TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f27TBActionPerformed
+
+  private void f29TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f29TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f29TBActionPerformed
+
+  private void f30TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f30TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f30TBActionPerformed
+
+  private void f31TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f31TBActionPerformed
+    buttonActionPerformed(evt);
+  }//GEN-LAST:event_f31TBActionPerformed
 
   public static void main(String args[]) {
     try {

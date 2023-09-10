@@ -353,7 +353,7 @@ public class ControllerImpl implements Controller {
   @Override
   public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
-    vendorController.changeFunctionValue(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), functionNumber, newValue);
+    vendorController.changeFunctionValue(locomotive.getUid().intValue(), functionNumber, newValue);
   }
 
   @Override
@@ -509,15 +509,14 @@ public class ControllerImpl implements Controller {
 
     @Override
     public void onFunctionChange(LocomotiveFunctionEvent functionEvent) {
-      LocomotiveBean lb = functionEvent.getLocomotiveBean();
-      LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
+      FunctionBean fb = functionEvent.getFunctionBean();
+      FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
 
-      if (dblb != null) {
-        FunctionBean fb = lb.getFunctionBean(functionEvent.getUpdatedFunctionNumber());
-        if (fb != null) {
-          dblb.setFunctionValue(fb.getNumber(), fb.getValue());
-          PersistenceFactory.getService().persist(dblb);
-          functionEvent.setLocomotiveBean(dblb);
+      if (dbfb != null) {
+        dbfb.setValue(fb.getValue());
+        if (!dbfb.isMomentary()) {
+          PersistenceFactory.getService().persist(dbfb);
+          functionEvent.setFunctionBean(dbfb);
         }
         for (LocomotiveFunctionEventListener fl : trackService.LocomotiveFunctionEventListeners) {
           fl.onFunctionChange(functionEvent);

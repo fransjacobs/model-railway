@@ -514,6 +514,8 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     locoAddress = switch (decoderType) {
       case MFX ->
         0x4000 + address;
+      case MFXP ->
+        0x4000 + address;
       case DCC ->
         0xC000 + address;
       case SX1 ->
@@ -546,12 +548,23 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     }
   }
 
-  @Override
+  //@Override
   public void changeFunctionValue(int address, DecoderType decoderType, int functionNumber, boolean flag) {
     if (this.power) {
       int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
       int la = getLocoAddres(address, decoderType);
+
       CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.csUid));
+      this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
+    }
+  }
+
+  //@Override
+  public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
+    if (this.power) {
+      int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
+
+      CanMessage message = sendMessage(CanMessageFactory.setFunction(locUid, functionNumber, flag, this.csUid));
       this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
     }
   }

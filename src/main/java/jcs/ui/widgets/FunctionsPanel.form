@@ -69,9 +69,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F0"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -95,9 +92,6 @@
                 <Property name="text" type="java.lang.String" value="F2"/>
                 <Property name="actionCommand" type="java.lang.String" value="F1"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -120,9 +114,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F2"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -145,9 +136,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F3"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -170,9 +158,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F4"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -195,9 +180,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F5"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -220,9 +202,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F6"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -245,9 +224,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F7"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -270,9 +246,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F8"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -295,9 +268,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F9"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -320,9 +290,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F10"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -345,9 +312,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F11"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -370,9 +334,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F12"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -395,9 +356,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F13"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -420,9 +378,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F14"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -445,9 +400,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F15"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -491,9 +443,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F16"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -513,9 +462,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F17"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -524,6 +470,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f17TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f17TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f18TB">
               <Properties>
@@ -532,9 +481,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F18"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -543,6 +489,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f18TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f18TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f19TB">
               <Properties>
@@ -551,9 +500,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F19"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -562,6 +508,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f19TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f19TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f20TB">
               <Properties>
@@ -570,9 +519,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F20"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -581,6 +527,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f20TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f20TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f21TB">
               <Properties>
@@ -589,9 +538,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F21"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -600,6 +546,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f21TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f21TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f22TB">
               <Properties>
@@ -608,9 +557,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F22"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -619,6 +565,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f22TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f22TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f23TB">
               <Properties>
@@ -627,9 +576,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F23"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -638,6 +584,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f23TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f23TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f24TB">
               <Properties>
@@ -646,9 +595,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F24"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -657,6 +603,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f24TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f24TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f25TB">
               <Properties>
@@ -665,9 +614,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F25"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -676,6 +622,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f25TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f25TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f26TB">
               <Properties>
@@ -684,9 +633,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F26"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -695,6 +641,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f26TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f26TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f27TB">
               <Properties>
@@ -703,9 +652,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F27"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -714,6 +660,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f27TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f27TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f28TB">
               <Properties>
@@ -722,9 +671,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F28"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -744,9 +690,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F29"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -755,6 +698,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f29TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f29TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f30TB">
               <Properties>
@@ -763,9 +709,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F30"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -774,6 +717,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f30TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f30TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f31TB">
               <Properties>
@@ -782,9 +728,6 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="F31"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[2, 2, 2, 2]"/>
-                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -793,6 +736,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f31TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f31TBActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

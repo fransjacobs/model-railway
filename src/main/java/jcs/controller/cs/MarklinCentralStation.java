@@ -46,8 +46,10 @@ public interface MarklinCentralStation {
 
   void changeVelocity(int address, DecoderType protocol, int speed);
 
-  void changeFunctionValue(int address, DecoderType protocol, int functionNumber, boolean flag);
+  //void changeFunctionValue(int address, DecoderType protocol, int functionNumber, boolean flag);
 
+  void changeFunctionValue(int locUid, int functionNumber, boolean flag);
+  
   void switchAccessory(int address, AccessoryValue value);
 
   void addPowerEventListener(PowerEventListener listener);

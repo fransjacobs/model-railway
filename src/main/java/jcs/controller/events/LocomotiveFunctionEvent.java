@@ -18,7 +18,6 @@ package jcs.controller.events;
 import java.io.Serializable;
 import jcs.controller.cs.can.CanMessage;
 import jcs.entities.FunctionBean;
-import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
@@ -27,12 +26,11 @@ import org.tinylog.Logger;
  */
 public class LocomotiveFunctionEvent implements Serializable {
 
-  private LocomotiveBean locomotiveBean;
+  private FunctionBean function;
 
-  private Integer updatedFunctionNumber;
-
-  public LocomotiveFunctionEvent(LocomotiveBean locomotiveBean) {
-    this.locomotiveBean = locomotiveBean;
+  //private Integer updatedFunctionNumber;
+  public LocomotiveFunctionEvent(FunctionBean changedFunction) {
+    this.function = changedFunction;
   }
 
   public LocomotiveFunctionEvent(CanMessage message) {
@@ -49,41 +47,38 @@ public class LocomotiveFunctionEvent implements Serializable {
 
     if (resp.isResponseMessage() && CanMessage.LOC_FUNCTION_RESP == resp.getCommand()) {
       byte[] data = resp.getData();
-      long id = CanMessage.toInt(new byte[]{data[0], data[1], data[2], data[3]});
+      long locomotiveId = CanMessage.toInt(new byte[]{data[0], data[1], data[2], data[3]});
 
       int functionNumber = data[4];
       int functionValue = data[5];
-      this.locomotiveBean = new LocomotiveBean();
 
-      FunctionBean function = new FunctionBean(functionNumber, id);
-      function.setValue(functionValue);
+      FunctionBean fb = new FunctionBean(functionNumber, locomotiveId);
+      fb.setValue(functionValue);
 
-      this.locomotiveBean.setId(id);
-      this.locomotiveBean.addFunction(function);
-      this.updatedFunctionNumber = functionNumber;
+      //this.updatedFunctionNumber = functionNumber;
+      this.function = fb;
     } else {
       Logger.warn("Can't parse message, not an Locomotive Function Message! " + resp);
     }
   }
 
-  public LocomotiveBean getLocomotiveBean() {
-    return locomotiveBean;
+  public FunctionBean getFunctionBean() {
+    return this.function;
   }
 
-  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-    this.locomotiveBean = locomotiveBean;
+  public void setFunctionBean(FunctionBean function) {
+    this.function = function;
   }
 
-  public Integer getUpdatedFunctionNumber() {
-    return updatedFunctionNumber;
-  }
-
+//  public Integer getUpdatedFunctionNumber() {
+//    return updatedFunctionNumber;
+//  }
   public boolean isValid() {
-    return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
+    return this.function != null && this.function.getLocomotiveId() != null && this.function.getNumber() != null;
   }
 
-  public boolean isEventFor(LocomotiveBean locomotive) {
-    return this.locomotiveBean.getId().equals(locomotive.getId());
+  public boolean isEventFor(FunctionBean function) {
+    return this.function.getNumber().equals(function.getNumber()) && this.function.getLocomotiveId().equals(function.getLocomotiveId());
   }
 
 }

@@ -274,6 +274,25 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
+  public static CanMessage setFunction(int uid, int functionNumber, boolean value, int gfpUid) {
+    byte[] data = new byte[CanMessage.DATA_SIZE];
+    byte[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    byte[] locid = CanMessage.to4Bytes(uid);
+    System.arraycopy(locid, 0, data, 0, locid.length);
+    data[4] = (byte) (functionNumber & 0xff);
+    data[5] = (byte) (value ? 1 : 0);
+    CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, DLC_6, data);
+    return cm;
+  }
+
+  
+  //old
   public static CanMessage setFunction(int address, int functionNumber, int value, int gfpUid) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;

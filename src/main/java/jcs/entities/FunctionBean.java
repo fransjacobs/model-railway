@@ -16,12 +16,7 @@
 package jcs.entities;
 
 import java.awt.Image;
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -29,8 +24,6 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import jcs.controller.cs3.FunctionSvgToPngConverter;
-import org.tinylog.Logger;
 
 /**
  * Represents a locomotive function
@@ -312,28 +305,6 @@ public class FunctionBean implements Serializable {
 
   public String toLogString() {
     return toString();
-  }
-
-  public static void main(String[] z) throws IOException {
-    FunctionSvgToPngConverter svgCache = new FunctionSvgToPngConverter();
-    Path fcticons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "fcticons.json");
-    String json = Files.readString(fcticons);
-    svgCache.loadSvgCache(json);
-
-    FunctionBean fba = new FunctionBean();
-    fba.setIcon("fkticon_a_001");
-
-    FunctionBean fbi = new FunctionBean();
-    fbi.setIcon("fkticon_i_092");
-
-    Logger.trace(fba.getIcon() + " a: " + fba.getActiveIcon() + " i: " + fba.getInActiveIcon());
-    Logger.trace(fbi.getIcon() + " a: " + fbi.getActiveIcon() + " i: " + fbi.getInActiveIcon());
-
-    Logger.trace("fba a:" + svgCache.getFunctionImageCS3(fba.getActiveIcon()));
-    Logger.trace("fba i:" + svgCache.getFunctionImageCS3(fba.getInActiveIcon()));
-
-    Logger.trace("fbi a:" + svgCache.getFunctionImageCS3(fbi.getActiveIcon()));
-    Logger.trace("fbi i:" + svgCache.getFunctionImageCS3(fbi.getInActiveIcon()));
   }
 
 }
