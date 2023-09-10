@@ -15,9 +15,8 @@
  */
 package jcs.controller.cs;
 
+import jcs.entities.Device;
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Date;
 import jcs.controller.events.SensorEvent;
 import java.util.HashMap;
@@ -29,19 +28,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import jcs.JCS;
-import jcs.controller.cs.can.parser.AccessoryBeanParser;
-import jcs.controller.cs.can.parser.LocomotiveBeanParser;
+import jcs.controller.cs2.AccessoryBeanParser;
+import jcs.controller.cs2.LocomotiveBeanParser;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
 import jcs.entities.enums.DecoderType;
-import jcs.controller.cs.http.parser.CS3FunctionSvgToImageConverter;
+import jcs.controller.cs3.FunctionSvgToPngConverter;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs.can.CanMessageFactory;
 import static jcs.controller.cs.can.CanMessageFactory.getStatusDataConfigResponse;
-import jcs.controller.cs.can.parser.ChannelDataParser;
+import jcs.controller.cs2.ChannelDataParser;
 import jcs.controller.cs.can.parser.MessageInflator;
 import jcs.controller.cs.can.parser.StatusDataConfigParser;
 import jcs.controller.cs.can.parser.SystemStatusParser;
@@ -49,11 +48,11 @@ import jcs.controller.cs.net.CSConnection;
 import jcs.controller.cs.net.HTTPConnection;
 import jcs.controller.cs.net.CSConnectionFactory;
 import jcs.controller.events.PowerEvent;
-import jcs.controller.cs3.http.DeviceJSONParser;
+import jcs.controller.cs3.DeviceJSONParser;
 
 import jcs.controller.events.LocomotiveDirectionEvent;
 import jcs.controller.events.LocomotiveFunctionEvent;
-import jcs.controller.cs3.http.AccessoryJSONParser;
+import jcs.controller.cs3.AccessoryJSONParser;
 import jcs.controller.events.LocomotiveSpeedEvent;
 import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.AccessoryListener;
@@ -62,6 +61,7 @@ import jcs.util.ByteUtil;
 import jcs.controller.cs.events.FeedbackListener;
 import jcs.controller.cs.events.LocomotiveListener;
 import jcs.controller.cs.events.SystemListener;
+import jcs.controller.cs3.LocomotiveBeanJSONParser;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
@@ -100,7 +100,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private ScheduledExecutorService scheduledExecutor;
   private boolean power;
 
-  private CS3FunctionSvgToImageConverter svgToImage;
+  private FunctionSvgToPngConverter svgToImage;
 
   public MarklinCentralStationImpl() {
     this(true);
@@ -191,7 +191,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 //          for (Device d : this.devices.values()) {
 //            Logger.trace(d);
 //          }
-
           if (this.mainDevice != null) {
             Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
             JCS.logProgress("Connected with " + this.mainDevice.getDeviceName());
@@ -581,12 +580,24 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     return lp.parseLocomotivesFile(csLocos);
   }
 
+  List<LocomotiveBean> getLocomotivesViaJSON() {
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    String json = httpCon.getLocomotivesJSON();
+    LocomotiveBeanJSONParser lp = new LocomotiveBeanJSONParser();
+    return lp.parseLocomotives(json);
+  }
+
   @Override
   public List<LocomotiveBean> getLocomotives() {
-    if (System.getProperty("locomotive.list.via", "can").equalsIgnoreCase("http")) {
-      return getLocomotivesViaHttp();
+    if (this.isCS3()) {
+      //For the CS-3 use the JSON for everything as otherwise some function icons are missed
+      return getLocomotivesViaJSON();
     } else {
-      return getLocomotivesViaCAN();
+      if (System.getProperty("locomotive.list.via", "can").equalsIgnoreCase("http")) {
+        return getLocomotivesViaHttp();
+      } else {
+        return getLocomotivesViaCAN();
+      }
     }
   }
 
@@ -648,19 +659,23 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   }
 
   @Override
+  public void clearCaches() {
+    this.svgToImage = null;
+  }
+
+  @Override
   public Image getLocomotiveFunctionImage(String icon) {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
-    Image functionIcon = httpCon.getFunctionImageCS2(icon);
-    if (functionIcon == null && this.isCS3()) {
-      //Lets try if we can get the image via the JSON fcticons.json file on the CS3
+    if (this.isCS3()) {
       if (this.svgToImage == null) {
-        this.svgToImage = new CS3FunctionSvgToImageConverter();
-        this.svgToImage.loadSvgCache(httpCon.getFunctionsSvgJSON());
+        String json = httpCon.getFunctionsSvgJSON();
+        this.svgToImage = new FunctionSvgToPngConverter();
+        this.svgToImage.loadSvgCache(json);
       }
-      functionIcon = this.svgToImage.getFunctionImage(icon);
+      return this.svgToImage.getFunctionImageCS3(icon);
+    } else {
+      return httpCon.getFunctionImageCS2(icon);
     }
-
-    return functionIcon;
   }
 
   @Override
@@ -850,7 +865,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
       switch (cmd) {
         case CanMessage.PING_RESP -> {
           if (CanMessage.DLC_8 == dlc) {
-//            controller.updateMember(message);
+            controller.updateMember(message);
           }
         }
       }

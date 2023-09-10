@@ -15,8 +15,8 @@
  */
 package jcs.controller.cs;
 
+import jcs.entities.Device;
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
@@ -76,10 +76,8 @@ public interface MarklinCentralStation {
 
   List<LocomotiveBean> getLocomotives();
 
-  //void cacheAllFunctionIcons(PropertyChangeListener progressListener);
-
   Image getLocomotiveImage(String icon);
-  
+
   Image getLocomotiveFunctionImage(String icon);
 
   List<AccessoryBean> getSwitches();
@@ -89,5 +87,7 @@ public interface MarklinCentralStation {
   Device getDevice();
 
   List<Device> getDevices();
+
+  void clearCaches();
 
 }

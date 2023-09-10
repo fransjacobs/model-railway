@@ -154,7 +154,7 @@ public class ControllerImpl implements Controller {
       path = Paths.get(basePath + File.separator + "functions");
     }
 
-    File imageFile = new File(path + File.separator + imageName + ".png");
+    File imageFile = new File(path + File.separator + imageName.toLowerCase() + ".png");
 
     try {
       if (!Files.exists(path)) {
@@ -162,11 +162,8 @@ public class ControllerImpl implements Controller {
         Logger.trace("Created new directory " + path);
       }
       ImageIO.write((BufferedImage) image, "png", imageFile);
-      
-      //    ImageIO.write((BufferedImage) imgg, "PNG", new File(test + File.separator + "FktIcon_a_ge_116" + ".png"));
 
-      
-      
+      //    ImageIO.write((BufferedImage) imgg, "PNG", new File(test + File.separator + "FktIcon_a_ge_116" + ".png"));
     } catch (IOException ex) {
       Logger.error("Can't store image " + imageFile + "! ", ex.getMessage());
     }
@@ -229,8 +226,19 @@ public class ControllerImpl implements Controller {
   public void synchronizeLocomotivesWithController(PropertyChangeListener progressListener) {
     List<LocomotiveBean> fromController = this.vendorController.getLocomotives();
 
-    Set<String> functionImageNames = new HashSet<>();
+    String importedFrom;
+    if (this.vendorController.getDevice() != null) {
+      importedFrom = this.vendorController.getDevice().isCS3() ? "CS3-" : "CS2-";
+      importedFrom = importedFrom + this.vendorController.getDevice().getSerialNumber();
+    } else {
+      //There are some rare situations which occur mainly during lots of testing, where the device is not found ins 10 s or so...
+      importedFrom = "CS2-xxxxxx";
+    }
 
+    Set<String> functionImageNames = new HashSet<>();
+    //Map<String,String> functionImageNames =  new HashMap();
+
+    //TODO show the progress...
     if (progressListener != null) {
       PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Controller reports " + fromController.size() + " Locomotives");
       progressListener.propertyChange(pce);
@@ -240,14 +248,13 @@ public class ControllerImpl implements Controller {
       Long id = loco.getId();
       LocomotiveBean dbLoco = PersistenceFactory.getService().getLocomotive(id);
 
-      if (dbLoco != null && loco.getAddress().equals(dbLoco.getAddress()) && loco.getDecoderType().equals(dbLoco.getDecoderType())) {
+      if (dbLoco != null && loco.getId().equals(dbLoco.getId())) {
         Logger.trace("Loco id: " + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString() + " Exists");
+
         // Keep the name, commuter, show and lenght
         loco.setName(dbLoco.getName());
         loco.setCommuter(dbLoco.isCommuter());
-
         loco.setShow(dbLoco.isShow());
-
         loco.setLength(dbLoco.getLength());
 
         if (progressListener != null) {
@@ -263,6 +270,7 @@ public class ControllerImpl implements Controller {
         }
       }
       try {
+        loco.setImported(importedFrom);
         PersistenceFactory.getService().persist(loco);
 
         //Also cache the locomotive Image
@@ -275,6 +283,7 @@ public class ControllerImpl implements Controller {
         //Function icons...
         Set<FunctionBean> functions = loco.getFunctions().values().stream().collect(Collectors.toSet());
         for (FunctionBean fb : functions) {
+
           String aIcon = fb.getActiveIcon();
           String iIcon = fb.getInActiveIcon();
           functionImageNames.add(aIcon);
@@ -291,6 +300,8 @@ public class ControllerImpl implements Controller {
       boolean available = getLocomotiveFunctionImage(functionImage) != null;
       Logger.trace("Function Image " + functionImage + " is " + (available ? "available" : "NOT available"));
     }
+
+    this.vendorController.clearCaches();
   }
 
   @Override

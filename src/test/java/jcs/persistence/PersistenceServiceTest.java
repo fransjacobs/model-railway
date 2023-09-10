@@ -491,7 +491,9 @@ public class PersistenceServiceTest {
     System.out.println("persist");
     LocomotiveBean locomotive = new LocomotiveBean(80L, "DB BR 44 100", 16393L, 1945180593L, 80, "DB BR 44 100", "mfx", "0x81", 80, 5, 0, 0, false, null, true);
 
-    FunctionBean fb80_0 = new FunctionBean(null, 80L, 0, 1, 0);
+    locomotive.setImported("testcase");
+
+    FunctionBean fb80_0 = new FunctionBean(80L, 0, 1, 0);
 
     locomotive.addFunction(fb80_0);
 
@@ -500,6 +502,8 @@ public class PersistenceServiceTest {
     LocomotiveBean result = instance.persist(locomotive);
 
     assertEquals(expResult, result);
+
+    assertEquals("testcase", result.getImported());
 
     LocomotiveBean loco = instance.getLocomotive(80L);
     assertEquals(locomotive, loco);
@@ -516,6 +520,9 @@ public class PersistenceServiceTest {
     FunctionBean function = locfunctions.get(0);
     fb80_0.setId(23L);
     assertEquals(fb80_0, function);
+    //expected: jcs.entities.FunctionBean<locoId:80, number:0;type: 1, value: 0, momentary: false>
+    // but was: jcs.entities.FunctionBean<locoId:80, number:0;type: 1, value: 0, momentary: false>
+
 
     loco.setIcon("new Icon");
     instance.persist(loco);
@@ -560,7 +567,6 @@ public class PersistenceServiceTest {
     List<AccessoryBean> expResult = this.turnouts;
     List<AccessoryBean> result = instance.getTurnouts();
     assertEquals(expResult, result);
-
   }
 
   /**
@@ -622,9 +628,14 @@ public class PersistenceServiceTest {
     assertEquals(accessory, ab);
 
     accessory.setName("WWWWW");
+    accessory.setImported("test");
+    
     instance.persist(accessory);
     ab = instance.getAccessoryByAddress(expResult.getAddress());
     assertEquals(accessory, ab);
+    
+    assertEquals("test", ab.getImported());
+    
   }
 
   /**

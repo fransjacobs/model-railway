@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs.can.parser;
+package jcs.controller.cs2;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -34,8 +34,6 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class LocomotiveBeanParser {
-
-  public final static String LOCOMOTIVE_FILE = "lokomotive.cs2";
 
   private static final String LOCOMOTIVES_START = "[lokomotive]";
   private static final String VERSION = "version";
@@ -73,10 +71,9 @@ public class LocomotiveBeanParser {
   private static final String WERT = "..wert";
   private static final String ADRESSE_2 = "..adresse";
   private static final String NAME_2 = "..name";
-  
-  //..dauer=0
- //Auslösedauer, 0: Dauerfunktion, -1 Momentfunktion, sonst Zeitfunktion
 
+  //TODO: What to do with "..dauer=0", "Auslösedauer, 0", Dauerfunktion: -1 Momentfunktion, sonst Zeitfunktion?
+  //Could not find a valid example in my loco's
   public List<LocomotiveBean> parseLocomotivesFile(String locofile) {
     List<LocomotiveBean> locs = new LinkedList<>();
     List<String> items = Arrays.asList(locofile.split("\n"));
@@ -158,7 +155,7 @@ public class LocomotiveBeanParser {
                   if (WERT.equals(key)) {
                     locoFunction.setValue(val);
                   }
-                  
+
                 }
               }
             }
@@ -253,7 +250,6 @@ public class LocomotiveBeanParser {
         address = cvb.getValue();
         decoderType = "mm2_prg";
       }
-
     }
 
     LocomotiveBean lb = new LocomotiveBean(id, name, previousName, uid, mfxUid, address, icon, decoderType,
@@ -275,7 +271,7 @@ public class LocomotiveBeanParser {
   }
 
   public static void main(String[] a) throws Exception {
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotives.cs2");
+    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "lokomotive.cs2");
 
     String loksFile = Files.readString(path);
 

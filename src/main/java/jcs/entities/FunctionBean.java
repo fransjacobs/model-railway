@@ -16,7 +16,12 @@
 package jcs.entities;
 
 import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -24,6 +29,8 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import jcs.controller.cs3.FunctionSvgToPngConverter;
+import org.tinylog.Logger;
 
 /**
  * Represents a locomotive function
@@ -40,18 +47,34 @@ public class FunctionBean implements Serializable {
   private Integer functionType;
   private Integer value;
 
-  private final String IMG_PREFIX = "FktIcon_";
-  private final String IMG_A = "a_";
-  private final String IMG_I = "i_";
-  private final String IMG_YELLOW = "ge_";
-  private final String IMG_WHITE = "we_";
+  private Boolean momentary;
+  private String icon;
+
+  //Fields for CS 2
+  private final static String IMG_PREFIX = "FktIcon_";
+  private final static String IMG_A = "a_";
+  private final static String IMG_I = "i_";
+  private final static String IMG_YELLOW = "ge_";
+  private final static String IMG_WHITE = "we_";
   //private final String IMG_GREY = "gr_";
-  private final String NMB_FORMAT = "%02d";
-  //private final String EXTENSION = ".png";
+  private final static String NMB_FORMAT = "%02d";
 
   private Image inActiveIconImage;
   private Image activeIconImage;
 
+  /**
+   * <p>
+   * Entity to model a Locomotive Function.</p>
+   * <p>
+   * In Case of a CS 2 the momentary flag is derived from the function type.<br>
+   * When the functionType is greater then 127 but lower then 150 a function is momentary.</p>
+   * <p>
+   * The momentary flag also plays a role in the retrieval of the function icons,<br>
+   * so for all numbers above 128, but below 150, 128 has to be subtracted to get the right image number(...)<br></p>
+   * <p>
+   * In case of a CS 3 the momentary flag an icons are specified in a JSON file.</p>
+   *
+   */
   public FunctionBean() {
   }
 
@@ -68,10 +91,20 @@ public class FunctionBean implements Serializable {
   }
 
   public FunctionBean(Long id, Long locomotiveId, Integer number, Integer functionType, Integer value) {
+    this(id, locomotiveId, number, functionType, value, (functionType != null && functionType > 127 && functionType < 150), null);
+  }
+
+  public FunctionBean(Long locomotiveId, Integer number, Integer functionType, Integer value, Boolean momentary, String icon) {
+    this(null, locomotiveId, number, functionType, value, momentary, icon);
+  }
+
+  public FunctionBean(Long id, Long locomotiveId, Integer number, Integer functionType, Integer value, Boolean momentary, String icon) {
     this.locomotiveId = locomotiveId;
     this.number = number;
     this.functionType = functionType;
     this.value = value;
+    this.momentary = momentary;
+    this.icon = icon;
   }
 
   @Id
@@ -116,6 +149,33 @@ public class FunctionBean implements Serializable {
     return value;
   }
 
+  @Column(name = "locomotive_id", nullable = false)
+  public Long getLocomotiveId() {
+    return locomotiveId;
+  }
+
+  public void setLocomotiveId(Long locomotiveId) {
+    this.locomotiveId = locomotiveId;
+  }
+
+  public void setMomentary(boolean momentary) {
+    this.momentary = momentary;
+  }
+
+  @Column(name = "momentary", nullable = false, columnDefinition = "show bool default '1'")
+  public boolean isMomentary() {
+    return momentary;
+  }
+
+  @Column(name = "f_icon", length = 255)
+  public String getIcon() {
+    return icon;
+  }
+
+  public void setIcon(String icon) {
+    this.icon = icon;
+  }
+
   @Transient
   public boolean isOn() {
     return this.value >= 1;
@@ -129,46 +189,48 @@ public class FunctionBean implements Serializable {
     this.value = Integer.valueOf(value);
   }
 
-  /**
-   * The "normal" function numbers (typ) are apparently in the range between 0 and 127. When a number is greater then 128 the MSB is set meaning the the function is momentary. This appears to be right
-   * until 150 which are apparently Cab? icons...
-   *
-   * @return true when the function is momentary
-   */
   @Transient
-  public boolean isMomentary() {
-    //return this.functionType != null && this.functionType > 127 && this.functionType < 150;
-    return this.functionType != null && this.functionType > 127;
+  public String getIconName() {
+    return getIconName(this.isOn());
   }
 
   @Transient
-  public String getIcon() {
-    return getIcon(this.isOn());
-  }
-
-  private String getIcon(boolean active) {
-    String ai;
-    String col;
-    String icon;
-    if (active) {
-      ai = IMG_A;
-      col = IMG_YELLOW;
-    } else {
-      ai = IMG_I;
-      col = IMG_WHITE;
-    }
-
-    if (this.functionType != null) {
-      //if (this.functionType < 127 || this.functionType >= 150) {
-      if (this.functionType < 127) {
-        icon = IMG_PREFIX + ai + col + String.format(NMB_FORMAT, this.functionType);
+  public String getIconName(boolean active) {
+    if (this.icon == null) {
+      String ai;
+      String col;
+      if (active) {
+        ai = IMG_A;
+        col = IMG_YELLOW;
       } else {
-        int typ = this.functionType - 128;
-        icon = IMG_PREFIX + ai + col + String.format(NMB_FORMAT, typ);
+        ai = IMG_I;
+        col = IMG_WHITE;
       }
-      return icon;
+      if (this.functionType == null) {
+        return null;
+      }
+      if (this.functionType < 127 || this.functionType >= 150) {
+        return IMG_PREFIX + ai + col + String.format(NMB_FORMAT, this.functionType);
+      } else if (this.functionType > 128 || this.functionType < 150) {
+        int typ = this.functionType - 128;
+        return IMG_PREFIX + ai + col + String.format(NMB_FORMAT, typ);
+      } else {
+        return null;
+      }
     } else {
-      return null;
+      //Make the name CS2 compatible
+      //a; active -> _a_ge_. i; inactive _i_we_
+      if (this.icon.contains("_a_") && active) {
+        return this.icon.replace("_a_", "_a_ge_");
+      } else if (this.icon.contains("_i_") && active) {
+        return this.icon.replaceAll("_i_", "_a_ge_");
+      } else if (this.icon.contains("_i_") && !active) {
+        return this.icon.replace("_i_", "_i_we_");
+      } else if (this.icon.contains("_a_") && !active) {
+        return this.icon.replaceAll("_a_", "_i_we_");
+      } else {
+        return null;
+      }
     }
   }
 
@@ -192,21 +254,12 @@ public class FunctionBean implements Serializable {
 
   @Transient
   public String getActiveIcon() {
-    return getIcon(true);
+    return getIconName(true);
   }
 
   @Transient
   public String getInActiveIcon() {
-    return getIcon(false);
-  }
-
-  @Column(name = "locomotive_id", nullable = false)
-  public Long getLocomotiveId() {
-    return locomotiveId;
-  }
-
-  public void setLocomotiveId(Long locomotiveId) {
-    this.locomotiveId = locomotiveId;
+    return getIconName(false);
   }
 
   @Override
@@ -216,6 +269,9 @@ public class FunctionBean implements Serializable {
     hash = 71 * hash + Objects.hashCode(this.number);
     hash = 71 * hash + Objects.hashCode(this.functionType);
     hash = 71 * hash + Objects.hashCode(this.value);
+    hash = 71 * hash + Objects.hashCode(this.momentary);
+    hash = 71 * hash + Objects.hashCode(this.icon);
+
     return hash;
   }
 
@@ -240,16 +296,44 @@ public class FunctionBean implements Serializable {
     if (!Objects.equals(this.functionType, other.functionType)) {
       return false;
     }
+    if (!Objects.equals(this.momentary, other.momentary)) {
+      return false;
+    }
+    if (!Objects.equals(this.icon, other.icon)) {
+      return false;
+    }
     return Objects.equals(this.value, other.value);
   }
 
   @Override
   public String toString() {
-    return "locoId:" + locomotiveId + ", number:" + number + ";type: " + functionType + ", value: " + value;
+    return "locoId:" + locomotiveId + ", number:" + number + ", type: " + functionType + ", value: " + value + ", momentary: " + momentary + ", icon: " + icon;
   }
 
   public String toLogString() {
     return toString();
+  }
+
+  public static void main(String[] z) throws IOException {
+    FunctionSvgToPngConverter svgCache = new FunctionSvgToPngConverter();
+    Path fcticons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "fcticons.json");
+    String json = Files.readString(fcticons);
+    svgCache.loadSvgCache(json);
+
+    FunctionBean fba = new FunctionBean();
+    fba.setIcon("fkticon_a_001");
+
+    FunctionBean fbi = new FunctionBean();
+    fbi.setIcon("fkticon_i_092");
+
+    Logger.trace(fba.getIcon() + " a: " + fba.getActiveIcon() + " i: " + fba.getInActiveIcon());
+    Logger.trace(fbi.getIcon() + " a: " + fbi.getActiveIcon() + " i: " + fbi.getInActiveIcon());
+
+    Logger.trace("fba a:" + svgCache.getFunctionImageCS3(fba.getActiveIcon()));
+    Logger.trace("fba i:" + svgCache.getFunctionImageCS3(fba.getInActiveIcon()));
+
+    Logger.trace("fbi a:" + svgCache.getFunctionImageCS3(fbi.getActiveIcon()));
+    Logger.trace("fbi i:" + svgCache.getFunctionImageCS3(fbi.getInActiveIcon()));
   }
 
 }

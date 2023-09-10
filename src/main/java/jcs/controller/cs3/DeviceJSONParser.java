@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs3.http;
+package jcs.controller.cs3;
 
-import jcs.controller.cs.Device;
+import jcs.entities.Device;
 import jcs.controller.cs.SxxBus;
 import jcs.controller.cs.MeasurementChannel;
 import org.json.JSONArray;

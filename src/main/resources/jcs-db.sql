@@ -21,6 +21,7 @@ create table accessories (
   accessory_group    varchar(255),
   icon               varchar(255),
   icon_file          varchar(255),
+  imported           varchar(255),
   constraint acce_pk primary key (id),
   constraint acce_address_un unique (decoder_type,address)
 );
@@ -44,6 +45,7 @@ create table locomotives (
   commuter           bool not null default false,
   length             integer,
   show               bool not null default true,
+  imported           varchar(255),
   constraint loco_pk primary key (id),
   constraint loco_addr_dety_un unique (address,decoder_type)
 );
@@ -57,6 +59,8 @@ create table locomotive_functions (
   f_number           integer not null,
   f_type             integer not null,
   f_value            integer,
+  f_icon             varchar(255),
+  momentary          bool not null default false,
   constraint lofu_pk primary key (id),
   constraint lofu_loid_fnum_un unique (locomotive_id,f_number)
 );

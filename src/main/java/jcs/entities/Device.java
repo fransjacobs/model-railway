@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs;
+package jcs.entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import jcs.controller.cs.MeasurementChannel;
+import jcs.controller.cs.SxxBus;
 import jcs.controller.cs.can.CanMessage;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -109,7 +111,6 @@ public class Device {
 //    for (CanMessage r : responses) {
 //      Logger.trace(r);
 //    }
-
     if (!responses.isEmpty()) {
       //The last response has the total response messages
       CanMessage last = responses.get(responses.size() - 1);

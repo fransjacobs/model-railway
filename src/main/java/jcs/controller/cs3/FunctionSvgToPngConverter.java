@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs.http.parser;
+package jcs.controller.cs3;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -28,7 +28,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class CS3FunctionSvgToImageConverter {
+public class FunctionSvgToPngConverter {
 
   private static final String SVG_NAME_SPACE = "<svg version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
 
@@ -39,12 +39,14 @@ public class CS3FunctionSvgToImageConverter {
 
   private final Map<String, String> functionSvgCache;
 
-  public CS3FunctionSvgToImageConverter() {
+  public FunctionSvgToPngConverter() {
     ImageIO.scanForPlugins();
     functionSvgCache = new HashMap<>();
   }
-  private String getSvg(String imageName) {
+
+  private String getCS3SvgName(String imageName) {
     //Remove te color
+    //TODO prepend a 0 or 2 0 when number is only 1 or 2 long
     String svgName = imageName.replaceFirst("_ge_", "_");
     svgName = svgName.replaceFirst("_we_", "_");
     svgName = svgName.replaceFirst("_gr_", "_");
@@ -52,18 +54,54 @@ public class CS3FunctionSvgToImageConverter {
     return this.functionSvgCache.get(svgName);
   }
 
-  public BufferedImage getFunctionImage(String imageName) {
-    String svg = getSvg(imageName);
+  public BufferedImage getFunctionImageCS2(String imageName) {
+    return getFunctionImageCS3(getCS3SvgName(imageName));
+  }
+
+  public BufferedImage getFunctionImageCS3(String imageName) {
+    String svgName = imageName.replace("_we_", "_").replace("_ge_", "_");
+    String svg = getCS3SvgName(svgName);
+
+    if (svg == null) {
+      Logger.trace("ImageName " + imageName + "; '" + svgName + "' not found");
+      return null;
+    }
+
     //Get the color
     String color;
+    String col;
     if (imageName.contains("_ge_")) {
       color = YELLOW;
-    } else if (imageName.contains("we")) {
+      col = "ge";
+    } else if (imageName.contains("_we_")) {
       color = WHITE;
-    } else if (imageName.contains("we")) {
+      col = "we";
+    } else if (imageName.contains("_gr_")) {
       color = GREY;
+      col = "gr";
     } else {
       color = BLACK;
+      col = "bk";
+    }
+
+    String rep, rep1;
+    switch (col) {
+      case "ge" -> {
+        rep = "fill=\"#DCA00A\"";
+        rep1 = "<path fill=\"rgb(220, 160, 10)\" ";
+      }
+      case "we" -> {
+        rep = "fill=\"#FFFFFF\"";
+        rep1 = "<path fill=\"rgb(255, 255, 255)\" ";
+      }
+      case "gr" -> {
+        rep = "fill=\"#666666\"";
+        rep1 = "<path fill=\"rgb(102, 102, 102)\" ";
+      }
+      default -> {
+        rep = "fill=\"#000000\"";
+        rep1 = "<path fill=\"rgb(0, 0, 0)\" ";
+      }
     }
 
     String svgBase = svg;
@@ -79,9 +117,10 @@ public class CS3FunctionSvgToImageConverter {
     //Logger.trace(svgStyle);
 
     if (svgStyle.contains("fill=\"")) {
-      svgStyle = svgStyle.replaceAll("fill=\"(.*?)\"", "fill=\"#DCA00A\"");
+
+      svgStyle = svgStyle.replaceAll("fill=\"(.*?)\"", rep);
     } else {
-      svgStyle = svgStyle.replaceAll("<path ", "<path fill=\"rgb(220, 160, 10)\" ");
+      svgStyle = svgStyle.replaceAll("<path ", rep1);
     }
 
     BufferedImage img = null;
@@ -103,6 +142,5 @@ public class CS3FunctionSvgToImageConverter {
     }
     Logger.trace("Loaded " + this.functionSvgCache.size() + " svg images");
   }
-
 
 }

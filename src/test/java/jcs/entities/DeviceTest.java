@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.cs;
+package jcs.entities;
 
+import jcs.entities.Device;
 import jcs.controller.cs.can.CanMessage;
 import org.junit.After;
 import org.junit.Before;

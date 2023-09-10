@@ -30,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
-import jcs.entities.FunctionBean;
 import org.tinylog.Logger;
 
 /**
@@ -45,6 +44,7 @@ public class HTTPConnection {
   private final static String HTTP = "http://";
   private final static String CONFIG = "/config/";
   private final static String LOCOMOTIVE = "lokomotive.cs2";
+  private final static String LOCOMOTIVE_JSON = "/app/api/loks";
   private final static String MAGNETARTIKEL = "magnetartikel.cs2";
   private final static String ACCESSORIES_URL = "/app/api/mags";
   private final static String DEVICE = "geraet.vrs";
@@ -98,6 +98,26 @@ public class HTTPConnection {
     return locs.toString();
   }
 
+  public String getLocomotivesJSON() {
+    StringBuilder loks = new StringBuilder();
+    try {
+      URL url = new URL(HTTP + csAddress.getHostAddress() + LOCOMOTIVE_JSON);
+      URLConnection lc = url.openConnection();
+      try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+          loks.append(inputLine.strip());
+          loks.append("\n");
+        }
+      }
+    } catch (MalformedURLException ex) {
+      Logger.error(ex);
+    } catch (IOException ex) {
+      Logger.error(ex);
+    }
+    return loks.toString();
+  }
+
   public String getAccessoriesFile() {
     StringBuilder locs = new StringBuilder();
     try {
@@ -140,15 +160,15 @@ public class HTTPConnection {
   }
 
   public String getFunctionsSvgJSON() {
-    StringBuilder device = new StringBuilder();
+    StringBuilder json = new StringBuilder();
     try {
       URL url = new URL(HTTP + csAddress.getHostAddress() + FUNCTION_SVG_URL);
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
-          device.append(inputLine.strip());
-          device.append("\n");
+          json.append(inputLine.strip());
+          json.append("\n");
         }
       }
     } catch (MalformedURLException ex) {
@@ -156,19 +176,19 @@ public class HTTPConnection {
     } catch (IOException ex) {
       Logger.error(ex);
     }
-    return device.toString();
+    return json.toString();
   }
 
   public String getAccessoriesJSON() {
-    StringBuilder mags = new StringBuilder();
+    StringBuilder json = new StringBuilder();
     try {
       URL url = new URL(HTTP + csAddress.getHostAddress() + ACCESSORIES_URL);
       URLConnection lc = url.openConnection();
       try (BufferedReader in = new BufferedReader(new InputStreamReader(lc.getInputStream()))) {
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
-          mags.append(inputLine.strip());
-          mags.append("\n");
+          json.append(inputLine.strip());
+          json.append("\n");
         }
       }
     } catch (MalformedURLException ex) {
@@ -176,7 +196,7 @@ public class HTTPConnection {
     } catch (IOException ex) {
       Logger.error(ex);
     }
-    return mags.toString();
+    return json.toString();
   }
 
   public Image getLocomotiveImage(String imageName) {
@@ -204,7 +224,6 @@ public class HTTPConnection {
     String iurl = fixURL(HTTP + csAddress.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
 
     try {
-      //Logger.trace("Try to fetch: " + iurl);
       URL url = new URL(iurl);
       image = ImageIO.read(url);
     } catch (IIOException iio) {
@@ -339,25 +358,16 @@ public class HTTPConnection {
 //        for (AccessoryStatus as : acsList) {
 //            System.out.println(as.toString());
 //        }
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator + "functions" + File.separator + "fcticons.json");
-
+//
+    Path fcticons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "fcticons.json");
     String json = hc.getFunctionsSvgJSON();
+    Files.writeString(fcticons, json);
 
-    Files.writeString(path, json);
+    Path locomotives = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "locomotives.json");
+    json = hc.getLocomotivesJSON();
 
-//         SvgIconToPngIconConverter svgp = new SvgIconToPngIconConverter();
-//         svgp.convertAndCacheAllFunctionsSvgIcons(json);
-    /*
-        String json = hc.getDevicesJSON();
-        DeviceJSONParser dp = new DeviceJSONParser();
-        dp.parseAccessories(json);
-     */
-    //  String json = hc.getAccessoriesJSON();
-    //System.out.println(json);
-    //   AccessoryJSONParser ap = new AccessoryJSONParser();
-    //   ap.parseAccessories(json);
-    //   for (AccessoryBean ab : ap.getSignals()) {
-    //     Logger.trace(ab.toLogString());
-    //  }
+    Logger.trace(json);
+    Files.writeString(locomotives, json);
+
   }
 }

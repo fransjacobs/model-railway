@@ -39,6 +39,7 @@ public class AccessoryBean {
   private String group;
   private String icon;
   private String iconFile;
+  private String imported;
 
   public AccessoryBean() {
     this(null, null, null, null, null, null, null, null);
@@ -221,6 +222,15 @@ public class AccessoryBean {
 
   public void setIconFile(String iconFile) {
     this.iconFile = iconFile;
+  }
+
+  @Column(name = "imported", length = 255)
+  public String getImported() {
+    return imported;
+  }
+
+  public void setImported(String imported) {
+    this.imported = imported;
   }
 
   @Transient
