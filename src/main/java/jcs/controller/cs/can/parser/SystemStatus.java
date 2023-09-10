@@ -25,12 +25,12 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class SystemStatusParser implements Serializable {
+public class SystemStatus implements Serializable {
 
   private boolean power;
   private byte[] gfpUid;
 
-  public SystemStatusParser(CanMessage message) {
+  public SystemStatus(CanMessage message) {
     parseMessage(message);
   }
 

@@ -48,8 +48,11 @@ class TCPConnection implements CSConnection {
   private static final long SHORT_TIMEOUT = 1000L;
   private static final long LONG_TIMEOUT = 5000L;
 
+  private boolean debug = false;
+
   TCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
+    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     checkConnection();
   }
 
@@ -95,7 +98,7 @@ class TCPConnection implements CSConnection {
   private class ResponseCallback {
 
     private final CanMessage tx;
-    private boolean done = false; 
+    private boolean done = false;
 
     ResponseCallback(final CanMessage tx) {
       this.tx = tx;
@@ -127,7 +130,7 @@ class TCPConnection implements CSConnection {
     ResponseCallback callback = null;
 
     if (message != null) {
-      if (message.expectsResponse() || message.expectsLargeResponse()) {
+      if (message.expectsResponse() || message.expectsLongResponse()) {
         //Message is expecting response so lets register for response
         callback = new ResponseCallback(message);
         this.messageReceiver.registerResponseCallback(callback);
@@ -144,14 +147,16 @@ class TCPConnection implements CSConnection {
 
       if (CanMessage.PING_RESP != message.getCommand()) {
         //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
-        Logger.trace("TX: " + message);
+        if (debug) {
+          Logger.trace("TX: " + message);
+        }
       }
 
       long now = System.currentTimeMillis();
       long start = now;
       long timeout;
 
-      if (message.expectsLargeResponse()) {
+      if (message.expectsLongResponse()) {
         timeout = now + LONG_TIMEOUT;
       } else if (message.expectsResponse()) {
         timeout = now + SHORT_TIMEOUT;
@@ -167,10 +172,12 @@ class TCPConnection implements CSConnection {
           now = System.currentTimeMillis();
         }
 
-        if (responseComplete) {
-          Logger.trace("Got Response in " + (now - start) + " ms");
-        } else {
-          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
+        if (debug) {
+          if (responseComplete) {
+            Logger.trace("Got Response in " + (now - start) + " ms");
+          } else {
+            Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
+          }
         }
 
         //Remove the callback
@@ -330,7 +337,9 @@ class TCPConnection implements CSConnection {
           } else {
             if (CanMessage.BOOTLOADER_CAN != 0x36) {
               //Do not log the bootloader message. it is not used in JCS. No idea what this message is for. 
-              Logger.trace("#RX: " + rx);
+              if (debug) {
+                Logger.trace("#RX: " + rx);
+              }
             }
           }
         } catch (SocketException se) {
@@ -340,7 +349,7 @@ class TCPConnection implements CSConnection {
         }
       }
 
-      Logger.trace("Stop receiving");
+      Logger.debug("Stop receiving");
       try {
         din.close();
       } catch (IOException ex) {

@@ -255,9 +255,8 @@ public class CanMessage implements MarklinCan, Serializable {
             || this.command == REQUEST_CONFIG_DATA;
   }
 
-  public boolean expectsLargeResponse() {
-    return this.command == STATUS_CONFIG
-            || this.command == REQUEST_CONFIG_DATA;
+  public boolean expectsLongResponse() {
+    return this.command == REQUEST_CONFIG_DATA;
   }
 
   public boolean isResponseFor(CanMessage other) {
@@ -347,7 +346,7 @@ public class CanMessage implements MarklinCan, Serializable {
   }
 
   public boolean isResponseComplete() {
-    boolean expectResponse = this.expectsLargeResponse() || this.expectsResponse();
+    boolean expectResponse = this.expectsLongResponse() || this.expectsResponse();
     if (!(expectResponse)) {
       return true;
     } else if (this.responses.isEmpty()) {

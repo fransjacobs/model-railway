@@ -42,8 +42,8 @@ import jcs.controller.cs.can.CanMessageFactory;
 import static jcs.controller.cs.can.CanMessageFactory.getStatusDataConfigResponse;
 import jcs.controller.cs2.ChannelDataParser;
 import jcs.controller.cs.can.parser.MessageInflator;
-import jcs.controller.cs.can.parser.StatusDataConfigParser;
-import jcs.controller.cs.can.parser.SystemStatusParser;
+import jcs.controller.cs.can.parser.StatusDataConfig;
+import jcs.controller.cs.can.parser.SystemStatus;
 import jcs.controller.cs.net.CSConnection;
 import jcs.controller.cs.net.HTTPConnection;
 import jcs.controller.cs.net.CSConnectionFactory;
@@ -102,12 +102,16 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 
   private FunctionSvgToPngConverter svgToImage;
 
+  private boolean debug = false;
+
   public MarklinCentralStationImpl() {
     this(true);
   }
 
   private MarklinCentralStationImpl(boolean autoConnect) {
     devices = new HashMap<>();
+
+    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
 
     powerEventListeners = new LinkedList<>();
     sensorEventListeners = new LinkedList<>();
@@ -177,7 +181,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
           this.connection.setLocomotiveListener(locomotiveListener);
 
           JCS.logProgress("Obtaining Device information...");
-          //request all member to give a response
+          //request all members to give a response
           getMembers();
 
           now = System.currentTimeMillis();
@@ -187,20 +191,14 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
             now = System.currentTimeMillis();
           }
 
-//          Logger.trace("Found " + this.devices.size() + " devices.");
-//          for (Device d : this.devices.values()) {
-//            Logger.trace(d);
-//          }
           if (this.mainDevice != null) {
             Logger.trace("Connected with " + this.mainDevice.getDeviceName() + " " + this.mainDevice.getArticleNumber() + " SerialNumber: " + mainDevice.getSerialNumber() + " UID: " + this.csUid);
             JCS.logProgress("Connected with " + this.mainDevice.getDeviceName());
 
             this.power = this.isPower();
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
-
           } else {
             Logger.warn("No Main Device found yet...");
-            //this.disconnect();
           }
         }
       } else {
@@ -273,9 +271,10 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   public boolean isPower() {
     if (this.connected) {
       CanMessage m = sendMessage(CanMessageFactory.querySystem(this.csUid));
-
-      Logger.trace("Received " + m.getResponses().size() + " responses. RX: " + m.getResponse());
-      SystemStatusParser ss = new SystemStatusParser(m);
+      if (debug) {
+        Logger.trace("Received " + m.getResponses().size() + " responses. RX: " + m.getResponse());
+      }
+      SystemStatus ss = new SystemStatus(m);
       this.power = ss.isPower();
     } else {
       this.power = false;
@@ -294,7 +293,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   @Override
   public boolean power(boolean on) {
     if (this.connected) {
-      SystemStatusParser ss = new SystemStatusParser(sendMessage(CanMessageFactory.systemStopGo(on, csUid)));
+      SystemStatus ss = new SystemStatus(sendMessage(CanMessageFactory.systemStopGo(on, csUid)));
       this.power = ss.isPower();
       return power;
     } else {
@@ -332,26 +331,68 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     CanMessage msg = CanMessageFactory.getMembersPing();
     this.connection.sendCanMessage(msg);
 
+    if (debug) {
+      Logger.trace(msg);
+      for (CanMessage r : msg.getResponses()) {
+        Logger.trace(r);
+      }
+    }
+
     for (CanMessage r : msg.getResponses()) {
       Device d = new Device(r);
       if (!this.devices.containsKey(d.getUid())) {
         this.devices.put(d.getUid(), d);
       }
+      if (debug) {
+        Logger.trace("Found uid: " + d.getUid() + " deviceId: " + d.getDeviceId() + " Device Type: " + d.getDevice());
+      }
     }
-    Logger.trace("Found " + this.devices.size() + " devices");
-
-    for (Device d : this.getDevices()) {
-      CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUid(), 0));
-      d.updateFromMessage(updateMessage);
+    if (debug) {
+      Logger.trace("Found " + this.devices.size() + " devices");
     }
+    while (this.mainDevice == null) {
+      for (Device d : this.getDevices()) {
+        if (!d.isDataComplete()) {
+          if (debug) {
+            Logger.trace("Requesting more info for uid: " + d.getUid());
+          }
+          CanMessage updateMessage = sendMessage(CanMessageFactory.statusDataConfig(d.getUid(), 0));
 
-    for (Device d : this.getDevices()) {
-      if (d.isDataComplete() && ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()))) {
-        this.csUid = d.getUid();
-        this.mainDevice = d;
-        Logger.trace("Main Device: " + d);
-      } else {
-        Logger.trace(d);
+          if (debug) {
+            Logger.trace(updateMessage);
+            for (CanMessage r : updateMessage.getResponses()) {
+              Logger.trace(r);
+            }
+          }
+          d.updateFromMessage(updateMessage);
+          if (debug) {
+            if (d.isDataComplete()) {
+              Logger.trace("Updated: " + d);
+            } else {
+              Logger.trace("No data received for Device uid: " + d.getUid());
+            }
+          }
+        }
+      }
+
+      for (Device d : this.getDevices()) {
+        if (d.isDataComplete() && ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()))) {
+          this.csUid = d.getUid();
+          this.mainDevice = d;
+          if (debug) {
+            Logger.trace("Main Device: " + d);
+          }
+          if (System.getProperty("cs.article") == null) {
+            System.setProperty("cs.article", this.mainDevice.getArticleNumber());
+            System.setProperty("cs.serial", this.mainDevice.getSerialNumber());
+            System.setProperty("cs.name", this.mainDevice.getDeviceName());
+            System.setProperty("cs.cs3", (this.mainDevice.isCS3() ? "true" : "false"));
+          }
+        } else {
+          if (debug) {
+            Logger.trace(d);
+          }
+        }
       }
     }
   }
@@ -375,16 +416,17 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
       if (!device.isDataComplete()) {
         CanMessage msg = sendMessage(CanMessageFactory.statusDataConfig(device.getUid(), 0));
         device.updateFromMessage(msg);
-        Logger.trace("Updated: " + device);
-
+        if (debug) {
+          Logger.trace("Updated: " + device);
+        }
         //Can the main device be set from the avaliable data
         for (Device d : this.devices.values()) {
           if (d.isDataComplete() && ("60214".equals(d.getArticleNumber()) || "60226".equals(d.getArticleNumber()) || "60126".equals(d.getArticleNumber()))) {
             this.csUid = d.getUid();
             this.mainDevice = d;
-            Logger.trace("Main Device: " + d);
-            //TODO Callback to UI whet the Main Device is set at a later state 
-
+            if (debug) {
+              Logger.trace("Main Device: " + d);
+            }
           }
         }
       }
@@ -399,8 +441,9 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
             System.setProperty("cs.serial", this.mainDevice.getSerialNumber());
             System.setProperty("cs.name", this.mainDevice.getDeviceName());
             System.setProperty("cs.cs3", (this.mainDevice.isCS3() ? "true" : "false"));
-
-            Logger.trace("CS " + (mainDevice.isCS3() ? "3" : "2") + " Device: " + device);
+            if (debug) {
+              Logger.trace("CS " + (mainDevice.isCS3() ? "3" : "2") + " Device: " + device);
+            }
           }
         }
       }
@@ -410,7 +453,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   void getStatusDataConfig() {
     if (this.connected) {
       CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 0));
-      StatusDataConfigParser sdcp = new StatusDataConfigParser(message);
+      StatusDataConfig sdcp = new StatusDataConfig(message);
 
       Logger.debug(sdcp);
 
@@ -845,11 +888,10 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
       //int uid = message.getDeviceUidNumberFromMessage();
       switch (cmd) {
         case CanMessage.PING_REQ -> {
-          //Lets do the when we know all of the CS
+          //Lets do this the when we know all of the CS...
           if (controller.mainDevice != null) {
             if (CanMessage.DLC_0 == dlc) {
-              //broadcast  
-              //controller.sendJCSUID();
+              controller.sendJCSUID();
             }
           }
         }
@@ -861,7 +903,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     ) {
       int cmd = message.getCommand();
       int dlc = message.getDlc();
-      //int uid = message.getDeviceUidNumberFromMessage();
       switch (cmd) {
         case CanMessage.PING_RESP -> {
           if (CanMessage.DLC_8 == dlc) {
@@ -879,7 +920,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
       switch (cmd) {
         case CanMessage.STATUS_CONFIG -> {
           if (CanMessage.JCS_UID == uid && CanMessage.DLC_5 == dlc) {
-//            controller.sendJCSInformation();
+            controller.sendJCSInformation();
           }
         }
       }
@@ -1018,7 +1059,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 //Now get the systemstatus for all devices
 //First the status data config must be called to get the channels
       //cs3.getSystemStatus()
-      //            SystemStatusParser ss = cs.getSystemStatus();
+      //            SystemStatus ss = cs.getSystemStatus();
       //            Logger.debug("1: "+ss);
       //
       //
@@ -1070,7 +1111,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 //    for (AccessoryBean accessory : accessories) {
 //      Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
 //    }
-//    List<LocomotiveBean> locs = cs.getLocomotives();
+//    List<LocomotiveBean> locs = cs.getLocomotivesViaCAN();
 //    for (LocomotiveBean loc : locs) {
 //      Logger.trace(loc);
 //    }

@@ -24,7 +24,7 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class StatusDataConfigParser implements Serializable {
+public class StatusDataConfig implements Serializable {
 
   private String serialNumber;
   private String articleNumber;
@@ -36,7 +36,7 @@ public class StatusDataConfigParser implements Serializable {
   private int index;
   private int packetCount;
 
-  public StatusDataConfigParser(CanMessage message) {
+  public StatusDataConfig(CanMessage message) {
     parseMessageIndex(message);
   }
 
