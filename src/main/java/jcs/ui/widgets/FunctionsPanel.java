@@ -25,8 +25,6 @@ import javax.swing.JFrame;
 import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import jcs.controller.events.LocomotiveFunctionEvent;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
@@ -110,7 +108,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       FunctionBean fb = event.getFunctionBean();
       this.buttons.get(fb.getNumber()).setSelected(fb.isOn());
     } else {
-      Logger.trace("Function button for LocomotiveId "+event.getFunctionBean().getLocomotiveId()+" and number " + event.getFunctionBean().getNumber() + " not found");
+      Logger.trace("Function button for LocomotiveId " + event.getFunctionBean().getLocomotiveId() + " and number " + event.getFunctionBean().getNumber() + " not found");
     }
   }
 
@@ -182,8 +180,9 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " new Value: " + newValue + " Momentary: " + fb.isMomentary());
 
-      ControllerFactory.getController().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
-
+      if (ControllerFactory.getController() != null) {
+        ControllerFactory.getController().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
+      }
       if (fb.isMomentary() && newValue) {
         JToggleButton tb = this.buttons.get(fb.getNumber());
         tb.doClick();
