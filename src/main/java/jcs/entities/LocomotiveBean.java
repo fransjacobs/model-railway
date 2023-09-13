@@ -384,8 +384,7 @@ public class LocomotiveBean implements Serializable {
 
   @Override
   public String toString() {
-    //return this.name;
-    return toLogString();
+    return this.name;
   }
 
   public String toLogString() {
@@ -465,9 +464,6 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.name, other.name)) {
       return false;
     }
-//        if (!Objects.equals(this.previousName, other.previousName)) {
-//            return false;
-//        }
     if (!Objects.equals(this.icon, other.icon)) {
       return false;
     }
@@ -477,15 +473,9 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.mfxSid, other.mfxSid)) {
       return false;
     }
-//        if (!Objects.equals(this.spm, other.spm)) {
-//            return false;
-//        }
     if (!Objects.equals(this.mfxType, other.mfxType)) {
       return false;
     }
-//        if (!Objects.equals(this.block, other.block)) {
-//            return false;
-//        }
     if (!Objects.equals(this.id, other.id)) {
       return false;
     }
@@ -504,15 +494,6 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.vMin, other.vMin)) {
       return false;
     }
-//        if (!Objects.equals(this.accelerationDelay, other.accelerationDelay)) {
-//            return false;
-//        }
-//        if (!Objects.equals(this.brakeDelay, other.brakeDelay)) {
-//            return false;
-//        }
-//        if (!Objects.equals(this.volume, other.volume)) {
-//            return false;
-//        }
     if (!Objects.equals(this.velocity, other.velocity)) {
       return false;
     }

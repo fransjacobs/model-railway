@@ -38,19 +38,19 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunctionEventListener {
-
+  
   private final Map<Integer, JToggleButton> buttons;
   private LocomotiveBean locomotive;
   private final ExecutorService executor;
-
+  
   public FunctionsPanel() {
     buttons = new HashMap<>();
     executor = Executors.newCachedThreadPool();
-
+    
     initComponents();
     mapButtons();
   }
-
+  
   private void mapButtons() {
     buttons.put(0, f0TB);
     buttons.put(1, f1TB);
@@ -68,7 +68,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     buttons.put(13, f13TB);
     buttons.put(14, f14TB);
     buttons.put(15, f15TB);
-
+    
     buttons.put(16, f16TB);
     buttons.put(17, f17TB);
     buttons.put(18, f18TB);
@@ -85,13 +85,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     buttons.put(29, f29TB);
     buttons.put(30, f30TB);
     buttons.put(31, f31TB);
-
+    
     setEnabled(false);
     if (ControllerFactory.getController() != null) {
       ControllerFactory.getController().addLocomotiveFunctionEventListener(this);
     }
   }
-
+  
   @Override
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
@@ -101,7 +101,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     }
     this.buttonsTP.setEnabled(enabled);
   }
-
+  
   @Override
   public void onFunctionChange(LocomotiveFunctionEvent event) {
     if (this.locomotive != null && this.locomotive.getId().equals(event.getFunctionBean().getLocomotiveId())) {
@@ -111,44 +111,49 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       Logger.trace("Function button for LocomotiveId " + event.getFunctionBean().getLocomotiveId() + " and number " + event.getFunctionBean().getNumber() + " not found");
     }
   }
-
+  
   private void resetButtons() {
     for (JToggleButton btn : this.buttons.values()) {
       btn.setIcon(null);
       btn.setSelectedIcon(null);
       btn.setText("");
       btn.setEnabled(false);
+      
+      btn.setForeground(new java.awt.Color(204, 204, 204));
+      btn.setBackground(new java.awt.Color(204, 204, 204));
+      
+      btn.setSelected(false);
     }
   }
-
+  
   public void setLocomotive(LocomotiveBean locomotive) {
+    resetButtons();
     if (PersistenceFactory.getService() != null && locomotive != null) {
       this.locomotive = locomotive;
-      resetButtons();
       Map<Integer, FunctionBean> functions = locomotive.getFunctions();
-
+      
       Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
-
+      
       for (FunctionBean fb : functions.values()) {
         Integer fnr = fb.getNumber();
         JToggleButton btn = this.buttons.get(fnr);
-
+        
         Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
-
+        
         if (fb.getInActiveIconImage() != null) {
           btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
         } else {
           btn.setText("F" + fb.getNumber());
           Logger.trace("Missing Icon: " + fb.getInActiveIcon());
         }
-
+        
         if (fb.getActiveIconImage() != null) {
           btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
         } else {
           btn.setText("F" + fb.getNumber());
           Logger.trace("Missing Icon: " + fb.getActiveIcon());
         }
-
+        
         boolean val = fb.getValue() == 1;
         btn.setSelected(val);
         btn.setActionCommand("F" + fb.getNumber());
@@ -157,29 +162,29 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       this.buttonsTP.setEnabled(true);
     }
   }
-
+  
   public LocomotiveBean getLocomotive() {
     return locomotive;
   }
-
+  
   private void buttonActionPerformed(ActionEvent evt) {
     JToggleButton src = (JToggleButton) evt.getSource();
     boolean value = src.isSelected();
     Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
     Integer functionNumber = Integer.decode(evt.getActionCommand().replace("F", ""));
-
+    
     FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
     Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
-
+    
     executor.execute(() -> changeFunction(value, functionNumber, locomotive));
-
+    
   }
-
+  
   private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
     if (ControllerFactory.getController() != null && this.locomotive != null) {
       FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " new Value: " + newValue + " Momentary: " + fb.isMomentary());
-
+      
       if (ControllerFactory.getController() != null) {
         ControllerFactory.getController().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
       }
@@ -396,6 +401,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f10TB.setBackground(new java.awt.Color(204, 204, 204));
     f10TB.setText("F10");
     f10TB.setDoubleBuffered(true);
+    f10TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f10TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f10TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f10TB.setName("f10TB"); // NOI18N
@@ -410,6 +416,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f11TB.setBackground(new java.awt.Color(204, 204, 204));
     f11TB.setText("F11");
     f11TB.setDoubleBuffered(true);
+    f11TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f11TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f11TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f11TB.setName("f11TB"); // NOI18N
@@ -424,6 +431,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f12TB.setBackground(new java.awt.Color(204, 204, 204));
     f12TB.setText("F12");
     f12TB.setDoubleBuffered(true);
+    f12TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f12TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f12TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f12TB.setName("f12TB"); // NOI18N
@@ -438,6 +446,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f13TB.setBackground(new java.awt.Color(204, 204, 204));
     f13TB.setText("F13");
     f13TB.setDoubleBuffered(true);
+    f13TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f13TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f13TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f13TB.setName("f13TB"); // NOI18N
@@ -452,6 +461,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f14TB.setBackground(new java.awt.Color(204, 204, 204));
     f14TB.setText("F14");
     f14TB.setDoubleBuffered(true);
+    f14TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f14TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f14TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f14TB.setName("f14TB"); // NOI18N
@@ -466,6 +476,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f15TB.setBackground(new java.awt.Color(204, 204, 204));
     f15TB.setText("F15");
     f15TB.setDoubleBuffered(true);
+    f15TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f15TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f15TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f15TB.setName("f15TB"); // NOI18N
@@ -485,6 +496,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f16TB.setBackground(new java.awt.Color(204, 204, 204));
     f16TB.setText("F16");
     f16TB.setDoubleBuffered(true);
+    f16TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f16TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f16TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f16TB.setName("f16TB"); // NOI18N
@@ -498,6 +510,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f17TB.setBackground(new java.awt.Color(204, 204, 204));
     f17TB.setText("F17");
     f17TB.setDoubleBuffered(true);
+    f17TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f17TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f17TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f17TB.setName("f17TB"); // NOI18N
@@ -511,6 +524,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f18TB.setBackground(new java.awt.Color(204, 204, 204));
     f18TB.setText("F18");
     f18TB.setDoubleBuffered(true);
+    f18TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f18TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f18TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f18TB.setName("f18TB"); // NOI18N
@@ -524,6 +538,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f19TB.setBackground(new java.awt.Color(204, 204, 204));
     f19TB.setText("F19");
     f19TB.setDoubleBuffered(true);
+    f19TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f19TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f19TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f19TB.setName("f19TB"); // NOI18N
@@ -537,6 +552,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f20TB.setBackground(new java.awt.Color(204, 204, 204));
     f20TB.setText("F20");
     f20TB.setDoubleBuffered(true);
+    f20TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f20TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f20TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f20TB.setName("f20TB"); // NOI18N
@@ -550,6 +566,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f21TB.setBackground(new java.awt.Color(204, 204, 204));
     f21TB.setText("F21");
     f21TB.setDoubleBuffered(true);
+    f21TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f21TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f21TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f21TB.setName("f21TB"); // NOI18N
@@ -563,6 +580,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f22TB.setBackground(new java.awt.Color(204, 204, 204));
     f22TB.setText("F22");
     f22TB.setDoubleBuffered(true);
+    f22TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f22TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f22TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f22TB.setName("f22TB"); // NOI18N
@@ -576,6 +594,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f23TB.setBackground(new java.awt.Color(204, 204, 204));
     f23TB.setText("F23");
     f23TB.setDoubleBuffered(true);
+    f23TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f23TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f23TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f23TB.setName("f23TB"); // NOI18N
@@ -589,6 +608,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f24TB.setBackground(new java.awt.Color(204, 204, 204));
     f24TB.setText("F24");
     f24TB.setDoubleBuffered(true);
+    f24TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f24TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f24TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f24TB.setName("f24TB"); // NOI18N
@@ -602,6 +622,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f25TB.setBackground(new java.awt.Color(204, 204, 204));
     f25TB.setText("F25");
     f25TB.setDoubleBuffered(true);
+    f25TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f25TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f25TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f25TB.setName("f25TB"); // NOI18N
@@ -615,6 +636,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f26TB.setBackground(new java.awt.Color(204, 204, 204));
     f26TB.setText("F26");
     f26TB.setDoubleBuffered(true);
+    f26TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f26TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f26TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f26TB.setName("f26TB"); // NOI18N
@@ -628,6 +650,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f27TB.setBackground(new java.awt.Color(204, 204, 204));
     f27TB.setText("F27");
     f27TB.setDoubleBuffered(true);
+    f27TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f27TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f27TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f27TB.setName("f27TB"); // NOI18N
@@ -641,6 +664,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f28TB.setBackground(new java.awt.Color(204, 204, 204));
     f28TB.setText("F28");
     f28TB.setDoubleBuffered(true);
+    f28TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f28TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f28TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f28TB.setName("f28TB"); // NOI18N
@@ -654,6 +678,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f29TB.setBackground(new java.awt.Color(204, 204, 204));
     f29TB.setText("F29");
     f29TB.setDoubleBuffered(true);
+    f29TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f29TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f29TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f29TB.setName("f29TB"); // NOI18N
@@ -667,6 +692,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f30TB.setBackground(new java.awt.Color(204, 204, 204));
     f30TB.setText("F30");
     f30TB.setDoubleBuffered(true);
+    f30TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f30TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f30TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f30TB.setName("f30TB"); // NOI18N
@@ -680,6 +706,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f31TB.setBackground(new java.awt.Color(204, 204, 204));
     f31TB.setText("F31");
     f31TB.setDoubleBuffered(true);
+    f31TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f31TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f31TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f31TB.setName("f31TB"); // NOI18N
@@ -822,7 +849,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   private void f31TBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_f31TBActionPerformed
     buttonActionPerformed(evt);
   }//GEN-LAST:event_f31TBActionPerformed
-
+  
   public static void main(String args[]) {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
@@ -830,12 +857,12 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       Logger.error("Can't set the LookAndFeel: " + ex);
     }
     java.awt.EventQueue.invokeLater(() -> {
-
+      
       FunctionsPanel testPanel = new FunctionsPanel();
       JFrame testFrame = new JFrame("FunctionsPanel Tester");
-
+      
       testFrame.add(testPanel);
-
+      
       testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
@@ -844,18 +871,18 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       });
       testFrame.pack();
       testFrame.setLocationRelativeTo(null);
-
+      
       if (ControllerFactory.getController() != null) {
 
         //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
         //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
         LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16394L);
         Logger.debug(loc);
-
+        
         testPanel.setLocomotive(loc);
-
+        
       }
-
+      
       testFrame.setVisible(true);
     });
   }
