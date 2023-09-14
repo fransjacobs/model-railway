@@ -198,13 +198,6 @@ public class ControllerImpl implements Controller {
   }
 
   @Override
-  public void addPowerEventListener(PowerEventListener listener) {
-    if (this.vendorController != null) {
-      this.vendorController.addPowerEventListener(listener);
-    }
-  }
-
-  @Override
   public void switchPower(boolean on) {
     Logger.trace("Switch Power " + (on ? "On" : "Off"));
     if (this.vendorController != null) {
@@ -340,14 +333,14 @@ public class ControllerImpl implements Controller {
     Integer address = locomotive.getAddress();
     DecoderType decoderType = locomotive.getDecoderType();
 
-    vendorController.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), 0);
-    vendorController.changeDirection(address, decoderType, newDirection);
+    vendorController.changeVelocity(locomotive.getUid().intValue(), 0);
+    vendorController.changeDirection(locomotive.getUid().intValue(), newDirection);
   }
 
   @Override
   public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
-    vendorController.changeVelocity(locomotive.getAddress(), DecoderType.get(locomotive.getDecoderTypeString()), newVelocity);
+    vendorController.changeVelocity(locomotive.getUid().intValue(), newVelocity);
   }
 
   @Override
@@ -419,6 +412,20 @@ public class ControllerImpl implements Controller {
   @Override
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.remove(listener);
+  }
+
+  @Override
+  public void addPowerEventListener(PowerEventListener listener) {
+    if (this.vendorController != null) {
+      this.vendorController.addPowerEventListener(listener);
+    }
+  }
+
+  @Override
+  public void removePowerEventListener(PowerEventListener listener) {
+    if (this.vendorController != null) {
+      this.vendorController.removePowerEventListener(listener);
+    }
   }
 
   private class SensorChangeEventListener implements SensorEventListener {
@@ -571,7 +578,6 @@ public class ControllerImpl implements Controller {
           PersistenceFactory.getService().persist(dblb);
 
           speedEvent.setLocomotiveBean(dblb);
-
           for (LocomotiveSpeedEventListener dl : this.trackService.locomotiveSpeedEventListeners) {
             dl.onSpeedChange(speedEvent);
           }

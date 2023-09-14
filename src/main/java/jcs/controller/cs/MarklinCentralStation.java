@@ -42,14 +42,15 @@ public interface MarklinCentralStation {
 
   boolean power(boolean on);
 
-  void changeDirection(int address, DecoderType protocol, Direction direction);
+  void changeDirection(int locUid, Direction direction);
 
-  void changeVelocity(int address, DecoderType protocol, int speed);
-
-  //void changeFunctionValue(int address, DecoderType protocol, int functionNumber, boolean flag);
+  void changeVelocity(int locUid, int speed);
 
   void changeFunctionValue(int locUid, int functionNumber, boolean flag);
-  
+
+  //void changeDirection(int address, DecoderType protocol, Direction direction);
+  //void changeVelocity(int address, DecoderType protocol, int speed);
+  //void changeFunctionValue(int address, DecoderType protocol, int functionNumber, boolean flag);
   void switchAccessory(int address, AccessoryValue value);
 
   void addPowerEventListener(PowerEventListener listener);

@@ -37,8 +37,6 @@ import org.tinylog.Logger;
  */
 public class DriverCapFrame extends javax.swing.JFrame {
 
-  private final ExecutorService executor;
-
   private List<LocomotiveBean> filteredLocos;
   List<String> locoNames;
 
@@ -53,7 +51,6 @@ public class DriverCapFrame extends javax.swing.JFrame {
       this.setIconImage(new ImageIcon(iconUrl).getImage());
     }
 
-    executor = Executors.newCachedThreadPool();
     postInit();
   }
 
@@ -95,8 +92,9 @@ public class DriverCapFrame extends javax.swing.JFrame {
 
     driverCabPanel1 = new jcs.ui.DriverCabPanel();
     northPanel = new javax.swing.JPanel();
+    filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(30, 0), new java.awt.Dimension(35, 0), new java.awt.Dimension(20, 32767));
     locoLabel = new javax.swing.JLabel();
-    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(50, 0), new java.awt.Dimension(90, 0), new java.awt.Dimension(50, 32767));
+    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(50, 0), new java.awt.Dimension(35, 0), new java.awt.Dimension(50, 32767));
     locoCB = new javax.swing.JComboBox<>();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -107,9 +105,9 @@ public class DriverCapFrame extends javax.swing.JFrame {
     java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 20, 0);
     flowLayout1.setAlignOnBaseline(true);
     northPanel.setLayout(flowLayout1);
+    northPanel.add(filler2);
 
     locoLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-    locoLabel.setText("loc icon");
     locoLabel.setPreferredSize(new java.awt.Dimension(120, 60));
     northPanel.add(locoLabel);
     northPanel.add(filler1);
@@ -131,11 +129,21 @@ public class DriverCapFrame extends javax.swing.JFrame {
     Logger.trace(evt.getActionCommand() + " -> " + this.locomotiveComboBoxModel.getSelectedItem());
 
     if (((LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem()).getName() != null) {
-      this.setTitle(this.locomotiveComboBoxModel.getSelectedItem().toString());
-      this.driverCabPanel1.setLocomotiveBean((LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem());
+      LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
+      this.setTitle(locomotive.getName());
+
+      if (locomotive.getLocIcon() != null) {
+        this.locoLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
+        this.locoLabel.setText(null);
+      } else {
+        this.locoLabel.setText(locomotive.getName());
+      }
+      this.driverCabPanel1.setLocomotiveBean(locomotive);
     } else {
       this.driverCabPanel1.setLocomotiveBean(null);
       this.setTitle("Locomotive not Selected");
+      this.locoLabel.setIcon(null);
+      this.locoLabel.setText(null);
     }
 
   }//GEN-LAST:event_locoCBActionPerformed
@@ -156,7 +164,7 @@ public class DriverCapFrame extends javax.swing.JFrame {
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(() -> {
       DriverCapFrame driverFrame = new DriverCapFrame();
-      
+
       driverFrame.pack();
       driverFrame.setLocationRelativeTo(null);
       driverFrame.setVisible(true);
@@ -166,6 +174,7 @@ public class DriverCapFrame extends javax.swing.JFrame {
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private jcs.ui.DriverCabPanel driverCabPanel1;
   private javax.swing.Box.Filler filler1;
+  private javax.swing.Box.Filler filler2;
   private javax.swing.JComboBox<LocomotiveBean> locoCB;
   private javax.swing.JLabel locoLabel;
   private javax.swing.JPanel northPanel;

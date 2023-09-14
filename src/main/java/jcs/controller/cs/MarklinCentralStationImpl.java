@@ -527,43 +527,58 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     return locoAddress;
   }
 
+//  @Override
+//  public void changeDirection(int address, DecoderType decoderType, Direction direction) {
+//    if (this.power) {
+//      int la = getLocoAddres(address, decoderType);
+//      Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType + " Dir Mar: " + direction.getMarklinValue());
+//      CanMessage message = sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.csUid));
+//      LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(message);
+//      this.notifyLocomotiveDirectionEventListeners(dme);
+//    }
+//  }
+
   @Override
-  public void changeDirection(int address, DecoderType decoderType, Direction direction) {
+  public void changeDirection(int locUid, Direction direction) {
     if (this.power) {
-      int la = getLocoAddres(address, decoderType);
-      Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType + " Dir Mar: " + direction.getMarklinValue());
-      CanMessage message = sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.csUid));
+      CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
       LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(message);
       this.notifyLocomotiveDirectionEventListeners(dme);
     }
   }
 
+//  @Override
+//  public void changeVelocity(int address, DecoderType decoderType, int speed) {
+//    if (this.power) {
+//      int la = getLocoAddres(address, decoderType);
+//      CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.csUid));
+//      LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(message);
+//      this.notifyLocomotiveSpeedEventListeners(vme);
+//    }
+//  }
   @Override
-  public void changeVelocity(int address, DecoderType decoderType, int speed) {
+  public void changeVelocity(int locUid, int speed) {
     if (this.power) {
-      int la = getLocoAddres(address, decoderType);
-      CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.csUid));
+      CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(locUid, speed, this.csUid));
       LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(message);
       this.notifyLocomotiveSpeedEventListeners(vme);
     }
   }
 
-  //@Override
-  public void changeFunctionValue(int address, DecoderType decoderType, int functionNumber, boolean flag) {
-    if (this.power) {
-      int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
-      int la = getLocoAddres(address, decoderType);
-
-      CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.csUid));
-      this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
-    }
-  }
-
-  //@Override
+//  //@Override
+//  public void changeFunctionValue(int address, DecoderType decoderType, int functionNumber, boolean flag) {
+//    if (this.power) {
+//      int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
+//      int la = getLocoAddres(address, decoderType);
+//
+//      CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.csUid));
+//      this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
+//    }
+//  }
+  @Override
   public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
     if (this.power) {
-      int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
-
+      //int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
       CanMessage message = sendMessage(CanMessageFactory.setFunction(locUid, functionNumber, flag, this.csUid));
       this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
     }

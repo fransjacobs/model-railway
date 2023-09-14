@@ -20,7 +20,6 @@ import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
 import jcs.controller.events.LocomotiveSpeedEventListener;
-//import jcs.controller.cs3.events.CanMessageListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
@@ -47,6 +46,8 @@ public interface Controller {
   void disconnect();
 
   void addPowerEventListener(PowerEventListener listener);
+
+  void removePowerEventListener(PowerEventListener listener);
 
   void changeLocomotiveDirection(Direction direction, LocomotiveBean locomotive);
 
@@ -88,9 +89,6 @@ public interface Controller {
 
   void synchronizeSignalsWithController();
 
-    //Image getFunctionImage(String imageName);
-
-  
-  
+  //Image getFunctionImage(String imageName);
   //void updateGuiStatuses();
 }

@@ -200,10 +200,10 @@ public class H2PersistenceService implements PersistenceService {
     try {
       if (database.where("id=?", functionBean.getId()).first(FunctionBean.class) != null) {
         int rows = database.update(functionBean).getRowsAffected();
-        Logger.trace(rows + " rows updated; " + functionBean);
+        //Logger.trace(rows + " rows updated; " + functionBean);
       } else {
         int rows = database.insert(functionBean).getRowsAffected();
-        Logger.trace(rows + " rows inserted; " + functionBean);
+        //Logger.trace(rows + " rows inserted; " + functionBean);
       }
     } catch (DbException dbe) {
       Logger.error("Error: " + dbe.getMessage());
@@ -225,10 +225,10 @@ public class H2PersistenceService implements PersistenceService {
   public LocomotiveBean persist(LocomotiveBean locomotive) {
     if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
       int rows = database.update(locomotive).getRowsAffected();
-      Logger.trace(rows + " rows updated; " + locomotive);
+      //Logger.trace(rows + " rows updated; " + locomotive);
     } else {
       int rows = database.insert(locomotive).getRowsAffected();
-      Logger.trace(rows + " rows inserted; " + locomotive);
+      //Logger.trace(rows + " rows inserted; " + locomotive);
     }
     List<FunctionBean> functions = new LinkedList<>();
     functions.addAll(locomotive.getFunctions().values());
@@ -280,11 +280,10 @@ public class H2PersistenceService implements PersistenceService {
     Image image = null;
 
     String serial = System.getProperty("cs.serial", "");
-
-    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial;
+    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
 
     if (function) {
-      path = path + File.separator + "functions" + File.separator;
+      path = path + "functions" + File.separator;
     }
 
     File imgFile = new File(path + imageName.toLowerCase() + ".png");

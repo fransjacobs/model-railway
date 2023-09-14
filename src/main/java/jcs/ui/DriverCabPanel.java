@@ -24,6 +24,8 @@ import jcs.controller.events.LocomotiveDirectionEvent;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveSpeedEvent;
 import jcs.controller.events.LocomotiveSpeedEventListener;
+import jcs.controller.events.PowerEvent;
+import jcs.controller.events.PowerEventListener;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.Direction;
 import org.tinylog.Logger;
@@ -32,29 +34,36 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDirectionEventListener, LocomotiveSpeedEventListener {
-  
+public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDirectionEventListener, LocomotiveSpeedEventListener, PowerEventListener {
+
   private LocomotiveBean locomotiveBean;
-  
+
   private final ExecutorService executor;
-  
+
+  private boolean power;
+
   public DriverCabPanel() {
     executor = Executors.newCachedThreadPool();
     initComponents();
+    postInit();
   }
-  
+
   private void postInit() {
     if (ControllerFactory.getController() != null) {
+      this.power = ControllerFactory.getController().isPowerOn();
+
       ControllerFactory.getController().addLocomotiveSpeedEventListener(this);
       ControllerFactory.getController().addLocomotiveDirectionEventListener(this);
+      ControllerFactory.getController().addPowerEventListener(this);
     }
   }
-  
+
   @Override
   public void setVisible(boolean aFlag) {
     if (!aFlag && ControllerFactory.getController() != null) {
       ControllerFactory.getController().removeLocomotiveSpeedEventListener(this);
       ControllerFactory.getController().removeLocomotiveDirectionEventListener(this);
+      ControllerFactory.getController().removePowerEventListener(this);
       ControllerFactory.getController().removeLocomotiveFunctionEventListener(this.functionsPanel);
     }
     super.setVisible(aFlag);
@@ -105,13 +114,14 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     speedGauge.setDoubleBuffered(true);
     speedGauge.setFrameVisible(false);
     speedGauge.setLcdVisible(false);
-    speedGauge.setLedVisible(false);
     speedGauge.setMinimumSize(new java.awt.Dimension(190, 190));
     speedGauge.setOrientation(eu.hansolo.steelseries.tools.Orientation.CENTER);
     speedGauge.setPreferredSize(new java.awt.Dimension(190, 190));
     speedGauge.setTitle("");
     speedGauge.setTitleAndUnitFontEnabled(true);
     speedGauge.setUnitString("km/h");
+    speedGauge.setUserLedColor(eu.hansolo.steelseries.tools.LedColor.GREEN_LED);
+    speedGauge.setUserLedVisible(true);
     gaugePanel.add(speedGauge);
 
     centerPanel.add(gaugePanel);
@@ -188,9 +198,11 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     southPanel.add(filler1);
 
     forwardReverseBG.add(reverseButton);
-    reverseButton.setText("<");
+    reverseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-24.png"))); // NOI18N
+    reverseButton.setActionCommand("Backwards");
     reverseButton.setMinimumSize(new java.awt.Dimension(30, 30));
     reverseButton.setPreferredSize(new java.awt.Dimension(30, 30));
+    reverseButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/left-Y-24.png"))); // NOI18N
     reverseButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         reverseButtonActionPerformed(evt);
@@ -199,9 +211,12 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     southPanel.add(reverseButton);
 
     forwardReverseBG.add(forwardButton);
-    forwardButton.setText(">");
+    forwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-24.png"))); // NOI18N
+    forwardButton.setSelected(true);
+    forwardButton.setActionCommand("Forwards");
     forwardButton.setMinimumSize(new java.awt.Dimension(30, 30));
     forwardButton.setPreferredSize(new java.awt.Dimension(30, 30));
+    forwardButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-Y-24.png"))); // NOI18N
     forwardButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         forwardButtonActionPerformed(evt);
@@ -224,37 +239,53 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }// </editor-fold>//GEN-END:initComponents
 
   private void reverseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseButtonActionPerformed
-    // TODO add your handling code here:
+    changeDirection(Direction.get(evt.getActionCommand()));
   }//GEN-LAST:event_reverseButtonActionPerformed
 
   private void forwardButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardButtonActionPerformed
-    // TODO add your handling code here:
+    changeDirection(Direction.get(evt.getActionCommand()));
   }//GEN-LAST:event_forwardButtonActionPerformed
 
   private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
-    // TODO add your handling code here:
+    this.speedSlider.setValue(0);
   }//GEN-LAST:event_stopButtonActionPerformed
 
   private void speed4ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed4ButtonActionPerformed
-    // TODO add your handling code here:
+    if (this.locomotiveBean != null) {
+      int tachoMax = locomotiveBean.getTachoMax();
+      tachoMax = (tachoMax / 5) * 4; // 80 %
+      this.speedSlider.setValue(tachoMax);
+    }
   }//GEN-LAST:event_speed4ButtonActionPerformed
 
   private void speed3ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed3ButtonActionPerformed
-    // TODO add your handling code here:
+    if (this.locomotiveBean != null) {
+      int tachoMax = locomotiveBean.getTachoMax();
+      tachoMax = (tachoMax / 5) * 3; // 60 %
+      this.speedSlider.setValue(tachoMax);
+    }
   }//GEN-LAST:event_speed3ButtonActionPerformed
 
   private void speed2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed2ButtonActionPerformed
-    // TODO add your handling code here:
+    if (this.locomotiveBean != null) {
+      int tachoMax = locomotiveBean.getTachoMax();
+      tachoMax = (tachoMax / 5) * 2; // 40 %
+      this.speedSlider.setValue(tachoMax);
+    }
   }//GEN-LAST:event_speed2ButtonActionPerformed
 
   private void speed1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed1ButtonActionPerformed
-    // TODO add your handling code here:
+    if (this.locomotiveBean != null) {
+      int tachoMax = locomotiveBean.getTachoMax();
+      tachoMax = tachoMax / 5; // 20 %
+      this.speedSlider.setValue(tachoMax);
+    }
   }//GEN-LAST:event_speed1ButtonActionPerformed
 
   private void speedSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_speedSliderStateChanged
     JSlider slider = (JSlider) evt.getSource();
     if (!slider.getValueIsAdjusting()) {
-      
+
       if (this.locomotiveBean != null) {
         int max = locomotiveBean.getTachoMax();
         double value = slider.getValue();
@@ -265,60 +296,85 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       }
     }
   }//GEN-LAST:event_speedSliderStateChanged
-  
+
   private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
-    if (ControllerFactory.getController() != null) {
+    if (ControllerFactory.getController() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+
+      Logger.trace("Changing speeed of " + locomotiveBean + " to: " + newVelocity);
       ControllerFactory.getController().changeLocomotiveSpeed(newVelocity, locomotiveBean);
-      
+
       double max = this.speedGauge.getMaxValue();
       double gaugeValue = Math.round(max / 1000 * newVelocity);
       this.speedGauge.setValue(gaugeValue);
     }
   }
-  
+
+  private void changeDirection(Direction direction) {
+    executor.execute(() -> changeDirection(direction, this.locomotiveBean));
+  }
+
+  private void changeDirection(Direction newDirection, LocomotiveBean locomotiveBean) {
+    if (ControllerFactory.getController() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+      Logger.trace("Changing direction of " + locomotiveBean + " to: " + newDirection);
+      ControllerFactory.getController().changeLocomotiveDirection(newDirection, locomotiveBean);
+    }
+  }
+
   public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
     this.functionsPanel.setLocomotive(locomotiveBean);
-    
+
     if (locomotiveBean != null) {
       int velocity = locomotiveBean.getVelocity();
       double max = locomotiveBean.getTachoMax();
       int sliderValue = (int) Math.round(max / 1000 * velocity);
-      
-      Logger.trace("Change to " + locomotiveBean + " sliderValue: " + sliderValue);
+
+      Logger.trace("Changed speed of " + locomotiveBean + " sliderValue: " + sliderValue);
 
       //set the new slider properties without triggering a change event
       ChangeListener[] changeListeners = this.speedSlider.getChangeListeners();
       for (ChangeListener changeListener : changeListeners) {
         this.speedSlider.removeChangeListener(changeListener);
       }
-      
+
       this.speedSlider.setMaximum(locomotiveBean.getTachoMax());
       this.speedGauge.setMaxValue(locomotiveBean.getTachoMax());
       this.speedGauge.setValue(sliderValue);
-      
+
       this.speedSlider.setValue(sliderValue);
-      
+
       for (ChangeListener changeListener : changeListeners) {
         this.speedSlider.addChangeListener(changeListener);
       }
-      
+
       Direction d = locomotiveBean.getDirection();
       if (Direction.BACKWARDS.equals(d)) {
         this.reverseButton.setSelected(true);
       } else {
         this.forwardButton.setSelected(true);
       }
+
+      this.speedGauge.setUserLedOn(this.power);
+      this.speedGauge.setLedBlinking(!this.power);
+    } else {
+      this.speedGauge.setUserLedOn(false);
+      this.speedGauge.setLedBlinking(false);
     }
   }
+
+  public boolean isPower() {
+    return power;
+  }
   
+  
+
   @Override
   public void onDirectionChange(LocomotiveDirectionEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
-    
+
     if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
       locomotiveBean.setRichtung(lb.getRichtung());
-      
+
       if (Direction.BACKWARDS.equals(lb.getDirection())) {
         this.reverseButton.setSelected(true);
       } else {
@@ -326,16 +382,16 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       }
     }
   }
-  
+
   @Override
   public void onSpeedChange(LocomotiveSpeedEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
-    
+
     if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
       Logger.trace(lb.getName() + " Speed changed from " + this.locomotiveBean.getVelocity() + " to " + lb.getVelocity());
-      
+
       locomotiveBean.setVelocity(lb.getVelocity());
-      
+
       int velocity = locomotiveBean.getVelocity();
       double max = locomotiveBean.getTachoMax();
       int sliderValue = (int) Math.round(max / 1000 * velocity);
@@ -345,18 +401,33 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       for (ChangeListener changeListener : changeListeners) {
         this.speedSlider.removeChangeListener(changeListener);
       }
-      
+
       this.speedSlider.setValue(sliderValue);
-      
+
       for (ChangeListener changeListener : changeListeners) {
         this.speedSlider.addChangeListener(changeListener);
       }
-      
+
       max = this.speedGauge.getMaxValue();
       double gaugeValue = Math.round(max / 1000 * velocity);
       this.speedGauge.setValue(gaugeValue);
+
+      this.speedGauge.setUserLedOn(this.power);
+      this.speedGauge.setLedBlinking(!this.power);
     }
   }
+
+  @Override
+  public void onPowerChange(PowerEvent event) {
+    if (this.locomotiveBean != null) {
+      this.power = event.isPower();
+
+      this.speedGauge.setUserLedOn(this.power);
+      this.speedGauge.setLedBlinking(!this.power);
+      Logger.trace("Power is " + this.power);
+    }
+  }
+
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel centerPanel;
