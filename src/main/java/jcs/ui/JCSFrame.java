@@ -115,7 +115,7 @@ public class JCSFrame extends JFrame implements UICallback {
       }
 
       if (ControllerFactory.getController().isConnected()) {
-        this.locomotivesPanel.loadLocomotives();
+        //this.locomotivesPanel.loadLocomotives();
         setControllerProperties();
       }
 
@@ -249,7 +249,8 @@ public class JCSFrame extends JFrame implements UICallback {
     layoutPanel = new LayoutPanel();
     overviewPanel = new LayoutPanel(true);
     leftPanel = new JPanel();
-    locomotivesPanel = new LocomotivePanel();
+    jPanel6 = new JPanel();
+    launchDriverCabBtn = new JButton();
     bottomLeftPanel = new JPanel();
     filler7 = new Box.Filler(new Dimension(0, 10), new Dimension(0, 10), new Dimension(32767, 35));
     jPanel1 = new JPanel();
@@ -491,9 +492,18 @@ public class JCSFrame extends JFrame implements UICallback {
     leftPanel.setPreferredSize(new Dimension(225, 845));
     leftPanel.setLayout(new BorderLayout(1, 1));
 
-    locomotivesPanel.setName("locomotivesPanel"); // NOI18N
-    locomotivesPanel.setPreferredSize(new Dimension(220, 580));
-    leftPanel.add(locomotivesPanel, BorderLayout.PAGE_START);
+    jPanel6.setName("jPanel6"); // NOI18N
+
+    launchDriverCabBtn.setText("Launch Driver Cab");
+    launchDriverCabBtn.setName("launchDriverCabBtn"); // NOI18N
+    launchDriverCabBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        launchDriverCabBtnActionPerformed(evt);
+      }
+    });
+    jPanel6.add(launchDriverCabBtn);
+
+    leftPanel.add(jPanel6, BorderLayout.CENTER);
 
     bottomLeftPanel.setBorder(BorderFactory.createTitledBorder("Controller Properties"));
     bottomLeftPanel.setMinimumSize(new Dimension(220, 200));
@@ -790,6 +800,18 @@ public class JCSFrame extends JFrame implements UICallback {
       this.connectButton.setSelected(connect);
     }//GEN-LAST:event_connectMIActionPerformed
 
+  private void launchDriverCabBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_launchDriverCabBtnActionPerformed
+    DriverCabFrame frame = new DriverCabFrame();
+
+    frame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    
+    frame.pack();
+    frame.setLocationRelativeTo(null);
+    frame.setVisible(true);
+    frame.toFront();
+
+  }//GEN-LAST:event_launchDriverCabBtnActionPerformed
+
   private String getTitleString() {
     String jcsVersion = JCS.getVersionInfo().getVersion();
     if (ControllerFactory.getController() != null && ControllerFactory.getController().getControllerSerialNumber() != null) {
@@ -878,12 +900,13 @@ public class JCSFrame extends JFrame implements UICallback {
   private JPanel jPanel3;
   private JPanel jPanel4;
   private JPanel jPanel5;
+  private JPanel jPanel6;
   private JMenuBar jcsMenuBar;
   private JToolBar jcsToolBar;
+  private JButton launchDriverCabBtn;
   private LayoutPanel layoutPanel;
   private JPanel leftPanel;
   private JSplitPane locoDisplaySP;
-  private LocomotivePanel locomotivesPanel;
   private JPanel mainPanel;
   private JMenuItem optionsMI;
   private LayoutPanel overviewPanel;

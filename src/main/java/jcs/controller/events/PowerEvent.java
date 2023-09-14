@@ -24,33 +24,37 @@ import org.tinylog.Logger;
  */
 public class PowerEvent {
 
-    private boolean power;
+  private boolean power;
 
-    public PowerEvent(CanMessage message) {
-        parseMessage(message);
+  public PowerEvent(boolean power) {
+    this.power = power;
+  }
+
+  public PowerEvent(CanMessage message) {
+    parseMessage(message);
+  }
+
+  private void parseMessage(CanMessage message) {
+    CanMessage resp;
+    if (!message.isResponseMessage()) {
+      resp = message.getResponse();
+    } else {
+      resp = message;
     }
 
-    private void parseMessage(CanMessage message) {
-        CanMessage resp;
-        if (!message.isResponseMessage()) {
-            resp = message.getResponse();
-        } else {
-            resp = message;
-        }
+    int cmd = message.getCommand();
+    int subCmd = message.getSubCommand();
 
-        int cmd = message.getCommand();
-        int subCmd = message.getSubCommand();
+    if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND_RESP == cmd && (subCmd == 0 | subCmd == 1)) {
 
-        if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND_RESP == cmd && (subCmd == 0 | subCmd == 1)) {
-
-            this.power = subCmd == 1;
-        } else {
-            Logger.warn("Can't parse message, not a System Go or Stop Response! " + resp);
-        }
+      this.power = subCmd == 1;
+    } else {
+      Logger.warn("Can't parse message, not a System Go or Stop Response! " + resp);
     }
+  }
 
-    public boolean isPower() {
-        return power;
-    }
+  public boolean isPower() {
+    return power;
+  }
 
 }

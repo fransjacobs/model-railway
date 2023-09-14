@@ -295,10 +295,15 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     if (this.connected) {
       SystemStatus ss = new SystemStatus(sendMessage(CanMessageFactory.systemStopGo(on, csUid)));
       this.power = ss.isPower();
+
+      PowerEvent pe = new PowerEvent(this.power);
+      notifyPowerEventListeners(pe);
+
       return power;
     } else {
       return false;
     }
+
   }
 
   @Override
@@ -537,7 +542,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 //      this.notifyLocomotiveDirectionEventListeners(dme);
 //    }
 //  }
-
   @Override
   public void changeDirection(int locUid, Direction direction) {
     if (this.power) {
