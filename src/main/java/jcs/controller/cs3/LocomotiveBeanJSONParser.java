@@ -109,11 +109,31 @@ public class LocomotiveBeanJSONParser {
           fb.setMomentary(functionsArray.getJSONObject(j).optBoolean("isMoment"));
 
           fb.setIcon(functionsArray.getJSONObject(j).optString("icon"));
-          fb.setValue(functionsArray.getJSONObject(j).optInt("state"));
 
+          fb.setValue(functionsArray.getJSONObject(j).optInt("state"));
+          //   
           //TODO: Currently not yet supported, I also do not have a valid example...
           //"fs": 0,
           //"dauer": 0,
+          //
+
+          //Most mm loks have default functions 0, 3 and 4. So when ther is no icon set set a default one
+          if (fb.getFunctionType() != null && fb.getFunctionType() == 0 && fb.getNumber() == 0 && (fb.getIcon() == null || "".equals(fb.getIcon()))) {
+            String iconname = "fkticon_" + (fb.isOn() ? "a_" : "i_") + "001";
+            fb.setFunctionType(1);
+            fb.setIcon(iconname);
+          }
+          if (fb.getFunctionType() != null && fb.getFunctionType() == 0 && fb.getNumber() == 3 && (fb.getIcon() == null || "".equals(fb.getIcon()))) {
+            String iconname = "fkticon_" + (fb.isOn() ? "a_" : "i_") + "008";
+            fb.setFunctionType(8);
+            fb.setIcon(iconname);
+          }
+          if (fb.getFunctionType() != null && fb.getFunctionType() == 0 && fb.getNumber() == 4 && (fb.getIcon() == null || "".equals(fb.getIcon()))) {
+            String iconname = "fkticon_" + (fb.isOn() ? "a_" : "i_") + "018";
+            fb.setFunctionType(18);
+            fb.setIcon(iconname);
+          }
+
           if (fb.getFunctionType() != null && fb.getFunctionType() > 0) {
             lb.addFunction(fb);
           }

@@ -801,15 +801,15 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_connectMIActionPerformed
 
   private void launchDriverCabBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_launchDriverCabBtnActionPerformed
-    DriverCabFrame frame = new DriverCabFrame();
+    DriverCabFrame driverFrame = new DriverCabFrame();
 
-    frame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    
-    frame.pack();
-    frame.setLocationRelativeTo(null);
-    frame.setVisible(true);
-    frame.toFront();
+    driverFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+    driverFrame.pack();
+    driverFrame.setLocationRelativeTo(null);
+    driverFrame.setVisible(true);
+    driverFrame.setResizable(false);
+    driverFrame.toFront();
   }//GEN-LAST:event_launchDriverCabBtnActionPerformed
 
   private String getTitleString() {

@@ -177,6 +177,7 @@ public class DriverCabFrame extends javax.swing.JFrame {
       driverFrame.pack();
       driverFrame.setLocationRelativeTo(null);
       driverFrame.setVisible(true);
+      driverFrame.setResizable(false);
     });
   }
 
