@@ -15,17 +15,16 @@
  */
 package jcs.persistence;
 
-import java.awt.Image;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
+import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.DecoderType;
-import org.tinylog.Logger;
 
 /**
  * The Persistence Service takes care of all persistence functionality which is needed within the JCS Application
@@ -62,9 +61,13 @@ public interface PersistenceService {
 
   LocomotiveBean persist(LocomotiveBean locomotive);
 
-  void remove(LocomotiveBean locomotiveBean);
+  List<FunctionBean> getLocomotiveFunctions(Long locomotiveId);
 
-  Image getFunctionImage(String imageName);
+  FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number);
+
+  FunctionBean persist(FunctionBean functionBean);
+
+  void remove(LocomotiveBean locomotiveBean);
 
   //Accessories
   List<AccessoryBean> getTurnouts();

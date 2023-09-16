@@ -19,7 +19,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
+import jcs.controller.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.Orientation;
@@ -30,9 +31,8 @@ import static jcs.entities.enums.SignalValue.Hp1;
 import static jcs.entities.enums.SignalValue.Hp2;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.TileType;
-import jcs.trackservice.events.AccessoryListener;
 
-public class Signal extends Straight implements Tile, AccessoryListener {
+public class Signal extends Straight implements Tile, AccessoryEventListener {
 
   private SignalValue signalValue;
   private SignalType signalType;
@@ -297,8 +297,9 @@ public class Signal extends Straight implements Tile, AccessoryListener {
   }
 
   @Override
-  public void onChange(AccessoryMessageEvent event) {
-    if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
+  public void onAccessoryChange(AccessoryEvent event) {
+    //if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
+    if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
       this.setSignalValue(event.getAccessoryBean().getSignalValue());
       repaintTile();
     }

@@ -20,13 +20,15 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="0"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-21,0,0,0,-56"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,3,0,0,0,-41"/>
   </AuxValues>
   <SubComponents>
     <Container class="javax.swing.JTabbedPane" name="buttonsTP">
       <Properties>
         <Property name="tabLayoutPolicy" type="int" value="1"/>
         <Property name="tabPlacement" type="int" value="3"/>
+        <Property name="debugGraphicsOptions" type="int" value="-1"/>
+        <Property name="doubleBuffered" type="boolean" value="true"/>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[200, 230]"/>
         </Property>
@@ -55,11 +57,16 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
             <Property name="columns" type="int" value="4"/>
+            <Property name="horizontalGap" type="int" value="1"/>
             <Property name="rows" type="int" value="4"/>
+            <Property name="verticalGap" type="int" value="1"/>
           </Layout>
           <SubComponents>
             <Component class="javax.swing.JToggleButton" name="f0TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F0"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -79,6 +86,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f1TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F2"/>
                 <Property name="actionCommand" type="java.lang.String" value="F1"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
@@ -99,6 +109,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f2TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F2"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -118,6 +131,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f3TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F3"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -137,6 +153,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f4TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F4"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -156,6 +175,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f5TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F5"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -175,6 +197,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f6TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F6"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -194,6 +219,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f7TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F7"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -213,6 +241,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f8TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F8"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -232,6 +263,9 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f9TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F9"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -251,8 +285,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f10TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F10"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -270,8 +310,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f11TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F11"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -289,8 +335,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f12TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F12"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -308,8 +360,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f13TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F13"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -327,8 +385,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f14TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F14"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -346,8 +410,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f15TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F15"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -386,8 +456,14 @@
           <SubComponents>
             <Component class="javax.swing.JToggleButton" name="f16TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F16"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -402,8 +478,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f17TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F17"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -412,11 +494,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f17TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f17TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f18TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F18"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -425,11 +516,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f18TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f18TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f19TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F19"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -438,11 +538,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f19TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f19TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f20TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F20"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -451,11 +560,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f20TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f20TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f21TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F21"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -464,11 +582,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f21TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f21TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f22TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F22"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -477,11 +604,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f22TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f22TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f23TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F23"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -490,11 +626,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f23TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f23TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f24TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F24"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -503,11 +648,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f24TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f24TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f25TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F25"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -516,11 +670,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f25TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f25TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f26TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F26"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -529,11 +692,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f26TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f26TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f27TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F27"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -542,11 +714,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f27TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f27TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f28TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F28"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -561,8 +742,14 @@
             </Component>
             <Component class="javax.swing.JToggleButton" name="f29TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F29"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -571,11 +758,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f29TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f29TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f30TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F30"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -584,11 +780,20 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f30TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f30TBActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JToggleButton" name="f31TB">
               <Properties>
+                <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="cc" green="cc" red="cc" type="rgb"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="F31"/>
                 <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                  <Insets value="[2, 2, 2, 2]"/>
+                </Property>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[40, 40]"/>
                 </Property>
@@ -597,6 +802,9 @@
                 </Property>
                 <Property name="name" type="java.lang.String" value="f31TB" noResource="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="f31TBActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
