@@ -27,9 +27,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+import jcs.controller.ControllerFactory;
+import jcs.controller.events.SensorEvent;
+import jcs.controller.events.SensorEventListener;
 import jcs.entities.SensorBean;
-import jcs.trackservice.TrackControllerFactory;
-import jcs.trackservice.events.SensorListener;
 
 /**
  * Diagnostic panel for a feedback module
@@ -38,228 +39,228 @@ import jcs.trackservice.events.SensorListener;
  */
 public class FeedbackPanel extends JPanel {
 
-    private static final String ICON_PATH_ON = "/media/Button-Purple-20px.png";
-    private static final String ICON_PATH_OFF = "/media/Button-Grey-20px.png";
+  private static final String ICON_PATH_ON = "/media/Button-Purple-20px.png";
+  private static final String ICON_PATH_OFF = "/media/Button-Grey-20px.png";
 
-    private static final ImageIcon ICON_ON = new ImageIcon(FeedbackPanel.class.getResource(ICON_PATH_ON));
-    private static final ImageIcon ICON_OFF = new ImageIcon(FeedbackPanel.class.getResource(ICON_PATH_OFF));
+  private static final ImageIcon ICON_ON = new ImageIcon(FeedbackPanel.class.getResource(ICON_PATH_ON));
+  private static final ImageIcon ICON_OFF = new ImageIcon(FeedbackPanel.class.getResource(ICON_PATH_OFF));
 
-    private int moduleNumber;
-    private Integer deviceId;
-    private Integer contactIdOffset;
-    private Integer startContactId;
+  private int moduleNumber;
+  private Integer deviceId;
+  private Integer contactIdOffset;
+  private Integer startContactId;
 
-    private FeedbackPort p1;
-    private FeedbackPort p2;
-    private FeedbackPort p3;
-    private FeedbackPort p4;
-    private FeedbackPort p5;
-    private FeedbackPort p6;
-    private FeedbackPort p7;
-    private FeedbackPort p8;
-    private FeedbackPort p9;
-    private FeedbackPort p10;
-    private FeedbackPort p11;
-    private FeedbackPort p12;
-    private FeedbackPort p13;
-    private FeedbackPort p14;
-    private FeedbackPort p15;
-    private FeedbackPort p16;
+  private FeedbackPort p1;
+  private FeedbackPort p2;
+  private FeedbackPort p3;
+  private FeedbackPort p4;
+  private FeedbackPort p5;
+  private FeedbackPort p6;
+  private FeedbackPort p7;
+  private FeedbackPort p8;
+  private FeedbackPort p9;
+  private FeedbackPort p10;
+  private FeedbackPort p11;
+  private FeedbackPort p12;
+  private FeedbackPort p13;
+  private FeedbackPort p14;
+  private FeedbackPort p15;
+  private FeedbackPort p16;
 
-    /**
-     * Create default FeedbackPanel for module number 1
-     */
-    public FeedbackPanel() {
-        this(1);
+  /**
+   * Create default FeedbackPanel for module number 1
+   */
+  public FeedbackPanel() {
+    this(1);
+  }
+
+  public FeedbackPanel(int moduleNumber) {
+    this(1, 0, 0);
+  }
+
+  /**
+   * Create FeedbackPanel for given moduleNumber
+   *
+   * @param moduleNumber
+   * @param deviceId
+   * @param contactIdOffset
+   */
+  public FeedbackPanel(int moduleNumber, Integer deviceId, Integer contactIdOffset) {
+    this.moduleNumber = moduleNumber;
+    this.deviceId = deviceId;
+    this.contactIdOffset = contactIdOffset;
+
+    initComponents();
+  }
+
+  private void initSensorListeners() {
+    if (this.contactIdOffset == null) {
+      this.contactIdOffset = 0;
     }
 
-    public FeedbackPanel(int moduleNumber) {
-        this(1, 0, 0);
+    int port = 1;
+    p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p5 = new FeedbackPort(this.lbl5, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p6 = new FeedbackPort(this.lbl6, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p7 = new FeedbackPort(this.lbl7, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p8 = new FeedbackPort(this.lbl8, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p9 = new FeedbackPort(this.lbl9, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p10 = new FeedbackPort(this.lbl10, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p11 = new FeedbackPort(this.lbl11, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p12 = new FeedbackPort(this.lbl12, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p13 = new FeedbackPort(this.lbl13, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p14 = new FeedbackPort(this.lbl14, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p15 = new FeedbackPort(this.lbl15, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+    p16 = new FeedbackPort(this.lbl16, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+  }
+
+  public void registerSensorListeners() {
+    if (ControllerFactory.getController() != null) {
+      initSensorListeners();
+
+      ControllerFactory.getController().addSensorEventListener(p1);
+      ControllerFactory.getController().addSensorEventListener(p2);
+      ControllerFactory.getController().addSensorEventListener(p3);
+      ControllerFactory.getController().addSensorEventListener(p4);
+      ControllerFactory.getController().addSensorEventListener(p5);
+      ControllerFactory.getController().addSensorEventListener(p6);
+      ControllerFactory.getController().addSensorEventListener(p7);
+      ControllerFactory.getController().addSensorEventListener(p8);
+      ControllerFactory.getController().addSensorEventListener(p9);
+      ControllerFactory.getController().addSensorEventListener(p10);
+      ControllerFactory.getController().addSensorEventListener(p11);
+      ControllerFactory.getController().addSensorEventListener(p12);
+      ControllerFactory.getController().addSensorEventListener(p13);
+      ControllerFactory.getController().addSensorEventListener(p14);
+      ControllerFactory.getController().addSensorEventListener(p15);
+      ControllerFactory.getController().addSensorEventListener(p16);
     }
+  }
 
-    /**
-     * Create FeedbackPanel for given moduleNumber
-     *
-     * @param moduleNumber
-     * @param deviceId
-     * @param contactIdOffset
-     */
-    public FeedbackPanel(int moduleNumber, Integer deviceId, Integer contactIdOffset) {
-        this.moduleNumber = moduleNumber;
-        this.deviceId = deviceId;
-        this.contactIdOffset = contactIdOffset;
+  public void removeSensorListeners() {
+    if (ControllerFactory.getController() != null) {
+      ControllerFactory.getController().removeSensorEventListener(p1);
+      ControllerFactory.getController().removeSensorEventListener(p2);
+      ControllerFactory.getController().removeSensorEventListener(p3);
+      ControllerFactory.getController().removeSensorEventListener(p4);
+      ControllerFactory.getController().removeSensorEventListener(p5);
+      ControllerFactory.getController().removeSensorEventListener(p6);
+      ControllerFactory.getController().removeSensorEventListener(p7);
+      ControllerFactory.getController().removeSensorEventListener(p8);
+      ControllerFactory.getController().removeSensorEventListener(p9);
+      ControllerFactory.getController().removeSensorEventListener(p10);
+      ControllerFactory.getController().removeSensorEventListener(p11);
+      ControllerFactory.getController().removeSensorEventListener(p12);
+      ControllerFactory.getController().removeSensorEventListener(p13);
+      ControllerFactory.getController().removeSensorEventListener(p14);
+      ControllerFactory.getController().removeSensorEventListener(p15);
+      ControllerFactory.getController().removeSensorEventListener(p16);
 
-        initComponents();
+      this.p1 = null;
+      this.p2 = null;
+      this.p3 = null;
+      this.p4 = null;
+      this.p5 = null;
+      this.p6 = null;
+      this.p7 = null;
+      this.p8 = null;
+      this.p9 = null;
+      this.p10 = null;
+      this.p11 = null;
+      this.p12 = null;
+      this.p13 = null;
+      this.p14 = null;
+      this.p15 = null;
+      this.p16 = null;
     }
+  }
 
-    private void initSensorListeners() {
-        if (this.contactIdOffset == null) {
-            this.contactIdOffset = 0;
-        }
+  private static int calculateContactId(int module, int offset, int port) {
+    //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
+    module = module - 1;
+    int contactId = module * 16;
+    return contactId + port + offset;
+  }
 
-        int port = 1;
-        p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p5 = new FeedbackPort(this.lbl5, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p6 = new FeedbackPort(this.lbl6, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p7 = new FeedbackPort(this.lbl7, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p8 = new FeedbackPort(this.lbl8, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p9 = new FeedbackPort(this.lbl9, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p10 = new FeedbackPort(this.lbl10, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p11 = new FeedbackPort(this.lbl11, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p12 = new FeedbackPort(this.lbl12, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p13 = new FeedbackPort(this.lbl13, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p14 = new FeedbackPort(this.lbl14, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p15 = new FeedbackPort(this.lbl15, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-        p16 = new FeedbackPort(this.lbl16, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
-    }
+  public void setTitle(String title) {
+    ((TitledBorder) this.getBorder()).setTitle(title);
+  }
 
-    public void registerSensorListeners() {
-        if (TrackControllerFactory.getTrackController() != null) {
-            initSensorListeners();
+  public String getTitle() {
+    return ((TitledBorder) this.getBorder()).getTitle();
+  }
 
-            TrackControllerFactory.getTrackController().addSensorListener(p1);
-            TrackControllerFactory.getTrackController().addSensorListener(p2);
-            TrackControllerFactory.getTrackController().addSensorListener(p3);
-            TrackControllerFactory.getTrackController().addSensorListener(p4);
-            TrackControllerFactory.getTrackController().addSensorListener(p5);
-            TrackControllerFactory.getTrackController().addSensorListener(p6);
-            TrackControllerFactory.getTrackController().addSensorListener(p7);
-            TrackControllerFactory.getTrackController().addSensorListener(p8);
-            TrackControllerFactory.getTrackController().addSensorListener(p9);
-            TrackControllerFactory.getTrackController().addSensorListener(p10);
-            TrackControllerFactory.getTrackController().addSensorListener(p11);
-            TrackControllerFactory.getTrackController().addSensorListener(p12);
-            TrackControllerFactory.getTrackController().addSensorListener(p13);
-            TrackControllerFactory.getTrackController().addSensorListener(p14);
-            TrackControllerFactory.getTrackController().addSensorListener(p15);
-            TrackControllerFactory.getTrackController().addSensorListener(p16);
-        }
-    }
+  public int getModuleNumber() {
+    return moduleNumber;
+  }
 
-    public void removeSensorListeners() {
-        if (TrackControllerFactory.getTrackController() != null) {
-            TrackControllerFactory.getTrackController().removeSensorListener(p1);
-            TrackControllerFactory.getTrackController().removeSensorListener(p2);
-            TrackControllerFactory.getTrackController().removeSensorListener(p3);
-            TrackControllerFactory.getTrackController().removeSensorListener(p4);
-            TrackControllerFactory.getTrackController().removeSensorListener(p5);
-            TrackControllerFactory.getTrackController().removeSensorListener(p6);
-            TrackControllerFactory.getTrackController().removeSensorListener(p7);
-            TrackControllerFactory.getTrackController().removeSensorListener(p8);
-            TrackControllerFactory.getTrackController().removeSensorListener(p9);
-            TrackControllerFactory.getTrackController().removeSensorListener(p10);
-            TrackControllerFactory.getTrackController().removeSensorListener(p11);
-            TrackControllerFactory.getTrackController().removeSensorListener(p12);
-            TrackControllerFactory.getTrackController().removeSensorListener(p13);
-            TrackControllerFactory.getTrackController().removeSensorListener(p14);
-            TrackControllerFactory.getTrackController().removeSensorListener(p15);
-            TrackControllerFactory.getTrackController().removeSensorListener(p16);
+  public void setModuleNumber(int moduleNumber) {
+    this.moduleNumber = moduleNumber;
+  }
 
-            this.p1 = null;
-            this.p2 = null;
-            this.p3 = null;
-            this.p4 = null;
-            this.p5 = null;
-            this.p6 = null;
-            this.p7 = null;
-            this.p8 = null;
-            this.p9 = null;
-            this.p10 = null;
-            this.p11 = null;
-            this.p12 = null;
-            this.p13 = null;
-            this.p14 = null;
-            this.p15 = null;
-            this.p16 = null;
-        }
-    }
+  public Integer getDeviceId() {
+    return deviceId;
+  }
 
-    private static int calculateContactId(int module, int offset, int port) {
-        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
-        module = module - 1;
-        int contactId = module * 16;
-        return contactId + port + offset;
-    }
+  public void setDeviceId(Integer deviceId) {
+    this.deviceId = deviceId;
+  }
 
-    public void setTitle(String title) {
-        ((TitledBorder) this.getBorder()).setTitle(title);
-    }
+  public Integer getContactIdOffset() {
+    return contactIdOffset;
+  }
 
-    public String getTitle() {
-        return ((TitledBorder) this.getBorder()).getTitle();
-    }
+  public void setContactIdOffset(Integer contactIdOffset) {
+    this.contactIdOffset = contactIdOffset;
+  }
 
-    public int getModuleNumber() {
-        return moduleNumber;
-    }
+  public Integer getStartContactId() {
+    return startContactId;
+  }
 
-    public void setModuleNumber(int moduleNumber) {
-        this.moduleNumber = moduleNumber;
-    }
+  public void setStartContactId(Integer startContactId) {
+    this.startContactId = startContactId;
+  }
 
-    public Integer getDeviceId() {
-        return deviceId;
-    }
+  @Override
+  public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+  }
 
-    public void setDeviceId(Integer deviceId) {
-        this.deviceId = deviceId;
-    }
+  private class FeedbackPort implements SensorEventListener {
 
-    public Integer getContactIdOffset() {
-        return contactIdOffset;
-    }
+    private final JLabel label;
+    private final Integer deviceId;
+    private final Integer contactId;
+    private boolean value;
 
-    public void setContactIdOffset(Integer contactIdOffset) {
-        this.contactIdOffset = contactIdOffset;
-    }
+    FeedbackPort(JLabel label, Integer deviceId, Integer contactId) {
+      this.label = label;
+      this.deviceId = deviceId;
+      this.contactId = contactId;
 
-    public Integer getStartContactId() {
-        return startContactId;
-    }
-
-    public void setStartContactId(Integer startContactId) {
-        this.startContactId = startContactId;
+      this.label.setToolTipText("DeviceId: " + this.deviceId + " ContactId: " + this.contactId);
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
+    public void onSensorChange(SensorEvent event) {
+      SensorBean sensor = event.getSensorBean();
+
+      if (this.deviceId.equals(sensor.getDeviceId()) && this.contactId.equals(sensor.getContactId())) {
+        this.value = sensor.isActive();
+        this.label.setIcon(value ? ICON_ON : ICON_OFF);
+        this.label.repaint();
+      }
     }
+  }
 
-    private class FeedbackPort implements SensorListener {
-
-        private final JLabel label;
-        private final Integer deviceId;
-        private final Integer contactId;
-        private boolean value;
-
-        FeedbackPort(JLabel label, Integer deviceId, Integer contactId) {
-            this.label = label;
-            this.deviceId = deviceId;
-            this.contactId = contactId;
-
-            this.label.setToolTipText("DeviceId: " + this.deviceId + " ContactId: " + this.contactId);
-        }
-
-        @Override
-        public void onChange(SensorBean sensor) {
-            if (this.deviceId.equals(sensor.getDeviceId()) && this.contactId.equals(sensor.getContactId())) {
-                this.value = sensor.isActive();
-                this.label.setIcon(value ? ICON_ON : ICON_OFF);
-                this.label.repaint();
-            }
-        }
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
+  /**
+   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

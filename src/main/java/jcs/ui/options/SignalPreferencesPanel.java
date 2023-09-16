@@ -50,7 +50,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.options.table.SignalTableModel;
 import org.tinylog.Logger;
 
@@ -505,7 +505,7 @@ public class SignalPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    TrackControllerFactory.getTrackController().synchronizeSignals();
+    ControllerFactory.getController().synchronizeSignalsWithController();
     refresh();
   }
 
@@ -555,7 +555,7 @@ public class SignalPreferencesPanel extends JPanel {
 
   public static void main(String args[]) {
     try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error("Can't set the LookAndFeel: " + ex);
     }

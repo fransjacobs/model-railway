@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities.enums;
 
@@ -58,38 +55,38 @@ public enum SignalType {
 
   private static String translateSignalString(String marklinType) {
     if (marklinType != null) {
-      switch (marklinType) {
-        case "lichtsignal_HP01":
-          return "HP01";
-        case "lichtsignal_HP02":
-          return "HP012";
-        case "lichtsignal_HP012":
-          return "HP012";
-        case "lichtsignal_HP012_SH01":
-          return "HP012SH1";
-        case "lichtsignal_SH01":
-          return "HP0SH1";
-        case "formsignal_HP01":
-          return "HP01";
-        case "formsignal_HP02":
-          return "HP012";
-        case "formsignal_HP012":
-          return "HP012";
-        case "formsignal_HP012_SH01":
-          return "HP012SH1";
-        case "formsignal_SH01":
-          return "HP0SH1";
-        case "urc_lichtsignal_HP01":
-          return "HP01";
-        case "urc_lichtsignal_HP012":
-          return "HP012";
-        case "urc_lichtsignal_HP012_SH01":
-          return "HP012SH1";
-        case "urc_lichtsignal_SH01":
-          return "HP0SH1";
-        default:
-          return "NONE";
-      }
+      return switch (marklinType) {
+        case "lichtsignal_HP01" ->
+          "HP01";
+        case "lichtsignal_HP02" ->
+          "HP012";
+        case "lichtsignal_HP012" ->
+          "HP012";
+        case "lichtsignal_HP012_SH01" ->
+          "HP012SH1";
+        case "lichtsignal_SH01" ->
+          "HP0SH1";
+        case "formsignal_HP01" ->
+          "HP01";
+        case "formsignal_HP02" ->
+          "HP012";
+        case "formsignal_HP012" ->
+          "HP012";
+        case "formsignal_HP012_SH01" ->
+          "HP012SH1";
+        case "formsignal_SH01" ->
+          "HP0SH1";
+        case "urc_lichtsignal_HP01" ->
+          "HP01";
+        case "urc_lichtsignal_HP012" ->
+          "HP012";
+        case "urc_lichtsignal_HP012_SH01" ->
+          "HP012SH1";
+        case "urc_lichtsignal_SH01" ->
+          "HP0SH1";
+        default ->
+          "NONE";
+      };
     } else {
       return "NONE";
     }

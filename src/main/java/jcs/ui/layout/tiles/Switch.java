@@ -22,7 +22,8 @@ import java.awt.Point;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
+import jcs.controller.events.AccessoryEventListener;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
@@ -30,10 +31,9 @@ import static jcs.entities.enums.Orientation.NORTH;
 import static jcs.entities.enums.Orientation.SOUTH;
 import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
-import jcs.trackservice.events.AccessoryListener;
 import jcs.ui.layout.tiles.enums.Direction;
 
-public class Switch extends AbstractTile implements Tile, AccessoryListener {
+public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
 
   protected AccessoryValue accessoryValue;
   protected AccessoryValue routeValue;
@@ -346,8 +346,9 @@ public class Switch extends AbstractTile implements Tile, AccessoryListener {
   }
 
   @Override
-  public void onChange(AccessoryMessageEvent event) {
-    if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
+  public void onAccessoryChange(AccessoryEvent event) {
+    //if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
+    if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
       setValue(event.getAccessoryBean().getAccessoryValue());
       repaintTile();
     }

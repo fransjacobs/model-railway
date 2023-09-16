@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.entities.enums;
 
@@ -54,16 +51,16 @@ public enum Direction {
   }
 
   private static int translate2MarklinValue(String value) {
-    switch (value) {
-      case "Forwards":
-        return 1;
-      case "Backwards":
-        return 2;
-      case "Switch":
-        return 2;
-      default:
-        return 0;
-    }
+    return switch (value) {
+      case "Forwards" ->
+        1;
+      case "Backwards" ->
+        2;
+      case "Switch" ->
+        2;
+      default ->
+        0;
+    };
   }
 
   public int getMarklinValue() {
@@ -71,16 +68,16 @@ public enum Direction {
   }
 
   private static String translate2DirectionString(int value) {
-    switch (value) {
-      case 1:
-        return "Forwards";
-      case 2:
-        return "Backwards";
-      case 3:
-        return "Switch";
-      default:
-        return "Same";
-    }
+    return switch (value) {
+      case 1 ->
+        "Forwards";
+      case 2 ->
+        "Backwards";
+      case 3 ->
+        "Switch";
+      default ->
+        "Same";
+    };
   }
 
   public static Direction getDirection(int marklinValue) {
@@ -88,14 +85,14 @@ public enum Direction {
   }
 
   public Direction toggle() {
-    switch (this.direction) {
-      case "Forwards":
-        return BACKWARDS;
-      case "Backwards":
-        return FORWARDS;
-      default:
-        return SAME;
-    }
+    return switch (this.direction) {
+      case "Forwards" ->
+        BACKWARDS;
+      case "Backwards" ->
+        FORWARDS;
+      default ->
+        SAME;
+    };
   }
 
 }

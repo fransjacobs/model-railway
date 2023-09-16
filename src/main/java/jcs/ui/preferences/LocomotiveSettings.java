@@ -62,7 +62,9 @@ public class LocomotiveSettings extends javax.swing.JPanel {
 
   private static ComboBoxModel<DecoderType> getDecoderTypeModel() {
     DefaultComboBoxModel<DecoderType> model = new DefaultComboBoxModel<>();
-    model.addElement(DecoderType.MM);
+    model.addElement(DecoderType.MM_DIL);
+    model.addElement(DecoderType.MM_PRG);
+    model.addElement(DecoderType.MM2_PRG);
     model.addElement(DecoderType.MFX);
     model.addElement(DecoderType.DCC);
     model.addElement(DecoderType.SX1);

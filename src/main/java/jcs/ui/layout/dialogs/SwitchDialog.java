@@ -20,7 +20,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.layout.tiles.Switch;
 import org.tinylog.Logger;
 
@@ -74,7 +74,7 @@ public class SwitchDialog extends javax.swing.JDialog {
       Logger.trace("Selected Turnout: " + ab);
 
       //Unregister as properties might change
-      TrackControllerFactory.getTrackController().removeAccessoryListener(turnout);
+      ControllerFactory.getController().removeAccessoryEventListener(turnout);
     }
   }
 
@@ -166,7 +166,7 @@ public class SwitchDialog extends javax.swing.JDialog {
         if (this.turnout.getAccessoryBean().getName() != null) {
           PersistenceFactory.getService().persist((turnout));
 
-          TrackControllerFactory.getTrackController().addAccessoryListener(turnout);
+          ControllerFactory.getController().addAccessoryEventListener(turnout);
         } else {
           this.turnout.setAccessoryBean(null);
           PersistenceFactory.getService().persist((turnout));
