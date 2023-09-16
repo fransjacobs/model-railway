@@ -42,13 +42,15 @@ the debugging of the inflation. When true the raw and decompressed files are
 written to the file system  
 inflate.debug=true (default false)
 
-
 ## Debugging data
 JCS uses an embedded [H2](https://h2database.com/html/main.html) database.
 On de first startup, when ther are no files in the jcs home directory (~/jcs)
 database is created. The database is created as user SA (pass jcs) this user
 creates the jcs schema and user( user jcs pass repo);
 Inside the jcs schema the tables are created.
+
+## Datamodel
+![UI screenshot: JCS Datamodel](assets/jcs_datamodel.png?raw=true) 
 
 ### Connect to the database
 It is possble to connect to the embedded JCS database using an SQL tool like

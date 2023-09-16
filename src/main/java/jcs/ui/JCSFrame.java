@@ -239,7 +239,7 @@ public class JCSFrame extends JFrame implements UICallback {
     filler5 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     showFeedbackMonitorBtn = new JButton();
     filler8 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    statusPanel = new JPanel();
+    statusPanel = new StatusPanel();
     mainPanel = new JPanel();
     locoDisplaySP = new JSplitPane();
     centerPanel = new JPanel();
@@ -437,12 +437,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
     getContentPane().add(jPanel5, BorderLayout.NORTH);
 
-    statusPanel.setMinimumSize(new Dimension(574, 45));
     statusPanel.setName("statusPanel"); // NOI18N
-    statusPanel.setPreferredSize(new Dimension(1200, 45));
-    FlowLayout flowLayout7 = new FlowLayout(FlowLayout.CENTER, 0, 0);
-    flowLayout7.setAlignOnBaseline(true);
-    statusPanel.setLayout(flowLayout7);
     getContentPane().add(statusPanel, BorderLayout.SOUTH);
 
     mainPanel.setMinimumSize(new Dimension(1050, 900));
@@ -856,20 +851,6 @@ public class JCSFrame extends JFrame implements UICallback {
     this.powerButton.setSelected(event.isPower());
   }
 
-//  private class Powerlistener implements PowerEventListener {
-//
-//    private final JCSFrame jcsFrame;
-//
-//    Powerlistener(JCSFrame jcsFrame) {
-//      this.jcsFrame = jcsFrame;
-//    }
-//
-//    @Override
-//    public void onPowerChange(PowerEvent event) {
-//      this.jcsFrame.powerButton.setSelected(event.isPower());
-//
-//    }
-//  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPanel bottomLeftPanel;
@@ -921,7 +902,7 @@ public class JCSFrame extends JFrame implements UICallback {
   private JMenuItem showLocosMI;
   private JButton showOverviewBtn;
   private JMenuItem showSensorMonitor;
-  private JPanel statusPanel;
+  private StatusPanel statusPanel;
   private JMenu toolsMenu;
   private JMenu viewMenu;
   // End of variables declaration//GEN-END:variables

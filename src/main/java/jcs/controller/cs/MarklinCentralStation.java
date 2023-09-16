@@ -15,14 +15,15 @@
  */
 package jcs.controller.cs;
 
+import jcs.entities.MeasurementChannel;
 import jcs.entities.Device;
 import java.awt.Image;
 import java.util.List;
+import java.util.Map;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
-import jcs.entities.enums.DecoderType;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
@@ -92,5 +93,7 @@ public interface MarklinCentralStation {
   List<Device> getDevices();
 
   void clearCaches();
+
+  Map<Integer, MeasurementChannel> getTrackMeasurements();
 
 }

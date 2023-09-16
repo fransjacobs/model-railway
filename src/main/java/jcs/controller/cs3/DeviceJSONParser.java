@@ -17,7 +17,7 @@ package jcs.controller.cs3;
 
 import jcs.entities.Device;
 import jcs.controller.cs.SxxBus;
-import jcs.controller.cs.MeasurementChannel;
+import jcs.entities.MeasurementChannel;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.tinylog.Logger;

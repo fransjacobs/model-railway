@@ -15,6 +15,7 @@
  */
 package jcs.controller.cs;
 
+import jcs.entities.MeasurementChannel;
 import jcs.entities.Device;
 import java.awt.Image;
 import java.util.Date;
@@ -83,10 +84,11 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private Device mainDevice;
   private int csUid;
 
-  private ChannelDataParser channelData1;
-  private ChannelDataParser channelData2;
-  private ChannelDataParser channelData3;
-  private ChannelDataParser channelData4;
+//  private ChannelDataParser channelData1;
+//  private ChannelDataParser channelData2;
+//  private ChannelDataParser channelData3;
+//  private ChannelDataParser channelData4;
+  Map<Integer, MeasurementChannel> measurementChannels;
 
   private final List<PowerEventListener> powerEventListeners;
   private final List<AccessoryEventListener> accessoryEventListeners;
@@ -97,7 +99,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
   private ExecutorService executor;
-  private ScheduledExecutorService scheduledExecutor;
+  //private ScheduledExecutorService scheduledExecutor;
   private boolean power;
 
   private FunctionSvgToPngConverter svgToImage;
@@ -111,6 +113,8 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private MarklinCentralStationImpl(boolean autoConnect) {
     devices = new HashMap<>();
 
+    measurementChannels = new HashMap<>();
+
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
 
     powerEventListeners = new LinkedList<>();
@@ -122,7 +126,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     locomotiveSpeedEventListeners = new LinkedList<>();
 
     executor = Executors.newCachedThreadPool();
-    scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    //scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     if (autoConnect) {
       connect();
@@ -303,7 +307,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     } else {
       return false;
     }
-
   }
 
   @Override
@@ -455,49 +458,78 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     }
   }
 
-  void getStatusDataConfig() {
-    if (this.connected) {
-      CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 0));
-      StatusDataConfig sdcp = new StatusDataConfig(message);
+  @Override
+  public synchronized Map<Integer, MeasurementChannel> getTrackMeasurements() {
+    if (this.connected && this.mainDevice != null) {
+      //main device
+      int nrOfChannels = this.mainDevice.getMeasureChannels();
 
-      Logger.debug(sdcp);
+      ChannelDataParser parser = new ChannelDataParser();
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 1));
-      channelData1 = new ChannelDataParser(message);
+      if (this.measurementChannels.isEmpty()) {
+        //No channels configured so let do this first
+        for (int c = 1; c <= nrOfChannels; c++) {
+          Logger.trace("Quering config for channel " + c);
+          CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, c));
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 2));
-      channelData2 = new ChannelDataParser(message);
+          MeasurementChannel ch = parser.parseConfigMessage(message);
+          measurementChannels.put(c, ch);
+        }
+      }
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 3));
-      channelData3 = new ChannelDataParser(message);
+      //Update the measured values
+      //CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 0));
+      //StatusDataConfig sdcp = new StatusDataConfig(message);
+      //Logger.debug(sdcp);
+      for (int c = 1; c <= nrOfChannels; c++) {
+        MeasurementChannel ch = this.measurementChannels.get(c);
+        if (ch != null) {
+          CanMessage message = sendMessage(CanMessageFactory.systemStatus(c, csUid));
+          ch = parser.parseUpdateMessage(message, ch);
+          measurementChannels.put(c, ch);
+        }
+      }
 
-      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 4));
-      channelData4 = new ChannelDataParser(message);
-
-      updateChannelStatuses();
+//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 1));
+//      channelData1 = new ChannelDataParser(message);
+//      
+//      
+//         channelData1.getChannel()
+//      
+//      
+//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 2));
+//      channelData2 = new ChannelDataParser(message);
+//
+//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 3));
+//      channelData3 = new ChannelDataParser(message);
+//
+//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 4));
+//      channelData4 = new ChannelDataParser(message);
+//      updateChannelStatuses();
+//    }
     }
+    return this.measurementChannels;
   }
 
-  void updateChannelStatuses() {
-    if (this.connected) {
-      CanMessage message = sendMessage(CanMessageFactory.systemStatus(1, csUid));
-      channelData1.parseMessage(message);
-      Logger.trace(channelData1);
-
-      message = sendMessage(CanMessageFactory.systemStatus(2, csUid));
-      channelData2.parseMessage(message);
-      Logger.trace(channelData2);
-
-      message = sendMessage(CanMessageFactory.systemStatus(3, csUid));
-      channelData3.parseMessage(message);
-      Logger.trace(channelData3);
-
-      message = sendMessage(CanMessageFactory.systemStatus(4, csUid));
-      channelData4.parseMessage(message);
-      Logger.trace(channelData1);
-    }
-  }
-
+//  void updateChannelStatuses() {
+//    if (this.connected) {
+//      CanMessage message = sendMessage(CanMessageFactory.systemStatus(1, csUid));
+//      channelData1.parseMessage(message);
+//      Logger.trace(channelData1);
+//
+//      message = sendMessage(CanMessageFactory.systemStatus(2, csUid));
+//      channelData2.parseMessage(message);
+//      Logger.trace(channelData2);
+//
+//      message = sendMessage(CanMessageFactory.systemStatus(3, csUid));
+//      channelData3.parseMessage(message);
+//      Logger.trace(channelData3);
+//
+//      message = sendMessage(CanMessageFactory.systemStatus(4, csUid));
+//      channelData4.parseMessage(message);
+//      Logger.trace(channelData1);
+//    }
+//  }
   /**
    * Blocking call to the message sender thread which send the message and await the response. When there is no response within 1s the waiting is cancelled
    *
@@ -1079,7 +1111,12 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
       //Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       //cs3.sendJCSInfo();
       //SystemConfiguration data
-//      cs.getStatusDataConfig();
+      Map<Integer, MeasurementChannel> measurements = cs.getTrackMeasurements();
+
+      for (MeasurementChannel ch : measurements.values()) {
+        Logger.trace("Channel " + ch.getNumber() + ": " + ch.getHumanValue() + " " + ch.getUnit());
+      }
+
 //      Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
 //      Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
 //      Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());

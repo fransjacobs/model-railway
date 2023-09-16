@@ -19,8 +19,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -36,40 +34,40 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class DriverCabFrame extends javax.swing.JFrame {
-  
+
   private List<LocomotiveBean> filteredLocos;
   List<String> locoNames;
-  
+
   private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
-  
+
   public DriverCabFrame() {
     initComponents();
-    
+
     URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
     //URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
     if (iconUrl != null) {
       this.setIconImage(new ImageIcon(iconUrl).getImage());
     }
-    
+
     postInit();
   }
-  
+
   private void postInit() {
     this.driverCabPanel.setLocomotiveBean(null);
     loadLocomotives();
   }
-  
+
   public void loadLocomotives() {
     if (PersistenceFactory.getService() != null) {
       List<LocomotiveBean> locos = new LinkedList<>();
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
-      
+
       locos.addAll(PersistenceFactory.getService().getLocomotives());
-      
+
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
       this.locoCB.setModel(locomotiveComboBoxModel);
-      
+
       locoNames = new ArrayList<>(locos.size());
       filteredLocos = new ArrayList<>(locos.size());
       for (LocomotiveBean loc : locos) {
@@ -78,11 +76,9 @@ public class DriverCabFrame extends javax.swing.JFrame {
           locoNames.add(loc.getName());
         }
       }
-      //((DefaultListModel) listModel).addAll(locoNames);
-      //this.locoList.setModel(listModel);
     }
   }
-  
+
   /**
    * Overridden to remove all the listeners
    */
@@ -136,11 +132,11 @@ public class DriverCabFrame extends javax.swing.JFrame {
 
   private void locoCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locoCBActionPerformed
     Logger.trace(evt.getActionCommand() + " -> " + this.locomotiveComboBoxModel.getSelectedItem());
-    
+
     if (((LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem()).getName() != null) {
       LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
       this.setTitle(locomotive.getName());
-      
+
       if (locomotive.getLocIcon() != null) {
         this.locoLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
         this.locoLabel.setText(null);
@@ -157,9 +153,6 @@ public class DriverCabFrame extends javax.swing.JFrame {
 
   }//GEN-LAST:event_locoCBActionPerformed
 
-  /**
-   * @param args the command line arguments
-   */
   public static void main(String args[]) {
     try {
       String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
@@ -170,10 +163,9 @@ public class DriverCabFrame extends javax.swing.JFrame {
       Logger.error(ex);
     }
 
-    /* Create and display the form */
     java.awt.EventQueue.invokeLater(() -> {
       DriverCabFrame driverFrame = new DriverCabFrame();
-      
+
       driverFrame.pack();
       driverFrame.setLocationRelativeTo(null);
       driverFrame.setVisible(true);

@@ -17,7 +17,7 @@ package jcs.controller.cs2;
 
 import java.io.Serializable;
 import java.util.List;
-import jcs.controller.cs.MeasurementChannel;
+import jcs.entities.MeasurementChannel;
 import jcs.controller.cs.can.CanMessage;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -28,15 +28,8 @@ import org.tinylog.Logger;
  */
 public class ChannelDataParser implements Serializable {
 
-  private final MeasurementChannel channel;
+  public ChannelDataParser() {
 
-  public ChannelDataParser(CanMessage message) {
-    channel = new MeasurementChannel();
-    try {
-      parseMessage(message);
-    } catch (Exception e) {
-      Logger.warn("Config Data Invalid! " + e.getMessage());
-    }
   }
 
   private int getStringLength(byte[] data) {
@@ -66,15 +59,14 @@ public class ChannelDataParser implements Serializable {
       //CS-2 lets assume the number packets to be the size
       packets = responses.size() - 1;
     }
-    Logger.trace("Responses: " + responses.size() + " lastIdx: " + lastIdx + " packets: " + packets);
     return packets;
   }
 
-  public final void parseMessage(CanMessage message) {
+  public MeasurementChannel parseConfigMessage(CanMessage message) {
+    MeasurementChannel channel = new MeasurementChannel();
     if (message.getCommand() == CanMessage.STATUS_CONFIG) {
       List<CanMessage> responses = message.getResponses();
       int packets = getNumberOfPackets(message);
-      Logger.trace("Channel Configuration responses count " + responses.size() + " packet size: " + packets);
 
       //Create one array with data
       byte[] data = new byte[8 * packets];
@@ -93,13 +85,13 @@ public class ChannelDataParser implements Serializable {
         int colorRed = Byte.toUnsignedInt(data[5]);
         double startValue = ((double) ByteUtil.toInt(new byte[]{data[6], data[7]}));
 
-        this.channel.setNumber(number);
-        this.channel.setScale(scale);
-        this.channel.setColorMax(colorMax);
-        this.channel.setColorGreen(colorGreen);
-        this.channel.setColorYellow(colorYellow);
-        this.channel.setColorRed(colorRed);
-        this.channel.setStartValue(startValue);
+        channel.setNumber(number);
+        channel.setScale(scale);
+        channel.setColorMax(colorMax);
+        channel.setColorGreen(colorGreen);
+        channel.setColorYellow(colorYellow);
+        channel.setColorRed(colorRed);
+        channel.setStartValue(startValue);
 
         //1
         int rangeMax = ByteUtil.toInt(new byte[]{data[8], data[9]});
@@ -107,10 +99,10 @@ public class ChannelDataParser implements Serializable {
         int rangeYellow = ByteUtil.toInt(new byte[]{data[12], data[13]});
         int rangeRed = ByteUtil.toInt(new byte[]{data[14], data[15]});
 
-        this.channel.setRangeMax(rangeMax);
-        this.channel.setRangeGreen(rangeGreen);
-        this.channel.setRangeYellow(rangeYellow);
-        this.channel.setRangeRed(rangeRed);
+        channel.setRangeMax(rangeMax);
+        channel.setRangeGreen(rangeGreen);
+        channel.setRangeYellow(rangeYellow);
+        channel.setRangeRed(rangeRed);
 
         //2,3,4
         //parse the strings
@@ -124,7 +116,7 @@ public class ChannelDataParser implements Serializable {
         System.arraycopy(data, idx, strArr, 0, strArr.length);
 
         String name = ByteUtil.bytesToString(strArr);
-        this.channel.setName(name);
+        channel.setName(name);
 
         //next string
         idx = idx + len + 1;
@@ -136,7 +128,7 @@ public class ChannelDataParser implements Serializable {
         System.arraycopy(data, idx, strArr, 0, strArr.length);
         String startVal = ByteUtil.bytesToString(strArr);
         double startValDouble = Double.parseDouble(startVal);
-        this.channel.setStartValue(startValDouble);
+        channel.setStartValue(startValDouble);
 
         //next string
         idx = idx + len + 1;
@@ -149,7 +141,7 @@ public class ChannelDataParser implements Serializable {
         String endVal = ByteUtil.bytesToString(strArr);
 
         double endValue = Double.parseDouble(endVal);
-        this.channel.setEndValue(endValue);
+        channel.setEndValue(endValue);
 
         //next string
         idx = idx + len + 1;
@@ -160,7 +152,7 @@ public class ChannelDataParser implements Serializable {
         strArr = new byte[len];
         System.arraycopy(data, idx, strArr, 0, strArr.length);
         String uom = ByteUtil.bytesToString(strArr);
-        this.channel.setUnit(uom);
+        channel.setUnit(uom);
 
         //last string??
         idx = idx + len + 1;
@@ -177,32 +169,28 @@ public class ChannelDataParser implements Serializable {
       } else {
         Logger.warn("Config packet data Invalid");
       }
-    } else if (message.getCommand() == CanMessage.SYSTEM_COMMAND && message.getSubCommand() == CanMessage.SYSTEM_SUB_STATUS) {
+    } else {
+      Logger.trace("Command: " + ByteUtil.toHexString(message.getCommand()) + " Sub Command: " + ByteUtil.toHexString(message.getSubCommand()));
+    }
+    return channel;
+  }
+
+  public MeasurementChannel parseUpdateMessage(CanMessage message, MeasurementChannel channel) {
+    if (message.getCommand() == CanMessage.SYSTEM_COMMAND && message.getSubCommand() == CanMessage.SYSTEM_SUB_STATUS) {
       CanMessage response = message.getResponse();
       byte[] data = response.getData();
-
       int number = data[5];
-
       int value = CanMessage.toInt(new byte[]{data[6], data[7]});
-      Logger.trace("Channel Measurement response for channel " + number + " raw value: " + value);
 
-      if (this.channel.getNumber() == number) {
-        this.channel.setValue(value);
+      if (channel.getNumber() == number) {
+        channel.setValue(value);
       } else {
         Logger.warn("Can't set value for " + channel.getNumber() + " as the response is for channel " + number);
       }
     } else {
-      Logger.trace("Command: " + ByteUtil.toHexString(message.getCommand()) + " Sub Command: " + message.getSubCommand());
+      Logger.trace("Command: " + ByteUtil.toHexString(message.getCommand()) + " Sub Command: " + ByteUtil.toHexString(message.getSubCommand()));
     }
-  }
-
-  public MeasurementChannel getChannel() {
     return channel;
-  }
-
-  @Override
-  public String toString() {
-    return "ChannelDataParser{" + "channel=" + channel + "}";
   }
 
 }

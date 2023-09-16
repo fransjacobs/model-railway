@@ -20,6 +20,7 @@ import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
 import jcs.controller.events.LocomotiveSpeedEventListener;
+import jcs.controller.events.MeasurementEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
@@ -76,6 +77,10 @@ public interface Controller {
   void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
   void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
+
+  void addMeasurementEventListener(MeasurementEventListener listener);
+
+  void removeMeasurementListener(MeasurementEventListener listener);
 
   String getControllerName();
 
