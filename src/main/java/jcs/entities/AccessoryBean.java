@@ -39,6 +39,7 @@ public class AccessoryBean {
   private String group;
   private String icon;
   private String iconFile;
+  private String imported;
 
   public AccessoryBean() {
     this(null, null, null, null, null, null, null, null);
@@ -155,14 +156,18 @@ public class AccessoryBean {
   @Transient
   public SignalValue getSignalValue() {
     if (this.position != null) {
-      return SignalValue.cs3Get(this.position);
+      return SignalValue.csGet(this.position);
     } else {
       return SignalValue.OFF;
     }
   }
 
+  public void setSignalValue(SignalValue signalValue) {
+    this.position = signalValue.getCSValue();
+  }
+
   public void setAccessoryValue(SignalValue signalValue) {
-    this.setPosition(signalValue.getCS3Value());
+    this.setPosition(signalValue.getCSValue());
   }
 
   @Column(name = "switch_time")
@@ -217,6 +222,15 @@ public class AccessoryBean {
 
   public void setIconFile(String iconFile) {
     this.iconFile = iconFile;
+  }
+
+  @Column(name = "imported", length = 255)
+  public String getImported() {
+    return imported;
+  }
+
+  public void setImported(String imported) {
+    this.imported = imported;
   }
 
   @Transient

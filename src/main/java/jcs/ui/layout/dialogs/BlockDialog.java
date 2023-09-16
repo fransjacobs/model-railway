@@ -18,10 +18,11 @@ package jcs.ui.layout.dialogs;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import jcs.entities.SensorBean;
+import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.tiles.Block;
-import jcs.ui.layout.tiles.Tile;
+import jcs.controller.ControllerFactory;
+import jcs.ui.layout.tiles.Switch;
+import org.tinylog.Logger;
 
 /**
  *
@@ -29,20 +30,18 @@ import jcs.ui.layout.tiles.Tile;
  */
 public class BlockDialog extends javax.swing.JDialog {
 
-  private final Block block;
-
-  private ComboBoxModel<SensorBean> plusSensorComboBoxModel;
-  private ComboBoxModel<SensorBean> minSensorComboBoxModel;
+  private final Switch turnout;
+  private ComboBoxModel<AccessoryBean> accessoryComboBoxModel;
 
   /**
    * Creates new form SensorDialog
    *
    * @param parent
-   * @param tile
+   * @param turnout
    */
-  public BlockDialog(java.awt.Frame parent, Tile tile) {
+  public BlockDialog(java.awt.Frame parent, Switch turnout) {
     super(parent, true);
-    this.block = (Block) tile;
+    this.turnout = turnout;
     initComponents();
 
     postInit();
@@ -50,25 +49,32 @@ public class BlockDialog extends javax.swing.JDialog {
 
   private void postInit() {
     setLocationRelativeTo(null);
-    String text = this.headingLbl.getText(); // + " " + this.turnout.getId();
+    String text = this.headingLbl.getText() + " " + this.turnout.getId();
     this.headingLbl.setText(text);
 
-    if (this.block != null) {
-      //Get a list of all available Sensors
-      List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+    if (this.turnout != null) {
+      //Get a list of all available Turnouts
+      List<AccessoryBean> turnouts = PersistenceFactory.getService().getTurnouts();
       //Expand with an empty one for display
-      SensorBean emptyBean = new SensorBean();
-      sensors.add(emptyBean);
+      AccessoryBean emptyBean = new AccessoryBean();
+      turnouts.add(emptyBean);
 
-      plusSensorComboBoxModel = new DefaultComboBoxModel(sensors.toArray());
-      minSensorComboBoxModel = new DefaultComboBoxModel(sensors.toArray());
-      this.plusSensorCB.setModel(plusSensorComboBoxModel);
-      this.minSensorCB.setModel(minSensorComboBoxModel);
+      accessoryComboBoxModel = new DefaultComboBoxModel(turnouts.toArray());
+      //this.accessoryCB.setModel(accessoryComboBoxModel);
 
-      if (this.block.getBlockBean() != null && this.block.getBlockBean().getPlusSensorBean() != null) {
-        this.plusSensorComboBoxModel.setSelectedItem(block.getBlockBean().getPlusSensorBean());
+      AccessoryBean ab = this.turnout.getAccessoryBean();
+      if (turnout.getAccessoryId() != null && ab == null) {
+        ab = PersistenceFactory.getService().getAccessory(turnout.getAccessoryId());
       }
+      if (ab == null) {
+        ab = emptyBean;
+      }
+      this.turnout.setAccessoryBean(ab);
+      this.accessoryComboBoxModel.setSelectedItem(ab);
+      Logger.trace("Selected Turnout: " + ab);
 
+      //Unregister as properties might change
+      //ControllerFactory.getController().removeAccessoryListener(turnout);
     }
   }
 
@@ -81,18 +87,14 @@ public class BlockDialog extends javax.swing.JDialog {
 
     headingPanel = new javax.swing.JPanel();
     headingLbl = new javax.swing.JLabel();
-    deviceIdPanel = new javax.swing.JPanel();
-    blockIdLbl = new javax.swing.JLabel();
-    blockIdTF = new javax.swing.JTextField();
     namePanel = new javax.swing.JPanel();
     blockDescLbl = new javax.swing.JLabel();
     blockTF1 = new javax.swing.JTextField();
-    plusSensorPanel = new javax.swing.JPanel();
-    plusSensorLbl = new javax.swing.JLabel();
-    plusSensorCB = new javax.swing.JComboBox<>();
-    minSensorPanel = new javax.swing.JPanel();
-    minSensorLbl = new javax.swing.JLabel();
-    minSensorCB = new javax.swing.JComboBox<>();
+    deviceIdPanel = new javax.swing.JPanel();
+    blockIdLbl = new javax.swing.JLabel();
+    blockIdTF = new javax.swing.JTextField();
+    sensorPanel = new javax.swing.JPanel();
+    signalPanel = new javax.swing.JPanel();
     saveExitPanel = new javax.swing.JPanel();
     saveExitBtn = new javax.swing.JButton();
 
@@ -111,21 +113,6 @@ public class BlockDialog extends javax.swing.JDialog {
 
     getContentPane().add(headingPanel);
 
-    deviceIdPanel.setPreferredSize(new java.awt.Dimension(290, 40));
-    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout2.setAlignOnBaseline(true);
-    deviceIdPanel.setLayout(flowLayout2);
-
-    blockIdLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-    blockIdLbl.setText("Id:");
-    blockIdLbl.setPreferredSize(new java.awt.Dimension(100, 16));
-    deviceIdPanel.add(blockIdLbl);
-
-    blockIdTF.setPreferredSize(new java.awt.Dimension(150, 23));
-    deviceIdPanel.add(blockIdTF);
-
-    getContentPane().add(deviceIdPanel);
-
     namePanel.setMinimumSize(new java.awt.Dimension(290, 40));
     namePanel.setPreferredSize(new java.awt.Dimension(290, 40));
     java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
@@ -143,44 +130,33 @@ public class BlockDialog extends javax.swing.JDialog {
 
     getContentPane().add(namePanel);
 
-    plusSensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
-    java.awt.FlowLayout flowLayout7 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout7.setAlignOnBaseline(true);
-    plusSensorPanel.setLayout(flowLayout7);
+    deviceIdPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout2.setAlignOnBaseline(true);
+    deviceIdPanel.setLayout(flowLayout2);
 
-    plusSensorLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    plusSensorLbl.setText("Plus Sensor:");
-    plusSensorLbl.setDoubleBuffered(true);
-    plusSensorLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    plusSensorPanel.add(plusSensorLbl);
+    blockIdLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    blockIdLbl.setText("Id:");
+    blockIdLbl.setPreferredSize(new java.awt.Dimension(100, 16));
+    deviceIdPanel.add(blockIdLbl);
 
-    plusSensorCB.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        plusSensorCBActionPerformed(evt);
-      }
-    });
-    plusSensorPanel.add(plusSensorCB);
+    blockIdTF.setPreferredSize(new java.awt.Dimension(150, 23));
+    deviceIdPanel.add(blockIdTF);
 
-    getContentPane().add(plusSensorPanel);
+    getContentPane().add(deviceIdPanel);
 
-    minSensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    sensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
     java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout3.setAlignOnBaseline(true);
-    minSensorPanel.setLayout(flowLayout3);
+    sensorPanel.setLayout(flowLayout3);
 
-    minSensorLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    minSensorLbl.setText("Min. Sensor:");
-    minSensorLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    minSensorPanel.add(minSensorLbl);
+    signalPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout5.setAlignOnBaseline(true);
+    signalPanel.setLayout(flowLayout5);
+    sensorPanel.add(signalPanel);
 
-    minSensorCB.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        minSensorCBActionPerformed(evt);
-      }
-    });
-    minSensorPanel.add(minSensorCB);
-
-    getContentPane().add(minSensorPanel);
+    getContentPane().add(sensorPanel);
 
     saveExitPanel.setPreferredSize(new java.awt.Dimension(290, 50));
     java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
@@ -202,28 +178,20 @@ public class BlockDialog extends javax.swing.JDialog {
   }// </editor-fold>//GEN-END:initComponents
 
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
-//      if (this.turnout != null && this.turnout.getAccessoryBean() != null) {
-//        if (this.turnout.getAccessoryBean().getName() != null) {
-//          PersistenceFactory.getService().persist((turnout));
-//
-//          TrackControllerFactory.getTrackController().addAccessoryListener(turnout);
-//        } else {
-//          this.turnout.setAccessoryBean(null);
-//          PersistenceFactory.getService().persist((turnout));
-//        }
-//      }
-//      this.setVisible(false);
-//      this.dispose();
-//      Logger.trace(evt.getActionCommand() + "Switch " + turnout.getId() + " linked to accessoryId: " + turnout.getAccessoryId());
+      if (this.turnout != null && this.turnout.getAccessoryBean() != null) {
+        if (this.turnout.getAccessoryBean().getName() != null) {
+          PersistenceFactory.getService().persist((turnout));
+
+          //ControllerFactory.getController().addAccessoryListener(turnout);
+        } else {
+          this.turnout.setAccessoryBean(null);
+          PersistenceFactory.getService().persist((turnout));
+        }
+      }
+      this.setVisible(false);
+      this.dispose();
+      Logger.trace(evt.getActionCommand() + "Switch " + turnout.getId() + " linked to accessoryId: " + turnout.getAccessoryId());
     }//GEN-LAST:event_saveExitBtnActionPerformed
-
-  private void plusSensorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plusSensorCBActionPerformed
-    // TODO add your handling code here:
-  }//GEN-LAST:event_plusSensorCBActionPerformed
-
-  private void minSensorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_minSensorCBActionPerformed
-    // TODO add your handling code here:
-  }//GEN-LAST:event_minSensorCBActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JLabel blockDescLbl;
@@ -233,14 +201,10 @@ public class BlockDialog extends javax.swing.JDialog {
   private javax.swing.JPanel deviceIdPanel;
   private javax.swing.JLabel headingLbl;
   private javax.swing.JPanel headingPanel;
-  private javax.swing.JComboBox<SensorBean> minSensorCB;
-  private javax.swing.JLabel minSensorLbl;
-  private javax.swing.JPanel minSensorPanel;
   private javax.swing.JPanel namePanel;
-  private javax.swing.JComboBox<SensorBean> plusSensorCB;
-  private javax.swing.JLabel plusSensorLbl;
-  private javax.swing.JPanel plusSensorPanel;
   private javax.swing.JButton saveExitBtn;
   private javax.swing.JPanel saveExitPanel;
+  private javax.swing.JPanel sensorPanel;
+  private javax.swing.JPanel signalPanel;
   // End of variables declaration//GEN-END:variables
 }

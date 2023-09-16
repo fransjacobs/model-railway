@@ -21,19 +21,19 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.cs3.events.PowerEvent;
-import jcs.controller.cs3.events.PowerEventListener;
+import jcs.controller.events.PowerEvent;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
-import jcs.trackservice.TrackController;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.MacOsAdapter;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
+import jcs.controller.Controller;
+import jcs.controller.events.PowerEventListener;
 
 /**
  *
@@ -45,7 +45,7 @@ public class JCS extends Thread {
   private static JCS instance = null;
   private static JCSSplash splashScreen;
   private static PersistenceService persistentStore;
-  private static TrackController trackController;
+  private static Controller trackController;
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
@@ -86,9 +86,7 @@ public class JCS extends Thread {
     }
 
     java.awt.EventQueue.invokeLater(() -> {
-
       jcsFrame = new JCSFrame();
-
       if (RunUtil.isMacOSX()) {
         osAdapter.setUiCallback(jcsFrame);
       }
@@ -102,8 +100,21 @@ public class JCS extends Thread {
       jcsFrame.pack();
       jcsFrame.setLocationRelativeTo(null);
       jcsFrame.setVisible(true);
+
+      jcsFrame.toFront();
+
+      jcsFrame.showOverviewPanel();
+      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
+        jcsFrame.connect(true);
+      }
+
     });
 
+//    if (!ControllerFactory.getController().isConnected()) {
+//      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
+//        jcsFrame.connect(true);
+//      }
+//    }
     JCS.logProgress("JCS started...");
 
     int mb = 1024 * 1024;
@@ -187,7 +198,7 @@ public class JCS extends Thread {
     persistentStore = PersistenceFactory.getService();
     if (persistentStore != null) {
       logProgress("Aquire Track Controller...");
-      trackController = TrackControllerFactory.getTrackController();
+      trackController = ControllerFactory.getController();
       if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect"))) {
         if (trackController != null) {
           boolean connected = trackController.connect();

@@ -17,19 +17,6 @@ package jcs.ui.layout;
 
 import jcs.ui.layout.tiles.Tile;
 import java.awt.Point;
-import java.beans.PropertyChangeListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import jcs.entities.TileBean;
-import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.STRAIGHT;
-import jcs.persistence.PersistenceFactory;
-
-import jcs.ui.layout.tiles.TileFactory;
-import org.tinylog.Logger;
 
 /**
  *

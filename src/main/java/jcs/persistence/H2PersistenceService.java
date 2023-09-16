@@ -16,6 +16,7 @@
 package jcs.persistence;
 
 import com.dieselpoint.norm.Database;
+import com.dieselpoint.norm.DbException;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -135,51 +136,79 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
-  private LocomotiveBean getLocomotiveFunctionsAndImage(LocomotiveBean locomotive) {
-    if (locomotive != null) {
-      Long locomotiveId = locomotive.getId();
-      List<FunctionBean> locFunctions = database.where("locomotive_id=?", locomotiveId).orderBy("f_number").results(FunctionBean.class);
-      locomotive.replaceAllFunctions(locFunctions);
-      locomotive.setLocIcon(getLocomotiveImage(locomotive.getIcon()));
+  @Override
+  public List<FunctionBean> getLocomotiveFunctions(Long locomotiveId) {
+    List<FunctionBean> locFunctions = database.where("locomotive_id=?", locomotiveId).orderBy("f_number").results(FunctionBean.class);
+
+    for (FunctionBean fb : locFunctions) {
+      fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
+      fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
     }
-    return locomotive;
+    return locFunctions;
   }
 
-  private List<LocomotiveBean> getLocomotiveFunctions(List<LocomotiveBean> locomotives) {
-    List<LocomotiveBean> locs = new LinkedList<>();
-    for (LocomotiveBean lb : locomotives) {
-      lb = getLocomotiveFunctionsAndImage(lb);
-      locs.add(lb);
+  @Override
+  public FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number) {
+    FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
+    if (fb != null) {
+      fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
+      fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
     }
-    return locs;
+    return fb;
   }
 
   @Override
   public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
     Object[] args = new Object[]{address, decoderType.getDecoderType()};
-    LocomotiveBean loco = getLocomotiveFunctionsAndImage(database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class));
+
+    LocomotiveBean loco = database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class);
+    loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+    loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
     return loco;
   }
 
   @Override
   public LocomotiveBean getLocomotive(Long id) {
-    LocomotiveBean loco = getLocomotiveFunctionsAndImage(database.where("id=?", id).first(LocomotiveBean.class));
+    LocomotiveBean loco = database.where("id=?", id).first(LocomotiveBean.class);
+    if (loco != null) {
+      loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
     return loco;
   }
 
   @Override
   public List<LocomotiveBean> getLocomotives() {
-    List<LocomotiveBean> locos = H2PersistenceService.this.getLocomotiveFunctions(database.orderBy("id").results(LocomotiveBean.class));
+    List<LocomotiveBean> locos = database.orderBy("id").results(LocomotiveBean.class);
+
+    for (LocomotiveBean loco : locos) {
+      loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
+
     return locos;
   }
 
-  private FunctionBean persist(FunctionBean functionBean) {
-    if (database.where("id=?", functionBean.getId()).first(FunctionBean.class) != null) {
-      int rows = database.update(functionBean).getRowsAffected();
-      Logger.trace(rows + " rows updated");
-    } else {
-      int rows = database.insert(functionBean).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+  @Override
+  public FunctionBean persist(FunctionBean functionBean) {
+    if (functionBean.getId() == null) {
+      //Might be a new refresh of an existing function so let try to find it
+      FunctionBean dbFb = this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
+      if (dbFb != null) {
+        functionBean.setId(dbFb.getId());
+      }
+    }
+    try {
+      if (database.where("id=?", functionBean.getId()).first(FunctionBean.class) != null) {
+        int rows = database.update(functionBean).getRowsAffected();
+        //Logger.trace(rows + " rows updated; " + functionBean);
+      } else {
+        int rows = database.insert(functionBean).getRowsAffected();
+        //Logger.trace(rows + " rows inserted; " + functionBean);
+      }
+    } catch (DbException dbe) {
+      Logger.error("Error: " + dbe.getMessage());
+      Logger.debug("SQL: " + dbe.getSql());
     }
     return functionBean;
   }
@@ -197,18 +226,18 @@ public class H2PersistenceService implements PersistenceService {
   public LocomotiveBean persist(LocomotiveBean locomotive) {
     if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
       int rows = database.update(locomotive).getRowsAffected();
-      Logger.trace(rows + " rows updated");
+      //Logger.trace(rows + " rows updated; " + locomotive);
     } else {
       int rows = database.insert(locomotive).getRowsAffected();
-      Logger.trace(rows + " rows inserted");
+      //Logger.trace(rows + " rows inserted; " + locomotive);
     }
     List<FunctionBean> functions = new LinkedList<>();
     functions.addAll(locomotive.getFunctions().values());
 
     //remove the current functions
-    database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
+    //database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
     persistFunctionBeans(functions);
-    locomotive.replaceAllFunctions(functions);
+    locomotive.setFunctions(functions);
 
     return locomotive;
   }
@@ -235,7 +264,6 @@ public class H2PersistenceService implements PersistenceService {
     return this.imageCache.get(imageName);
   }
 
-  @Override
   public Image getFunctionImage(String imageName) {
     if (!functionImageCache.containsKey(imageName)) {
       //Try to load the image from the file cache
@@ -251,20 +279,24 @@ public class H2PersistenceService implements PersistenceService {
 
   private Image readImage(String imageName, boolean function) {
     Image image = null;
-    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
+
+    String serial = System.getProperty("cs.serial", "");
+    String path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
 
     if (function) {
       path = path + "functions" + File.separator;
     }
 
-    File imgFile = new File(path + imageName + ".png");
+    File imgFile = new File(path + imageName.toLowerCase() + ".png");
     if (imgFile.exists()) {
       try {
         image = ImageIO.read(imgFile);
-
       } catch (IOException e) {
         Logger.trace("Image file " + imageName + ".png does not exists");
       }
+    } else {
+      //should we attempt to obatian it now and cache it when available, but also when it is not avaliable put a marker so tha we are not trying over and over again...
+      //who should be responsable for the cache.. the vendor controller this class or?
     }
     return image;
   }

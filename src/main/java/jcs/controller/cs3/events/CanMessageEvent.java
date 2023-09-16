@@ -18,7 +18,7 @@ package jcs.controller.cs3.events;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Date;
-import jcs.controller.cs3.can.CanMessage;
+import jcs.controller.cs.can.CanMessage;
 
 public class CanMessageEvent implements Serializable {
 

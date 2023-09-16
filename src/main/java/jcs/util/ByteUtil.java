@@ -64,30 +64,28 @@ public class ByteUtil {
     return (int) toLong(value);
   }
 
-  public static int[] to2ByteArray(int value) {
-    int[] bts = new int[]{
-      (value >> 8) & 0xFF,
-      value & 0XFF};
-
-    return bts;
-  }
-
-  public static int[] to4ByteArray(int value) {
-    int[] bts = new int[]{
-      (value >> 24) & 0xFF,
-      (value >> 16) & 0xFF,
-      (value >> 8) & 0xFF,
-      value & 0XFF};
-
-    return bts;
-  }
-
   public static String toHexString(int b) {
     String h = Integer.toHexString((b & 0xff));
     if (h.length() == 1) {
       h = "0" + h;
     }
     return h;
+  }
+
+  public static String toHexString(Integer[] bytes) {
+    if (bytes == null) {
+      return "";
+    }
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < bytes.length; i++) {
+      sb.append("0x");
+      sb.append(toHexString(bytes[i]));
+      if (i + 1 < bytes.length) {
+        sb.append(" ");
+      }
+    }
+    return sb.toString();
   }
 
   public static String toHexString(byte[] bytes) {

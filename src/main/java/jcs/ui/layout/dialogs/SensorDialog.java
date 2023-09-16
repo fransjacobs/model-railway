@@ -17,7 +17,7 @@ package jcs.ui.layout.dialogs;
 
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -59,9 +59,9 @@ public class SensorDialog extends javax.swing.JDialog {
         sb = new SensorBean();
         this.sensor.setSensorBean(sb);
       } else {
-        if (TrackControllerFactory.getTrackController() != null) {
+        if (ControllerFactory.getController() != null) {
           //Unregister is properties might change
-          TrackControllerFactory.getTrackController().removeSensorListener(this.sensor);
+          ControllerFactory.getController().removeSensorEventListener(this.sensor);
         }
       }
 
@@ -192,7 +192,7 @@ public class SensorDialog extends javax.swing.JDialog {
           PersistenceFactory.getService().persist(sensorBean);
 
           PersistenceFactory.getService().persist((sensor));
-          TrackControllerFactory.getTrackController().addSensorListener(sensor);
+          ControllerFactory.getController().addSensorEventListener(sensor);
         }
       } else if (this.sensor != null && this.sensor.getSensorBean() == null) {
         SensorBean sensorBean = new SensorBean(this.nameTF.getText(), (Integer) this.deviceIdSpinner.getValue(), (Integer) contactIdSpinner.getValue());
@@ -204,7 +204,7 @@ public class SensorDialog extends javax.swing.JDialog {
           Logger.trace("Created " + sensorBean);
 
           PersistenceFactory.getService().persist((sensor));
-          TrackControllerFactory.getTrackController().addSensorListener(sensor);
+          ControllerFactory.getController().addSensorEventListener(sensor);
 
         }
       }

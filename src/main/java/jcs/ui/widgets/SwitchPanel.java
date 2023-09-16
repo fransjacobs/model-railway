@@ -21,10 +21,10 @@ import javax.swing.JToggleButton;
 import javax.swing.border.TitledBorder;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.controller.cs3.events.AccessoryMessageEvent;
+import jcs.controller.events.AccessoryEvent;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
-import jcs.trackservice.events.AccessoryListener;
+import jcs.controller.ControllerFactory;
+import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -110,7 +110,7 @@ public class SwitchPanel extends JPanel {
     button.setActionCommand((button.getText()));
     Integer address = Integer.valueOf(button.getActionCommand());
 
-    if (TrackControllerFactory.getTrackController() != null) {
+    if (ControllerFactory.getController() != null) {
       AccessoryBean ab = PersistenceFactory.getService().getAccessoryByAddress(address);
       if (ab != null) {
         button.setForeground(new Color(0, 153, 0));
@@ -120,7 +120,7 @@ public class SwitchPanel extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      TrackControllerFactory.getTrackController().addAccessoryListener(asl);
+      ControllerFactory.getController().addAccessoryEventListener(asl);
     }
   }
 
@@ -418,9 +418,9 @@ public class SwitchPanel extends JPanel {
     AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
     Logger.trace("ID: " + id + " Value: " + value);
 
-    if (TrackControllerFactory.getTrackController() != null) {
+    if (ControllerFactory.getController() != null) {
       AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
-      TrackControllerFactory.getTrackController().switchAccessory(value, a);
+      ControllerFactory.getController().switchAccessory(value, a);
     }
   }
 
@@ -499,7 +499,7 @@ public class SwitchPanel extends JPanel {
     return panelNumber;
   }
 
-  private class AccessoryStatusListener implements AccessoryListener {
+  private class AccessoryStatusListener implements AccessoryEventListener {
 
     private final JToggleButton button;
     private final Integer address;
@@ -510,7 +510,7 @@ public class SwitchPanel extends JPanel {
     }
 
     @Override
-    public void onChange(AccessoryMessageEvent event) {
+    public void onAccessoryChange(AccessoryEvent event) {
       if (event.getAccessoryBean().getAddress().equals(address)) {
         this.button.setSelected(AccessoryValue.RED.equals(event.getAccessoryBean().getAccessoryValue()));
       }

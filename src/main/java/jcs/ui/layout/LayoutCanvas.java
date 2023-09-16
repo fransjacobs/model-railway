@@ -51,21 +51,19 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.SensorEventListener;
 import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.events.AccessoryListener;
-import jcs.trackservice.events.SensorListener;
-import jcs.ui.layout.dialogs.BlockDialog;
 import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
 import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.astar.AStar;
-import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
@@ -376,11 +374,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       switch (tile.getTileType()) {
         case SENSOR ->
-          TrackControllerFactory.getTrackController().addSensorListener((SensorListener) tile);
+          ControllerFactory.getController().addSensorEventListener((SensorEventListener) tile);
         case SWITCH ->
-          TrackControllerFactory.getTrackController().addAccessoryListener((AccessoryListener) tile);
+          ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
-          TrackControllerFactory.getTrackController().addAccessoryListener((AccessoryListener) tile);
+          ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         default -> {
           //Do nothing
         }
@@ -644,7 +642,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
-      TrackControllerFactory.getTrackController().switchAccessory(ab.getAccessoryValue(), ab);
+      ControllerFactory.getController().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
@@ -656,7 +654,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       ab.toggle();
       Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
 
-      TrackControllerFactory.getTrackController().switchAccessory(ab.getAccessoryValue(), ab);
+      ControllerFactory.getController().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }
@@ -692,20 +690,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           showDelete = true;
         }
         case SENSOR -> {
-          SensorDialog fbd = new SensorDialog(getParentFrame(), tile);
+          SensorDialog fbd = new SensorDialog(getParentFrame(), (Sensor) tile);
           fbd.setVisible(true);
         }
         case SIGNAL -> {
-          SignalDialog sd = new SignalDialog(getParentFrame(), tile);
+          SignalDialog sd = new SignalDialog(getParentFrame(), (Signal) tile);
           sd.setVisible(true);
         }
         case SWITCH -> {
-          SwitchDialog td = new SwitchDialog(getParentFrame(), tile);
+          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
           td.setVisible(true);
         }
         case BLOCK -> {
-          BlockDialog bd = new BlockDialog(getParentFrame(), tile);
-          bd.setVisible(true);
+//                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
+//                    osd.setVisible(true);
+//                    break;
         }
         default -> {
         }

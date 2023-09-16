@@ -20,9 +20,8 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.layout.tiles.Switch;
-import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -31,18 +30,18 @@ import org.tinylog.Logger;
  */
 public class SwitchDialog extends javax.swing.JDialog {
 
-  private final Switch zwitch;
+  private final Switch turnout;
   private ComboBoxModel<AccessoryBean> accessoryComboBoxModel;
 
   /**
    * Creates new form SensorDialog
    *
    * @param parent
-   * @param tile
+   * @param turnout
    */
-  public SwitchDialog(java.awt.Frame parent, Tile tile) {
+  public SwitchDialog(java.awt.Frame parent, Switch turnout) {
     super(parent, true);
-    this.zwitch = (Switch)tile;
+    this.turnout = turnout;
     initComponents();
 
     postInit();
@@ -50,10 +49,10 @@ public class SwitchDialog extends javax.swing.JDialog {
 
   private void postInit() {
     setLocationRelativeTo(null);
-    String text = this.headingLbl.getText() + " " + this.zwitch.getId();
+    String text = this.headingLbl.getText() + " " + this.turnout.getId();
     this.headingLbl.setText(text);
 
-    if (this.zwitch != null) {
+    if (this.turnout != null) {
       //Get a list of all available Turnouts
       List<AccessoryBean> turnouts = PersistenceFactory.getService().getTurnouts();
       //Expand with an empty one for display
@@ -63,19 +62,19 @@ public class SwitchDialog extends javax.swing.JDialog {
       accessoryComboBoxModel = new DefaultComboBoxModel(turnouts.toArray());
       this.accessoryCB.setModel(accessoryComboBoxModel);
 
-      AccessoryBean ab = this.zwitch.getAccessoryBean();
-      if (zwitch.getAccessoryId() != null && ab == null) {
-        ab = PersistenceFactory.getService().getAccessory(zwitch.getAccessoryId());
+      AccessoryBean ab = this.turnout.getAccessoryBean();
+      if (turnout.getAccessoryId() != null && ab == null) {
+        ab = PersistenceFactory.getService().getAccessory(turnout.getAccessoryId());
       }
       if (ab == null) {
         ab = emptyBean;
       }
-      this.zwitch.setAccessoryBean(ab);
+      this.turnout.setAccessoryBean(ab);
       this.accessoryComboBoxModel.setSelectedItem(ab);
       Logger.trace("Selected Turnout: " + ab);
 
       //Unregister as properties might change
-      TrackControllerFactory.getTrackController().removeAccessoryListener(zwitch);
+      ControllerFactory.getController().removeAccessoryEventListener(turnout);
     }
   }
 
@@ -163,25 +162,25 @@ public class SwitchDialog extends javax.swing.JDialog {
   }// </editor-fold>//GEN-END:initComponents
 
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
-      if (this.zwitch != null && this.zwitch.getAccessoryBean() != null) {
-        if (this.zwitch.getAccessoryBean().getName() != null) {
-          PersistenceFactory.getService().persist((zwitch));
+      if (this.turnout != null && this.turnout.getAccessoryBean() != null) {
+        if (this.turnout.getAccessoryBean().getName() != null) {
+          PersistenceFactory.getService().persist((turnout));
 
-          TrackControllerFactory.getTrackController().addAccessoryListener(zwitch);
+          ControllerFactory.getController().addAccessoryEventListener(turnout);
         } else {
-          this.zwitch.setAccessoryBean(null);
-          PersistenceFactory.getService().persist((zwitch));
+          this.turnout.setAccessoryBean(null);
+          PersistenceFactory.getService().persist((turnout));
         }
       }
       this.setVisible(false);
       this.dispose();
-      Logger.trace(evt.getActionCommand() + "Switch " + zwitch.getId() + " linked to accessoryId: " + zwitch.getAccessoryId());
+      Logger.trace(evt.getActionCommand() + "Switch " + turnout.getId() + " linked to accessoryId: " + turnout.getAccessoryId());
     }//GEN-LAST:event_saveExitBtnActionPerformed
 
     private void accessoryCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accessoryCBActionPerformed
       AccessoryBean selected = (AccessoryBean) this.accessoryComboBoxModel.getSelectedItem();
       Logger.trace(evt.getActionCommand() + " Selected: " + selected.toLogString());
-      this.zwitch.setAccessoryBean(selected);
+      this.turnout.setAccessoryBean(selected);
     }//GEN-LAST:event_accessoryCBActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
