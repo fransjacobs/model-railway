@@ -348,18 +348,19 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private TileBean addReleatedObjects(TileBean tileBean) {
-    if (tileBean.getAccessoryId() != null) {
-      tileBean.setAccessoryBean(this.getAccessory(tileBean.getAccessoryId()));
-    }
+    if (tileBean != null) {
+      if (tileBean.getAccessoryId() != null) {
+        tileBean.setAccessoryBean(this.getAccessory(tileBean.getAccessoryId()));
+      }
 
-    if (tileBean.getSensorId() != null) {
-      tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
-    }
+      if (tileBean.getSensorId() != null) {
+        tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
+      }
 
-    if (tileBean.getTileType() != null && TileType.BLOCK == tileBean.getTileType()) {
-      tileBean.setBlockBean(this.getBlockByTileId(tileBean.getId()));
+      if (tileBean.getTileType() != null && TileType.BLOCK == tileBean.getTileType()) {
+        tileBean.setBlockBean(this.getBlockByTileId(tileBean.getId()));
+      }
     }
-
     return tileBean;
   }
 
@@ -539,24 +540,27 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private BlockBean addReleatedObjects(BlockBean blockBean) {
-    if (blockBean.getLocomotiveId() != null) {
-      blockBean.setLocomotive(this.getLocomotive(blockBean.getLocomotiveId()));
-    }
+    if (blockBean != null) {
 
-    if (blockBean.getPlusSensorBean() != null) {
-      blockBean.setPlusSensorBean(this.getSensor(blockBean.getPlusSensorId()));
-    }
+      if (blockBean.getLocomotiveId() != null) {
+        blockBean.setLocomotive(this.getLocomotive(blockBean.getLocomotiveId()));
+      }
 
-    if (blockBean.getMinSensorBean() != null) {
-      blockBean.setMinSensorBean(this.getSensor(blockBean.getMinSensorId()));
-    }
+      if (blockBean.getPlusSensorBean() != null) {
+        blockBean.setPlusSensorBean(this.getSensor(blockBean.getPlusSensorId()));
+      }
 
-    if (blockBean.getPlusSignalId() != null) {
-      blockBean.setPlusSignal(this.getAccessory(blockBean.getPlusSignalId()));
-    }
+      if (blockBean.getMinSensorBean() != null) {
+        blockBean.setMinSensorBean(this.getSensor(blockBean.getMinSensorId()));
+      }
 
-    if (blockBean.getMinSignalId() != null) {
-      blockBean.setMinSignal(this.getAccessory(blockBean.getMinSignalId()));
+      if (blockBean.getPlusSignalId() != null) {
+        blockBean.setPlusSignal(this.getAccessory(blockBean.getPlusSignalId()));
+      }
+
+      if (blockBean.getMinSignalId() != null) {
+        blockBean.setMinSignal(this.getAccessory(blockBean.getMinSignalId()));
+      }
     }
     return blockBean;
   }
