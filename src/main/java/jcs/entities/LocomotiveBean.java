@@ -54,6 +54,7 @@ public class LocomotiveBean implements Serializable {
   private Integer length;
   private String block;
   private boolean show;
+  private String imported;
 
   private Image locIcon;
 
@@ -345,13 +346,15 @@ public class LocomotiveBean implements Serializable {
     this.locIcon = locIcon;
   }
 
-//    @OneToMany(targetEntity=LocomotiveFunction.class )
-//  public List<LocomotiveFunction> getLocomotiveFunctions() {
-//    return locomotiveFunctions;
-//  }
-//  public void setLocomotiveFunctions(List<LocomotiveFunction> locomotiveFunctions) {
-//    this.locomotiveFunctions = locomotiveFunctions;
-//  }
+  @Column(name = "imported", length = 255)
+  public String getImported() {
+    return imported;
+  }
+
+  public void setImported(String imported) {
+    this.imported = imported;
+  }
+
   @Transient
   public Map<Integer, FunctionBean> getFunctions() {
     return functions;
@@ -367,7 +370,7 @@ public class LocomotiveBean implements Serializable {
     }
   }
 
-  public void replaceAllFunctions(List<FunctionBean> functions) {
+  public void setFunctions(List<FunctionBean> functions) {
     this.functions.clear();
     for (FunctionBean function : functions) {
       this.functions.put(function.getNumber(), function);
@@ -381,12 +384,11 @@ public class LocomotiveBean implements Serializable {
 
   @Override
   public String toString() {
-    //return this.name;
-    return toLogString();
+    return this.name;
   }
 
   public String toLogString() {
-    return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", previousName=" + previousName + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", mfxType=" + mfxType + ", blocks=" + block + ", locIcon=" + locIcon + '}';
+    return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", blocks=" + block + "}";
   }
 
   //Convenience
@@ -462,9 +464,6 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.name, other.name)) {
       return false;
     }
-//        if (!Objects.equals(this.previousName, other.previousName)) {
-//            return false;
-//        }
     if (!Objects.equals(this.icon, other.icon)) {
       return false;
     }
@@ -474,15 +473,9 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.mfxSid, other.mfxSid)) {
       return false;
     }
-//        if (!Objects.equals(this.spm, other.spm)) {
-//            return false;
-//        }
     if (!Objects.equals(this.mfxType, other.mfxType)) {
       return false;
     }
-//        if (!Objects.equals(this.block, other.block)) {
-//            return false;
-//        }
     if (!Objects.equals(this.id, other.id)) {
       return false;
     }
@@ -501,15 +494,6 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.vMin, other.vMin)) {
       return false;
     }
-//        if (!Objects.equals(this.accelerationDelay, other.accelerationDelay)) {
-//            return false;
-//        }
-//        if (!Objects.equals(this.brakeDelay, other.brakeDelay)) {
-//            return false;
-//        }
-//        if (!Objects.equals(this.volume, other.volume)) {
-//            return false;
-//        }
     if (!Objects.equals(this.velocity, other.velocity)) {
       return false;
     }

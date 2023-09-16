@@ -16,13 +16,12 @@
 package jcs.ui.monitor;
 
 import com.formdev.flatlaf.util.SystemInfo;
-import static com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.options.table.SensorTableModel;
 import org.tinylog.Logger;
 
@@ -149,16 +148,16 @@ public class FeedbackMonitor extends JFrame {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-      if (TrackControllerFactory.getTrackController() != null) {
-        TrackControllerFactory.getTrackController().removeSensorListener(sensorTableModel);
+      if (ControllerFactory.getController() != null) {
+        ControllerFactory.getController().removeSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Removed sensor listener");
       }
       this.sensorTableModel.clear();
     }//GEN-LAST:event_formWindowClosed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-      if (TrackControllerFactory.getTrackController() != null) {
-        TrackControllerFactory.getTrackController().addSensorListener(sensorTableModel);
+      if (ControllerFactory.getController() != null) {
+        ControllerFactory.getController().addSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Added sensor listener");
       }
     }//GEN-LAST:event_formWindowActivated

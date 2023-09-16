@@ -48,7 +48,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.trackservice.TrackControllerFactory;
+import jcs.controller.ControllerFactory;
 import jcs.ui.options.table.LocomotiveTableModel;
 import org.tinylog.Logger;
 
@@ -474,7 +474,7 @@ public class LocomotivePreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    TrackControllerFactory.getTrackController().synchronizeLocomotivesWithController(null);
+    ControllerFactory.getController().synchronizeLocomotivesWithController(null);
 
     refresh();
   }
@@ -545,7 +545,7 @@ public class LocomotivePreferencesPanel extends JPanel {
 
   public static void main(String args[]) {
     try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error("Can't set the LookAndFeel: " + ex);
     }

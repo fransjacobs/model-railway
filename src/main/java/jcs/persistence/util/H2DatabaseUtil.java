@@ -194,7 +194,8 @@ public class H2DatabaseUtil {
         Logger.warn("Script " + scriptFile.getName() + " does not exist!");
       }
     } catch (FileNotFoundException | SQLException e) {
-      Logger.error("Can't execute ddl script! ", e);
+      Logger.error("Can't execute ddl script!");
+      Logger.error("Cause: "+e.getMessage(), e);
     } finally {
       if (conn != null) {
         try {

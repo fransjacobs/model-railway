@@ -12,10 +12,11 @@ hence this project is Open Source so anyone can benefit.
 ## About The Project
 JCS is an application to control a model railway. It is in an early stage of development.
 The project mostly contains my experiments to automate my model railway.
-I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), hence the (current) hardware supported is the Maerklin CS-3 (and probably also the CS-2).
+I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), hence the (current) hardware supported is the Maerklin CS-3 and also the CS-2.
+(allthough ther are some differences between the CS 3 and 2)
 
-I started this project 2019 as (and still is) a hobby to automate my model rail layout.
-As I am trying to do this project beside my work, family and other hobbies it is a project with very slow pace...
+I started this project 2019 as (and still is) a hobby to automate my model-rail layout.
+As I am trying to do this project beside my work, family and other hobbies it is a project with sometimes a very slow pace...
 
 The aim of the program is to automate the running of trains on my layout.
 Currently the following modules are build:
@@ -26,10 +27,16 @@ Currently the following modules are build:
 * Locomotives overview (including automatic downloading of the Locomotive- and function button images) and control.
 * Turnout and Signals overview (Synchronized with the CS-3) and control.
 
+## Screenshots
 So here are a few screenshots of the Project:
-Control mode running a locomotive, turnout and signals can be controlled.
+Main screen in control mode turnout and signals can be controlled by clicking on the turnout or signal. 
 Sensor activation is shown.
 ![UI screenshot: JCS Main Screen](assets/mainscreen_control.png?raw=true)
+
+Locomotives can be driven manually using the Diver Cab.
+![UI screenshot: JCS Main Screen](assets/driver_cab.png?raw=true)
+
+The Locomotive- and function images are displayed. Images are automatically downloaded from the Central Station.
 
 In Editmode you can draw a layout using pre defined Tiles.
 also the layout can be routed. (it the very first and early step for the preparation of automatic running).
@@ -50,16 +57,16 @@ Sensor Monitor
 ## TODO's (and there are still a lots of todo's...):
 
 Currently the following features are under active development:
-* Improve communication with the CS
+* Improving communication with the CS-2/3
 * Automatically route the Layout.
 * React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. 
 * Automatically run trains.
 
-* Redesign the Locomotive(s) control so that it can support 32 functions in a nicer way.
 * Configuration screens to edit the Locomotives, Accessories and Sensors.
 * Automatic driving of the trains
 * Add deployment configuration for Windows and Linux and to an App
   (first added is MacOS as that is my main development platform) [Postponed this a while, but basics where done]
+* Add more Unit tests
 * ...
 
 So I hope you get inspired!
@@ -67,11 +74,11 @@ So I hope you get inspired!
 Frans
 
 ## License
-[LICENSE.md](LICENSE.md)
+[LICENSE](LICENSE.md)
 
 
 ## Build JCS from source
-[BUILDING.md](BUILDING.md)
+[BUILDING](BUILDING.md)
 
 ## Contributors
 
