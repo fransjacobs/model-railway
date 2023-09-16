@@ -29,7 +29,7 @@ Currently the following modules are build:
 So here are a few screenshots of the Project:
 Control mode running a locomotive, turnout and signals can be controlled.
 Sensor activation is shown.
-![UI screenshot: JCS Main Screen](assets/mainscreen_control.png?raw=true)
+![UI screenshot: JCS Main Screen](assets/mainscreen.png?raw=true)
 
 In Editmode you can draw a layout using pre defined Tiles.
 also the layout can be routed. (it the very first and early step for the preparation of automatic running).
