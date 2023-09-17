@@ -143,7 +143,7 @@ public class SensorBean implements Serializable {
 
   @Transient
   public boolean isActive() {
-    if(status != null) {
+    if (status != null) {
       return this.status > 0;
     } else {
       return false;
@@ -247,11 +247,11 @@ public class SensorBean implements Serializable {
 
   @Override
   public String toString() {
-    return "SensorBean{" + "id=" + id + ", name=" + name + ", deviceId=" + deviceId + ", contactId=" + contactId + ", status=" + status + ", previousStatus=" + previousStatus + ", millis=" + millis + ", lastUpdated=" + lastUpdated + '}';
+    return name;
   }
 
   public String toLogString() {
-    return toString();
+    return "SensorBean{" + "id=" + id + ", name=" + name + ", deviceId=" + deviceId + ", contactId=" + contactId + ", status=" + status + ", previousStatus=" + previousStatus + ", millis=" + millis + ", lastUpdated=" + lastUpdated + '}';
   }
 
 }
