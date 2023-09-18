@@ -3,7 +3,7 @@
 ## Model railway control with JCS (Java Central Station)
 Experiments wich should eventually lead to automater rail roud control.
 
-# Why?
+## Why?
 To have fun!
 I know there are ready to go products on the market.
 This project is not an attempt to compeat with any of them,
@@ -26,6 +26,9 @@ Currently the following modules are build:
 * A Screen to see Sensor / feedback events from the CS-3
 * Locomotives overview (including automatic downloading of the Locomotive- and function button images) and control.
 * Turnout and Signals overview (Synchronized with the CS-3) and control.
+
+## Build Status
+[![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
 
 ## Screenshots
 So here are a few screenshots of the Project:
