@@ -37,7 +37,6 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import jcs.JCS;
 import jcs.ui.layout.tiles.enums.Direction;
-import jcs.ui.layout.enums.Mode;
 import org.tinylog.Logger;
 
 /**
@@ -62,7 +61,7 @@ public class LayoutPanel extends JPanel {
   private void postInit() {
     this.straightBtn.setSelected(true);
     this.canvas.setTileType(TileType.STRAIGHT);
-    this.setMode(readonly ? Mode.CONTROL : Mode.SELECT);
+    this.setMode(readonly ? LayoutCanvas.Mode.CONTROL : LayoutCanvas.Mode.SELECT);
 
     if (this.readonly) {
       this.canvas.setDrawGrid(!readonly);
@@ -772,15 +771,15 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_loadBtnActionPerformed
 
     private void selectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_selectBtnActionPerformed
-      setMode(Mode.SELECT);
+      setMode(LayoutCanvas.Mode.SELECT);
     }//GEN-LAST:event_selectBtnActionPerformed
 
     private void addBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-      setMode(Mode.ADD);
+      setMode(LayoutCanvas.Mode.ADD);
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
-      setMode(Mode.DELETE);
+      setMode(LayoutCanvas.Mode.DELETE);
       this.canvas.removeTiles();
     }//GEN-LAST:event_deleteBtnActionPerformed
 
@@ -813,7 +812,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_flipVerticalBtnActionPerformed
 
     private void moveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveBtnActionPerformed
-      setMode(Mode.MOVE);
+      setMode(LayoutCanvas.Mode.MOVE);
     }//GEN-LAST:event_moveBtnActionPerformed
 
     private void rightSwitchBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightSwitchBtnActionPerformed
@@ -891,7 +890,7 @@ public class LayoutPanel extends JPanel {
     this.canvas.setDirection(direction);
   }
 
-  private void setMode(Mode mode) {
+  private void setMode(LayoutCanvas.Mode mode) {
     switch (mode) {
       case SELECT -> {
         selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png")));
