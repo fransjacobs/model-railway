@@ -1,3 +1,9 @@
+delete from locomotive_functions;
+delete from locomotives;
+
+alter table locomotive_functions alter column id restart with 1;
+
+
 INSERT INTO jcs.locomotives (id,name,uid,mfx_uid,address,icon,decoder_type,mfx_sid,tacho_max,v_min,velocity,richtung,commuter,"length",show,imported) VALUES
 	 (2,'BR 81 002',2,NULL,2,'DB BR 81 008','mm','0x2',80,1,0,0,false,0,true,'CS3-2374'),
 	 (3,'DB bzf 761',3,NULL,3,'DB bzf 761','mm','0x3',120,0,0,0,false,NULL,true,'CS3-2374'),

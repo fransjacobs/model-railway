@@ -5,6 +5,11 @@ delete from tiles;
 delete from sensors;
 delete from accessories;
 
+alter table accessories alter column id restart with 1;
+alter table sensors alter column id restart with 1;
+alter table route_elements alter column id restart with 1;
+alter table blocks alter column id restart with 1;
+
 commit;
 
 
