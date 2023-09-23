@@ -77,8 +77,6 @@ public class ControllerImpl implements Controller {
   
   private final List<MeasurementEventListener> measurementEventListeners;
   
-  private Timer trackMeasurementTimer;
-  
   public ControllerImpl() {
     this("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true")));
   }
@@ -102,8 +100,8 @@ public class ControllerImpl implements Controller {
     if (centralStation != null && centralStation.isConnected()) {
       return centralStation.isConnected();
     }
-    JCS.logProgress("Connecting to Vendor Controller");
     String controllerImplClassName = System.getProperty("vendorController");
+    JCS.logProgress("Connecting to: "+controllerImplClassName);
     
     if (centralStation == null) {
       try {

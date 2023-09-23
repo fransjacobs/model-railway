@@ -16,11 +16,14 @@
 package jcs.ui.monitor;
 
 import com.formdev.flatlaf.util.SystemInfo;
+import java.net.URL;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
+import jcs.JCS;
 import jcs.controller.ControllerFactory;
 import jcs.ui.options.table.SensorTableModel;
 import org.tinylog.Logger;
@@ -44,6 +47,12 @@ public class FeedbackMonitor extends JFrame {
       this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
     }
     initComponents();
+
+    URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
+    if (iconUrl != null) {
+      this.setIconImage(new ImageIcon(iconUrl).getImage());
+    }
+
     alignSensorTable();
   }
 

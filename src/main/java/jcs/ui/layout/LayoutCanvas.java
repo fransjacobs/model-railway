@@ -59,11 +59,11 @@ import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
 import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
-import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.astar.AStar;
 import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
@@ -78,89 +78,98 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class LayoutCanvas extends JPanel implements PropertyChangeListener {
-  
+
+  public enum Mode {
+    SELECT,
+    ADD,
+    EDIT,
+    MOVE,
+    DELETE,
+    CONTROL
+  }
+
   private boolean readonly;
   private Mode mode;
   private boolean drawGrid = true;
-  
+
   private Orientation orientation;
   private Direction direction;
   private TileType tileType;
-  
+
   private Point mouseLocation = new Point(0, 0);
-  
+
   private BufferedImage grid;
-  
+
   private final ExecutorService executor;
-  
+
   private final Map<Point, Tile> tiles;
   private final Map<Point, Tile> altTiles;
   private final Set<Point> selectedTiles;
   private final Set<Point> movingTiles;
-  
+
   private Tile movingTile;
-  
+
   private RoutesDialog routesDialog;
   private final Map<String, RouteElementBean> selectedRouteElements;
-  
+
   public LayoutCanvas() {
     this(false);
   }
-  
+
   public LayoutCanvas(boolean readonly) {
     this.readonly = readonly;
     this.tiles = new HashMap<>();
     this.altTiles = new HashMap<>();
-    
+
     this.selectedTiles = new HashSet<>();
     this.movingTiles = new HashSet<>();
-    
+
     this.selectedRouteElements = new HashMap<>();
-    
+
     this.executor = Executors.newSingleThreadExecutor();
-    
+
     this.mode = Mode.SELECT;
     this.orientation = Orientation.EAST;
     this.direction = Direction.CENTER;
-    
+
     initComponents();
     postInit();
   }
-  
+
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, this.readonly);
   }
-  
+
   @Override
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g.create();
-    
+
     Set<Tile> snapshot;
     Map<String, RouteElementBean> routeSnapshot;
-    
+
     synchronized (tiles) {
       snapshot = new HashSet<>(tiles.values());
       routeSnapshot = new HashMap<>(this.selectedRouteElements);
     }
-    
+
     if (this.drawGrid) {
       //paintDotGrid(g);
       paintLineGrid(g);
     } else {
       paintNullGrid(g);
     }
-    
+
     for (Tile tile : snapshot) {
       if (tile != null) {
         tile.setDrawOutline(drawGrid);
-        
+
         if (selectedTiles.contains(tile.getCenter())) {
           tile.setBackgroundColor(Color.yellow);
         } else {
           tile.setBackgroundColor(Color.white);
         }
-        
+
         if (routeSnapshot.containsKey(tile.getId())) {
           //if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
           if (tile.isJunction()) {
@@ -179,7 +188,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
             tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
           }
         }
-        
+
         tile.drawTile(g2, drawGrid);
 
         //debug
@@ -188,55 +197,55 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         }
       }
     }
-    
+
     g2.dispose();
   }
-  
+
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("repaintTile".equals(evt.getPropertyName())) {
-      
+
       Tile tile = (Tile) evt.getNewValue();
       this.repaint(tile.getBounds());
     }
   }
-  
+
   private void paintNullGrid(Graphics g) {
     if (this.grid != null) {
       int pw = this.getWidth();
       int ph = this.getHeight();
-      
+
       int gw = grid.getWidth();
       int gh = grid.getHeight();
-      
+
       if (pw != gw || ph != gh) {
         Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       } else {
       }
     }
-    
+
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-      
+
       Logger.trace("Width: " + width + " Height: " + height);
-      
+
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
-      
+
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-      
+
       gc.setPaint(Color.black);
-      
+
       gc.dispose();
     }
     Graphics2D g2 = (Graphics2D) g;
     //Draw grid from pre computed image
     g2.drawImage(grid, null, 0, 0);
   }
-  
+
   private void paintDotGrid(Graphics g) {
     if (this.grid != null) {
       int pw = this.getWidth(); // getSize().width;
@@ -244,28 +253,28 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       int gw = grid.getWidth();
       int gh = grid.getHeight();
-      
+
       if (pw != gw || ph != gh) {
         Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       } else {
       }
     }
-    
+
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-      
+
       Logger.trace("Width: " + width + " Height: " + height);
-      
+
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
-      
+
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-      
+
       gc.setPaint(Color.black);
-      
+
       for (int r = 0; r < width; r++) {
         for (int c = 0; c < height; c++) {
           gc.drawOval(r * Tile.GRID * 2, c * Tile.GRID * 2, 1, 1);
@@ -277,34 +286,34 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     //Draw grid from pre computed image
     g2.drawImage(grid, null, 0, 0);
   }
-  
+
   private void paintLineGrid(Graphics g) {
     if (this.grid != null) {
       int pw = this.getWidth();
       int ph = this.getHeight();
-      
+
       int gw = grid.getWidth();
       int gh = grid.getHeight();
-      
+
       if (pw != gw || ph != gh) {
         Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       }
     }
-    
+
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
       Logger.trace("Width: " + width + " Height: " + height);
-      
+
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
-      
+
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-      
+
       gc.setPaint(Color.lightGray);
-      
+
       gc.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
       for (int x = 0; x < width; x += 40) {
         gc.drawLine(x, 0, x, height);
@@ -317,63 +326,63 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Graphics2D g2 = (Graphics2D) g;
     g2.drawImage(grid, null, 0, 0);
   }
-  
+
   void resetDotGrid() {
     Logger.debug("reset dot grid");
     this.grid = null;
   }
-  
-  void setMode(Mode mode) {
+
+  void setMode(LayoutCanvas.Mode mode) {
     this.mode = mode;
     Logger.trace("Mode: " + mode);
   }
-  
-  Mode getMode() {
+
+  LayoutCanvas.Mode getMode() {
     return this.mode;
   }
-  
+
   void setDrawGrid(boolean flag) {
     this.drawGrid = flag;
   }
-  
+
   void setTileType(TileType tileType) {
     this.tileType = tileType;
     Logger.trace("TileType: " + this.tileType + " Current mode: " + this.mode);
   }
-  
+
   Orientation getOrientation() {
     return orientation;
   }
-  
+
   void setOrientation(Orientation orientation) {
     this.orientation = orientation;
   }
-  
+
   void setDirection(Direction direction) {
     this.direction = direction;
   }
-  
+
   Direction getDirection() {
     return direction;
   }
-  
+
   public void loadLayout() {
     this.executor.execute(() -> loadTiles());
   }
-  
+
   private void loadTiles() {
     boolean showValues = Mode.CONTROL.equals(this.mode);
-    
+
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
-    
+
     selectedTiles.clear();
     altTiles.clear();
     tiles.clear();
-    
+
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
       tile.setPropertyChangeListener(this);
-      
+
       switch (tile.getTileType()) {
         case SENSOR ->
           ControllerFactory.getController().addSensorEventListener((SensorEventListener) tile);
@@ -381,6 +390,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
+          
         default -> {
           //Do nothing
         }
@@ -396,39 +406,23 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     Logger.debug("Loaded " + tiles.size() + " Tiles...");
-
-//    Map<Point, Tile> tm = TileCache.loadLayout(drawGrid, this, showValues);
-//    Set<Point> ps = tm.keySet();
-//
-//    for (Point p : ps) {
-//      Tile t = tm.get(p);
-//      tiles.put(t.getCenter(), t);
-//      //Alternative point(s) to be able to find all points
-//      if (!t.getAltPoints().isEmpty()) {
-//        Set<Point> alt = t.getAltPoints();
-//        for (Point ap : alt) {
-//          altTiles.put(ap, t);
-//        }
-//      }
-//    }
-    Logger.debug("Loaded " + this.tiles.size() + " tiles...");
     this.repaint();
   }
-  
+
   public void saveLayout() {
     this.executor.execute(() -> saveTiles());
   }
-  
+
   private void saveTiles() {
     Logger.debug("Saving " + this.tiles.size() + " tiles...");
-    
+
     Set<Tile> snapshot;
     synchronized (tiles) {
       snapshot = new HashSet<>(tiles.values());
     }
-    
+
     List<TileBean> beans = new LinkedList<>();
-    
+
     for (Tile tile : snapshot) {
       if (tile != null) {
         TileBean tb = tile.getTileBean();
@@ -439,7 +433,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     PersistenceFactory.getService().persist(beans);
-    
+
     this.selectedTiles.clear();
   }
 
@@ -574,7 +568,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Logger.trace("@ (" + evt.getX() + "," + evt.getY() + ") button " + evt.getButton() + " " + evt.paramString());
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
     Logger.trace("Snapped (" + p.getX() + "," + p.getY() + ") Grid Tile: " + LayoutUtil.getGridX(evt.getX()) + "," + LayoutUtil.getGridY(evt.getY()) + " Current Mode: " + this.mode);
-    
+
     Tile tile = this.findTile(p);
 
     //Always make a new selection
@@ -585,12 +579,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         this.selectedTiles.addAll(tile.getAllPoints());
       }
     }
-    
+
     switch (this.mode) {
       case ADD -> {
         if (MouseEvent.BUTTON1 == evt.getButton()) {
           this.selectedTiles.clear();
-          
+
           Logger.trace("Adding tile: " + this.tileType + " @ (" + p.x + ", " + p.y + ")");
           addTile(p);
           this.selectedTiles.add(p);
@@ -617,7 +611,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.repaint();
 
   }//GEN-LAST:event_formMouseClicked
-  
+
   private void executeControlActionForTile(Tile tile, Point p) {
     TileType tt = tile.getTileType();
     switch (tt) {
@@ -628,6 +622,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       case SENSOR -> {
       }
       case BLOCK -> {
+        //show the Block control dialog so tha a locomotive can be assigned to the block
+        BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), (Block) tile);
+        bcd.setVisible(true);
       }
       case SIGNAL ->
         toggleSignal((Signal) tile);
@@ -639,7 +636,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
   }
-  
+
   private void toggleSwitch(Switch turnout) {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
@@ -649,19 +646,19 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
   }
-  
+
   private void toggleSignal(Signal signal) {
     if (signal.getAccessoryBean() != null) {
       AccessoryBean ab = signal.getAccessoryBean();
       ab.toggle();
       Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
-      
+
       ControllerFactory.getController().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }
   }
-  
+
   private void editSelectedTileProperties() {
     //the first tile should be the selected one
     boolean showProperties = false;
@@ -669,7 +666,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     boolean showRotate = false;
     boolean showMove = false;
     boolean showDelete = false;
-    
+
     if (!this.selectedTiles.isEmpty()) {
       Point tcp = this.selectedTiles.iterator().next();
       Tile tile = findTile(tcp);
@@ -714,7 +711,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.executor.execute(() -> repaint());
     Logger.trace("Edit done");
   }
-  
+
   private void showOperationsPopupMenu(Tile tile, Point p) {
     //which items should be shown
     boolean showProperties = false;
@@ -722,7 +719,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     boolean showRotate = false;
     boolean showMove = false;
     boolean showDelete = false;
-    
+
     TileType tt = tile.getTileType();
     switch (tt) {
       case SENSOR -> {
@@ -772,12 +769,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Logger.trace("Press X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
     Tile tile = this.findTile(p);
-    
+
     if (MouseEvent.BUTTON1 == evt.getButton() && tile != null) {
       this.movingTiles.clear();
       this.selectedTiles.clear();
       this.movingTiles.add(tile.getCenter());
-      
+
       this.movingTile = tile;
       this.selectedTiles.add(p);
       Logger.trace("Setting moving tile: " + tile);
@@ -789,49 +786,53 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void formMouseReleased(MouseEvent evt) {//GEN-FIRST:event_formMouseReleased
     Logger.trace("X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
-    
+
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
-    
-    if (this.movingTile != null) {
-      Point tp = this.movingTile.getCenter();
-      if (!tp.equals(p)) {
-        Logger.tag("Moving Tile from " + tp + " to " + p + " Tile to move: " + this.movingTile);
-        //Check if new position is free
-        if (this.tiles.containsKey(p)) {
-          Logger.debug("Point " + p + " is occupied by tile: " + tiles.get(p));
-          this.movingTile = null;
-        } else {
-          Tile tile = this.tiles.remove(tp);
-          if (tile != null) {
-            Set<Point> rps = tile.getAltPoints();
-            //Also remove alt points
-            for (Point ap : rps) {
-              this.tiles.remove(ap);
-            }
-            Logger.trace("Moved Tile from " + tp + " to " + p + " Tile: " + tile + "...");
-            
-            tile.setCenter(p);
-            this.tiles.put(p, tile);
-            for (Point ep : tile.getAltPoints()) {
-              this.altTiles.put(ep, tile);
-            }
-            
-            this.selectedTiles.clear();
-            this.selectedTiles.add(p);
-            
+    //Mode.
+
+    if (!LayoutCanvas.Mode.CONTROL.equals(this.mode)) {
+      if (this.movingTile != null) {
+        Point tp = this.movingTile.getCenter();
+        if (!tp.equals(p)) {
+          Logger.tag("Moving Tile from " + tp + " to " + p + " Tile to move: " + this.movingTile);
+          //Check if new position is free
+          if (this.tiles.containsKey(p)) {
+            Logger.debug("Point " + p + " is occupied by tile: " + tiles.get(p));
             this.movingTile = null;
+          } else {
+            Tile tile = this.tiles.remove(tp);
+            if (tile != null) {
+              Set<Point> rps = tile.getAltPoints();
+              //Also remove alt points
+              for (Point ap : rps) {
+                this.tiles.remove(ap);
+              }
+              Logger.trace("Moved Tile from " + tp + " to " + p + " Tile: " + tile + "...");
+
+              tile.setCenter(p);
+              this.tiles.put(p, tile);
+              for (Point ep : tile.getAltPoints()) {
+                this.altTiles.put(ep, tile);
+              }
+
+              this.selectedTiles.clear();
+              this.selectedTiles.add(p);
+
+              this.movingTile = null;
+            }
+
+            this.repaint();
           }
-          this.repaint();
+        } else {
+          this.movingTile = null;
         }
-      } else {
-        this.movingTile = null;
       }
     }
   }//GEN-LAST:event_formMouseReleased
 
   private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
       this.mouseLocation = null;
@@ -840,7 +841,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void verticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_verticalMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
       this.mouseLocation = null;
@@ -849,7 +850,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void rightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
       this.mouseLocation = null;
@@ -858,7 +859,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void leftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
 
@@ -866,7 +867,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       this.mouseLocation = null;
     }
   }//GEN-LAST:event_leftMIActionPerformed
-  
+
   private Tile findTile(Point cp) {
     Tile result = this.tiles.get(cp);
     if (result == null) {
@@ -876,14 +877,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         //Logger.trace("Found " + result + " in alt tiles");
       }
     }
-    
+
     return result;
   }
 
   private void formMouseMoved(MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
     //Only repaint when the mouse is snapped to the next grid
     Point sp = LayoutUtil.snapToGrid(evt.getPoint());
-    
+
     Tile tile = findTile(sp);
     if (tile != null) {
       setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -915,21 +916,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
       editSelectedTileProperties();
     }//GEN-LAST:event_propertiesMIActionPerformed
-  
+
   private Point getCheckAvailable(Point newPoint) {
     if (this.tiles.containsKey(newPoint)) {
       Tile et = this.tiles.get(newPoint);
-      
+
       Logger.debug("@ " + newPoint + " is allready occcupied by: " + et + "...");
       //Search for the nearest avalaible free point 
       //first get the Center point of the tile which is occuping this slot
 
       // show warning!
       Point ecp = et.getCenter();
-      
+
       int w = et.getWidth();
       int h = et.getHeight();
-      
+
       Point np;
       np = switch (this.orientation) {
         case EAST ->
@@ -941,34 +942,34 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         default ->
           new Point(ecp.x, newPoint.y - h);
       };
-      
+
       Logger.trace("Alternative CP: " + np);
       // recursive check
       return getCheckAvailable(np);
     } else {
       Logger.debug("@ " + newPoint + " is not yet used...");
-      
+
       return newPoint;
     }
   }
-  
+
   private void addTile(Point p) {
     if (this.orientation == null) {
       this.orientation = Orientation.EAST;
     }
-    
+
     if (this.direction == null) {
       this.direction = Direction.RIGHT;
     }
-    
+
     Logger.trace("Adding: " + tileType + " @ " + p);
-    
+
     Point chkp = getCheckAvailable(p);
-    
+
     boolean fullRepaint = !chkp.equals(p);
-    
+
     Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
-    
+
     tiles.put(chkp, tile);
     //Alternative point(s) to be able to find all points
     if (!tile.getAltPoints().isEmpty()) {
@@ -979,21 +980,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
     Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
     Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
-    
+
     if (fullRepaint) {
       this.repaint();
     }
   }
-  
+
   void removeTiles() {
     removeTiles(this.selectedTiles);
   }
-  
+
   private void removeTiles(Set<Point> pointsToRemove) {
     for (Point p : pointsToRemove) {
       synchronized (tiles) {
         Tile removed = this.tiles.remove(p);
-        
+
         if (removed != null && removed.getAllPoints() != null) {
           //Remove tile from persistent store
           //PersistenceFactory.getService().remove(removed.getTileBean());
@@ -1003,21 +1004,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           for (Point ap : rps) {
             this.tiles.remove(ap);
           }
-          
+
           Logger.trace("Removed: " + removed);
         }
       }
     }
     this.selectedTiles.clear();
     this.repaint();
-    
+
   }
-  
+
   private java.awt.Frame getParentFrame() {
     JFrame frame = (JFrame) SwingUtilities.getRoot(this);
     return frame;
   }
-  
+
   public void rotateSelectedTile() {
     Logger.trace("Selected Tiles " + selectedTiles.size());
 
@@ -1031,7 +1032,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         for (Point ep : t.getAltPoints()) {
           this.altTiles.remove(ep);
         }
-        
+
         t.rotate();
         Logger.trace("Rotated " + t);
         this.orientation = t.getOrientation();
@@ -1042,14 +1043,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
         }
-        
+
         this.selectedTiles.clear();
         this.selectedTiles.addAll(t.getAllPoints());
       }
     }
     this.executor.execute(() -> repaint());
   }
-  
+
   public void flipSelectedTileHorizontal() {
     Set<Point> snapshot = new HashSet<>(selectedTiles);
     for (Point p : snapshot) {
@@ -1060,7 +1061,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         for (Point ep : t.getAltPoints()) {
           this.altTiles.remove(ep);
         }
-        
+
         t.flipHorizontal();
         Logger.trace("Flipped " + t);
         this.orientation = t.getOrientation();
@@ -1071,14 +1072,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
         }
-        
+
         this.selectedTiles.clear();
         this.selectedTiles.addAll(t.getAllPoints());
       }
     }
     this.executor.execute(() -> repaint());
   }
-  
+
   public void flipSelectedTileVertical() {
     Set<Point> snapshot = new HashSet<>(selectedTiles);
     for (Point p : snapshot) {
@@ -1089,7 +1090,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         for (Point ep : t.getAltPoints()) {
           this.altTiles.remove(ep);
         }
-        
+
         t.flipVertical();
         Logger.trace("Flipped " + t);
         this.orientation = t.getOrientation();
@@ -1100,33 +1101,33 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
         }
-        
+
         this.selectedTiles.clear();
         this.selectedTiles.addAll(t.getAllPoints());
       }
     }
     this.executor.execute(() -> repaint());
   }
-  
+
   void routeLayout() {
     routeLayoutWithAStar();
     //this.executor.execute(() -> routeLayoutWithAStar());
   }
-  
+
   private void routeLayoutWithAStar() {
     //Make sure the layout is saved
     this.saveTiles();
-    
+
     AStar astar = new AStar();
     astar.buildGraph(this.tiles.values().stream().collect(Collectors.toList()));
     astar.routeAll();
     astar.persistRoutes();
   }
-  
+
   void showRoutesDialog() {
     this.routesDialog.setVisible(true);
   }
-  
+
   void setSelectRoute(RouteBean route) {
     selectedRouteElements.clear();
     if (route != null) {
@@ -1145,7 +1146,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         //}
       }
     }
-    
+
     this.executor.execute(() -> repaint());
   }
 
