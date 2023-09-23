@@ -90,9 +90,9 @@ INSERT INTO jcs.sensors (name,device_id,contact_id,status,previous_status,millis
 	 ('M2008',65,2008,0,1,600,'2023-09-23'),
 	 ('M2007',65,2007,0,1,37800,'2023-09-23'),
 	 ('M2031',65,2031,0,1,5100,'2023-09-23'),
-	 ('M2012',65,1012,1,0,900,'2023-09-23');
+	 ('M1012',65,1012,1,0,900,'2023-09-23');
 INSERT INTO jcs.sensors (name,device_id,contact_id,status,previous_status,millis,last_updated) VALUES
-	 ('M2011',65,1011,0,1,100,'2023-09-23'),
+	 ('M1011',65,1011,0,1,100,'2023-09-23'),
 	 ('M2032',65,2032,0,1,5100,'2023-09-23'),
 	 ('M2028',65,2028,NULL,NULL,NULL,NULL),
 	 ('M2021',65,2021,0,1,200,'2023-09-23'),
@@ -118,6 +118,7 @@ INSERT INTO jcs.sensors (name,device_id,contact_id,status,previous_status,millis
 	 ('M2004',65,2004,0,1,2800,'2023-09-23'),
 	 ('M2012',65,2012,0,1,5300,'2023-09-23'),
 	 ('M2011',65,2011,0,1,1200,'2023-09-23');
+
 commit;
 
 INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
@@ -203,7 +204,7 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('sw-18','Switch','West','Right',700,540,NULL,30,NULL),
 	 ('ct-13','Curved','East','Center',660,260,NULL,NULL,NULL),
 	 ('st-78','Straight','East','Center',420,780,NULL,NULL,NULL),
-	 ('se-26','Sensor','East','Center',660,380,NULL,NULL,60),
+	 ('se-26','Sensor','East','Center',660,380,NULL,NULL,53),
 	 ('st-10','Straight','East','Center',620,100,NULL,NULL,NULL),
 	 ('se-1','Sensor','South','Center',180,140,NULL,NULL,19),
 	 ('si-4','Signal','West','Center',340,340,NULL,11,NULL),
@@ -338,7 +339,7 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('se-14','Sensor','West','Center',380,300,NULL,NULL,24),
 	 ('ct-10','Curved','West','Center',700,340,NULL,NULL,NULL),
 	 ('sd-5','StraightDirection','West','Center',580,300,NULL,NULL,NULL),
-	 ('se-24','Sensor','East','Center',580,380,NULL,NULL,61),
+	 ('se-24','Sensor','East','Center',580,380,NULL,NULL,54),
 	 ('se-45','Sensor','West','Center',780,780,NULL,NULL,16);
 INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('se-31','Sensor','West','Center',340,540,NULL,NULL,9),
