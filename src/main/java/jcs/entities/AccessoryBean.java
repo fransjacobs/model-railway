@@ -127,9 +127,16 @@ public class AccessoryBean {
   @Transient
   public void toggle() {
     //based on number of states
+    if (this.states == null) {
+      this.states = 0;
+    }
     int s = this.states;
     if (s == 0) {
       s = 2;
+    }
+
+    if (this.position == null) {
+      this.position = 0;
     }
 
     s = s - 1;
