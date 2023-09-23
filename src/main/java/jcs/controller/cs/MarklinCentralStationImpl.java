@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.controller.cs2.AccessoryBeanParser;
@@ -43,7 +42,6 @@ import jcs.controller.cs.can.CanMessageFactory;
 import static jcs.controller.cs.can.CanMessageFactory.getStatusDataConfigResponse;
 import jcs.controller.cs2.ChannelDataParser;
 import jcs.controller.cs.can.parser.MessageInflator;
-import jcs.controller.cs.can.parser.StatusDataConfig;
 import jcs.controller.cs.can.parser.SystemStatus;
 import jcs.controller.cs.net.CSConnection;
 import jcs.controller.cs.net.HTTPConnection;
@@ -84,10 +82,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private Device mainDevice;
   private int csUid;
 
-//  private ChannelDataParser channelData1;
-//  private ChannelDataParser channelData2;
-//  private ChannelDataParser channelData3;
-//  private ChannelDataParser channelData4;
   Map<Integer, MeasurementChannel> measurementChannels;
 
   private final List<PowerEventListener> powerEventListeners;
@@ -99,7 +93,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
   private ExecutorService executor;
-  //private ScheduledExecutorService scheduledExecutor;
   private boolean power;
 
   private FunctionSvgToPngConverter svgToImage;
@@ -126,7 +119,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     locomotiveSpeedEventListeners = new LinkedList<>();
 
     executor = Executors.newCachedThreadPool();
-    //scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
 
     if (autoConnect) {
       connect();

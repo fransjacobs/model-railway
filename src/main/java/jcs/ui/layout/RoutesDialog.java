@@ -19,10 +19,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.ImageIcon;
+import jcs.JCS;
 import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -58,6 +61,11 @@ public class RoutesDialog extends javax.swing.JDialog {
     this.executor = Executors.newSingleThreadExecutor();
 
     initComponents();
+
+    URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
+    if (iconUrl != null) {
+      this.setIconImage(new ImageIcon(iconUrl).getImage());
+    }
 
     if (this.readonly) {
       this.routeBtn.setEnabled(!readonly);
@@ -110,7 +118,7 @@ public class RoutesDialog extends javax.swing.JDialog {
     routeToolBar.setRollover(true);
     routeToolBar.setPreferredSize(new java.awt.Dimension(150, 40));
 
-    routeBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/route-24.png"))); // NOI18N
+    routeBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
     routeBtn.setToolTipText("Route the Layout");
     routeBtn.setFocusable(false);
     routeBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);

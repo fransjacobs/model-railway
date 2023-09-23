@@ -65,11 +65,13 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
-        //Should be created in the edit screen...
-        Logger.warn("Block has no BlockBean. Creating one...");
-        bb = new BlockBean();
-        bb.setTile(block);
-        bb.setTileId(this.block.getId());
+        bb = PersistenceFactory.getService().getBlockByTileId(block.getId());
+        if(bb == null) {   
+          Logger.warn("Block has no BlockBean. Creating one...");
+          bb = new BlockBean();
+          bb.setTile(block);
+          bb.setTileId(this.block.getId());
+        }  
         this.block.setBlockBean(bb);
       }
 
@@ -81,9 +83,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
       }
 
       if (bb.getLocomotive() != null) {
-        this.locomotiveComboBoxModel.setSelectedItem(bb.getLocomotive());
+        this.locomotiveCB.setSelectedItem(bb.getLocomotive());
       } else {
-        this.locomotiveComboBoxModel.setSelectedItem(emptyBean);
+        this.locomotiveCB.setSelectedItem(emptyBean);
       }
     }
   }

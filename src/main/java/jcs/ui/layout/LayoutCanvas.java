@@ -390,6 +390,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
+          
         default -> {
           //Do nothing
         }
@@ -405,22 +406,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     Logger.debug("Loaded " + tiles.size() + " Tiles...");
-
-//    Map<Point, Tile> tm = TileCache.loadLayout(drawGrid, this, showValues);
-//    Set<Point> ps = tm.keySet();
-//
-//    for (Point p : ps) {
-//      Tile t = tm.get(p);
-//      tiles.put(t.getCenter(), t);
-//      //Alternative point(s) to be able to find all points
-//      if (!t.getAltPoints().isEmpty()) {
-//        Set<Point> alt = t.getAltPoints();
-//        for (Point ap : alt) {
-//          altTiles.put(ap, t);
-//        }
-//      }
-//    }
-    Logger.debug("Loaded " + this.tiles.size() + " tiles...");
     this.repaint();
   }
 
