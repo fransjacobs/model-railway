@@ -533,7 +533,8 @@ public class TurnoutPreferencesPanel extends JPanel {
 
   protected void setComponentValues(AccessoryBean turnout) {
     if (turnout != null) {
-      this.idSpinner.setValue(turnout.getId());
+      this.idSpinner.setValue(turnout.getAddress());
+      
       this.nameTF.setText(turnout.getName());
       this.typeTF.setText(turnout.getType());
       this.switchTimeSpinner.setValue(turnout.getSwitchTime());

@@ -25,6 +25,7 @@ import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.DecoderType;
+import jcs.entities.enums.TileType;
 
 /**
  * The Persistence Service takes care of all persistence functionality which is needed within the
@@ -85,6 +86,8 @@ public interface PersistenceService {
 
   // Tile
   List<TileBean> getTileBeans();
+
+  List<TileBean> getTileBeansByTileType(TileType tileType);
 
   TileBean getTileBean(String id);
 

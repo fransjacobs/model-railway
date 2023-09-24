@@ -15,12 +15,17 @@
  */
 package jcs.ui.layout.dialogs;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
+import jcs.entities.TileBean;
+import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -54,11 +59,31 @@ public class SignalDialog extends javax.swing.JDialog {
     this.headingLbl.setText(text);
 
     if (this.signal != null) {
-      List<AccessoryBean> signals = PersistenceFactory.getService().getSignals();
-      AccessoryBean emptyBean = new AccessoryBean();
-      signals.add(emptyBean);
+      List<AccessoryBean> accessoryBeans = PersistenceFactory.getService().getSignals();
+      List<TileBean> signalTiles = PersistenceFactory.getService().getTileBeansByTileType(TileType.SIGNAL);
 
-      accessoryComboBoxModel = new DefaultComboBoxModel(signals.toArray());
+      Set<String> usedAccessoryIds = new HashSet<>();
+      for (TileBean tb : signalTiles) {
+        if (tb.getAccessoryId() != null) {
+          usedAccessoryIds.add(tb.getAccessoryId());
+        }
+      }
+      //Filter the unused signals
+      List<AccessoryBean> filtered = new ArrayList<>();
+      for (AccessoryBean ab : accessoryBeans) {
+        if (!usedAccessoryIds.contains(ab.getId())) {
+          filtered.add(ab);
+        }
+      }
+      //Ensure the selectes is still there
+      if (this.signal.getAccessoryBean() != null) {
+        filtered.add(this.signal.getAccessoryBean());
+      }
+
+      AccessoryBean emptyBean = new AccessoryBean();
+      filtered.add(emptyBean);
+
+      accessoryComboBoxModel = new DefaultComboBoxModel(filtered.toArray());
       this.accessoryCB.setModel(accessoryComboBoxModel);
 
       AccessoryBean ab = this.signal.getAccessoryBean();

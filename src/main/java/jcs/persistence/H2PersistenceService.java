@@ -408,6 +408,12 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public List<TileBean> getTileBeansByTileType(TileType tileType) {
+    List<TileBean> tileBeans = database.where("tile_type = ?",tileType.getTileType()).results(TileBean.class);
+    return addReleatedObjects(tileBeans);
+  }
+  
+  @Override
   public TileBean getTileBean(String id) {
     TileBean tileBean = database.where("id=?", id).first(TileBean.class);
     return addReleatedObjects(tileBean);

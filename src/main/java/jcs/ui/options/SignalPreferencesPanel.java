@@ -535,7 +535,9 @@ public class SignalPreferencesPanel extends JPanel {
 
   protected void setComponentValues(AccessoryBean signal) {
     if (signal != null) {
-      this.idSpinner.setValue(signal.getId());
+      
+      this.idSpinner.setValue(signal.getAddress());
+      
       this.nameTF.setText(signal.getName());
       this.typeTF.setText(signal.getType());
       this.switchTimeSpinner.setValue(signal.getSwitchTime());

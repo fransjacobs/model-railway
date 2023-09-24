@@ -15,12 +15,18 @@
  */
 package jcs.ui.layout.dialogs;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
+import jcs.entities.AccessoryBean;
+import jcs.entities.TileBean;
+import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.Switch;
 import org.tinylog.Logger;
 
@@ -54,12 +60,33 @@ public class SwitchDialog extends javax.swing.JDialog {
 
     if (this.turnout != null) {
       //Get a list of all available Turnouts
-      List<AccessoryBean> turnouts = PersistenceFactory.getService().getTurnouts();
+      List<AccessoryBean> accessoryBeans = PersistenceFactory.getService().getTurnouts();
+
+      List<TileBean> turnoutTiles = PersistenceFactory.getService().getTileBeansByTileType(TileType.SWITCH);
+      turnoutTiles.addAll(PersistenceFactory.getService().getTileBeansByTileType(TileType.CROSS));
+
+      Set<String> usedAccessoryIds = new HashSet<>();
+      for (TileBean tb : turnoutTiles) {
+        if (tb.getAccessoryId() != null) {
+          usedAccessoryIds.add(tb.getAccessoryId());
+        }
+      }
+      //Filter the unused turnouts
+      List<AccessoryBean> filtered = new ArrayList<>();
+      for (AccessoryBean ab : accessoryBeans) {
+        if (!usedAccessoryIds.contains(ab.getId())) {
+          filtered.add(ab);
+        }
+      }
+      //Ensure the selectes is still there
+      if (this.turnout.getAccessoryBean() != null) {
+        filtered.add(this.turnout.getAccessoryBean());
+      }
       //Expand with an empty one for display
       AccessoryBean emptyBean = new AccessoryBean();
-      turnouts.add(emptyBean);
+      filtered.add(emptyBean);
 
-      accessoryComboBoxModel = new DefaultComboBoxModel(turnouts.toArray());
+      accessoryComboBoxModel = new DefaultComboBoxModel(filtered.toArray());
       this.accessoryCB.setModel(accessoryComboBoxModel);
 
       AccessoryBean ab = this.turnout.getAccessoryBean();
