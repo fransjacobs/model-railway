@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -132,46 +132,6 @@ public class AccessoryBeanParser {
     return accessories;
   }
 
-//  public List<AccessoryBean> parseAccessoryStatusFile(String accessoryStatusFile) {
-//    List<AccessoryBean> accessories = new LinkedList<>();
-//    List<String> items = Arrays.asList(accessoryStatusFile.split("\n"));
-//    Map<String, String> ma = new HashMap<>();
-//    for (String s : items) {
-//      //Logger.trace("Line: " + s);
-//      switch (s) {
-//        case ACCESSORY_START -> {
-//        }
-//        case VERSION -> {
-//        }
-//        case ARTIKEL -> {
-//          if (ma.containsKey(ID)) {
-//            AccessoryBean ab = createAccessory(ma);
-//            accessories.add(ab);
-//          }
-//          ma.clear();
-//        }
-//        default -> {
-//          if (s.contains("=")) {
-//            String[] kp = s.split("=");
-//            String key = kp[0];
-//            String val = kp[1];
-//            ma.put(key, val);
-//
-//          } else {
-//            Logger.debug("Tag?: " + s);
-//          }
-//        }
-//      }
-//    }
-//    // parse the last Accessory
-//    if (ma.containsKey(ID)) {
-//      if (ma.containsKey(ID)) {
-//        AccessoryBean ab = createAccessory(ma);
-//        accessories.add(ab);
-//      }
-//    }
-//    return accessories;
-//  }
   private AccessoryBean createAccessory(Map<String, String> ma) {
     Integer address = Integer.valueOf(ma.get(ID));
     String name = ma.get(NAME);
@@ -189,8 +149,10 @@ public class AccessoryBeanParser {
 
     String decoderType = ma.get(DECTYP);
     String decoder = ma.get(DECODER);
+    
+    String id = address+"";
 
-    return new AccessoryBean(address, name, type, position, switchTime, decoderType, decoder);
+    return new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
   }
 
   public static void main(String[] a) throws Exception {
@@ -204,7 +166,6 @@ public class AccessoryBeanParser {
     for (AccessoryBean accessory : accessories) {
       Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
     }
-
   }
 
 }

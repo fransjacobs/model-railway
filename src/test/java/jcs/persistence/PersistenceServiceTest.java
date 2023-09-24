@@ -15,6 +15,8 @@
  */
 package jcs.persistence;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,9 +38,8 @@ import jcs.ui.layout.tiles.enums.Direction;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.tinylog.Logger;
 
 public class PersistenceServiceTest {
@@ -61,7 +62,7 @@ public class PersistenceServiceTest {
     testHelper = PersistenceTestHelper.getInstance();
 
     jcsPropertyList = new LinkedList<>();
-    sensors = new LinkedList<>();
+    sensors = new ArrayList<>();
     locomotives = new LinkedList<>();
     functions = new LinkedList<>();
     turnouts = new LinkedList<>();
@@ -72,12 +73,10 @@ public class PersistenceServiceTest {
   }
 
   @BeforeClass
-  public static void setUpClass() throws Exception {
-  }
+  public static void setUpClass() throws Exception {}
 
   @AfterClass
-  public static void tearDownClass() throws Exception {
-  }
+  public static void tearDownClass() throws Exception {}
 
   @Before
   public void setUp() {
@@ -91,20 +90,100 @@ public class PersistenceServiceTest {
     jcsPropertyList.add(p10);
     jcsPropertyList.add(p11);
 
-    SensorBean s1 = new SensorBean(1L, "M1", 65, 1, 0, 0, 0, null);
+    SensorBean s1 = new SensorBean("65-1", "M1", 65, 1, 0, 0, 0, null);
     sensors.add(s1);
-    SensorBean s2 = new SensorBean(2L, "M2", 65, 2, 1, 1, 0, null);
+    SensorBean s2 = new SensorBean("65-2", "M2", 65, 2, 1, 1, 0, null);
     sensors.add(s2);
 
-    LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 0L, 2, "DB BR 81 008", "mm_prg", null, 120, 1, 0, 0, false, null, true);
+    LocomotiveBean loco2 =
+        new LocomotiveBean(
+            2L,
+            "BR 81 002",
+            2L,
+            0L,
+            2,
+            "DB BR 81 008",
+            "mm_prg",
+            null,
+            120,
+            1,
+            0,
+            0,
+            false,
+            null,
+            true);
     locomotives.add(loco2);
-    LocomotiveBean loco8 = new LocomotiveBean(8L, "NS  6505", 8L, null, 8, "NS DHG 6505", "mm_prg", null, 120, 0, 0, 0, false, null, true);
+    LocomotiveBean loco8 =
+        new LocomotiveBean(
+            8L,
+            "NS  6505",
+            8L,
+            null,
+            8,
+            "NS DHG 6505",
+            "mm_prg",
+            null,
+            120,
+            0,
+            0,
+            0,
+            false,
+            null,
+            true);
     locomotives.add(loco8);
-    LocomotiveBean loco12 = new LocomotiveBean(12L, "BR 141 015-08", 12L, null, 12, "DB BR 141 136-2", "mm_prg", null, 120, 0, 0, 0, false, null, true);
+    LocomotiveBean loco12 =
+        new LocomotiveBean(
+            12L,
+            "BR 141 015-08",
+            12L,
+            null,
+            12,
+            "DB BR 141 136-2",
+            "mm_prg",
+            null,
+            120,
+            0,
+            0,
+            0,
+            false,
+            null,
+            true);
     locomotives.add(loco12);
-    LocomotiveBean loco16389 = new LocomotiveBean(16389L, "193 304-3 DB AG", 16389L, 1945312555L, 5, "DB BR 193 304-3", "mfx", "0x5", 160, 5, 0, 0, false, null, true);
+    LocomotiveBean loco16389 =
+        new LocomotiveBean(
+            16389L,
+            "193 304-3 DB AG",
+            16389L,
+            1945312555L,
+            5,
+            "DB BR 193 304-3",
+            "mfx",
+            "0x5",
+            160,
+            5,
+            0,
+            0,
+            false,
+            null,
+            true);
     locomotives.add(loco16389);
-    LocomotiveBean loco49156 = new LocomotiveBean(49156L, "NS Plan Y", 49156L, null, 4, "NS Plan Y", "dcc", null, 120, 1, 0, 0, false, null, true);
+    LocomotiveBean loco49156 =
+        new LocomotiveBean(
+            49156L,
+            "NS Plan Y",
+            49156L,
+            null,
+            4,
+            "NS Plan Y",
+            "dcc",
+            null,
+            120,
+            1,
+            0,
+            0,
+            false,
+            null,
+            true);
     locomotives.add(loco49156);
 
     FunctionBean fb16389_5 = new FunctionBean(1L, 16389L, 5, 20, 0);
@@ -150,42 +229,206 @@ public class PersistenceServiceTest {
     FunctionBean fb49156_4 = new FunctionBean(21L, 49156L, 4, 18, 0);
     functions.add(fb49156_4);
 
-    AccessoryBean w1 = new AccessoryBean(1L, 1, "W 1R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
+    AccessoryBean w1 =
+        new AccessoryBean(
+            "1",
+            1,
+            "W 1R",
+            "rechtsweiche",
+            1,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "weichen",
+            "005",
+            "magicon_a_005_01.svg");
     this.turnouts.add(w1);
-    AccessoryBean w2 = new AccessoryBean(2L, 2, "W 2L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg");
+    AccessoryBean w2 =
+        new AccessoryBean(
+            "2",
+            2,
+            "W 2L",
+            "linksweiche",
+            1,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "weichen",
+            "006",
+            "magicon_a_006_01.svg");
     this.turnouts.add(w2);
-    AccessoryBean w6 = new AccessoryBean(3L, 6, "W 6R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
+    AccessoryBean w6 =
+        new AccessoryBean(
+            "6",
+            6,
+            "W 6R",
+            "rechtsweiche",
+            1,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "weichen",
+            "005",
+            "magicon_a_005_01.svg");
     this.turnouts.add(w6);
-    AccessoryBean w7 = new AccessoryBean(4L, 7, "W 7L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg");
+    AccessoryBean w7 =
+        new AccessoryBean(
+            "7",
+            7,
+            "W 7L",
+            "linksweiche",
+            1,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "weichen",
+            "006",
+            "magicon_a_006_01.svg");
     this.turnouts.add(w7);
-    AccessoryBean s15 = new AccessoryBean(5L, 15, "S 15", "lichtsignal_SH01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "019", "magicon_a_019_00.svg");
+    AccessoryBean s15 =
+        new AccessoryBean(
+            "15",
+            15,
+            "S 15",
+            "lichtsignal_SH01",
+            0,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "lichtsignale",
+            "019",
+            "magicon_a_019_00.svg");
     this.signals.add(s15);
-    AccessoryBean s19 = new AccessoryBean(6L, 19, "S 19", "lichtsignal_HP01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "015", "magicon_a_015_00.svg");
+    AccessoryBean s19 =
+        new AccessoryBean(
+            "19",
+            19,
+            "S 19",
+            "lichtsignal_HP01",
+            0,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "lichtsignale",
+            "015",
+            "magicon_a_015_00.svg");
     this.signals.add(s19);
-    AccessoryBean s25 = new AccessoryBean(7L, 25, "S 25/26", "urc_lichtsignal_HP012_SH01", 0, 4, 200, "mm", "ein_alt", "lichtsignale", "027", "magicon_a_027_00.svg");
+    AccessoryBean s25 =
+        new AccessoryBean(
+            "25",
+            25,
+            "S 25/26",
+            "urc_lichtsignal_HP012_SH01",
+            0,
+            4,
+            200,
+            "mm",
+            "ein_alt",
+            "lichtsignale",
+            "027",
+            "magicon_a_027_00.svg");
     this.signals.add(s25);
-    AccessoryBean s41 = new AccessoryBean(8L, 41, "S 41", "urc_lichtsignal_HP012", 0, 3, 200, "mm", "ein_alt", "lichtsignale", "026", "magicon_a_026_00.svg");
+    AccessoryBean s41 =
+        new AccessoryBean(
+            "41",
+            41,
+            "S 41",
+            "urc_lichtsignal_HP012",
+            0,
+            3,
+            200,
+            "mm",
+            "ein_alt",
+            "lichtsignale",
+            "026",
+            "magicon_a_026_00.svg");
     this.signals.add(s41);
 
-    TileBean bk1 = new TileBean("bk-1", TileType.BLOCK, Orientation.EAST, Direction.CENTER, 320, 140, null, null, null);
+    TileBean bk1 =
+        new TileBean(
+            "bk-1", TileType.BLOCK, Orientation.EAST, Direction.CENTER, 320, 140, null, null, null);
     tiles.add(bk1);
-    TileBean bk2 = new TileBean("bk-2", TileType.BLOCK, Orientation.EAST, Direction.CENTER, 420, 140, null, null, null);
+    TileBean bk2 =
+        new TileBean(
+            "bk-2", TileType.BLOCK, Orientation.EAST, Direction.CENTER, 420, 140, null, null, null);
     tiles.add(bk2);
-    TileBean ct2 = new TileBean("ct-2", TileType.CURVED, Orientation.EAST, Direction.CENTER, 260, 140, null, null, null);
+    TileBean ct2 =
+        new TileBean(
+            "ct-2",
+            TileType.CURVED,
+            Orientation.EAST,
+            Direction.CENTER,
+            260,
+            140,
+            null,
+            null,
+            null);
     tiles.add(ct2);
-    TileBean ct5 = new TileBean("ct-5", TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 180, 380, null, null, null);
+    TileBean ct5 =
+        new TileBean(
+            "ct-5",
+            TileType.CURVED,
+            Orientation.SOUTH,
+            Direction.CENTER,
+            180,
+            380,
+            null,
+            null,
+            null);
     tiles.add(ct5);
-    TileBean se5 = new TileBean("se-5", TileType.SENSOR, Orientation.NORTH, Direction.CENTER, 340, 380, null, null, 2L);
+    TileBean se5 =
+        new TileBean(
+            "se-5",
+            TileType.SENSOR,
+            Orientation.NORTH,
+            Direction.CENTER,
+            340,
+            380,
+            null,
+            null,
+            "65-2");
     tiles.add(se5);
-    TileBean se6 = new TileBean("se-6", TileType.SENSOR, Orientation.WEST, Direction.CENTER, 500, 380, null, null, 1L);
+    TileBean se6 =
+        new TileBean(
+            "se-6",
+            TileType.SENSOR,
+            Orientation.WEST,
+            Direction.CENTER,
+            500,
+            380,
+            null,
+            null,
+            "65-1");
     tiles.add(se6);
-    TileBean si3 = new TileBean("si-3", TileType.SIGNAL, Orientation.EAST, Direction.CENTER, 300, 140, null, 5L, null);
+    TileBean si3 =
+        new TileBean(
+            "si-3", TileType.SIGNAL, Orientation.EAST, Direction.CENTER, 300, 140, null, "15", null);
     tiles.add(si3);
-    TileBean st1 = new TileBean("st-1", TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 300, 180, null, null, null);
+    TileBean st1 =
+        new TileBean(
+            "st-1",
+            TileType.STRAIGHT,
+            Orientation.EAST,
+            Direction.CENTER,
+            300,
+            180,
+            null,
+            null,
+            null);
     tiles.add(st1);
-    TileBean sw1 = new TileBean("sw-1", TileType.SWITCH, Orientation.WEST, Direction.LEFT, 260, 180, null, 2L, null);
+    TileBean sw1 =
+        new TileBean(
+            "sw-1", TileType.SWITCH, Orientation.WEST, Direction.LEFT, 260, 180, null, "2", null);
     tiles.add(sw1);
-    TileBean sw2 = new TileBean("sw-2", TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 580, 180, null, null, null);
+    TileBean sw2 =
+        new TileBean(
+            "sw-2", TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 580, 180, null, null, null);
     tiles.add(sw2);
 
     RouteBean bk1pbk2m = new RouteBean("[bk-1+]->[bk-2-]", "bk-1", "+", "bk-2", "-", "red", false);
@@ -204,28 +447,25 @@ public class PersistenceServiceTest {
     bk1pbk2m.setRouteElements(rel);
     this.routes.add(bk1pbk2m);
 
-    RouteBean bk2mbk1p = new RouteBean("[bk-2-]->[bk-1+]", "bk-2", "-", "bk-1", "+", "yellow", false);
+    RouteBean bk2mbk1p =
+        new RouteBean("[bk-2-]->[bk-1+]", "bk-2", "-", "bk-1", "+", "yellow", false);
 
     this.routes.add(bk2mbk1p);
 
     BlockBean block1 = new BlockBean(bk1);
     block1.setDescription("Block 1");
-    block1.setId(1L);
+    block1.setId("bk-1");
     this.blocks.add(block1);
     BlockBean block2 = new BlockBean(bk2);
     block2.setDescription("Block 2");
-    block2.setId(2L);
+    block2.setId("bk-2");
     this.blocks.add(block2);
-
   }
 
   @After
-  public void tearDown() {
-  }
+  public void tearDown() {}
 
-  /**
-   * Test of getProperties method, of class PersistenceService.
-   */
+  /** Test of getProperties method, of class PersistenceService. */
   @Test
   public void testGetProperties() {
     System.out.println("getProperties");
@@ -235,9 +475,7 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getProperty method, of class PersistenceService.
-   */
+  /** Test of getProperty method, of class PersistenceService. */
   @Test
   public void testGetProperty() {
     System.out.println("getProperty");
@@ -248,9 +486,7 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of persist method, of class PersistenceService.
-   */
+  /** Test of persist method, of class PersistenceService. */
   @Test
   public void testPersist_JCSPropertyBean() {
     System.out.println("persist");
@@ -271,9 +507,7 @@ public class PersistenceServiceTest {
     assertEquals(propertyBean, chkP);
   }
 
-  /**
-   * Test of remove method, of class PersistenceService.
-   */
+  /** Test of remove method, of class PersistenceService. */
   @Test
   public void testRemove_JCSPropertyBean() {
     System.out.println("remove");
@@ -289,9 +523,7 @@ public class PersistenceServiceTest {
     assertNull(chkP);
   }
 
-  /**
-   * Test of getSensors method, of class PersistenceService.
-   */
+  /** Test of getSensors method, of class PersistenceService. */
   @Test
   public void testGetSensors() {
     System.out.println("getSensors");
@@ -301,22 +533,18 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getSensor method, of class PersistenceService.
-   */
+  /** Test of getSensor method, of class PersistenceService. */
   @Test
   public void testGetSensor_Long() {
     System.out.println("getSensor");
-    Long id = 1L;
+    String id = "65-1";
     PersistenceService instance = PersistenceFactory.getService();
     SensorBean expResult = sensors.get(0);
     SensorBean result = instance.getSensor(id);
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getSensor method, of class PersistenceService.
-   */
+  /** Test of getSensor method, of class PersistenceService. */
   @Test
   public void testGetSensor_Integer_Integer() {
     System.out.println("getSensor");
@@ -328,9 +556,7 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of persist method, of class PersistenceService.
-   */
+  /** Test of persist method, of class PersistenceService. */
   @Test
   public void testPersist_SensorBean() {
     System.out.println("persist");
@@ -339,7 +565,6 @@ public class PersistenceServiceTest {
 
     SensorBean result = instance.persist(sensor);
 
-    sensor.setId(3L);
     assertEquals(sensor, result);
 
     SensorBean s3 = instance.getSensor(65, 3);
@@ -349,13 +574,11 @@ public class PersistenceServiceTest {
     result = instance.persist(sensor);
     assertEquals(sensor, result);
 
-    s3 = instance.getSensor(3L);
+    s3 = instance.getSensor("65-3");
     assertEquals(sensor, s3);
   }
 
-  /**
-   * Test of remove method, of class PersistenceService.
-   */
+  /** Test of remove method, of class PersistenceService. */
   @Test
   public void testRemove_SensorBean() {
     System.out.println("remove");
@@ -364,7 +587,6 @@ public class PersistenceServiceTest {
 
     SensorBean result = instance.persist(sensor);
 
-    sensor.setId(3L);
     assertEquals(sensor, result);
 
     SensorBean s3 = instance.getSensor(65, 4);
@@ -376,9 +598,7 @@ public class PersistenceServiceTest {
     assertNull(s3);
   }
 
-  /**
-   * Test of getLocomotives method, of class PersistenceService.
-   */
+  /** Test of getLocomotives method, of class PersistenceService. */
   @Test
   public void testGetLocomotives() {
     System.out.println("getLocomotives");
@@ -410,9 +630,7 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getLocomotive method, of class PersistenceService.
-   */
+  /** Test of getLocomotive method, of class PersistenceService. */
   @Test
   public void testGetLocomotive_Integer_DecoderType() {
     System.out.println("getLocomotive");
@@ -442,19 +660,17 @@ public class PersistenceServiceTest {
 
     assertEquals(expResult, result);
 
-    //Check Functions
+    // Check Functions
     List<FunctionBean> resFunctions = new LinkedList<>();
     resFunctions.addAll(result.getFunctions().values());
 
     assertEquals(2, resFunctions.size());
 
-//        List<LocomotiveFunction> locomotiveFunctions = new LinkedList<>();
-//        assertEquals(functions, locomotiveFunctions);
+    //        List<LocomotiveFunction> locomotiveFunctions = new LinkedList<>();
+    //        assertEquals(functions, locomotiveFunctions);
   }
 
-  /**
-   * Test of getLocomotive method, of class PersistenceService.
-   */
+  /** Test of getLocomotive method, of class PersistenceService. */
   @Test
   public void testGetLocomotive_Integer() {
     System.out.println("getLocomotive");
@@ -483,13 +699,27 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of persist method, of class PersistenceService.
-   */
+  /** Test of persist method, of class PersistenceService. */
   @Test
   public void testPersist_LocomotiveBean() {
     System.out.println("persist");
-    LocomotiveBean locomotive = new LocomotiveBean(80L, "DB BR 44 100", 16393L, 1945180593L, 80, "DB BR 44 100", "mfx", "0x81", 80, 5, 0, 0, false, null, true);
+    LocomotiveBean locomotive =
+        new LocomotiveBean(
+            80L,
+            "DB BR 44 100",
+            16393L,
+            1945180593L,
+            80,
+            "DB BR 44 100",
+            "mfx",
+            "0x81",
+            80,
+            5,
+            0,
+            0,
+            false,
+            null,
+            true);
 
     locomotive.setImported("testcase");
 
@@ -520,9 +750,8 @@ public class PersistenceServiceTest {
     FunctionBean function = locfunctions.get(0);
     fb80_0.setId(23L);
     assertEquals(fb80_0, function);
-    //expected: jcs.entities.FunctionBean<locoId:80, number:0;type: 1, value: 0, momentary: false>
+    // expected: jcs.entities.FunctionBean<locoId:80, number:0;type: 1, value: 0, momentary: false>
     // but was: jcs.entities.FunctionBean<locoId:80, number:0;type: 1, value: 0, momentary: false>
-
 
     loco.setIcon("new Icon");
     instance.persist(loco);
@@ -533,13 +762,27 @@ public class PersistenceServiceTest {
     instance.remove(locomotive);
   }
 
-  /**
-   * Test of remove method, of class PersistenceService.
-   */
+  /** Test of remove method, of class PersistenceService. */
   @Test
   public void testRemove_LocomotiveBean() {
     System.out.println("remove");
-    LocomotiveBean locomotiveBean = new LocomotiveBean(70L, "To Be Removed", 16370L, 1945180570L, 70, "To Be Removed", "mfx", "0x70", 80, 5, 0, 0, false, null, true);
+    LocomotiveBean locomotiveBean =
+        new LocomotiveBean(
+            70L,
+            "To Be Removed",
+            16370L,
+            1945180570L,
+            70,
+            "To Be Removed",
+            "mfx",
+            "0x70",
+            80,
+            5,
+            0,
+            0,
+            false,
+            null,
+            true);
     PersistenceService instance = PersistenceFactory.getService();
 
     LocomotiveBean expResult = locomotiveBean;
@@ -556,9 +799,7 @@ public class PersistenceServiceTest {
     assertNull(loco);
   }
 
-  /**
-   * Test of getTurnouts method, of class PersistenceService.
-   */
+  /** Test of getTurnouts method, of class PersistenceService. */
   @Test
   public void testGetTurnouts() {
     System.out.println("getTurnouts");
@@ -569,9 +810,7 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getSignals method, of class PersistenceService.
-   */
+  /** Test of getSignals method, of class PersistenceService. */
   @Test
   public void testGetSignals() {
     System.out.println("getSignals");
@@ -582,22 +821,18 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getAccessory method, of class PersistenceService.
-   */
+  /** Test of getAccessory method, of class PersistenceService. */
   @Test
   public void testGetAccessoryById() {
     System.out.println("getAccessoryById");
-    Long id = 7L;
+    String id = "25";
     PersistenceService instance = PersistenceFactory.getService();
     AccessoryBean expResult = this.signals.get(2);
     AccessoryBean result = instance.getAccessory(id);
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getAccessoryByAddress method, of class PersistenceService.
-   */
+  /** Test of getAccessoryByAddress method, of class PersistenceService. */
   @Test
   public void testGetAccessory() {
     System.out.println("getAccessory");
@@ -608,19 +843,29 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of persist method, of class PersistenceService.
-   */
+  /** Test of persist method, of class PersistenceService. */
   @Test
   public void testPersist_AccessoryBean() {
     System.out.println("persist");
-    AccessoryBean accessory = new AccessoryBean(null, 100, "W 100", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
+    AccessoryBean accessory =
+        new AccessoryBean(
+            "100",
+            100,
+            "W 100",
+            "rechtsweiche",
+            1,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "weichen",
+            "005",
+            "magicon_a_005_01.svg");
     PersistenceService instance = PersistenceFactory.getService();
 
     AccessoryBean result = instance.persist(accessory);
 
     AccessoryBean expResult = accessory;
-    expResult.setId(9L);
 
     assertEquals(expResult, result);
 
@@ -629,27 +874,35 @@ public class PersistenceServiceTest {
 
     accessory.setName("WWWWW");
     accessory.setImported("test");
-    
+
     instance.persist(accessory);
     ab = instance.getAccessoryByAddress(expResult.getAddress());
     assertEquals(accessory, ab);
-    
+
     assertEquals("test", ab.getImported());
-    
   }
 
-  /**
-   * Test of remove method, of class PersistenceService.
-   */
+  /** Test of remove method, of class PersistenceService. */
   @Test
   public void testRemove_AccessoryBean() {
     System.out.println("remove");
-    AccessoryBean accessory = new AccessoryBean(null, 101, "W 101", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
+    AccessoryBean accessory =
+        new AccessoryBean(
+            "101",
+            101,
+            "W 101",
+            "rechtsweiche",
+            1,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "weichen",
+            "005",
+            "magicon_a_005_01.svg");
     PersistenceService instance = PersistenceFactory.getService();
 
     AccessoryBean result = instance.persist(accessory);
-    accessory.setId(9L);
-
     assertEquals(accessory, result);
 
     AccessoryBean ab = instance.getAccessoryByAddress(accessory.getAddress());
@@ -662,9 +915,7 @@ public class PersistenceServiceTest {
     assertNull(ab);
   }
 
-  /**
-   * Test of getTileBeans method, of class PersistenceService.
-   */
+  /** Test of getTileBeans method, of class PersistenceService. */
   @Test
   public void testGetTileBeans() {
     System.out.println("getTiles");
@@ -676,9 +927,7 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of getTileBean method, of class PersistenceService.
-   */
+  /** Test of getTileBean method, of class PersistenceService. */
   @Test
   public void testGetTile() {
     System.out.println("getTile");
@@ -690,13 +939,13 @@ public class PersistenceServiceTest {
     assertEquals(expResult, result);
   }
 
-  /**
-   * Test of persist method, of class PersistenceService.
-   */
+  /** Test of persist method, of class PersistenceService. */
   @Test
   public void testPersist_TileBean() {
     System.out.println("persist");
-    TileBean sw12 = new TileBean("sw-12", TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 50, 50, null, null, null);
+    TileBean sw12 =
+        new TileBean(
+            "sw-12", TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 50, 50, null, null, null);
 
     PersistenceService instance = PersistenceFactory.getService();
     TileBean result = instance.persist(sw12);
@@ -716,7 +965,9 @@ public class PersistenceServiceTest {
   @Test
   public void testRemove_TileBean() {
     System.out.println("remove");
-    TileBean sw13 = new TileBean("sw-13", TileType.CURVED, Orientation.EAST, Direction.CENTER, 80, 50, null, null, null);
+    TileBean sw13 =
+        new TileBean(
+            "sw-13", TileType.CURVED, Orientation.EAST, Direction.CENTER, 80, 50, null, null, null);
     PersistenceService instance = PersistenceFactory.getService();
 
     TileBean result = instance.persist(sw13);
@@ -731,9 +982,7 @@ public class PersistenceServiceTest {
     assertNull(tb1);
   }
 
-  /**
-   * Test of persist method, of class PersistenceService.
-   */
+  /** Test of persist method, of class PersistenceService. */
   @Test
   public void testPersist_List_TileBeans() {
     System.out.println("persist list");
@@ -741,27 +990,37 @@ public class PersistenceServiceTest {
 
     List<TileBean> tbl = this.tiles;
 
-    TileBean sw22 = new TileBean("sw-22", TileType.CROSS, Orientation.EAST, Direction.CENTER, 100, 100, null, null, null);
+    TileBean sw22 =
+        new TileBean(
+            "sw-22",
+            TileType.CROSS,
+            Orientation.EAST,
+            Direction.CENTER,
+            100,
+            100,
+            null,
+            null,
+            null);
 
     List<TileBean> current = instance.getTileBeans();
 
-    //There should be 10 tiles...
+    // There should be 10 tiles...
     assertEquals(10, current.size());
 
-    //tbl.add(sw22);
-    //instance.persist(tbl);
+    // tbl.add(sw22);
+    // instance.persist(tbl);
     List<TileBean> current2 = instance.getTileBeans();
 
-    //There should now be 10 tiles...
+    // There should now be 10 tiles...
     assertEquals(10, current2.size());
 
-    //TileBean tb = instance.getTileBean(100, 100);
-    //assertEquals(sw22, tb);
-    //tbl.remove(sw22);
-    //instance.persist(tbl);
-    //current2 = instance.getTileBeans();
-    //There should now be 11 tiles...
-    //assertEquals(11, current2.size());
+    // TileBean tb = instance.getTileBean(100, 100);
+    // assertEquals(sw22, tb);
+    // tbl.remove(sw22);
+    // instance.persist(tbl);
+    // current2 = instance.getTileBeans();
+    // There should now be 11 tiles...
+    // assertEquals(11, current2.size());
   }
 
   @Test
@@ -771,14 +1030,16 @@ public class PersistenceServiceTest {
 
     List<TileBean> expected = new ArrayList<>();
 
-    //Create a lot of test tiles
+    // Create a lot of test tiles
     int x = 20;
     int cy = 100;
     for (int i = 2; i < 1002; i++) {
       String id = "st-" + i;
       int cx = x + i * 40;
 
-      TileBean stn = new TileBean(id, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, cx, cy, null, null, null);
+      TileBean stn =
+          new TileBean(
+              id, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, cx, cy, null, null, null);
       expected.add(stn);
     }
 
@@ -829,7 +1090,8 @@ public class PersistenceServiceTest {
     List<RouteElementBean> rel = new LinkedList<>();
     RouteElementBean rect2 = new RouteElementBean("[ct-2]->[ct-5]", "ct-2", "ct-2", null, 0);
     rel.add(rect2);
-    RouteElementBean resi3 = new RouteElementBean("[ct-2]->[ct-5]", "si-3", "si-3", AccessoryValue.GREEN, 1);
+    RouteElementBean resi3 =
+        new RouteElementBean("[ct-2]->[ct-5]", "si-3", "si-3", AccessoryValue.GREEN, 1);
     rel.add(resi3);
 
     route.setRouteElements(rel);
@@ -889,7 +1151,7 @@ public class PersistenceServiceTest {
   @Test
   public void testGetBlock() {
     System.out.println("getBlock");
-    Long id = 1L;
+    String id = "bk-1";
     PersistenceService instance = PersistenceFactory.getService();
     BlockBean expResult = this.blocks.get(0);
     BlockBean result = instance.getBlock(id);
@@ -910,13 +1172,13 @@ public class PersistenceServiceTest {
   public void testPersist_BlockBean() {
     System.out.println("persist");
     BlockBean block = new BlockBean();
+    block.setId("st-1");
     block.setTileId("st-1");
     block.setDescription("A Test Block");
 
     PersistenceService instance = PersistenceFactory.getService();
 
     BlockBean expResult = block;
-    expResult.setId(3L);
 
     BlockBean result = instance.persist(block);
     assertEquals(expResult, result);
@@ -931,14 +1193,13 @@ public class PersistenceServiceTest {
   public void testRemove_BlockBean() {
     System.out.println("remove");
     BlockBean block = new BlockBean();
+    block.setId("si-3");
     block.setTileId("si-3");
     block.setDescription("A Test Block to remove");
 
     PersistenceService instance = PersistenceFactory.getService();
 
     BlockBean result = instance.persist(block);
-    block.setId(3L);
-
     assertEquals(block, result);
 
     result = instance.getBlockByTileId("si-3");
@@ -966,5 +1227,4 @@ public class PersistenceServiceTest {
 
     assertEquals(0, result.size());
   }
-
 }

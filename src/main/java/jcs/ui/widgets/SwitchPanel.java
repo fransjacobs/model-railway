@@ -413,8 +413,8 @@ public class SwitchPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
   private void sendCommand(String actionCommand, String name, boolean selected) {
-    Long id = Long.valueOf(actionCommand);
-    Integer address = id.intValue();
+    String id = actionCommand;
+    Integer address = Integer.getInteger(id);
     AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
     Logger.trace("ID: " + id + " Value: " + value);
 

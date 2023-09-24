@@ -17,7 +17,6 @@ package jcs.entities;
 
 import java.util.Objects;
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -25,13 +24,13 @@ import javax.persistence.Transient;
 @Table(name = "blocks")
 public class BlockBean {
 
-  private Long id;
+  private String id;
   private String tileId;
   private String description;
-  private Long plusSensorId;
-  private Long minSensorId;
-  private Long plusSignalId;
-  private Long minSignalId;
+  private String plusSensorId;
+  private String minSensorId;
+  private String plusSignalId;
+  private String minSignalId;
   private Long locomotiveId;
 
   private TileBean tileBean;
@@ -55,13 +54,12 @@ public class BlockBean {
   }
 
   @Id
-  @GeneratedValue
   @Column(name = "id")
-  public Long getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -98,11 +96,11 @@ public class BlockBean {
   }
 
   @Column(name = "plus_sensor_id")
-  public Long getPlusSensorId() {
+  public String getPlusSensorId() {
     return plusSensorId;
   }
 
-  public void setPlusSensorId(Long plusSensorId) {
+  public void setPlusSensorId(String plusSensorId) {
     this.plusSensorId = plusSensorId;
   }
 
@@ -121,11 +119,11 @@ public class BlockBean {
   }
 
   @Column(name = "min_sensor_id")
-  public Long getMinSensorId() {
+  public String getMinSensorId() {
     return minSensorId;
   }
 
-  public void setMinSensorId(Long minSensorId) {
+  public void setMinSensorId(String minSensorId) {
     this.minSensorId = minSensorId;
   }
 
@@ -144,11 +142,11 @@ public class BlockBean {
   }
 
   @Column(name = "plus_signal_id")
-  public Long getPlusSignalId() {
+  public String getPlusSignalId() {
     return plusSignalId;
   }
 
-  public void setPlusSignalId(Long plusSignalId) {
+  public void setPlusSignalId(String plusSignalId) {
     this.plusSignalId = plusSignalId;
   }
 
@@ -167,11 +165,11 @@ public class BlockBean {
   }
 
   @Column(name = "min_signal_id")
-  public Long getMinSignalId() {
+  public String getMinSignalId() {
     return minSignalId;
   }
 
-  public void setMinSignalId(Long minSignalId) {
+  public void setMinSignalId(String minSignalId) {
     this.minSignalId = minSignalId;
   }
 

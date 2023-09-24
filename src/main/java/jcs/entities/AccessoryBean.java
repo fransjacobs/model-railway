@@ -17,7 +17,6 @@ package jcs.entities;
 
 import java.util.Objects;
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -27,7 +26,7 @@ import jcs.entities.enums.SignalValue;
 @Table(name = "accessories")
 public class AccessoryBean {
 
-  private Long id;
+  private String id;
   private Integer address;
   private String name;
   private String type;
@@ -45,15 +44,43 @@ public class AccessoryBean {
     this(null, null, null, null, null, null, null, null);
   }
 
-  public AccessoryBean(Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
-    this(null, address, name, type, position, switchTime, decoderType, decoder);
+  public AccessoryBean(
+      String id,
+      Integer address,
+      String name,
+      String type,
+      Integer position,
+      Integer switchTime,
+      String decoderType,
+      String decoder) {
+    this(
+        id,
+        address,
+        name,
+        type,
+        position,
+        null,
+        switchTime,
+        decoderType,
+        decoder,
+        null,
+        null,
+        null);
   }
 
-  public AccessoryBean(Long id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
-    this(id, address, name, type, position, null, switchTime, decoderType, decoder, null, null, null);
-  }
-
-  public AccessoryBean(Long id, Integer address, String name, String type, Integer position, Integer states, Integer switchTime, String decoderType, String decoder, String group, String icon, String iconFile) {
+  public AccessoryBean(
+      String id,
+      Integer address,
+      String name,
+      String type,
+      Integer position,
+      Integer states,
+      Integer switchTime,
+      String decoderType,
+      String decoder,
+      String group,
+      String icon,
+      String iconFile) {
     this.id = id;
     this.address = address;
     this.name = name;
@@ -69,13 +96,12 @@ public class AccessoryBean {
   }
 
   @Id
-  @GeneratedValue
   @Column(name = "id")
-  public Long getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -126,9 +152,9 @@ public class AccessoryBean {
 
   @Transient
   public void toggle() {
-    //based on number of states
+    // based on number of states
     if (this.states == null) {
-      this.states = 0;
+      this.states = 2;
     }
     int s = this.states;
     if (s == 0) {
@@ -242,7 +268,25 @@ public class AccessoryBean {
 
   @Transient
   public boolean isSignal() {
-    return "lichtsignale".equals(this.group);
+    if (this.group != null) {
+      return "lichtsignale".equals(this.group);
+    } else {
+      return this.type != null && this.type.contains("lichtsignal");
+    }
+  }
+
+  @Transient
+  public boolean isTurnout() {
+    if (this.group != null) {
+      return "weichen".equals(this.group);
+    } else {
+      return this.type != null && this.type.contains("weiche");
+    }
+  }
+
+  @Transient
+  public boolean isOther() {
+    return !isTurnout() && !isSignal();
   }
 
   @Override
@@ -251,7 +295,28 @@ public class AccessoryBean {
   }
 
   public String toLogString() {
-    return "AccessoryBean{" + "id=" + id + ", address=" + address + ", name=" + name + ", type=" + type + ", position=" + position + ", switchTime=" + switchTime + ", decoderType=" + decoderType + ", decoder=" + decoder + ", group=" + group + ", states=" + states + "}";
+    return "AccessoryBean{"
+        + "id="
+        + id
+        + ", address="
+        + address
+        + ", name="
+        + name
+        + ", type="
+        + type
+        + ", position="
+        + position
+        + ", switchTime="
+        + switchTime
+        + ", decoderType="
+        + decoderType
+        + ", decoder="
+        + decoder
+        + ", group="
+        + group
+        + ", states="
+        + states
+        + "}";
   }
 
   @Override

@@ -442,10 +442,10 @@ public class TurnoutPreferencesPanel extends JPanel {
 
     Logger.debug("Create new Turnout...");
     selectedTurnout = new AccessoryBean();
-    Long idl = turnoutTableModel.getRowCount() + 1l;
+    long idl = turnoutTableModel.getRowCount() + 1l;
 
     selectedTurnout.setName("W " + idl);
-    selectedTurnout.setId(idl);
+    selectedTurnout.setId(idl + "");
     selectedTurnout.setPosition(0);
 
     setComponentValues(selectedTurnout);
@@ -517,8 +517,8 @@ public class TurnoutPreferencesPanel extends JPanel {
 
   //Create Turnout from fields  
   protected AccessoryBean setTurnoutValues() {
-    Long id = (Long) this.idSpinner.getValue();
-    Integer address = id.intValue();
+    String id = (String) this.idSpinner.getValue();
+    Integer address = Integer.getInteger(id);
     String name = nameTF.getText();
     String type = typeTF.getText();
     Integer switchTime = (Integer) this.switchTimeSpinner.getValue();

@@ -27,7 +27,8 @@ import jcs.entities.TileBean;
 import jcs.entities.enums.DecoderType;
 
 /**
- * The Persistence Service takes care of all persistence functionality which is needed within the JCS Application
+ * The Persistence Service takes care of all persistence functionality which is needed within the
+ * JCS Application
  *
  * @author frans
  */
@@ -41,10 +42,10 @@ public interface PersistenceService {
 
   void remove(JCSPropertyBean property);
 
-  //Sensors
+  // Sensors
   List<SensorBean> getSensors();
 
-  SensorBean getSensor(Long id);
+  SensorBean getSensor(String id);
 
   SensorBean getSensor(Integer deviceId, Integer contactId);
 
@@ -52,7 +53,7 @@ public interface PersistenceService {
 
   void remove(SensorBean sensor);
 
-  //Locomotive 
+  // Locomotive
   List<LocomotiveBean> getLocomotives();
 
   LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
@@ -69,12 +70,12 @@ public interface PersistenceService {
 
   void remove(LocomotiveBean locomotiveBean);
 
-  //Accessories
+  // Accessories
   List<AccessoryBean> getTurnouts();
 
   List<AccessoryBean> getSignals();
 
-  AccessoryBean getAccessory(Long id);
+  AccessoryBean getAccessory(String id);
 
   AccessoryBean getAccessoryByAddress(Integer address);
 
@@ -82,7 +83,7 @@ public interface PersistenceService {
 
   void remove(AccessoryBean accessoryBean);
 
-  //Tile
+  // Tile
   List<TileBean> getTileBeans();
 
   TileBean getTileBean(String id);
@@ -107,7 +108,7 @@ public interface PersistenceService {
 
   List<BlockBean> getBlocks();
 
-  BlockBean getBlock(Long id);
+  BlockBean getBlock(String id);
 
   BlockBean getBlockByTileId(String tileId);
 
@@ -116,5 +117,4 @@ public interface PersistenceService {
   void remove(BlockBean block);
 
   void removeAllBlocks();
-
 }

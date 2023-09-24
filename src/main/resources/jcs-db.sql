@@ -9,7 +9,7 @@ drop table if exists route_elements cascade;
 drop table if exists jcs_properties cascade;
 
 create table accessories (
-  id                 identity not null,
+  id                 varchar(255) not null,
   address            integer not null,
   name               varchar(255) not null,
   type               varchar(255) not null,
@@ -71,7 +71,7 @@ create unique index lofu_loid_fnum_un_idx on locomotive_functions (locomotive_id
 alter table locomotive_functions add constraint lofu_loco_fk foreign key (locomotive_id) references locomotives(id);
 
 create table sensors (
-  id                 identity not null,
+  id                 varchar(255) not null,
   name               varchar(255) not null,
   device_id          integer,
   contact_id         integer,
@@ -94,8 +94,8 @@ create table tiles (
   x                  integer not null,
   y                  integer not null,
   signal_type        varchar(255),
-  accessory_id       bigint,
-  sensor_id          bigint,
+  accessory_id       varchar(255),
+  sensor_id          varchar(255),
   constraint tile_pk primary key (id),
   constraint tile_x_y_un unique (x,y)
 );
@@ -111,13 +111,13 @@ alter table tiles add constraint tile_acc_fk foreign key (accessory_id) referenc
 alter table tiles add constraint tile_sens_fk foreign key (sensor_id) references sensors(id);
 
 create table blocks (
-  id                 identity not null,
+  id                 varchar(255),
   tile_id            varchar(255) not null,
   description        varchar(255),
-  plus_sensor_id     bigint,
-  min_sensor_id      bigint,
-  plus_signal_id     bigint,
-  min_signal_id      bigint,
+  plus_sensor_id     varchar(255),
+  min_sensor_id      varchar(255),
+  plus_signal_id     varchar(255),
+  min_signal_id      varchar(255),
   locomotive_id      bigint,
   constraint bloc_pk primary key (id),
   constraint bloc_tile_un unique (tile_id)
