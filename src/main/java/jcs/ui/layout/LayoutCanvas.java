@@ -127,6 +127,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.selectedRouteElements = new HashMap<>();
 
     this.executor = Executors.newSingleThreadExecutor();
+    //this.executor = Executors.newCachedThreadPool();
 
     this.mode = Mode.SELECT;
     this.orientation = Orientation.EAST;
@@ -390,7 +391,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
-          
+
         default -> {
           //Do nothing
         }
@@ -627,9 +628,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         bcd.setVisible(true);
       }
       case SIGNAL ->
-        toggleSignal((Signal) tile);
+        this.executor.execute(() -> toggleSignal((Signal) tile));
+      //toggleSignal((Signal) tile);
       case SWITCH ->
-        toggleSwitch((Switch) tile);
+        this.executor.execute(() -> toggleSwitch((Switch) tile));
+      //toggleSwitch((Switch) tile);
       case CROSS -> {
       }
       default -> {

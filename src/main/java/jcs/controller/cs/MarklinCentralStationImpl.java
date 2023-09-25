@@ -99,6 +99,8 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 
   private boolean debug = false;
 
+  private int defaultSwitchTime;
+
   public MarklinCentralStationImpl() {
     this(true);
   }
@@ -109,6 +111,8 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     measurementChannels = new HashMap<>();
 
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+
+    defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
 
     powerEventListeners = new LinkedList<>();
     sensorEventListeners = new LinkedList<>();
@@ -142,7 +146,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   }
 
   @Override
-  public final boolean connect() {
+  public final synchronized boolean connect() {
     if (!connected) {
       Logger.trace("Connecting to a Central Station...");
       if (executor == null || executor.isShutdown()) {
@@ -197,12 +201,13 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
             Logger.warn("No Main Device found yet...");
           }
         }
+        Logger.trace("Connected: " + connected + " Default Accessory SwitchTime: " + this.defaultSwitchTime);
+
       } else {
         Logger.warn("Can't connect with Central Station!");
         JCS.logProgress("Can't connect with Central Station!");
       }
     }
-    Logger.trace("Connected: " + connected);
 
     return connected;
   }
@@ -469,10 +474,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
         }
       }
 
-      //Update the measured values
-      //CanMessage message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 0));
-      //StatusDataConfig sdcp = new StatusDataConfig(message);
-      //Logger.debug(sdcp);
       for (int c = 1; c <= nrOfChannels; c++) {
         MeasurementChannel ch = this.measurementChannels.get(c);
         if (ch != null) {
@@ -481,49 +482,14 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
           measurementChannels.put(c, ch);
         }
       }
-
-//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 1));
-//      channelData1 = new ChannelDataParser(message);
-//      
-//      
-//         channelData1.getChannel()
-//      
-//      
-//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 2));
-//      channelData2 = new ChannelDataParser(message);
-//
-//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 3));
-//      channelData3 = new ChannelDataParser(message);
-//
-//      message = sendMessage(CanMessageFactory.statusDataConfig(csUid, 4));
-//      channelData4 = new ChannelDataParser(message);
-//      updateChannelStatuses();
-//    }
     }
     return this.measurementChannels;
   }
 
-//  void updateChannelStatuses() {
-//    if (this.connected) {
-//      CanMessage message = sendMessage(CanMessageFactory.systemStatus(1, csUid));
-//      channelData1.parseMessage(message);
-//      Logger.trace(channelData1);
-//
-//      message = sendMessage(CanMessageFactory.systemStatus(2, csUid));
-//      channelData2.parseMessage(message);
-//      Logger.trace(channelData2);
-//
-//      message = sendMessage(CanMessageFactory.systemStatus(3, csUid));
-//      channelData3.parseMessage(message);
-//      Logger.trace(channelData3);
-//
-//      message = sendMessage(CanMessageFactory.systemStatus(4, csUid));
-//      channelData4.parseMessage(message);
-//      Logger.trace(channelData1);
-//    }
-//  }
   /**
-   * Blocking call to the message sender thread which send the message and await the response. When there is no response within 1s the waiting is cancelled
+   * Blocking call to the message sender thread which send the message and await the response.<br>
+   * When there is no response within 1s or 5s timeout the waiting is cancelled.<br>
+   * The time out depends on the message request
    *
    * @param canMessage to send
    * @return the CanMessage with responses
@@ -556,16 +522,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     return locoAddress;
   }
 
-//  @Override
-//  public void changeDirection(int address, DecoderType decoderType, Direction direction) {
-//    if (this.power) {
-//      int la = getLocoAddres(address, decoderType);
-//      Logger.trace("Setting direction to: " + direction + " for loc address: " + la + " Decoder: " + decoderType + " Dir Mar: " + direction.getMarklinValue());
-//      CanMessage message = sendMessage(CanMessageFactory.setDirection(la, direction.getMarklinValue(), this.csUid));
-//      LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(message);
-//      this.notifyLocomotiveDirectionEventListeners(dme);
-//    }
-//  }
   @Override
   public void changeDirection(int locUid, Direction direction) {
     if (this.power) {
@@ -575,15 +531,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     }
   }
 
-//  @Override
-//  public void changeVelocity(int address, DecoderType decoderType, int speed) {
-//    if (this.power) {
-//      int la = getLocoAddres(address, decoderType);
-//      CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(la, speed, this.csUid));
-//      LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(message);
-//      this.notifyLocomotiveSpeedEventListeners(vme);
-//    }
-//  }
   @Override
   public void changeVelocity(int locUid, int speed) {
     if (this.power) {
@@ -593,28 +540,12 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
     }
   }
 
-//  //@Override
-//  public void changeFunctionValue(int address, DecoderType decoderType, int functionNumber, boolean flag) {
-//    if (this.power) {
-//      int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
-//      int la = getLocoAddres(address, decoderType);
-//
-//      CanMessage message = sendMessage(CanMessageFactory.setFunction(la, functionNumber, value, this.csUid));
-//      this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
-//    }
-//  }
   @Override
   public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
     if (this.power) {
-      //int value = flag ? CanMessage.FUNCTION_ON : CanMessage.FUNCTION_OFF;
       CanMessage message = sendMessage(CanMessageFactory.setFunction(locUid, functionNumber, flag, this.csUid));
       this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
     }
-  }
-
-  // Use for Accessories
-  private void wait200ms() {
-    pause(200L);
   }
 
   private void pause(long millis) {
@@ -627,21 +558,29 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
 
   @Override
   public void switchAccessory(int address, AccessoryValue value) {
+    switchAccessory(address, value, this.defaultSwitchTime);
+  }
+
+  @Override
+  public void switchAccessory(int address, AccessoryValue value, int switchTime) {
     if (this.power) {
-      executor.execute(() -> switchAccessoryOnOff(address, value));
+      //make sure a time is set!
+      int st;
+      if (switchTime == 0) {
+        st = this.defaultSwitchTime;
+      } else {
+        st = switchTime;
+      }
+      //CS Switchtime is in 10 ms increments
+      st = st / 10;
+      CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, true, st, this.csUid));
+      //Notify listeners
+      AccessoryEvent ae = new AccessoryEvent(message);
+
+      notifyAccessoryEventListeners(ae);
     } else {
       Logger.trace("Trackpower is OFF! Can't switch Accessory: " + address + " to: " + value + "!");
     }
-  }
-
-  private void switchAccessoryOnOff(int address, AccessoryValue value) {
-    CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, true, this.csUid));
-    //TODO: dynamic setting of time or messageQueue it
-    wait200ms();
-    sendMessage(CanMessageFactory.switchAccessory(address, value, false, this.csUid));
-    //Notify listeners
-    AccessoryEvent ae = new AccessoryEvent(message);
-    notifyAccessoryEventListeners(ae);
   }
 
   private void sendJCSUID() {

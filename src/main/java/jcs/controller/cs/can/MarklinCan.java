@@ -99,6 +99,7 @@ interface MarklinCan {
   public final static int ACCESSORY_ADDRESS_IDX = 3;
   public final static int ACCESSORY_VALUE_IDX = 4;
   public final static int ACCESSORY_ACTIVE_IDX = 5;
+  public final static int ACCESSORY_SWITCH_TIME_IDX = 6;
 
   public final static int ACCESSORY_CONFIG = 0x18;
 
