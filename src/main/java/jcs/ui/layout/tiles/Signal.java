@@ -122,8 +122,7 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color1 = Color.gray;
         color2 = Color.green;
       }
-      default -> {
-      }
+      default -> {}
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -142,25 +141,18 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     int rw = 24;
     int rh = 12;
     int c1x = GRID + 14;
-    int c1y = GRID + 6;
-    int c2x = GRID + 9;
-    int c2y = GRID + 6;
-    int c3x = GRID + 9;
-    int c3y = GRID + 11;
-    int c4x = GRID + 5;
-    int c4y = GRID + 12;
-    int c5x = GRID + 2;
-    int c5y = GRID + 7;
-    int c6x = GRID - 4;
-    int c6y = GRID + 6;
+    int c1y = GRID + 12;
 
-    //Initialize all "lights"
+    int c2x = GRID - 4;
+    int c2y = GRID + 12;
+
+    int c3x = GRID - 4;
+    int c3y = GRID + 6;
+
+    // Initialize all "lights"
     Color color1 = Color.gray;
     Color color2 = Color.gray;
     Color color3 = Color.gray;
-    Color color4 = Color.gray;
-    Color color5 = Color.gray;
-    Color color6 = Color.gray;
 
     if (this.signalValue == null) {
       this.signalValue = SignalValue.OFF;
@@ -168,17 +160,14 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
 
     switch (this.signalValue) {
       case Hp0 -> {
-        color2 = Color.red;
         color3 = Color.red;
       }
-      case Hp1 ->
-        color1 = Color.green;
+      case Hp1 -> color1 = Color.green;
       case Hp2 -> {
         color1 = Color.green;
-        color6 = Color.yellow;
+        color2 = Color.yellow;
       }
-      default -> {
-      }
+      default -> {}
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -187,16 +176,12 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
 
     g2d.setPaint(color1);
     g2d.fillOval(c1x, c1y, 5, 5);
+
     g2d.setPaint(color2);
     g2d.fillOval(c2x, c2y, 5, 5);
+
     g2d.setPaint(color3);
     g2d.fillOval(c3x, c3y, 5, 5);
-    g2d.setPaint(color4);
-    g2d.fillOval(c4x, c4y, 3, 3);
-    g2d.setPaint(color5);
-    g2d.fillOval(c5x, c5y, 3, 3);
-    g2d.setPaint(color6);
-    g2d.fillOval(c6x, c6y, 5, 5);
   }
 
   /**
@@ -222,7 +207,7 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     int c6x = GRID - 4;
     int c6y = GRID + 6;
 
-    //Initialize all "lights"
+    // Initialize all "lights"
     Color color1 = Color.gray;
     Color color2 = Color.gray;
     Color color3 = Color.gray;
@@ -239,8 +224,7 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color2 = Color.red;
         color3 = Color.red;
       }
-      case Hp1 ->
-        color1 = Color.green;
+      case Hp1 -> color1 = Color.green;
       case Hp2 -> {
         color1 = Color.green;
         color6 = Color.yellow;
@@ -250,8 +234,7 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color4 = Color.white;
         color5 = Color.white;
       }
-      default -> {
-      }
+      default -> {}
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -309,8 +292,7 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color3 = Color.white;
         color4 = Color.white;
       }
-      default -> {
-      }
+      default -> {}
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -341,14 +323,11 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     }
 
     switch (signalType) {
-      case HP012 ->
-        renderSignal3(g2d);
-      case HP012SH1 ->
-        renderSignal4(g2d);
-      case HP0SH1 ->
-        renderSignal2m(g2d);
-      default -> //HP01
-        renderSignal2(g2d);
+      case HP012 -> renderSignal3(g2d);
+      case HP012SH1 -> renderSignal4(g2d);
+      case HP0SH1 -> renderSignal2m(g2d);
+      default -> // HP01
+      renderSignal2(g2d);
     }
 
     g2d.dispose();
@@ -356,11 +335,11 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
 
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    //if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
+    // if (this.getAccessoryBean() != null &&
+    // this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
     if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
       this.setSignalValue(event.getAccessoryBean().getSignalValue());
       repaintTile();
     }
   }
-
 }

@@ -148,6 +148,11 @@
             <artifactId>SteelSeries</artifactId>
             <version>3.9.30</version>
         </dependency>
+        <dependency>
+            <groupId>org.imgscalr</groupId>
+            <artifactId>imgscalr-lib</artifactId>
+            <version>4.2</version>
+        </dependency> 
     </dependencies>
     <build>
         <plugins>
@@ -207,7 +212,7 @@
                     </execution>
                 </executions>
             </plugin>
-           <!-- 
+            <!-- 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
