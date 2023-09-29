@@ -15,8 +15,16 @@
  */
 package jcs.ui.layout.tiles;
 
+import static jcs.entities.enums.Orientation.NORTH;
+import static jcs.entities.enums.Orientation.SOUTH;
+import static jcs.entities.enums.Orientation.WEST;
+import static jcs.entities.enums.TileType.BLOCK;
+import static jcs.entities.enums.TileType.CROSS;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -41,26 +49,21 @@ import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
 import jcs.entities.enums.TileType;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
 import jcs.ui.layout.LayoutUtil;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import jcs.ui.layout.tiles.enums.Direction;
 
 /**
+ * Basic graphic element to display a track, turnout, etc on the screen. By default the drawing of a
+ * Tile is Horizontal from L to R or West to East. Default orientation is East
  *
- * Basic graphic element to display a track, turnout, etc on the screen. By default the drawing of a Tile is Horizontal from L to R or West to East. Default orientation is East
+ * <p>The default size of a Tile is 40 x 40 pixels. The center point of a Tile is stored and always
+ * snapped to the nearest grid point. The basic grid is 20x 20 pixels.
  *
- * The default size of a Tile is 40 x 40 pixels. The center point of a Tile is stored and always snapped to the nearest grid point. The basic grid is 20x 20 pixels.
+ * <p>A Tile can be rotated (always clockwise). Rotation will change the orientation from East ->
+ * South -> West -> North -> East.
  *
- * A Tile can be rotated (always clockwise). Rotation will change the orientation from East -> South -> West -> North -> East.
- *
- * A Tile is rendered to a Buffered Image to speed up the display
- *
+ * <p>A Tile is rendered to a Buffered Image to speed up the display
  */
 public abstract class AbstractTile extends TileBean implements Tile {
 
@@ -94,7 +97,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
     this(orientation, direction, x, y, null);
   }
 
-  protected AbstractTile(Orientation orientation, Direction direction, int x, int y, Color backgroundColor) {
+  protected AbstractTile(
+      Orientation orientation, Direction direction, int x, int y, Color backgroundColor) {
     this.tileOrientation = orientation.getOrientation();
     this.tileDirection = direction.getDirection();
 
@@ -128,7 +132,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
     this.accessoryId = other.getAccessoryId();
     this.signalAccessoryType = other.getSignalAccessoryType();
     this.sensorId = other.getSensorId();
-    
+
     this.accessoryBean = other.getAccessoryBean();
     this.sensorBean = other.getSensorBean();
   }
@@ -146,17 +150,17 @@ public abstract class AbstractTile extends TileBean implements Tile {
     tb.setSignalAccessoryType(this.signalAccessoryType);
     tb.setAccessoryId(this.accessoryId);
     tb.setSensorId(this.sensorId);
-    //tb.setNeighbours(this.neighbours);
+    // tb.setNeighbours(this.neighbours);
     tb.setAccessoryBean(this.accessoryBean);
     tb.setSensorBean(this.sensorBean);
 
     return tb;
   }
 
-//  private void init() {
-//    this.id = getNewId();
-//    Logger.trace(this);
-//  }
+  //  private void init() {
+  //    this.id = getNewId();
+  //    Logger.trace(this);
+  //  }
   @Override
   public Color getTrackColor() {
     return trackColor;
@@ -189,7 +193,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
    */
   @Override
   public void drawTile(Graphics2D g2d, boolean drawOutline) {
-    //by default and image is rendered in the EAST orientation
+    // by default and image is rendered in the EAST orientation
     Orientation o = getOrientation();
     if (o == null) {
       o = Orientation.EAST;
@@ -245,7 +249,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
 
       renderTile(g2di, trackColor, backgroundColor);
 
-      //outline, but only when the (line) grid is on!
+      // outline, but only when the (line) grid is on!
       if (drawOutline) {
         g2di.setPaint(Color.lightGray);
         g2di.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -263,7 +267,11 @@ public abstract class AbstractTile extends TileBean implements Tile {
       cbi = bi;
     }
 
-    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + this.offsetX, (y - cbi.getHeight() / 2) + this.offsetY, null);
+    g2d.drawImage(
+        cbi,
+        (x - cbi.getWidth() / 2) + this.offsetX,
+        (y - cbi.getHeight() / 2) + this.offsetY,
+        null);
   }
 
   /**
@@ -272,9 +280,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
    * @param g2 the Graphic context
    */
   @Override
-  public void drawName(Graphics2D g2) {
-
-  }
+  public void drawName(Graphics2D g2) {}
 
   @Override
   public void drawCenterPoint(Graphics2D g2d) {
@@ -295,7 +301,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
     g2d.fill(new Ellipse2D.Double(dX, dY, size, size));
 
     if (!getAltPoints().isEmpty()) {
-      //Also draw the alt points
+      // Also draw the alt points
       Set<Point> alt = new HashSet<>(getAltPoints());
 
       for (Point ap : alt) {
@@ -310,20 +316,14 @@ public abstract class AbstractTile extends TileBean implements Tile {
     g2d.draw(getBounds());
   }
 
-  /**
-   * Rotate the tile clockwise 90 deg
-   */
+  /** Rotate the tile clockwise 90 deg */
   @Override
   public void rotate() {
     switch (getOrientation()) {
-      case EAST ->
-        setOrientation(Orientation.SOUTH);
-      case SOUTH ->
-        setOrientation(Orientation.WEST);
-      case WEST ->
-        setOrientation(Orientation.NORTH);
-      default ->
-        setOrientation(Orientation.EAST);
+      case EAST -> setOrientation(Orientation.SOUTH);
+      case SOUTH -> setOrientation(Orientation.WEST);
+      case WEST -> setOrientation(Orientation.NORTH);
+      default -> setOrientation(Orientation.EAST);
     }
   }
 
@@ -350,6 +350,11 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
+
+//    Font currentFont = g2d.getFont();
+//    Font newFont = currentFont.deriveFont(currentFont.getSize() * 0.8F);
+//    g2d.setFont(newFont);
+
     g2d.translate((float) x, (float) y);
     g2d.rotate(Math.toRadians(angle));
     g2d.drawString(text, 0, 0);
@@ -358,7 +363,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   public static BufferedImage flipHorizontally(BufferedImage source) {
-    BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
+    BufferedImage output =
+        new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
 
     AffineTransform flip = AffineTransform.getScaleInstance(1, -1);
     flip.translate(0, -source.getHeight());
@@ -370,7 +376,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   public static BufferedImage flipVertically(BufferedImage source) {
-    BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
+    BufferedImage output =
+        new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
 
     AffineTransform flip = AffineTransform.getScaleInstance(-1, 1);
     flip.translate(-source.getWidth(), 0);
@@ -474,7 +481,16 @@ public abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public String toString() {
-    return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", center: " + xyToString() + "}";
+    return this.getClass().getSimpleName()
+        + " {id: "
+        + id
+        + ", orientation: "
+        + getOrientation()
+        + ", direction: "
+        + getDirection()
+        + ", center: "
+        + xyToString()
+        + "}";
   }
 
   @Override
@@ -525,11 +541,11 @@ public abstract class AbstractTile extends TileBean implements Tile {
       cy = h / 2;
     }
 
-    //top left dX and dY
+    // top left dX and dY
     tlx = cx - w / 2;
     tly = cy - h / 2;
 
-    //Check if X and Y range is ok
+    // Check if X and Y range is ok
     return !(x < tlx || x > (tlx + w) || y < tly || y > (tly + h));
   }
 
@@ -584,7 +600,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
 
   protected void repaintTile() {
     if (this.propertyChangeListener != null) {
-      this.propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "repaintTile", this, this));
+      this.propertyChangeListener.propertyChange(
+          new PropertyChangeEvent(this, "repaintTile", this, this));
     }
   }
 
@@ -601,21 +618,23 @@ public abstract class AbstractTile extends TileBean implements Tile {
   protected final int getDefaultWidth() {
     switch (this.getTileType()) {
       case BLOCK -> {
-        if (Orientation.EAST.equals(this.getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+        if (Orientation.EAST.equals(this.getOrientation())
+            || Orientation.WEST.equals(getOrientation())) {
           return DEFAULT_WIDTH * 3;
         } else {
           return DEFAULT_WIDTH;
         }
       }
       case CROSS -> {
-        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+        if (Orientation.EAST.equals(getOrientation())
+            || Orientation.WEST.equals(getOrientation())) {
           return DEFAULT_WIDTH * 2;
         } else {
           return DEFAULT_WIDTH;
         }
       }
       default -> {
-        //Straight,Curved,Sensor,Signal,Switch
+        // Straight,Curved,Sensor,Signal,Switch
         return DEFAULT_WIDTH;
       }
     }
@@ -624,21 +643,23 @@ public abstract class AbstractTile extends TileBean implements Tile {
   protected final int getDefaultHeight() {
     switch (this.getTileType()) {
       case BLOCK -> {
-        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+        if (Orientation.EAST.equals(getOrientation())
+            || Orientation.WEST.equals(getOrientation())) {
           return DEFAULT_HEIGHT;
         } else {
           return DEFAULT_HEIGHT * 3;
         }
       }
       case CROSS -> {
-        if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+        if (Orientation.EAST.equals(getOrientation())
+            || Orientation.WEST.equals(getOrientation())) {
           return DEFAULT_HEIGHT;
         } else {
           return DEFAULT_HEIGHT * 2;
         }
       }
       default -> {
-        //Straight,Curved,Sensor,Signal,Switch
+        // Straight,Curved,Sensor,Signal,Switch
         return DEFAULT_HEIGHT;
       }
     }
@@ -661,7 +682,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
    */
   @Override
   public boolean isHorizontal() {
-    return (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) && TileType.CURVED != getTileType();
+    return (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation())
+        && TileType.CURVED != getTileType();
   }
 
   /**
@@ -671,7 +693,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
    */
   @Override
   public boolean isVertical() {
-    return (Orientation.NORTH == getOrientation() || Orientation.SOUTH == getOrientation()) && TileType.CURVED != getTileType();
+    return (Orientation.NORTH == getOrientation() || Orientation.SOUTH == getOrientation())
+        && TileType.CURVED != getTileType();
   }
 
   @Override
@@ -765,7 +788,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   /**
-   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
+   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central"
+   * point. From the switch side a Green or Red path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the switch side of the Turnout
@@ -776,7 +800,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   /**
-   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
+   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the
+   * diverging side a Red path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the diverging side of the Turnout
@@ -787,7 +812,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   /**
-   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
+   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the
+   * Straight side a Green path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the straight side of the Turnout
@@ -798,7 +824,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   /**
-   * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
+   * When the tile has a specific direction a train may travel then this method will indicate
+   * whether the other tile is in on the side where the arrow is pointing to
    *
    * @param other A Tile
    * @return true where other is on the side of this tile where the arrow points to
@@ -807,5 +834,4 @@ public abstract class AbstractTile extends TileBean implements Tile {
   public boolean isArrowDirection(Tile other) {
     return true;
   }
-
 }

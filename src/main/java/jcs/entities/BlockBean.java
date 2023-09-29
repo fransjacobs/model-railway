@@ -32,6 +32,7 @@ public class BlockBean {
   private String plusSignalId;
   private String minSignalId;
   private Long locomotiveId;
+  private boolean reverseArrival;
 
   private TileBean tileBean;
 
@@ -41,16 +42,13 @@ public class BlockBean {
   private AccessoryBean minSignal;
   private LocomotiveBean locomotive;
 
-  public BlockBean() {
-
-  }
+  public BlockBean() {}
 
   public BlockBean(TileBean tileBean) {
     this.tileBean = tileBean;
     if (tileBean != null) {
       this.tileId = tileBean.getId();
     }
-
   }
 
   @Id
@@ -196,6 +194,18 @@ public class BlockBean {
     this.locomotiveId = locomotiveId;
   }
 
+  @Column(
+      name = "reverse_arrival_side",
+      nullable = false,
+      columnDefinition = "reverse_arrival_side bool default '1'")
+  public boolean isReverseArrival() {
+    return reverseArrival;
+  }
+
+  public void setReverseArrival(boolean reverseArrival) {
+    this.reverseArrival = reverseArrival;
+  }
+
   @Transient
   public LocomotiveBean getLocomotive() {
     return locomotive;
@@ -262,7 +272,23 @@ public class BlockBean {
 
   @Override
   public String toString() {
-    return "BlockBean{" + "id=" + id + ", tileId=" + tileId + ", description=" + description + ", plusSensorId=" + plusSensorId + ", minSensorId=" + minSensorId + ", plusSignalId=" + plusSignalId + ", minSignalId=" + minSignalId + ", locomotiveId=" + locomotiveId + "}";
+    return "BlockBean{"
+        + "id="
+        + id
+        + ", tileId="
+        + tileId
+        + ", description="
+        + description
+        + ", plusSensorId="
+        + plusSensorId
+        + ", minSensorId="
+        + minSensorId
+        + ", plusSignalId="
+        + plusSignalId
+        + ", minSignalId="
+        + minSignalId
+        + ", locomotiveId="
+        + locomotiveId
+        + "}";
   }
-
 }

@@ -23,15 +23,18 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
+import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Orientation;
-import jcs.ui.layout.tiles.enums.Direction;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.SignalValue;
+import jcs.entities.enums.TileType;
+import jcs.ui.layout.tiles.enums.Direction;
 import org.tinylog.Logger;
 
 /**
- *
  * @author Frans Jacobs
  */
 public class TileTester extends JFrame {
@@ -105,10 +108,54 @@ public class TileTester extends JFrame {
     tileWest1 = new Curved(Orientation.WEST, 250, 100);
     tileNorth1 = new Curved(Orientation.NORTH, 340, 100);
 
-    tileEast2 = new Block(Orientation.EAST, 70, 190);
-    tileSouth2 = new Block(Orientation.SOUTH, 160, 190);
-    tileWest2 = new Block(Orientation.WEST, 250, 190);
-    tileNorth2 = new Block(Orientation.NORTH, 340, 190);
+    tileEast2 = TileFactory.createTile(TileType.BLOCK, Orientation.EAST, 70, 190, true);
+    tileSouth2 = TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, 160, 190, true);
+    tileWest2 = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, 250, 190, true);
+    tileNorth2 = TileFactory.createTile(TileType.BLOCK, Orientation.NORTH, 340, 190, true);
+
+    LocomotiveBean lok1 =
+        new LocomotiveBean(
+            2L,
+            "BR 81 002",
+            2L,
+            0L,
+            2,
+            "DB BR 81 008",
+            "mm_prg",
+            null,
+            120,
+            1,
+            0,
+            0,
+            false,
+            null,
+            true);
+
+    BlockBean bb1 = new BlockBean((TileBean) tileEast2);
+    bb1.setLocomotive(lok1);
+    ((Block) tileEast2).setBlockBean(bb1);
+
+    LocomotiveBean lok2 =
+        new LocomotiveBean(
+            12L,
+            "BR 141 015-08",
+            12L,
+            null,
+            12,
+            "DB BR 141 136-2",
+            "mm_prg",
+            null,
+            120,
+            0,
+            0,
+            2,
+            false,
+            null,
+            true);
+
+    BlockBean bb2 = new BlockBean((TileBean) tileWest2);
+    bb2.setLocomotive(lok2);
+    ((Block) tileWest2).setBlockBean(bb1);
 
     tileEast3 = new Sensor(Orientation.EAST, 70, 280);
     tileSouth3 = new Sensor(Orientation.SOUTH, 160, 280);
@@ -161,7 +208,6 @@ public class TileTester extends JFrame {
     tileSouth10 = new End(Orientation.SOUTH, 160, 750);
     tileWest10 = new End(Orientation.WEST, 250, 750);
     tileNorth10 = new End(Orientation.NORTH, 340, 750);
-
   }
 
   @Override
@@ -347,14 +393,16 @@ public class TileTester extends JFrame {
     tileNorth10.drawTile(g2d, false);
     tileNorth10.drawBounds(g2d);
     tileNorth10.drawCenterPoint(g2d, Color.cyan);
-
   }
 
   public static void main(String args[]) {
 
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+    } catch (ClassNotFoundException
+        | InstantiationException
+        | IllegalAccessException
+        | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
@@ -363,11 +411,11 @@ public class TileTester extends JFrame {
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     app.setSize(400, 820);
 
-    app.setLocation(dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+    app.setLocation(
+        dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 
     app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
-
 }

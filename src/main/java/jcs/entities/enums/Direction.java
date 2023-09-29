@@ -57,7 +57,7 @@ public enum Direction {
       case "Backwards" ->
         2;
       case "Switch" ->
-        2;
+        3;
       default ->
         0;
     };
@@ -76,7 +76,8 @@ public enum Direction {
       case 3 ->
         "Switch";
       default ->
-        "Same";
+        //"Same";
+        "Forwards";
     };
   }
 

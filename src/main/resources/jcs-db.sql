@@ -111,14 +111,15 @@ alter table tiles add constraint tile_acc_fk foreign key (accessory_id) referenc
 alter table tiles add constraint tile_sens_fk foreign key (sensor_id) references sensors(id);
 
 create table blocks (
-  id                 varchar(255),
-  tile_id            varchar(255) not null,
-  description        varchar(255),
-  plus_sensor_id     varchar(255),
-  min_sensor_id      varchar(255),
-  plus_signal_id     varchar(255),
-  min_signal_id      varchar(255),
-  locomotive_id      bigint,
+  id                          varchar(255),
+  tile_id                     varchar(255) not null,
+  description                 varchar(255),
+  plus_sensor_id              varchar(255),
+  min_sensor_id               varchar(255),
+  plus_signal_id              varchar(255),
+  min_signal_id               varchar(255),
+  locomotive_id               bigint,
+  reverse_arrival_side        bool not null default false,
   constraint bloc_pk primary key (id),
   constraint bloc_tile_un unique (tile_id)
 );

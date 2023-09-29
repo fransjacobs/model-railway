@@ -136,9 +136,67 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     g2d.fillOval(l2x, l2y, 5, 5);
   }
 
-  //TODO
   protected void renderSignal3(Graphics2D g2d) {
-    renderSignal4(g2d);
+    int rx = GRID - 5;
+    int ry = GRID + 5;
+    int rw = 24;
+    int rh = 12;
+    int c1x = GRID + 14;
+    int c1y = GRID + 6;
+    int c2x = GRID + 9;
+    int c2y = GRID + 6;
+    int c3x = GRID + 9;
+    int c3y = GRID + 11;
+    int c4x = GRID + 5;
+    int c4y = GRID + 12;
+    int c5x = GRID + 2;
+    int c5y = GRID + 7;
+    int c6x = GRID - 4;
+    int c6y = GRID + 6;
+
+    //Initialize all "lights"
+    Color color1 = Color.gray;
+    Color color2 = Color.gray;
+    Color color3 = Color.gray;
+    Color color4 = Color.gray;
+    Color color5 = Color.gray;
+    Color color6 = Color.gray;
+
+    if (this.signalValue == null) {
+      this.signalValue = SignalValue.OFF;
+    }
+
+    switch (this.signalValue) {
+      case Hp0 -> {
+        color2 = Color.red;
+        color3 = Color.red;
+      }
+      case Hp1 ->
+        color1 = Color.green;
+      case Hp2 -> {
+        color1 = Color.green;
+        color6 = Color.yellow;
+      }
+      default -> {
+      }
+    }
+
+    g2d.setStroke(new BasicStroke(10f));
+    g2d.setPaint(Color.darkGray);
+    g2d.fillRoundRect(rx, ry, rw, rh, 0, 0);
+
+    g2d.setPaint(color1);
+    g2d.fillOval(c1x, c1y, 5, 5);
+    g2d.setPaint(color2);
+    g2d.fillOval(c2x, c2y, 5, 5);
+    g2d.setPaint(color3);
+    g2d.fillOval(c3x, c3y, 5, 5);
+    g2d.setPaint(color4);
+    g2d.fillOval(c4x, c4y, 3, 3);
+    g2d.setPaint(color5);
+    g2d.fillOval(c5x, c5y, 3, 3);
+    g2d.setPaint(color6);
+    g2d.fillOval(c6x, c6y, 5, 5);
   }
 
   /**
