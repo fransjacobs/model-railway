@@ -235,6 +235,27 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
+  public static CanMessage switchAccessory(int address, AccessoryValue value, boolean on, int switchTime, int gfpUid) {
+    byte[] data = new byte[CanMessage.DATA_SIZE];
+    byte[] hash;
+    if (gfpUid > 0) {
+      hash = CanMessage.generateHash(gfpUid);
+    } else {
+      hash = MAGIC_HASH;
+    }
+
+    data[ACCESSORY_CAN_ADDRESS_IDX] = ACCESSORY_CAN_ADDRESS;
+    data[ACCESSORY_ADDRESS_IDX] = (byte) (address - 1);
+    data[ACCESSORY_VALUE_IDX] = (byte) (AccessoryValue.GREEN.equals(value) ? 1 : 0);
+    data[ACCESSORY_ACTIVE_IDX] = (byte) (on ? 1 : 0);
+
+    byte[] st = CanMessage.to2Bytes(switchTime);
+
+    System.arraycopy(st, 0, data, ACCESSORY_SWITCH_TIME_IDX, st.length);
+    CanMessage cm = new CanMessage(PRIO_1, ACCESSORY_SWITCHING, hash, DLC_8, data);
+    return cm;
+  }
+
   /**
    * Request the Configuration Data of a Member.
    *
@@ -291,23 +312,6 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
-//  //old
-//  public static CanMessage setFunction(int address, int functionNumber, int value, int gfpUid) {
-//    byte[] data = new byte[CanMessage.DATA_SIZE];
-//    byte[] hash;
-//    if (gfpUid > 0) {
-//      hash = CanMessage.generateHash(gfpUid);
-//    } else {
-//      hash = MAGIC_HASH;
-//    }
-//
-//    byte[] locid = CanMessage.to4Bytes(address);
-//    System.arraycopy(locid, 0, data, 0, locid.length);
-//    data[4] = (byte) (functionNumber & 0xff);
-//    data[5] = (byte) (value & 0xff);
-//    CanMessage cm = new CanMessage(PRIO_1, LOC_FUNCTION, hash, DLC_6, data);
-//    return cm;
-//  }
   public static CanMessage queryDirection(int address, int gfpUid) {
     byte[] data = new byte[CanMessage.DATA_SIZE];
     byte[] hash;
@@ -416,6 +420,10 @@ public class CanMessageFactory implements MarklinCan {
 
     System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.RED, true, 1668498828));
 
+    System.out.println("switchAccessory 2g: " + switchAccessory(2, AccessoryValue.GREEN, true,50, 1668498828));
+    System.out.println("switchAccessory 2r: " + switchAccessory(2, AccessoryValue.RED, true,50, 1668498828));
+
+    
     System.out.println("requestConfigData:  " + requestConfigData(1668498828, "loks"));
 
     System.out.println("");

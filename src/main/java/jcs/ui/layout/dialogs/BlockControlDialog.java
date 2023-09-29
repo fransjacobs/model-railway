@@ -15,12 +15,13 @@
  */
 package jcs.ui.layout.dialogs;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JTextField;
+import javax.swing.ImageIcon;
 import jcs.entities.BlockBean;
-import jcs.entities.SensorBean;
+import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Block;
 import org.tinylog.Logger;
@@ -29,12 +30,11 @@ import org.tinylog.Logger;
  *
  * @author fransjacobs
  */
-public class BlockDialog extends javax.swing.JDialog {
+public class BlockControlDialog extends javax.swing.JDialog {
 
   private final Block block;
 
-  private ComboBoxModel<SensorBean> plusSensorComboBoxModel;
-  private ComboBoxModel<SensorBean> minSensorComboBoxModel;
+  private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
 
   /**
    * Creates new form SensorDialog
@@ -42,7 +42,7 @@ public class BlockDialog extends javax.swing.JDialog {
    * @param parent
    * @param block
    */
-  public BlockDialog(java.awt.Frame parent, Block block) {
+  public BlockControlDialog(java.awt.Frame parent, Block block) {
     super(parent, true);
     this.block = block;
     initComponents();
@@ -56,58 +56,37 @@ public class BlockDialog extends javax.swing.JDialog {
     this.headingLbl.setText(text);
 
     if (this.block != null) {
-      //Get a list of all sensors
-      List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
-      //Expand with an empty one for display
-      SensorBean emptyBean = new SensorBean();
-      sensors.add(emptyBean);
-
-      plusSensorComboBoxModel = new DefaultComboBoxModel(sensors.toArray());
-      minSensorComboBoxModel = new DefaultComboBoxModel(sensors.toArray());
-
-      this.plusSensorCB.setModel(plusSensorComboBoxModel);
-      this.minSensorCB.setModel(minSensorComboBoxModel);
+      List<LocomotiveBean> locos = new LinkedList<>();
+      LocomotiveBean emptyBean = new LocomotiveBean();
+      locos.add(emptyBean);
+      locos.addAll(PersistenceFactory.getService().getLocomotives());
+      locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
+      this.locomotiveCB.setModel(locomotiveComboBoxModel);
 
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
-        bb = new BlockBean();
-        bb.setTile(block);
-        bb.setTileId(this.block.getId());
-
+        bb = PersistenceFactory.getService().getBlockByTileId(block.getId());
+        if(bb == null) {   
+          Logger.warn("Block has no BlockBean. Creating one...");
+          bb = new BlockBean();
+          bb.setTile(block);
+          bb.setTileId(this.block.getId());
+        }  
         this.block.setBlockBean(bb);
       }
 
       this.blockIdTF.setText(this.block.getId());
       this.blockNameTF.setText(bb.getDescription());
 
-      SensorBean plusSb, minSb;
-      if (bb.getPlusSensorId() != null && bb.getPlusSensorBean() == null) {
-        plusSb = PersistenceFactory.getService().getSensor(bb.getPlusSensorId());
-        bb.setPlusSensorBean(plusSb);
-      } else {
-        plusSb = bb.getPlusSensorBean();
+      if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
+        bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
       }
 
-      if (bb.getMinSensorId() != null && bb.getMinSensorBean() == null) {
-        minSb = PersistenceFactory.getService().getSensor(bb.getMinSensorId());
-        bb.setPlusSensorBean(plusSb);
+      if (bb.getLocomotive() != null) {
+        this.locomotiveCB.setSelectedItem(bb.getLocomotive());
       } else {
-        minSb = bb.getMinSensorBean();
+        this.locomotiveCB.setSelectedItem(emptyBean);
       }
-
-      if (plusSb != null) {
-        this.plusSensorComboBoxModel.setSelectedItem(plusSb);
-      } else {
-        this.plusSensorComboBoxModel.setSelectedItem(emptyBean);
-      }
-      if (minSb != null) {
-        this.minSensorComboBoxModel.setSelectedItem(minSb);
-      } else {
-        this.minSensorComboBoxModel.setSelectedItem(emptyBean);
-      }
-
-      //Unregister as properties might change
-      //ControllerFactory.getController().removeAccessoryListener(block);
     }
   }
 
@@ -126,12 +105,11 @@ public class BlockDialog extends javax.swing.JDialog {
     namePanel = new javax.swing.JPanel();
     blockDescLbl = new javax.swing.JLabel();
     blockNameTF = new javax.swing.JTextField();
-    plusSensorPanel = new javax.swing.JPanel();
-    plusSensorLbl = new javax.swing.JLabel();
-    plusSensorCB = new javax.swing.JComboBox<>();
-    minSensorPanel = new javax.swing.JPanel();
-    minSensorLbl = new javax.swing.JLabel();
-    minSensorCB = new javax.swing.JComboBox<>();
+    locomotiveImagePanel = new javax.swing.JPanel();
+    locomotiveIconLbl = new javax.swing.JLabel();
+    locomotivePanel = new javax.swing.JPanel();
+    locomotiveLbl = new javax.swing.JLabel();
+    locomotiveCB = new javax.swing.JComboBox<>();
     saveExitPanel = new javax.swing.JPanel();
     saveExitBtn = new javax.swing.JButton();
 
@@ -145,7 +123,7 @@ public class BlockDialog extends javax.swing.JDialog {
     headingPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
     headingLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-block.png"))); // NOI18N
-    headingLbl.setText("Block");
+    headingLbl.setText("Block, assign Locomotive");
     headingPanel.add(headingLbl);
 
     getContentPane().add(headingPanel);
@@ -162,16 +140,6 @@ public class BlockDialog extends javax.swing.JDialog {
 
     blockIdTF.setEnabled(false);
     blockIdTF.setPreferredSize(new java.awt.Dimension(150, 23));
-    blockIdTF.addFocusListener(new java.awt.event.FocusAdapter() {
-      public void focusLost(java.awt.event.FocusEvent evt) {
-        blockIdTFFocusLost(evt);
-      }
-    });
-    blockIdTF.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        blockIdTFActionPerformed(evt);
-      }
-    });
     deviceIdPanel.add(blockIdTF);
 
     getContentPane().add(deviceIdPanel);
@@ -188,59 +156,44 @@ public class BlockDialog extends javax.swing.JDialog {
     blockDescLbl.setPreferredSize(new java.awt.Dimension(100, 16));
     namePanel.add(blockDescLbl);
 
+    blockNameTF.setEditable(false);
     blockNameTF.setPreferredSize(new java.awt.Dimension(150, 23));
-    blockNameTF.addFocusListener(new java.awt.event.FocusAdapter() {
-      public void focusLost(java.awt.event.FocusEvent evt) {
-        blockNameTFFocusLost(evt);
-      }
-    });
-    blockNameTF.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        blockNameTFActionPerformed(evt);
-      }
-    });
     namePanel.add(blockNameTF);
 
     getContentPane().add(namePanel);
 
-    plusSensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
-    java.awt.FlowLayout flowLayout7 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout7.setAlignOnBaseline(true);
-    plusSensorPanel.setLayout(flowLayout7);
+    locomotiveImagePanel.setPreferredSize(new java.awt.Dimension(290, 60));
+    java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
+    flowLayout5.setAlignOnBaseline(true);
+    locomotiveImagePanel.setLayout(flowLayout5);
 
-    plusSensorLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    plusSensorLbl.setText("Plus Sensor:");
-    plusSensorLbl.setDoubleBuffered(true);
-    plusSensorLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    plusSensorPanel.add(plusSensorLbl);
+    locomotiveIconLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+    locomotiveIconLbl.setDoubleBuffered(true);
+    locomotiveIconLbl.setPreferredSize(new java.awt.Dimension(120, 60));
+    locomotiveImagePanel.add(locomotiveIconLbl);
 
-    plusSensorCB.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        plusSensorCBActionPerformed(evt);
-      }
-    });
-    plusSensorPanel.add(plusSensorCB);
+    getContentPane().add(locomotiveImagePanel);
 
-    getContentPane().add(plusSensorPanel);
-
-    minSensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    locomotivePanel.setPreferredSize(new java.awt.Dimension(290, 40));
     java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout3.setAlignOnBaseline(true);
-    minSensorPanel.setLayout(flowLayout3);
+    locomotivePanel.setLayout(flowLayout3);
 
-    minSensorLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    minSensorLbl.setText("Min. Sensor:");
-    minSensorLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    minSensorPanel.add(minSensorLbl);
+    locomotiveLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+    locomotiveLbl.setText("Locomotive:");
+    locomotiveLbl.setDoubleBuffered(true);
+    locomotiveLbl.setPreferredSize(new java.awt.Dimension(100, 17));
+    locomotivePanel.add(locomotiveLbl);
 
-    minSensorCB.addActionListener(new java.awt.event.ActionListener() {
+    locomotiveCB.setPreferredSize(new java.awt.Dimension(150, 23));
+    locomotiveCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        minSensorCBActionPerformed(evt);
+        locomotiveCBActionPerformed(evt);
       }
     });
-    minSensorPanel.add(minSensorCB);
+    locomotivePanel.add(locomotiveCB);
 
-    getContentPane().add(minSensorPanel);
+    getContentPane().add(locomotivePanel);
 
     saveExitPanel.setPreferredSize(new java.awt.Dimension(290, 50));
     java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
@@ -269,32 +222,25 @@ public class BlockDialog extends javax.swing.JDialog {
 
       this.setVisible(false);
       this.dispose();
-      Logger.trace(evt.getActionCommand() + "Block " + block.getId() + " Name: " + this.block.getBlockBean().getDescription());
+      Logger.trace(evt.getActionCommand() + "Block " + block.getId() + " Locomotive: " + this.block.getBlockBean().getLocomotive());
     }//GEN-LAST:event_saveExitBtnActionPerformed
 
-  private void plusSensorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plusSensorCBActionPerformed
-    this.block.getBlockBean().setPlusSensorBean((SensorBean) this.plusSensorCB.getSelectedItem());
-  }//GEN-LAST:event_plusSensorCBActionPerformed
+  private void locomotiveCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locomotiveCBActionPerformed
+    Logger.trace(evt.getActionCommand() + " -> " + this.locomotiveComboBoxModel.getSelectedItem());
 
-  private void minSensorCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_minSensorCBActionPerformed
-    this.block.getBlockBean().setMinSensorBean((SensorBean) this.minSensorCB.getSelectedItem());
-  }//GEN-LAST:event_minSensorCBActionPerformed
+    LocomotiveBean selected = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
 
-  private void blockNameTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blockNameTFActionPerformed
-    this.block.getBlockBean().setDescription(((JTextField) evt.getSource()).getText());
-  }//GEN-LAST:event_blockNameTFActionPerformed
+    this.block.getBlockBean().setLocomotive(selected);
 
-  private void blockNameTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_blockNameTFFocusLost
-    this.block.getBlockBean().setDescription(((JTextField) evt.getSource()).getText());
-  }//GEN-LAST:event_blockNameTFFocusLost
+    if (selected.getLocIcon() != null) {
+      this.locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
+      this.locomotiveIconLbl.setText(null);
+    } else {
+      this.locomotiveIconLbl.setText(selected.getName());
+    }
 
-  private void blockIdTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blockIdTFActionPerformed
-    this.block.getBlockBean().setTileId(((JTextField) evt.getSource()).getText());
-  }//GEN-LAST:event_blockIdTFActionPerformed
 
-  private void blockIdTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_blockIdTFFocusLost
-    this.block.getBlockBean().setTileId(((JTextField) evt.getSource()).getText());
-  }//GEN-LAST:event_blockIdTFFocusLost
+  }//GEN-LAST:event_locomotiveCBActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JLabel blockDescLbl;
@@ -304,13 +250,12 @@ public class BlockDialog extends javax.swing.JDialog {
   private javax.swing.JPanel deviceIdPanel;
   private javax.swing.JLabel headingLbl;
   private javax.swing.JPanel headingPanel;
-  private javax.swing.JComboBox<SensorBean> minSensorCB;
-  private javax.swing.JLabel minSensorLbl;
-  private javax.swing.JPanel minSensorPanel;
+  private javax.swing.JComboBox<LocomotiveBean> locomotiveCB;
+  private javax.swing.JLabel locomotiveIconLbl;
+  private javax.swing.JPanel locomotiveImagePanel;
+  private javax.swing.JLabel locomotiveLbl;
+  private javax.swing.JPanel locomotivePanel;
   private javax.swing.JPanel namePanel;
-  private javax.swing.JComboBox<SensorBean> plusSensorCB;
-  private javax.swing.JLabel plusSensorLbl;
-  private javax.swing.JPanel plusSensorPanel;
   private javax.swing.JButton saveExitBtn;
   private javax.swing.JPanel saveExitPanel;
   // End of variables declaration//GEN-END:variables

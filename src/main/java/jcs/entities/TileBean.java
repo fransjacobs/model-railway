@@ -41,13 +41,14 @@ public class TileBean implements Serializable, Comparable {
   protected String tileOrientation;
   protected String tileDirection;
   protected String signalAccessoryType;
-  protected Long accessoryId;
-  protected Long sensorId;
+  protected String accessoryId;
+  protected String sensorId;
 
   protected List<TileBean> neighbours;
 
   protected AccessoryBean accessoryBean;
   protected SensorBean sensorBean;
+  protected BlockBean blockBean;
 
   public TileBean() {
     this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
@@ -57,11 +58,11 @@ public class TileBean implements Serializable, Comparable {
     this(id, tileType, orientation, direction, x, y, null, null, null);
   }
 
-  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, Long accessoryId, Long sensorId) {
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, String accessoryId, String sensorId) {
     this(id, tileType, orientation, direction, center.x, center.y, signalType, null, sensorId);
   }
 
-  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, Long accessoryId, Long sensorId) {
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, String accessoryId, String sensorId) {
     this.id = id;
     this.setTileType(tileType);
     this.tileOrientation = orientation.getOrientation();
@@ -114,7 +115,11 @@ public class TileBean implements Serializable, Comparable {
 
   @Transient
   public TileType getTileType() {
-    return TileType.get(type);
+    if (type != null) {
+      return TileType.get(type);
+    } else {
+      return null;
+    }
   }
 
   public final void setTileType(TileType tileType) {
@@ -188,20 +193,20 @@ public class TileBean implements Serializable, Comparable {
   }
 
   @Column(name = "accessory_id")
-  public Long getAccessoryId() {
+  public String getAccessoryId() {
     return accessoryId;
   }
 
-  public void setAccessoryId(Long accessoryId) {
+  public void setAccessoryId(String accessoryId) {
     this.accessoryId = accessoryId;
   }
 
   @Column(name = "sensor_id")
-  public Long getSensorId() {
+  public String getSensorId() {
     return sensorId;
   }
 
-  public void setSensorId(Long sensorId) {
+  public void setSensorId(String sensorId) {
     this.sensorId = sensorId;
   }
 
@@ -231,6 +236,15 @@ public class TileBean implements Serializable, Comparable {
     } else {
       this.sensorId = null;
     }
+  }
+
+  @Transient
+  public BlockBean getBlockBean() {
+    return blockBean;
+  }
+
+  public void setBlockBean(BlockBean blockBean) {
+    this.blockBean = blockBean;
   }
 
   @Override

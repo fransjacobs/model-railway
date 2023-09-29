@@ -447,7 +447,7 @@ public class SignalPreferencesPanel extends JPanel {
     Long idl = signalTableModel.getRowCount() + 1l;
 
     selectedSignal.setName("W " + idl);
-    selectedSignal.setId(idl);
+    selectedSignal.setId(idl + "");
     selectedSignal.setPosition(0);
 
     setComponentValues(selectedSignal);
@@ -519,8 +519,8 @@ public class SignalPreferencesPanel extends JPanel {
 
   //Create Signal from fields  
   protected AccessoryBean setSignalValues() {
-    Long id = (Long) this.idSpinner.getValue();
-    Integer address = id.intValue();
+    String id = (String) this.idSpinner.getValue();
+    Integer address = Integer.getInteger(id);
     String name = nameTF.getText();
     String type = typeTF.getText();
     Integer switchTime = (Integer) this.switchTimeSpinner.getValue();
@@ -535,7 +535,9 @@ public class SignalPreferencesPanel extends JPanel {
 
   protected void setComponentValues(AccessoryBean signal) {
     if (signal != null) {
-      this.idSpinner.setValue(signal.getId());
+      
+      this.idSpinner.setValue(signal.getAddress());
+      
       this.nameTF.setText(signal.getName());
       this.typeTF.setText(signal.getType());
       this.switchTimeSpinner.setValue(signal.getSwitchTime());

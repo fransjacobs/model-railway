@@ -27,7 +27,6 @@ import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 
 /**
- *
  * @author frans
  */
 public class SensorTableModel extends BeanTableModel<SensorBean> implements SensorEventListener {
@@ -97,66 +96,42 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
   @Override
   public Object getColumnValue(SensorBean sensor, int column) {
     return switch (column) {
-      case 0 ->
-        sensor.getId();
-      case 1 ->
-        sensor.getName();
-      case 2 ->
-        sensor.getDeviceId();
-      case 3 ->
-        sensor.getContactId();
-      case 4 ->
-        sensor.getStatus();
-      case 5 ->
-        sensor.getPreviousStatus();
-      case 6 ->
-        sensor.getMillis();
-      default ->
-        null;
+      case 0 -> sensor.getId();
+      case 1 -> sensor.getName();
+      case 2 -> sensor.getDeviceId();
+      case 3 -> sensor.getContactId();
+      case 4 -> sensor.getStatus();
+      case 5 -> sensor.getPreviousStatus();
+      case 6 -> sensor.getMillis();
+      default -> null;
     };
   }
 
   @Override
   public Class<?> getColumnClass(int columnIndex) {
     return switch (columnIndex) {
-      case 0 ->
-        BigDecimal.class;
-      case 1 ->
-        String.class;
-      case 2 ->
-        Integer.class;
-      case 3 ->
-        Integer.class;
-      case 4 ->
-        Integer.class;
-      case 5 ->
-        Integer.class;
-      case 6 ->
-        Integer.class;
-      default ->
-        String.class;
+      case 0 -> BigDecimal.class;
+      case 1 -> String.class;
+      case 2 -> Integer.class;
+      case 3 -> Integer.class;
+      case 4 -> Integer.class;
+      case 5 -> Integer.class;
+      case 6 -> Integer.class;
+      default -> String.class;
     };
   }
 
   @Override
   void setColumnValue(SensorBean sensor, int column, Object value) {
     switch (column) {
-      case 0 ->
-        sensor.setId((Long) value);
-      case 1 ->
-        sensor.setName((String) value);
-      case 2 ->
-        sensor.setDeviceId((Integer) value);
-      case 3 ->
-        sensor.setContactId((Integer) value);
-      case 4 ->
-        sensor.setStatus((Integer) value);
-      case 5 ->
-        sensor.setPreviousStatus((Integer) value);
-      case 6 ->
-        sensor.setMillis((Integer) value);
-      default -> {
-      }
+      case 0 -> sensor.setId((String) value);
+      case 1 -> sensor.setName((String) value);
+      case 2 -> sensor.setDeviceId((Integer) value);
+      case 3 -> sensor.setContactId((Integer) value);
+      case 4 -> sensor.setStatus((Integer) value);
+      case 5 -> sensor.setPreviousStatus((Integer) value);
+      case 6 -> sensor.setMillis((Integer) value);
+      default -> {}
     }
 
     PersistenceFactory.getService().persist(sensor);
@@ -168,7 +143,6 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
       this.sensorBeanCache.clear();
     }
     this.fireTableDataChanged();
-
   }
 
   @Override
@@ -176,7 +150,7 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
     int row = -1;
 
     if (bean != null && bean.getId() != null) {
-      Long id = bean.getId();
+      String id = bean.getId();
       int rowCount = this.beans.size();
 
       for (int i = 0; i < rowCount; i++) {
@@ -189,5 +163,4 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
     }
     return row;
   }
-
 }

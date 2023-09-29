@@ -155,7 +155,7 @@ public class FunctionBean implements Serializable {
     this.momentary = momentary;
   }
 
-  @Column(name = "momentary", nullable = false, columnDefinition = "show bool default '1'")
+  @Column(name = "momentary", nullable = false, columnDefinition = "momentary bool default '1'")
   public boolean isMomentary() {
     return momentary;
   }

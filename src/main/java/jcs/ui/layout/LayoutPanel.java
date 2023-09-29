@@ -37,7 +37,6 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import jcs.JCS;
 import jcs.ui.layout.tiles.enums.Direction;
-import jcs.ui.layout.enums.Mode;
 import org.tinylog.Logger;
 
 /**
@@ -62,7 +61,7 @@ public class LayoutPanel extends JPanel {
   private void postInit() {
     this.straightBtn.setSelected(true);
     this.canvas.setTileType(TileType.STRAIGHT);
-    this.setMode(readonly ? Mode.CONTROL : Mode.SELECT);
+    this.setMode(readonly ? LayoutCanvas.Mode.CONTROL : LayoutCanvas.Mode.SELECT);
 
     if (this.readonly) {
       this.canvas.setDrawGrid(!readonly);
@@ -138,6 +137,15 @@ public class LayoutPanel extends JPanel {
 
       this.rotateBtn.setEnabled(!readonly);
       this.rotateBtn.setVisible(!readonly);
+    } else {
+
+      this.toolBar.remove(this.autoPilotBtn);
+      this.autoPilotBtn.setEnabled(readonly);
+      this.autoPilotBtn.setVisible(readonly);
+
+      this.toolBar.remove(this.startAutoPilotBtn);
+      this.startAutoPilotBtn.setEnabled(readonly);
+      this.startAutoPilotBtn.setVisible(readonly);
     }
 
     if (readonly) {
@@ -181,6 +189,8 @@ public class LayoutPanel extends JPanel {
         loadBtn = new JButton();
         repaintBtn = new JButton();
         routeBtn = new JButton();
+        autoPilotBtn = new JToggleButton();
+        startAutoPilotBtn = new JToggleButton();
         filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
         selectBtn = new JButton();
         addBtn = new JButton();
@@ -364,7 +374,7 @@ public class LayoutPanel extends JPanel {
         });
         toolBar.add(repaintBtn);
 
-        routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/route-24.png"))); // NOI18N
+        routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
         routeBtn.setToolTipText("Route");
         routeBtn.setFocusable(false);
         routeBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -378,6 +388,38 @@ public class LayoutPanel extends JPanel {
             }
         });
         toolBar.add(routeBtn);
+
+        autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
+        autoPilotBtn.setToolTipText("Auto mode");
+        autoPilotBtn.setFocusable(false);
+        autoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        autoPilotBtn.setMaximumSize(new Dimension(38, 38));
+        autoPilotBtn.setMinimumSize(new Dimension(38, 38));
+        autoPilotBtn.setPreferredSize(new Dimension(38, 38));
+        autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/pilot-green.png"))); // NOI18N
+        autoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        autoPilotBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                autoPilotBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(autoPilotBtn);
+
+        startAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
+        startAutoPilotBtn.setToolTipText("Auto mode");
+        startAutoPilotBtn.setFocusable(false);
+        startAutoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+        startAutoPilotBtn.setMaximumSize(new Dimension(38, 38));
+        startAutoPilotBtn.setMinimumSize(new Dimension(38, 38));
+        startAutoPilotBtn.setPreferredSize(new Dimension(38, 38));
+        startAutoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
+        startAutoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+        startAutoPilotBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                startAutoPilotBtnActionPerformed(evt);
+            }
+        });
+        toolBar.add(startAutoPilotBtn);
         toolBar.add(filler1);
 
         selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png"))); // NOI18N
@@ -772,15 +814,15 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_loadBtnActionPerformed
 
     private void selectBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_selectBtnActionPerformed
-      setMode(Mode.SELECT);
+      setMode(LayoutCanvas.Mode.SELECT);
     }//GEN-LAST:event_selectBtnActionPerformed
 
     private void addBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-      setMode(Mode.ADD);
+      setMode(LayoutCanvas.Mode.ADD);
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
-      setMode(Mode.DELETE);
+      setMode(LayoutCanvas.Mode.DELETE);
       this.canvas.removeTiles();
     }//GEN-LAST:event_deleteBtnActionPerformed
 
@@ -813,7 +855,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_flipVerticalBtnActionPerformed
 
     private void moveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveBtnActionPerformed
-      setMode(Mode.MOVE);
+      setMode(LayoutCanvas.Mode.MOVE);
     }//GEN-LAST:event_moveBtnActionPerformed
 
     private void rightSwitchBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightSwitchBtnActionPerformed
@@ -883,6 +925,16 @@ public class LayoutPanel extends JPanel {
     setTileType(TileType.END);
   }//GEN-LAST:event_endTrackBtnActionPerformed
 
+  private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
+    Logger.trace(evt.getActionCommand() + " Enable Auto mode " + this.autoPilotBtn.isSelected());
+    
+  }//GEN-LAST:event_autoPilotBtnActionPerformed
+
+  private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
+    Logger.trace(evt.getActionCommand() + " Start Auto mode " + this.autoPilotBtn.isSelected());
+    
+  }//GEN-LAST:event_startAutoPilotBtnActionPerformed
+
   private void setTileType(TileType tileType) {
     this.canvas.setTileType(tileType);
   }
@@ -891,7 +943,7 @@ public class LayoutPanel extends JPanel {
     this.canvas.setDirection(direction);
   }
 
-  private void setMode(Mode mode) {
+  private void setMode(LayoutCanvas.Mode mode) {
     switch (mode) {
       case SELECT -> {
         selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png")));
@@ -922,6 +974,7 @@ public class LayoutPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addBtn;
+    private JToggleButton autoPilotBtn;
     private JToggleButton blockBtn;
     private LayoutCanvas canvas;
     private JScrollPane canvasScrollPane;
@@ -959,6 +1012,7 @@ public class LayoutPanel extends JPanel {
     private JButton selectBtn;
     private JToggleButton sensorBtn;
     private JToggleButton signalBtn;
+    private JToggleButton startAutoPilotBtn;
     private JToggleButton straightBtn;
     private JToggleButton straightDirectionBtn;
     private JPopupMenu straightPopupMenu;

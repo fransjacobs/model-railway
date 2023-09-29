@@ -48,7 +48,7 @@ public class AccessoryEvent implements Serializable {
       int position = data[4];
       //CS is zero based
       address = address + 1;
-      long id = address;
+      String id = address+"";
 
       this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null);
       if (resp.getDlc() == CanMessage.DLC_8) {

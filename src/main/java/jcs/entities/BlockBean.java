@@ -17,7 +17,6 @@ package jcs.entities;
 
 import java.util.Objects;
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -25,14 +24,15 @@ import javax.persistence.Transient;
 @Table(name = "blocks")
 public class BlockBean {
 
-  private Long id;
+  private String id;
   private String tileId;
   private String description;
-  private Integer plusSensorId;
-  private Integer minSensorId;
-  private Integer plusSignalId;
-  private Integer minSignalId;
-  private Integer locomotiveId;
+  private String plusSensorId;
+  private String minSensorId;
+  private String plusSignalId;
+  private String minSignalId;
+  private Long locomotiveId;
+  private boolean reverseArrival;
 
   private TileBean tileBean;
 
@@ -42,26 +42,22 @@ public class BlockBean {
   private AccessoryBean minSignal;
   private LocomotiveBean locomotive;
 
-  public BlockBean() {
-
-  }
+  public BlockBean() {}
 
   public BlockBean(TileBean tileBean) {
     this.tileBean = tileBean;
     if (tileBean != null) {
       this.tileId = tileBean.getId();
     }
-
   }
 
   @Id
-  @GeneratedValue
   @Column(name = "id")
-  public Long getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -98,11 +94,11 @@ public class BlockBean {
   }
 
   @Column(name = "plus_sensor_id")
-  public Integer getPlusSensorId() {
+  public String getPlusSensorId() {
     return plusSensorId;
   }
 
-  public void setPlusSensorId(Integer plusSensorId) {
+  public void setPlusSensorId(String plusSensorId) {
     this.plusSensorId = plusSensorId;
   }
 
@@ -113,14 +109,19 @@ public class BlockBean {
 
   public void setPlusSensorBean(SensorBean plusSensorBean) {
     this.plusSensorBean = plusSensorBean;
+    if (plusSensorBean != null) {
+      this.plusSensorId = plusSensorBean.getId();
+    } else {
+      this.plusSensorId = null;
+    }
   }
 
   @Column(name = "min_sensor_id")
-  public Integer getMinSensorId() {
+  public String getMinSensorId() {
     return minSensorId;
   }
 
-  public void setMinSensorId(Integer minSensorId) {
+  public void setMinSensorId(String minSensorId) {
     this.minSensorId = minSensorId;
   }
 
@@ -131,14 +132,19 @@ public class BlockBean {
 
   public void setMinSensorBean(SensorBean minSensorBean) {
     this.minSensorBean = minSensorBean;
+    if (minSensorBean != null) {
+      this.minSensorId = minSensorBean.getId();
+    } else {
+      this.minSensorId = null;
+    }
   }
 
   @Column(name = "plus_signal_id")
-  public Integer getPlusSignalId() {
+  public String getPlusSignalId() {
     return plusSignalId;
   }
 
-  public void setPlusSignalId(Integer plusSignalId) {
+  public void setPlusSignalId(String plusSignalId) {
     this.plusSignalId = plusSignalId;
   }
 
@@ -149,14 +155,19 @@ public class BlockBean {
 
   public void setPlusSignal(AccessoryBean plusSignal) {
     this.plusSignal = plusSignal;
+    if (plusSignal != null) {
+      this.plusSignalId = plusSignal.getId();
+    } else {
+      this.plusSignalId = null;
+    }
   }
 
   @Column(name = "min_signal_id")
-  public Integer getMinSignalId() {
+  public String getMinSignalId() {
     return minSignalId;
   }
 
-  public void setMinSignalId(Integer minSignalId) {
+  public void setMinSignalId(String minSignalId) {
     this.minSignalId = minSignalId;
   }
 
@@ -167,15 +178,32 @@ public class BlockBean {
 
   public void setMinSignal(AccessoryBean minSignal) {
     this.minSignal = minSignal;
+    if (minSignal != null) {
+      this.minSignalId = minSignal.getId();
+    } else {
+      this.minSignalId = null;
+    }
   }
 
   @Column(name = "locomotive_id")
-  public Integer getLocomotiveId() {
+  public Long getLocomotiveId() {
     return locomotiveId;
   }
 
-  public void setLocomotiveId(Integer locomotiveId) {
+  public void setLocomotiveId(Long locomotiveId) {
     this.locomotiveId = locomotiveId;
+  }
+
+  @Column(
+      name = "reverse_arrival_side",
+      nullable = false,
+      columnDefinition = "reverse_arrival_side bool default '1'")
+  public boolean isReverseArrival() {
+    return reverseArrival;
+  }
+
+  public void setReverseArrival(boolean reverseArrival) {
+    this.reverseArrival = reverseArrival;
   }
 
   @Transient
@@ -185,6 +213,11 @@ public class BlockBean {
 
   public void setLocomotive(LocomotiveBean locomotive) {
     this.locomotive = locomotive;
+    if (locomotive != null) {
+      this.locomotiveId = locomotive.getId();
+    } else {
+      this.locomotiveId = null;
+    }
   }
 
   @Override
@@ -239,7 +272,23 @@ public class BlockBean {
 
   @Override
   public String toString() {
-    return "BlockBean{" + "id=" + id + ", tileId=" + tileId + ", description=" + description + ", plusSensorId=" + plusSensorId + ", minSensorId=" + minSensorId + ", plusSignalId=" + plusSignalId + ", minSignalId=" + minSignalId + ", locomotiveId=" + locomotiveId + "}";
+    return "BlockBean{"
+        + "id="
+        + id
+        + ", tileId="
+        + tileId
+        + ", description="
+        + description
+        + ", plusSensorId="
+        + plusSensorId
+        + ", minSensorId="
+        + minSensorId
+        + ", plusSignalId="
+        + plusSignalId
+        + ", minSignalId="
+        + minSignalId
+        + ", locomotiveId="
+        + locomotiveId
+        + "}";
   }
-
 }

@@ -25,13 +25,15 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-@Table(name = "sensors", indexes = {
-  @Index(name = "sens_devi_cont_idx", columnList = "device_id, contact_id", unique = true)})
+@Table(
+    name = "sensors",
+    indexes = {
+      @Index(name = "sens_devi_cont_idx", columnList = "device_id, contact_id", unique = true)
+    })
 public class SensorBean implements Serializable {
 
-  private Long id;
+  private String id;
   private String name;
-
   private Integer deviceId;
   private Integer contactId;
   private Integer status;
@@ -43,7 +45,13 @@ public class SensorBean implements Serializable {
     this(null, null, null, null, null, null, null, null);
   }
 
-  public SensorBean(Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+  public SensorBean(
+      Integer deviceId,
+      Integer contactId,
+      Integer status,
+      Integer previousStatus,
+      Integer millis,
+      Date lastUpdated) {
     this(null, null, deviceId, contactId, status, previousStatus, millis, lastUpdated);
   }
 
@@ -51,14 +59,28 @@ public class SensorBean implements Serializable {
     this(null, name, deviceId, contactId, null, null, null, null);
   }
 
-  public SensorBean(String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+  public SensorBean(
+      String name,
+      Integer deviceId,
+      Integer contactId,
+      Integer status,
+      Integer previousStatus,
+      Integer millis,
+      Date lastUpdated) {
     this(null, name, deviceId, contactId, status, previousStatus, millis, lastUpdated);
   }
 
-  public SensorBean(Long id, String name, Integer deviceId, Integer contactId, Integer status, Integer previousStatus, Integer millis, Date lastUpdated) {
+  public SensorBean(
+      String id,
+      String name,
+      Integer deviceId,
+      Integer contactId,
+      Integer status,
+      Integer previousStatus,
+      Integer millis,
+      Date lastUpdated) {
     this.id = id;
     this.name = name;
-
     this.status = status;
     this.previousStatus = previousStatus;
     this.deviceId = deviceId;
@@ -68,13 +90,15 @@ public class SensorBean implements Serializable {
   }
 
   @Id
-  @GeneratedValue
-  @Column(name = "id")
-  public Long getId() {
+  @Column(name = "id", nullable = false)
+  public String getId() {
+    if (this.id == null) {
+      this.id = this.deviceId + "-" + this.contactId;
+    }
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -143,7 +167,7 @@ public class SensorBean implements Serializable {
 
   @Transient
   public boolean isActive() {
-    if(status != null) {
+    if (status != null) {
       return this.status > 0;
     } else {
       return false;
@@ -163,21 +187,21 @@ public class SensorBean implements Serializable {
     return this.previousStatus > 0;
   }
 
-//    public static Integer calculateModuleNumber(int contactId) {
-//        int module = (contactId - 1) / 16 + 1;
-//        return module;
-//    }
-//    public static int calculatePortNumber(int contactId) {
-//        int module = (contactId - 1) / 16 + 1;
-//        int mport = contactId - (module - 1) * 16;
-//        return mport;
-//    }
-//    public static int calculateContactId(int module, int port) {
-//        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
-//        module = module - 1;
-//        int contactId = module * 16;
-//        return contactId + port;
-//    }
+  //    public static Integer calculateModuleNumber(int contactId) {
+  //        int module = (contactId - 1) / 16 + 1;
+  //        return module;
+  //    }
+  //    public static int calculatePortNumber(int contactId) {
+  //        int module = (contactId - 1) / 16 + 1;
+  //        int mport = contactId - (module - 1) * 16;
+  //        return mport;
+  //    }
+  //    public static int calculateContactId(int module, int port) {
+  //        //Bei einer CS2 errechnet sich der richtige Kontakt mit der Formel M - 1 * 16 + N
+  //        module = module - 1;
+  //        int contactId = module * 16;
+  //        return contactId + port;
+  //    }
   @Override
   public int hashCode() {
     int hash = 3;
@@ -247,11 +271,27 @@ public class SensorBean implements Serializable {
 
   @Override
   public String toString() {
-    return "SensorBean{" + "id=" + id + ", name=" + name + ", deviceId=" + deviceId + ", contactId=" + contactId + ", status=" + status + ", previousStatus=" + previousStatus + ", millis=" + millis + ", lastUpdated=" + lastUpdated + '}';
+    return name;
   }
 
   public String toLogString() {
-    return toString();
+    return "SensorBean{"
+        + "id="
+        + id
+        + ", name="
+        + name
+        + ", deviceId="
+        + deviceId
+        + ", contactId="
+        + contactId
+        + ", status="
+        + status
+        + ", previousStatus="
+        + previousStatus
+        + ", millis="
+        + millis
+        + ", lastUpdated="
+        + lastUpdated
+        + '}';
   }
-
 }

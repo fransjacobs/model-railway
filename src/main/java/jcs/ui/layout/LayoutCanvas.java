@@ -59,11 +59,13 @@ import jcs.entities.enums.Orientation;
 import static jcs.entities.enums.TileType.STRAIGHT;
 import static jcs.entities.enums.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.dialogs.BlockControlDialog;
+import jcs.ui.layout.dialogs.BlockDialog;
 import jcs.ui.layout.dialogs.SensorDialog;
 import jcs.ui.layout.dialogs.SignalDialog;
 import jcs.ui.layout.dialogs.SwitchDialog;
-import jcs.ui.layout.enums.Mode;
 import jcs.ui.layout.pathfinding.astar.AStar;
+import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
@@ -76,6 +78,15 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class LayoutCanvas extends JPanel implements PropertyChangeListener {
+
+  public enum Mode {
+    SELECT,
+    ADD,
+    EDIT,
+    MOVE,
+    DELETE,
+    CONTROL
+  }
 
   private boolean readonly;
   private Mode mode;
@@ -116,6 +127,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.selectedRouteElements = new HashMap<>();
 
     this.executor = Executors.newSingleThreadExecutor();
+    //this.executor = Executors.newCachedThreadPool();
 
     this.mode = Mode.SELECT;
     this.orientation = Orientation.EAST;
@@ -321,12 +333,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.grid = null;
   }
 
-  void setMode(Mode mode) {
+  void setMode(LayoutCanvas.Mode mode) {
     this.mode = mode;
     Logger.trace("Mode: " + mode);
   }
 
-  Mode getMode() {
+  LayoutCanvas.Mode getMode() {
     return this.mode;
   }
 
@@ -379,6 +391,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
           ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
+
         default -> {
           //Do nothing
         }
@@ -394,22 +407,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     Logger.debug("Loaded " + tiles.size() + " Tiles...");
-
-//    Map<Point, Tile> tm = TileCache.loadLayout(drawGrid, this, showValues);
-//    Set<Point> ps = tm.keySet();
-//
-//    for (Point p : ps) {
-//      Tile t = tm.get(p);
-//      tiles.put(t.getCenter(), t);
-//      //Alternative point(s) to be able to find all points
-//      if (!t.getAltPoints().isEmpty()) {
-//        Set<Point> alt = t.getAltPoints();
-//        for (Point ap : alt) {
-//          altTiles.put(ap, t);
-//        }
-//      }
-//    }
-    Logger.debug("Loaded " + this.tiles.size() + " tiles...");
     this.repaint();
   }
 
@@ -626,11 +623,16 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       case SENSOR -> {
       }
       case BLOCK -> {
+        //show the Block control dialog so tha a locomotive can be assigned to the block
+        BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), (Block) tile);
+        bcd.setVisible(true);
       }
       case SIGNAL ->
-        toggleSignal((Signal) tile);
+        this.executor.execute(() -> toggleSignal((Signal) tile));
+      //toggleSignal((Signal) tile);
       case SWITCH ->
-        toggleSwitch((Switch) tile);
+        this.executor.execute(() -> toggleSwitch((Switch) tile));
+      //toggleSwitch((Switch) tile);
       case CROSS -> {
       }
       default -> {
@@ -702,9 +704,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           td.setVisible(true);
         }
         case BLOCK -> {
-//                    OccupancySensorDialog osd = new OccupancySensorDialog(getParentFrame(), true, (BlockTile) tile);
-//                    osd.setVisible(true);
-//                    break;
+          BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile);
+          bd.setVisible(true);
         }
         default -> {
         }
@@ -790,40 +791,44 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Logger.trace("X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
 
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
+    //Mode.
 
-    if (this.movingTile != null) {
-      Point tp = this.movingTile.getCenter();
-      if (!tp.equals(p)) {
-        Logger.tag("Moving Tile from " + tp + " to " + p + " Tile to move: " + this.movingTile);
-        //Check if new position is free
-        if (this.tiles.containsKey(p)) {
-          Logger.debug("Point " + p + " is occupied by tile: " + tiles.get(p));
-          this.movingTile = null;
-        } else {
-          Tile tile = this.tiles.remove(tp);
-          if (tile != null) {
-            Set<Point> rps = tile.getAltPoints();
-            //Also remove alt points
-            for (Point ap : rps) {
-              this.tiles.remove(ap);
-            }
-            Logger.trace("Moved Tile from " + tp + " to " + p + " Tile: " + tile + "...");
-
-            tile.setCenter(p);
-            this.tiles.put(p, tile);
-            for (Point ep : tile.getAltPoints()) {
-              this.altTiles.put(ep, tile);
-            }
-
-            this.selectedTiles.clear();
-            this.selectedTiles.add(p);
-
+    if (!LayoutCanvas.Mode.CONTROL.equals(this.mode)) {
+      if (this.movingTile != null) {
+        Point tp = this.movingTile.getCenter();
+        if (!tp.equals(p)) {
+          Logger.tag("Moving Tile from " + tp + " to " + p + " Tile to move: " + this.movingTile);
+          //Check if new position is free
+          if (this.tiles.containsKey(p)) {
+            Logger.debug("Point " + p + " is occupied by tile: " + tiles.get(p));
             this.movingTile = null;
+          } else {
+            Tile tile = this.tiles.remove(tp);
+            if (tile != null) {
+              Set<Point> rps = tile.getAltPoints();
+              //Also remove alt points
+              for (Point ap : rps) {
+                this.tiles.remove(ap);
+              }
+              Logger.trace("Moved Tile from " + tp + " to " + p + " Tile: " + tile + "...");
+
+              tile.setCenter(p);
+              this.tiles.put(p, tile);
+              for (Point ep : tile.getAltPoints()) {
+                this.altTiles.put(ep, tile);
+              }
+
+              this.selectedTiles.clear();
+              this.selectedTiles.add(p);
+
+              this.movingTile = null;
+            }
+
+            this.repaint();
           }
-          this.repaint();
+        } else {
+          this.movingTile = null;
         }
-      } else {
-        this.movingTile = null;
       }
     }
   }//GEN-LAST:event_formMouseReleased

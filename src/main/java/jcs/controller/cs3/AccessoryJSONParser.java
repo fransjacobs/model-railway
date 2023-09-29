@@ -43,7 +43,9 @@ public class AccessoryJSONParser {
       AccessoryBean ab = new AccessoryBean();
 
       ab.setName(accArray.getJSONObject(i).getString("name"));
-      ab.setId(accArray.getJSONObject(i).getLong("id"));
+      //TODO !
+      //ab.setId(accArray.getJSONObject(i).getLong("id"));
+      
       ab.setAddress(accArray.getJSONObject(i).getInt("address"));
       ab.setIcon(accArray.getJSONObject(i).getString("icon"));
       ab.setIconFile(accArray.getJSONObject(i).getString("iconFile"));
