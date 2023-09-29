@@ -28,6 +28,7 @@ Currently the following modules are build:
 * Turnout and Signals overview (Synchronized with the CS-3) and control.
 
 ## Build Status
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/traintastic/traintastic)](https://github.com/traintastic/traintastic/graphs/commit-activity)
 [![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
 
 ## Screenshots
