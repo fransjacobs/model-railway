@@ -24,21 +24,19 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.imageio.ImageIO;
-import jcs.entities.JCSPropertyBean;
-import jcs.entities.SensorBean;
-import jcs.entities.enums.DecoderType;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.FunctionBean;
+import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.TileBean;
-import org.tinylog.Logger;
-
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
-import jcs.entities.enums.TileType;
+import jcs.entities.SensorBean;
+import jcs.entities.TileBean;
+import jcs.entities.enums.DecoderType;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import jcs.ui.layout.tiles.Tile;
+import org.tinylog.Logger;
 
 public class H2PersistenceService implements PersistenceService {
 
@@ -387,7 +385,7 @@ public class H2PersistenceService implements PersistenceService {
         tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
       }
 
-      if (tileBean.getTileType() != null && TileType.BLOCK == tileBean.getTileType()) {
+      if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
         tileBean.setBlockBean(this.getBlockByTileId(tileBean.getId()));
       }
     }
@@ -408,11 +406,12 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<TileBean> getTileBeansByTileType(TileType tileType) {
-    List<TileBean> tileBeans = database.where("tile_type = ?",tileType.getTileType()).results(TileBean.class);
+  public List<TileBean> getTileBeansByTileType(TileBean.TileType tileType) {
+    List<TileBean> tileBeans =
+        database.where("tile_type = ?", tileType.getTileType()).results(TileBean.class);
     return addReleatedObjects(tileBeans);
   }
-  
+
   @Override
   public TileBean getTileBean(String id) {
     TileBean tileBean = database.where("id=?", id).first(TileBean.class);

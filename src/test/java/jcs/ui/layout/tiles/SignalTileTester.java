@@ -23,7 +23,7 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.entities.enums.Orientation;
+import jcs.entities.TileBean.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.SignalValue;
 import org.tinylog.Logger;
@@ -59,16 +59,16 @@ public class SignalTileTester extends JFrame {
     super(title);
 
     signal2East = new Signal(Orientation.EAST, 70, 60, SignalType.HP01);
-    ((Signal) signal2East).setSignalValue(SignalValue.Hp1);
+    ((Signal) signal2East).setSignalValue(SignalValue.Hp0);
 
-    signal2South = new Signal(Orientation.SOUTH, 160, 60, SignalType.HP012);
-    ((Signal) signal2South).setSignalValue(SignalValue.Hp2);
+    signal2South = new Signal(Orientation.SOUTH, 160, 60, SignalType.HP01);
+    ((Signal) signal2South).setSignalValue(SignalValue.Hp1);
 
-    signal2West = new Signal(Orientation.WEST, 250, 60, SignalType.HP012SH1);
-    ((Signal) signal2West).setSignalValue(SignalValue.Hp0Sh1);
+    signal2West = new Signal(Orientation.WEST, 250, 60, SignalType.HP01);
+    ((Signal) signal2West).setSignalValue(SignalValue.Hp0);
 
-    signal2North = new Signal(Orientation.NORTH, 340, 60, SignalType.HP0SH1);
-    ((Signal) signal2North).setSignalValue(SignalValue.Hp0);
+    signal2North = new Signal(Orientation.NORTH, 340, 60, SignalType.HP01);
+    ((Signal) signal2North).setSignalValue(SignalValue.Hp1);
 
     //
     signal2MEast = new Signal(Orientation.EAST, 70, 110, SignalType.HP0SH1);

@@ -25,8 +25,6 @@ import jcs.controller.events.SensorEvent;
 import jcs.controller.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 
 public class Sensor extends Straight implements SensorEventListener {
 

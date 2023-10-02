@@ -25,7 +25,6 @@ import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
 import jcs.entities.TileBean;
-import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -59,7 +58,7 @@ public class SensorDialog extends javax.swing.JDialog {
     this.headingLbl.setText(text);
 
     List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
-    List<TileBean> sensorTiles = PersistenceFactory.getService().getTileBeansByTileType(TileType.SENSOR);
+    List<TileBean> sensorTiles = PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.SENSOR);
 
     Set<String> usedSensorIds = new HashSet<>();
     for (TileBean tb : sensorTiles) {

@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.tiles;
 
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -26,12 +27,6 @@ import jcs.controller.events.AccessoryEvent;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 
 public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
 

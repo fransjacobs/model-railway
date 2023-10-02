@@ -15,16 +15,13 @@
  */
 package jcs.ui.layout.tiles;
 
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -48,10 +45,9 @@ import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 import jcs.ui.layout.LayoutUtil;
-import jcs.ui.layout.tiles.enums.Direction;
+import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Method;
 
 /**
  * Basic graphic element to display a track, turnout, etc on the screen. By default the drawing of a
@@ -69,6 +65,9 @@ public abstract class AbstractTile extends TileBean implements Tile {
 
   protected int width;
   protected int height;
+  protected int renderWidth;
+  protected int renderHeight;
+
   protected int offsetX = 0;
   protected int offsetY = 0;
 
@@ -78,6 +77,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
   protected boolean drawName = true;
 
   protected boolean drawOutline = false;
+
+  protected boolean scaleImage = true;
 
   protected PropertyChangeListener propertyChangeListener;
 
@@ -104,8 +105,11 @@ public abstract class AbstractTile extends TileBean implements Tile {
 
     this.x = x;
     this.y = y;
-    this.width = getDefaultWidth();
-    this.height = getDefaultHeight();
+    this.width = DEFAULT_WIDTH;
+    this.height = DEFAULT_HEIGHT;
+
+    this.renderWidth = RENDER_WIDTH;
+    this.renderHeight = RENDER_HEIGHT;
 
     this.trackColor = DEFAULT_TRACK_COLOR;
     this.backgroundColor = backgroundColor;
@@ -118,6 +122,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
     copyInto(tileBean);
     this.trackColor = DEFAULT_TRACK_COLOR;
     this.backgroundColor = Color.white;
+    this.renderWidth = RENDER_WIDTH;
+    this.renderHeight = RENDER_HEIGHT;
   }
 
   private void copyInto(TileBean other) {
@@ -127,6 +133,11 @@ public abstract class AbstractTile extends TileBean implements Tile {
     this.tileDirection = other.getTileDirection();
     this.x = other.getX();
     this.y = other.getY();
+
+    if (other instanceof AbstractTile abstractTile) {
+      this.renderWidth = abstractTile.getRenderWidth();
+      this.renderHeight = abstractTile.getRenderHeight();
+    }
 
     this.setSignalType(other.getSignalType());
     this.accessoryId = other.getAccessoryId();
@@ -157,10 +168,6 @@ public abstract class AbstractTile extends TileBean implements Tile {
     return tb;
   }
 
-  //  private void init() {
-  //    this.id = getNewId();
-  //    Logger.trace(this);
-  //  }
   @Override
   public Color getTrackColor() {
     return trackColor;
@@ -218,53 +225,58 @@ public abstract class AbstractTile extends TileBean implements Tile {
       AffineTransform trans = new AffineTransform();
 
       g2di.setBackground(backgroundColor);
-      g2di.clearRect(0, 0, this.getWidth(), this.height);
+      g2di.clearRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
 
       int ox = 0, oy = 0;
 
       switch (o) {
         case SOUTH -> {
-          trans.rotate(Math.PI / 2, getWidth() / 2, getHeight() / 2);
-          ox = (this.height - this.width) / 2;
-          oy = (this.width - this.height) / 2;
+          trans.rotate(Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
+          ox = (this.renderHeight - this.renderWidth) / 2;
+          oy = (this.renderWidth - this.renderHeight) / 2;
           trans.translate(-ox, -oy);
         }
         case WEST -> {
-          trans.rotate(Math.PI, getWidth() / 2, getHeight() / 2);
+          trans.rotate(Math.PI, this.renderWidth / 2, this.renderHeight / 2);
           trans.translate(ox, oy);
         }
         case NORTH -> {
-          trans.rotate(-Math.PI / 2, getWidth() / 2, getHeight() / 2);
-          ox = (this.height - this.width) / 2;
-          oy = (this.width - this.height) / 2;
+          trans.rotate(-Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
+          ox = (this.renderHeight - this.renderWidth) / 2;
+          oy = (this.renderWidth - this.renderHeight) / 2;
           trans.translate(-ox, -oy);
         }
         default -> {
-          trans.rotate(0.0, getWidth() / 2, getHeight() / 2);
+          trans.rotate(0.0, this.renderWidth / 2, this.renderHeight / 2);
           trans.translate(ox, oy);
         }
       }
 
       g2di.setTransform(trans);
-
       renderTile(g2di, trackColor, backgroundColor);
 
       // outline, but only when the (line) grid is on!
       if (drawOutline) {
         g2di.setPaint(Color.lightGray);
         g2di.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        if (this instanceof Block) {
-          g2di.drawRect(0, 0, DEFAULT_WIDTH * 3, DEFAULT_HEIGHT);
-        } else if (this instanceof Cross) {
-          g2di.drawRect(0, 0, DEFAULT_WIDTH * 2, DEFAULT_HEIGHT);
-        } else {
-          g2di.drawRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        }
+        g2di.drawRect(0, 0, this.renderWidth, this.renderHeight);
       }
+
       g2di.setTransform(backup);
+
+      // Scale the image back...
+      BufferedImage sbi;
+      if (scaleImage) {
+        int sw = this.renderWidth / 10;
+        int sh = this.renderHeight / 10;
+        sbi = Scalr.resize(bi, Method.QUALITY, sw, sh, Scalr.OP_ANTIALIAS);
+      } else {
+        sbi = bi;
+      }
+
       g2di.dispose();
-      TileImageCache.put(this, bi);
-      cbi = bi;
+      TileImageCache.put(this, sbi);
+      cbi = sbi;
     }
 
     g2d.drawImage(
@@ -351,9 +363,9 @@ public abstract class AbstractTile extends TileBean implements Tile {
 
   protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
 
-//    Font currentFont = g2d.getFont();
-//    Font newFont = currentFont.deriveFont(currentFont.getSize() * 0.8F);
-//    g2d.setFont(newFont);
+    //    Font currentFont = g2d.getFont();
+    //    Font newFont = currentFont.deriveFont(currentFont.getSize() * 0.8F);
+    //    g2d.setFont(newFont);
 
     g2d.translate((float) x, (float) y);
     g2d.rotate(Math.toRadians(angle));
@@ -438,7 +450,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   protected BufferedImage createImage() {
-    return new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+    return new BufferedImage(this.renderWidth, this.renderHeight, BufferedImage.TYPE_INT_RGB);
   }
 
   @Override
@@ -446,7 +458,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
     if (this.x > 0) {
       return this.x;
     } else {
-      return getDefaultWidth() / 2;
+      return GRID;
     }
   }
 
@@ -455,7 +467,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
     if (this.y > 0) {
       return this.y;
     } else {
-      return getDefaultHeight() / 2;
+      return GRID;
     }
   }
 
@@ -470,6 +482,14 @@ public abstract class AbstractTile extends TileBean implements Tile {
   @Override
   public boolean isDrawOutline() {
     return drawOutline;
+  }
+
+  public boolean isScaleImage() {
+    return scaleImage;
+  }
+
+  public void setScaleImage(boolean scaleImage) {
+    this.scaleImage = scaleImage;
   }
 
   @Override
@@ -606,63 +626,21 @@ public abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  public int getHeight() {
-    return this.height;
-  }
-
-  @Override
   public int getWidth() {
     return this.width;
   }
 
-  protected final int getDefaultWidth() {
-    switch (this.getTileType()) {
-      case BLOCK -> {
-        if (Orientation.EAST.equals(this.getOrientation())
-            || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_WIDTH * 3;
-        } else {
-          return DEFAULT_WIDTH;
-        }
-      }
-      case CROSS -> {
-        if (Orientation.EAST.equals(getOrientation())
-            || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_WIDTH * 2;
-        } else {
-          return DEFAULT_WIDTH;
-        }
-      }
-      default -> {
-        // Straight,Curved,Sensor,Signal,Switch
-        return DEFAULT_WIDTH;
-      }
-    }
+  int getRenderWidth() {
+    return this.renderWidth;
   }
 
-  protected final int getDefaultHeight() {
-    switch (this.getTileType()) {
-      case BLOCK -> {
-        if (Orientation.EAST.equals(getOrientation())
-            || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_HEIGHT;
-        } else {
-          return DEFAULT_HEIGHT * 3;
-        }
-      }
-      case CROSS -> {
-        if (Orientation.EAST.equals(getOrientation())
-            || Orientation.WEST.equals(getOrientation())) {
-          return DEFAULT_HEIGHT;
-        } else {
-          return DEFAULT_HEIGHT * 2;
-        }
-      }
-      default -> {
-        // Straight,Curved,Sensor,Signal,Switch
-        return DEFAULT_HEIGHT;
-      }
-    }
+  @Override
+  public int getHeight() {
+    return this.height;
+  }
+
+  int getRenderHeight() {
+    return this.renderHeight;
   }
 
   @Override

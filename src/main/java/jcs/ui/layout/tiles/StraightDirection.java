@@ -21,8 +21,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.Collection;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 
 public class StraightDirection extends Straight {
 

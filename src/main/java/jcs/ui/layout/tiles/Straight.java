@@ -22,8 +22,6 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 
 public class Straight extends AbstractTile implements Tile {
 
@@ -35,7 +33,6 @@ public class Straight extends AbstractTile implements Tile {
 
   public Straight(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
-
   }
 
   public Straight(Orientation orientation, int x, int y) {
@@ -53,11 +50,11 @@ public class Straight extends AbstractTile implements Tile {
     int cy = this.getCenterY();
 
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      //Horizontal
+      // Horizontal
       neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
       neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
     } else {
-      //Vertical
+      // Vertical
       neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
       neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
     }
@@ -72,11 +69,11 @@ public class Straight extends AbstractTile implements Tile {
     int cy = this.getCenterY();
 
     if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      //Horizontal
+      // Horizontal
       edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
       edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
     } else {
-      //Vertical
+      // Vertical
       edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
       edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
     }
@@ -86,9 +83,9 @@ public class Straight extends AbstractTile implements Tile {
   protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx, yy, w, h;
     xx = 0;
-    yy = 17;
-    w = DEFAULT_WIDTH;
-    h = 6;
+    yy = 175;
+    w = RENDER_WIDTH;
+    h = 50;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
@@ -99,5 +96,4 @@ public class Straight extends AbstractTile implements Tile {
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
     renderStraight(g2, trackColor, backgroundColor);
   }
-
 }

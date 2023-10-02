@@ -21,19 +21,9 @@ import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
-import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.TileType.BLOCK;
-import static jcs.entities.enums.TileType.CROSS;
-import static jcs.entities.enums.TileType.CURVED;
-import static jcs.entities.enums.TileType.END;
-import static jcs.entities.enums.TileType.SENSOR;
-import static jcs.entities.enums.TileType.SIGNAL;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
 import org.tinylog.Logger;
-import static jcs.entities.enums.TileType.STRAIGHT;
-import static jcs.entities.enums.TileType.STRAIGHT_DIR;
-import static jcs.entities.enums.TileType.SWITCH;
 
 /**
  * Factory object to create Tiles
@@ -61,7 +51,7 @@ public class TileFactory {
     return idSeq;
   }
 
-  private static String getTileId(TileType tileType) {
+  private static String getTileId(TileBean.TileType tileType) {
     switch (tileType) {
       case STRAIGHT -> {
         straightIdSeq++;
@@ -119,7 +109,7 @@ public class TileFactory {
       return null;
     }
 
-    TileType tileType = tileBean.getTileType();
+    TileBean.TileType tileType = tileBean.getTileType();
     AbstractTile tile = null;
     switch (tileType) {
       case STRAIGHT -> {
@@ -187,7 +177,7 @@ public class TileFactory {
    * @return a Tile object
    */
   public static Tile createTile(
-      TileType tileType, Orientation orientation, int x, int y, boolean drawOutline) {
+      TileBean.TileType tileType, Orientation orientation, int x, int y, boolean drawOutline) {
     return createTile(tileType, orientation, Direction.CENTER, x, y, drawOutline);
   }
 
@@ -201,7 +191,7 @@ public class TileFactory {
    * @return a Tile object
    */
   public static Tile createTile(
-      TileType tileType,
+      TileBean.TileType tileType,
       Orientation orientation,
       Direction direction,
       int x,
@@ -211,7 +201,7 @@ public class TileFactory {
   }
 
   public static Tile createTile(
-      TileType tileType,
+      TileBean.TileType tileType,
       Orientation orientation,
       Direction direction,
       Point center,

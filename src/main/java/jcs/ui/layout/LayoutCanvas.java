@@ -17,7 +17,6 @@ package jcs.ui.layout;
 
 import jcs.ui.layout.tiles.Tile;
 import java.awt.BasicStroke;
-import jcs.entities.enums.TileType;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -54,10 +53,11 @@ import jcs.entities.enums.AccessoryValue;
 import jcs.controller.ControllerFactory;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.SensorEventListener;
-import jcs.ui.layout.tiles.enums.Direction;
-import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.TileType.STRAIGHT;
-import static jcs.entities.enums.TileType.SWITCH;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.EAST;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
@@ -94,7 +94,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private Orientation orientation;
   private Direction direction;
-  private TileType tileType;
+  private TileBean.TileType tileType;
 
   private Point mouseLocation = new Point(0, 0);
 
@@ -346,7 +346,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.drawGrid = flag;
   }
 
-  void setTileType(TileType tileType) {
+  void setTileType(TileBean.TileType tileType) {
     this.tileType = tileType;
     Logger.trace("TileType: " + this.tileType + " Current mode: " + this.mode);
   }
@@ -614,7 +614,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }//GEN-LAST:event_formMouseClicked
 
   private void executeControlActionForTile(Tile tile, Point p) {
-    TileType tt = tile.getTileType();
+    TileBean.TileType tt = tile.getTileType();
     switch (tt) {
       case STRAIGHT -> {
       }
@@ -673,7 +673,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (!this.selectedTiles.isEmpty()) {
       Point tcp = this.selectedTiles.iterator().next();
       Tile tile = findTile(tcp);
-      TileType tt = tile.getTileType();
+      TileBean.TileType tt = tile.getTileType();
       switch (tt) {
         case END -> {
           showRotate = true;
@@ -723,7 +723,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     boolean showMove = false;
     boolean showDelete = false;
 
-    TileType tt = tile.getTileType();
+    TileBean.TileType tt = tile.getTileType();
     switch (tt) {
       case SENSOR -> {
         showProperties = true;

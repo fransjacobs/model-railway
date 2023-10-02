@@ -26,12 +26,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.SignalValue;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 import org.tinylog.Logger;
 
 /**
@@ -108,10 +107,10 @@ public class TileTester extends JFrame {
     tileWest1 = new Curved(Orientation.WEST, 250, 100);
     tileNorth1 = new Curved(Orientation.NORTH, 340, 100);
 
-    tileEast2 = TileFactory.createTile(TileType.BLOCK, Orientation.EAST, 70, 190, true);
-    tileSouth2 = TileFactory.createTile(TileType.BLOCK, Orientation.SOUTH, 160, 190, true);
-    tileWest2 = TileFactory.createTile(TileType.BLOCK, Orientation.WEST, 250, 190, true);
-    tileNorth2 = TileFactory.createTile(TileType.BLOCK, Orientation.NORTH, 340, 190, true);
+    tileEast2 = TileFactory.createTile(TileBean.TileType.BLOCK, Orientation.EAST, 70, 190, true);
+    tileSouth2 = TileFactory.createTile(TileBean.TileType.BLOCK, Orientation.SOUTH, 160, 190, true);
+    tileWest2 = TileFactory.createTile(TileBean.TileType.BLOCK, Orientation.WEST, 250, 190, true);
+    tileNorth2 = TileFactory.createTile(TileBean.TileType.BLOCK, Orientation.NORTH, 340, 190, true);
 
     LocomotiveBean lok1 =
         new LocomotiveBean(

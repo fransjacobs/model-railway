@@ -18,16 +18,15 @@ package jcs.ui.layout.tiles;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.SignalValue;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 import org.tinylog.Logger;
 
 /**
- *
  * @author frans
  */
 public final class TileImageCache {
@@ -37,19 +36,19 @@ public final class TileImageCache {
   public static void put(Tile tile, BufferedImage image) {
     String key = getKey(tile);
     tileImageCache.put(key, image);
-    //Logger.trace(key);
+    // Logger.trace(key);
   }
 
   public static boolean contains(Tile tile) {
     String key = getKey(tile);
     boolean exist = tileImageCache.containsKey(key);
-    //Logger.trace(key + " " + (exist ? "exist" : "unknown"));
+    // Logger.trace(key + " " + (exist ? "exist" : "unknown"));
     return exist;
   }
 
   public static BufferedImage get(Tile tile) {
     String key = getKey(tile);
-    //Logger.trace(key);
+    // Logger.trace(key);
     return tileImageCache.get(key);
   }
 
@@ -62,7 +61,7 @@ public final class TileImageCache {
   }
 
   public static String getKey(Tile tile) {
-    TileType tileType = tile.getTileType();
+    TileBean.TileType tileType = tile.getTileType();
     Orientation orientation = tile.getOrientation();
     Direction direction = tile.getDirection();
     AccessoryValue accessoryValue;
@@ -122,11 +121,10 @@ public final class TileImageCache {
     sb.append(bc);
     sb.append("~");
     sb.append(ol);
-    if (TileType.BLOCK.equals(tileType)) {
+    if (TileBean.TileType.BLOCK.equals(tileType)) {
       sb.append("~");
       sb.append(id);
     }
     return sb.toString();
   }
-
 }

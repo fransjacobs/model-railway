@@ -21,12 +21,10 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
 import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.Switch;
 import org.tinylog.Logger;
 
@@ -62,8 +60,8 @@ public class SwitchDialog extends javax.swing.JDialog {
       //Get a list of all available Turnouts
       List<AccessoryBean> accessoryBeans = PersistenceFactory.getService().getTurnouts();
 
-      List<TileBean> turnoutTiles = PersistenceFactory.getService().getTileBeansByTileType(TileType.SWITCH);
-      turnoutTiles.addAll(PersistenceFactory.getService().getTileBeansByTileType(TileType.CROSS));
+      List<TileBean> turnoutTiles = PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.SWITCH);
+      turnoutTiles.addAll(PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.CROSS));
 
       Set<String> usedAccessoryIds = new HashSet<>();
       for (TileBean tb : turnoutTiles) {

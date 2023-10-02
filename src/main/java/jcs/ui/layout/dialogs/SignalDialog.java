@@ -25,7 +25,6 @@ import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.controller.ControllerFactory;
 import jcs.entities.TileBean;
-import jcs.entities.enums.TileType;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -60,7 +59,7 @@ public class SignalDialog extends javax.swing.JDialog {
 
     if (this.signal != null) {
       List<AccessoryBean> accessoryBeans = PersistenceFactory.getService().getSignals();
-      List<TileBean> signalTiles = PersistenceFactory.getService().getTileBeansByTileType(TileType.SIGNAL);
+      List<TileBean> signalTiles = PersistenceFactory.getService().getTileBeansByTileType(TileBean.TileType.SIGNAL);
 
       Set<String> usedAccessoryIds = new HashSet<>();
       for (TileBean tb : signalTiles) {

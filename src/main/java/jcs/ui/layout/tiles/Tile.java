@@ -23,13 +23,12 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 
 /**
- *
  * @author frans
  */
 public interface Tile extends Shape {
@@ -38,7 +37,11 @@ public interface Tile extends Shape {
   public static final int DEFAULT_WIDTH = GRID * 2;
   public static final int DEFAULT_HEIGHT = GRID * 2;
 
-  public final static Color DEFAULT_TRACK_COLOR = Color.lightGray;
+  static final int RENDER_GRID = GRID * 10;
+  static final int RENDER_WIDTH = RENDER_GRID * 2;
+  static final int RENDER_HEIGHT = RENDER_GRID * 2;
+
+  public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
   Color getTrackColor();
 
@@ -74,9 +77,9 @@ public interface Tile extends Shape {
 
   void move(int newX, int newY);
 
-  Orientation getOrientation();
+  TileBean.Orientation getOrientation();
 
-  void setOrientation(Orientation orientation);
+  void setOrientation(TileBean.Orientation orientation);
 
   Direction getDirection();
 
@@ -87,13 +90,11 @@ public interface Tile extends Shape {
   void setCenter(Point center);
 
   /**
-   *
    * @return a Set of alternative "center" points in case the tile is not a square
    */
   Set<Point> getAltPoints();
 
   /**
-   *
    * @return All point relevant for the Object on the Canvas
    */
   Set<Point> getAllPoints();
@@ -111,13 +112,11 @@ public interface Tile extends Shape {
   int getWidth();
 
   /**
-   *
    * @return the X (pixel) coordinate of the center of the tile
    */
   int getCenterX();
 
   /**
-   *
    * @return then Y (pixel) coordinate of the center of the tile
    */
   int getCenterY();
@@ -135,13 +134,11 @@ public interface Tile extends Shape {
   String xyToString();
 
   /**
-   *
    * @return the X number of the grid square (grid is 40 x 40 pix)
    */
   int getGridX();
 
   /**
-   *
    * @return the Y number of the grid square (grid is 40 x 40 pix)
    */
   int getGridY();
@@ -182,7 +179,6 @@ public interface Tile extends Shape {
   Map<Point, Orientation> getEdgeOrientations();
 
   /**
-   *
    * @param other a tile to check with this tile
    * @return true when the other tile is adjacent to this and the "tracks" connect
    */
@@ -193,7 +189,8 @@ public interface Tile extends Shape {
   AccessoryValue getSwitchValueTo(Tile other);
 
   /**
-   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
+   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central"
+   * point. From the switch side a Green or Red path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the switch side of the Turnout
@@ -201,7 +198,8 @@ public interface Tile extends Shape {
   boolean isSwitchSide(Tile other);
 
   /**
-   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
+   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the
+   * diverging side a Red path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the diverging side of the Turnout
@@ -209,7 +207,8 @@ public interface Tile extends Shape {
   boolean isDivergingSide(Tile other);
 
   /**
-   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
+   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the
+   * Straight side a Green path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the straight side of the Turnout
@@ -217,11 +216,11 @@ public interface Tile extends Shape {
   boolean isStraightSide(Tile other);
 
   /**
-   * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
+   * When the tile has a specific direction a train may travel then this method will indicate
+   * whether the other tile is in on the side where the arrow is pointing to
    *
    * @param other A Tile
    * @return true where other is on the side of this tile where the arrow points to
    */
   boolean isArrowDirection(Tile other);
-
 }

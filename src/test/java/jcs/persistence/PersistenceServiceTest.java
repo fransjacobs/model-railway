@@ -29,12 +29,11 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 import jcs.persistence.util.PersistenceTestHelper;
-import jcs.ui.layout.tiles.enums.Direction;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -352,16 +351,32 @@ public class PersistenceServiceTest {
 
     TileBean bk1 =
         new TileBean(
-            "bk-1", TileType.BLOCK, Orientation.EAST, Direction.CENTER, 320, 140, null, null, null);
+            "bk-1",
+            TileBean.TileType.BLOCK,
+            Orientation.EAST,
+            Direction.CENTER,
+            320,
+            140,
+            null,
+            null,
+            null);
     tiles.add(bk1);
     TileBean bk2 =
         new TileBean(
-            "bk-2", TileType.BLOCK, Orientation.EAST, Direction.CENTER, 420, 140, null, null, null);
+            "bk-2",
+            TileBean.TileType.BLOCK,
+            Orientation.EAST,
+            Direction.CENTER,
+            420,
+            140,
+            null,
+            null,
+            null);
     tiles.add(bk2);
     TileBean ct2 =
         new TileBean(
             "ct-2",
-            TileType.CURVED,
+            TileBean.TileType.CURVED,
             Orientation.EAST,
             Direction.CENTER,
             260,
@@ -373,7 +388,7 @@ public class PersistenceServiceTest {
     TileBean ct5 =
         new TileBean(
             "ct-5",
-            TileType.CURVED,
+            TileBean.TileType.CURVED,
             Orientation.SOUTH,
             Direction.CENTER,
             180,
@@ -385,7 +400,7 @@ public class PersistenceServiceTest {
     TileBean se5 =
         new TileBean(
             "se-5",
-            TileType.SENSOR,
+            TileBean.TileType.SENSOR,
             Orientation.NORTH,
             Direction.CENTER,
             340,
@@ -397,7 +412,7 @@ public class PersistenceServiceTest {
     TileBean se6 =
         new TileBean(
             "se-6",
-            TileType.SENSOR,
+            TileBean.TileType.SENSOR,
             Orientation.WEST,
             Direction.CENTER,
             500,
@@ -408,12 +423,20 @@ public class PersistenceServiceTest {
     tiles.add(se6);
     TileBean si3 =
         new TileBean(
-            "si-3", TileType.SIGNAL, Orientation.EAST, Direction.CENTER, 300, 140, null, "15", null);
+            "si-3",
+            TileBean.TileType.SIGNAL,
+            Orientation.EAST,
+            Direction.CENTER,
+            300,
+            140,
+            null,
+            "15",
+            null);
     tiles.add(si3);
     TileBean st1 =
         new TileBean(
             "st-1",
-            TileType.STRAIGHT,
+            TileBean.TileType.STRAIGHT,
             Orientation.EAST,
             Direction.CENTER,
             300,
@@ -424,11 +447,27 @@ public class PersistenceServiceTest {
     tiles.add(st1);
     TileBean sw1 =
         new TileBean(
-            "sw-1", TileType.SWITCH, Orientation.WEST, Direction.LEFT, 260, 180, null, "2", null);
+            "sw-1",
+            TileBean.TileType.SWITCH,
+            Orientation.WEST,
+            Direction.LEFT,
+            260,
+            180,
+            null,
+            "2",
+            null);
     tiles.add(sw1);
     TileBean sw2 =
         new TileBean(
-            "sw-2", TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 580, 180, null, null, null);
+            "sw-2",
+            TileBean.TileType.SWITCH,
+            Orientation.EAST,
+            Direction.RIGHT,
+            580,
+            180,
+            null,
+            null,
+            null);
     tiles.add(sw2);
 
     RouteBean bk1pbk2m = new RouteBean("[bk-1+]->[bk-2-]", "bk-1", "+", "bk-2", "-", "red", false);
@@ -945,7 +984,15 @@ public class PersistenceServiceTest {
     System.out.println("persist");
     TileBean sw12 =
         new TileBean(
-            "sw-12", TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 50, 50, null, null, null);
+            "sw-12",
+            TileBean.TileType.SWITCH,
+            Orientation.EAST,
+            Direction.RIGHT,
+            50,
+            50,
+            null,
+            null,
+            null);
 
     PersistenceService instance = PersistenceFactory.getService();
     TileBean result = instance.persist(sw12);
@@ -967,7 +1014,15 @@ public class PersistenceServiceTest {
     System.out.println("remove");
     TileBean sw13 =
         new TileBean(
-            "sw-13", TileType.CURVED, Orientation.EAST, Direction.CENTER, 80, 50, null, null, null);
+            "sw-13",
+            TileBean.TileType.CURVED,
+            Orientation.EAST,
+            Direction.CENTER,
+            80,
+            50,
+            null,
+            null,
+            null);
     PersistenceService instance = PersistenceFactory.getService();
 
     TileBean result = instance.persist(sw13);
@@ -993,7 +1048,7 @@ public class PersistenceServiceTest {
     TileBean sw22 =
         new TileBean(
             "sw-22",
-            TileType.CROSS,
+            TileBean.TileType.CROSS,
             Orientation.EAST,
             Direction.CENTER,
             100,
@@ -1039,7 +1094,15 @@ public class PersistenceServiceTest {
 
       TileBean stn =
           new TileBean(
-              id, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, cx, cy, null, null, null);
+              id,
+              TileBean.TileType.STRAIGHT,
+              Orientation.EAST,
+              Direction.CENTER,
+              cx,
+              cy,
+              null,
+              null,
+              null);
       expected.add(stn);
     }
 
