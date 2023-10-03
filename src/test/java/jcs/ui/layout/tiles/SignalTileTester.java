@@ -52,8 +52,7 @@ public class SignalTileTester extends JFrame {
   private final Tile signal4South;
   private final Tile signal4West;
   private final Tile signal4North;
-  
-  
+
   @SuppressWarnings("OverridableMethodCallInConstructor")
   public SignalTileTester(String title) {
     super(title);
@@ -108,7 +107,6 @@ public class SignalTileTester extends JFrame {
 
     signal4North = new Signal(Orientation.NORTH, 340, 210, SignalType.HP012SH1);
     ((Signal) signal4North).setSignalValue(SignalValue.Hp0Sh1);
-
 
   }
 
@@ -183,7 +181,6 @@ public class SignalTileTester extends JFrame {
     signal4North.drawBounds(g2d);
     signal4North.drawCenterPoint(g2d, Color.cyan);
 
-
   }
 
   public static void main(String args[]) {
@@ -191,19 +188,19 @@ public class SignalTileTester extends JFrame {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException
-        | InstantiationException
-        | IllegalAccessException
-        | UnsupportedLookAndFeelException ex) {
+            | InstantiationException
+            | IllegalAccessException
+            | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
-    SignalTileTester app = new SignalTileTester("Tile Tester 2");
+    SignalTileTester app = new SignalTileTester("Signal Tile Tester");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    app.setSize(400, 400);
+    app.setSize(400, 250);
 
     app.setLocation(
-        dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+            dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 

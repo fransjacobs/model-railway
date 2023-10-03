@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -275,9 +274,9 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx, yy, w, h;
     xx = 0;
-    yy = 17;
-    w = DEFAULT_WIDTH;
-    h = 6;
+    yy = 175;
+    w = RENDER_WIDTH;
+    h = 50;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
@@ -287,14 +286,14 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   protected void renderDiagonal(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int[] xPoints, yPoints;
     if (Direction.RIGHT.equals(getDirection())) {
-      xPoints = new int[]{40, 40, 16, 24};
-      yPoints = new int[]{16, 24, 0, 0};
+      xPoints = new int[]{400, 400, 170, 230};
+      yPoints = new int[]{170, 230, 0, 0};
     } else {
-      xPoints = new int[]{40, 40, 16, 24};
-      yPoints = new int[]{24, 16, 40, 40};
+      xPoints = new int[]{400, 400, 170, 230};
+      yPoints = new int[]{230, 170, 400, 400};
     }
 
-    g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
@@ -342,7 +341,6 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
 
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    //if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
     if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
       setValue(event.getAccessoryBean().getAccessoryValue());
       repaintTile();

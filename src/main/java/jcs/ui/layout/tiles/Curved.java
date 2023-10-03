@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -111,13 +110,14 @@ public class Curved extends AbstractTile implements Tile {
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
     Graphics2D g2d = (Graphics2D) g2.create();
 
-    int[] xPoints = new int[]{40, 40, 16, 24};
-    int[] yPoints = new int[]{24, 16, 40, 40};
+    int[] xPoints = new int[]{400, 400, 170, 230};
+    int[] yPoints = new int[]{230, 170, 400, 400};
 
-    g2d.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2d.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2d.setPaint(trackColor);
 
     g2d.fillPolygon(xPoints, yPoints, xPoints.length);
+
     g2d.dispose();
   }
 

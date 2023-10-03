@@ -23,9 +23,8 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
-import jcs.entities.enums.SignalType;
-import jcs.entities.enums.SignalValue;
 import org.tinylog.Logger;
 
 /**
@@ -38,20 +37,23 @@ public class UnScaledTileTester extends JFrame {
 //  private final Tile tileWest;
 //  private final Tile tileNorth;
 
-
   @SuppressWarnings("OverridableMethodCallInConstructor")
   public UnScaledTileTester(String title) {
     super(title);
 
     //tileEast = new Straight1(Orientation.EAST, 250, 250);
-    
-   tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
-    ((AbstractTile) tileEast).setScaleImage(false);
-    ((Signal) tileEast).setSignalValue(SignalValue.Hp0);
-    
+    //tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
+    // ((Signal) tileEast).setSignalValue(SignalValue.Hp0);
+    //tileEast = new Curved(Orientation.EAST, 250, 250);
+    //tileEast = new Sensor(Orientation.EAST, 250, 250);
+    //tileEast = new Switch(Orientation.EAST, TileBean.Direction.LEFT, 250, 250);
+
+    tileEast = new End(Orientation.EAST, 250, 250);
+
 //    tileSouth = new Straight1(Orientation.SOUTH, 160, 60);
 //    tileWest = new Straight1(Orientation.WEST, 250, 60);
 //    tileNorth = new Straight1(Orientation.NORTH, 340, 60);
+    ((AbstractTile) tileEast).setScaleImage(false);
 
   }
 
@@ -75,7 +77,6 @@ public class UnScaledTileTester extends JFrame {
 //    tileNorth.drawBounds(g2d);
 //    tileNorth.drawCenterPoint(g2d, Color.cyan);
     //
- 
   }
 
   public static void main(String args[]) {
@@ -83,20 +84,20 @@ public class UnScaledTileTester extends JFrame {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException
-        | InstantiationException
-        | IllegalAccessException
-        | UnsupportedLookAndFeelException ex) {
+            | InstantiationException
+            | IllegalAccessException
+            | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
-    UnScaledTileTester app = new UnScaledTileTester("Tile Tester 2");
+    UnScaledTileTester app = new UnScaledTileTester("UNSCALED Tile Tester");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     //app.pack();
     app.setSize(500, 500);
 
     app.setLocation(
-        dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+            dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 

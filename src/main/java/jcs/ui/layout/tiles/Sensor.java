@@ -52,21 +52,21 @@ public class Sensor extends Straight implements SensorEventListener {
   }
 
   private void renderSensor(Graphics2D g2) {
-    int xx, yy; //, w, h;
-    xx = 13;
-    yy = 13;
+    int xx, yy;
+    xx = RENDER_GRID - 75;
+    yy = RENDER_GRID - 75;
 
     Point c = new Point(xx, yy);
-    float radius = 30;
+    float radius = 300;
     float[] dist = {0.0f, 0.6f};
 
     if (this.active) {
-      Color[] colors = {Color.red.brighter(), Color.white};
-      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
+      Color[] colors = {Color.red.brighter(), Color.red.darker()};
+      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.REFLECT);
       g2.setPaint(foreground);
     } else {
-      Color[] colors = {Color.green.darker(), Color.white};
-      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
+      Color[] colors = {Color.green.darker(), Color.green.brighter()};
+      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.REFLECT);
       g2.setPaint(foreground);
     }
 

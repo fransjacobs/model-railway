@@ -29,20 +29,20 @@ import org.tinylog.Logger;
 /**
  * @author Frans Jacobs
  */
-public class StraightTileTester extends JFrame {
+public class SensorTileTester extends JFrame {
 
   private final Tile trackEast;
   private final Tile trackSouth;
   private final Tile trackWest;
   private final Tile trackNorth;
 
-  public StraightTileTester(String title) {
+  public SensorTileTester(String title) {
     super(title);
 
-    trackEast = new Straight(Orientation.EAST, 70, 60);
-    trackSouth = new Straight(Orientation.SOUTH, 160, 60);
-    trackWest = new Straight(Orientation.WEST, 250, 60);
-    trackNorth = new Straight(Orientation.NORTH, 340, 60);
+    trackEast = new Sensor(Orientation.EAST, 70, 60);
+    trackSouth = new Sensor(Orientation.SOUTH, 160, 60);
+    trackWest = new Sensor(Orientation.WEST, 250, 60);
+    trackNorth = new Sensor(Orientation.NORTH, 340, 60);
   }
 
   @Override
@@ -56,10 +56,12 @@ public class StraightTileTester extends JFrame {
     trackSouth.drawTile(g2d, false);
     trackSouth.drawBounds(g2d);
     trackSouth.drawCenterPoint(g2d, Color.blue);
+    ((Sensor) trackSouth).setActive(true);
 
     trackWest.drawTile(g2d, false);
     trackWest.drawBounds(g2d);
     trackWest.drawCenterPoint(g2d, Color.red);
+    ((Sensor) trackWest).setActive(true);
 
     trackNorth.drawTile(g2d, false);
     trackNorth.drawBounds(g2d);
@@ -77,7 +79,7 @@ public class StraightTileTester extends JFrame {
       Logger.error(ex);
     }
 
-    StraightTileTester app = new StraightTileTester("Straight Tile Tester");
+    SensorTileTester app = new SensorTileTester("Sensor Tile Tester");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     app.setSize(400, 100);

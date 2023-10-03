@@ -272,8 +272,8 @@ public class Block extends AbstractTile implements Tile {
     int rw = RENDER_WIDTH * 3 - 40;
     int rh = 200;
 
-    g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
-    g2.setPaint(Color.darkGray);
+    g2.setPaint(Color.black);
+    g2.setStroke(new BasicStroke(3, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
     g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
 
     // A block has a direction of travel. Hence it has a plus (+) and a Minus(-) side.

@@ -29,20 +29,20 @@ import org.tinylog.Logger;
 /**
  * @author Frans Jacobs
  */
-public class StraightTileTester extends JFrame {
+public class EndTileTester extends JFrame {
 
   private final Tile trackEast;
   private final Tile trackSouth;
   private final Tile trackWest;
   private final Tile trackNorth;
 
-  public StraightTileTester(String title) {
+  public EndTileTester(String title) {
     super(title);
 
-    trackEast = new Straight(Orientation.EAST, 70, 60);
-    trackSouth = new Straight(Orientation.SOUTH, 160, 60);
-    trackWest = new Straight(Orientation.WEST, 250, 60);
-    trackNorth = new Straight(Orientation.NORTH, 340, 60);
+    trackEast = new End(Orientation.EAST, 70, 60);
+    trackSouth = new End(Orientation.SOUTH, 160, 60);
+    trackWest = new End(Orientation.WEST, 250, 60);
+    trackNorth = new End(Orientation.NORTH, 340, 60);
   }
 
   @Override
@@ -77,7 +77,7 @@ public class StraightTileTester extends JFrame {
       Logger.error(ex);
     }
 
-    StraightTileTester app = new StraightTileTester("Straight Tile Tester");
+    EndTileTester app = new EndTileTester("End Tile Tester");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     app.setSize(400, 100);
