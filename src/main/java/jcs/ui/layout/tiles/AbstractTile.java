@@ -70,6 +70,9 @@ public abstract class AbstractTile extends TileBean implements Tile {
   protected int offsetX = 0;
   protected int offsetY = 0;
 
+  protected int renderOffsetX = 0;
+  protected int renderOffsetY = 0;
+
   protected Color trackColor;
 
   protected Color backgroundColor;
@@ -207,9 +210,9 @@ public abstract class AbstractTile extends TileBean implements Tile {
 
     BufferedImage cbi = TileImageCache.get(this);
     if (cbi == null) {
-      BufferedImage bi = createImage();
+      BufferedImage nbi = createImage();
 
-      Graphics2D g2di = bi.createGraphics();
+      Graphics2D g2di = nbi.createGraphics();
       if (trackColor == null) {
         trackColor = DEFAULT_TRACK_COLOR;
       }
@@ -257,8 +260,8 @@ public abstract class AbstractTile extends TileBean implements Tile {
       //When the line grid is one the scale tile must be a little smaller
       int sw, sh;
       if (drawOutline) {
-        sw = this.getWidth() - 1;
-        sh = this.getHeight() -1;
+        sw = this.getWidth() - 2;
+        sh = this.getHeight() - 2;
       } else {
         sw = this.getWidth();
         sh = this.getHeight();
@@ -266,9 +269,9 @@ public abstract class AbstractTile extends TileBean implements Tile {
       // Scale the image back...
       BufferedImage sbi;
       if (scaleImage) {
-        sbi = Scalr.resize(bi, Method.QUALITY, Mode.FIT_EXACT, sw, sh, Scalr.OP_ANTIALIAS);
+        sbi = Scalr.resize(nbi, Method.QUALITY, Mode.FIT_EXACT, sw, sh, Scalr.OP_ANTIALIAS);
       } else {
-        sbi = bi;
+        sbi = nbi;
       }
 
       g2di.dispose();
@@ -276,11 +279,19 @@ public abstract class AbstractTile extends TileBean implements Tile {
       cbi = sbi;
     }
 
-    g2d.drawImage(
-            cbi,
-            (x - cbi.getWidth() / 2) + this.offsetX,
-            (y - cbi.getHeight() / 2) + this.offsetY,
-            null);
+    if (scaleImage) {
+      g2d.drawImage(
+              cbi,
+              (x - cbi.getWidth() / 2) + this.offsetX,
+              (y - cbi.getHeight() / 2) + this.offsetY,
+              null);
+    } else {
+      g2d.drawImage(
+              cbi,
+              (x - cbi.getWidth() / 2) + this.renderOffsetX,
+              (y - cbi.getHeight() / 2) + this.renderOffsetY,
+              null);
+    }
   }
 
   /**
