@@ -386,7 +386,7 @@ public class H2PersistenceService implements PersistenceService {
       }
 
       if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
-        tileBean.setBlockBean(this.getBlockByTileId(tileBean.getId()));
+        tileBean.setBlockBean(this.getBlock(tileBean.getId()));
       }
     }
     return tileBean;

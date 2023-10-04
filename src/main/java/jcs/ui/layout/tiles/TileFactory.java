@@ -32,7 +32,8 @@ import org.tinylog.Logger;
  */
 public class TileFactory {
 
-  private TileFactory() {}
+  private TileFactory() {
+  }
 
   // Keep the records of the used id sequence number
   private static int straightIdSeq;
@@ -136,7 +137,7 @@ public class TileFactory {
         signalIdSeq = getHeighestIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile)
-              .setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
+                  .setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
       }
       case SENSOR -> {
@@ -152,14 +153,15 @@ public class TileFactory {
       }
       case STRAIGHT_DIR -> {
         tile = new StraightDirection(tileBean);
-        straightDirectionIdSeq =
-            getHeighestIdSeq(straightDirectionIdSeq, getIdSeq(tileBean.getId()));
+        straightDirectionIdSeq
+                = getHeighestIdSeq(straightDirectionIdSeq, getIdSeq(tileBean.getId()));
       }
       case END -> {
         tile = new End(tileBean);
         endIdSeq = getHeighestIdSeq(endIdSeq, getIdSeq(tileBean.getId()));
       }
-      default -> Logger.warn("Unknown Tile Type " + tileType);
+      default ->
+        Logger.warn("Unknown Tile Type " + tileType);
     }
 
     if (tile != null) {
@@ -177,7 +179,7 @@ public class TileFactory {
    * @return a Tile object
    */
   public static Tile createTile(
-      TileBean.TileType tileType, Orientation orientation, int x, int y, boolean drawOutline) {
+          TileBean.TileType tileType, Orientation orientation, int x, int y, boolean drawOutline) {
     return createTile(tileType, orientation, Direction.CENTER, x, y, drawOutline);
   }
 
@@ -191,35 +193,44 @@ public class TileFactory {
    * @return a Tile object
    */
   public static Tile createTile(
-      TileBean.TileType tileType,
-      Orientation orientation,
-      Direction direction,
-      int x,
-      int y,
-      boolean drawOutline) {
+          TileBean.TileType tileType,
+          Orientation orientation,
+          Direction direction,
+          int x,
+          int y,
+          boolean drawOutline) {
     return createTile(tileType, orientation, direction, new Point(x, y), drawOutline);
   }
 
   public static Tile createTile(
-      TileBean.TileType tileType,
-      Orientation orientation,
-      Direction direction,
-      Point center,
-      boolean drawOutline) {
+          TileBean.TileType tileType,
+          Orientation orientation,
+          Direction direction,
+          Point center,
+          boolean drawOutline) {
     Tile tile = null;
     switch (tileType) {
       case STRAIGHT -> {
         tile = new Straight(orientation, center);
       }
-      case CURVED -> tile = new Curved(orientation, center);
-      case SWITCH -> tile = new Switch(orientation, direction, center);
-      case CROSS -> tile = new Cross(orientation, direction, center);
-      case SIGNAL -> tile = new Signal(orientation, center);
-      case SENSOR -> tile = new Sensor(orientation, center);
-      case BLOCK -> tile = new Block(orientation, center);
-      case STRAIGHT_DIR -> tile = new StraightDirection(orientation, center);
-      case END -> tile = new End(orientation, center);
-      default -> Logger.warn("Unknown Tile Type " + tileType);
+      case CURVED ->
+        tile = new Curved(orientation, center);
+      case SWITCH ->
+        tile = new Switch(orientation, direction, center);
+      case CROSS ->
+        tile = new Cross(orientation, direction, center);
+      case SIGNAL ->
+        tile = new Signal(orientation, center);
+      case SENSOR ->
+        tile = new Sensor(orientation, center);
+      case BLOCK ->
+        tile = new Block(orientation, center);
+      case STRAIGHT_DIR ->
+        tile = new StraightDirection(orientation, center);
+      case END ->
+        tile = new End(orientation, center);
+      default ->
+        Logger.warn("Unknown Tile Type " + tileType);
     }
 
     if (tile != null) {
@@ -231,7 +242,7 @@ public class TileFactory {
   }
 
   public static List<Tile> convert(
-      List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
+          List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
     List<Tile> tiles = new LinkedList<>();
 
     for (TileBean tileBean : tileBeans) {

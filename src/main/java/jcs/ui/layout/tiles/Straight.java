@@ -25,17 +25,17 @@ import jcs.entities.TileBean;
 
 public class Straight extends AbstractTile implements Tile {
 
-  public Straight(TileBean tileBean) {
+  Straight(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
   }
 
-  public Straight(Orientation orientation, Point center) {
+  Straight(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
 
-  public Straight(Orientation orientation, int x, int y) {
+  Straight(Orientation orientation, int x, int y) {
     super(orientation, x, y);
     this.type = TileType.STRAIGHT.getTileType();
     this.width = DEFAULT_WIDTH;
@@ -96,4 +96,11 @@ public class Straight extends AbstractTile implements Tile {
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
     renderStraight(g2, trackColor, backgroundColor);
   }
+
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    return sb.toString();
+  }
+
 }

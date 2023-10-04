@@ -60,7 +60,7 @@ import org.imgscalr.Scalr.Mode;
  * <p>
  * A Tile is rendered to a Buffered Image to speed up the display
  */
-public abstract class AbstractTile extends TileBean implements Tile {
+abstract class AbstractTile extends TileBean implements Tile {
 
   protected int width;
   protected int height;
@@ -208,8 +208,7 @@ public abstract class AbstractTile extends TileBean implements Tile {
       o = Orientation.EAST;
     }
 
-    BufferedImage cbi = TileImageCache.get(this);
-    if (cbi == null) {
+    if (!TileImageCache.contains(this)) {
       BufferedImage nbi = createImage();
 
       Graphics2D g2di = nbi.createGraphics();
@@ -267,31 +266,26 @@ public abstract class AbstractTile extends TileBean implements Tile {
         sh = this.getHeight();
       }
       // Scale the image back...
-      BufferedImage sbi;
       if (scaleImage) {
-        sbi = Scalr.resize(nbi, Method.QUALITY, Mode.FIT_EXACT, sw, sh, Scalr.OP_ANTIALIAS);
-      } else {
-        sbi = nbi;
+        nbi = Scalr.resize(nbi, Method.QUALITY, Mode.FIT_EXACT, sw, sh, Scalr.OP_ANTIALIAS);
       }
 
       g2di.dispose();
-      TileImageCache.put(this, sbi);
-      cbi = sbi;
+      TileImageCache.put(this, nbi);
     }
 
+    BufferedImage cbi = TileImageCache.get(this);
+
+    int ox, oy;
     if (scaleImage) {
-      g2d.drawImage(
-              cbi,
-              (x - cbi.getWidth() / 2) + this.offsetX,
-              (y - cbi.getHeight() / 2) + this.offsetY,
-              null);
+      ox = this.offsetX;
+      oy = this.offsetY;
     } else {
-      g2d.drawImage(
-              cbi,
-              (x - cbi.getWidth() / 2) + this.renderOffsetX,
-              (y - cbi.getHeight() / 2) + this.renderOffsetY,
-              null);
+      ox = this.renderOffsetX;
+      oy = this.renderOffsetY;
     }
+
+    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + ox, (y - cbi.getHeight() / 2) + oy, null);
   }
 
   /**
@@ -822,4 +816,27 @@ public abstract class AbstractTile extends TileBean implements Tile {
   public boolean isArrowDirection(Tile other) {
     return true;
   }
+
+  protected StringBuilder getImageKeyBuilder() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(id);
+    sb.append("~");
+    sb.append(this.getOrientation().getOrientation());
+    sb.append("~");
+    sb.append(this.getDirection().getDirection());
+    sb.append("~");
+    sb.append(this.getBackgroundColor().toString());
+    sb.append("~");
+    sb.append(this.getTrackColor().toString());
+    sb.append("~");
+    sb.append(isDrawOutline() ? "y" : "n");
+    sb.append("~");
+    //Tile specific properties
+    //AccessoryValue
+    //SignalType
+    //SignalValue
+    //active;
+    return sb;
+  }
+
 }

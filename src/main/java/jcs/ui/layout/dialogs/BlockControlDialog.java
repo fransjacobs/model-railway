@@ -66,17 +66,20 @@ public class BlockControlDialog extends javax.swing.JDialog {
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
         bb = PersistenceFactory.getService().getBlockByTileId(block.getId());
-        if(bb == null) {   
+        if (bb == null) {
           Logger.warn("Block has no BlockBean. Creating one...");
           bb = new BlockBean();
+          bb.setId(block.getId());
           bb.setTile(block);
-          bb.setTileId(this.block.getId());
-        }  
+          bb.setTileId(block.getId());
+        }
         this.block.setBlockBean(bb);
       }
 
-      this.blockIdTF.setText(this.block.getId());
+      this.blockIdTF.setText(block.getId());
       this.blockNameTF.setText(bb.getDescription());
+
+      this.reverseArrivalCB.setSelected(bb.isReverseArrival());
 
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
@@ -84,6 +87,13 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
       if (bb.getLocomotive() != null) {
         this.locomotiveCB.setSelectedItem(bb.getLocomotive());
+
+        if (bb.getLocomotive().getLocIcon() != null) {
+          this.locomotiveIconLbl.setIcon(new ImageIcon(bb.getLocomotive().getLocIcon()));
+          this.locomotiveIconLbl.setText(null);
+        } else {
+          this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
+        }
       } else {
         this.locomotiveCB.setSelectedItem(emptyBean);
       }
@@ -106,6 +116,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
     blockDescLbl = new javax.swing.JLabel();
     blockNameTF = new javax.swing.JTextField();
     locomotiveImagePanel = new javax.swing.JPanel();
+    reverseArrivalCB = new javax.swing.JCheckBox();
     locomotiveIconLbl = new javax.swing.JLabel();
     locomotivePanel = new javax.swing.JPanel();
     locomotiveLbl = new javax.swing.JLabel();
@@ -163,9 +174,18 @@ public class BlockControlDialog extends javax.swing.JDialog {
     getContentPane().add(namePanel);
 
     locomotiveImagePanel.setPreferredSize(new java.awt.Dimension(290, 60));
-    java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
+    java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 1, 0);
     flowLayout5.setAlignOnBaseline(true);
     locomotiveImagePanel.setLayout(flowLayout5);
+
+    reverseArrivalCB.setText("Reverse Arrival Side");
+    reverseArrivalCB.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+    reverseArrivalCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        reverseArrivalCBActionPerformed(evt);
+      }
+    });
+    locomotiveImagePanel.add(reverseArrivalCB);
 
     locomotiveIconLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
     locomotiveIconLbl.setDoubleBuffered(true);
@@ -242,21 +262,27 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
   }//GEN-LAST:event_locomotiveCBActionPerformed
 
+  private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
+    Logger.trace(evt.getActionCommand() + " to " + this.reverseArrivalCB.isSelected());
+    this.block.getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
+  }//GEN-LAST:event_reverseArrivalCBActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JLabel blockDescLbl;
-  private javax.swing.JLabel blockIdLbl;
-  private javax.swing.JTextField blockIdTF;
-  private javax.swing.JTextField blockNameTF;
-  private javax.swing.JPanel deviceIdPanel;
-  private javax.swing.JLabel headingLbl;
-  private javax.swing.JPanel headingPanel;
+  javax.swing.JLabel blockDescLbl;
+  javax.swing.JLabel blockIdLbl;
+  javax.swing.JTextField blockIdTF;
+  javax.swing.JTextField blockNameTF;
+  javax.swing.JPanel deviceIdPanel;
+  javax.swing.JLabel headingLbl;
+  javax.swing.JPanel headingPanel;
   private javax.swing.JComboBox<LocomotiveBean> locomotiveCB;
-  private javax.swing.JLabel locomotiveIconLbl;
-  private javax.swing.JPanel locomotiveImagePanel;
-  private javax.swing.JLabel locomotiveLbl;
-  private javax.swing.JPanel locomotivePanel;
-  private javax.swing.JPanel namePanel;
-  private javax.swing.JButton saveExitBtn;
-  private javax.swing.JPanel saveExitPanel;
+  javax.swing.JLabel locomotiveIconLbl;
+  javax.swing.JPanel locomotiveImagePanel;
+  javax.swing.JLabel locomotiveLbl;
+  javax.swing.JPanel locomotivePanel;
+  javax.swing.JPanel namePanel;
+  javax.swing.JCheckBox reverseArrivalCB;
+  javax.swing.JButton saveExitBtn;
+  javax.swing.JPanel saveExitPanel;
   // End of variables declaration//GEN-END:variables
 }

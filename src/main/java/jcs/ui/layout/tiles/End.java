@@ -25,18 +25,18 @@ import jcs.entities.TileBean;
 
 public class End extends AbstractTile implements Tile {
 
-  public End(TileBean tileBean) {
+  End(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
   }
 
-  public End(Orientation orientation, Point center) {
+  End(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
 
   }
 
-  public End(Orientation orientation, int x, int y) {
+  End(Orientation orientation, int x, int y) {
     super(orientation, x, y);
     this.type = TileType.END.getTileType();
     this.width = DEFAULT_WIDTH;
@@ -103,7 +103,6 @@ public class End extends AbstractTile implements Tile {
 
     g2.setPaint(Color.DARK_GRAY);
     g2.fillRect(xx, yy, w, h);
-
   }
 
   @Override
@@ -111,4 +110,9 @@ public class End extends AbstractTile implements Tile {
     renderEnd(g2, trackColor, backgroundColor);
   }
 
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    return sb.toString();
+  }
 }

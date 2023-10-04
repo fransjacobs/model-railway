@@ -33,17 +33,17 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   protected AccessoryValue routeValue;
   protected Color routeColor;
 
-  public Switch(TileBean tileBean) {
+  Switch(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
   }
 
-  public Switch(Orientation orientation, Direction direction, int x, int y) {
+  Switch(Orientation orientation, Direction direction, int x, int y) {
     this(orientation, direction, new Point(x, y));
   }
 
-  public Switch(Orientation orientation, Direction direction, Point center) {
+  Switch(Orientation orientation, Direction direction, Point center) {
     super(orientation, direction, center.x, center.y);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
@@ -366,4 +366,12 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     return switchDirection;
   }
 
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(getAccessoryValue());
+    sb.append("~");
+    sb.append(getRouteValue());
+    return sb.toString();
+  }
 }

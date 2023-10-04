@@ -30,15 +30,15 @@ public class Sensor extends Straight implements SensorEventListener {
 
   private boolean active;
 
-  public Sensor(TileBean tileBean) {
+  Sensor(TileBean tileBean) {
     super(tileBean);
   }
 
-  public Sensor(Orientation orientation, int x, int y) {
+  Sensor(Orientation orientation, int x, int y) {
     this(orientation, new Point(x, y));
   }
 
-  public Sensor(Orientation orientation, Point center) {
+  Sensor(Orientation orientation, Point center) {
     super(orientation, center);
     this.type = TileType.SENSOR.getTileType();
   }
@@ -97,4 +97,10 @@ public class Sensor extends Straight implements SensorEventListener {
     return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", active: " + active + ", center: (" + x + "," + y + ")}";
   }
 
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(isActive() ? "y" : "n");
+    return sb.toString();
+  }
 }

@@ -54,6 +54,8 @@ public interface Tile extends Shape {
   String getId();
 
   void setId(String id);
+  
+  String getImageKey();
 
   void drawTile(Graphics2D g2d, boolean drawOutline);
 

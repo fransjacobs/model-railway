@@ -38,10 +38,11 @@ import java.util.Set;
 import jcs.entities.TileBean;
 
 public class Block extends AbstractTile implements Tile {
+
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 
-  public Block(TileBean tileBean) {
+  Block(TileBean tileBean) {
     super(tileBean);
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
       this.width = BLOCK_WIDTH;
@@ -54,17 +55,17 @@ public class Block extends AbstractTile implements Tile {
       this.height = BLOCK_HEIGHT;
       this.renderHeight = RENDER_HEIGHT * 3;
     }
+    this.blockBean = tileBean.getBlockBean();
   }
 
-  public Block(int x, int y) {
-    this(Orientation.EAST, x, y);
-  }
-
-  public Block(Orientation orientation, Point center) {
+//  Block(int x, int y) {
+//    this(Orientation.EAST, x, y);
+//  }
+  Block(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
 
-  public Block(Orientation orientation, int x, int y) {
+  Block(Orientation orientation, int x, int y) {
     super(orientation, Direction.CENTER, x, y);
 
     if (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) {
@@ -108,17 +109,25 @@ public class Block extends AbstractTile implements Tile {
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST -> new Point(cx - Tile.GRID * 2, cy);
-        case NORTH -> new Point(cx, cy - Tile.GRID * 2);
-        case SOUTH -> new Point(cx, cy + Tile.GRID * 2);
-        default -> new Point(cx + Tile.GRID * 2, cy);
+        case WEST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> new Point(cx - Tile.GRID * 2, cy);
-        case SOUTH -> new Point(cx, cy - Tile.GRID * 2);
-        case NORTH -> new Point(cx, cy + Tile.GRID * 2);
-        default -> new Point(cx + Tile.GRID * 2, cy);
+        case EAST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
       };
     }
   }
@@ -171,17 +180,25 @@ public class Block extends AbstractTile implements Tile {
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST -> new Point(cx - Tile.GRID * 4, cy);
-        case NORTH -> new Point(cx, cy - Tile.GRID * 4);
-        case SOUTH -> new Point(cx, cy + Tile.GRID * 4);
-        default -> new Point(cx + Tile.GRID * 4, cy);
+        case WEST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> new Point(cx - Tile.GRID * 4, cy);
-        case SOUTH -> new Point(cx, cy - Tile.GRID * 4);
-        case NORTH -> new Point(cx, cy + Tile.GRID * 4);
-        default -> new Point(cx + Tile.GRID * 4, cy);
+        case EAST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
       };
     }
   }
@@ -191,10 +208,14 @@ public class Block extends AbstractTile implements Tile {
       return this.getOrientation();
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> Orientation.WEST;
-        case SOUTH -> Orientation.NORTH;
-        case NORTH -> Orientation.SOUTH;
-        default -> Orientation.EAST;
+        case EAST ->
+          Orientation.WEST;
+        case SOUTH ->
+          Orientation.NORTH;
+        case NORTH ->
+          Orientation.SOUTH;
+        default ->
+          Orientation.EAST;
       };
     }
   }
@@ -290,22 +311,16 @@ public class Block extends AbstractTile implements Tile {
     drawName(g2);
   }
 
-  @Override
-  public void drawName(Graphics2D g2d) {
+  public String getBlockText() {
     String blockText;
-    g2d.setPaint(Color.darkGray);
 
-    Font currentFont = g2d.getFont();
-    Font newFont = currentFont.deriveFont(currentFont.getSize() * 10.0F);
-    g2d.setFont(newFont);
-
-    if (this.getBlockBean() != null && this.getBlockBean().getLocomotive() != null) {
-      blockText = this.getBlockBean().getLocomotive().getName();
+    if (!drawOutline && getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
+      blockText = getBlockBean().getLocomotive().getName();
       boolean reverseArrival = this.getBlockBean().isReverseArrival();
 
-      String direction =
-          (jcs.entities.enums.Direction.FORWARDS
-                  == this.getBlockBean().getLocomotive().getDirection()
+      String direction
+              = (jcs.entities.enums.Direction.FORWARDS
+              == this.getBlockBean().getLocomotive().getDirection()
               ? ">"
               : "<");
 
@@ -341,10 +356,22 @@ public class Block extends AbstractTile implements Tile {
           }
         }
       }
-
     } else {
-      blockText = this.getId();
+      blockText = getId();
     }
+    return blockText;
+  }
+
+  @Override
+  public void drawName(Graphics2D g2d) {
+    g2d.setPaint(Color.darkGray);
+
+    Font currentFont = g2d.getFont();
+    Font newFont = currentFont.deriveFont(currentFont.getSize() * 10.0F);
+    g2d.setFont(newFont);
+
+    String blockText = getBlockText();
+
     // Scale the text if necessary
     int textWidth = g2d.getFontMetrics().stringWidth(blockText);
     double fontscale = 10.0;
@@ -360,40 +387,48 @@ public class Block extends AbstractTile implements Tile {
     switch (getOrientation()) {
       case EAST -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-            RENDER_GRID + textHeight / 3,
-            0,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+                RENDER_GRID + textHeight / 3,
+                0,
+                blockText);
       }
       case WEST -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-            RENDER_GRID - textHeight / 3,
-            180,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+                RENDER_GRID - textHeight / 3,
+                180,
+                blockText);
       }
       case NORTH -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-            RENDER_GRID + textHeight / 3,
-            0,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+                RENDER_GRID + textHeight / 3,
+                0,
+                blockText);
       }
       case SOUTH -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-            RENDER_GRID - textHeight / 3,
-            180,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+                RENDER_GRID - textHeight / 3,
+                180,
+                blockText);
       }
     }
 
     // reset to the original font
     newFont = currentFont.deriveFont(currentFont.getSize() * 1.0F);
     g2d.setFont(newFont);
+  }
+
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(getBlockText());
+
+    return sb.toString();
   }
 }

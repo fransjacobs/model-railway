@@ -41,7 +41,7 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
   private SignalValue signalValue;
   private SignalType signalType;
 
-  public Signal(TileBean tileBean) {
+  Signal(TileBean tileBean) {
     super(tileBean);
     if (tileBean.getAccessoryBean() != null) {
       AccessoryBean ab = tileBean.getAccessoryBean();
@@ -49,19 +49,18 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     }
   }
 
-  public Signal(Orientation orientation, int x, int y) {
-    this(orientation, new Point(x, y), SignalType.HP01);
-  }
-
-  public Signal(Orientation orientation, int x, int y, SignalType signalType) {
+//  Signal(Orientation orientation, int x, int y) {
+//    this(orientation, new Point(x, y), SignalType.HP01);
+//  }
+  Signal(Orientation orientation, int x, int y, SignalType signalType) {
     this(orientation, new Point(x, y), signalType);
   }
 
-  public Signal(Orientation orientation, Point center) {
+  Signal(Orientation orientation, Point center) {
     this(orientation, center, SignalType.HP01);
   }
 
-  public Signal(Orientation orientation, Point center, SignalType signalType) {
+  Signal(Orientation orientation, Point center, SignalType signalType) {
     super(orientation, center);
     this.signalType = signalType;
     this.signalValue = SignalValue.OFF;
@@ -126,7 +125,8 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color1 = Color.gray;
         color2 = Color.green;
       }
-      default -> {}
+      default -> {
+      }
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -167,12 +167,14 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
       case Hp0 -> {
         color3 = Color.red;
       }
-      case Hp1 -> color1 = Color.green;
+      case Hp1 ->
+        color1 = Color.green;
       case Hp2 -> {
         color1 = Color.green;
         color2 = Color.yellow;
       }
-      default -> {}
+      default -> {
+      }
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -234,7 +236,8 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color2 = Color.red;
         color3 = Color.red;
       }
-      case Hp1 -> color1 = Color.green;
+      case Hp1 ->
+        color1 = Color.green;
       case Hp2 -> {
         color1 = Color.green;
         color6 = Color.yellow;
@@ -244,7 +247,8 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color4 = Color.white;
         color5 = Color.white;
       }
-      default -> {}
+      default -> {
+      }
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -276,24 +280,24 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     int rw = 120;
     int rh = 120;
 
-    int[] xps =
-        new int[] {
-          RENDER_GRID + 100,
-          +RENDER_GRID + 140,
-          +RENDER_GRID + 160,
-          RENDER_GRID + 160,
-          +RENDER_GRID + 140,
-          RENDER_GRID + 100
-        };
-    int[] yps =
-        new int[] {
-          RENDER_GRID + 80,
-          RENDER_GRID + 80,
-          RENDER_GRID + 100,
-          +RENDER_GRID + 140,
-          +RENDER_GRID + 160,
-          RENDER_GRID + 160
-        };
+    int[] xps
+            = new int[]{
+              RENDER_GRID + 100,
+              +RENDER_GRID + 140,
+              +RENDER_GRID + 160,
+              RENDER_GRID + 160,
+              +RENDER_GRID + 140,
+              RENDER_GRID + 100
+            };
+    int[] yps
+            = new int[]{
+              RENDER_GRID + 80,
+              RENDER_GRID + 80,
+              RENDER_GRID + 100,
+              +RENDER_GRID + 140,
+              +RENDER_GRID + 160,
+              RENDER_GRID + 160
+            };
 
     Polygon signalOutline = new Polygon(xps, yps, xps.length);
 
@@ -327,7 +331,8 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         color3 = Color.white;
         color4 = Color.white;
       }
-      default -> {}
+      default -> {
+      }
     }
 
     g2d.setStroke(new BasicStroke(10f));
@@ -358,10 +363,14 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     }
 
     switch (signalType) {
-      case HP012 -> renderSignal3(g2d);
-      case HP012SH1 -> renderSignal4(g2d);
-      case HP0SH1 -> renderSignal2m(g2d);
-      default -> renderSignal2(g2d);
+      case HP012 ->
+        renderSignal3(g2d);
+      case HP012SH1 ->
+        renderSignal4(g2d);
+      case HP0SH1 ->
+        renderSignal2m(g2d);
+      default ->
+        renderSignal2(g2d);
     }
 
     g2d.dispose();
@@ -373,5 +382,16 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
       this.setSignalValue(event.getAccessoryBean().getSignalValue());
       repaintTile();
     }
+  }
+
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(getSignalType());
+    sb.append("~");
+    sb.append(getSignalValue());
+    sb.append("~");
+
+    return sb.toString();
   }
 }

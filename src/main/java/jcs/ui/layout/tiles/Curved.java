@@ -25,17 +25,17 @@ import jcs.entities.TileBean;
 
 public class Curved extends AbstractTile implements Tile {
 
-  public Curved(TileBean tileBean) {
+  Curved(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
   }
 
-  public Curved(Orientation orientation, int x, int y) {
+  Curved(Orientation orientation, int x, int y) {
     this(orientation, new Point(x, y));
   }
 
-  public Curved(Orientation orientation, Point center) {
+  Curved(Orientation orientation, Point center) {
     super(orientation, center);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
@@ -119,6 +119,12 @@ public class Curved extends AbstractTile implements Tile {
     g2d.fillPolygon(xPoints, yPoints, xPoints.length);
 
     g2d.dispose();
+  }
+
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    return sb.toString();
   }
 
 }

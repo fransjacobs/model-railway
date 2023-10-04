@@ -44,7 +44,7 @@ public class Cross extends Switch implements Tile {
   public static final Color LIGHT_GREEN = new Color(0, 255, 51);
   public static final Color DARK_GREEN = new Color(0, 153, 0);
 
-  public Cross(TileBean tileBean) {
+  Cross(TileBean tileBean) {
     super(tileBean);
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
       this.width = CROSS_WIDTH;
@@ -63,7 +63,7 @@ public class Cross extends Switch implements Tile {
     }
   }
 
-  public Cross(Orientation orientation, Direction direction, int x, int y) {
+  Cross(Orientation orientation, Direction direction, int x, int y) {
     this(orientation, direction, new Point(x, y));
   }
 
@@ -501,5 +501,14 @@ public class Cross extends Switch implements Tile {
         }
       }
     }
+  }
+
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(getAccessoryValue());
+    sb.append("~");
+    sb.append(getRouteValue());
+    return sb.toString();
   }
 }
