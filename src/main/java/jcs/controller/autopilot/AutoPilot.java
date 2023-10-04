@@ -15,10 +15,38 @@
  */
 package jcs.controller.autopilot;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
+import jcs.persistence.PersistenceFactory;
+import org.tinylog.Logger;
+
 /**
  *
  * @author frans
  */
 public class AutoPilot {
-  
+
+  //Fort started a list of locomotives is needed which are on the track ie assigned to a Tile
+  private List<LocomotiveBean> getOnTrackLocomotives() {
+    //direct query call or derive?
+    //Loc can only be in a block, so strart there
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    Logger.trace("There are " + blocks.size() + " blocks");
+
+    //filter..
+    List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
+
+    Logger.trace("There are " + occupiedBlocks.size() + " occupied blocks");
+
+    return null;
+  }
+
+  public static void main(String[] a) {
+    AutoPilot ap = new AutoPilot();
+
+    ap.getOnTrackLocomotives();
+  }
+
 }

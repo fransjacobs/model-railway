@@ -54,7 +54,7 @@ public class H2PersistenceService implements PersistenceService {
 
   private void connect() {
     Logger.debug(
-        "Connecting to: "
+            "Connecting to: "
             + System.getProperty("norm.jdbcUrl")
             + " with db user: "
             + System.getProperty("norm.user"));
@@ -76,8 +76,8 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public JCSPropertyBean persist(JCSPropertyBean property) {
-    JCSPropertyBean prop =
-        database.where("p_key=?", property.getKey()).first(JCSPropertyBean.class);
+    JCSPropertyBean prop
+            = database.where("p_key=?", property.getKey()).first(JCSPropertyBean.class);
     if (prop != null) {
       int rows = database.update(property).getRowsAffected();
       Logger.trace(rows + " rows updated");
@@ -102,9 +102,9 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public SensorBean getSensor(Integer deviceId, Integer contactId) {
-    Object[] args = new Object[] {deviceId, contactId};
-    SensorBean sensor =
-        database.where("device_id=? and contact_id=?", args).first(SensorBean.class);
+    Object[] args = new Object[]{deviceId, contactId};
+    SensorBean sensor
+            = database.where("device_id=? and contact_id=?", args).first(SensorBean.class);
     return sensor;
   }
 
@@ -139,11 +139,11 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<FunctionBean> getLocomotiveFunctions(Long locomotiveId) {
-    List<FunctionBean> locFunctions =
-        database
-            .where("locomotive_id=?", locomotiveId)
-            .orderBy("f_number")
-            .results(FunctionBean.class);
+    List<FunctionBean> locFunctions
+            = database
+                    .where("locomotive_id=?", locomotiveId)
+                    .orderBy("f_number")
+                    .results(FunctionBean.class);
 
     for (FunctionBean fb : locFunctions) {
       fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
@@ -154,10 +154,10 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number) {
-    FunctionBean fb =
-        database
-            .where("locomotive_id=? and f_number=?", locomotiveId, number)
-            .first(FunctionBean.class);
+    FunctionBean fb
+            = database
+                    .where("locomotive_id=? and f_number=?", locomotiveId, number)
+                    .first(FunctionBean.class);
     if (fb != null) {
       fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
       fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
@@ -167,10 +167,10 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
-    Object[] args = new Object[] {address, decoderType.getDecoderType()};
+    Object[] args = new Object[]{address, decoderType.getDecoderType()};
 
-    LocomotiveBean loco =
-        database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class);
+    LocomotiveBean loco
+            = database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class);
     loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
     loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
     return loco;
@@ -202,8 +202,8 @@ public class H2PersistenceService implements PersistenceService {
   public FunctionBean persist(FunctionBean functionBean) {
     if (functionBean.getId() == null) {
       // Might be a new refresh of an existing function so let try to find it
-      FunctionBean dbFb =
-          this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
+      FunctionBean dbFb
+              = this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
       if (dbFb != null) {
         functionBean.setId(dbFb.getId());
       }
@@ -257,8 +257,8 @@ public class H2PersistenceService implements PersistenceService {
   public void remove(LocomotiveBean locomotive) {
     // First femove the functions
     database
-        .sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId())
-        .execute();
+            .sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId())
+            .execute();
 
     int rows = database.delete(locomotive).getRowsAffected();
     Logger.trace(rows + " rows deleted");
@@ -272,7 +272,7 @@ public class H2PersistenceService implements PersistenceService {
         int size = 100;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
         this.imageCache.put(
-            imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+                imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
     return this.imageCache.get(imageName);
@@ -286,7 +286,7 @@ public class H2PersistenceService implements PersistenceService {
         int size = 30;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
         this.functionImageCache.put(
-            imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+                imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
     return this.functionImageCache.get(imageName);
@@ -296,8 +296,8 @@ public class H2PersistenceService implements PersistenceService {
     Image image = null;
 
     String serial = System.getProperty("cs.serial", "");
-    String path =
-        System.getProperty("user.home")
+    String path
+            = System.getProperty("user.home")
             + File.separator
             + "jcs"
             + File.separator
@@ -328,16 +328,16 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public List<AccessoryBean> getTurnouts() {
     String typeClause = "%weiche";
-    List<AccessoryBean> turnouts =
-        database.where("type like ?", typeClause).results(AccessoryBean.class);
+    List<AccessoryBean> turnouts
+            = database.where("type like ?", typeClause).results(AccessoryBean.class);
     return turnouts;
   }
 
   @Override
   public List<AccessoryBean> getSignals() {
     String typeClause = "%signal%";
-    List<AccessoryBean> signals =
-        database.where("type like ?", typeClause).results(AccessoryBean.class);
+    List<AccessoryBean> signals
+            = database.where("type like ?", typeClause).results(AccessoryBean.class);
     return signals;
   }
 
@@ -369,8 +369,8 @@ public class H2PersistenceService implements PersistenceService {
   public void remove(AccessoryBean accessory) {
     // First ensure the linked tile records are decoupled
     database
-        .sql("update tiles set sensor_id = null where accessory_id =?", accessory.getId())
-        .execute();
+            .sql("update tiles set sensor_id = null where accessory_id =?", accessory.getId())
+            .execute();
     int rows = database.delete(accessory).getRowsAffected();
     Logger.trace(rows + " Accessories deleted");
   }
@@ -407,8 +407,8 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<TileBean> getTileBeansByTileType(TileBean.TileType tileType) {
-    List<TileBean> tileBeans =
-        database.where("tile_type = ?", tileType.getTileType()).results(TileBean.class);
+    List<TileBean> tileBeans
+            = database.where("tile_type = ?", tileType.getTileType()).results(TileBean.class);
     return addReleatedObjects(tileBeans);
   }
 
@@ -420,7 +420,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public TileBean getTileBean(Integer x, Integer y) {
-    Object[] args = new Object[] {x, y};
+    Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
     return addReleatedObjects(tileBean);
   }
@@ -463,8 +463,8 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private List<RouteElementBean> getRouteElements(String routeId) {
-    List<RouteElementBean> routeElements =
-        database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
+    List<RouteElementBean> routeElements
+            = database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
     return routeElements;
   }
 
@@ -500,13 +500,12 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public RouteBean getRoute(
-      String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
-    Object[] args = new Object[] {fromTileId, fromSuffix, toTileId, toSuffix};
-    RouteBean route =
-        database
-            .where(
-                "from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args)
-            .first(RouteBean.class);
+          String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
+    Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
+    RouteBean route
+            = database
+                    .where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args)
+                    .first(RouteBean.class);
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
       route.setRouteElements(routeElements);
@@ -560,9 +559,9 @@ public class H2PersistenceService implements PersistenceService {
   private void setJCSPropertiesAsSystemProperties() {
     List<JCSPropertyBean> props = getProperties();
     props.forEach(
-        p -> {
-          System.setProperty(p.getKey(), p.getValue());
-        });
+            p -> {
+              System.setProperty(p.getKey(), p.getValue());
+            });
   }
 
   @Override
@@ -633,8 +632,8 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     if (block != null
-        && block.getId() != null
-        && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
+            && block.getId() != null
+            && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
       database.update(block).getRowsAffected();
     } else {
       database.insert(block).getRowsAffected();
