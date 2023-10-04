@@ -1,35 +1,42 @@
-# Model-railway
+# Java Central Station
 
-## Model railway control with JCS (Java Central Station)
-Experiments wich should eventually lead to automater rail roud control.
+![Static Badge](https://img.shields.io/badge/Model_Railroad-Automation-blue) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
+
+![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/fransjacobs/model-railway) [![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
+
+![GitHub Gist last commit](https://img.shields.io/github/gist/last-commit/55ccec54ddb4630852deaceb07f5c42a)
+ ![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
+
+
+## Model railway control with JCS
+Experiments wich should eventually lead to automated rail road control.
 
 ## Why?
 To have fun!
-I know there are ready to go products on the market.
-This project is not an attempt to compeat with any of them,
+I know there are ready to go products on the market. This project is not an attempt to compeat with any of them,
 hence this project is Open Source so anyone can benefit.
 
 ## About The Project
 JCS is an application to control a model railway. It is in an early stage of development.
 The project mostly contains my experiments to automate my model railway.
-I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), hence the (current) hardware supported is the Maerklin CS-3 and also the CS-2.
-(allthough ther are some differences between the CS 3 and 2)
 
 I started this project 2019 as (and still is) a hobby to automate my model-rail layout.
 As I am trying to do this project beside my work, family and other hobbies it is a project with sometimes a very slow pace...
 
 The aim of the program is to automate the running of trains on my layout.
+
+### Supported Hardware
+As I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), hence the (current) hardware supported is the Maerklin CS-3 and also the CS-2.
+(allthough there are some differences between the CS2 and 3).
+
+## Current status
 Currently the following modules are build:
 
-* A Screen or edit/display de schematic Layout.
-* Communication layer to "talk" to the Maerklin CS-3, (Included automatic discovery of the CS-3 ip address).
-* A Screen to see Sensor / feedback events from the CS-3
+* A Screen to edit/display de schematic Layout.
+* Communication layer to "talk" to the Maerklin CS-3, (Included automatic discovery of the CS2/3 ip address).
+* A Screen to see Sensor / feedback events from the CS2/3
 * Locomotives overview (including automatic downloading of the Locomotive- and function button images) and control.
-* Turnout and Signals overview (Synchronized with the CS-3) and control.
-
-## Build Status
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/traintastic/traintastic)](https://github.com/traintastic/traintastic/graphs/commit-activity)
-[![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
+* Turnout and Signals overview (Synchronized with the CS2/3) and control.
 
 ## Screenshots
 So here are a few screenshots of the Project:
@@ -61,13 +68,12 @@ Sensor Monitor
 ## TODO's (and there are still a lots of todo's...):
 
 Currently the following features are under active development:
-* Improving communication with the CS-2/3
-* Automatically route the Layout.
-* React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. 
-* Automatically run trains.
+* Improving communication with the CS-2/3 [more or less done :)]
+* Automatically route the Layout. [more or less done :)]
+* React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. [more or less done :)]
+* Automatically run trains. [Work in progress]
 
-* Configuration screens to edit the Locomotives, Accessories and Sensors.
-* Automatic driving of the trains
+* Configuration screens to edit the Locomotives, Accessories and Sensors. [Todo]
 * Add deployment configuration for Windows and Linux and to an App
   (first added is MacOS as that is my main development platform) [Postponed this a while, but basics where done]
 * Add more Unit tests
