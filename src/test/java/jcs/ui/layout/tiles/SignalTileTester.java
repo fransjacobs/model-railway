@@ -23,7 +23,7 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.entities.enums.Orientation;
+import jcs.entities.TileBean.Orientation;
 import jcs.entities.enums.SignalType;
 import jcs.entities.enums.SignalValue;
 import org.tinylog.Logger;
@@ -52,23 +52,22 @@ public class SignalTileTester extends JFrame {
   private final Tile signal4South;
   private final Tile signal4West;
   private final Tile signal4North;
-  
-  
+
   @SuppressWarnings("OverridableMethodCallInConstructor")
   public SignalTileTester(String title) {
     super(title);
 
     signal2East = new Signal(Orientation.EAST, 70, 60, SignalType.HP01);
-    ((Signal) signal2East).setSignalValue(SignalValue.Hp1);
+    ((Signal) signal2East).setSignalValue(SignalValue.Hp0);
 
-    signal2South = new Signal(Orientation.SOUTH, 160, 60, SignalType.HP012);
-    ((Signal) signal2South).setSignalValue(SignalValue.Hp2);
+    signal2South = new Signal(Orientation.SOUTH, 160, 60, SignalType.HP01);
+    ((Signal) signal2South).setSignalValue(SignalValue.Hp1);
 
-    signal2West = new Signal(Orientation.WEST, 250, 60, SignalType.HP012SH1);
-    ((Signal) signal2West).setSignalValue(SignalValue.Hp0Sh1);
+    signal2West = new Signal(Orientation.WEST, 250, 60, SignalType.HP01);
+    ((Signal) signal2West).setSignalValue(SignalValue.Hp0);
 
-    signal2North = new Signal(Orientation.NORTH, 340, 60, SignalType.HP0SH1);
-    ((Signal) signal2North).setSignalValue(SignalValue.Hp0);
+    signal2North = new Signal(Orientation.NORTH, 340, 60, SignalType.HP01);
+    ((Signal) signal2North).setSignalValue(SignalValue.Hp1);
 
     //
     signal2MEast = new Signal(Orientation.EAST, 70, 110, SignalType.HP0SH1);
@@ -108,7 +107,6 @@ public class SignalTileTester extends JFrame {
 
     signal4North = new Signal(Orientation.NORTH, 340, 210, SignalType.HP012SH1);
     ((Signal) signal4North).setSignalValue(SignalValue.Hp0Sh1);
-
 
   }
 
@@ -183,7 +181,6 @@ public class SignalTileTester extends JFrame {
     signal4North.drawBounds(g2d);
     signal4North.drawCenterPoint(g2d, Color.cyan);
 
-
   }
 
   public static void main(String args[]) {
@@ -191,19 +188,19 @@ public class SignalTileTester extends JFrame {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException
-        | InstantiationException
-        | IllegalAccessException
-        | UnsupportedLookAndFeelException ex) {
+            | InstantiationException
+            | IllegalAccessException
+            | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
-    SignalTileTester app = new SignalTileTester("Tile Tester 2");
+    SignalTileTester app = new SignalTileTester("Signal Tile Tester");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    app.setSize(400, 400);
+    app.setSize(400, 250);
 
     app.setLocation(
-        dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+            dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 

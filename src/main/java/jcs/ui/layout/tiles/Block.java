@@ -15,10 +15,16 @@
  */
 package jcs.ui.layout.tiles;
 
-import static jcs.entities.enums.Orientation.EAST;
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
+import static jcs.entities.TileBean.Orientation.EAST;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
+import static jcs.ui.layout.tiles.AbstractTile.drawRotate;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
+import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
+import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -30,42 +36,48 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 
 public class Block extends AbstractTile implements Tile {
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 
-  public Block(TileBean tileBean) {
+  Block(TileBean tileBean) {
     super(tileBean);
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
       this.width = BLOCK_WIDTH;
+      this.renderWidth = RENDER_WIDTH * 3;
       this.height = DEFAULT_HEIGHT;
+      this.renderHeight = RENDER_HEIGHT;
     } else {
       this.width = DEFAULT_WIDTH;
+      this.renderWidth = RENDER_WIDTH;
       this.height = BLOCK_HEIGHT;
+      this.renderHeight = RENDER_HEIGHT * 3;
     }
+    this.blockBean = tileBean.getBlockBean();
   }
 
-  public Block(int x, int y) {
-    this(Orientation.EAST, x, y);
+//  Block(int x, int y) {
+//    this(Orientation.EAST, x, y);
+//  }
+  Block(Orientation orientation, Point center) {
+    this(orientation, center.x, center.y);
   }
 
-  public Block(Orientation orientation, int x, int y) {
-    this(orientation, new Point(x, y));
-  }
+  Block(Orientation orientation, int x, int y) {
+    super(orientation, Direction.CENTER, x, y);
 
-  public Block(Orientation orientation, Point center) {
-    super(orientation, Direction.CENTER, center.x, center.y);
-    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-      this.width = DEFAULT_WIDTH * 3;
+    if (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) {
+      this.width = BLOCK_WIDTH;
+      this.renderWidth = RENDER_WIDTH * 3;
       this.height = DEFAULT_HEIGHT;
+      this.renderHeight = RENDER_HEIGHT;
     } else {
       this.width = DEFAULT_WIDTH;
-      this.height = DEFAULT_HEIGHT * 3;
+      this.renderWidth = RENDER_WIDTH;
+      this.height = BLOCK_HEIGHT;
+      this.renderHeight = RENDER_HEIGHT * 3;
     }
     this.type = TileType.BLOCK.getTileType();
   }
@@ -97,17 +109,25 @@ public class Block extends AbstractTile implements Tile {
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST -> new Point(cx - Tile.GRID * 2, cy);
-        case NORTH -> new Point(cx, cy - Tile.GRID * 2);
-        case SOUTH -> new Point(cx, cy + Tile.GRID * 2);
-        default -> new Point(cx + Tile.GRID * 2, cy);
+        case WEST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> new Point(cx - Tile.GRID * 2, cy);
-        case SOUTH -> new Point(cx, cy - Tile.GRID * 2);
-        case NORTH -> new Point(cx, cy + Tile.GRID * 2);
-        default -> new Point(cx + Tile.GRID * 2, cy);
+        case EAST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
       };
     }
   }
@@ -160,17 +180,25 @@ public class Block extends AbstractTile implements Tile {
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST -> new Point(cx - Tile.GRID * 4, cy);
-        case NORTH -> new Point(cx, cy - Tile.GRID * 4);
-        case SOUTH -> new Point(cx, cy + Tile.GRID * 4);
-        default -> new Point(cx + Tile.GRID * 4, cy);
+        case WEST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> new Point(cx - Tile.GRID * 4, cy);
-        case SOUTH -> new Point(cx, cy - Tile.GRID * 4);
-        case NORTH -> new Point(cx, cy + Tile.GRID * 4);
-        default -> new Point(cx + Tile.GRID * 4, cy);
+        case EAST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
       };
     }
   }
@@ -180,10 +208,14 @@ public class Block extends AbstractTile implements Tile {
       return this.getOrientation();
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> Orientation.WEST;
-        case SOUTH -> Orientation.NORTH;
-        case NORTH -> Orientation.SOUTH;
-        default -> Orientation.EAST;
+        case EAST ->
+          Orientation.WEST;
+        case SOUTH ->
+          Orientation.NORTH;
+        case NORTH ->
+          Orientation.SOUTH;
+        default ->
+          Orientation.EAST;
       };
     }
   }
@@ -256,94 +288,147 @@ public class Block extends AbstractTile implements Tile {
 
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    int xx, yy, w, h;
+    int xx = 20;
+    int yy = 100;
+    int rw = RENDER_WIDTH * 3 - 40;
+    int rh = 200;
 
-    xx = 2;
-    yy = 10;
-    w = DEFAULT_WIDTH * 3 - 4;
-    h = 20;
+    g2.setPaint(Color.black);
+    g2.setStroke(new BasicStroke(3, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+    g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
 
-    g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER));
-    g2.setPaint(Color.darkGray);
-    g2.drawRect(xx, yy, w, h);
-
-    // Block needs to have a direction so travel from a to b or from - to +
-    // so in east direction the block is -[ - bk-nn + ]-
+    // A block has a direction of travel. Hence it has a plus (+) and a Minus(-) side.
+    // The default the EAST direction, the blcok will look like: -[ - bk-nn + ]-
     g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
     g2.setPaint(Color.black);
 
     // a - at the start and end of the block
-    g2.drawLine(xx + 4, yy + 10, xx + 10, yy + 10);
-    g2.drawLine(w - 10, yy + 10, w - 4, yy + 10);
+    g2.drawLine(xx + 40, yy + 100, xx + 100, yy + 100);
+    g2.drawLine(rw - 80, yy + 100, rw - 20, yy + 100);
     // a | at the end of the block
-    g2.drawLine(w - 7, yy + 7, w - 7, yy + 13);
+    g2.drawLine(rw - 50, yy + 70, rw - 50, yy + 130);
 
     drawName(g2);
   }
 
-  @Override
-  public void drawName(Graphics2D g2d) {
+  public String getBlockText() {
     String blockText;
-    if (this.getBlockBean() != null && this.getBlockBean().getLocomotive() != null) {
-      blockText = this.getBlockBean().getLocomotive().getName();
+
+    if (!drawOutline && getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
+      blockText = getBlockBean().getLocomotive().getName();
       boolean reverseArrival = this.getBlockBean().isReverseArrival();
-      jcs.entities.enums.Direction dir = this.getBlockBean().getLocomotive().getDirection();
 
-      // The default forward direction is toward the + side
+      String direction
+              = (jcs.entities.enums.Direction.FORWARDS
+              == this.getBlockBean().getLocomotive().getDirection()
+              ? ">"
+              : "<");
 
+      // Depending on the arrival direction the direction is to the - or +
+      // The default is always the + direction
       switch (getOrientation()) {
         case EAST -> {
-          if (jcs.entities.enums.Direction.FORWARDS == dir) {
-            if (reverseArrival) {
-              blockText = "<" + blockText;
-            } else {
-              blockText = blockText + ">";
-            }
+          if (reverseArrival) {
+            blockText = direction + blockText;
           } else {
-            if (reverseArrival) {
-              blockText = ">" + blockText;
-            } else {
-              blockText = blockText + "<";
-            }
+            blockText = blockText + direction;
           }
         }
         case WEST -> {
-          if (jcs.entities.enums.Direction.FORWARDS == dir) {
-            if (reverseArrival) {
-              blockText = blockText + ">";
-            } else {
-              blockText = "<" + blockText;
-            }
+          if (reverseArrival) {
+            blockText = blockText + direction;
           } else {
-            if (reverseArrival) {
-              blockText = blockText + "<";
-            } else {
-              blockText = ">" + blockText;
-            }
+            blockText = direction + blockText;
           }
         }
-          //      case NORTH -> drawRotate(g2d, 20, GRID + 4, 0, blockText);
-          //      case SOUTH -> drawRotate(g2d, 100, GRID - 4, 180, blockText);
+        case SOUTH -> {
+          if (reverseArrival) {
+            blockText = blockText + direction;
+          } else {
+            blockText = direction + blockText;
+          }
+        }
+        case NORTH -> {
+          if (reverseArrival) {
+            blockText = "<" + blockText;
+          } else {
+            blockText = blockText + ">";
+          }
+        }
       }
-
     } else {
-      blockText = this.getId();
+      blockText = getId();
     }
+    return blockText;
+  }
 
+  @Override
+  public void drawName(Graphics2D g2d) {
     g2d.setPaint(Color.darkGray);
 
     Font currentFont = g2d.getFont();
-    Font newFont = currentFont.deriveFont(currentFont.getSize() * 0.8F);
+    Font newFont = currentFont.deriveFont(currentFont.getSize() * 10.0F);
     g2d.setFont(newFont);
 
-    switch (getOrientation()) {
-      case EAST -> drawRotate(g2d, 16, GRID + 4, 0, blockText);
-      case WEST -> drawRotate(g2d, 104, GRID - 4, 180, blockText);
-      case NORTH -> drawRotate(g2d, 20, GRID + 4, 0, blockText);
-      case SOUTH -> drawRotate(g2d, 100, GRID - 4, 180, blockText);
+    String blockText = getBlockText();
+
+    // Scale the text if necessary
+    int textWidth = g2d.getFontMetrics().stringWidth(blockText);
+    double fontscale = 10.0;
+    if (textWidth > 845) {
+      fontscale = fontscale * 847.0 / textWidth;
+      newFont = currentFont.deriveFont(currentFont.getSize() * (float) fontscale);
+      g2d.setFont(newFont);
+      textWidth = g2d.getFontMetrics().stringWidth(blockText);
     }
 
+    int textHeight = g2d.getFontMetrics().getHeight();
+
+    switch (getOrientation()) {
+      case EAST -> {
+        drawRotate(
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+                RENDER_GRID + textHeight / 3,
+                0,
+                blockText);
+      }
+      case WEST -> {
+        drawRotate(
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+                RENDER_GRID - textHeight / 3,
+                180,
+                blockText);
+      }
+      case NORTH -> {
+        drawRotate(
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+                RENDER_GRID + textHeight / 3,
+                0,
+                blockText);
+      }
+      case SOUTH -> {
+        drawRotate(
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+                RENDER_GRID - textHeight / 3,
+                180,
+                blockText);
+      }
+    }
+
+    // reset to the original font
     newFont = currentFont.deriveFont(currentFont.getSize() * 1.0F);
     g2d.setFont(newFont);
+  }
+
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(getBlockText());
+
+    return sb.toString();
   }
 }

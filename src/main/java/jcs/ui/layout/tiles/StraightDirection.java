@@ -21,20 +21,18 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.Collection;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 
 public class StraightDirection extends Straight {
 
-  public StraightDirection(TileBean tileBean) {
+  StraightDirection(TileBean tileBean) {
     super(tileBean);
   }
 
-  public StraightDirection(Orientation orientation, int x, int y) {
-    this(orientation, new Point(x, y));
-  }
+//  StraightDirection(Orientation orientation, int x, int y) {
+//    this(orientation, new Point(x, y));
+//  }
 
-  public StraightDirection(Orientation orientation, Point center) {
+  StraightDirection(Orientation orientation, Point center) {
     super(orientation, center);
     this.type = TileType.STRAIGHT_DIR.getTileType();
   }

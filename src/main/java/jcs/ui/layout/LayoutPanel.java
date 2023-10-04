@@ -16,7 +16,6 @@
 package jcs.ui.layout;
 
 import java.awt.BorderLayout;
-import jcs.entities.enums.TileType;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
@@ -36,7 +35,9 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import jcs.JCS;
-import jcs.ui.layout.tiles.enums.Direction;
+import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.TileType;
 import org.tinylog.Logger;
 
 /**
@@ -831,15 +832,15 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_repaintBtnActionPerformed
 
     private void straightBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_straightBtnActionPerformed
-      setTileType(TileType.STRAIGHT);
+      setTileType(TileBean.TileType.STRAIGHT);
     }//GEN-LAST:event_straightBtnActionPerformed
 
     private void curvedBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_curvedBtnActionPerformed
-      setTileType(TileType.CURVED);
+      setTileType(TileBean.TileType.CURVED);
     }//GEN-LAST:event_curvedBtnActionPerformed
 
     private void blockBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_blockBtnActionPerformed
-      setTileType(TileType.BLOCK);
+      setTileType(TileBean.TileType.BLOCK);
     }//GEN-LAST:event_blockBtnActionPerformed
 
     private void rotateBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateBtnActionPerformed
@@ -859,21 +860,21 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_moveBtnActionPerformed
 
     private void rightSwitchBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightSwitchBtnActionPerformed
-      this.setTileType(TileType.SWITCH);
+      this.setTileType(TileBean.TileType.SWITCH);
       this.setDirection(Direction.RIGHT);
     }//GEN-LAST:event_rightSwitchBtnActionPerformed
 
     private void leftSwitchBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftSwitchBtnActionPerformed
-      this.setTileType(TileType.SWITCH);
+      this.setTileType(TileBean.TileType.SWITCH);
       this.setDirection(Direction.LEFT);
     }//GEN-LAST:event_leftSwitchBtnActionPerformed
 
     private void signalBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_signalBtnActionPerformed
-      setTileType(TileType.SIGNAL);
+      setTileType(TileBean.TileType.SIGNAL);
     }//GEN-LAST:event_signalBtnActionPerformed
 
     private void sensorBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sensorBtnActionPerformed
-      setTileType(TileType.SENSOR);
+      setTileType(TileBean.TileType.SENSOR);
     }//GEN-LAST:event_sensorBtnActionPerformed
 
     private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
@@ -886,12 +887,12 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_formComponentResized
 
     private void crossLBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossLBtnActionPerformed
-      setTileType(TileType.CROSS);
+      setTileType(TileBean.TileType.CROSS);
       this.setDirection(Direction.LEFT);
     }//GEN-LAST:event_crossLBtnActionPerformed
 
     private void crossRBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossRBtnActionPerformed
-      setTileType(TileType.CROSS);
+      setTileType(TileBean.TileType.CROSS);
       this.setDirection(Direction.RIGHT);
     }//GEN-LAST:event_crossRBtnActionPerformed
 
@@ -918,24 +919,24 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_formComponentShown
 
   private void straightDirectionBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_straightDirectionBtnActionPerformed
-    setTileType(TileType.STRAIGHT_DIR);
+    setTileType(TileBean.TileType.STRAIGHT_DIR);
   }//GEN-LAST:event_straightDirectionBtnActionPerformed
 
   private void endTrackBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_endTrackBtnActionPerformed
-    setTileType(TileType.END);
+    setTileType(TileBean.TileType.END);
   }//GEN-LAST:event_endTrackBtnActionPerformed
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Enable Auto mode " + this.autoPilotBtn.isSelected());
-    
+
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start Auto mode " + this.autoPilotBtn.isSelected());
-    
+
   }//GEN-LAST:event_startAutoPilotBtnActionPerformed
 
-  private void setTileType(TileType tileType) {
+  private void setTileType(TileBean.TileType tileType) {
     this.canvas.setTileType(tileType);
   }
 

@@ -18,20 +18,21 @@ package jcs.entities;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import jcs.entities.enums.Orientation;
 import jcs.entities.enums.SignalType;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 
-@Table(name = "tiles", indexes = {
-  @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
+@Table(
+    name = "tiles",
+    indexes = {@Index(name = "tile_x_y", columnList = "x, y", unique = true)})
 public class TileBean implements Serializable, Comparable {
 
   protected String id;
@@ -54,15 +55,38 @@ public class TileBean implements Serializable, Comparable {
     this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
   }
 
-  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y) {
+  public TileBean(
+      String id,
+      TileType tileType,
+      Orientation orientation,
+      Direction direction,
+      Integer x,
+      Integer y) {
     this(id, tileType, orientation, direction, x, y, null, null, null);
   }
 
-  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, String accessoryId, String sensorId) {
+  public TileBean(
+      String id,
+      TileType tileType,
+      Orientation orientation,
+      Direction direction,
+      Point center,
+      SignalType signalType,
+      String accessoryId,
+      String sensorId) {
     this(id, tileType, orientation, direction, center.x, center.y, signalType, null, sensorId);
   }
 
-  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, String accessoryId, String sensorId) {
+  public TileBean(
+      String id,
+      TileType tileType,
+      Orientation orientation,
+      Direction direction,
+      Integer x,
+      Integer y,
+      SignalType signalType,
+      String accessoryId,
+      String sensorId) {
     this.id = id;
     this.setTileType(tileType);
     this.tileOrientation = orientation.getOrientation();
@@ -114,7 +138,7 @@ public class TileBean implements Serializable, Comparable {
   }
 
   @Transient
-  public TileType getTileType() {
+  public TileBean.TileType getTileType() {
     if (type != null) {
       return TileType.get(type);
     } else {
@@ -122,7 +146,7 @@ public class TileBean implements Serializable, Comparable {
     }
   }
 
-  public final void setTileType(TileType tileType) {
+  public final void setTileType(TileBean.TileType tileType) {
     this.type = tileType.getTileType();
   }
 
@@ -334,4 +358,101 @@ public class TileBean implements Serializable, Comparable {
     return toString();
   }
 
+  public enum TileType {
+    STRAIGHT("Straight"),
+    STRAIGHT_DIR("StraightDirection"),
+    CURVED("Curved"),
+    SWITCH("Switch"),
+    CROSS("Cross"),
+    SIGNAL("Signal"),
+    SENSOR("Sensor"),
+    BLOCK("Block"),
+    END("End");
+
+    private final String tileType;
+
+    private static final Map<String, TileType> ENUM_MAP;
+
+    TileType(String tileType) {
+      this.tileType = tileType;
+    }
+
+    public String getTileType() {
+      return this.tileType;
+    }
+
+    static {
+      Map<String, TileType> map = new ConcurrentHashMap<>();
+      for (TileType instance : TileType.values()) {
+        map.put(instance.getTileType(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static TileType get(String tileType) {
+      if (tileType == null) {
+        return null;
+      }
+      return ENUM_MAP.get(tileType);
+    }
+  }
+
+  public enum Orientation {
+    NORTH("North"),
+    SOUTH("South"),
+    EAST("East"),
+    WEST("West");
+
+    private final String orientation;
+    private static final Map<String, Orientation> ENUM_MAP;
+
+    Orientation(String orientation) {
+      this.orientation = orientation;
+    }
+
+    static {
+      Map<String, Orientation> map = new ConcurrentHashMap<>();
+      for (Orientation instance : Orientation.values()) {
+        map.put(instance.getOrientation(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public String getOrientation() {
+      return this.orientation;
+    }
+
+    public static Orientation get(String direction) {
+      return ENUM_MAP.get(direction);
+    }
+  }
+
+  public enum Direction {
+    RIGHT("Right"),
+    LEFT("Left"),
+    CENTER("Center");
+
+    private final String direction;
+    private static final Map<String, Direction> ENUM_MAP;
+
+    Direction(String direction) {
+      this.direction = direction;
+    }
+
+    static {
+      Map<String, Direction> map = new ConcurrentHashMap<>();
+      for (Direction instance : Direction.values()) {
+        map.put(instance.getDirection(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public String getDirection() {
+      return this.direction;
+    }
+
+    public static Direction get(String direction) {
+      return ENUM_MAP.get(direction);
+    }
+  }
 }

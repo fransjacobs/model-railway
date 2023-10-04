@@ -26,12 +26,6 @@ import jcs.controller.events.AccessoryEvent;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 
 public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
 
@@ -39,17 +33,17 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   protected AccessoryValue routeValue;
   protected Color routeColor;
 
-  public Switch(TileBean tileBean) {
+  Switch(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
   }
 
-  public Switch(Orientation orientation, Direction direction, int x, int y) {
+  Switch(Orientation orientation, Direction direction, int x, int y) {
     this(orientation, direction, new Point(x, y));
   }
 
-  public Switch(Orientation orientation, Direction direction, Point center) {
+  Switch(Orientation orientation, Direction direction, Point center) {
     super(orientation, direction, center.x, center.y);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
@@ -280,9 +274,9 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx, yy, w, h;
     xx = 0;
-    yy = 17;
-    w = DEFAULT_WIDTH;
-    h = 6;
+    yy = 175;
+    w = RENDER_WIDTH;
+    h = 50;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
@@ -292,14 +286,14 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   protected void renderDiagonal(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int[] xPoints, yPoints;
     if (Direction.RIGHT.equals(getDirection())) {
-      xPoints = new int[]{40, 40, 16, 24};
-      yPoints = new int[]{16, 24, 0, 0};
+      xPoints = new int[]{400, 400, 170, 230};
+      yPoints = new int[]{170, 230, 0, 0};
     } else {
-      xPoints = new int[]{40, 40, 16, 24};
-      yPoints = new int[]{24, 16, 40, 40};
+      xPoints = new int[]{400, 400, 170, 230};
+      yPoints = new int[]{230, 170, 400, 400};
     }
 
-    g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
@@ -347,7 +341,6 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
 
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    //if (this.getAccessoryBean() != null && this.getAccessoryId().equals(event.getAccessoryBean().getId())) {
     if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
       setValue(event.getAccessoryBean().getAccessoryValue());
       repaintTile();
@@ -373,4 +366,12 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     return switchDirection;
   }
 
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(getAccessoryValue());
+    sb.append("~");
+    sb.append(getRouteValue());
+    return sb.toString();
+  }
 }

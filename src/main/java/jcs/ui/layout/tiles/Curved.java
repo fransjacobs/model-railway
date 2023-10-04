@@ -22,25 +22,20 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
-import jcs.entities.enums.TileType;
 
 public class Curved extends AbstractTile implements Tile {
 
-  public Curved(TileBean tileBean) {
+  Curved(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
   }
 
-  public Curved(Orientation orientation, int x, int y) {
+  Curved(Orientation orientation, int x, int y) {
     this(orientation, new Point(x, y));
   }
 
-  public Curved(Orientation orientation, Point center) {
+  Curved(Orientation orientation, Point center) {
     super(orientation, center);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
@@ -115,14 +110,21 @@ public class Curved extends AbstractTile implements Tile {
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
     Graphics2D g2d = (Graphics2D) g2.create();
 
-    int[] xPoints = new int[]{40, 40, 16, 24};
-    int[] yPoints = new int[]{24, 16, 40, 40};
+    int[] xPoints = new int[]{400, 400, 170, 230};
+    int[] yPoints = new int[]{230, 170, 400, 400};
 
-    g2d.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2d.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2d.setPaint(trackColor);
 
     g2d.fillPolygon(xPoints, yPoints, xPoints.length);
+
     g2d.dispose();
+  }
+
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    return sb.toString();
   }
 
 }

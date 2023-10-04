@@ -25,22 +25,20 @@ import jcs.controller.events.SensorEvent;
 import jcs.controller.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import jcs.entities.enums.TileType;
 
 public class Sensor extends Straight implements SensorEventListener {
 
   private boolean active;
 
-  public Sensor(TileBean tileBean) {
+  Sensor(TileBean tileBean) {
     super(tileBean);
   }
 
-  public Sensor(Orientation orientation, int x, int y) {
+  Sensor(Orientation orientation, int x, int y) {
     this(orientation, new Point(x, y));
   }
 
-  public Sensor(Orientation orientation, Point center) {
+  Sensor(Orientation orientation, Point center) {
     super(orientation, center);
     this.type = TileType.SENSOR.getTileType();
   }
@@ -54,21 +52,21 @@ public class Sensor extends Straight implements SensorEventListener {
   }
 
   private void renderSensor(Graphics2D g2) {
-    int xx, yy; //, w, h;
-    xx = 13;
-    yy = 13;
+    int xx, yy;
+    xx = RENDER_GRID - 75;
+    yy = RENDER_GRID - 75;
 
     Point c = new Point(xx, yy);
-    float radius = 30;
+    float radius = 300;
     float[] dist = {0.0f, 0.6f};
 
     if (this.active) {
-      Color[] colors = {Color.red.brighter(), Color.white};
-      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
+      Color[] colors = {Color.red.brighter(), Color.red.darker()};
+      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.REFLECT);
       g2.setPaint(foreground);
     } else {
-      Color[] colors = {Color.green.darker(), Color.white};
-      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.NO_CYCLE);
+      Color[] colors = {Color.green.darker(), Color.green.brighter()};
+      RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.REFLECT);
       g2.setPaint(foreground);
     }
 
@@ -99,4 +97,10 @@ public class Sensor extends Straight implements SensorEventListener {
     return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", active: " + active + ", center: (" + x + "," + y + ")}";
   }
 
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(isActive() ? "y" : "n");
+    return sb.toString();
+  }
 }

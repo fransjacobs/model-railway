@@ -15,6 +15,9 @@
  */
 package jcs.ui.layout.tiles;
 
+import static jcs.entities.enums.AccessoryValue.GREEN;
+import static jcs.entities.enums.AccessoryValue.RED;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -26,14 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import static jcs.entities.enums.AccessoryValue.GREEN;
-import static jcs.entities.enums.AccessoryValue.RED;
-import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
-import jcs.entities.enums.TileType;
-import jcs.ui.layout.tiles.enums.Direction;
 
 public class Cross extends Switch implements Tile {
 
@@ -49,20 +44,26 @@ public class Cross extends Switch implements Tile {
   public static final Color LIGHT_GREEN = new Color(0, 255, 51);
   public static final Color DARK_GREEN = new Color(0, 153, 0);
 
-  public Cross(TileBean tileBean) {
+  Cross(TileBean tileBean) {
     super(tileBean);
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
       this.width = CROSS_WIDTH;
       this.height = DEFAULT_HEIGHT;
-      this.offsetX = Tile.GRID;
+      this.offsetX = GRID;
+      this.renderWidth = RENDER_GRID * 4;
+      this.renderHeight = RENDER_GRID * 2;
+      this.renderOffsetX = RENDER_GRID;
     } else {
       this.width = DEFAULT_WIDTH;
       this.height = CROSS_HEIGHT;
-      this.offsetY = Tile.GRID;
+      this.offsetY = GRID;
+      this.renderWidth = RENDER_GRID * 2;
+      this.renderHeight = RENDER_GRID * 4;
+      this.renderOffsetY = RENDER_GRID;
     }
   }
 
-  public Cross(Orientation orientation, Direction direction, int x, int y) {
+  Cross(Orientation orientation, Direction direction, int x, int y) {
     this(orientation, direction, new Point(x, y));
   }
 
@@ -76,18 +77,27 @@ public class Cross extends Switch implements Tile {
         this.offsetY = CROSS_OFFSET;
         this.width = DEFAULT_WIDTH;
         this.height = CROSS_HEIGHT;
+        this.renderWidth = RENDER_GRID * 2;
+        this.renderHeight = RENDER_GRID * 4;
+        this.renderOffsetY = RENDER_GRID;
       }
       case WEST -> {
         this.offsetX = -CROSS_OFFSET;
         this.offsetY = 0;
         this.width = CROSS_WIDTH;
         this.height = DEFAULT_HEIGHT;
+        this.renderWidth = RENDER_GRID * 4;
+        this.renderHeight = RENDER_GRID * 2;
+        this.renderOffsetX = -RENDER_GRID;
       }
       case NORTH -> {
         this.offsetX = 0;
         this.offsetY = -CROSS_OFFSET;
         this.width = DEFAULT_WIDTH;
         this.height = CROSS_HEIGHT;
+        this.renderWidth = RENDER_GRID * 2;
+        this.renderHeight = RENDER_GRID * 4;
+        this.renderOffsetY = -RENDER_GRID;
       }
       default -> {
         //East so default
@@ -95,6 +105,9 @@ public class Cross extends Switch implements Tile {
         this.offsetY = 0;
         this.width = CROSS_WIDTH;
         this.height = DEFAULT_HEIGHT;
+        this.renderWidth = RENDER_GRID * 4;
+        this.renderHeight = RENDER_GRID * 2;
+        this.renderOffsetX = +RENDER_GRID;
       }
     }
   }
@@ -386,9 +399,9 @@ public class Cross extends Switch implements Tile {
   protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx, yy, w, h;
     xx = 0;
-    yy = 17;
-    w = DEFAULT_WIDTH;
-    h = 6;
+    yy = 175;
+    w = RENDER_WIDTH;
+    h = 50;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
@@ -397,10 +410,10 @@ public class Cross extends Switch implements Tile {
 
   protected void renderStraight2(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx, yy, w, h;
-    xx = DEFAULT_WIDTH;
-    yy = 17;
-    w = DEFAULT_WIDTH;
-    h = 6;
+    xx = RENDER_WIDTH;
+    yy = 175;
+    w = RENDER_WIDTH;
+    h = 50;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
@@ -411,14 +424,14 @@ public class Cross extends Switch implements Tile {
   protected void renderDiagonal(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int[] xPoints, yPoints;
     if (Direction.RIGHT.equals(getDirection())) {
-      xPoints = new int[]{40, 40, 16, 24};
-      yPoints = new int[]{16, 24, 0, 0};
+      xPoints = new int[]{400, 400, 167, 230};
+      yPoints = new int[]{170, 230, 0, 0};
     } else {
-      xPoints = new int[]{40, 40, 16, 24};
-      yPoints = new int[]{24, 16, 40, 40};
+      xPoints = new int[]{400, 400, 170, 230};
+      yPoints = new int[]{230, 170, 400, 400};
     }
 
-    g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
@@ -426,14 +439,14 @@ public class Cross extends Switch implements Tile {
   protected void renderDiagonal2(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int[] xPoints, yPoints;
     if (Direction.RIGHT.equals(getDirection())) {
-      xPoints = new int[]{40, 40, 56, 64};
-      yPoints = new int[]{16, 24, 40, 40};
+      xPoints = new int[]{400, 400, 570, 630};
+      yPoints = new int[]{170, 230, 400, 400};
     } else {
-      xPoints = new int[]{40, 40, 56, 64};
-      yPoints = new int[]{24, 16, 0, 0};
+      xPoints = new int[]{400, 400, 570, 630};
+      yPoints = new int[]{230, 170, 0, 0};
     }
 
-    g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
@@ -488,6 +501,14 @@ public class Cross extends Switch implements Tile {
         }
       }
     }
+  }
 
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    sb.append(getAccessoryValue());
+    sb.append("~");
+    sb.append(getRouteValue());
+    return sb.toString();
   }
 }

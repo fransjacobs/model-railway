@@ -22,26 +22,21 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.entities.TileBean;
-import jcs.entities.enums.Orientation;
-import static jcs.entities.enums.Orientation.NORTH;
-import static jcs.entities.enums.Orientation.SOUTH;
-import static jcs.entities.enums.Orientation.WEST;
-import jcs.entities.enums.TileType;
 
 public class End extends AbstractTile implements Tile {
 
-  public End(TileBean tileBean) {
+  End(TileBean tileBean) {
     super(tileBean);
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
   }
 
-  public End(Orientation orientation, Point center) {
+  End(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
 
   }
 
-  public End(Orientation orientation, int x, int y) {
+  End(Orientation orientation, int x, int y) {
     super(orientation, x, y);
     this.type = TileType.END.getTileType();
     this.width = DEFAULT_WIDTH;
@@ -91,24 +86,23 @@ public class End extends AbstractTile implements Tile {
   protected void renderEnd(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx, yy, w, h;
     xx = 0;
-    yy = 17;
+    yy = 175;
 
-    w = GRID;
-    h = 6;
+    w = RENDER_GRID;
+    h = 50;
 
-    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+    g2.setStroke(new BasicStroke(40, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
     g2.fillRect(xx, yy, w, h);
 
-    xx = GRID;
-    yy = 10;
+    xx = RENDER_GRID;
+    yy = 100;
 
-    w = 5;
-    h = 20;
+    w = 30;
+    h = 200;
 
     g2.setPaint(Color.DARK_GRAY);
     g2.fillRect(xx, yy, w, h);
-
   }
 
   @Override
@@ -116,4 +110,9 @@ public class End extends AbstractTile implements Tile {
     renderEnd(g2, trackColor, backgroundColor);
   }
 
+  @Override
+  public String getImageKey() {
+    StringBuilder sb = getImageKeyBuilder();
+    return sb.toString();
+  }
 }
