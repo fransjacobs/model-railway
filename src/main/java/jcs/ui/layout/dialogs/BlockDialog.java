@@ -15,7 +15,10 @@
  */
 package jcs.ui.layout.dialogs;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
@@ -50,6 +53,20 @@ public class BlockDialog extends javax.swing.JDialog {
     postInit();
   }
 
+  private Set<String> getLinkedSensorIds() {
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    Set<String> linkedSensorIds = new HashSet<>();
+    for (BlockBean bb : blocks) {
+      if (bb.getPlusSensorId() != null) {
+        linkedSensorIds.add(bb.getPlusSensorId());
+      }
+      if (bb.getMinSensorId() != null) {
+        linkedSensorIds.add(bb.getMinSensorId());
+      }
+    }
+    return linkedSensorIds;
+  }
+
   private void postInit() {
     setLocationRelativeTo(null);
     String text = this.headingLbl.getText() + " " + this.block.getId();
@@ -57,28 +74,28 @@ public class BlockDialog extends javax.swing.JDialog {
 
     if (this.block != null) {
       //Get a list of all sensors
-      List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+      List<SensorBean> allSensors = PersistenceFactory.getService().getSensors();
+      List<SensorBean> freeSensors = new ArrayList<>();
+      // filter the list, remove sensors which are already linked to other blocks.
+      Set<String> linkedSensorIds = getLinkedSensorIds();
+
+      for (SensorBean sb : allSensors) {
+        if (!linkedSensorIds.contains(sb.getId())) {
+          freeSensors.add(sb);
+        }
+      }
+
       //Expand with an empty one for display
       SensorBean emptyBean = new SensorBean();
-      sensors.add(emptyBean);
-
-      plusSensorComboBoxModel = new DefaultComboBoxModel(sensors.toArray());
-      minSensorComboBoxModel = new DefaultComboBoxModel(sensors.toArray());
-
-      this.plusSensorCB.setModel(plusSensorComboBoxModel);
-      this.minSensorCB.setModel(minSensorComboBoxModel);
+      freeSensors.add(emptyBean);
 
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
         bb = new BlockBean();
         bb.setTile(block);
         bb.setTileId(this.block.getId());
-
         this.block.setBlockBean(bb);
       }
-
-      this.blockIdTF.setText(this.block.getId());
-      this.blockNameTF.setText(bb.getDescription());
 
       SensorBean plusSb, minSb;
       if (bb.getPlusSensorId() != null && bb.getPlusSensorBean() == null) {
@@ -94,6 +111,24 @@ public class BlockDialog extends javax.swing.JDialog {
       } else {
         minSb = bb.getMinSensorBean();
       }
+
+      if (bb.getPlusSensorBean() != null) {
+        //Add the used sensor also the the filtered list
+        freeSensors.add(bb.getPlusSensorBean());
+      }
+      if (bb.getMinSensorBean() != null) {
+        //Add the used sensor also the the filtered list
+        freeSensors.add(bb.getMinSensorBean());
+      }
+
+      plusSensorComboBoxModel = new DefaultComboBoxModel(freeSensors.toArray());
+      minSensorComboBoxModel = new DefaultComboBoxModel(freeSensors.toArray());
+
+      this.plusSensorCB.setModel(plusSensorComboBoxModel);
+      this.minSensorCB.setModel(minSensorComboBoxModel);
+
+      this.blockIdTF.setText(this.block.getId());
+      this.blockNameTF.setText(bb.getDescription());
 
       if (plusSb != null) {
         this.plusSensorComboBoxModel.setSelectedItem(plusSb);
@@ -264,6 +299,12 @@ public class BlockDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
       if (this.block != null && this.block.getBlockBean() != null) {
         BlockBean bb = this.block.getBlockBean();
+        //TODO, depends on future changes but for now
+        if (bb.getId() == null) {
+          //Can't be nulll and should be the same as the block
+          bb.setId(this.block.getId());
+        }
+
         PersistenceFactory.getService().persist(bb);
       }
 

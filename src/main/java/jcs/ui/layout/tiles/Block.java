@@ -58,9 +58,9 @@ public class Block extends AbstractTile implements Tile {
     this.blockBean = tileBean.getBlockBean();
   }
 
-//  Block(int x, int y) {
-//    this(Orientation.EAST, x, y);
-//  }
+  //  Block(int x, int y) {
+  //    this(Orientation.EAST, x, y);
+  //  }
   Block(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
@@ -109,25 +109,17 @@ public class Block extends AbstractTile implements Tile {
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST ->
-          new Point(cx - Tile.GRID * 2, cy);
-        case NORTH ->
-          new Point(cx, cy - Tile.GRID * 2);
-        case SOUTH ->
-          new Point(cx, cy + Tile.GRID * 2);
-        default ->
-          new Point(cx + Tile.GRID * 2, cy);
+        case WEST -> new Point(cx - Tile.GRID * 2, cy);
+        case NORTH -> new Point(cx, cy - Tile.GRID * 2);
+        case SOUTH -> new Point(cx, cy + Tile.GRID * 2);
+        default -> new Point(cx + Tile.GRID * 2, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST ->
-          new Point(cx - Tile.GRID * 2, cy);
-        case SOUTH ->
-          new Point(cx, cy - Tile.GRID * 2);
-        case NORTH ->
-          new Point(cx, cy + Tile.GRID * 2);
-        default ->
-          new Point(cx + Tile.GRID * 2, cy);
+        case EAST -> new Point(cx - Tile.GRID * 2, cy);
+        case SOUTH -> new Point(cx, cy - Tile.GRID * 2);
+        case NORTH -> new Point(cx, cy + Tile.GRID * 2);
+        default -> new Point(cx + Tile.GRID * 2, cy);
       };
     }
   }
@@ -180,25 +172,17 @@ public class Block extends AbstractTile implements Tile {
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST ->
-          new Point(cx - Tile.GRID * 4, cy);
-        case NORTH ->
-          new Point(cx, cy - Tile.GRID * 4);
-        case SOUTH ->
-          new Point(cx, cy + Tile.GRID * 4);
-        default ->
-          new Point(cx + Tile.GRID * 4, cy);
+        case WEST -> new Point(cx - Tile.GRID * 4, cy);
+        case NORTH -> new Point(cx, cy - Tile.GRID * 4);
+        case SOUTH -> new Point(cx, cy + Tile.GRID * 4);
+        default -> new Point(cx + Tile.GRID * 4, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST ->
-          new Point(cx - Tile.GRID * 4, cy);
-        case SOUTH ->
-          new Point(cx, cy - Tile.GRID * 4);
-        case NORTH ->
-          new Point(cx, cy + Tile.GRID * 4);
-        default ->
-          new Point(cx + Tile.GRID * 4, cy);
+        case EAST -> new Point(cx - Tile.GRID * 4, cy);
+        case SOUTH -> new Point(cx, cy - Tile.GRID * 4);
+        case NORTH -> new Point(cx, cy + Tile.GRID * 4);
+        default -> new Point(cx + Tile.GRID * 4, cy);
       };
     }
   }
@@ -208,14 +192,10 @@ public class Block extends AbstractTile implements Tile {
       return this.getOrientation();
     } else {
       return switch (this.getOrientation()) {
-        case EAST ->
-          Orientation.WEST;
-        case SOUTH ->
-          Orientation.NORTH;
-        case NORTH ->
-          Orientation.SOUTH;
-        default ->
-          Orientation.EAST;
+        case EAST -> Orientation.WEST;
+        case SOUTH -> Orientation.NORTH;
+        case NORTH -> Orientation.SOUTH;
+        default -> Orientation.EAST;
       };
     }
   }
@@ -314,15 +294,32 @@ public class Block extends AbstractTile implements Tile {
   public String getBlockText() {
     String blockText;
 
-    if (!drawOutline && getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
-      blockText = getBlockBean().getLocomotive().getName();
+    if (!drawOutline && getBlockBean() != null && getBlockBean().getDescription() != null) {
+      boolean locInBlock = false;
+      if (getBlockBean().getLocomotive() != null
+          && getBlockBean().getLocomotive().getName() != null) {
+        blockText = getBlockBean().getLocomotive().getName();
+        locInBlock = true;
+      } else {
+        if (getBlockBean().getDescription().length() > 0) {
+          blockText = getBlockBean().getDescription();
+        } else {
+          blockText = getId();
+        }
+      }
+
       boolean reverseArrival = this.getBlockBean().isReverseArrival();
 
-      String direction
-              = (jcs.entities.enums.Direction.FORWARDS
-              == this.getBlockBean().getLocomotive().getDirection()
-              ? ">"
-              : "<");
+      String direction;
+      if (locInBlock) {
+        direction =
+            (jcs.entities.enums.Direction.FORWARDS
+                    == this.getBlockBean().getLocomotive().getDirection()
+                ? ">"
+                : "<");
+      } else {
+        direction = "";
+      }
 
       // Depending on the arrival direction the direction is to the - or +
       // The default is always the + direction
@@ -357,7 +354,14 @@ public class Block extends AbstractTile implements Tile {
         }
       }
     } else {
-      blockText = getId();
+      // Design mode show description when available
+      if (getBlockBean() != null
+          && getBlockBean().getDescription() != null
+          && getBlockBean().getDescription().length() > 0) {
+        blockText = getBlockBean().getDescription();
+      } else {
+        blockText = getId();
+      }
     }
     return blockText;
   }
@@ -387,35 +391,35 @@ public class Block extends AbstractTile implements Tile {
     switch (getOrientation()) {
       case EAST -> {
         drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-                RENDER_GRID + textHeight / 3,
-                0,
-                blockText);
+            g2d,
+            ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+            RENDER_GRID + textHeight / 3,
+            0,
+            blockText);
       }
       case WEST -> {
         drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-                RENDER_GRID - textHeight / 3,
-                180,
-                blockText);
+            g2d,
+            ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+            RENDER_GRID - textHeight / 3,
+            180,
+            blockText);
       }
       case NORTH -> {
         drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-                RENDER_GRID + textHeight / 3,
-                0,
-                blockText);
+            g2d,
+            ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+            RENDER_GRID + textHeight / 3,
+            0,
+            blockText);
       }
       case SOUTH -> {
         drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-                RENDER_GRID - textHeight / 3,
-                180,
-                blockText);
+            g2d,
+            ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+            RENDER_GRID - textHeight / 3,
+            180,
+            blockText);
       }
     }
 
