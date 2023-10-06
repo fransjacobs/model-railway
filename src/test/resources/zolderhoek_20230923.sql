@@ -7,7 +7,6 @@ delete from accessories;
 
 commit;
 
-
 INSERT INTO jcs.accessories (id,address,name,"type","position",states,switch_time,decoder_type,decoder,accessory_group,icon,icon_file,imported) VALUES
 	 ('15',15,'S 15','lichtsignal_SH01',0,NULL,200,'mm2','ein_alt',NULL,NULL,NULL,NULL),
 	 ('16',16,'S 16','lichtsignal_SH01',1,NULL,200,'mm2','ein_alt',NULL,NULL,NULL,NULL),
@@ -411,5 +410,29 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('st-49','Straight','South','Center',980,100,NULL,NULL,NULL),
 	 ('st-86','Straight','West','Center',820,700,NULL,NULL,NULL),
 	 ('se-44','Sensor','West','Center',780,740,NULL,NULL,'65-15');
+
+commit;
+
+
+INSERT INTO jcs.blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,reverse_arrival_side) VALUES
+	 ('bk-1','bk-1','Blok 1','65-1007','65-1008',NULL,NULL,16408,false),
+	 ('bk-4','bk-4','Wildpark 5B','65-1012','65-2031',NULL,NULL,NULL,false),
+	 ('bk-5','bk-5','Wildpark 5A','65-1011','65-2032',NULL,NULL,NULL,false),
+	 ('bk-6','bk-6','Spoor 4','65-2015','65-2008',NULL,NULL,NULL,false),
+	 ('bk-7','bk-7','Spoor 3','65-2013','65-2006',NULL,NULL,NULL,false),
+	 ('bk-8','bk-8','Spoor 2','65-2011','65-2004',NULL,NULL,NULL,false),
+	 ('bk-9','bk-9','Spoor 1','65-2009','65-2002',NULL,NULL,NULL,false),
+	 ('bk-10','bk-10','Station Straat','65-2025','65-1003',NULL,NULL,NULL,false),
+	 ('bk-11','bk-11','','65-2','65-1',NULL,NULL,NULL,false),
+	 ('bk-12','bk-12','','65-1014','65-1013',NULL,NULL,NULL,false);
+INSERT INTO jcs.blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,reverse_arrival_side) VALUES
+	 ('bk-13','bk-13','Schaduw Spoor 4','65-3','65-8',NULL,NULL,NULL,false),
+	 ('bk-14','bk-14','Schaduw Spoor 3','65-4','65-9',NULL,NULL,NULL,false),
+	 ('bk-16','bk-16','Schaduw Spoor 2','65-5','65-13',NULL,NULL,NULL,false),
+	 ('bk-17','bk-17','Schaduw Spoor 1','65-14','65-7',NULL,NULL,NULL,false),
+	 ('bk-15','bk-15','','65-1002','65-2022',NULL,NULL,NULL,false),
+	 ('bk-18','bk-18','','65-2017','65-1004',NULL,NULL,NULL,false),
+	 ('bk-2','bk-2','','65-1015','65-1009',NULL,NULL,NULL,false),
+	 ('bk-3','bk-3','','65-2019','65-1001',NULL,NULL,NULL,false);
 
 commit;
