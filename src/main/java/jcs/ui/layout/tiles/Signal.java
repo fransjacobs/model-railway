@@ -15,15 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import static jcs.entities.enums.SignalType.HP012;
-import static jcs.entities.enums.SignalType.HP012SH1;
-import static jcs.entities.enums.SignalType.HP0SH1;
-import static jcs.entities.enums.SignalValue.Hp0;
-import static jcs.entities.enums.SignalValue.Hp0Sh1;
-import static jcs.entities.enums.SignalValue.Hp1;
-import static jcs.entities.enums.SignalValue.Hp2;
-import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -34,7 +25,15 @@ import jcs.controller.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
 import jcs.entities.enums.SignalType;
+import static jcs.entities.enums.SignalType.HP012;
+import static jcs.entities.enums.SignalType.HP012SH1;
+import static jcs.entities.enums.SignalType.HP0SH1;
 import jcs.entities.enums.SignalValue;
+import static jcs.entities.enums.SignalValue.Hp0;
+import static jcs.entities.enums.SignalValue.Hp0Sh1;
+import static jcs.entities.enums.SignalValue.Hp1;
+import static jcs.entities.enums.SignalValue.Hp2;
+import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 
 public class Signal extends Straight implements Tile, AccessoryEventListener {
 
@@ -275,43 +274,38 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
    * @param g2d the Graphics context
    */
   protected void renderSignal2m(Graphics2D g2d) {
-    int rx = RENDER_GRID + 50;
-    int ry = RENDER_GRID + 50;
-    int rw = 120;
-    int rh = 120;
-
-    int[] xps
+     int[] xps
             = new int[]{
-              RENDER_GRID + 100,
-              +RENDER_GRID + 140,
-              +RENDER_GRID + 160,
-              RENDER_GRID + 160,
-              +RENDER_GRID + 140,
-              RENDER_GRID + 100
+              RENDER_GRID + 80,
+              +RENDER_GRID + 150,
+              +RENDER_GRID + 170,
+              RENDER_GRID + 170,
+              +RENDER_GRID + 150,
+              RENDER_GRID + 80
             };
     int[] yps
             = new int[]{
+              RENDER_GRID + 60,
+              RENDER_GRID + 60,
               RENDER_GRID + 80,
-              RENDER_GRID + 80,
-              RENDER_GRID + 100,
-              +RENDER_GRID + 140,
               +RENDER_GRID + 160,
-              RENDER_GRID + 160
+              +RENDER_GRID + 180,
+              RENDER_GRID + 180
             };
 
     Polygon signalOutline = new Polygon(xps, yps, xps.length);
 
     int c1x = RENDER_GRID + 130;
-    int c1y = RENDER_GRID + 87;
+    int c1y = RENDER_GRID + 70;
 
     int c2x = RENDER_GRID + 130;
-    int c2y = RENDER_GRID + 138;
+    int c2y = RENDER_GRID + 140;
 
     int c3x = RENDER_GRID + 130;
-    int c3y = RENDER_GRID + 112;
+    int c3y = RENDER_GRID + 105;
 
-    int c4x = RENDER_GRID + 105;
-    int c4y = RENDER_GRID + 87;
+    int c4x = RENDER_GRID + 85;
+    int c4y = RENDER_GRID + 70;
 
     Color color1 = Color.gray;
     Color color2 = Color.gray;
@@ -341,16 +335,16 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     g2d.fillPolygon(signalOutline);
 
     g2d.setPaint(color1);
-    g2d.fillOval(c1x, c1y, 15, 15);
+    g2d.fillOval(c1x, c1y, 30, 30);
 
     g2d.setPaint(color2);
-    g2d.fillOval(c2x, c2y, 15, 15);
+    g2d.fillOval(c2x, c2y, 30, 30);
 
     g2d.setPaint(color3);
-    g2d.fillOval(c3x, c3y, 15, 15);
+    g2d.fillOval(c3x, c3y, 30, 30);
 
     g2d.setPaint(color4);
-    g2d.fillOval(c4x, c4y, 15, 15);
+    g2d.fillOval(c4x, c4y, 30, 30);
   }
 
   @Override
