@@ -23,8 +23,8 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import jcs.entities.enums.SignalType;
 import org.tinylog.Logger;
 
 /**
@@ -42,7 +42,7 @@ public class UnScaledTileTester extends JFrame {
     super(title);
 
     //tileEast = new Straight1(Orientation.EAST, 250, 250);
-    //tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
+    tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
     // ((Signal) tileEast).setSignalValue(SignalValue.Hp0);
     //tileEast = new Curved(Orientation.EAST, 250, 250);
     //tileEast = new Sensor(Orientation.EAST, 250, 250);
@@ -50,7 +50,7 @@ public class UnScaledTileTester extends JFrame {
 
     //tileEast = new End(Orientation.EAST, 250, 250);
     
-     tileEast = new Cross(Orientation.EAST, Direction.RIGHT, 250, 250);
+     //tileEast = new Cross(Orientation.EAST, Direction.RIGHT, 250, 250);
 
 //    tileSouth = new Straight1(Orientation.SOUTH, 160, 60);
 //    tileWest = new Straight1(Orientation.WEST, 250, 60);

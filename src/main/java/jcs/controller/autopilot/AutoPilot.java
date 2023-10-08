@@ -15,6 +15,7 @@
  */
 package jcs.controller.autopilot;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import jcs.entities.BlockBean;
@@ -39,6 +40,21 @@ public class AutoPilot {
     List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
 
     Logger.trace("There are " + occupiedBlocks.size() + " occupied blocks");
+    
+    List<LocomotiveBean> activeLocomotives = new ArrayList<>();
+    for(BlockBean occupiedBlock : occupiedBlocks) {
+      activeLocomotives.add(occupiedBlock.getLocomotive());
+    }
+    
+    if(Logger.isDebugEnabled()) {
+      Logger.debug("There are "+activeLocomotives.size()+" Active Locomotives: ");
+      for(LocomotiveBean loc : activeLocomotives) {
+        Logger.debug(loc);
+      }
+    }
+    
+    //For each locomotive we need to start a State machine Thread
+    
 
     return null;
   }
