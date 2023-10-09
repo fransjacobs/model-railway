@@ -274,7 +274,7 @@ public class AStar {
   }
 
   public static void main(String[] a) {
-    List<Tile> tiles = TileFactory.convert(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
 
     AStar gb = new AStar();
     gb.buildGraph(tiles);

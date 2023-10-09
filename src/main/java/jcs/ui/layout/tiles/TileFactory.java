@@ -23,6 +23,7 @@ import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.TileType.STRAIGHT;
 import org.tinylog.Logger;
 
 /**
@@ -37,6 +38,7 @@ public class TileFactory {
 
   // Keep the records of the used id sequence number
   private static int straightIdSeq;
+  private static int crossingIdSeq;
   private static int curvedIdSeq;
   private static int switchIdSeq;
   private static int crossIdSeq;
@@ -46,17 +48,21 @@ public class TileFactory {
   private static int straightDirectionIdSeq;
   private static int endIdSeq;
 
-  private static int getIdSeq(String id) {
+  private static int nextIdSeq(String id) {
     String idnr = id.substring(3);
     int idSeq = Integer.parseInt(idnr);
     return idSeq;
   }
 
-  private static String getTileId(TileBean.TileType tileType) {
+  private static String nextTileId(TileBean.TileType tileType) {
     switch (tileType) {
       case STRAIGHT -> {
         straightIdSeq++;
         return "st-" + straightIdSeq;
+      }
+      case CROSSING -> {
+        crossingIdSeq++;
+        return "cr-" + crossingIdSeq;
       }
       case CURVED -> {
         curvedIdSeq++;
@@ -97,7 +103,7 @@ public class TileFactory {
     }
   }
 
-  private static int getHeighestIdSeq(int currentId, int newId) {
+  private static int maxIdSeq(int currentId, int newId) {
     if (currentId < newId) {
       return newId;
     } else {
@@ -115,26 +121,30 @@ public class TileFactory {
     switch (tileType) {
       case STRAIGHT -> {
         tile = new Straight(tileBean);
-        straightIdSeq = getHeighestIdSeq(straightIdSeq, getIdSeq(tileBean.getId()));
+        straightIdSeq = maxIdSeq(straightIdSeq, nextIdSeq(tileBean.getId()));
+      }
+      case CROSSING -> {
+        tile = new Crossing(tileBean);
+        crossingIdSeq = maxIdSeq(crossingIdSeq, nextIdSeq(tileBean.getId()));
       }
       case CURVED -> {
         tile = new Curved(tileBean);
-        curvedIdSeq = getHeighestIdSeq(curvedIdSeq, getIdSeq(tileBean.getId()));
+        curvedIdSeq = maxIdSeq(curvedIdSeq, nextIdSeq(tileBean.getId()));
       }
       case SWITCH -> {
         tile = new Switch(tileBean);
-        switchIdSeq = getHeighestIdSeq(switchIdSeq, getIdSeq(tileBean.getId()));
+        switchIdSeq = maxIdSeq(switchIdSeq, nextIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Switch) tile).setValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
       }
       case CROSS -> {
         tile = new Cross(tileBean);
-        crossIdSeq = getHeighestIdSeq(crossIdSeq, getIdSeq(tileBean.getId()));
+        crossIdSeq = maxIdSeq(crossIdSeq, nextIdSeq(tileBean.getId()));
       }
       case SIGNAL -> {
         tile = new Signal(tileBean);
-        signalIdSeq = getHeighestIdSeq(signalIdSeq, getIdSeq(tileBean.getId()));
+        signalIdSeq = maxIdSeq(signalIdSeq, nextIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile)
                   .setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
@@ -142,23 +152,23 @@ public class TileFactory {
       }
       case SENSOR -> {
         tile = new Sensor(tileBean);
-        sensorIdSeq = getHeighestIdSeq(sensorIdSeq, getIdSeq(tileBean.getId()));
+        sensorIdSeq = maxIdSeq(sensorIdSeq, nextIdSeq(tileBean.getId()));
         if (showValues && tileBean.getSensorBean() != null) {
           ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
         }
       }
       case BLOCK -> {
         tile = new Block(tileBean);
-        blockIdSeq = getHeighestIdSeq(blockIdSeq, getIdSeq(tileBean.getId()));
+        blockIdSeq = maxIdSeq(blockIdSeq, nextIdSeq(tileBean.getId()));
       }
       case STRAIGHT_DIR -> {
         tile = new StraightDirection(tileBean);
         straightDirectionIdSeq
-                = getHeighestIdSeq(straightDirectionIdSeq, getIdSeq(tileBean.getId()));
+                = maxIdSeq(straightDirectionIdSeq, nextIdSeq(tileBean.getId()));
       }
       case END -> {
         tile = new End(tileBean);
-        endIdSeq = getHeighestIdSeq(endIdSeq, getIdSeq(tileBean.getId()));
+        endIdSeq = maxIdSeq(endIdSeq, nextIdSeq(tileBean.getId()));
       }
       default ->
         Logger.warn("Unknown Tile Type " + tileType);
@@ -213,6 +223,9 @@ public class TileFactory {
       case STRAIGHT -> {
         tile = new Straight(orientation, center);
       }
+      case CROSSING -> {
+        tile = new Crossing(orientation, center);
+      }
       case CURVED ->
         tile = new Curved(orientation, center);
       case SWITCH ->
@@ -235,13 +248,13 @@ public class TileFactory {
 
     if (tile != null) {
       tile.setDrawOutline(drawOutline);
-      tile.setId(getTileId(tileType));
+      tile.setId(nextTileId(tileType));
     }
 
     return (Tile) tile;
   }
 
-  public static List<Tile> convert(
+  public static List<Tile> toTiles(
           List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
     List<Tile> tiles = new LinkedList<>();
 

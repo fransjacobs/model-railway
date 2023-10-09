@@ -24,7 +24,6 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.TileBean.Orientation;
-import jcs.entities.enums.SignalType;
 import org.tinylog.Logger;
 
 /**
@@ -42,7 +41,7 @@ public class UnScaledTileTester extends JFrame {
     super(title);
 
     //tileEast = new Straight1(Orientation.EAST, 250, 250);
-    tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
+    //tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
     // ((Signal) tileEast).setSignalValue(SignalValue.Hp0);
     //tileEast = new Curved(Orientation.EAST, 250, 250);
     //tileEast = new Sensor(Orientation.EAST, 250, 250);
@@ -52,10 +51,14 @@ public class UnScaledTileTester extends JFrame {
     
      //tileEast = new Cross(Orientation.EAST, Direction.RIGHT, 250, 250);
 
+     tileEast = new Crossing(Orientation.EAST, 250, 250);
+
 //    tileSouth = new Straight1(Orientation.SOUTH, 160, 60);
 //    tileWest = new Straight1(Orientation.WEST, 250, 60);
 //    tileNorth = new Straight1(Orientation.NORTH, 340, 60);
-    ((AbstractTile) tileEast).setScaleImage(false);
+
+
+((AbstractTile) tileEast).setScaleImage(false);
 
   }
 
@@ -96,7 +99,8 @@ public class UnScaledTileTester extends JFrame {
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     //app.pack();
-    app.setSize(1000, 500);
+    app.setSize(500, 500);
+    //app.setSize(1000, 500);
 
     app.setLocation(
             dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
