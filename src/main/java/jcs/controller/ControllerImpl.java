@@ -34,37 +34,35 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
-
 import jcs.JCS;
+import jcs.controller.cs.MarklinCentralStation;
+import jcs.controller.events.AccessoryEvent;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEvent;
+import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEvent;
+import jcs.controller.events.LocomotiveFunctionEventListener;
+import jcs.controller.events.LocomotiveSpeedEvent;
+import jcs.controller.events.LocomotiveSpeedEventListener;
+import jcs.controller.events.MeasurementEvent;
+import jcs.controller.events.MeasurementEventListener;
+import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEvent;
-import jcs.entities.SensorBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Direction;
+import jcs.controller.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
-import org.tinylog.Logger;
-import jcs.controller.events.AccessoryEvent;
-import jcs.controller.events.LocomotiveDirectionEvent;
-import jcs.controller.events.LocomotiveFunctionEvent;
-import jcs.controller.events.LocomotiveSpeedEvent;
-import jcs.persistence.PersistenceFactory;
-import jcs.controller.events.AccessoryEventListener;
-import jcs.controller.events.PowerEventListener;
-import jcs.controller.events.SensorEventListener;
-import jcs.controller.events.LocomotiveFunctionEventListener;
-import jcs.controller.events.LocomotiveDirectionEventListener;
-import jcs.controller.events.LocomotiveSpeedEventListener;
-import jcs.controller.cs.MarklinCentralStation;
-import jcs.controller.events.MeasurementEvent;
-import jcs.controller.events.MeasurementEventListener;
 import jcs.entities.MeasurementChannel;
+import jcs.entities.SensorBean;
+import jcs.entities.enums.AccessoryValue;
+import jcs.entities.enums.Direction;
+import jcs.persistence.PersistenceFactory;
+import org.tinylog.Logger;
 
 /**
- * The Controller Implementation is the implementation of the Controller Interface. Its purpose is to serve as an abstraction layer for Controllers so that in the future more Controllers can be
- * implemented
+ * The Command Station Controller HAL Implementation
  */
-public class ControllerImpl implements Controller {
+public class ControllerImpl implements CommandStation {
 
   private MarklinCentralStation centralStation;
 
@@ -78,7 +76,7 @@ public class ControllerImpl implements Controller {
   private final List<MeasurementEventListener> measurementEventListeners;
 
   public ControllerImpl() {
-    this("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true")));
+    this("true".equalsIgnoreCase(System.getProperty("skip.controller.autoconnect", "true")));
   }
 
   private ControllerImpl(boolean autoConnectController) {
@@ -92,6 +90,8 @@ public class ControllerImpl implements Controller {
     if (autoConnectController) {
       connect();
       Logger.trace(centralStation != null ? "Aquired " + centralStation.getClass().getSimpleName() : "Could not aquire a Vendor Controller Service! " + (centralStation.isConnected() ? "Connected" : "NOT Connected"));
+    } else {
+      Logger.trace("Auto Connect disabled");
     }
   }
 
@@ -120,12 +120,12 @@ public class ControllerImpl implements Controller {
       this.centralStation.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
     }
 
-    //TODO implement get the day end i.e. the current stata of all Objects on track
+    //TODO implement get the day end i.e. the current state of all Objects on track
     JCS.logProgress("Obtaining the last state of all items...");
 
     if (this.centralStation != null && this.centralStation.isConnected()) {
       //Start the measurments backgrount task
-      TrackMesausementTask measurementTask = new TrackMesausementTask(this);
+      TrackMeasusementTask measurementTask = new TrackMeasusementTask(this);
       Timer timer = new Timer("Timer");
 
       long delay = 5000L;
@@ -454,11 +454,11 @@ public class ControllerImpl implements Controller {
     this.measurementEventListeners.remove(listener);
   }
 
-  private class TrackMesausementTask extends TimerTask {
+  private class TrackMeasusementTask extends TimerTask {
 
     private final ControllerImpl Controller;
 
-    TrackMesausementTask(ControllerImpl Controller) {
+    TrackMeasusementTask(ControllerImpl Controller) {
       this.Controller = Controller;
     }
 

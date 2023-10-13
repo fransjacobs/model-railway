@@ -41,7 +41,7 @@ import javax.swing.text.BadLocationException;
 import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs3.events.CanMessageEvent;
 import jcs.controller.cs3.events.CanMessageListener;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.ui.widgets.FeedbackPanel;
 import jcs.ui.widgets.SwitchPanel;
 import org.tinylog.Logger;
@@ -61,7 +61,7 @@ public class ControllerPanel extends JPanel {
   }
 
   void registerListeners() {
-    if (ControllerFactory.getController() != null) {
+    if (CommandStationFactory.getCommandStation() != null) {
       this.csModule1Panel.registerSensorListeners();
       this.csModule2Panel.registerSensorListeners();
       this.csModule3Panel.registerSensorListeners();
@@ -86,7 +86,7 @@ public class ControllerPanel extends JPanel {
   }
 
   void removeListeners() {
-    if (ControllerFactory.getController() != null) {
+    if (CommandStationFactory.getCommandStation() != null) {
       this.csModule1Panel.removeSensorListeners();
       this.csModule2Panel.removeSensorListeners();
       this.csModule3Panel.removeSensorListeners();
@@ -113,10 +113,10 @@ public class ControllerPanel extends JPanel {
   
   //TODO !
   private void postInit() {
-    //Find the number of feedback modules from the Controller LinkS88 busses
-//    if (ControllerFactory.getTrackController() != null && ControllerFactory.getTrackController().getLinkSxx() != null) {
+    //Find the number of feedback modules from the CommandStation LinkS88 busses
+//    if (CommandStationFactory.getTrackController() != null && CommandStationFactory.getTrackController().getLinkSxx() != null) {
 // 
-//      LinkSxx linkSxx = ControllerFactory.getTrackController().getLinkSxx();
+//      LinkSxx linkSxx = CommandStationFactory.getTrackController().getLinkSxx();
 //      int deviceId = linkSxx.getDeviceId();
 //      //For now support only a max of 4 modules per bus, which
 //      //should be sufficient for most tracks ;)

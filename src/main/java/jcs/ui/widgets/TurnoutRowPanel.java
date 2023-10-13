@@ -27,7 +27,7 @@ import jcs.entities.enums.AccessoryValue;
 import static jcs.entities.enums.AccessoryValue.GREEN;
 import static jcs.entities.enums.AccessoryValue.RED;
 import jcs.controller.events.AccessoryEvent;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
@@ -208,9 +208,9 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
     if (this.turnout != null) {
       switch (value) {
         case RED ->
-          ControllerFactory.getController().switchAccessory(AccessoryValue.RED, turnout);
+          CommandStationFactory.getCommandStation().switchAccessory(AccessoryValue.RED, turnout);
         case GREEN ->
-          ControllerFactory.getController().switchAccessory(AccessoryValue.GREEN, turnout);
+          CommandStationFactory.getCommandStation().switchAccessory(AccessoryValue.GREEN, turnout);
       }
     }
   }
@@ -250,7 +250,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
       TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
       f.add(signalRowPanel);
 
-      ControllerFactory.getController().addAccessoryEventListener(signalRowPanel);
+      CommandStationFactory.getCommandStation().addAccessoryEventListener(signalRowPanel);
 
     }
 

@@ -29,7 +29,7 @@ import jcs.controller.events.LocomotiveFunctionEvent;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.controller.events.LocomotiveFunctionEventListener;
 import org.tinylog.Logger;
 
@@ -87,8 +87,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     buttons.put(31, f31TB);
     
     setEnabled(false);
-    if (ControllerFactory.getController() != null) {
-      ControllerFactory.getController().addLocomotiveFunctionEventListener(this);
+    if (CommandStationFactory.getCommandStation() != null) {
+      CommandStationFactory.getCommandStation().addLocomotiveFunctionEventListener(this);
     }
   }
   
@@ -181,12 +181,12 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   }
   
   private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
-    if (ControllerFactory.getController() != null && this.locomotive != null) {
+    if (CommandStationFactory.getCommandStation() != null && this.locomotive != null) {
       FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " new Value: " + newValue + " Momentary: " + fb.isMomentary());
       
-      if (ControllerFactory.getController() != null) {
-        ControllerFactory.getController().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
+      if (CommandStationFactory.getCommandStation() != null) {
+        CommandStationFactory.getCommandStation().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
       }
       if (fb.isMomentary() && newValue) {
         JToggleButton tb = this.buttons.get(fb.getNumber());
@@ -872,10 +872,10 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       testFrame.pack();
       testFrame.setLocationRelativeTo(null);
       
-      if (ControllerFactory.getController() != null) {
+      if (CommandStationFactory.getCommandStation() != null) {
 
-        //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16390));
-        //LocomotiveBean loc = ControllerFactory.getTrackService().getLocomotive(new BigDecimal(16394));
+        //LocomotiveBean loc = CommandStationFactory.getTrackService().getLocomotive(new BigDecimal(16390));
+        //LocomotiveBean loc = CommandStationFactory.getTrackService().getLocomotive(new BigDecimal(16394));
         LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16394L);
         Logger.debug(loc);
         

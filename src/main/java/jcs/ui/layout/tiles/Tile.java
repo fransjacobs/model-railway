@@ -54,7 +54,7 @@ public interface Tile extends Shape {
   String getId();
 
   void setId(String id);
-  
+
   String getImageKey();
 
   void drawTile(Graphics2D g2d, boolean drawOutline);
@@ -172,6 +172,8 @@ public interface Tile extends Shape {
 
   boolean isDirectional();
 
+  boolean isCrossing();
+
   Map<Orientation, Point> getNeighborPoints();
 
   Map<Point, Orientation> getNeighborOrientations();
@@ -191,8 +193,7 @@ public interface Tile extends Shape {
   AccessoryValue getSwitchValueTo(Tile other);
 
   /**
-   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central"
-   * point. From the switch side a Green or Red path is possible.
+   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the switch side of the Turnout
@@ -200,8 +201,7 @@ public interface Tile extends Shape {
   boolean isSwitchSide(Tile other);
 
   /**
-   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the
-   * diverging side a Red path is possible.
+   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the diverging side of the Turnout
@@ -209,8 +209,7 @@ public interface Tile extends Shape {
   boolean isDivergingSide(Tile other);
 
   /**
-   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the
-   * Straight side a Green path is possible.
+   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
    *
    * @param other A Tile
    * @return true when other is connected to the straight side of the Turnout
@@ -218,8 +217,7 @@ public interface Tile extends Shape {
   boolean isStraightSide(Tile other);
 
   /**
-   * When the tile has a specific direction a train may travel then this method will indicate
-   * whether the other tile is in on the side where the arrow is pointing to
+   * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
    *
    * @param other A Tile
    * @return true where other is on the side of this tile where the arrow points to

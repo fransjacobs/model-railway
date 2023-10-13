@@ -15,11 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -42,8 +37,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.enums.AccessoryValue;
 import jcs.ui.layout.LayoutUtil;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
@@ -707,7 +706,12 @@ abstract class AbstractTile extends TileBean implements Tile {
   public boolean isDiagonal() {
     return TileType.CURVED == getTileType();
   }
-
+  
+  @Override
+  public boolean isCrossing() {
+    return TileType.CROSSING == getTileType();
+  }
+    
   public List<TileBean> getNeighbours() {
     return neighbours;
   }
@@ -831,6 +835,17 @@ abstract class AbstractTile extends TileBean implements Tile {
     sb.append("~");
     sb.append(isDrawOutline() ? "y" : "n");
     sb.append("~");
+    int r = this.backgroundColor.getRed();
+    int g = this.backgroundColor.getGreen();
+    int b = this.backgroundColor.getBlue();
+    sb.append("#");
+    sb.append(r);
+    sb.append("#");
+    sb.append(g);
+    sb.append("#");
+    sb.append(b);
+    sb.append("~");
+    
     //Tile specific properties
     //AccessoryValue
     //SignalType

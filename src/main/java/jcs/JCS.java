@@ -25,15 +25,15 @@ import jcs.controller.events.PowerEvent;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.MacOsAdapter;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
-import jcs.controller.Controller;
 import jcs.controller.events.PowerEventListener;
+import jcs.controller.CommandStation;
 
 /**
  *
@@ -45,7 +45,7 @@ public class JCS extends Thread {
   private static JCS instance = null;
   private static JCSSplash splashScreen;
   private static PersistenceService persistentStore;
-  private static Controller trackController;
+  private static CommandStation trackController;
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
@@ -110,7 +110,7 @@ public class JCS extends Thread {
 
     });
 
-//    if (!ControllerFactory.getController().isConnected()) {
+//    if (!CommandStationFactory.getCommandStation().isConnected()) {
 //      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
 //        jcsFrame.connect(true);
 //      }
@@ -198,7 +198,7 @@ public class JCS extends Thread {
     persistentStore = PersistenceFactory.getService();
     if (persistentStore != null) {
       logProgress("Aquire Track Controller...");
-      trackController = ControllerFactory.getController();
+      trackController = CommandStationFactory.getCommandStation();
       if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect"))) {
         if (trackController != null) {
           boolean connected = trackController.connect();

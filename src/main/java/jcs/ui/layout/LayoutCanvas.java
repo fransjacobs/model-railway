@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout;
 
-import jcs.ui.layout.tiles.Tile;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -45,19 +44,19 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import jcs.controller.CommandStationFactory;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.controller.ControllerFactory;
-import jcs.controller.events.AccessoryEventListener;
-import jcs.controller.events.SensorEventListener;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.enums.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
@@ -69,6 +68,7 @@ import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
+import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
@@ -149,10 +149,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Set<Tile> snapshot;
     Map<String, RouteElementBean> routeSnapshot;
 
-    synchronized (tiles) {
+    //synchronized (tiles) {
       snapshot = new HashSet<>(tiles.values());
       routeSnapshot = new HashMap<>(this.selectedRouteElements);
-    }
+    //}
 
     if (this.drawGrid) {
       //paintDotGrid(g);
@@ -166,7 +166,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         tile.setDrawOutline(drawGrid);
 
         if (selectedTiles.contains(tile.getCenter())) {
-          tile.setBackgroundColor(Color.yellow);
+          //tile.setBackgroundColor(Color.yellow);
+          tile.setBackgroundColor(Color.orange);
         } else {
           tile.setBackgroundColor(Color.white);
         }
@@ -367,11 +368,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     return direction;
   }
 
-  public void loadLayout() {
+  public void loadLayoutInBackground() {
     this.executor.execute(() -> loadTiles());
   }
 
-  private void loadTiles() {
+  public void loadTiles() {
     boolean showValues = Mode.CONTROL.equals(this.mode);
 
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
@@ -386,11 +387,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       switch (tile.getTileType()) {
         case SENSOR ->
-          ControllerFactory.getController().addSensorEventListener((SensorEventListener) tile);
+          CommandStationFactory.getCommandStation().addSensorEventListener((SensorEventListener) tile);
         case SWITCH ->
-          ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
+          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
-          ControllerFactory.getController().addAccessoryEventListener((AccessoryEventListener) tile);
+          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
 
         default -> {
           //Do nothing
@@ -566,17 +567,15 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
 
   private void formMouseClicked(MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
-    Logger.trace("@ (" + evt.getX() + "," + evt.getY() + ") button " + evt.getButton() + " " + evt.paramString());
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
-    Logger.trace("Snapped (" + p.getX() + "," + p.getY() + ") Grid Tile: " + LayoutUtil.getGridX(evt.getX()) + "," + LayoutUtil.getGridY(evt.getY()) + " Current Mode: " + this.mode);
-
+    Logger.trace("(" + evt.getX() + "," + evt.getY() + ") Snapped (" + p.getX() + "," + p.getY() + ") button " + evt.getButton() + " " + evt.paramString());
+    //Logger.trace("Snapped (" + p.getX() + "," + p.getY() + ") Grid Tile: " + LayoutUtil.getGridX(evt.getX()) + "," + LayoutUtil.getGridY(evt.getY()) + " Current Mode: " + this.mode);
     Tile tile = this.findTile(p);
 
-    //Always make a new selection
     this.selectedTiles.clear();
     if (MouseEvent.BUTTON1 == evt.getButton() || MouseEvent.BUTTON3 == evt.getButton()) {
       if (tile != null) {
-        Logger.trace("selecting " + tile + " @ " + p);
+        Logger.trace("Selecting " + tile + " @ " + p);
         this.selectedTiles.addAll(tile.getAllPoints());
       }
     }
@@ -644,7 +643,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
-      ControllerFactory.getController().switchAccessory(ab.getAccessoryValue(), ab);
+      CommandStationFactory.getCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
@@ -656,7 +655,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       ab.toggle();
       Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
 
-      ControllerFactory.getController().switchAccessory(ab.getAccessoryValue(), ab);
+      CommandStationFactory.getCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }

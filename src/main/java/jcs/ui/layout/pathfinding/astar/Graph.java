@@ -9,6 +9,11 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.EAST;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 import org.tinylog.Logger;
 
 public class Graph {
@@ -47,6 +52,11 @@ public class Graph {
     if (from == null || to == null) {
       return false;
     }
+    if (from.getPreviousNode() != null && from.getPreviousNode().equals(to)) {
+      //Skip going around...
+      //Logger.trace("Skip from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+      return false;
+    }
 
     if (from.getPreviousNode() != null && from.getTile().isJunction()) {
       //Check is the full path is possible
@@ -79,6 +89,34 @@ public class Graph {
       boolean isToOnArrowSide = from.getTile().isArrowDirection(to.getTile());
       //Logger.trace("From " + from.getId() + " to: " + to.getId() + " isToOnArrowSide: " + isToOnArrowSide);
       return from.getTile().isAdjacent(to.getTile()) && isToOnArrowSide;
+    } else if (from.getPreviousNode() != null && from.isCrossing()) {
+      //Find the edge connection point between the previous and the from node
+      Set<Point> prevPoints = from.getPreviousNode().getEdgePoints();
+      Point prevFromPoint = null;
+      for (Point p : prevPoints) {
+        if (from.getEdgePoints().contains(p)) {
+          prevFromPoint = p;
+          break;
+        }
+      }
+
+      //find the connection edge point on the opposite side
+      Orientation prevFromOrientation = from.getTile().getEdgeOrientations().get(prevFromPoint);
+      Orientation toConnectingEdgeOrientation = null;
+      switch (prevFromOrientation) {
+        case WEST ->
+          toConnectingEdgeOrientation = Orientation.EAST;
+        case EAST ->
+          toConnectingEdgeOrientation = Orientation.WEST;
+        case NORTH ->
+          toConnectingEdgeOrientation = Orientation.SOUTH;
+        case SOUTH ->
+          toConnectingEdgeOrientation = Orientation.NORTH;
+      }
+
+      Point toConnectingEdgePoint = from.getTile().getEdgePoints().get(toConnectingEdgeOrientation);
+      //Check if the to has this edgepoint
+      return to.getEdgePoints().contains(toConnectingEdgePoint);
     } else {
       return from.getTile().isAdjacent(to.getTile());
     }
@@ -136,7 +174,7 @@ public class Graph {
 
     while (!activeNodes.isEmpty()) {
       Node current = activeNodes.poll();
-      //Logger.trace("Polled " + current.getId() + " from activeNodes. Size: " + activeNodes.size());
+      Logger.trace("Polled " + current.getId() + " from activeNodes. Size: " + activeNodes.size());
 
       if (current == destination) {
         current.setSuffix(destSuffix);
@@ -153,6 +191,11 @@ public class Graph {
       } else {
         currentEdges = current.getEdges();
       }
+
+      Logger.trace("Current " + current.getId() + " has " + currentEdges.size() + " edges...");
+      //for (Edge edge : currentEdges) {
+      //  Logger.trace("Cur: "+current.getId()+" ->"+edge);
+      //}
 
       for (Edge edge : currentEdges) {
         Node neighbor = edge.getOpposite(current);

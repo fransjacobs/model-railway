@@ -47,7 +47,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.ui.options.table.TurnoutTableModel;
 import org.tinylog.Logger;
 
@@ -503,7 +503,7 @@ public class TurnoutPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    ControllerFactory.getController().synchronizeTurnoutsWithController();
+    CommandStationFactory.getCommandStation().synchronizeTurnoutsWithController();
     refresh();
   }
 

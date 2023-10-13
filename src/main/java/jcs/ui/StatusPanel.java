@@ -20,7 +20,7 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.controller.events.MeasurementEvent;
 import jcs.controller.events.MeasurementEventListener;
 import org.tinylog.Logger;
@@ -40,8 +40,8 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   }
 
   private void postInit() {
-    if (ControllerFactory.getController() != null) {
-      ControllerFactory.getController().addMeasurementEventListener(this);
+    if (CommandStationFactory.getCommandStation() != null) {
+      CommandStationFactory.getCommandStation().addMeasurementEventListener(this);
     }
   }
 

@@ -24,7 +24,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.JCS;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.ui.options.table.SensorTableModel;
 import org.tinylog.Logger;
 
@@ -157,16 +157,16 @@ public class FeedbackMonitor extends JFrame {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-      if (ControllerFactory.getController() != null) {
-        ControllerFactory.getController().removeSensorEventListener(sensorTableModel);
+      if (CommandStationFactory.getCommandStation() != null) {
+        CommandStationFactory.getCommandStation().removeSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Removed sensor listener");
       }
       this.sensorTableModel.clear();
     }//GEN-LAST:event_formWindowClosed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-      if (ControllerFactory.getController() != null) {
-        ControllerFactory.getController().addSensorEventListener(sensorTableModel);
+      if (CommandStationFactory.getCommandStation() != null) {
+        CommandStationFactory.getCommandStation().addSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Added sensor listener");
       }
     }//GEN-LAST:event_formWindowActivated

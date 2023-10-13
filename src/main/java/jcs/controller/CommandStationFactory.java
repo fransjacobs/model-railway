@@ -27,49 +27,48 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class ControllerFactory {
+public class CommandStationFactory {
 
-  private Controller controller;
-  private static ControllerFactory instance;
+  private CommandStation controller;
+  private static CommandStationFactory instance;
 
-  private ControllerFactory() {
+  private CommandStationFactory() {
   }
 
-  public static ControllerFactory getInstance() {
+  public static CommandStationFactory getInstance() {
     if (instance == null) {
-      instance = new ControllerFactory();
-      instance.aquireControllerImpl();
+      instance = new CommandStationFactory();
+      instance.aquireCommandStationImpl();
     }
     return instance;
   }
 
-  public static Controller getController() {
-    return ControllerFactory.getInstance().getTrackControllerImpl();
+  public static CommandStation getCommandStation() {
+    return CommandStationFactory.getInstance().getCommandStationImpl();
   }
 
-  private Controller getTrackControllerImpl() {
+  private CommandStation getCommandStationImpl() {
     return controller;
   }
 
-  private boolean aquireControllerImpl() {
+  private boolean aquireCommandStationImpl() {
     RunUtil.loadProperties();
     loadPersistentJCSProperties();
     //Load the external properties
     RunUtil.loadExternalProperties();
+    String commandStationImplClassName = System.getProperty("controller");
 
-    String controllerImplClassName = System.getProperty("controller");
+    Logger.trace("Try to instantiate: " + commandStationImplClassName);
 
-    Logger.trace("Try to instantiate: " + controllerImplClassName);
-
-    if (controllerImplClassName != null) {
+    if (commandStationImplClassName != null) {
       try {
-        this.controller = (Controller) Class.forName(controllerImplClassName).getDeclaredConstructor().newInstance();
+        this.controller = (CommandStation) Class.forName(commandStationImplClassName).getDeclaredConstructor().newInstance();
       } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-        Logger.error("Can't instantiate a '" + controllerImplClassName + "' " + ex.getMessage());
+        Logger.error("Can't instantiate a '" + commandStationImplClassName + "' " + ex.getMessage());
         Logger.trace(ex);
       }
     } else {
-      Logger.error("Cant find implementation class for 'controller'!");
+      Logger.error("Can't find implementation class for 'controller'!");
     }
 
     if (controller != null) {

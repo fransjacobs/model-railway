@@ -15,11 +15,8 @@
  */
 package jcs.controller.cs;
 
-import jcs.entities.MeasurementChannel;
-import jcs.entities.Device;
 import java.awt.Image;
 import java.util.Date;
-import jcs.controller.events.SensorEvent;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,46 +25,48 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import jcs.JCS;
-import jcs.controller.cs2.AccessoryBeanParser;
-import jcs.controller.cs2.LocomotiveBeanParser;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Direction;
-import jcs.entities.enums.DecoderType;
-import jcs.controller.cs3.FunctionSvgToPngConverter;
-import jcs.entities.AccessoryBean;
-import jcs.entities.LocomotiveBean;
-import org.tinylog.Logger;
 import jcs.controller.cs.can.CanMessage;
 import jcs.controller.cs.can.CanMessageFactory;
 import static jcs.controller.cs.can.CanMessageFactory.getStatusDataConfigResponse;
-import jcs.controller.cs2.ChannelDataParser;
 import jcs.controller.cs.can.parser.MessageInflator;
 import jcs.controller.cs.can.parser.SystemStatus;
-import jcs.controller.cs.net.CSConnection;
-import jcs.controller.cs.net.HTTPConnection;
-import jcs.controller.cs.net.CSConnectionFactory;
-import jcs.controller.events.PowerEvent;
-import jcs.controller.cs3.DeviceJSONParser;
-
-import jcs.controller.events.LocomotiveDirectionEvent;
-import jcs.controller.events.LocomotiveFunctionEvent;
-import jcs.controller.cs3.AccessoryJSONParser;
-import jcs.controller.events.LocomotiveSpeedEvent;
-import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.AccessoryListener;
-import jcs.controller.events.AccessoryEvent;
-import jcs.util.ByteUtil;
+import jcs.controller.cs.events.CanPingListener;
 import jcs.controller.cs.events.FeedbackListener;
 import jcs.controller.cs.events.LocomotiveListener;
 import jcs.controller.cs.events.SystemListener;
+import jcs.controller.cs.net.CSConnection;
+import jcs.controller.cs.net.CSConnectionFactory;
+import jcs.controller.cs.net.HTTPConnection;
+import jcs.controller.cs2.AccessoryBeanParser;
+import jcs.controller.cs2.ChannelDataParser;
+import jcs.controller.cs2.LocomotiveBeanParser;
+import jcs.controller.cs3.AccessoryJSONParser;
+import jcs.controller.cs3.DeviceJSONParser;
+import jcs.controller.cs3.FunctionSvgToPngConverter;
 import jcs.controller.cs3.LocomotiveBeanJSONParser;
+import jcs.controller.events.AccessoryEvent;
 import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEvent;
 import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEvent;
 import jcs.controller.events.LocomotiveFunctionEventListener;
-import jcs.controller.events.PowerEventListener;
-import jcs.controller.events.SensorEventListener;
+import jcs.controller.events.LocomotiveSpeedEvent;
 import jcs.controller.events.LocomotiveSpeedEventListener;
+import jcs.controller.events.PowerEvent;
+import jcs.controller.events.PowerEventListener;
+import jcs.controller.events.SensorEvent;
+import jcs.controller.events.SensorEventListener;
+import jcs.entities.AccessoryBean;
+import jcs.entities.Device;
+import jcs.entities.LocomotiveBean;
+import jcs.entities.MeasurementChannel;
+import jcs.entities.enums.AccessoryValue;
+import jcs.entities.enums.DecoderType;
+import jcs.entities.enums.Direction;
+import jcs.util.ByteUtil;
 import jcs.util.RunUtil;
+import org.tinylog.Logger;
 
 /**
  *
@@ -102,16 +101,13 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private int defaultSwitchTime;
 
   public MarklinCentralStationImpl() {
-    this(true);
+    this(System.getProperty("skip.controller.autoconnect","true").equalsIgnoreCase("true"));
   }
 
   private MarklinCentralStationImpl(boolean autoConnect) {
     devices = new HashMap<>();
-
     measurementChannels = new HashMap<>();
-
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-
     defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
 
     powerEventListeners = new LinkedList<>();
@@ -202,7 +198,6 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
           }
         }
         Logger.trace("Connected: " + connected + " Default Accessory SwitchTime: " + this.defaultSwitchTime);
-
       } else {
         Logger.warn("Can't connect with Central Station!");
         JCS.logProgress("Can't connect with Central Station!");

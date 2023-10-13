@@ -34,7 +34,7 @@ import jcs.controller.events.SensorEventListener;
  *
  * @author frans
  */
-public interface Controller {
+public interface CommandStation {
 
   void switchPower(boolean on);
 

@@ -26,7 +26,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
 import jcs.controller.events.AccessoryEvent;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
@@ -264,9 +264,9 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
   }
 
   private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
-    if (ControllerFactory.getController() != null) {
+    if (CommandStationFactory.getCommandStation() != null) {
       //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
-      ControllerFactory.getController().switchAccessory(value, signal);
+      CommandStationFactory.getCommandStation().switchAccessory(value, signal);
     }
   }
 
@@ -304,7 +304,7 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
       SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
       f.add(signalRowPanel);
 
-      ControllerFactory.getController().addAccessoryEventListener(signalRowPanel);
+      CommandStationFactory.getCommandStation().addAccessoryEventListener(signalRowPanel);
     }
 
     f.pack();

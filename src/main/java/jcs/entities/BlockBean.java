@@ -48,6 +48,7 @@ public class BlockBean {
     this.tileBean = tileBean;
     if (tileBean != null) {
       this.tileId = tileBean.getId();
+      this.id = tileBean.getId();
     }
   }
 

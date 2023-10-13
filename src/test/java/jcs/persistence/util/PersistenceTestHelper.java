@@ -83,18 +83,24 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
     Logger.debug("Inserted Simple Layout Direction Test data...");
   }
 
+  public void runTestDataInsertScript(String scriptName) {
+    URL url = PersistenceTestHelper.class.getClassLoader().getResource(scriptName);
+    String f = url.getFile();
+    executeSQLScript(f);
+    H2DatabaseUtil.setProperties(true);
+    Logger.debug("Executed script: " + scriptName);
+  }
+
   public static void main(String[] a) {
     //createDatabaseUsers(true);
-
     //createDatabase();
     PersistenceTestHelper pth = getInstance();
 
     pth.insertTestData();
 
     pth.insertSimpleLayoutTestData();
-    
-    pth.insertSimpleLayoutDirectionTestData();
 
+    pth.insertSimpleLayoutDirectionTestData();
     //recreateTest();
   }
 }

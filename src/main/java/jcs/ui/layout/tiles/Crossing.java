@@ -45,43 +45,33 @@ public class Crossing extends Straight implements Tile {
   @Override
   public Map<Orientation, Point> getNeighborPoints() {
     Map<Orientation, Point> neighbors = new HashMap<>();
-    Orientation orientation = this.getOrientation();
     int cx = this.getCenterX();
     int cy = this.getCenterY();
 
-    //TODO
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      // Horizontal
-      neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
-      neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
-    } else {
-      // Vertical
-      neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
-      neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
-    }
+    // Horizontal
+    neighbors.put(Orientation.EAST, new Point(cx + Tile.GRID * 2, cy));
+    neighbors.put(Orientation.WEST, new Point(cx - Tile.GRID * 2, cy));
+    // Vertical
+    neighbors.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID * 2));
+    neighbors.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID * 2));
     return neighbors;
   }
 
   @Override
   public Map<Orientation, Point> getEdgePoints() {
     Map<Orientation, Point> edgeConnections = new HashMap<>();
-    Orientation orientation = this.getOrientation();
     int cx = this.getCenterX();
     int cy = this.getCenterY();
 
-    //TODO
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      // Horizontal
-      edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
-      edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
-    } else {
-      // Vertical
-      edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
-      edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
-    }
+    // Horizontal
+    edgeConnections.put(Orientation.EAST, new Point(cx + Tile.GRID, cy));
+    edgeConnections.put(Orientation.WEST, new Point(cx - Tile.GRID, cy));
+    // Vertical
+    edgeConnections.put(Orientation.NORTH, new Point(cx, cy - Tile.GRID));
+    edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
     return edgeConnections;
   }
-
+  
   protected void renderVerticalAndDividers(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xxn, yyn, xxs, yys, w, h;
     xxn = 175;

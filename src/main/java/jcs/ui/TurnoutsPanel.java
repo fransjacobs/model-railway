@@ -22,7 +22,7 @@ import java.awt.GridLayout;
 import java.util.Collections;
 import java.util.List;
 import jcs.entities.AccessoryBean;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.ui.widgets.TurnoutRowPanel;
 import org.tinylog.Logger;
 
@@ -45,11 +45,11 @@ public class TurnoutsPanel extends javax.swing.JPanel {
     }
 
     public void refreshPanel() {
-        if (ControllerFactory.getController() == null) {
+        if (CommandStationFactory.getCommandStation() == null) {
             return;
         }
         //stub
-        List<AccessoryBean> turnouts = Collections.EMPTY_LIST; // ControllerFactory.getTrackService().getSwitches();
+        List<AccessoryBean> turnouts = Collections.EMPTY_LIST; // CommandStationFactory.getTrackService().getSwitches();
 
         Logger.trace("There are " + turnouts.size() + " turnouts...");
 
@@ -70,7 +70,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
             }
 
             this.add(turnoutRowPanel);
-            ControllerFactory.getController().addAccessoryEventListener(turnoutRowPanel);
+            CommandStationFactory.getCommandStation().addAccessoryEventListener(turnoutRowPanel);
         }
         GridLayout gl = new GridLayout(rows, cols);
         this.setLayout(gl);

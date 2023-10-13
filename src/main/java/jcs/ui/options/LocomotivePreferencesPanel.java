@@ -48,7 +48,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.controller.ControllerFactory;
+import jcs.controller.CommandStationFactory;
 import jcs.ui.options.table.LocomotiveTableModel;
 import org.tinylog.Logger;
 
@@ -474,7 +474,7 @@ public class LocomotivePreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    ControllerFactory.getController().synchronizeLocomotivesWithController(null);
+    CommandStationFactory.getCommandStation().synchronizeLocomotivesWithController(null);
 
     refresh();
   }

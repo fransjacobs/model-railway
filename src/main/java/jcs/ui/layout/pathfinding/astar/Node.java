@@ -18,11 +18,13 @@ package jcs.ui.layout.pathfinding.astar;
 import java.awt.Point;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jcs.entities.TileBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 public class Node implements Comparable<Node> {
@@ -91,6 +93,38 @@ public class Node implements Comparable<Node> {
 
   public boolean isDirectional() {
     return this.tile.isDirectional();
+  }
+
+  public boolean isCrossing() {
+    return this.tile.isCrossing();
+  }
+
+  public boolean isHorizontal() {
+    return this.tile.isHorizontal();
+  }
+
+  public Set<Point> getEdgePoints() {
+    return new HashSet<>(this.tile.getEdgePoints().values());
+  }
+
+  public Set<Point> getHorizontalEdgePoints() {
+    Set<Point> hp = new HashSet<>();
+    Map<TileBean.Orientation, Point> edgePoints = this.tile.getEdgePoints();
+    hp.add(edgePoints.get(TileBean.Orientation.EAST));
+    hp.add(edgePoints.get(TileBean.Orientation.WEST));
+    return hp;
+  }
+
+  public boolean isVertical() {
+    return this.tile.isVertical();
+  }
+
+  public Set<Point> getVerticalEdgePoints() {
+    Set<Point> vp = new HashSet<>();
+    Map<TileBean.Orientation, Point> edgePoints = this.tile.getEdgePoints();
+    vp.add(edgePoints.get(TileBean.Orientation.NORTH));
+    vp.add(edgePoints.get(TileBean.Orientation.SOUTH));
+    return vp;
   }
 
   public double getG() {
