@@ -47,6 +47,10 @@ public interface Tile extends Shape {
 
   void setTrackColor(Color trackColor);
 
+  //Color getTrackRouteColor();
+
+  void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
+
   Color getBackgroundColor();
 
   void setBackgroundColor(Color backgroundColor);

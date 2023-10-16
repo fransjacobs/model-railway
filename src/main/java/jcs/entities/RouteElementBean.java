@@ -35,6 +35,9 @@ public class RouteElementBean implements Serializable {
   private String tileId;
   private String accessoryState;
   private Integer elementOrder;
+  private String incomingSide;
+
+  private TileBean tileBean;
 
   public RouteElementBean() {
   }
@@ -117,6 +120,41 @@ public class RouteElementBean implements Serializable {
     this.elementOrder = elementOrder;
   }
 
+  @Column(name = "incoming_side", length = 255)
+  public String getIncomingSide() {
+    return incomingSide;
+  }
+
+  public void setIncomingSide(String incomingSide) {
+    this.incomingSide = incomingSide;
+  }
+
+  @Transient
+  public TileBean.Orientation getIncomingOrientation() {
+    if (incomingSide != null) {
+      return TileBean.Orientation.get(this.incomingSide);
+    } else {
+      return null;
+    }
+  }
+
+  public void setIncomingOrientation(TileBean.Orientation orientation) {
+    if (orientation != null) {
+      this.incomingSide = orientation.getOrientation();
+    } else {
+      this.incomingSide = null;
+    }
+  }
+
+  @Transient
+  public TileBean getTileBean() {
+    return tileBean;
+  }
+
+  public void setTileBean(TileBean tileBean) {
+    this.tileBean = tileBean;
+  }
+
   @Override
   public int hashCode() {
     int hash = 3;
@@ -126,6 +164,7 @@ public class RouteElementBean implements Serializable {
     hash = 23 * hash + Objects.hashCode(this.tileId);
     hash = 23 * hash + Objects.hashCode(this.accessoryState);
     hash = 23 * hash + Objects.hashCode(this.elementOrder);
+    hash = 23 * hash + Objects.hashCode(this.incomingSide);
     return hash;
   }
 
@@ -141,6 +180,9 @@ public class RouteElementBean implements Serializable {
       return false;
     }
     final RouteElementBean other = (RouteElementBean) obj;
+    if (!Objects.equals(this.incomingSide, other.incomingSide)) {
+      return false;
+    }
     if (!Objects.equals(this.elementOrder, other.elementOrder)) {
       return false;
     }
@@ -161,7 +203,7 @@ public class RouteElementBean implements Serializable {
 
   @Override
   public String toString() {
-    return "RouteElement{id=" + id + ", routeId=" + routeId + ", nodeId=" + nodeId + ", tileId=" + tileId + ", accessoryValue=" + accessoryState + ", elementOrder=" + elementOrder + "}";
+    return "RouteElement{id=" + id + ", routeId=" + routeId + ", nodeId=" + nodeId + ", tileId=" + tileId + ", accessoryValue=" + accessoryState + ", elementOrder=" + elementOrder + ", incomingSide=" + incomingSide + "}";
   }
 
   public String toLogString() {

@@ -80,13 +80,12 @@ public class RoutesDialog extends javax.swing.JDialog {
     }
   }
 
-  private void loadRoutes() {
+  void loadRoutes() {
     this.routes.clear();
     this.routes.addAll(PersistenceFactory.getService().getRoutes());
     String[] listData = new String[routes.size()];
 
     for (int i = 0; i < listData.length; i++) {
-      //TODO
       listData[i] = routes.get(i).getId() + "";
     }
     this.routeList.setListData(listData);

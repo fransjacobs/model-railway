@@ -15,10 +15,25 @@
  */
 package jcs.ui.layout;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import jcs.JCS;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
@@ -158,83 +173,83 @@ public class LayoutPanel extends JPanel {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    straightPopupMenu = new javax.swing.JPopupMenu();
-    verticalMI = new javax.swing.JMenuItem();
-    horizontalMI = new javax.swing.JMenuItem();
-    curvedPopupMenu = new javax.swing.JPopupMenu();
-    rightMI = new javax.swing.JMenuItem();
-    leftMI = new javax.swing.JMenuItem();
-    operationsPM = new javax.swing.JPopupMenu();
-    xyMI = new javax.swing.JMenuItem();
-    propertiesMI = new javax.swing.JMenuItem();
-    rotateMI = new javax.swing.JMenuItem();
-    flipHorizontalMI = new javax.swing.JMenuItem();
-    flipVerticalMI = new javax.swing.JMenuItem();
-    moveMI = new javax.swing.JMenuItem();
-    deleteMI = new javax.swing.JMenuItem();
-    tileBtnGroup = new javax.swing.ButtonGroup();
-    topPanel = new javax.swing.JPanel();
-    toolBar = new javax.swing.JToolBar();
-    saveBtn = new javax.swing.JButton();
-    loadBtn = new javax.swing.JButton();
-    repaintBtn = new javax.swing.JButton();
-    routeBtn = new javax.swing.JButton();
-    autoPilotBtn = new javax.swing.JToggleButton();
-    startAutoPilotBtn = new javax.swing.JToggleButton();
-    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
-    selectBtn = new javax.swing.JButton();
-    addBtn = new javax.swing.JButton();
-    deleteBtn = new javax.swing.JButton();
-    filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
-    gridBtn = new javax.swing.JToggleButton();
-    filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
-    straightBtn = new javax.swing.JToggleButton();
-    curvedBtn = new javax.swing.JToggleButton();
-    blockBtn = new javax.swing.JToggleButton();
-    sensorBtn = new javax.swing.JToggleButton();
-    signalBtn = new javax.swing.JToggleButton();
-    leftSwitchBtn = new javax.swing.JToggleButton();
-    rightSwitchBtn = new javax.swing.JToggleButton();
-    crossLBtn = new javax.swing.JToggleButton();
-    crossRBtn = new javax.swing.JToggleButton();
-    straightDirectionBtn = new javax.swing.JToggleButton();
-    endTrackBtn = new javax.swing.JToggleButton();
-    crossingBtn = new javax.swing.JToggleButton();
-    filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
-    moveBtn = new javax.swing.JButton();
-    flipVerticalBtn = new javax.swing.JButton();
-    flipHorizontalBtn = new javax.swing.JButton();
-    rotateBtn = new javax.swing.JButton();
-    canvasScrollPane = new javax.swing.JScrollPane();
+    straightPopupMenu = new JPopupMenu();
+    verticalMI = new JMenuItem();
+    horizontalMI = new JMenuItem();
+    curvedPopupMenu = new JPopupMenu();
+    rightMI = new JMenuItem();
+    leftMI = new JMenuItem();
+    operationsPM = new JPopupMenu();
+    xyMI = new JMenuItem();
+    propertiesMI = new JMenuItem();
+    rotateMI = new JMenuItem();
+    flipHorizontalMI = new JMenuItem();
+    flipVerticalMI = new JMenuItem();
+    moveMI = new JMenuItem();
+    deleteMI = new JMenuItem();
+    tileBtnGroup = new ButtonGroup();
+    topPanel = new JPanel();
+    toolBar = new JToolBar();
+    saveBtn = new JButton();
+    loadBtn = new JButton();
+    repaintBtn = new JButton();
+    routeBtn = new JButton();
+    autoPilotBtn = new JToggleButton();
+    startAutoPilotBtn = new JToggleButton();
+    filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    selectBtn = new JButton();
+    addBtn = new JButton();
+    deleteBtn = new JButton();
+    filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    gridBtn = new JToggleButton();
+    filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    straightBtn = new JToggleButton();
+    curvedBtn = new JToggleButton();
+    blockBtn = new JToggleButton();
+    sensorBtn = new JToggleButton();
+    signalBtn = new JToggleButton();
+    leftSwitchBtn = new JToggleButton();
+    rightSwitchBtn = new JToggleButton();
+    crossLBtn = new JToggleButton();
+    crossRBtn = new JToggleButton();
+    straightDirectionBtn = new JToggleButton();
+    endTrackBtn = new JToggleButton();
+    crossingBtn = new JToggleButton();
+    filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    moveBtn = new JButton();
+    flipVerticalBtn = new JButton();
+    flipHorizontalBtn = new JButton();
+    rotateBtn = new JButton();
+    canvasScrollPane = new JScrollPane();
     canvas = new LayoutCanvas(this.readonly);
 
     verticalMI.setText("Vertical");
-    verticalMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    verticalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         verticalMIActionPerformed(evt);
       }
     });
     straightPopupMenu.add(verticalMI);
 
     horizontalMI.setText("Horizontal");
-    horizontalMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    horizontalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         horizontalMIActionPerformed(evt);
       }
     });
     straightPopupMenu.add(horizontalMI);
 
     rightMI.setText("Right");
-    rightMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    rightMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         rightMIActionPerformed(evt);
       }
     });
     curvedPopupMenu.add(rightMI);
 
     leftMI.setText("Left");
-    leftMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    leftMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         leftMIActionPerformed(evt);
       }
     });
@@ -244,230 +259,230 @@ public class LayoutPanel extends JPanel {
     operationsPM.add(xyMI);
 
     propertiesMI.setText("Properties");
-    propertiesMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    propertiesMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         propertiesMIActionPerformed(evt);
       }
     });
     operationsPM.add(propertiesMI);
 
     rotateMI.setText("Rotate");
-    rotateMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    rotateMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         rotateMIActionPerformed(evt);
       }
     });
     operationsPM.add(rotateMI);
 
     flipHorizontalMI.setText("Flip Horizontal");
-    flipHorizontalMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    flipHorizontalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         flipHorizontalMIActionPerformed(evt);
       }
     });
     operationsPM.add(flipHorizontalMI);
 
     flipVerticalMI.setText("Flip Vertical");
-    flipVerticalMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    flipVerticalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         flipVerticalMIActionPerformed(evt);
       }
     });
     operationsPM.add(flipVerticalMI);
 
     moveMI.setText("Move");
-    moveMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    moveMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         moveMIActionPerformed(evt);
       }
     });
     operationsPM.add(moveMI);
 
     deleteMI.setText("Delete");
-    deleteMI.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    deleteMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         deleteMIActionPerformed(evt);
       }
     });
     operationsPM.add(deleteMI);
 
-    setMinimumSize(new java.awt.Dimension(1000, 160));
+    setMinimumSize(new Dimension(1000, 160));
     setOpaque(false);
-    setPreferredSize(new java.awt.Dimension(1400, 900));
-    addComponentListener(new java.awt.event.ComponentAdapter() {
-      public void componentHidden(java.awt.event.ComponentEvent evt) {
+    setPreferredSize(new Dimension(1400, 900));
+    addComponentListener(new ComponentAdapter() {
+      public void componentHidden(ComponentEvent evt) {
         formComponentHidden(evt);
       }
-      public void componentResized(java.awt.event.ComponentEvent evt) {
+      public void componentResized(ComponentEvent evt) {
         formComponentResized(evt);
       }
-      public void componentShown(java.awt.event.ComponentEvent evt) {
+      public void componentShown(ComponentEvent evt) {
         formComponentShown(evt);
       }
     });
-    setLayout(new java.awt.BorderLayout());
+    setLayout(new BorderLayout());
 
-    topPanel.setMaximumSize(new java.awt.Dimension(32767, 50));
-    topPanel.setMinimumSize(new java.awt.Dimension(1000, 50));
-    topPanel.setPreferredSize(new java.awt.Dimension(1000, 50));
-    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    topPanel.setMaximumSize(new Dimension(32767, 50));
+    topPanel.setMinimumSize(new Dimension(1000, 50));
+    topPanel.setPreferredSize(new Dimension(1000, 50));
+    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     topPanel.setLayout(flowLayout1);
 
     toolBar.setDoubleBuffered(true);
-    toolBar.setMargin(new java.awt.Insets(1, 1, 1, 1));
-    toolBar.setMaximumSize(new java.awt.Dimension(1200, 42));
-    toolBar.setMinimumSize(new java.awt.Dimension(1150, 42));
+    toolBar.setMargin(new Insets(1, 1, 1, 1));
+    toolBar.setMaximumSize(new Dimension(1200, 42));
+    toolBar.setMinimumSize(new Dimension(1150, 42));
     toolBar.setName(""); // NOI18N
-    toolBar.setPreferredSize(new java.awt.Dimension(1100, 42));
+    toolBar.setPreferredSize(new Dimension(1100, 42));
 
-    saveBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
+    saveBtn.setIcon(new ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
     saveBtn.setToolTipText("Save");
     saveBtn.setFocusable(false);
-    saveBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    saveBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    saveBtn.setMinimumSize(new java.awt.Dimension(40, 40));
-    saveBtn.setPreferredSize(new java.awt.Dimension(40, 40));
-    saveBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    saveBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    saveBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    saveBtn.setMaximumSize(new Dimension(40, 40));
+    saveBtn.setMinimumSize(new Dimension(40, 40));
+    saveBtn.setPreferredSize(new Dimension(40, 40));
+    saveBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    saveBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         saveBtnActionPerformed(evt);
       }
     });
     toolBar.add(saveBtn);
 
-    loadBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
+    loadBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
     loadBtn.setToolTipText("Load");
     loadBtn.setFocusable(false);
-    loadBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    loadBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    loadBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    loadBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    loadBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    loadBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    loadBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    loadBtn.setMaximumSize(new Dimension(38, 38));
+    loadBtn.setMinimumSize(new Dimension(38, 38));
+    loadBtn.setPreferredSize(new Dimension(38, 38));
+    loadBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    loadBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         loadBtnActionPerformed(evt);
       }
     });
     toolBar.add(loadBtn);
 
-    repaintBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
+    repaintBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
     repaintBtn.setToolTipText("Repaint");
     repaintBtn.setFocusable(false);
-    repaintBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    repaintBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    repaintBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    repaintBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    repaintBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    repaintBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    repaintBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    repaintBtn.setMaximumSize(new Dimension(40, 40));
+    repaintBtn.setMinimumSize(new Dimension(38, 38));
+    repaintBtn.setPreferredSize(new Dimension(38, 38));
+    repaintBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    repaintBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         repaintBtnActionPerformed(evt);
       }
     });
     toolBar.add(repaintBtn);
 
-    routeBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
+    routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
     routeBtn.setToolTipText("Route");
     routeBtn.setFocusable(false);
-    routeBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    routeBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    routeBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    routeBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    routeBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    routeBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    routeBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    routeBtn.setMaximumSize(new Dimension(38, 38));
+    routeBtn.setMinimumSize(new Dimension(38, 38));
+    routeBtn.setPreferredSize(new Dimension(38, 38));
+    routeBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    routeBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         routeBtnActionPerformed(evt);
       }
     });
     toolBar.add(routeBtn);
 
-    autoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
+    autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
     autoPilotBtn.setToolTipText("Auto mode");
     autoPilotBtn.setFocusable(false);
-    autoPilotBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    autoPilotBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    autoPilotBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    autoPilotBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    autoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/pilot-green.png"))); // NOI18N
-    autoPilotBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    autoPilotBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    autoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    autoPilotBtn.setMaximumSize(new Dimension(38, 38));
+    autoPilotBtn.setMinimumSize(new Dimension(38, 38));
+    autoPilotBtn.setPreferredSize(new Dimension(38, 38));
+    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/pilot-green.png"))); // NOI18N
+    autoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    autoPilotBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         autoPilotBtnActionPerformed(evt);
       }
     });
     toolBar.add(autoPilotBtn);
 
-    startAutoPilotBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
+    startAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
     startAutoPilotBtn.setToolTipText("Auto mode");
     startAutoPilotBtn.setFocusable(false);
-    startAutoPilotBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    startAutoPilotBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    startAutoPilotBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    startAutoPilotBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    startAutoPilotBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
-    startAutoPilotBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    startAutoPilotBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    startAutoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    startAutoPilotBtn.setMaximumSize(new Dimension(38, 38));
+    startAutoPilotBtn.setMinimumSize(new Dimension(38, 38));
+    startAutoPilotBtn.setPreferredSize(new Dimension(38, 38));
+    startAutoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
+    startAutoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    startAutoPilotBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         startAutoPilotBtnActionPerformed(evt);
       }
     });
     toolBar.add(startAutoPilotBtn);
     toolBar.add(filler1);
 
-    selectBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/cursor-24-y.png"))); // NOI18N
+    selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png"))); // NOI18N
     selectBtn.setToolTipText("Select");
     selectBtn.setFocusable(false);
-    selectBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    selectBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    selectBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    selectBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    selectBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    selectBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    selectBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    selectBtn.setMaximumSize(new Dimension(40, 40));
+    selectBtn.setMinimumSize(new Dimension(38, 38));
+    selectBtn.setPreferredSize(new Dimension(38, 38));
+    selectBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    selectBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         selectBtnActionPerformed(evt);
       }
     });
     toolBar.add(selectBtn);
 
-    addBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
+    addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
     addBtn.setToolTipText("Add");
     addBtn.setFocusable(false);
-    addBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    addBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    addBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    addBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    addBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    addBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    addBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    addBtn.setMaximumSize(new Dimension(40, 40));
+    addBtn.setMinimumSize(new Dimension(38, 38));
+    addBtn.setPreferredSize(new Dimension(38, 38));
+    addBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    addBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         addBtnActionPerformed(evt);
       }
     });
     toolBar.add(addBtn);
 
-    deleteBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/delete-24.png"))); // NOI18N
+    deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png"))); // NOI18N
     deleteBtn.setToolTipText("Delete");
     deleteBtn.setFocusable(false);
-    deleteBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    deleteBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    deleteBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    deleteBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    deleteBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    deleteBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    deleteBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    deleteBtn.setMaximumSize(new Dimension(40, 40));
+    deleteBtn.setMinimumSize(new Dimension(38, 38));
+    deleteBtn.setPreferredSize(new Dimension(38, 38));
+    deleteBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    deleteBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         deleteBtnActionPerformed(evt);
       }
     });
     toolBar.add(deleteBtn);
     toolBar.add(filler3);
 
-    gridBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/grid-2-24.png"))); // NOI18N
+    gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/grid-2-24.png"))); // NOI18N
     gridBtn.setSelected(true);
     gridBtn.setToolTipText("Grid");
-    gridBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    gridBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/grid-dot-24.png"))); // NOI18N
-    gridBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    gridBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    gridBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    gridBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/grid-dot-24.png"))); // NOI18N
+    gridBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    gridBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         gridBtnActionPerformed(evt);
       }
     });
@@ -475,260 +490,261 @@ public class LayoutPanel extends JPanel {
     toolBar.add(filler2);
 
     tileBtnGroup.add(straightBtn);
-    straightBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straight.png"))); // NOI18N
+    straightBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-straight.png"))); // NOI18N
     straightBtn.setToolTipText("Straight Track");
     straightBtn.setDoubleBuffered(true);
-    straightBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    straightBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    straightBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    straightBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    straightBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straight_Y.png"))); // NOI18N
-    straightBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    straightBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    straightBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    straightBtn.setMaximumSize(new Dimension(38, 38));
+    straightBtn.setMinimumSize(new Dimension(38, 38));
+    straightBtn.setPreferredSize(new Dimension(38, 38));
+    straightBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight_Y.png"))); // NOI18N
+    straightBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    straightBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         straightBtnActionPerformed(evt);
       }
     });
     toolBar.add(straightBtn);
 
     tileBtnGroup.add(curvedBtn);
-    curvedBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-diagonal.png"))); // NOI18N
+    curvedBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-diagonal.png"))); // NOI18N
     curvedBtn.setToolTipText("Curved Track");
     curvedBtn.setDoubleBuffered(true);
-    curvedBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    curvedBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    curvedBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    curvedBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    curvedBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-diagonal_Y.png"))); // NOI18N
-    curvedBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    curvedBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    curvedBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    curvedBtn.setMaximumSize(new Dimension(38, 38));
+    curvedBtn.setMinimumSize(new Dimension(38, 38));
+    curvedBtn.setPreferredSize(new Dimension(38, 38));
+    curvedBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-diagonal_Y.png"))); // NOI18N
+    curvedBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    curvedBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         curvedBtnActionPerformed(evt);
       }
     });
     toolBar.add(curvedBtn);
 
     tileBtnGroup.add(blockBtn);
-    blockBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-block.png"))); // NOI18N
+    blockBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-block.png"))); // NOI18N
     blockBtn.setToolTipText("Block");
     blockBtn.setDoubleBuffered(true);
-    blockBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    blockBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    blockBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    blockBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    blockBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-block_Y.png"))); // NOI18N
-    blockBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    blockBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    blockBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    blockBtn.setMaximumSize(new Dimension(38, 38));
+    blockBtn.setMinimumSize(new Dimension(38, 38));
+    blockBtn.setPreferredSize(new Dimension(38, 38));
+    blockBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-block_Y.png"))); // NOI18N
+    blockBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    blockBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         blockBtnActionPerformed(evt);
       }
     });
     toolBar.add(blockBtn);
 
     tileBtnGroup.add(sensorBtn);
-    sensorBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straight-feedback.png"))); // NOI18N
+    sensorBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-straight-feedback.png"))); // NOI18N
     sensorBtn.setToolTipText("Sensor");
     sensorBtn.setDoubleBuffered(true);
-    sensorBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    sensorBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    sensorBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    sensorBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    sensorBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straight-feedback_Y.png"))); // NOI18N
-    sensorBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    sensorBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    sensorBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    sensorBtn.setMaximumSize(new Dimension(38, 38));
+    sensorBtn.setMinimumSize(new Dimension(38, 38));
+    sensorBtn.setPreferredSize(new Dimension(38, 38));
+    sensorBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight-feedback_Y.png"))); // NOI18N
+    sensorBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    sensorBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         sensorBtnActionPerformed(evt);
       }
     });
     toolBar.add(sensorBtn);
 
     tileBtnGroup.add(signalBtn);
-    signalBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straight-signal.png"))); // NOI18N
+    signalBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-straight-signal.png"))); // NOI18N
     signalBtn.setDoubleBuffered(true);
-    signalBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    signalBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    signalBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    signalBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    signalBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straight-signal_Y.png"))); // NOI18N
-    signalBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    signalBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    signalBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    signalBtn.setMaximumSize(new Dimension(38, 38));
+    signalBtn.setMinimumSize(new Dimension(38, 38));
+    signalBtn.setPreferredSize(new Dimension(38, 38));
+    signalBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straight-signal_Y.png"))); // NOI18N
+    signalBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    signalBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         signalBtnActionPerformed(evt);
       }
     });
     toolBar.add(signalBtn);
 
     tileBtnGroup.add(leftSwitchBtn);
-    leftSwitchBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-L-turnout.png"))); // NOI18N
+    leftSwitchBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-L-turnout.png"))); // NOI18N
     leftSwitchBtn.setDoubleBuffered(true);
-    leftSwitchBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    leftSwitchBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    leftSwitchBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    leftSwitchBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    leftSwitchBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-LY-turnout.png"))); // NOI18N
-    leftSwitchBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    leftSwitchBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    leftSwitchBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    leftSwitchBtn.setMaximumSize(new Dimension(38, 38));
+    leftSwitchBtn.setMinimumSize(new Dimension(38, 38));
+    leftSwitchBtn.setPreferredSize(new Dimension(38, 38));
+    leftSwitchBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-LY-turnout.png"))); // NOI18N
+    leftSwitchBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    leftSwitchBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         leftSwitchBtnActionPerformed(evt);
       }
     });
     toolBar.add(leftSwitchBtn);
 
     tileBtnGroup.add(rightSwitchBtn);
-    rightSwitchBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-R-turnout.png"))); // NOI18N
+    rightSwitchBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-R-turnout.png"))); // NOI18N
     rightSwitchBtn.setToolTipText("");
     rightSwitchBtn.setDoubleBuffered(true);
-    rightSwitchBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    rightSwitchBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    rightSwitchBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    rightSwitchBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    rightSwitchBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-RY-turnout.png"))); // NOI18N
-    rightSwitchBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    rightSwitchBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    rightSwitchBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    rightSwitchBtn.setMaximumSize(new Dimension(38, 38));
+    rightSwitchBtn.setMinimumSize(new Dimension(38, 38));
+    rightSwitchBtn.setPreferredSize(new Dimension(38, 38));
+    rightSwitchBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-RY-turnout.png"))); // NOI18N
+    rightSwitchBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    rightSwitchBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         rightSwitchBtnActionPerformed(evt);
       }
     });
     toolBar.add(rightSwitchBtn);
 
     tileBtnGroup.add(crossLBtn);
-    crossLBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-cross-L.png"))); // NOI18N
+    crossLBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-cross-L.png"))); // NOI18N
     crossLBtn.setToolTipText("");
     crossLBtn.setDoubleBuffered(true);
-    crossLBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    crossLBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    crossLBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    crossLBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    crossLBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-cross-LY.png"))); // NOI18N
-    crossLBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    crossLBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    crossLBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    crossLBtn.setMaximumSize(new Dimension(40, 40));
+    crossLBtn.setMinimumSize(new Dimension(38, 38));
+    crossLBtn.setPreferredSize(new Dimension(38, 38));
+    crossLBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-cross-LY.png"))); // NOI18N
+    crossLBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    crossLBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         crossLBtnActionPerformed(evt);
       }
     });
     toolBar.add(crossLBtn);
 
     tileBtnGroup.add(crossRBtn);
-    crossRBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-cross-R.png"))); // NOI18N
+    crossRBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-cross-R.png"))); // NOI18N
     crossRBtn.setToolTipText("");
     crossRBtn.setDoubleBuffered(true);
-    crossRBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    crossRBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    crossRBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    crossRBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    crossRBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-cross-RY.png"))); // NOI18N
-    crossRBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    crossRBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    crossRBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    crossRBtn.setMaximumSize(new Dimension(38, 38));
+    crossRBtn.setMinimumSize(new Dimension(38, 38));
+    crossRBtn.setPreferredSize(new Dimension(38, 38));
+    crossRBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-cross-RY.png"))); // NOI18N
+    crossRBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    crossRBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         crossRBtnActionPerformed(evt);
       }
     });
     toolBar.add(crossRBtn);
 
     tileBtnGroup.add(straightDirectionBtn);
-    straightDirectionBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straightDirection.png"))); // NOI18N
+    straightDirectionBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-straightDirection.png"))); // NOI18N
     straightDirectionBtn.setDoubleBuffered(true);
     straightDirectionBtn.setFocusable(false);
-    straightDirectionBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    straightDirectionBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    straightDirectionBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    straightDirectionBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    straightDirectionBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-straightDirection_Y.png"))); // NOI18N
-    straightDirectionBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    straightDirectionBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    straightDirectionBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    straightDirectionBtn.setMaximumSize(new Dimension(38, 38));
+    straightDirectionBtn.setMinimumSize(new Dimension(38, 38));
+    straightDirectionBtn.setPreferredSize(new Dimension(38, 38));
+    straightDirectionBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-straightDirection_Y.png"))); // NOI18N
+    straightDirectionBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    straightDirectionBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         straightDirectionBtnActionPerformed(evt);
       }
     });
     toolBar.add(straightDirectionBtn);
 
     tileBtnGroup.add(endTrackBtn);
-    endTrackBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-end-track.png"))); // NOI18N
+    endTrackBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-end-track.png"))); // NOI18N
     endTrackBtn.setFocusable(false);
-    endTrackBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    endTrackBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    endTrackBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    endTrackBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    endTrackBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-end-track_Y.png"))); // NOI18N
-    endTrackBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    endTrackBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    endTrackBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    endTrackBtn.setMaximumSize(new Dimension(38, 38));
+    endTrackBtn.setMinimumSize(new Dimension(38, 38));
+    endTrackBtn.setPreferredSize(new Dimension(38, 38));
+    endTrackBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-end-track_Y.png"))); // NOI18N
+    endTrackBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    endTrackBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         endTrackBtnActionPerformed(evt);
       }
     });
     toolBar.add(endTrackBtn);
 
     tileBtnGroup.add(crossingBtn);
-    crossingBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-crossing.png"))); // NOI18N
+    crossingBtn.setIcon(new ImageIcon(getClass().getResource("/media/new-crossing.png"))); // NOI18N
     crossingBtn.setFocusable(false);
-    crossingBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    crossingBtn.setMaximumSize(new java.awt.Dimension(38, 38));
-    crossingBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    crossingBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    crossingBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    crossingBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    crossingBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    crossingBtn.setMaximumSize(new Dimension(38, 38));
+    crossingBtn.setMinimumSize(new Dimension(38, 38));
+    crossingBtn.setPreferredSize(new Dimension(38, 38));
+    crossingBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/new-crossing_Y.png"))); // NOI18N
+    crossingBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    crossingBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         crossingBtnActionPerformed(evt);
       }
     });
     toolBar.add(crossingBtn);
     toolBar.add(filler4);
 
-    moveBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/drag-24.png"))); // NOI18N
+    moveBtn.setIcon(new ImageIcon(getClass().getResource("/media/drag-24.png"))); // NOI18N
     moveBtn.setToolTipText("Move");
     moveBtn.setFocusable(false);
-    moveBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    moveBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    moveBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    moveBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    moveBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    moveBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    moveBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    moveBtn.setMaximumSize(new Dimension(40, 40));
+    moveBtn.setMinimumSize(new Dimension(38, 38));
+    moveBtn.setPreferredSize(new Dimension(38, 38));
+    moveBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    moveBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         moveBtnActionPerformed(evt);
       }
     });
     toolBar.add(moveBtn);
 
-    flipVerticalBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/flip-vertical-24.png"))); // NOI18N
+    flipVerticalBtn.setIcon(new ImageIcon(getClass().getResource("/media/flip-vertical-24.png"))); // NOI18N
     flipVerticalBtn.setToolTipText("Flip Vertical");
     flipVerticalBtn.setFocusable(false);
-    flipVerticalBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    flipVerticalBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    flipVerticalBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    flipVerticalBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    flipVerticalBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    flipVerticalBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    flipVerticalBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    flipVerticalBtn.setMaximumSize(new Dimension(40, 40));
+    flipVerticalBtn.setMinimumSize(new Dimension(38, 38));
+    flipVerticalBtn.setPreferredSize(new Dimension(38, 38));
+    flipVerticalBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    flipVerticalBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         flipVerticalBtnActionPerformed(evt);
       }
     });
     toolBar.add(flipVerticalBtn);
 
-    flipHorizontalBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/flip-horizontal-24.png"))); // NOI18N
+    flipHorizontalBtn.setIcon(new ImageIcon(getClass().getResource("/media/flip-horizontal-24.png"))); // NOI18N
     flipHorizontalBtn.setToolTipText("Flip Horizontal");
     flipHorizontalBtn.setFocusable(false);
-    flipHorizontalBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    flipHorizontalBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    flipHorizontalBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    flipHorizontalBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    flipHorizontalBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    flipHorizontalBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    flipHorizontalBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    flipHorizontalBtn.setMaximumSize(new Dimension(40, 40));
+    flipHorizontalBtn.setMinimumSize(new Dimension(38, 38));
+    flipHorizontalBtn.setPreferredSize(new Dimension(38, 38));
+    flipHorizontalBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    flipHorizontalBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         flipHorizontalBtnActionPerformed(evt);
       }
     });
     toolBar.add(flipHorizontalBtn);
 
-    rotateBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/rotate2-24.png"))); // NOI18N
+    rotateBtn.setIcon(new ImageIcon(getClass().getResource("/media/rotate2-24.png"))); // NOI18N
     rotateBtn.setToolTipText("Rotate");
     rotateBtn.setFocusable(false);
-    rotateBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    rotateBtn.setMaximumSize(new java.awt.Dimension(40, 40));
-    rotateBtn.setMinimumSize(new java.awt.Dimension(38, 38));
-    rotateBtn.setPreferredSize(new java.awt.Dimension(38, 38));
-    rotateBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    rotateBtn.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+    rotateBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    rotateBtn.setMaximumSize(new Dimension(40, 40));
+    rotateBtn.setMinimumSize(new Dimension(38, 38));
+    rotateBtn.setPreferredSize(new Dimension(38, 38));
+    rotateBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    rotateBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
         rotateBtnActionPerformed(evt);
       }
     });
@@ -736,18 +752,18 @@ public class LayoutPanel extends JPanel {
 
     topPanel.add(toolBar);
 
-    add(topPanel, java.awt.BorderLayout.NORTH);
+    add(topPanel, BorderLayout.NORTH);
 
     canvasScrollPane.setDoubleBuffered(true);
-    canvasScrollPane.setMinimumSize(new java.awt.Dimension(110, 110));
-    canvasScrollPane.setPreferredSize(new java.awt.Dimension(1000, 700));
+    canvasScrollPane.setMinimumSize(new Dimension(110, 110));
+    canvasScrollPane.setPreferredSize(new Dimension(1000, 700));
     canvasScrollPane.setViewportView(canvas);
 
-    canvas.setMinimumSize(new java.awt.Dimension(100, 100));
-    canvas.setPreferredSize(new java.awt.Dimension(895, 695));
+    canvas.setMinimumSize(new Dimension(100, 100));
+    canvas.setPreferredSize(new Dimension(895, 695));
     canvasScrollPane.setViewportView(canvas);
 
-    add(canvasScrollPane, java.awt.BorderLayout.CENTER);
+    add(canvasScrollPane, BorderLayout.CENTER);
   }// </editor-fold>//GEN-END:initComponents
 
   private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
@@ -984,54 +1000,54 @@ public class LayoutPanel extends JPanel {
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JButton addBtn;
-  private javax.swing.JToggleButton autoPilotBtn;
-  private javax.swing.JToggleButton blockBtn;
-  private jcs.ui.layout.LayoutCanvas canvas;
-  private javax.swing.JScrollPane canvasScrollPane;
-  private javax.swing.JToggleButton crossLBtn;
-  private javax.swing.JToggleButton crossRBtn;
-  private javax.swing.JToggleButton crossingBtn;
-  private javax.swing.JToggleButton curvedBtn;
-  private javax.swing.JPopupMenu curvedPopupMenu;
-  private javax.swing.JButton deleteBtn;
-  private javax.swing.JMenuItem deleteMI;
-  private javax.swing.JToggleButton endTrackBtn;
-  private javax.swing.Box.Filler filler1;
-  private javax.swing.Box.Filler filler2;
-  private javax.swing.Box.Filler filler3;
-  private javax.swing.Box.Filler filler4;
-  private javax.swing.JButton flipHorizontalBtn;
-  private javax.swing.JMenuItem flipHorizontalMI;
-  private javax.swing.JButton flipVerticalBtn;
-  private javax.swing.JMenuItem flipVerticalMI;
-  private javax.swing.JToggleButton gridBtn;
-  private javax.swing.JMenuItem horizontalMI;
-  private javax.swing.JMenuItem leftMI;
-  private javax.swing.JToggleButton leftSwitchBtn;
-  private javax.swing.JButton loadBtn;
-  private javax.swing.JButton moveBtn;
-  private javax.swing.JMenuItem moveMI;
-  private javax.swing.JPopupMenu operationsPM;
-  private javax.swing.JMenuItem propertiesMI;
-  private javax.swing.JButton repaintBtn;
-  private javax.swing.JMenuItem rightMI;
-  private javax.swing.JToggleButton rightSwitchBtn;
-  private javax.swing.JButton rotateBtn;
-  private javax.swing.JMenuItem rotateMI;
-  private javax.swing.JButton routeBtn;
-  private javax.swing.JButton saveBtn;
-  private javax.swing.JButton selectBtn;
-  private javax.swing.JToggleButton sensorBtn;
-  private javax.swing.JToggleButton signalBtn;
-  private javax.swing.JToggleButton startAutoPilotBtn;
-  private javax.swing.JToggleButton straightBtn;
-  private javax.swing.JToggleButton straightDirectionBtn;
-  private javax.swing.JPopupMenu straightPopupMenu;
-  private javax.swing.ButtonGroup tileBtnGroup;
-  private javax.swing.JToolBar toolBar;
-  private javax.swing.JPanel topPanel;
-  private javax.swing.JMenuItem verticalMI;
-  private javax.swing.JMenuItem xyMI;
+  private JButton addBtn;
+  private JToggleButton autoPilotBtn;
+  private JToggleButton blockBtn;
+  private LayoutCanvas canvas;
+  private JScrollPane canvasScrollPane;
+  private JToggleButton crossLBtn;
+  private JToggleButton crossRBtn;
+  private JToggleButton crossingBtn;
+  private JToggleButton curvedBtn;
+  private JPopupMenu curvedPopupMenu;
+  private JButton deleteBtn;
+  private JMenuItem deleteMI;
+  private JToggleButton endTrackBtn;
+  private Box.Filler filler1;
+  private Box.Filler filler2;
+  private Box.Filler filler3;
+  private Box.Filler filler4;
+  private JButton flipHorizontalBtn;
+  private JMenuItem flipHorizontalMI;
+  private JButton flipVerticalBtn;
+  private JMenuItem flipVerticalMI;
+  private JToggleButton gridBtn;
+  private JMenuItem horizontalMI;
+  private JMenuItem leftMI;
+  private JToggleButton leftSwitchBtn;
+  private JButton loadBtn;
+  private JButton moveBtn;
+  private JMenuItem moveMI;
+  private JPopupMenu operationsPM;
+  private JMenuItem propertiesMI;
+  private JButton repaintBtn;
+  private JMenuItem rightMI;
+  private JToggleButton rightSwitchBtn;
+  private JButton rotateBtn;
+  private JMenuItem rotateMI;
+  private JButton routeBtn;
+  private JButton saveBtn;
+  private JButton selectBtn;
+  private JToggleButton sensorBtn;
+  private JToggleButton signalBtn;
+  private JToggleButton startAutoPilotBtn;
+  private JToggleButton straightBtn;
+  private JToggleButton straightDirectionBtn;
+  private JPopupMenu straightPopupMenu;
+  private ButtonGroup tileBtnGroup;
+  private JToolBar toolBar;
+  private JPanel topPanel;
+  private JMenuItem verticalMI;
+  private JMenuItem xyMI;
   // End of variables declaration//GEN-END:variables
 }

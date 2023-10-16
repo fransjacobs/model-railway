@@ -10,10 +10,6 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jcs.entities.TileBean.Orientation;
-import static jcs.entities.TileBean.Orientation.EAST;
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
 import org.tinylog.Logger;
 
 public class Graph {
@@ -91,32 +87,15 @@ public class Graph {
       return from.getTile().isAdjacent(to.getTile()) && isToOnArrowSide;
     } else if (from.getPreviousNode() != null && from.isCrossing()) {
       //Find the edge connection point between the previous and the from node
-      Set<Point> prevPoints = from.getPreviousNode().getEdgePoints();
-      Point prevFromPoint = null;
-      for (Point p : prevPoints) {
-        if (from.getEdgePoints().contains(p)) {
-          prevFromPoint = p;
-          break;
-        }
-      }
+      Point inCommingEdgePoint = from.getIncomingPoint();
+      Orientation inCommingSide = from.getConnectingSide(inCommingEdgePoint);
 
       //find the connection edge point on the opposite side
-      Orientation prevFromOrientation = from.getTile().getEdgeOrientations().get(prevFromPoint);
-      Orientation toConnectingEdgeOrientation = null;
-      switch (prevFromOrientation) {
-        case WEST ->
-          toConnectingEdgeOrientation = Orientation.EAST;
-        case EAST ->
-          toConnectingEdgeOrientation = Orientation.WEST;
-        case NORTH ->
-          toConnectingEdgeOrientation = Orientation.SOUTH;
-        case SOUTH ->
-          toConnectingEdgeOrientation = Orientation.NORTH;
-      }
+      Orientation exitSide = Node.getOppositeSide(inCommingSide);
+      Point toInCommingPoint = from.getTile().getEdgePoints().get(exitSide);
 
-      Point toConnectingEdgePoint = from.getTile().getEdgePoints().get(toConnectingEdgeOrientation);
       //Check if the to has this edgepoint
-      return to.getEdgePoints().contains(toConnectingEdgePoint);
+      return to.getTile().getEdgePoints().containsValue(toInCommingPoint);
     } else {
       return from.getTile().isAdjacent(to.getTile());
     }

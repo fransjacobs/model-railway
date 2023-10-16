@@ -22,6 +22,7 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.entities.TileBean;
+import org.tinylog.Logger;
 
 public class Crossing extends Straight implements Tile {
 
@@ -71,7 +72,7 @@ public class Crossing extends Straight implements Tile {
     edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
     return edgeConnections;
   }
-  
+
   protected void renderVerticalAndDividers(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xxn, yyn, xxs, yys, w, h;
     xxn = 175;
@@ -105,9 +106,31 @@ public class Crossing extends Straight implements Tile {
 
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    renderStraight(g2, trackColor, backgroundColor);
-
-    renderVerticalAndDividers(g2, trackColor, backgroundColor);
+    
+    if (this.trackRouteColor != null) {
+      Logger.trace("routeSide: "+this.incomingSide+" Orientation: "+this.getOrientation());
+      
+      if (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide) {
+        if(this.isHorizontal()) {
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderVerticalAndDividers(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+        } else {
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderVerticalAndDividers(g2, this.trackRouteColor, backgroundColor);
+        }  
+      } else {
+        if(this.isHorizontal()) {
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderVerticalAndDividers(g2, this.trackRouteColor, backgroundColor);
+        } else {
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderVerticalAndDividers(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+        }  
+      } 
+    } else {
+      renderStraight(g2, trackColor, backgroundColor);
+      renderVerticalAndDividers(g2, trackColor, backgroundColor);
+    }
   }
 
   @Override

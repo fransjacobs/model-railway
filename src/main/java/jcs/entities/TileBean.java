@@ -30,10 +30,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import jcs.entities.enums.SignalType;
 
-@Table(
-        name = "tiles",
-        indexes = {
-          @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
+@Table(name = "tiles", indexes = {
+  @Index(name = "tile_x_y", columnList = "x, y", unique = true)})
 public class TileBean implements Serializable, Comparable {
 
   protected String id;
@@ -49,45 +47,23 @@ public class TileBean implements Serializable, Comparable {
   protected List<TileBean> neighbours;
 
   protected AccessoryBean accessoryBean;
+
   protected SensorBean sensorBean;
   protected BlockBean blockBean;
-
+  
   public TileBean() {
     this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
   }
 
-  public TileBean(
-          String id,
-          TileType tileType,
-          Orientation orientation,
-          Direction direction,
-          Integer x,
-          Integer y) {
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y) {
     this(id, tileType, orientation, direction, x, y, null, null, null);
   }
 
-  public TileBean(
-          String id,
-          TileType tileType,
-          Orientation orientation,
-          Direction direction,
-          Point center,
-          SignalType signalType,
-          String accessoryId,
-          String sensorId) {
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Point center, SignalType signalType, String accessoryId, String sensorId) {
     this(id, tileType, orientation, direction, center.x, center.y, signalType, null, sensorId);
   }
 
-  public TileBean(
-          String id,
-          TileType tileType,
-          Orientation orientation,
-          Direction direction,
-          Integer x,
-          Integer y,
-          SignalType signalType,
-          String accessoryId,
-          String sensorId) {
+  public TileBean(String id, TileType tileType, Orientation orientation, Direction direction, Integer x, Integer y, SignalType signalType, String accessoryId, String sensorId) {
     this.id = id;
     this.setTileType(tileType);
     this.tileOrientation = orientation.getOrientation();

@@ -34,12 +34,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.enums.AccessoryValue;
 import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
@@ -74,6 +70,9 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   protected Color trackColor;
 
+  protected Color trackRouteColor;
+  protected Orientation incomingSide;
+
   protected Color backgroundColor;
   protected boolean drawName = true;
 
@@ -99,8 +98,7 @@ abstract class AbstractTile extends TileBean implements Tile {
     this(orientation, direction, x, y, null);
   }
 
-  protected AbstractTile(
-          Orientation orientation, Direction direction, int x, int y, Color backgroundColor) {
+  protected AbstractTile(Orientation orientation, Direction direction, int x, int y, Color backgroundColor) {
     this.tileOrientation = orientation.getOrientation();
     this.tileDirection = direction.getDirection();
 
@@ -113,6 +111,7 @@ abstract class AbstractTile extends TileBean implements Tile {
     this.renderHeight = RENDER_HEIGHT;
 
     this.trackColor = DEFAULT_TRACK_COLOR;
+
     this.backgroundColor = backgroundColor;
     if (this.backgroundColor == null) {
       this.backgroundColor = Color.white;
@@ -176,9 +175,19 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public final void setTrackColor(Color trackColor) {
-    if (!Objects.equals(this.trackColor, trackColor)) {
-      this.trackColor = trackColor;
-    }
+    //if (!Objects.equals(this.trackColor, trackColor)) {
+    this.trackColor = trackColor;
+    //}
+  }
+
+  public Color getTrackRouteColor() {
+    return trackRouteColor;
+  }
+
+  @Override
+  public final void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide) {
+    this.trackRouteColor = trackRouteColor;
+    this.incomingSide = incomingSide;
   }
 
   @Override
@@ -188,9 +197,9 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public void setBackgroundColor(Color backgroundColor) {
-    if (!Objects.equals(this.backgroundColor, backgroundColor)) {
+    //if (!Objects.equals(this.backgroundColor, backgroundColor)) {
       this.backgroundColor = backgroundColor;
-    }
+    //}
   }
 
   /**
@@ -706,12 +715,12 @@ abstract class AbstractTile extends TileBean implements Tile {
   public boolean isDiagonal() {
     return TileType.CURVED == getTileType();
   }
-  
+
   @Override
   public boolean isCrossing() {
     return TileType.CROSSING == getTileType();
   }
-    
+
   public List<TileBean> getNeighbours() {
     return neighbours;
   }
@@ -844,8 +853,17 @@ abstract class AbstractTile extends TileBean implements Tile {
     sb.append(g);
     sb.append("#");
     sb.append(b);
-    sb.append("~");
+    if(this.incomingSide != null) {
+      sb.append("~");
+      sb.append(this.incomingSide.getOrientation());
+    }
+    if(this.trackRouteColor != null) {
+      sb.append("~");
+      sb.append(this.trackRouteColor.toString());
+    }    
     
+    sb.append("~");
+
     //Tile specific properties
     //AccessoryValue
     //SignalType

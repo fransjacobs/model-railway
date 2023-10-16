@@ -31,57 +31,46 @@ import org.tinylog.Logger;
  */
 public class UnScaledTileTester extends JFrame {
 
-  private final Tile tileEast;
-//  private final Tile tileSouth;
-//  private final Tile tileWest;
-//  private final Tile tileNorth;
+  private final Tile tile;
 
   @SuppressWarnings("OverridableMethodCallInConstructor")
   public UnScaledTileTester(String title) {
     super(title);
 
-    //tileEast = new Straight1(Orientation.EAST, 250, 250);
-    //tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
-    // ((Signal) tileEast).setSignalValue(SignalValue.Hp0);
-    //tileEast = new Curved(Orientation.EAST, 250, 250);
-    //tileEast = new Sensor(Orientation.EAST, 250, 250);
-    //tileEast = new Switch(Orientation.EAST, TileBean.Direction.LEFT, 250, 250);
+    // tileEast = new Straight1(Orientation.EAST, 250, 250);
+    // tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
+    // ((Signal) tile).setSignalValue(SignalValue.Hp0);
+    // tileEast = new Curved(Orientation.EAST, 250, 250);
+    // tileEast = new Sensor(Orientation.EAST, 250, 250);
+    // tileEast = new Switch(Orientation.EAST, TileBean.Direction.LEFT, 250, 250);
 
-    //tileEast = new End(Orientation.EAST, 250, 250);
-    
-     //tileEast = new Cross(Orientation.EAST, Direction.RIGHT, 250, 250);
+    // tileEast = new End(Orientation.EAST, 250, 250);
 
-     tileEast = new Crossing(Orientation.EAST, 250, 250);
+    // tileEast = new Cross(Orientation.EAST, Direction.RIGHT, 250, 250);
 
-//    tileSouth = new Straight1(Orientation.SOUTH, 160, 60);
-//    tileWest = new Straight1(Orientation.WEST, 250, 60);
-//    tileNorth = new Straight1(Orientation.NORTH, 340, 60);
+    tile = new Crossing(Orientation.NORTH, 250, 250);
 
+    //    tileSouth = new Straight1(Orientation.SOUTH, 160, 60);
+    //    tileWest = new Straight1(Orientation.WEST, 250, 60);
+    //    tileNorth = new Straight1(Orientation.NORTH, 340, 60);
 
-((AbstractTile) tileEast).setScaleImage(false);
-
+    ((AbstractTile) tile).setScaleImage(false);
   }
 
   @Override
   public void paint(Graphics g) {
     Graphics2D g2d = (Graphics2D) g;
     //
-    tileEast.drawTile(g2d, true);
-    tileEast.drawBounds(g2d);
-    tileEast.drawCenterPoint(g2d, Color.red);
+    tile.setTrackRouteColor(Color.black, Orientation.WEST);
+    
+    tile.drawTile(g2d, true);
+    tile.drawBounds(g2d);
+    tile.drawCenterPoint(g2d, Color.red);
+    
+    
+    //tile.
 
-//    tileSouth.drawTile(g2d, false);
-//    tileSouth.drawBounds(g2d);
-//    tileSouth.drawCenterPoint(g2d, Color.blue);
-//
-//    tileWest.drawTile(g2d, false);
-//    tileWest.drawBounds(g2d);
-//    tileWest.drawCenterPoint(g2d, Color.red);
-//
-//    tileNorth.drawTile(g2d, false);
-//    tileNorth.drawBounds(g2d);
-//    tileNorth.drawCenterPoint(g2d, Color.cyan);
-    //
+ 
   }
 
   public static void main(String args[]) {
@@ -89,21 +78,21 @@ public class UnScaledTileTester extends JFrame {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException
-            | InstantiationException
-            | IllegalAccessException
-            | UnsupportedLookAndFeelException ex) {
+        | InstantiationException
+        | IllegalAccessException
+        | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
     UnScaledTileTester app = new UnScaledTileTester("UNSCALED Tile Tester");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    //app.pack();
+    // app.pack();
     app.setSize(500, 500);
-    //app.setSize(1000, 500);
+    // app.setSize(1000, 500);
 
     app.setLocation(
-            dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+        dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 

@@ -463,8 +463,8 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private List<RouteElementBean> getRouteElements(String routeId) {
-    List<RouteElementBean> routeElements
-            = database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
+    List<RouteElementBean> routeElements = database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
+    //is the tile needed inside the route element?
     return routeElements;
   }
 

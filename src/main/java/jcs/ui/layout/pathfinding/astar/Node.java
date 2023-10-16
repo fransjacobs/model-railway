@@ -16,12 +16,16 @@
 package jcs.ui.layout.pathfinding.astar;
 
 import java.awt.Point;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.EAST;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.enums.AccessoryValue;
 import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Tile;
@@ -38,6 +42,8 @@ public class Node implements Comparable<Node> {
 
   private Node previousNode;
   private final Set<Edge> edges = new HashSet<>();
+
+  private Orientation incomingSide;
 
   public Node(Tile tile) {
     this.tile = tile;
@@ -103,28 +109,47 @@ public class Node implements Comparable<Node> {
     return this.tile.isHorizontal();
   }
 
-  public Set<Point> getEdgePoints() {
-    return new HashSet<>(this.tile.getEdgePoints().values());
+  public Point getIncomingPoint() {
+    //Find the edge connection point between the previous and the from node
+    if (this.previousNode != null) {
+      Collection<Point> prevPoints = this.previousNode.tile.getEdgePoints().values();
+      for (Point p : prevPoints) {
+        if (this.tile.getEdgePoints().containsValue(p)) {
+          return p;
+        }
+      }
+    }
+    return null;
   }
 
-  public Set<Point> getHorizontalEdgePoints() {
-    Set<Point> hp = new HashSet<>();
-    Map<TileBean.Orientation, Point> edgePoints = this.tile.getEdgePoints();
-    hp.add(edgePoints.get(TileBean.Orientation.EAST));
-    hp.add(edgePoints.get(TileBean.Orientation.WEST));
-    return hp;
+  public Orientation getConnectingSide(Point connectingPoint) {
+    return this.tile.getEdgeOrientations().get(connectingPoint);
+  }
+
+  public Orientation getIncomingSide() {
+    Point incomming = getIncomingPoint();
+    if(incomming != null) {
+      return getConnectingSide(incomming);
+    } else {
+      return null;
+    }  
+  }
+
+  public static Orientation getOppositeSide(Orientation inComming) {
+    return switch (inComming) {
+      case WEST ->
+        Orientation.EAST;
+      case EAST ->
+        Orientation.WEST;
+      case NORTH ->
+        Orientation.SOUTH;
+      case SOUTH ->
+        Orientation.NORTH;
+    };
   }
 
   public boolean isVertical() {
     return this.tile.isVertical();
-  }
-
-  public Set<Point> getVerticalEdgePoints() {
-    Set<Point> vp = new HashSet<>();
-    Map<TileBean.Orientation, Point> edgePoints = this.tile.getEdgePoints();
-    vp.add(edgePoints.get(TileBean.Orientation.NORTH));
-    vp.add(edgePoints.get(TileBean.Orientation.SOUTH));
-    return vp;
   }
 
   public double getG() {
@@ -234,7 +259,7 @@ public class Node implements Comparable<Node> {
 
   @Override
   public String toString() {
-    return "Node id: " + getId() + ", g: " + g + ", h: " + h + ", prevId: " + (previousNode != null ? previousNode.getId() : "") + (accessoryState != null ? " [" + accessoryState + "]" : "");
+    return "Node id: " + getId() + " inComing: " + this.incomingSide + ", g: " + g + ", h: " + h + ", prevId: " + (previousNode != null ? previousNode.getId() : "") + (accessoryState != null ? " [" + accessoryState + "]" : "");
   }
 
 }
