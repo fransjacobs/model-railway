@@ -108,17 +108,34 @@ public class Node implements Comparable<Node> {
   public boolean isHorizontal() {
     return this.tile.isHorizontal();
   }
+  
+  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return this.tile.accessoryValueForRoute(from, to);
+  }
+  
+  public Point getIncomingPoint(Collection<Point> fromPoints) {
+    for (Point p : fromPoints) {
+      if (this.tile.getEdgePoints().containsValue(p)) {
+        return p;
+      }
+    }
+    return null;
+  }
 
   public Point getIncomingPoint() {
     //Find the edge connection point between the previous and the from node
     if (this.previousNode != null) {
-      Collection<Point> prevPoints = this.previousNode.tile.getEdgePoints().values();
-      for (Point p : prevPoints) {
-        if (this.tile.getEdgePoints().containsValue(p)) {
-          return p;
-        }
-      }
+      return getIncomingPoint(this.previousNode.tile.getEdgePoints().values());
     }
+
+//    if (this.previousNode != null) {
+//      Collection<Point> prevPoints = this.previousNode.tile.getEdgePoints().values();
+//      for (Point p : prevPoints) {
+//        if (this.tile.getEdgePoints().containsValue(p)) {
+//          return p;
+//        }
+//      }
+//    }
     return null;
   }
 
@@ -128,11 +145,11 @@ public class Node implements Comparable<Node> {
 
   public Orientation getIncomingSide() {
     Point incomming = getIncomingPoint();
-    if(incomming != null) {
+    if (incomming != null) {
       return getConnectingSide(incomming);
     } else {
       return null;
-    }  
+    }
   }
 
   public static Orientation getOppositeSide(Orientation inComming) {
@@ -216,7 +233,21 @@ public class Node implements Comparable<Node> {
     if (from == null || to == null) {
       return AccessoryValue.OFF;
     }
+
     if (from.getPreviousNode() != null && from.getTile().isJunction()) {
+     Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+      
+      Point fromInComingPoint = from.getIncomingPoint();
+      Orientation fromInComingSide = from.getConnectingSide(fromInComingPoint);
+      Point toInComingPoint = to.getIncomingPoint(from.getTile().getEdgePoints().values());
+      Orientation fromExitSide = from.getConnectingSide( toInComingPoint);
+      AccessoryValue routeValue = from.accessoryValueForRoute(fromInComingSide, fromExitSide);
+      Logger.trace(from.getId()+" from "+fromInComingSide+" to "+fromExitSide+" route value "+routeValue);
+     
+      return routeValue;
+    } 
+
+    if (from.getPreviousNode() != null && from.getTile().isJunction() && 1==2) {
       boolean isParentOnSwitchSide = from.getTile().isSwitchSide(from.getPreviousNode().getTile());
       boolean isParentOnStraightSide = from.getTile().isStraightSide(from.getPreviousNode().getTile());
       boolean isParentOnDivergingSide = from.getTile().isDivergingSide(from.getPreviousNode().getTile());

@@ -10,6 +10,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jcs.entities.TileBean.Orientation;
+import jcs.entities.enums.AccessoryValue;
 import org.tinylog.Logger;
 
 public class Graph {
@@ -55,8 +56,25 @@ public class Graph {
     }
 
     if (from.getPreviousNode() != null && from.getTile().isJunction()) {
+//     Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+//      Point fromInComingPoint = from.getIncomingPoint();
+//      Orientation fromInComingSide = from.getConnectingSide(fromInComingPoint);
+//      Point toInComingPoint = to.getIncomingPoint(from.getTile().getEdgePoints().values());
+//      Orientation fromExitSide = from.getConnectingSide( toInComingPoint);
+//      AccessoryValue routeValue = from.accessoryValueForRoute(fromInComingSide, fromExitSide);
+//      Logger.trace(from.getId()+" from "+fromInComingSide+" to "+fromExitSide+" route value "+routeValue);
+
+      AccessoryValue routeValue = from.getAccessoryStatus(from, to);
+      Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + (AccessoryValue.OFF == routeValue ? " Not possible" : " Using " + routeValue) + " to " + to.getId());
+
+      return AccessoryValue.OFF != routeValue;
+    }
+    if (from.getPreviousNode() != null && from.getTile().isJunction() && 1 == 2) {
+      Point inCommingEdgePoint = from.getIncomingPoint();
+      Orientation inComingSide = from.getConnectingSide(inCommingEdgePoint);
+
       //Check is the full path is possible
-      //Logger.trace("Checking path from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+      Logger.trace("Check path from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " via incoming " + inComingSide);
 
       boolean isParentOnSwitchSide = from.getTile().isSwitchSide(from.getPreviousNode().getTile());
       boolean isParentOnStraightSide = from.getTile().isStraightSide(from.getPreviousNode().getTile());
@@ -87,15 +105,15 @@ public class Graph {
       return from.getTile().isAdjacent(to.getTile()) && isToOnArrowSide;
     } else if (from.getPreviousNode() != null && from.isCrossing()) {
       //Find the edge connection point between the previous and the from node
-      Point inCommingEdgePoint = from.getIncomingPoint();
-      Orientation inCommingSide = from.getConnectingSide(inCommingEdgePoint);
+      Point inComingEdgePoint = from.getIncomingPoint();
+      Orientation inComingSide = from.getConnectingSide(inComingEdgePoint);
 
       //find the connection edge point on the opposite side
-      Orientation exitSide = Node.getOppositeSide(inCommingSide);
-      Point toInCommingPoint = from.getTile().getEdgePoints().get(exitSide);
+      Orientation exitSide = Node.getOppositeSide(inComingSide);
+      Point toInComingPoint = from.getTile().getEdgePoints().get(exitSide);
 
       //Check if the to has this edgepoint
-      return to.getTile().getEdgePoints().containsValue(toInCommingPoint);
+      return to.getTile().getEdgePoints().containsValue(toInComingPoint);
     } else {
       return from.getTile().isAdjacent(to.getTile());
     }
@@ -171,11 +189,10 @@ public class Graph {
         currentEdges = current.getEdges();
       }
 
-      Logger.trace("Current " + current.getId() + " has " + currentEdges.size() + " edges...");
-      //for (Edge edge : currentEdges) {
-      //  Logger.trace("Cur: "+current.getId()+" ->"+edge);
-      //}
-
+//      Logger.trace("Current Node " + current.getId() + " has " + currentEdges.size() + " edges...");
+//      for (Edge edge : currentEdges) {
+//        Logger.trace(current.getId() + " -> " + edge);
+//      }
       for (Edge edge : currentEdges) {
         Node neighbor = edge.getOpposite(current);
         if (neighbor != null) {

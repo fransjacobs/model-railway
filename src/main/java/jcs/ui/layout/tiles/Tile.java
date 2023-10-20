@@ -48,7 +48,6 @@ public interface Tile extends Shape {
   void setTrackColor(Color trackColor);
 
   //Color getTrackRouteColor();
-
   void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
 
   Color getBackgroundColor();
@@ -185,6 +184,8 @@ public interface Tile extends Shape {
   Map<Orientation, Point> getEdgePoints();
 
   Map<Point, Orientation> getEdgeOrientations();
+
+  AccessoryValue accessoryValueForRoute(Orientation from, Orientation to);
 
   /**
    * @param other a tile to check with this tile

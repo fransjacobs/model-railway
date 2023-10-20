@@ -15,6 +15,8 @@
  */
 package jcs.ui.layout.pathfinding.astar;
 
+import jcs.entities.enums.AccessoryValue;
+
 public class Edge<T> {
 
   private double distance;
@@ -22,6 +24,8 @@ public class Edge<T> {
   private String fromSuffix;
   private final Node to;
   private String toSuffix;
+
+  private AccessoryValue pointValue;
 
   public Edge(Node from, Node to, double distance) {
     this.from = from;
@@ -68,6 +72,14 @@ public class Edge<T> {
       return from;
     }
     return null;
+  }
+
+  public AccessoryValue getPointValue() {
+    return pointValue;
+  }
+
+  public void setPointValue(AccessoryValue pointValue) {
+    this.pointValue = pointValue;
   }
 
   @Override

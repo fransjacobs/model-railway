@@ -106,27 +106,26 @@ public class Crossing extends Straight implements Tile {
 
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    
     if (this.trackRouteColor != null) {
-      Logger.trace("routeSide: "+this.incomingSide+" Orientation: "+this.getOrientation());
-      
+      Logger.trace("routeSide: " + this.incomingSide + " Orientation: " + this.getOrientation());
+
       if (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide) {
-        if(this.isHorizontal()) {
+        if (this.isHorizontal()) {
           renderStraight(g2, this.trackRouteColor, backgroundColor);
           renderVerticalAndDividers(g2, DEFAULT_TRACK_COLOR, backgroundColor);
         } else {
           renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderVerticalAndDividers(g2, this.trackRouteColor, backgroundColor);
-        }  
+        }
       } else {
-        if(this.isHorizontal()) {
+        if (this.isHorizontal()) {
           renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderVerticalAndDividers(g2, this.trackRouteColor, backgroundColor);
         } else {
           renderStraight(g2, this.trackRouteColor, backgroundColor);
           renderVerticalAndDividers(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-        }  
-      } 
+        }
+      }
     } else {
       renderStraight(g2, trackColor, backgroundColor);
       renderVerticalAndDividers(g2, trackColor, backgroundColor);

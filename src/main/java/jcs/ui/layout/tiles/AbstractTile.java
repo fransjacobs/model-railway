@@ -198,7 +198,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   @Override
   public void setBackgroundColor(Color backgroundColor) {
     //if (!Objects.equals(this.backgroundColor, backgroundColor)) {
-      this.backgroundColor = backgroundColor;
+    this.backgroundColor = backgroundColor;
     //}
   }
 
@@ -830,6 +830,11 @@ abstract class AbstractTile extends TileBean implements Tile {
     return true;
   }
 
+  @Override
+  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return AccessoryValue.OFF;
+  }
+
   protected StringBuilder getImageKeyBuilder() {
     StringBuilder sb = new StringBuilder();
     sb.append(id);
@@ -853,15 +858,15 @@ abstract class AbstractTile extends TileBean implements Tile {
     sb.append(g);
     sb.append("#");
     sb.append(b);
-    if(this.incomingSide != null) {
+    if (this.incomingSide != null) {
       sb.append("~");
       sb.append(this.incomingSide.getOrientation());
     }
-    if(this.trackRouteColor != null) {
+    if (this.trackRouteColor != null) {
       sb.append("~");
       sb.append(this.trackRouteColor.toString());
-    }    
-    
+    }
+
     sb.append("~");
 
     //Tile specific properties
