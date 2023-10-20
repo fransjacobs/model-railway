@@ -25,6 +25,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import jcs.entities.enums.AccessoryValue;
 import org.tinylog.Logger;
 
 /**
@@ -47,7 +48,8 @@ public class UnScaledTileTester extends JFrame {
 
     // tileEast = new End(Orientation.EAST, 250, 250);
 
-    tile = new Cross(Orientation.EAST, Direction.RIGHT, 250, 250);
+    //tile = new Cross(Orientation.WEST, Direction.RIGHT, 250, 250);
+    tile = new Cross(Orientation.NORTH, Direction.LEFT, 250, 750);
 
     //tile = new Crossing(Orientation.NORTH, 250, 250);
 
@@ -62,7 +64,8 @@ public class UnScaledTileTester extends JFrame {
   public void paint(Graphics g) {
     Graphics2D g2d = (Graphics2D) g;
     //
-    //tile.setTrackRouteColor(Color.black, Orientation.WEST);
+    tile.setTrackRouteColor(Color.black, Orientation.WEST);
+    ((Cross)tile).setRouteValue(AccessoryValue.RED, Color.black);
     
     tile.drawTile(g2d, true);
     tile.drawBounds(g2d);
@@ -90,7 +93,8 @@ public class UnScaledTileTester extends JFrame {
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     // app.pack();
     //app.setSize(500, 500);
-     app.setSize(1000, 500);
+     //app.setSize(1000, 500);
+     app.setSize(500, 1000);
 
     app.setLocation(
         dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
