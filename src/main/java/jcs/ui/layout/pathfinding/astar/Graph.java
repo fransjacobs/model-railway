@@ -68,37 +68,37 @@ public class Graph {
       Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + (AccessoryValue.OFF == routeValue ? " Not possible" : " Using " + routeValue) + " to " + to.getId());
 
       return AccessoryValue.OFF != routeValue;
-    }
-    if (from.getPreviousNode() != null && from.getTile().isJunction() && 1 == 2) {
-      Point inCommingEdgePoint = from.getIncomingPoint();
-      Orientation inComingSide = from.getConnectingSide(inCommingEdgePoint);
-
-      //Check is the full path is possible
-      Logger.trace("Check path from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " via incoming " + inComingSide);
-
-      boolean isParentOnSwitchSide = from.getTile().isSwitchSide(from.getPreviousNode().getTile());
-      boolean isParentOnStraightSide = from.getTile().isStraightSide(from.getPreviousNode().getTile());
-      boolean isParentOnDivergingSide = from.getTile().isDivergingSide(from.getPreviousNode().getTile());
-
-      ///Logger.trace("From " + from.getPreviousNode().getId() + " switchSide: " + isParentOnSwitchSide + " straightSide: " + isParentOnStraightSide + " divergingSide: " + isParentOnDivergingSide);
-      boolean isToOnSwitchSide = from.getTile().isSwitchSide(to.getTile());
-      boolean isToOnStraightSide = from.getTile().isStraightSide(to.getTile());
-      boolean isToOnDivergingSide = from.getTile().isDivergingSide(to.getTile());
-
-      //Logger.trace("To " + to.getId() + " switchSide: " + isToOnSwitchSide + " straightSide: " + isToOnStraightSide + " divergingSide: " + isToOnDivergingSide);
-      if (isParentOnSwitchSide && (isToOnDivergingSide || isToOnStraightSide)) {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using " + (isToOnDivergingSide ? "RED" : "GREEN"));
-        return from.getTile().isAdjacent(to.getTile());
-      } else if (isParentOnStraightSide && isToOnSwitchSide) {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using GREEN");
-        return from.getTile().isAdjacent(to.getTile());
-      } else if (isParentOnDivergingSide && isToOnSwitchSide) {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using RED");
-        return from.getTile().isAdjacent(to.getTile());
-      } else {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is NOT possible");
-        return false;
-      }
+    //}
+//    if (from.getPreviousNode() != null && from.getTile().isJunction() && 1 == 2) {
+//      Point inCommingEdgePoint = from.getIncomingPoint();
+//      Orientation inComingSide = from.getConnectingSide(inCommingEdgePoint);
+//
+//      //Check is the full path is possible
+//      Logger.trace("Check path from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " via incoming " + inComingSide);
+//
+//      boolean isParentOnSwitchSide = from.getTile().isSwitchSide(from.getPreviousNode().getTile());
+//      boolean isParentOnStraightSide = from.getTile().isStraightSide(from.getPreviousNode().getTile());
+//      boolean isParentOnDivergingSide = from.getTile().isDivergingSide(from.getPreviousNode().getTile());
+//
+//      ///Logger.trace("From " + from.getPreviousNode().getId() + " switchSide: " + isParentOnSwitchSide + " straightSide: " + isParentOnStraightSide + " divergingSide: " + isParentOnDivergingSide);
+//      boolean isToOnSwitchSide = from.getTile().isSwitchSide(to.getTile());
+//      boolean isToOnStraightSide = from.getTile().isStraightSide(to.getTile());
+//      boolean isToOnDivergingSide = from.getTile().isDivergingSide(to.getTile());
+//
+//      //Logger.trace("To " + to.getId() + " switchSide: " + isToOnSwitchSide + " straightSide: " + isToOnStraightSide + " divergingSide: " + isToOnDivergingSide);
+//      if (isParentOnSwitchSide && (isToOnDivergingSide || isToOnStraightSide)) {
+//        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using " + (isToOnDivergingSide ? "RED" : "GREEN"));
+//        return from.getTile().isAdjacent(to.getTile());
+//      } else if (isParentOnStraightSide && isToOnSwitchSide) {
+//        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using GREEN");
+//        return from.getTile().isAdjacent(to.getTile());
+//      } else if (isParentOnDivergingSide && isToOnSwitchSide) {
+//        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using RED");
+//        return from.getTile().isAdjacent(to.getTile());
+//      } else {
+//        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is NOT possible");
+//        return false;
+//      }
     } else if (from.getPreviousNode() != null && from.isDirectional()) {
       boolean isToOnArrowSide = from.getTile().isArrowDirection(to.getTile());
       //Logger.trace("From " + from.getId() + " to: " + to.getId() + " isToOnArrowSide: " + isToOnArrowSide);

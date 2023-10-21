@@ -228,7 +228,7 @@ abstract class AbstractTile extends TileBean implements Tile {
         backgroundColor = Color.white;
       }
 
-      AffineTransform backup = g2di.getTransform();
+      //AffineTransform backup = g2di.getTransform();
       AffineTransform trans = new AffineTransform();
 
       g2di.setBackground(backgroundColor);
@@ -262,7 +262,7 @@ abstract class AbstractTile extends TileBean implements Tile {
       g2di.setTransform(trans);
       renderTile(g2di, trackColor, backgroundColor);
 
-      g2di.setTransform(backup);
+      //g2di.setTransform(backup);
 
       //When the line grid is one the scale tile must be a little smaller
       int sw, sh;
@@ -437,16 +437,16 @@ abstract class AbstractTile extends TileBean implements Tile {
     return Collections.EMPTY_SET;
   }
 
-  @Override
-  public Set<Point> getAllPoints() {
-    Set<Point> aps = new HashSet<>();
-    aps.add(getCenter());
-    aps.addAll(this.getAltPoints());
-    return aps;
-  }
+//  @Override
+//  public Set<Point> getAllPoints() {
+//    Set<Point> aps = new HashSet<>();
+//    aps.add(getCenter());
+//    aps.addAll(this.getAltPoints());
+//    return aps;
+//  }
 
   @Override
-  public int getOffsetX() {
+  public final int getOffsetX() {
     return offsetX;
   }
 
@@ -456,7 +456,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  public int getOffsetY() {
+  public final int getOffsetY() {
     return offsetY;
   }
 
@@ -777,14 +777,14 @@ abstract class AbstractTile extends TileBean implements Tile {
     return adjacent;
   }
 
-  @Override
-  public AccessoryValue getSwitchValueTo(Tile other) {
-    if (other.isJunction()) {
-      return other.getSwitchValueTo(this);
-    } else {
-      return AccessoryValue.OFF;
-    }
-  }
+//  @Override
+//  public AccessoryValue getSwitchValueTo(Tile other) {
+//    if (other.isJunction()) {
+//      return other.getSwitchValueTo(this);
+//    } else {
+//      return AccessoryValue.OFF;
+//    }
+//  }
 
   /**
    * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
@@ -792,10 +792,10 @@ abstract class AbstractTile extends TileBean implements Tile {
    * @param other A Tile
    * @return true when other is connected to the switch side of the Turnout
    */
-  @Override
-  public boolean isSwitchSide(Tile other) {
-    return false;
-  }
+//  @Override
+//  public boolean isSwitchSide(Tile other) {
+//    return false;
+//  }
 
   /**
    * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
@@ -803,10 +803,10 @@ abstract class AbstractTile extends TileBean implements Tile {
    * @param other A Tile
    * @return true when other is connected to the diverging side of the Turnout
    */
-  @Override
-  public boolean isDivergingSide(Tile other) {
-    return false;
-  }
+//  @Override
+//  public boolean isDivergingSide(Tile other) {
+//    return false;
+//  }
 
   /**
    * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
@@ -814,10 +814,10 @@ abstract class AbstractTile extends TileBean implements Tile {
    * @param other A Tile
    * @return true when other is connected to the straight side of the Turnout
    */
-  @Override
-  public boolean isStraightSide(Tile other) {
-    return false;
-  }
+//  @Override
+//  public boolean isStraightSide(Tile other) {
+//    return false;
+//  }
 
   /**
    * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to

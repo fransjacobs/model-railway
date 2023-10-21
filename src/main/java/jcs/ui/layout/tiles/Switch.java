@@ -19,9 +19,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import jcs.controller.events.AccessoryEvent;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.entities.TileBean;
@@ -150,6 +151,13 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     return edgeConnections;
   }
 
+  @Override
+  public Set<Point> getAllPoints() {
+    Set<Point> aps = new HashSet<>();
+    aps.add(getCenter());
+    return aps;
+  }
+
   public AccessoryValue getAccessoryValue() {
     if (this.accessoryValue == null) {
       return AccessoryValue.OFF;
@@ -175,97 +183,94 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
    * @param other A Tile
    * @return true when other is connected to the switch side of the Turnout
    */
-  @Override
-  public boolean isSwitchSide(Tile other) {
-    boolean switchSide = false;
-    if (other != null) {
-      Orientation orientation = getOrientation();
-      Point switchPoint = getEdgePoints().get(orientation);
-      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
-      switchSide = otherEdgePoints.contains(switchPoint);
-    }
-    return switchSide && isAdjacent(other);
-  }
-
+//  @Override
+//  public boolean isSwitchSide(Tile other) {
+//    boolean switchSide = false;
+//    if (other != null) {
+//      Orientation orientation = getOrientation();
+//      Point switchPoint = getEdgePoints().get(orientation);
+//      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+//      switchSide = otherEdgePoints.contains(switchPoint);
+//    }
+//    return switchSide && isAdjacent(other);
+//  }
   /**
    *
    * @param other A Tile
    * @return true when other is connected to the diverging side of the Turnout
    */
-  @Override
-  public boolean isDivergingSide(Tile other) {
-    boolean divergingSide = false;
-    if (other != null) {
-      Orientation orientation = this.getOrientation();
-      Direction direction = this.getDirection();
-      Point divergingPoint;
-      switch (orientation) {
-        case NORTH -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.EAST);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.WEST);
-          }
-        }
-        case SOUTH -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.WEST);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.EAST);
-          }
-        }
-        case WEST -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.NORTH);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
-          }
-        }
-        default -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.NORTH);
-          }
-        }
-      }
-
-      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
-      divergingSide = otherEdgePoints.contains(divergingPoint);
-    }
-    return divergingSide && isAdjacent(other);
-  }
-
+//  @Override
+//  public boolean isDivergingSide(Tile other) {
+//    boolean divergingSide = false;
+//    if (other != null) {
+//      Orientation orientation = this.getOrientation();
+//      Direction direction = this.getDirection();
+//      Point divergingPoint;
+//      switch (orientation) {
+//        case NORTH -> {
+//          if (Direction.LEFT == direction) {
+//            divergingPoint = getEdgePoints().get(Orientation.EAST);
+//          } else {
+//            divergingPoint = getEdgePoints().get(Orientation.WEST);
+//          }
+//        }
+//        case SOUTH -> {
+//          if (Direction.LEFT == direction) {
+//            divergingPoint = getEdgePoints().get(Orientation.WEST);
+//          } else {
+//            divergingPoint = getEdgePoints().get(Orientation.EAST);
+//          }
+//        }
+//        case WEST -> {
+//          if (Direction.LEFT == direction) {
+//            divergingPoint = getEdgePoints().get(Orientation.NORTH);
+//          } else {
+//            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
+//          }
+//        }
+//        default -> {
+//          if (Direction.LEFT == direction) {
+//            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
+//          } else {
+//            divergingPoint = getEdgePoints().get(Orientation.NORTH);
+//          }
+//        }
+//      }
+//
+//      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+//      divergingSide = otherEdgePoints.contains(divergingPoint);
+//    }
+//    return divergingSide && isAdjacent(other);
+//  }
   /**
    *
    * @param other A Tile
    * @return true when other is connected to the straight side of the Turnout
    */
-  @Override
-  public boolean isStraightSide(Tile other
-  ) {
-    boolean straightSide = false;
-    if (other != null) {
-      Orientation orientation = this.getOrientation();
-      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
-
-      Point straightPoint;
-      straightPoint = switch (orientation) {
-        case NORTH ->
-          getEdgePoints().get(Orientation.SOUTH);
-        case SOUTH ->
-          getEdgePoints().get(Orientation.NORTH);
-        case WEST ->
-          getEdgePoints().get(Orientation.EAST);
-        default ->
-          getEdgePoints().get(Orientation.WEST);
-      };
-
-      straightSide = otherEdgePoints.contains(straightPoint);
-    }
-    return straightSide && isAdjacent(other);
-  }
-
+//  @Override
+//  public boolean isStraightSide(Tile other
+//  ) {
+//    boolean straightSide = false;
+//    if (other != null) {
+//      Orientation orientation = this.getOrientation();
+//      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
+//
+//      Point straightPoint;
+//      straightPoint = switch (orientation) {
+//        case NORTH ->
+//          getEdgePoints().get(Orientation.SOUTH);
+//        case SOUTH ->
+//          getEdgePoints().get(Orientation.NORTH);
+//        case WEST ->
+//          getEdgePoints().get(Orientation.EAST);
+//        default ->
+//          getEdgePoints().get(Orientation.WEST);
+//      };
+//
+//      straightSide = otherEdgePoints.contains(straightPoint);
+//    }
+//    return straightSide && isAdjacent(other);
+//  }
   public void setRouteValue(AccessoryValue value, Color routeColor) {
     this.routeValue = value;
     this.routeColor = routeColor;
@@ -352,20 +357,19 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     return true;
   }
 
-  @Override
-  public AccessoryValue getSwitchValueTo(Tile other) {
-    AccessoryValue switchDirection;
-    if (this.isDivergingSide(other)) {
-      //Other is on the diverging side
-      switchDirection = AccessoryValue.RED;
-    } else if (this.isSwitchSide(other) || this.isStraightSide(other)) {
-      switchDirection = AccessoryValue.GREEN;
-    } else {
-      switchDirection = AccessoryValue.OFF;
-    }
-    return switchDirection;
-  }
-
+//  @Override
+//  public AccessoryValue getSwitchValueTo(Tile other) {
+//    AccessoryValue switchDirection;
+//    if (this.isDivergingSide(other)) {
+//      //Other is on the diverging side
+//      switchDirection = AccessoryValue.RED;
+//    } else if (this.isSwitchSide(other) || this.isStraightSide(other)) {
+//      switchDirection = AccessoryValue.GREEN;
+//    } else {
+//      switchDirection = AccessoryValue.OFF;
+//    }
+//    return switchDirection;
+//  }
   @Override
   public String getImageKey() {
     StringBuilder sb = getImageKeyBuilder();
