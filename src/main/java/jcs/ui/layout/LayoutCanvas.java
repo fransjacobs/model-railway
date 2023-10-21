@@ -91,6 +91,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private boolean readonly;
   private Mode mode;
   private boolean drawGrid = true;
+  private boolean lineGrid = true;
 
   private Orientation orientation;
   private Direction direction;
@@ -139,6 +140,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, this.readonly);
+    lineGrid = "true".equals(System.getProperty("draw.linegrid", "true"));
   }
 
   @Override
@@ -146,58 +148,62 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g.create();
 
-    Set<Tile> snapshot;
+    Set<Tile> snapshot = new HashSet<>(tiles.values());
+    //ensure ther is no tile which is null... 
     Map<String, RouteElementBean> routeSnapshot;
 
-    //synchronized (tiles) {
-      snapshot = new HashSet<>(tiles.values());
-      routeSnapshot = new HashMap<>(this.selectedRouteElements);
-    //}
+    //snapshot = new HashSet<>(tiles.values());
+    routeSnapshot = new HashMap<>(this.selectedRouteElements);
 
     if (this.drawGrid) {
-      //paintDotGrid(g);
-      paintLineGrid(g);
+      if (lineGrid) {
+        paintLineGrid(g);
+      } else {
+        paintDotGrid(g);
+      }
     } else {
       paintNullGrid(g);
     }
 
     for (Tile tile : snapshot) {
-      if (tile != null) {
-        tile.setDrawOutline(drawGrid);
+      tile.setDrawOutline(drawGrid);
+      tile.setTrackRouteColor(null, null);
 
-        if (selectedTiles.contains(tile.getCenter())) {
-          //tile.setBackgroundColor(Color.yellow);
-          tile.setBackgroundColor(Color.orange);
+      if (selectedTiles.contains(tile.getCenter())) {
+        //tile.setBackgroundColor(Color.yellow);
+        tile.setBackgroundColor(Color.orange);
+      } else {
+        tile.setBackgroundColor(Color.white);
+      }
+
+      if (routeSnapshot.containsKey(tile.getId())) {
+        RouteElementBean re = routeSnapshot.get(tile.getId());
+        tile.setTrackRouteColor(Color.black, re.getIncomingOrientation());
+
+        if (tile.isJunction()) {
+          AccessoryValue av = re.getAccessoryValue();
+          ((Switch) tile).setRouteValue(av, Color.darkGray);
+          Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
         } else {
-          tile.setBackgroundColor(Color.white);
+          tile.setTrackColor(Color.darkGray);
         }
+      } else {
+        tile.setTrackRouteColor(null, null);
 
-        if (routeSnapshot.containsKey(tile.getId())) {
-          //if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
-          if (tile.isJunction()) {
-            RouteElementBean re = routeSnapshot.get(tile.getId());
-            AccessoryValue av = re.getAccessoryValue();
-            ((Switch) tile).setRouteValue(av, Color.darkGray);
-            Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
-          } else {
-            tile.setTrackColor(Color.darkGray);
-          }
+        if (tile.isJunction()) {
+          ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
         } else {
-          //if (TileType.CROSS.equals(tile.getTileType()) || TileType.SWITCH.equals(tile.getTileType())) {
-          if (tile.isJunction()) {
-            ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
-          } else {
-            tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
-          }
-        }
-
-        tile.drawTile(g2, drawGrid);
-
-        //debug
-        if (!this.readonly) {
-          tile.drawCenterPoint(g2, Color.magenta, 3);
+          tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
         }
       }
+
+      tile.drawTile(g2, drawGrid);
+
+      //debug
+      if (!this.readonly) {
+        tile.drawCenterPoint(g2, Color.magenta, 3);
+      }
+      //}
     }
 
     g2.dispose();
@@ -250,8 +256,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void paintDotGrid(Graphics g) {
     if (this.grid != null) {
-      int pw = this.getWidth(); // getSize().width;
-      int ph = this.getHeight(); // getSize().height;
+      int pw = this.getWidth(); 
+      int ph = this.getHeight();
 
       int gw = grid.getWidth();
       int gh = grid.getHeight();
@@ -345,6 +351,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   void setDrawGrid(boolean flag) {
     this.drawGrid = flag;
+    this.repaint();
   }
 
   void setTileType(TileBean.TileType tileType) {
@@ -380,6 +387,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     selectedTiles.clear();
     altTiles.clear();
     tiles.clear();
+    selectedRouteElements.clear();
 
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
@@ -412,17 +420,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   public void saveLayout() {
-    this.executor.execute(() -> saveTiles());
+    Set<Tile> snapshot = new HashSet<>(tiles.values());
+    this.selectedTiles.clear();
+    this.executor.execute(() -> saveTiles(snapshot));
   }
 
-  private void saveTiles() {
-    Logger.debug("Saving " + this.tiles.size() + " tiles...");
-
-    Set<Tile> snapshot;
-    synchronized (tiles) {
-      snapshot = new HashSet<>(tiles.values());
-    }
-
+  private void saveTiles(Set<Tile> snapshot) {
+    Logger.debug("Saving " + snapshot.size() + " tiles...");
     List<TileBean> beans = new LinkedList<>();
 
     for (Tile tile : snapshot) {
@@ -435,8 +439,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     PersistenceFactory.getService().persist(beans);
-
-    this.selectedTiles.clear();
   }
 
   /**
@@ -1112,18 +1114,23 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   void routeLayout() {
-    routeLayoutWithAStar();
-    //this.executor.execute(() -> routeLayoutWithAStar());
+    //routeLayoutWithAStar();
+    this.executor.execute(() -> routeLayoutWithAStar());
+
   }
 
   private void routeLayoutWithAStar() {
     //Make sure the layout is saved
-    this.saveTiles();
+    Set<Tile> snapshot = new HashSet<>(tiles.values());
+    this.saveTiles(snapshot);
 
     AStar astar = new AStar();
     astar.buildGraph(this.tiles.values().stream().collect(Collectors.toList()));
     astar.routeAll();
     astar.persistRoutes();
+    if (this.routesDialog.isVisible()) {
+      this.routesDialog.loadRoutes();
+    }
   }
 
   void showRoutesDialog() {
@@ -1136,6 +1143,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       List<RouteElementBean> rel = route.getRouteElements();
       for (RouteElementBean re : rel) {
         String id = re.getTileId();
+        Orientation incomingSide = re.getIncomingOrientation();
+
         String nodeId = re.getNodeId();
 
         //if (id.startsWith("sw-") || id.startsWith("cs-")) {

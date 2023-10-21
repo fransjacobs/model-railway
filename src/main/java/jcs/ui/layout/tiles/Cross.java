@@ -15,26 +15,30 @@
  */
 package jcs.ui.layout.tiles;
 
-import static jcs.entities.enums.AccessoryValue.GREEN;
-import static jcs.entities.enums.AccessoryValue.RED;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.enums.AccessoryValue;
+import static jcs.entities.enums.AccessoryValue.GREEN;
+import static jcs.entities.enums.AccessoryValue.RED;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.Tile.GRID;
 
 public class Cross extends Switch implements Tile {
 
   public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
   public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
-  public static final int CROSS_OFFSET = GRID;
+  //public static final int CROSS_OFFSET = GRID;
 
   public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
   public static final Color LIGHT_RED = new Color(255, 51, 51);
@@ -46,21 +50,7 @@ public class Cross extends Switch implements Tile {
 
   Cross(TileBean tileBean) {
     super(tileBean);
-    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-      this.width = CROSS_WIDTH;
-      this.height = DEFAULT_HEIGHT;
-      this.offsetX = GRID;
-      this.renderWidth = RENDER_GRID * 4;
-      this.renderHeight = RENDER_GRID * 2;
-      this.renderOffsetX = RENDER_GRID;
-    } else {
-      this.width = DEFAULT_WIDTH;
-      this.height = CROSS_HEIGHT;
-      this.offsetY = GRID;
-      this.renderWidth = RENDER_GRID * 2;
-      this.renderHeight = RENDER_GRID * 4;
-      this.renderOffsetY = RENDER_GRID;
-    }
+    setWidthHeightAndOffsets();
   }
 
   Cross(Orientation orientation, Direction direction, int x, int y) {
@@ -70,48 +60,62 @@ public class Cross extends Switch implements Tile {
   public Cross(Orientation orientation, Direction direction, Point center) {
     super(orientation, direction, center);
     this.type = TileType.CROSS.getTileType();
-    // As a cross is asymetrical an offset is necessary
-    switch (orientation) {
+    setWidthHeightAndOffsets();
+  }
+
+  private void setWidthHeightAndOffsets() {
+    //Reset offsets
+    this.offsetY = 0;
+    this.renderOffsetY = 0;
+    this.offsetX = 0;
+    this.renderOffsetX = 0;
+
+    if (isHorizontal()) {
+      this.width = DEFAULT_WIDTH * 2;
+      this.height = DEFAULT_HEIGHT;
+      this.renderWidth = RENDER_GRID * 4;
+      this.renderHeight = RENDER_GRID * 2;
+
+      this.offsetY = 0;
+      this.renderOffsetY = 0;
+    } else {
+      this.width = DEFAULT_WIDTH;
+      this.height = DEFAULT_HEIGHT * 2;
+      this.renderWidth = RENDER_GRID * 2;
+      this.renderHeight = RENDER_GRID * 4;
+
+      this.offsetX = 0;
+      this.renderOffsetX = 0;
+    }
+
+    //Due to the asymetical shape (center is on the left)
+    //the offset has to be changed with the rotation
+    switch (getOrientation()) {
       case SOUTH -> {
-        this.offsetX = 0;
-        this.offsetY = CROSS_OFFSET;
-        this.width = DEFAULT_WIDTH;
-        this.height = CROSS_HEIGHT;
-        this.renderWidth = RENDER_GRID * 2;
-        this.renderHeight = RENDER_GRID * 4;
+        this.offsetY = +GRID;
         this.renderOffsetY = RENDER_GRID;
       }
       case WEST -> {
-        this.offsetX = -CROSS_OFFSET;
-        this.offsetY = 0;
-        this.width = CROSS_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-        this.renderWidth = RENDER_GRID * 4;
-        this.renderHeight = RENDER_GRID * 2;
+        this.offsetX = -GRID;
         this.renderOffsetX = -RENDER_GRID;
       }
       case NORTH -> {
-        this.offsetX = 0;
-        this.offsetY = -CROSS_OFFSET;
-        this.width = DEFAULT_WIDTH;
-        this.height = CROSS_HEIGHT;
-        this.renderWidth = RENDER_GRID * 2;
-        this.renderHeight = RENDER_GRID * 4;
+        this.offsetY = -GRID;
         this.renderOffsetY = -RENDER_GRID;
       }
       default -> {
-        //East so default
-        this.offsetX = +CROSS_OFFSET;
-        this.offsetY = 0;
-        this.width = CROSS_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-        this.renderWidth = RENDER_GRID * 4;
-        this.renderHeight = RENDER_GRID * 2;
+        //East so default 
+        this.offsetX = +GRID;
         this.renderOffsetX = +RENDER_GRID;
       }
     }
   }
 
+  /**
+   * A Cross has a width in horizontal position of 2 tiles and a height of 1 tile in Vertical position a width of 1 tile and a height of 2 tiles.
+   *
+   * @return the set of center point which mark the position of the Cross
+   */
   @Override
   public Set<Point> getAltPoints() {
     int xx = this.x;
@@ -264,135 +268,10 @@ public class Cross extends Switch implements Tile {
     return edgeConnections;
   }
 
-  /**
-   *
-   * @param other A Tile
-   * @return true when other is connected to the switch side of the Turnout
-   */
-  @Override
-  public boolean isSwitchSide(Tile other) {
-    boolean switchSide = false;
-    if (other != null) {
-      Orientation orientation = getOrientation();
-      Point switchPoint = getEdgePoints().get(orientation);
-      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
-      switchSide = otherEdgePoints.contains(switchPoint);
-    }
-    return switchSide && isAdjacent(other);
-  }
-
-  /**
-   *
-   * @param other A Tile
-   * @return true when other is connected to the diverging side of the Turnout
-   */
-  @Override
-  public boolean isDivergingSide(Tile other) {
-    boolean divergingSide = false;
-    if (other != null) {
-      Orientation orientation = this.getOrientation();
-      Direction direction = this.getDirection();
-      Point divergingPoint;
-      switch (orientation) {
-        case NORTH -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.EAST);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.WEST);
-          }
-        }
-        case SOUTH -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.WEST);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.EAST);
-          }
-        }
-        case WEST -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.NORTH);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
-          }
-        }
-        default -> {
-          if (Direction.LEFT == direction) {
-            divergingPoint = getEdgePoints().get(Orientation.SOUTH);
-          } else {
-            divergingPoint = getEdgePoints().get(Orientation.NORTH);
-          }
-        }
-      }
-
-      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
-      divergingSide = otherEdgePoints.contains(divergingPoint);
-    }
-    return divergingSide && isAdjacent(other);
-  }
-
-  /**
-   *
-   * @param other A Tile
-   * @return true when other is connected to the straight side of the Turnout
-   */
-  @Override
-  public boolean isStraightSide(Tile other
-  ) {
-    boolean straightSide = false;
-    if (other != null) {
-      Orientation orientation = this.getOrientation();
-      Collection<Point> otherEdgePoints = other.getEdgePoints().values();
-
-      Point straightPoint;
-      straightPoint = switch (orientation) {
-        case NORTH ->
-          getEdgePoints().get(Orientation.SOUTH);
-        case SOUTH ->
-          getEdgePoints().get(Orientation.NORTH);
-        case WEST ->
-          getEdgePoints().get(Orientation.EAST);
-        default ->
-          getEdgePoints().get(Orientation.WEST);
-      };
-
-      straightSide = otherEdgePoints.contains(straightPoint);
-    }
-    return straightSide && isAdjacent(other);
-  }
-
   @Override
   public void rotate() {
     super.rotate();
-
-    //Due to the asymetical shape (center is on the left)
-    //the offset has to be changedr the rotation
-    switch (getOrientation()) {
-      case SOUTH -> {
-        this.offsetX = 0;
-        this.offsetY = CROSS_OFFSET;
-        this.width = DEFAULT_WIDTH;
-        this.height = CROSS_HEIGHT;
-      }
-      case WEST -> {
-        this.offsetX = -CROSS_OFFSET;
-        this.offsetY = 0;
-        this.width = CROSS_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-      }
-      case NORTH -> {
-        this.offsetX = 0;
-        this.offsetY = -CROSS_OFFSET;
-        this.width = DEFAULT_WIDTH;
-        this.height = CROSS_HEIGHT;
-      }
-      default -> {
-        //East so default 
-        this.offsetX = +CROSS_OFFSET;
-        this.offsetY = 0;
-        this.width = CROSS_WIDTH;
-        this.height = DEFAULT_HEIGHT;
-      }
-    }
+    setWidthHeightAndOffsets();
   }
 
   @Override
@@ -453,53 +332,193 @@ public class Cross extends Switch implements Tile {
 
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    if (accessoryValue == null) {
-      this.accessoryValue = AccessoryValue.OFF;
-    }
-
-    if (routeValue == null) {
-      this.routeValue = AccessoryValue.OFF;
-    }
-
-    if (this.routeColor == null) {
-      this.routeColor = trackColor;
-    }
-
-    switch (this.accessoryValue) {
-      case RED -> {
-        renderStraight2(g2, Cross.LIGHT_RED, backgroundColor);
-        renderDiagonal(g2, Cross.LIGHT_RED, backgroundColor);
-        renderStraight(g2, Cross.DARK_RED, backgroundColor);
-        renderDiagonal2(g2, Cross.DARK_RED, backgroundColor);
+    if (this.trackRouteColor != null) {
+      if (routeValue == null) {
+        this.routeValue = AccessoryValue.OFF;
       }
-      case GREEN -> {
-        renderDiagonal(g2, Cross.VERY_LIGHT_GREEN, backgroundColor);
-        renderDiagonal2(g2, Cross.VERY_LIGHT_GREEN, backgroundColor);
-        renderStraight(g2, Cross.DARK_GREEN, backgroundColor);
-        renderStraight2(g2, Cross.DARK_GREEN, backgroundColor);
+      if (this.isHorizontal()) {
+        if (AccessoryValue.GREEN == this.routeValue && (Orientation.NORTH == this.incomingSide || Orientation.SOUTH == this.incomingSide)) {
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.GREEN == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide)) {
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderStraight2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+        }
+      } else {
+        //Vertical
+        if (AccessoryValue.GREEN == this.routeValue && (Orientation.NORTH == this.incomingSide || Orientation.SOUTH == this.incomingSide)) {
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderStraight2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.GREEN == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide)) {
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+        }
       }
-      default -> {
-        switch (this.routeValue) {
-          case RED -> {
-            renderStraight2(g2, this.routeColor, backgroundColor);
-            renderDiagonal(g2, this.routeColor, backgroundColor);
-            renderStraight(g2, this.routeColor, backgroundColor);
-            renderDiagonal2(g2, this.routeColor, backgroundColor);
-          }
-          case GREEN -> {
-            renderDiagonal(g2, this.routeColor, backgroundColor);
-            renderDiagonal2(g2, this.routeColor, backgroundColor);
-            renderStraight(g2, this.routeColor, backgroundColor);
-            renderStraight2(g2, this.routeColor, backgroundColor);
-          }
-          default -> {
-            renderStraight(g2, trackColor, backgroundColor);
-            renderStraight2(g2, trackColor, backgroundColor);
-            renderDiagonal(g2, trackColor, backgroundColor);
-            renderDiagonal2(g2, trackColor, backgroundColor);
+    } else {
+      if (accessoryValue == null) {
+        this.accessoryValue = AccessoryValue.OFF;
+      }
+      if (routeValue == null) {
+        this.routeValue = AccessoryValue.OFF;
+      }
+
+      if (this.routeColor == null) {
+        this.routeColor = trackColor;
+      }
+
+      switch (this.accessoryValue) {
+        case RED -> {
+          renderStraight2(g2, Cross.LIGHT_RED, backgroundColor);
+          renderDiagonal(g2, Cross.LIGHT_RED, backgroundColor);
+          renderStraight(g2, Cross.DARK_RED, backgroundColor);
+          renderDiagonal2(g2, Cross.DARK_RED, backgroundColor);
+        }
+        case GREEN -> {
+          renderDiagonal(g2, Cross.VERY_LIGHT_GREEN, backgroundColor);
+          renderDiagonal2(g2, Cross.VERY_LIGHT_GREEN, backgroundColor);
+          renderStraight(g2, Cross.DARK_GREEN, backgroundColor);
+          renderStraight2(g2, Cross.DARK_GREEN, backgroundColor);
+        }
+        default -> {
+          switch (this.routeValue) {
+            case RED -> {
+              renderStraight2(g2, this.routeColor, backgroundColor);
+              renderDiagonal(g2, this.routeColor, backgroundColor);
+              renderStraight(g2, this.routeColor, backgroundColor);
+              renderDiagonal2(g2, this.routeColor, backgroundColor);
+            }
+            case GREEN -> {
+              renderDiagonal(g2, this.routeColor, backgroundColor);
+              renderDiagonal2(g2, this.routeColor, backgroundColor);
+              renderStraight(g2, this.routeColor, backgroundColor);
+              renderStraight2(g2, this.routeColor, backgroundColor);
+            }
+            default -> {
+              renderStraight(g2, trackColor, backgroundColor);
+              renderStraight2(g2, trackColor, backgroundColor);
+              renderDiagonal(g2, trackColor, backgroundColor);
+              renderDiagonal2(g2, trackColor, backgroundColor);
+            }
           }
         }
       }
+    }
+  }
+
+  @Override
+  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    if (from != null && to != null && this.getDirection() != null) {
+      switch (this.getDirection()) {
+        case LEFT -> {
+          if (this.isHorizontal()) {
+            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.NORTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.NORTH)) {
+              return AccessoryValue.RED;
+            } else if ((from == Orientation.EAST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.EAST)) {
+              return AccessoryValue.RED;
+            } else {
+              return AccessoryValue.OFF;
+            }
+          } else {
+            //Vertical
+            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.SOUTH && to == Orientation.WEST) || (from == Orientation.WEST && to == Orientation.SOUTH)) {
+              return AccessoryValue.RED;
+            } else if ((from == Orientation.EAST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.EAST)) {
+              return AccessoryValue.RED;
+            } else {
+              return AccessoryValue.OFF;
+            }
+          }
+        }
+        case RIGHT -> {
+          if (this.isHorizontal()) {
+            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.NORTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.NORTH)) {
+              return AccessoryValue.RED;
+            } else if ((from == Orientation.WEST && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.WEST)) {
+              return AccessoryValue.RED;
+            } else {
+              return AccessoryValue.OFF;
+            }
+          } else {
+            //Vertical
+            if ((from == Orientation.WEST && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.WEST)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.NORTH && to == Orientation.SOUTH) || (from == Orientation.SOUTH && to == Orientation.NORTH)) {
+              return AccessoryValue.GREEN;
+            } else if ((from == Orientation.SOUTH && to == Orientation.EAST) || (from == Orientation.EAST && to == Orientation.SOUTH)) {
+              return AccessoryValue.RED;
+            } else if ((from == Orientation.WEST && to == Orientation.NORTH) || (from == Orientation.NORTH && to == Orientation.WEST)) {
+              return AccessoryValue.RED;
+            } else {
+              return AccessoryValue.OFF;
+            }
+          }
+        }
+        default -> {
+          return AccessoryValue.OFF;
+        }
+      }
+    } else {
+      return AccessoryValue.OFF;
     }
   }
 

@@ -10,10 +10,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import jcs.entities.TileBean.Orientation;
-import static jcs.entities.TileBean.Orientation.EAST;
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.enums.AccessoryValue;
 import org.tinylog.Logger;
 
 public class Graph {
@@ -59,64 +56,25 @@ public class Graph {
     }
 
     if (from.getPreviousNode() != null && from.getTile().isJunction()) {
-      //Check is the full path is possible
-      //Logger.trace("Checking path from: " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId());
+      AccessoryValue routeValue = from.getAccessoryStatus(from, to);
+      Logger.trace("From: " + from.getPreviousNode().getId() + " via " + from.getId() + (AccessoryValue.OFF == routeValue ? " Not possible" : " Using " + routeValue) + " to " + to.getId());
 
-      boolean isParentOnSwitchSide = from.getTile().isSwitchSide(from.getPreviousNode().getTile());
-      boolean isParentOnStraightSide = from.getTile().isStraightSide(from.getPreviousNode().getTile());
-      boolean isParentOnDivergingSide = from.getTile().isDivergingSide(from.getPreviousNode().getTile());
-
-      ///Logger.trace("From " + from.getPreviousNode().getId() + " switchSide: " + isParentOnSwitchSide + " straightSide: " + isParentOnStraightSide + " divergingSide: " + isParentOnDivergingSide);
-      boolean isToOnSwitchSide = from.getTile().isSwitchSide(to.getTile());
-      boolean isToOnStraightSide = from.getTile().isStraightSide(to.getTile());
-      boolean isToOnDivergingSide = from.getTile().isDivergingSide(to.getTile());
-
-      //Logger.trace("To " + to.getId() + " switchSide: " + isToOnSwitchSide + " straightSide: " + isToOnStraightSide + " divergingSide: " + isToOnDivergingSide);
-      if (isParentOnSwitchSide && (isToOnDivergingSide || isToOnStraightSide)) {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using " + (isToOnDivergingSide ? "RED" : "GREEN"));
-        return from.getTile().isAdjacent(to.getTile());
-      } else if (isParentOnStraightSide && isToOnSwitchSide) {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using GREEN");
-        return from.getTile().isAdjacent(to.getTile());
-      } else if (isParentOnDivergingSide && isToOnSwitchSide) {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is possible using RED");
-        return from.getTile().isAdjacent(to.getTile());
-      } else {
-        Logger.trace("Path from " + from.getPreviousNode().getId() + " via " + from.getId() + " to " + to.getId() + " is NOT possible");
-        return false;
-      }
+      return AccessoryValue.OFF != routeValue;
     } else if (from.getPreviousNode() != null && from.isDirectional()) {
       boolean isToOnArrowSide = from.getTile().isArrowDirection(to.getTile());
       //Logger.trace("From " + from.getId() + " to: " + to.getId() + " isToOnArrowSide: " + isToOnArrowSide);
       return from.getTile().isAdjacent(to.getTile()) && isToOnArrowSide;
     } else if (from.getPreviousNode() != null && from.isCrossing()) {
       //Find the edge connection point between the previous and the from node
-      Set<Point> prevPoints = from.getPreviousNode().getEdgePoints();
-      Point prevFromPoint = null;
-      for (Point p : prevPoints) {
-        if (from.getEdgePoints().contains(p)) {
-          prevFromPoint = p;
-          break;
-        }
-      }
+      Point inComingEdgePoint = from.getIncomingPoint();
+      Orientation inComingSide = from.getConnectingSide(inComingEdgePoint);
 
       //find the connection edge point on the opposite side
-      Orientation prevFromOrientation = from.getTile().getEdgeOrientations().get(prevFromPoint);
-      Orientation toConnectingEdgeOrientation = null;
-      switch (prevFromOrientation) {
-        case WEST ->
-          toConnectingEdgeOrientation = Orientation.EAST;
-        case EAST ->
-          toConnectingEdgeOrientation = Orientation.WEST;
-        case NORTH ->
-          toConnectingEdgeOrientation = Orientation.SOUTH;
-        case SOUTH ->
-          toConnectingEdgeOrientation = Orientation.NORTH;
-      }
+      Orientation exitSide = Node.getOppositeSide(inComingSide);
+      Point toInComingPoint = from.getTile().getEdgePoints().get(exitSide);
 
-      Point toConnectingEdgePoint = from.getTile().getEdgePoints().get(toConnectingEdgeOrientation);
       //Check if the to has this edgepoint
-      return to.getEdgePoints().contains(toConnectingEdgePoint);
+      return to.getTile().getEdgePoints().containsValue(toInComingPoint);
     } else {
       return from.getTile().isAdjacent(to.getTile());
     }
@@ -192,11 +150,10 @@ public class Graph {
         currentEdges = current.getEdges();
       }
 
-      Logger.trace("Current " + current.getId() + " has " + currentEdges.size() + " edges...");
-      //for (Edge edge : currentEdges) {
-      //  Logger.trace("Cur: "+current.getId()+" ->"+edge);
-      //}
-
+//      Logger.trace("Current Node " + current.getId() + " has " + currentEdges.size() + " edges...");
+//      for (Edge edge : currentEdges) {
+//        Logger.trace(current.getId() + " -> " + edge);
+//      }
       for (Edge edge : currentEdges) {
         Node neighbor = edge.getOpposite(current);
         if (neighbor != null) {

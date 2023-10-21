@@ -139,6 +139,7 @@ public class AStar {
     for (Node n : path) {
       String nodeId = n.getId() + (n.getSuffix() != null ? n.getSuffix() : "");
       RouteElementBean re = new RouteElementBean(routeId, nodeId, n.getId(), n.getAccessoryState(), elementOrder);
+      re.setIncomingOrientation(n.getIncomingSide());
       elementOrder++;
       rel.add(re);
     }
@@ -158,10 +159,9 @@ public class AStar {
 
     for (Node block : blockNodes) {
       BlockBean bb = new BlockBean(block.getTile().getTileBean());
-      
+
       PersistenceFactory.getService().persist(bb);
     }
-
   }
 
   public RouteBean getRoute(String id) {
@@ -204,11 +204,10 @@ public class AStar {
               String fid = from.getId() + fromSuffix;
               String tid = to.getId() + toSuffix;
 
-              //if ("bk-1+".equals(fid) && "bk-2-".equals(tid)) {
+              //if ("bk-4-".equals(fid) && "bk-2-".equals(tid)) {
               //        || ("bk-3+".equals(fid) && "bk-2-".equals(tid))) {
               //if ("bk-2-".equals(fid) && "bk-3+".equals(tid)) {
               List<Node> path = findPath(from, fromSuffix, to, toSuffix);
-              
 
               if (path.isEmpty()) {
                 Logger.debug("No Path from " + fid + " to " + tid);
@@ -248,9 +247,7 @@ public class AStar {
       for (Point p : neighborPoints) {
         if (tileCache.contains(p)) {
           Node neighbor = graph.getNode(tileCache.getTileId(p));
-          //Crossing has special rules
-          
-          
+
           if (node.getTile().isAdjacent(neighbor.getTile())) {
             double distance;
             if (node.isBlock()) {

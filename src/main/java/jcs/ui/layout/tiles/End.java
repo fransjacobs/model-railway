@@ -20,7 +20,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import jcs.entities.TileBean;
 
 public class End extends AbstractTile implements Tile {
@@ -61,6 +63,13 @@ public class End extends AbstractTile implements Tile {
         neighbors.put(Orientation.EAST, new Point(cx - Tile.GRID * 2, cy));
     }
     return neighbors;
+  }
+
+  @Override
+  public Set<Point> getAllPoints() {
+    Set<Point> aps = new HashSet<>();
+    aps.add(getCenter());
+    return aps;
   }
 
   @Override

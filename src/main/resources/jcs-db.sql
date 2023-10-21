@@ -160,6 +160,7 @@ create table route_elements (
   tile_id            varchar(255) not null,
   accessory_value    varchar(255),
   order_seq          integer not null default 0,
+  incoming_side      varchar(255), 
   constraint roel_pk primary key (id),
   constraint roel_rout_node_tile_un unique (route_id,node_id,tile_id)
 );

@@ -20,7 +20,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import jcs.entities.TileBean;
 
 public class Curved extends AbstractTile implements Tile {
@@ -106,6 +108,13 @@ public class Curved extends AbstractTile implements Tile {
     return edgeConnections;
   }
 
+  @Override
+  public Set<Point> getAllPoints() {
+    Set<Point> aps = new HashSet<>();
+    aps.add(getCenter());
+    return aps;
+  }
+  
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
     Graphics2D g2d = (Graphics2D) g2.create();

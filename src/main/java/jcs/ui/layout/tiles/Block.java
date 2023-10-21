@@ -15,17 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import static jcs.entities.TileBean.Orientation.EAST;
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
-import static jcs.ui.layout.tiles.AbstractTile.drawRotate;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
-import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
-import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
-import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -36,6 +25,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
+import static jcs.entities.TileBean.Orientation.EAST;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
+import static jcs.ui.layout.tiles.AbstractTile.drawRotate;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
+import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
+import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
+import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -104,22 +103,38 @@ public class Block extends AbstractTile implements Tile {
     return alternatives;
   }
 
+  @Override
+  public Set<Point> getAllPoints() {
+    Set<Point> aps = new HashSet<>();
+    aps.add(getCenter());
+    aps.addAll(getAltPoints());
+    return aps;
+  }
+
   public Point getAltPoint(String suffix) {
     int cx = this.getCenterX();
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST -> new Point(cx - Tile.GRID * 2, cy);
-        case NORTH -> new Point(cx, cy - Tile.GRID * 2);
-        case SOUTH -> new Point(cx, cy + Tile.GRID * 2);
-        default -> new Point(cx + Tile.GRID * 2, cy);
+        case WEST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> new Point(cx - Tile.GRID * 2, cy);
-        case SOUTH -> new Point(cx, cy - Tile.GRID * 2);
-        case NORTH -> new Point(cx, cy + Tile.GRID * 2);
-        default -> new Point(cx + Tile.GRID * 2, cy);
+        case EAST ->
+          new Point(cx - Tile.GRID * 2, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 2);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 2);
+        default ->
+          new Point(cx + Tile.GRID * 2, cy);
       };
     }
   }
@@ -172,17 +187,25 @@ public class Block extends AbstractTile implements Tile {
     int cy = this.getCenterY();
     if ("+".equals(suffix)) {
       return switch (this.getOrientation()) {
-        case WEST -> new Point(cx - Tile.GRID * 4, cy);
-        case NORTH -> new Point(cx, cy - Tile.GRID * 4);
-        case SOUTH -> new Point(cx, cy + Tile.GRID * 4);
-        default -> new Point(cx + Tile.GRID * 4, cy);
+        case WEST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case NORTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case SOUTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
       };
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> new Point(cx - Tile.GRID * 4, cy);
-        case SOUTH -> new Point(cx, cy - Tile.GRID * 4);
-        case NORTH -> new Point(cx, cy + Tile.GRID * 4);
-        default -> new Point(cx + Tile.GRID * 4, cy);
+        case EAST ->
+          new Point(cx - Tile.GRID * 4, cy);
+        case SOUTH ->
+          new Point(cx, cy - Tile.GRID * 4);
+        case NORTH ->
+          new Point(cx, cy + Tile.GRID * 4);
+        default ->
+          new Point(cx + Tile.GRID * 4, cy);
       };
     }
   }
@@ -192,10 +215,14 @@ public class Block extends AbstractTile implements Tile {
       return this.getOrientation();
     } else {
       return switch (this.getOrientation()) {
-        case EAST -> Orientation.WEST;
-        case SOUTH -> Orientation.NORTH;
-        case NORTH -> Orientation.SOUTH;
-        default -> Orientation.EAST;
+        case EAST ->
+          Orientation.WEST;
+        case SOUTH ->
+          Orientation.NORTH;
+        case NORTH ->
+          Orientation.SOUTH;
+        default ->
+          Orientation.EAST;
       };
     }
   }
@@ -297,7 +324,7 @@ public class Block extends AbstractTile implements Tile {
     if (!drawOutline && getBlockBean() != null && getBlockBean().getDescription() != null) {
       boolean locInBlock = false;
       if (getBlockBean().getLocomotive() != null
-          && getBlockBean().getLocomotive().getName() != null) {
+              && getBlockBean().getLocomotive().getName() != null) {
         blockText = getBlockBean().getLocomotive().getName();
         locInBlock = true;
       } else {
@@ -312,9 +339,9 @@ public class Block extends AbstractTile implements Tile {
 
       String direction;
       if (locInBlock) {
-        direction =
-            (jcs.entities.enums.Direction.FORWARDS
-                    == this.getBlockBean().getLocomotive().getDirection()
+        direction
+                = (jcs.entities.enums.Direction.FORWARDS
+                == this.getBlockBean().getLocomotive().getDirection()
                 ? ">"
                 : "<");
       } else {
@@ -356,8 +383,8 @@ public class Block extends AbstractTile implements Tile {
     } else {
       // Design mode show description when available
       if (getBlockBean() != null
-          && getBlockBean().getDescription() != null
-          && getBlockBean().getDescription().length() > 0) {
+              && getBlockBean().getDescription() != null
+              && getBlockBean().getDescription().length() > 0) {
         blockText = getBlockBean().getDescription();
       } else {
         blockText = getId();
@@ -391,35 +418,35 @@ public class Block extends AbstractTile implements Tile {
     switch (getOrientation()) {
       case EAST -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-            RENDER_GRID + textHeight / 3,
-            0,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+                RENDER_GRID + textHeight / 3,
+                0,
+                blockText);
       }
       case WEST -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-            RENDER_GRID - textHeight / 3,
-            180,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+                RENDER_GRID - textHeight / 3,
+                180,
+                blockText);
       }
       case NORTH -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-            RENDER_GRID + textHeight / 3,
-            0,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
+                RENDER_GRID + textHeight / 3,
+                0,
+                blockText);
       }
       case SOUTH -> {
         drawRotate(
-            g2d,
-            ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-            RENDER_GRID - textHeight / 3,
-            180,
-            blockText);
+                g2d,
+                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
+                RENDER_GRID - textHeight / 3,
+                180,
+                blockText);
       }
     }
 

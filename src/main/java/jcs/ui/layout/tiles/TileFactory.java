@@ -23,18 +23,18 @@ import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.TileType.SENSOR;
+import static jcs.entities.TileBean.TileType.SIGNAL;
 import static jcs.entities.TileBean.TileType.STRAIGHT;
+import static jcs.entities.TileBean.TileType.SWITCH;
 import org.tinylog.Logger;
 
 /**
- * Factory object to create Tiles
+ * Factory object to create Tiles and cache tiles
  *
  * @author frans
  */
 public class TileFactory {
-
-  private TileFactory() {
-  }
 
   // Keep the records of the used id sequence number
   private static int straightIdSeq;
@@ -47,6 +47,12 @@ public class TileFactory {
   private static int blockIdSeq;
   private static int straightDirectionIdSeq;
   private static int endIdSeq;
+
+//  private static final Map<Point, Tile> tiles = new HashMap<>();
+//  private static final Map<Point, Tile> altTiles = new HashMap<>();
+
+  private TileFactory() {
+  }
 
   private static int nextIdSeq(String id) {
     String idnr = id.substring(3);
@@ -264,4 +270,48 @@ public class TileFactory {
     }
     return tiles;
   }
+
+//  public static void loadTiles(boolean drawGrid, boolean showValues, PropertyChangeListener propertyChangeListener) {
+//    List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
+//
+//    altTiles.clear();
+//    tiles.clear();
+//    
+//    for (TileBean tb : tileBeans) {
+//      Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
+//      tile.setPropertyChangeListener(propertyChangeListener);
+//
+//      switch (tile.getTileType()) {
+//        case SENSOR ->
+//          CommandStationFactory.getCommandStation().addSensorEventListener((SensorEventListener) tile);
+//        case SWITCH ->
+//          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+//        case SIGNAL ->
+//          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+//
+//        default -> {
+//          //Do nothing
+//        }
+//      }
+//      tiles.put(tile.getCenter(), tile);
+//
+//      //Alternative point(s) to be able to find all points
+//      if (!tile.getAltPoints().isEmpty()) {
+//        Set<Point> alt = tile.getAltPoints();
+//        for (Point ap : alt) {
+//          altTiles.put(ap, tile);
+//        }
+//      }
+//    }
+//    Logger.debug("Loaded " + tiles.size() + " Tiles...");
+//  }
+//  
+//  public static Map<Point, Tile> getTileMap() {
+//    return tiles;
+//  }
+//
+//  public static Map<Point, Tile>  getAlternateTileMap() {
+//    return altTiles;
+//  }  
+  
 }

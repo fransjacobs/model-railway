@@ -47,6 +47,9 @@ public interface Tile extends Shape {
 
   void setTrackColor(Color trackColor);
 
+  //Color getTrackRouteColor();
+  void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
+
   Color getBackgroundColor();
 
   void setBackgroundColor(Color backgroundColor);
@@ -92,12 +95,12 @@ public interface Tile extends Shape {
   void setCenter(Point center);
 
   /**
-   * @return a Set of alternative "center" points in case the tile is not a square
+   * @return a Set of alternative points in case the tile is not a square
    */
   Set<Point> getAltPoints();
 
   /**
-   * @return All point relevant for the Object on the Canvas
+   * @return All points relevant for the Object on the Canvas
    */
   Set<Point> getAllPoints();
 
@@ -182,6 +185,8 @@ public interface Tile extends Shape {
 
   Map<Point, Orientation> getEdgeOrientations();
 
+  AccessoryValue accessoryValueForRoute(Orientation from, Orientation to);
+
   /**
    * @param other a tile to check with this tile
    * @return true when the other tile is adjacent to this and the "tracks" connect
@@ -189,32 +194,6 @@ public interface Tile extends Shape {
   boolean isAdjacent(Tile other);
 
   String getIdSuffix(Tile other);
-
-  AccessoryValue getSwitchValueTo(Tile other);
-
-  /**
-   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the switch side of the Turnout
-   */
-  boolean isSwitchSide(Tile other);
-
-  /**
-   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the diverging side of the Turnout
-   */
-  boolean isDivergingSide(Tile other);
-
-  /**
-   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the straight side of the Turnout
-   */
-  boolean isStraightSide(Tile other);
 
   /**
    * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to

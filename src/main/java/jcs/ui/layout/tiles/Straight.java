@@ -20,7 +20,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import jcs.entities.TileBean;
 
 public class Straight extends AbstractTile implements Tile {
@@ -78,6 +80,13 @@ public class Straight extends AbstractTile implements Tile {
       edgeConnections.put(Orientation.SOUTH, new Point(cx, cy + Tile.GRID));
     }
     return edgeConnections;
+  }
+
+  @Override
+  public Set<Point> getAllPoints() {
+    Set<Point> aps = new HashSet<>();
+    aps.add(getCenter());
+    return aps;
   }
 
   protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {

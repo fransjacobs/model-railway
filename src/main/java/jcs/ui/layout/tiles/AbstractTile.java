@@ -34,12 +34,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import jcs.entities.TileBean;
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.enums.AccessoryValue;
 import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
@@ -74,6 +70,9 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   protected Color trackColor;
 
+  protected Color trackRouteColor;
+  protected Orientation incomingSide;
+
   protected Color backgroundColor;
   protected boolean drawName = true;
 
@@ -99,8 +98,7 @@ abstract class AbstractTile extends TileBean implements Tile {
     this(orientation, direction, x, y, null);
   }
 
-  protected AbstractTile(
-          Orientation orientation, Direction direction, int x, int y, Color backgroundColor) {
+  protected AbstractTile(Orientation orientation, Direction direction, int x, int y, Color backgroundColor) {
     this.tileOrientation = orientation.getOrientation();
     this.tileDirection = direction.getDirection();
 
@@ -113,6 +111,7 @@ abstract class AbstractTile extends TileBean implements Tile {
     this.renderHeight = RENDER_HEIGHT;
 
     this.trackColor = DEFAULT_TRACK_COLOR;
+
     this.backgroundColor = backgroundColor;
     if (this.backgroundColor == null) {
       this.backgroundColor = Color.white;
@@ -162,7 +161,6 @@ abstract class AbstractTile extends TileBean implements Tile {
     tb.setSignalAccessoryType(this.signalAccessoryType);
     tb.setAccessoryId(this.accessoryId);
     tb.setSensorId(this.sensorId);
-    // tb.setNeighbours(this.neighbours);
     tb.setAccessoryBean(this.accessoryBean);
     tb.setSensorBean(this.sensorBean);
 
@@ -176,9 +174,17 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public final void setTrackColor(Color trackColor) {
-    if (!Objects.equals(this.trackColor, trackColor)) {
-      this.trackColor = trackColor;
-    }
+    this.trackColor = trackColor;
+  }
+
+  public Color getTrackRouteColor() {
+    return trackRouteColor;
+  }
+
+  @Override
+  public final void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide) {
+    this.trackRouteColor = trackRouteColor;
+    this.incomingSide = incomingSide;
   }
 
   @Override
@@ -188,9 +194,7 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   @Override
   public void setBackgroundColor(Color backgroundColor) {
-    if (!Objects.equals(this.backgroundColor, backgroundColor)) {
-      this.backgroundColor = backgroundColor;
-    }
+    this.backgroundColor = backgroundColor;
   }
 
   /**
@@ -219,7 +223,6 @@ abstract class AbstractTile extends TileBean implements Tile {
         backgroundColor = Color.white;
       }
 
-      AffineTransform backup = g2di.getTransform();
       AffineTransform trans = new AffineTransform();
 
       g2di.setBackground(backgroundColor);
@@ -252,8 +255,6 @@ abstract class AbstractTile extends TileBean implements Tile {
 
       g2di.setTransform(trans);
       renderTile(g2di, trackColor, backgroundColor);
-
-      g2di.setTransform(backup);
 
       //When the line grid is one the scale tile must be a little smaller
       int sw, sh;
@@ -370,10 +371,6 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   protected static void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
-
-    //    Font currentFont = g2d.getFont();
-    //    Font newFont = currentFont.deriveFont(currentFont.getSize() * 0.8F);
-    //    g2d.setFont(newFont);
     g2d.translate((float) x, (float) y);
     g2d.rotate(Math.toRadians(angle));
     g2d.drawString(text, 0, 0);
@@ -429,15 +426,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  public Set<Point> getAllPoints() {
-    Set<Point> aps = new HashSet<>();
-    aps.add(getCenter());
-    aps.addAll(this.getAltPoints());
-    return aps;
-  }
-
-  @Override
-  public int getOffsetX() {
+  public final int getOffsetX() {
     return offsetX;
   }
 
@@ -447,7 +436,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   @Override
-  public int getOffsetY() {
+  public final int getOffsetY() {
     return offsetY;
   }
 
@@ -706,12 +695,12 @@ abstract class AbstractTile extends TileBean implements Tile {
   public boolean isDiagonal() {
     return TileType.CURVED == getTileType();
   }
-  
+
   @Override
   public boolean isCrossing() {
     return TileType.CROSSING == getTileType();
   }
-    
+
   public List<TileBean> getNeighbours() {
     return neighbours;
   }
@@ -768,48 +757,6 @@ abstract class AbstractTile extends TileBean implements Tile {
     return adjacent;
   }
 
-  @Override
-  public AccessoryValue getSwitchValueTo(Tile other) {
-    if (other.isJunction()) {
-      return other.getSwitchValueTo(this);
-    } else {
-      return AccessoryValue.OFF;
-    }
-  }
-
-  /**
-   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the switch side of the Turnout
-   */
-  @Override
-  public boolean isSwitchSide(Tile other) {
-    return false;
-  }
-
-  /**
-   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the diverging side of the Turnout
-   */
-  @Override
-  public boolean isDivergingSide(Tile other) {
-    return false;
-  }
-
-  /**
-   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the straight side of the Turnout
-   */
-  @Override
-  public boolean isStraightSide(Tile other) {
-    return false;
-  }
-
   /**
    * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
    *
@@ -819,6 +766,11 @@ abstract class AbstractTile extends TileBean implements Tile {
   @Override
   public boolean isArrowDirection(Tile other) {
     return true;
+  }
+
+  @Override
+  public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
+    return AccessoryValue.OFF;
   }
 
   protected StringBuilder getImageKeyBuilder() {
@@ -844,8 +796,17 @@ abstract class AbstractTile extends TileBean implements Tile {
     sb.append(g);
     sb.append("#");
     sb.append(b);
+    if (this.incomingSide != null) {
+      sb.append("~");
+      sb.append(this.incomingSide.getOrientation());
+    }
+    if (this.trackRouteColor != null) {
+      sb.append("~");
+      sb.append(this.trackRouteColor.toString());
+    }
+
     sb.append("~");
-    
+
     //Tile specific properties
     //AccessoryValue
     //SignalType
