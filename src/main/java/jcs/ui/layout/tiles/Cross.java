@@ -33,7 +33,6 @@ import static jcs.entities.enums.AccessoryValue.RED;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.Tile.GRID;
-import org.tinylog.Logger;
 
 public class Cross extends Switch implements Tile {
 
@@ -337,9 +336,6 @@ public class Cross extends Switch implements Tile {
       if (routeValue == null) {
         this.routeValue = AccessoryValue.OFF;
       }
-
-      Logger.trace("routeSide: " + this.incomingSide + " Orientation: " + this.getOrientation() + " route value: " + this.routeValue + " Direction: " + this.getDirection());
-
       if (this.isHorizontal()) {
         if (AccessoryValue.GREEN == this.routeValue && (Orientation.NORTH == this.incomingSide || Orientation.SOUTH == this.incomingSide)) {
           renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);

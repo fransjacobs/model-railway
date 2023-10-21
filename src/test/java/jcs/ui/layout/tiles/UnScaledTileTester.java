@@ -39,23 +39,15 @@ public class UnScaledTileTester extends JFrame {
   public UnScaledTileTester(String title) {
     super(title);
 
-    // tileEast = new Straight1(Orientation.EAST, 250, 250);
-    // tileEast = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
+    // tile = new Straight(Orientation.EAST, 250, 250);
+    // tile = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
     // ((Signal) tile).setSignalValue(SignalValue.Hp0);
-    // tileEast = new Curved(Orientation.EAST, 250, 250);
-    // tileEast = new Sensor(Orientation.EAST, 250, 250);
-    // tileEast = new Switch(Orientation.EAST, TileBean.Direction.LEFT, 250, 250);
-
-    // tileEast = new End(Orientation.EAST, 250, 250);
-
-    //tile = new Cross(Orientation.WEST, Direction.RIGHT, 250, 250);
+    // tile = new Curved(Orientation.EAST, 250, 250);
+    // tile = new Sensor(Orientation.EAST, 250, 250);
+    // tile = new Switch(Orientation.EAST, TileBean.Direction.LEFT, 250, 250);
+    // tile = new End(Orientation.EAST, 250, 250);
+    // tile = new Crossing(Orientation.NORTH, 250, 250);
     tile = new Cross(Orientation.NORTH, Direction.LEFT, 250, 750);
-
-    //tile = new Crossing(Orientation.NORTH, 250, 250);
-
-    //    tileSouth = new Straight1(Orientation.SOUTH, 160, 60);
-    //    tileWest = new Straight1(Orientation.WEST, 250, 60);
-    //    tileNorth = new Straight1(Orientation.NORTH, 340, 60);
 
     ((AbstractTile) tile).setScaleImage(false);
   }
@@ -65,16 +57,12 @@ public class UnScaledTileTester extends JFrame {
     Graphics2D g2d = (Graphics2D) g;
     //
     tile.setTrackRouteColor(Color.black, Orientation.WEST);
-    ((Cross)tile).setRouteValue(AccessoryValue.RED, Color.black);
-    
+    ((Cross) tile).setRouteValue(AccessoryValue.RED, Color.black);
+
     tile.drawTile(g2d, true);
     tile.drawBounds(g2d);
     tile.drawCenterPoint(g2d, Color.red);
-    
-    
-    //tile.
 
- 
   }
 
   public static void main(String args[]) {
@@ -82,9 +70,9 @@ public class UnScaledTileTester extends JFrame {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException
-        | InstantiationException
-        | IllegalAccessException
-        | UnsupportedLookAndFeelException ex) {
+            | InstantiationException
+            | IllegalAccessException
+            | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
@@ -93,11 +81,11 @@ public class UnScaledTileTester extends JFrame {
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     // app.pack();
     //app.setSize(500, 500);
-     //app.setSize(1000, 500);
-     app.setSize(500, 1000);
+    //app.setSize(1000, 500);
+    app.setSize(500, 1000);
 
     app.setLocation(
-        dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+            dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 

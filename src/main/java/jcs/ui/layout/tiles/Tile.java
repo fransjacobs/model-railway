@@ -195,32 +195,6 @@ public interface Tile extends Shape {
 
   String getIdSuffix(Tile other);
 
-  //AccessoryValue getSwitchValueTo(Tile other);
-
-  /**
-   * When the Tile is a Turnout then the switch side is the side of the tile which is the "central" point. From the switch side a Green or Red path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the switch side of the Turnout
-   */
-  //boolean isSwitchSide(Tile other);
-
-  /**
-   * When the Tile is a Turnout then the diverging side is the "limp" side of the tile. From the diverging side a Red path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the diverging side of the Turnout
-   */
-  //boolean isDivergingSide(Tile other);
-
-  /**
-   * When the Tile is a Turnout then the Straight side is the "through" side of the tile. From the Straight side a Green path is possible.
-   *
-   * @param other A Tile
-   * @return true when other is connected to the straight side of the Turnout
-   */
-  //boolean isStraightSide(Tile other);
-
   /**
    * When the tile has a specific direction a train may travel then this method will indicate whether the other tile is in on the side where the arrow is pointing to
    *

@@ -166,9 +166,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
 
     for (Tile tile : snapshot) {
-      //if (tile != null) {
       tile.setDrawOutline(drawGrid);
-      tile.setTrackRouteColor(null,null);
+      tile.setTrackRouteColor(null, null);
 
       if (selectedTiles.contains(tile.getCenter())) {
         //tile.setBackgroundColor(Color.yellow);
@@ -189,7 +188,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           tile.setTrackColor(Color.darkGray);
         }
       } else {
-        tile.setTrackRouteColor(null,null);
+        tile.setTrackRouteColor(null, null);
 
         if (tile.isJunction()) {
           ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
@@ -257,8 +256,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void paintDotGrid(Graphics g) {
     if (this.grid != null) {
-      int pw = this.getWidth(); // getSize().width;
-      int ph = this.getHeight(); // getSize().height;
+      int pw = this.getWidth(); 
+      int ph = this.getHeight();
 
       int gw = grid.getWidth();
       int gh = grid.getHeight();
@@ -428,11 +427,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void saveTiles(Set<Tile> snapshot) {
     Logger.debug("Saving " + snapshot.size() + " tiles...");
-
-    //Set<Tile> snapshot;
-    //synchronized (tiles) {
-    //  snapshot = new HashSet<>(tiles.values());
-    //}
     List<TileBean> beans = new LinkedList<>();
 
     for (Tile tile : snapshot) {
@@ -445,8 +439,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     PersistenceFactory.getService().persist(beans);
-
-    //this.selectedTiles.clear();
   }
 
   /**
@@ -1152,7 +1144,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       for (RouteElementBean re : rel) {
         String id = re.getTileId();
         Orientation incomingSide = re.getIncomingOrientation();
-        
+
         String nodeId = re.getNodeId();
 
         //if (id.startsWith("sw-") || id.startsWith("cs-")) {
