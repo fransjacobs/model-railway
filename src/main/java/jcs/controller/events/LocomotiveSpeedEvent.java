@@ -16,7 +16,7 @@
 package jcs.controller.events;
 
 import java.io.Serializable;
-import jcs.controller.cs.can.CanMessage;
+import jcs.controller.marklin.cs.can.CanMessage;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 

@@ -153,6 +153,11 @@
             <artifactId>imgscalr-lib</artifactId>
             <version>4.2</version>
         </dependency> 
+        <dependency>
+            <groupId>com.fazecast</groupId>
+            <artifactId>jSerialComm</artifactId>
+            <version>2.10.3</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

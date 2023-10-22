@@ -15,25 +15,25 @@
  */
 package jcs;
 
-import jcs.ui.util.ProcessFactory;
 import java.awt.GraphicsEnvironment;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.controller.CommandStation;
+import jcs.controller.CommandStationFactory;
 import jcs.controller.events.PowerEvent;
+import jcs.controller.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
-import jcs.controller.CommandStationFactory;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.MacOsAdapter;
+import jcs.ui.util.ProcessFactory;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
-import jcs.controller.events.PowerEventListener;
-import jcs.controller.CommandStation;
 
 /**
  *
@@ -157,6 +157,8 @@ public class JCS extends Thread {
   }
 
   public static void main(String[] args) {
+    System.setProperty("fazecast.jSerialComm.appid", "JCS");
+
     if (GraphicsEnvironment.isHeadless()) {
       Logger.error("This JDK environment is headless, can't start a GUI!");
       //Quit....

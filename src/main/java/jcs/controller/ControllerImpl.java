@@ -35,7 +35,6 @@ import java.util.TimerTask;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.JCS;
-import jcs.controller.cs.MarklinCentralStation;
 import jcs.controller.events.AccessoryEvent;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEvent;
@@ -49,6 +48,7 @@ import jcs.controller.events.MeasurementEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEvent;
 import jcs.controller.events.SensorEventListener;
+import jcs.controller.marklin.cs.MarklinCentralStation;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
@@ -100,7 +100,7 @@ public class ControllerImpl implements CommandStation {
     if (centralStation != null && centralStation.isConnected()) {
       return centralStation.isConnected();
     }
-    String controllerImplClassName = System.getProperty("vendorController");
+    String controllerImplClassName = System.getProperty("commandStation.Marklin.CentralStation");
     JCS.logProgress("Connecting to: " + controllerImplClassName);
 
     if (centralStation == null) {

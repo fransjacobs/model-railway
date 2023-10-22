@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import jcs.controller.cs.SxxBus;
-import jcs.controller.cs.can.CanMessage;
+import jcs.controller.marklin.cs.SxxBus;
+import jcs.controller.marklin.cs.can.CanMessage;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 

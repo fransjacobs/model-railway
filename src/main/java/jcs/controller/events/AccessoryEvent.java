@@ -16,7 +16,7 @@
 package jcs.controller.events;
 
 import java.io.Serializable;
-import jcs.controller.cs.can.CanMessage;
+import jcs.controller.marklin.cs.can.CanMessage;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;

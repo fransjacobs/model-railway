@@ -179,7 +179,10 @@ create table jcs_properties (
 
 create unique index prop_pk_idx on jcs_properties (p_key);
 
-insert into jcs_properties (p_key,p_value) values ('vendorController','jcs.controller.cs.MarklinCentralStationImpl');
+insert into jcs_properties (p_key,p_value) values ('commandStation.Marklin.6051','jcs.controller.marklin.m6051.M6051Impl');
+insert into jcs_properties (p_key,p_value) values ('commandStation.Marklin.CentralStation','jcs.controller.marklin.cs.MarklinCentralStationImpl');
+insert into jcs_properties (p_key,p_value) values ('commandStation.DCC_EX','jcs.controller.dcc_ex.DCC_EXImpl');
+
 insert into jcs_properties (p_key,p_value) values ('default.switchtime','500');
 
 commit;

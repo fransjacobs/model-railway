@@ -15,7 +15,7 @@
  */
 package jcs.controller.events;
 
-import jcs.controller.cs.can.CanMessage;
+import jcs.controller.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
 
 /**
