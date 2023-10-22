@@ -323,8 +323,7 @@ public class Block extends AbstractTile implements Tile {
 
     if (!drawOutline && getBlockBean() != null && getBlockBean().getDescription() != null) {
       boolean locInBlock = false;
-      if (getBlockBean().getLocomotive() != null
-              && getBlockBean().getLocomotive().getName() != null) {
+      if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
         blockText = getBlockBean().getLocomotive().getName();
         locInBlock = true;
       } else {
@@ -339,11 +338,7 @@ public class Block extends AbstractTile implements Tile {
 
       String direction;
       if (locInBlock) {
-        direction
-                = (jcs.entities.enums.Direction.FORWARDS
-                == this.getBlockBean().getLocomotive().getDirection()
-                ? ">"
-                : "<");
+        direction = (jcs.entities.enums.Direction.FORWARDS == this.getBlockBean().getLocomotive().getDirection() ? ">" : "<");
       } else {
         direction = "";
       }
@@ -382,9 +377,7 @@ public class Block extends AbstractTile implements Tile {
       }
     } else {
       // Design mode show description when available
-      if (getBlockBean() != null
-              && getBlockBean().getDescription() != null
-              && getBlockBean().getDescription().length() > 0) {
+      if (getBlockBean() != null && getBlockBean().getDescription() != null && getBlockBean().getDescription().length() > 0) {
         blockText = getBlockBean().getDescription();
       } else {
         blockText = getId();

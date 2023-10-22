@@ -91,6 +91,7 @@ public class BlockDialog extends javax.swing.JDialog {
 
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
+        Logger.tags("bb is null for "+this.block.getId());
         bb = new BlockBean();
         bb.setTile(block);
         bb.setTileId(this.block.getId());

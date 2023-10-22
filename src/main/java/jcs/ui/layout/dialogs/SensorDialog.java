@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import jcs.entities.SensorBean;
-import jcs.persistence.PersistenceFactory;
 import jcs.controller.CommandStationFactory;
+import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
+import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -97,7 +97,13 @@ public class SensorDialog extends javax.swing.JDialog {
     this.sensor.setSensorBean(sb);
     this.sensorComboBoxModel.setSelectedItem(sb);
 
-    this.nameTF.setText(this.sensor.getSensorBean().getName());
+    if (this.sensor.getSensorBean().getName() != null) {
+      this.nameTF.setText(this.sensor.getSensorBean().getName());
+    } else {
+      //Use the tile name
+      this.nameTF.setText(this.sensor.getTileBean().getId());
+    }
+
     if (this.sensor.getSensorBean().getDeviceId() != null) {
       this.deviceIdSpinner.setValue(this.sensor.getSensorBean().getDeviceId());
     }

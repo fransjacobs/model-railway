@@ -28,9 +28,9 @@ public class StraightDirection extends Straight {
     super(tileBean);
   }
 
-//  StraightDirection(Orientation orientation, int x, int y) {
-//    this(orientation, new Point(x, y));
-//  }
+  StraightDirection(Orientation orientation, int x, int y) {
+    this(orientation, new Point(x, y));
+  }
 
   StraightDirection(Orientation orientation, Point center) {
     super(orientation, center);
@@ -68,7 +68,7 @@ public class StraightDirection extends Straight {
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(Color.green.darker());
 
-    g2.fillPolygon(new int[]{15, 15, 27}, new int[]{13, 27, 20}, 3);
+    g2.fillPolygon(new int[]{150, 150, 270}, new int[]{130, 270, 200}, 3);
   }
 
   @Override

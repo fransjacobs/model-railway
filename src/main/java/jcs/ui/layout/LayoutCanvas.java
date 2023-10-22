@@ -203,7 +203,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       if (!this.readonly) {
         tile.drawCenterPoint(g2, Color.magenta, 3);
       }
-      //}
     }
 
     g2.dispose();
@@ -256,7 +255,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void paintDotGrid(Graphics g) {
     if (this.grid != null) {
-      int pw = this.getWidth(); 
+      int pw = this.getWidth();
       int ph = this.getHeight();
 
       int gw = grid.getWidth();
@@ -416,6 +415,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     Logger.debug("Loaded " + tiles.size() + " Tiles...");
+
     this.repaint();
   }
 
@@ -571,10 +571,16 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private void formMouseClicked(MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
     Logger.trace("(" + evt.getX() + "," + evt.getY() + ") Snapped (" + p.getX() + "," + p.getY() + ") button " + evt.getButton() + " " + evt.paramString());
-    //Logger.trace("Snapped (" + p.getX() + "," + p.getY() + ") Grid Tile: " + LayoutUtil.getGridX(evt.getX()) + "," + LayoutUtil.getGridY(evt.getY()) + " Current Mode: " + this.mode);
-    Tile tile = this.findTile(p);
 
+    //Clear current selection
     this.selectedTiles.clear();
+    //Try to find a tile on the selected point
+
+    Tile tile = this.findTile(p);
+    if (tile != null) {
+      Logger.trace("Selected Tile: " + tile.getId());
+    }
+
     if (MouseEvent.BUTTON1 == evt.getButton() || MouseEvent.BUTTON3 == evt.getButton()) {
       if (tile != null) {
         Logger.trace("Selecting " + tile + " @ " + p);
@@ -585,7 +591,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     switch (this.mode) {
       case ADD -> {
         if (MouseEvent.BUTTON1 == evt.getButton()) {
-          this.selectedTiles.clear();
+          //this.selectedTiles.clear();
 
           Logger.trace("Adding tile: " + this.tileType + " @ (" + p.x + ", " + p.y + ")");
           addTile(p);
@@ -624,6 +630,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       case SENSOR -> {
       }
       case BLOCK -> {
+        Logger.trace("Show BlockDialog for " + tile.getId());
         //show the Block control dialog so tha a locomotive can be assigned to the block
         BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), (Block) tile);
         bcd.setVisible(true);
@@ -675,6 +682,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       Point tcp = this.selectedTiles.iterator().next();
       Tile tile = findTile(tcp);
       TileBean.TileType tt = tile.getTileType();
+      
+      Logger.trace("Seleted tile "+tile.getId()+" TileType "+tt);
+            
       switch (tt) {
         case END -> {
           showRotate = true;
@@ -705,6 +715,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           td.setVisible(true);
         }
         case BLOCK -> {
+          Logger.trace("Show BlockDialog for "+tile.getId());
           BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile);
           bd.setVisible(true);
         }

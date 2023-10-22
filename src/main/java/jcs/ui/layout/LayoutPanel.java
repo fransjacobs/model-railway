@@ -905,7 +905,8 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_gridBtnActionPerformed
 
     private void formComponentResized(ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-      Logger.debug(evt.getComponent().getSize());// TODO add your handling code here:
+       //TODO!       
+       //Logger.debug(evt.getComponent().getSize());// TODO add your handling code here:
     }//GEN-LAST:event_formComponentResized
 
     private void crossLBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossLBtnActionPerformed

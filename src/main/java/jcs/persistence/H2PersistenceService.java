@@ -20,9 +20,12 @@ import com.dieselpoint.norm.DbException;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
@@ -368,9 +371,7 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public void remove(AccessoryBean accessory) {
     // First ensure the linked tile records are decoupled
-    database
-            .sql("update tiles set sensor_id = null where accessory_id =?", accessory.getId())
-            .execute();
+    database.sql("update tiles set sensor_id = null where accessory_id =?", accessory.getId()).execute();
     int rows = database.delete(accessory).getRowsAffected();
     Logger.trace(rows + " Accessories deleted");
   }
@@ -386,6 +387,7 @@ public class H2PersistenceService implements PersistenceService {
       }
 
       if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
+        Logger.trace("Look for blok "+tileBean.getId());
         tileBean.setBlockBean(this.getBlock(tileBean.getId()));
       }
     }
@@ -427,9 +429,12 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public TileBean persist(TileBean tileBean) {
+    if (tileBean == null) {
+      return null;
+    }
     TileBean tb;
-    if (tileBean instanceof Tile) {
-      tb = ((Tile) tileBean).getTileBean();
+    if (tileBean instanceof Tile tile) {
+      tb = tile.getTileBean();
     } else {
       tb = tileBean;
     }
@@ -442,21 +447,48 @@ public class H2PersistenceService implements PersistenceService {
         database.insert(tb);
       }
     }
+
+    if (tileBean.getBlockBean() != null) {
+      this.persist(tileBean.getBlockBean());
+    }
+
     return tileBean;
   }
 
   @Override
   public void remove(TileBean tileBean) {
+    if (tileBean.getBlockBean() != null) {
+      BlockBean bb = tileBean.getBlockBean();
+      this.remove(bb);
+    }
     int rows = database.delete(tileBean).getRowsAffected();
-    Logger.trace(rows + " TileBeans deleted");
+    Logger.trace(rows + " TileBean(s) deleted");
   }
 
   @Override
   public void persist(List<TileBean> tiles) {
-    removeAllBlocks();
-    removeAllRoutes();
+    List<TileBean> dbTiles = this.getTileBeans();
+    Set<String> newTileIds = new HashSet<>();
+    for (TileBean tb : tiles) {
+      newTileIds.add(tb.getId());
+    }
 
-    database.sql("delete from tiles").execute();
+    //Build a list of tiles which are not in the toPersistTiles
+    List<TileBean> tilesToRemove = new ArrayList<>();
+    for (TileBean tb : dbTiles) {
+      if (!newTileIds.contains(tb.getId())) {
+        tilesToRemove.add(tb);
+      }
+    }
+    //Tiles need to be removed so clear all routes
+    if (!tilesToRemove.isEmpty()) {
+      removeAllRoutes();
+    }
+
+    for (TileBean tb : tilesToRemove) {
+      this.remove(tb);
+    }
+
     for (TileBean tb : tiles) {
       persist(tb);
     }
@@ -631,9 +663,7 @@ public class H2PersistenceService implements PersistenceService {
       }
     }
 
-    if (block != null
-            && block.getId() != null
-            && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
+    if (block != null && block.getId() != null && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
       database.update(block).getRowsAffected();
     } else {
       database.insert(block).getRowsAffected();
