@@ -66,11 +66,11 @@ public class OptionDialog extends javax.swing.JDialog {
     topPanel = new JPanel();
     centerPanel = new JPanel();
     prefsTP = new JTabbedPane();
+    commandStationPanel = new CommandStationPanel();
     locomotivePanel = new LocomotivePreferencesPanel();
-    propertiesPanel = new PropertiesPanel();
-    signalPanel = new SignalPreferencesPanel();
     turnoutPanel = new TurnoutPreferencesPanel();
-    controllerInfoPanel1 = new ControllerInfoPanel();
+    signalPanel = new SignalPreferencesPanel();
+    propertiesPanel = new PropertiesPanel();
     southPanel = new JPanel();
     closeBtn = new JButton();
 
@@ -97,20 +97,20 @@ public class OptionDialog extends javax.swing.JDialog {
       }
     });
 
+    commandStationPanel.setName("commandStationPanel"); // NOI18N
+    prefsTP.addTab("Command Station", commandStationPanel);
+
     locomotivePanel.setName("locomotivePanel"); // NOI18N
     prefsTP.addTab("Locomotives", locomotivePanel);
-
-    propertiesPanel.setName("propertiesPanel"); // NOI18N
-    prefsTP.addTab("Properties", propertiesPanel);
-
-    signalPanel.setName("signalPanel"); // NOI18N
-    prefsTP.addTab("Signals", signalPanel);
 
     turnoutPanel.setName("turnoutPanel"); // NOI18N
     prefsTP.addTab("Turnouts", turnoutPanel);
 
-    controllerInfoPanel1.setName("controllerInfoPanel1"); // NOI18N
-    prefsTP.addTab("Controller", controllerInfoPanel1);
+    signalPanel.setName("signalPanel"); // NOI18N
+    prefsTP.addTab("Signals", signalPanel);
+
+    propertiesPanel.setName("propertiesPanel"); // NOI18N
+    prefsTP.addTab("Properties", propertiesPanel);
 
     centerPanel.add(prefsTP, BorderLayout.CENTER);
     prefsTP.getAccessibleContext().setAccessibleName("Locomotives");
@@ -186,7 +186,7 @@ public class OptionDialog extends javax.swing.JDialog {
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPanel centerPanel;
   private JButton closeBtn;
-  private ControllerInfoPanel controllerInfoPanel1;
+  private CommandStationPanel commandStationPanel;
   private LocomotivePreferencesPanel locomotivePanel;
   private JTabbedPane prefsTP;
   private PropertiesPanel propertiesPanel;

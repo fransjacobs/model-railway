@@ -227,7 +227,7 @@ public class PropertiesPanel extends JPanel {
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
     int selectedRow = this.propertiesTable.getSelectedRow();
     JCSPropertyBean p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (CommandStationFactory.getDispatcher() != null) {
       Logger.trace("Delete the Property: " + p);
       PersistenceFactory.getService().remove(p);
     }

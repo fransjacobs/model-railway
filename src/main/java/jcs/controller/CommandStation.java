@@ -15,30 +15,23 @@
  */
 package jcs.controller;
 
-import java.beans.PropertyChangeListener;
-import jcs.controller.events.AccessoryEventListener;
-import jcs.controller.events.LocomotiveDirectionEventListener;
-import jcs.controller.events.LocomotiveFunctionEventListener;
-import jcs.controller.events.LocomotiveSpeedEventListener;
-import jcs.controller.events.MeasurementEventListener;
+import jcs.entities.MeasurementChannel;
+import jcs.entities.Device;
+import java.awt.Image;
+import java.util.List;
+import java.util.Map;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEventListener;
+import jcs.controller.events.LocomotiveSpeedEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
 
-/**
- * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For future use the implementation of the Repository could be changed to
- * an other storage provider
- *
- * @author frans
- */
 public interface CommandStation {
-
-  void switchPower(boolean on);
-
-  boolean isPowerOn();
 
   boolean connect();
 
@@ -46,25 +39,31 @@ public interface CommandStation {
 
   void disconnect();
 
+  boolean isPower();
+
+  boolean power(boolean on);
+
+  void changeDirection(int locUid, Direction direction);
+
+  void changeVelocity(int locUid, int speed);
+
+  void changeFunctionValue(int locUid, int functionNumber, boolean flag);
+
+  void switchAccessory(int address, AccessoryValue value);
+
+  void switchAccessory(int address, AccessoryValue value, int switchTime);
+
   void addPowerEventListener(PowerEventListener listener);
 
   void removePowerEventListener(PowerEventListener listener);
 
-  void changeLocomotiveDirection(Direction direction, LocomotiveBean locomotive);
+  void addSensorEventListener(SensorEventListener listener);
 
-  void changeLocomotiveSpeed(Integer speed, LocomotiveBean locomotive);
-
-  void changeLocomotiveFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
-
-  void switchAccessory(AccessoryValue value, AccessoryBean accessory);
+  void removeSensorEventListener(SensorEventListener listener);
 
   void addAccessoryEventListener(AccessoryEventListener listener);
 
   void removeAccessoryEventListener(AccessoryEventListener listener);
-
-  void addSensorEventListener(SensorEventListener listener);
-
-  void removeSensorEventListener(SensorEventListener listener);
 
   void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener);
 
@@ -78,22 +77,22 @@ public interface CommandStation {
 
   void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
-  void addMeasurementEventListener(MeasurementEventListener listener);
+  List<LocomotiveBean> getLocomotives();
 
-  void removeMeasurementListener(MeasurementEventListener listener);
+  Image getLocomotiveImage(String icon);
 
-  String getControllerName();
+  Image getLocomotiveFunctionImage(String icon);
 
-  String getControllerSerialNumber();
+  List<AccessoryBean> getSwitches();
 
-  String getControllerArticleNumber();
+  List<AccessoryBean> getSignals();
 
-  void synchronizeLocomotivesWithController(PropertyChangeListener progressListener);
+  Device getDevice();
 
-  void synchronizeTurnoutsWithController();
+  List<Device> getDevices();
 
-  void synchronizeSignalsWithController();
+  void clearCaches();
 
-  //Image getFunctionImage(String imageName);
-  //void updateGuiStatuses();
+  Map<Integer, MeasurementChannel> getTrackMeasurements();
+
 }

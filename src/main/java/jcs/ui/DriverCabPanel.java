@@ -49,22 +49,22 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   private void postInit() {
-    if (CommandStationFactory.getCommandStation() != null) {
-      this.power = CommandStationFactory.getCommandStation().isPowerOn();
+    if (CommandStationFactory.getDispatcher() != null) {
+      this.power = CommandStationFactory.getDispatcher().isPowerOn();
 
-      CommandStationFactory.getCommandStation().addLocomotiveSpeedEventListener(this);
-      CommandStationFactory.getCommandStation().addLocomotiveDirectionEventListener(this);
-      CommandStationFactory.getCommandStation().addPowerEventListener(this);
+      CommandStationFactory.getDispatcher().addLocomotiveSpeedEventListener(this);
+      CommandStationFactory.getDispatcher().addLocomotiveDirectionEventListener(this);
+      CommandStationFactory.getDispatcher().addPowerEventListener(this);
     }
   }
 
   @Override
   public void setVisible(boolean aFlag) {
-    if (!aFlag && CommandStationFactory.getCommandStation() != null) {
-      CommandStationFactory.getCommandStation().removeLocomotiveSpeedEventListener(this);
-      CommandStationFactory.getCommandStation().removeLocomotiveDirectionEventListener(this);
-      CommandStationFactory.getCommandStation().removePowerEventListener(this);
-      CommandStationFactory.getCommandStation().removeLocomotiveFunctionEventListener(this.functionsPanel);
+    if (!aFlag && CommandStationFactory.getDispatcher() != null) {
+      CommandStationFactory.getDispatcher().removeLocomotiveSpeedEventListener(this);
+      CommandStationFactory.getDispatcher().removeLocomotiveDirectionEventListener(this);
+      CommandStationFactory.getDispatcher().removePowerEventListener(this);
+      CommandStationFactory.getDispatcher().removeLocomotiveFunctionEventListener(this.functionsPanel);
     }
     super.setVisible(aFlag);
   }
@@ -298,10 +298,10 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }//GEN-LAST:event_speedSliderStateChanged
 
   private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
-    if (CommandStationFactory.getCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+    if (CommandStationFactory.getDispatcher() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
 
       Logger.trace("Changing speeed of " + locomotiveBean + " to: " + newVelocity);
-      CommandStationFactory.getCommandStation().changeLocomotiveSpeed(newVelocity, locomotiveBean);
+      CommandStationFactory.getDispatcher().changeLocomotiveSpeed(newVelocity, locomotiveBean);
 
       double max = this.speedGauge.getMaxValue();
       double gaugeValue = Math.round(max / 1000 * newVelocity);
@@ -314,9 +314,9 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   private void changeDirection(Direction newDirection, LocomotiveBean locomotiveBean) {
-    if (CommandStationFactory.getCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+    if (CommandStationFactory.getDispatcher() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
       Logger.trace("Changing direction of " + locomotiveBean + " to: " + newDirection);
-      CommandStationFactory.getCommandStation().changeLocomotiveDirection(newDirection, locomotiveBean);
+      CommandStationFactory.getDispatcher().changeLocomotiveDirection(newDirection, locomotiveBean);
     }
   }
 

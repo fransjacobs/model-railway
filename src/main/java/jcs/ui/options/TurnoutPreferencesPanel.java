@@ -503,7 +503,7 @@ public class TurnoutPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    CommandStationFactory.getCommandStation().synchronizeTurnoutsWithController();
+    CommandStationFactory.getDispatcher().synchronizeTurnoutsWithCommandStation();
     refresh();
   }
 

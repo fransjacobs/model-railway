@@ -45,42 +45,42 @@ public class AccessoryBean {
   }
 
   public AccessoryBean(
-      String id,
-      Integer address,
-      String name,
-      String type,
-      Integer position,
-      Integer switchTime,
-      String decoderType,
-      String decoder) {
+          String id,
+          Integer address,
+          String name,
+          String type,
+          Integer position,
+          Integer switchTime,
+          String decoderType,
+          String decoder) {
     this(
-        id,
-        address,
-        name,
-        type,
-        position,
-        null,
-        switchTime,
-        decoderType,
-        decoder,
-        null,
-        null,
-        null);
+            id,
+            address,
+            name,
+            type,
+            position,
+            null,
+            switchTime,
+            decoderType,
+            decoder,
+            null,
+            null,
+            null);
   }
 
   public AccessoryBean(
-      String id,
-      Integer address,
-      String name,
-      String type,
-      Integer position,
-      Integer states,
-      Integer switchTime,
-      String decoderType,
-      String decoder,
-      String group,
-      String icon,
-      String iconFile) {
+          String id,
+          Integer address,
+          String name,
+          String type,
+          Integer position,
+          Integer states,
+          Integer switchTime,
+          String decoderType,
+          String decoder,
+          String group,
+          String icon,
+          String iconFile) {
     this.id = id;
     this.address = address;
     this.name = name;
@@ -296,27 +296,27 @@ public class AccessoryBean {
 
   public String toLogString() {
     return "AccessoryBean{"
-        + "id="
-        + id
-        + ", address="
-        + address
-        + ", name="
-        + name
-        + ", type="
-        + type
-        + ", position="
-        + position
-        + ", switchTime="
-        + switchTime
-        + ", decoderType="
-        + decoderType
-        + ", decoder="
-        + decoder
-        + ", group="
-        + group
-        + ", states="
-        + states
-        + "}";
+            + "id="
+            + id
+            + ", address="
+            + address
+            + ", name="
+            + name
+            + ", type="
+            + type
+            + ", position="
+            + position
+            + ", switchTime="
+            + switchTime
+            + ", decoderType="
+            + decoderType
+            + ", decoder="
+            + decoder
+            + ", group="
+            + group
+            + ", states="
+            + states
+            + "}";
   }
 
   @Override

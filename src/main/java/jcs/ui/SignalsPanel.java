@@ -42,7 +42,7 @@ public class SignalsPanel extends javax.swing.JPanel {
   }
 
   public void refreshPanel() {
-    if (CommandStationFactory.getCommandStation() == null) {
+    if (CommandStationFactory.getDispatcher() == null) {
       return;
     }
     //stub
@@ -68,7 +68,7 @@ public class SignalsPanel extends javax.swing.JPanel {
       }
 
       this.add(signalRowPanel);
-      CommandStationFactory.getCommandStation().addAccessoryEventListener(signalRowPanel);
+      CommandStationFactory.getDispatcher().addAccessoryEventListener(signalRowPanel);
     }
     GridLayout gl = new GridLayout(rows, cols);
     this.setLayout(gl);

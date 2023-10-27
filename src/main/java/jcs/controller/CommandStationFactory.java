@@ -18,6 +18,7 @@ package jcs.controller;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import jcs.JCS;
+import jcs.entities.CommandStationBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.util.RunUtil;
@@ -25,11 +26,12 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author frans
+ * Factory to create the Dispatcher and CommandStation
  */
 public class CommandStationFactory {
 
-  private CommandStation controller;
+  private Dispatcher dispatcher;
+  private CommandStation commandStation;
   private static CommandStationFactory instance;
 
   private CommandStationFactory() {
@@ -38,9 +40,45 @@ public class CommandStationFactory {
   public static CommandStationFactory getInstance() {
     if (instance == null) {
       instance = new CommandStationFactory();
-      instance.aquireCommandStationImpl();
     }
     return instance;
+  }
+
+  public static Dispatcher getDispatcher() {
+    return CommandStationFactory.getInstance().getDispatcherImpl();
+  }
+
+  private Dispatcher getDispatcherImpl() {
+    if (dispatcher == null) {
+      instance.aquireDispatcher();
+    }
+    return dispatcher;
+  }
+
+  private boolean aquireDispatcher() {
+    RunUtil.loadProperties();
+    loadPersistentJCSProperties();
+    //Load the external properties
+    RunUtil.loadExternalProperties();
+    String dispatcherImplClassName = System.getProperty("dispatcher");
+
+    Logger.trace("Try to instantiate: " + dispatcherImplClassName);
+
+    if (dispatcherImplClassName != null) {
+      try {
+        this.dispatcher = (Dispatcher) Class.forName(dispatcherImplClassName).getDeclaredConstructor().newInstance();
+      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+        Logger.error("Can't instantiate a '" + dispatcherImplClassName + "' " + ex.getMessage());
+        Logger.trace(ex);
+      }
+    } else {
+      Logger.error("Can't find implementation class for 'dispatcher'!");
+    }
+
+    if (dispatcher != null) {
+      Logger.trace("Using " + dispatcher.getClass().getSimpleName() + " as Dispatcher...");
+    }
+    return dispatcher != null;
   }
 
   public static CommandStation getCommandStation() {
@@ -48,33 +86,25 @@ public class CommandStationFactory {
   }
 
   private CommandStation getCommandStationImpl() {
-    return controller;
+    if (commandStation == null) {
+      instance.aquireCommandStation();
+    }
+    return commandStation;
   }
 
-  private boolean aquireCommandStationImpl() {
-    RunUtil.loadProperties();
-    loadPersistentJCSProperties();
-    //Load the external properties
-    RunUtil.loadExternalProperties();
-    String commandStationImplClassName = System.getProperty("controller");
+  private boolean aquireCommandStation() {
+    CommandStationBean bean = PersistenceFactory.getService().getDefaultCommandStation();
+    String commandStationImplClassName = bean.getClassName();
 
-    Logger.trace("Try to instantiate: " + commandStationImplClassName);
+    JCS.logProgress("Invoking CommandStation: " + commandStationImplClassName);
 
-    if (commandStationImplClassName != null) {
-      try {
-        this.controller = (CommandStation) Class.forName(commandStationImplClassName).getDeclaredConstructor().newInstance();
-      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-        Logger.error("Can't instantiate a '" + commandStationImplClassName + "' " + ex.getMessage());
-        Logger.trace(ex);
-      }
-    } else {
-      Logger.error("Can't find implementation class for 'controller'!");
+    try {
+      this.commandStation = (CommandStation) Class.forName(commandStationImplClassName).getDeclaredConstructor().newInstance();
+    } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+      Logger.error("Can't instantiate a '" + commandStationImplClassName + "' " + ex.getMessage());
     }
 
-    if (controller != null) {
-      Logger.trace("Using " + controller.getClass().getSimpleName() + " as Controller...");
-    }
-    return controller != null;
+    return this.commandStation != null;
   }
 
   private void loadPersistentJCSProperties() {

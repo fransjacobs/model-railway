@@ -110,7 +110,7 @@ public class SwitchPanel extends JPanel {
     button.setActionCommand((button.getText()));
     Integer address = Integer.valueOf(button.getActionCommand());
 
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (CommandStationFactory.getDispatcher() != null) {
       AccessoryBean ab = PersistenceFactory.getService().getAccessoryByAddress(address);
       if (ab != null) {
         button.setForeground(new Color(0, 153, 0));
@@ -120,7 +120,7 @@ public class SwitchPanel extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      CommandStationFactory.getCommandStation().addAccessoryEventListener(asl);
+      CommandStationFactory.getDispatcher().addAccessoryEventListener(asl);
     }
   }
 
@@ -418,9 +418,9 @@ public class SwitchPanel extends JPanel {
     AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
     Logger.trace("ID: " + id + " Value: " + value);
 
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (CommandStationFactory.getDispatcher() != null) {
       AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
-      CommandStationFactory.getCommandStation().switchAccessory(value, a);
+      CommandStationFactory.getDispatcher().switchAccessory(value, a);
     }
   }
 

@@ -99,7 +99,7 @@ public class SwitchDialog extends javax.swing.JDialog {
       Logger.trace("Selected Turnout: " + ab);
 
       //Unregister as properties might change
-      CommandStationFactory.getCommandStation().removeAccessoryEventListener(turnout);
+      CommandStationFactory.getDispatcher().removeAccessoryEventListener(turnout);
     }
   }
 
@@ -191,7 +191,7 @@ public class SwitchDialog extends javax.swing.JDialog {
         if (this.turnout.getAccessoryBean().getName() != null) {
           PersistenceFactory.getService().persist((turnout));
 
-          CommandStationFactory.getCommandStation().addAccessoryEventListener(turnout);
+          CommandStationFactory.getDispatcher().addAccessoryEventListener(turnout);
         } else {
           this.turnout.setAccessoryBean(null);
           PersistenceFactory.getService().persist((turnout));

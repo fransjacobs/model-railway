@@ -505,7 +505,7 @@ public class SignalPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    CommandStationFactory.getCommandStation().synchronizeSignalsWithController();
+    CommandStationFactory.getDispatcher().synchronizeSignalsWithCommandStation();
     refresh();
   }
 

@@ -474,7 +474,7 @@ public class LocomotivePreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    CommandStationFactory.getCommandStation().synchronizeLocomotivesWithController(null);
+    CommandStationFactory.getDispatcher().synchronizeLocomotivesWithCommandStation(null);
 
     refresh();
   }

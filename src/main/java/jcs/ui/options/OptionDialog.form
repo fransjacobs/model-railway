@@ -83,6 +83,18 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
           <SubComponents>
+            <Component class="jcs.ui.options.CommandStationPanel" name="commandStationPanel">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="commandStationPanel" noResource="true"/>
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                  <JTabbedPaneConstraints tabName="Command Station">
+                    <Property name="tabTitle" type="java.lang.String" value="Command Station"/>
+                  </JTabbedPaneConstraints>
+                </Constraint>
+              </Constraints>
+            </Component>
             <Component class="jcs.ui.options.LocomotivePreferencesPanel" name="locomotivePanel">
               <Properties>
                 <Property name="name" type="java.lang.String" value="locomotivePanel" noResource="true"/>
@@ -91,30 +103,6 @@
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                   <JTabbedPaneConstraints tabName="Locomotives">
                     <Property name="tabTitle" type="java.lang.String" value="Locomotives"/>
-                  </JTabbedPaneConstraints>
-                </Constraint>
-              </Constraints>
-            </Component>
-            <Component class="jcs.ui.options.PropertiesPanel" name="propertiesPanel">
-              <Properties>
-                <Property name="name" type="java.lang.String" value="propertiesPanel" noResource="true"/>
-              </Properties>
-              <Constraints>
-                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="Properties">
-                    <Property name="tabTitle" type="java.lang.String" value="Properties"/>
-                  </JTabbedPaneConstraints>
-                </Constraint>
-              </Constraints>
-            </Component>
-            <Component class="jcs.ui.options.SignalPreferencesPanel" name="signalPanel">
-              <Properties>
-                <Property name="name" type="java.lang.String" value="signalPanel" noResource="true"/>
-              </Properties>
-              <Constraints>
-                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="Signals">
-                    <Property name="tabTitle" type="java.lang.String" value="Signals"/>
                   </JTabbedPaneConstraints>
                 </Constraint>
               </Constraints>
@@ -131,14 +119,26 @@
                 </Constraint>
               </Constraints>
             </Component>
-            <Component class="jcs.ui.options.ControllerInfoPanel" name="controllerInfoPanel1">
+            <Component class="jcs.ui.options.SignalPreferencesPanel" name="signalPanel">
               <Properties>
-                <Property name="name" type="java.lang.String" value="controllerInfoPanel1" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="signalPanel" noResource="true"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="Controller">
-                    <Property name="tabTitle" type="java.lang.String" value="Controller"/>
+                  <JTabbedPaneConstraints tabName="Signals">
+                    <Property name="tabTitle" type="java.lang.String" value="Signals"/>
+                  </JTabbedPaneConstraints>
+                </Constraint>
+              </Constraints>
+            </Component>
+            <Component class="jcs.ui.options.PropertiesPanel" name="propertiesPanel">
+              <Properties>
+                <Property name="name" type="java.lang.String" value="propertiesPanel" noResource="true"/>
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+                  <JTabbedPaneConstraints tabName="Properties">
+                    <Property name="tabTitle" type="java.lang.String" value="Properties"/>
                   </JTabbedPaneConstraints>
                 </Constraint>
               </Constraints>

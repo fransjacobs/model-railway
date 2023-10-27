@@ -18,6 +18,7 @@ package jcs.persistence;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
@@ -27,8 +28,7 @@ import jcs.entities.TileBean;
 import jcs.entities.enums.DecoderType;
 
 /**
- * The Persistence Service takes care of all persistence functionality which is needed within the
- * JCS Application
+ * The Persistence Service takes care of all persistence functionality which is needed within the JCS Application
  *
  * @author frans
  */
@@ -119,4 +119,14 @@ public interface PersistenceService {
   void remove(BlockBean block);
 
   void removeAllBlocks();
+
+  List<CommandStationBean> getCommandStations();
+
+  CommandStationBean getCommandStation(String id);
+
+  CommandStationBean getDefaultCommandStation();
+  
+  CommandStationBean persist(CommandStationBean commandStationBean);
+
+  CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean);
 }

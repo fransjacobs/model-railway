@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.dcc_ex.net;
+package jcs.controller.dccex.net;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -23,7 +23,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import jcs.controller.dcc_ex.DccExConnection;
+import jcs.controller.dccex.DccExConnection;
 import jcs.controller.marklin.cs.can.CanMessage;
 import jcs.controller.marklin.cs.events.AccessoryListener;
 import jcs.controller.marklin.cs.events.CanPingListener;

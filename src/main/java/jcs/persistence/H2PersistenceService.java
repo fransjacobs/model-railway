@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
@@ -56,8 +57,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private void connect() {
-    Logger.debug(
-            "Connecting to: "
+    Logger.debug("Connecting to: "
             + System.getProperty("norm.jdbcUrl")
             + " with db user: "
             + System.getProperty("norm.user"));
@@ -205,19 +205,16 @@ public class H2PersistenceService implements PersistenceService {
   public FunctionBean persist(FunctionBean functionBean) {
     if (functionBean.getId() == null) {
       // Might be a new refresh of an existing function so let try to find it
-      FunctionBean dbFb
-              = this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
+      FunctionBean dbFb = this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
       if (dbFb != null) {
         functionBean.setId(dbFb.getId());
       }
     }
     try {
       if (database.where("id=?", functionBean.getId()).first(FunctionBean.class) != null) {
-        int rows = database.update(functionBean).getRowsAffected();
-        // Logger.trace(rows + " rows updated; " + functionBean);
+        database.update(functionBean);
       } else {
-        int rows = database.insert(functionBean).getRowsAffected();
-        // Logger.trace(rows + " rows inserted; " + functionBean);
+        database.insert(functionBean);
       }
     } catch (DbException dbe) {
       Logger.error("Error: " + dbe.getMessage());
@@ -238,18 +235,14 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public LocomotiveBean persist(LocomotiveBean locomotive) {
     if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
-      int rows = database.update(locomotive).getRowsAffected();
-      // Logger.trace(rows + " rows updated; " + locomotive);
+      database.update(locomotive);
     } else {
-      int rows = database.insert(locomotive).getRowsAffected();
-      // Logger.trace(rows + " rows inserted; " + locomotive);
+      database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
+      database.insert(locomotive);
     }
     List<FunctionBean> functions = new LinkedList<>();
     functions.addAll(locomotive.getFunctions().values());
 
-    // remove the current functions
-    // database.sql("delete from locomotive_functions where locomotive_id =?",
-    // locomotive.getId()).execute();
     persistFunctionBeans(functions);
     locomotive.setFunctions(functions);
 
@@ -259,9 +252,7 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public void remove(LocomotiveBean locomotive) {
     // First femove the functions
-    database
-            .sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId())
-            .execute();
+    database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
 
     int rows = database.delete(locomotive).getRowsAffected();
     Logger.trace(rows + " rows deleted");
@@ -321,7 +312,7 @@ public class H2PersistenceService implements PersistenceService {
         Logger.trace("Image file " + imageName + ".png does not exists");
       }
     } else {
-      // should we attempt to obatian it now and cache it when available, but also when it is not
+      // should we attempt to obtian it now and cache it when available, but also when it is not
       // avaliable put a marker so tha we are not trying over and over again...
       // who should be responsable for the cache.. the vendor controller this class or?
     }
@@ -331,16 +322,14 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public List<AccessoryBean> getTurnouts() {
     String typeClause = "%weiche";
-    List<AccessoryBean> turnouts
-            = database.where("type like ?", typeClause).results(AccessoryBean.class);
+    List<AccessoryBean> turnouts = database.where("type like ?", typeClause).results(AccessoryBean.class);
     return turnouts;
   }
 
   @Override
   public List<AccessoryBean> getSignals() {
     String typeClause = "%signal%";
-    List<AccessoryBean> signals
-            = database.where("type like ?", typeClause).results(AccessoryBean.class);
+    List<AccessoryBean> signals = database.where("type like ?", typeClause).results(AccessoryBean.class);
     return signals;
   }
 
@@ -387,7 +376,7 @@ public class H2PersistenceService implements PersistenceService {
       }
 
       if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
-        Logger.trace("Look for blok "+tileBean.getId());
+        Logger.trace("Look for blok " + tileBean.getId());
         tileBean.setBlockBean(this.getBlock(tileBean.getId()));
       }
     }
@@ -409,8 +398,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<TileBean> getTileBeansByTileType(TileBean.TileType tileType) {
-    List<TileBean> tileBeans
-            = database.where("tile_type = ?", tileType.getTileType()).results(TileBean.class);
+    List<TileBean> tileBeans = database.where("tile_type = ?", tileType.getTileType()).results(TileBean.class);
     return addReleatedObjects(tileBeans);
   }
 
@@ -534,10 +522,7 @@ public class H2PersistenceService implements PersistenceService {
   public RouteBean getRoute(
           String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
-    RouteBean route
-            = database
-                    .where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args)
-                    .first(RouteBean.class);
+    RouteBean route = database.where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args).first(RouteBean.class);
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
       route.setRouteElements(routeElements);
@@ -590,10 +575,9 @@ public class H2PersistenceService implements PersistenceService {
 
   private void setJCSPropertiesAsSystemProperties() {
     List<JCSPropertyBean> props = getProperties();
-    props.forEach(
-            p -> {
-              System.setProperty(p.getKey(), p.getValue());
-            });
+    props.forEach(p -> {
+      System.setProperty(p.getKey(), p.getValue());
+    });
   }
 
   @Override
@@ -683,4 +667,47 @@ public class H2PersistenceService implements PersistenceService {
     int rows = database.sql("delete from blocks").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " blocks");
   }
+
+  @Override
+  public List<CommandStationBean> getCommandStations() {
+    List<CommandStationBean> commandStationBeans = database.where("show=true").results(CommandStationBean.class);
+    return commandStationBeans;
+  }
+
+  @Override
+  public CommandStationBean getCommandStation(String id) {
+    return database.where("id=?", id).first(CommandStationBean.class);
+  }
+
+  @Override
+  public CommandStationBean getDefaultCommandStation() {
+    return database.where("default_cs=true").first(CommandStationBean.class);
+  }
+
+  @Override
+  public CommandStationBean persist(CommandStationBean commandStationBean) {
+    if (database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class) != null) {
+      database.update(commandStationBean);
+
+      //database.sql("update command_stations set jcs_default = ? where id =?", commandStationBean.isDefault(), commandStationBean.getId()).execute();
+    } else {
+      Logger.warn("Can't Create CommandStation " + commandStationBean);
+    }
+    return commandStationBean;
+  }
+
+  @Override
+  public CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean) {
+    //if (database.where("id=?", newDefaultCommandStationBean.getId()).first(CommandStationBean.class) != null) {
+    //The commandstation exists.
+    database.sql("update command_stations set default_cs = case when id = ? then true else false end", newDefaultCommandStationBean.getId()).execute();
+    //database.update(commandStationBean);
+
+    //database.sql("update command_stations set jcs_default = ? where id =?", commandStationBean.isDefault(), commandStationBean.getId()).execute();
+    // } else {
+    //  Logger.warn("Can't Update CommandStation " + newDefaultCommandStationBean);
+    //}
+    return newDefaultCommandStationBean;
+  }
+
 }

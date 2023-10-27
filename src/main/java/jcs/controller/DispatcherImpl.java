@@ -21,7 +21,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +47,6 @@ import jcs.controller.events.MeasurementEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEvent;
 import jcs.controller.events.SensorEventListener;
-import jcs.controller.marklin.cs.MarklinCentralStation;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
@@ -60,11 +58,11 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- * The Command Station Controller HAL Implementation
+ * The Dispatcher is the layer between the UI, engines and Command stations
  */
-public class ControllerImpl implements CommandStation {
+public class DispatcherImpl implements Dispatcher {
 
-  private MarklinCentralStation centralStation;
+  private CommandStation commandStation;
 
   private final List<SensorEventListener> sensorEventListeners;
   private final List<AccessoryEventListener> accessoryEventListeners;
@@ -75,11 +73,11 @@ public class ControllerImpl implements CommandStation {
 
   private final List<MeasurementEventListener> measurementEventListeners;
 
-  public ControllerImpl() {
+  public DispatcherImpl() {
     this("true".equalsIgnoreCase(System.getProperty("skip.controller.autoconnect", "true")));
   }
 
-  private ControllerImpl(boolean autoConnectController) {
+  private DispatcherImpl(boolean autoConnectController) {
     sensorEventListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
     LocomotiveFunctionEventListeners = new LinkedList<>();
@@ -89,7 +87,7 @@ public class ControllerImpl implements CommandStation {
 
     if (autoConnectController) {
       connect();
-      Logger.trace(centralStation != null ? "Aquired " + centralStation.getClass().getSimpleName() : "Could not aquire a Vendor Controller Service! " + (centralStation.isConnected() ? "Connected" : "NOT Connected"));
+      Logger.trace(commandStation != null ? "Aquired " + commandStation.getClass().getSimpleName() : "Could not aquire a Command Station! " + (commandStation.isConnected() ? "Connected" : "NOT Connected"));
     } else {
       Logger.trace("Auto Connect disabled");
     }
@@ -97,33 +95,25 @@ public class ControllerImpl implements CommandStation {
 
   @Override
   public final boolean connect() {
-    if (centralStation != null && centralStation.isConnected()) {
-      return centralStation.isConnected();
+    if (commandStation != null && commandStation.isConnected()) {
+      return commandStation.isConnected();
     }
-    String controllerImplClassName = System.getProperty("commandStation.Marklin.CentralStation");
-    JCS.logProgress("Connecting to: " + controllerImplClassName);
-
-    if (centralStation == null) {
-      try {
-        //TODO make the interface more abstract..
-        this.centralStation = (MarklinCentralStation) Class.forName(controllerImplClassName).getDeclaredConstructor().newInstance();
-      } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-        Logger.error("Can't instantiate a '" + controllerImplClassName + "' " + ex.getMessage());
-      }
+    if (commandStation == null) {
+      commandStation = CommandStationFactory.getCommandStation();
     }
 
-    if (centralStation != null && centralStation.connect()) {
-      this.centralStation.addSensorEventListener(new SensorChangeEventListener(this));
-      this.centralStation.addAccessoryEventListener(new AccessoryChangeEventListener(this));
-      this.centralStation.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
-      this.centralStation.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
-      this.centralStation.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
+    if (commandStation != null && commandStation.connect()) {
+      this.commandStation.addSensorEventListener(new SensorChangeEventListener(this));
+      this.commandStation.addAccessoryEventListener(new AccessoryChangeEventListener(this));
+      this.commandStation.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
+      this.commandStation.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
+      this.commandStation.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
     }
 
     //TODO implement get the day end i.e. the current state of all Objects on track
     JCS.logProgress("Obtaining the last state of all items...");
 
-    if (this.centralStation != null && this.centralStation.isConnected()) {
+    if (this.commandStation != null && this.commandStation.isConnected()) {
       //Start the measurments backgrount task
       TrackMeasusementTask measurementTask = new TrackMeasusementTask(this);
       Timer timer = new Timer("Timer");
@@ -132,22 +122,22 @@ public class ControllerImpl implements CommandStation {
       timer.schedule(measurementTask, 0, delay);
     }
 
-    return this.centralStation != null && this.centralStation.isConnected();
+    return this.commandStation != null && this.commandStation.isConnected();
   }
 
   @Override
   public boolean isConnected() {
-    return this.centralStation.isConnected();
+    return this.commandStation.isConnected();
   }
 
   @Override
   public void disconnect() {
-    this.centralStation.disconnect();
-    this.centralStation = null;
+    this.commandStation.disconnect();
+    this.commandStation = null;
   }
 
   public Image getLocomotiveImage(String imageName) {
-    Image image = centralStation.getLocomotiveImage(imageName);
+    Image image = commandStation.getLocomotiveImage(imageName);
     if (image != null) {
       storeImage(image, imageName, true);
     }
@@ -155,7 +145,7 @@ public class ControllerImpl implements CommandStation {
   }
 
   public Image getLocomotiveFunctionImage(String imageName) {
-    Image image = centralStation.getLocomotiveFunctionImage(imageName);
+    Image image = commandStation.getLocomotiveFunctionImage(imageName);
     if (image != null) {
       storeImage(image, imageName, false);
     }
@@ -164,7 +154,7 @@ public class ControllerImpl implements CommandStation {
 
   private void storeImage(Image image, String imageName, boolean locomotive) {
     Path path;
-    String basePath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + centralStation.getDevice().getSerialNumber();
+    String basePath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + commandStation.getDevice().getSerialNumber();
 
     if (locomotive) {
       path = Paths.get(basePath);
@@ -189,27 +179,27 @@ public class ControllerImpl implements CommandStation {
   }
 
   @Override
-  public String getControllerName() {
-    if (this.centralStation != null && this.centralStation.getDevice() != null) {
-      return this.centralStation.getDevice().getDeviceName();
+  public String getCommandStationName() {
+    if (this.commandStation != null && this.commandStation.getDevice() != null) {
+      return this.commandStation.getDevice().getDeviceName();
     } else {
       return null;
     }
   }
 
   @Override
-  public String getControllerSerialNumber() {
-    if (this.centralStation != null && this.centralStation.getDevice() != null) {
-      return this.centralStation.getDevice().getSerialNumber();
+  public String getCommandStationSerialNumber() {
+    if (this.commandStation != null && this.commandStation.getDevice() != null) {
+      return this.commandStation.getDevice().getSerialNumber();
     } else {
       return null;
     }
   }
 
   @Override
-  public String getControllerArticleNumber() {
-    if (this.centralStation != null && this.centralStation.getDevice() != null) {
-      return this.centralStation.getDevice().getArticleNumber();
+  public String getCommandStationArticleNumber() {
+    if (this.commandStation != null && this.commandStation.getDevice() != null) {
+      return this.commandStation.getDevice().getArticleNumber();
     } else {
       return null;
     }
@@ -218,29 +208,29 @@ public class ControllerImpl implements CommandStation {
   @Override
   public void switchPower(boolean on) {
     Logger.trace("Switch Power " + (on ? "On" : "Off"));
-    if (this.centralStation != null) {
-      this.centralStation.power(on);
+    if (this.commandStation != null) {
+      this.commandStation.power(on);
     }
   }
 
   @Override
   public boolean isPowerOn() {
     boolean power = false;
-    if (this.centralStation != null) {
-      power = centralStation.isPower();
+    if (this.commandStation != null) {
+      power = commandStation.isPower();
     }
 
     return power;
   }
 
   @Override
-  public void synchronizeLocomotivesWithController(PropertyChangeListener progressListener) {
-    List<LocomotiveBean> fromController = this.centralStation.getLocomotives();
+  public void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener) {
+    List<LocomotiveBean> fromController = this.commandStation.getLocomotives();
 
     String importedFrom;
-    if (this.centralStation.getDevice() != null) {
-      importedFrom = this.centralStation.getDevice().isCS3() ? "CS3-" : "CS2-";
-      importedFrom = importedFrom + this.centralStation.getDevice().getSerialNumber();
+    if (this.commandStation.getDevice() != null) {
+      importedFrom = this.commandStation.getDevice().isCS3() ? "CS3-" : "CS2-";
+      importedFrom = importedFrom + this.commandStation.getDevice().getSerialNumber();
     } else {
       //There are some rare situations which occur mainly during lots of testing, where the device is not found ins 10 s or so...
       importedFrom = "CS2-xxxxxx";
@@ -312,12 +302,12 @@ public class ControllerImpl implements CommandStation {
       Logger.trace("Function Image " + functionImage + " is " + (available ? "available" : "NOT available"));
     }
 
-    this.centralStation.clearCaches();
+    this.commandStation.clearCaches();
   }
 
   @Override
-  public void synchronizeTurnoutsWithController() {
-    List<AccessoryBean> csTurnouts = this.centralStation.getSwitches();
+  public void synchronizeTurnoutsWithCommandStation() {
+    List<AccessoryBean> csTurnouts = this.commandStation.getSwitches();
 
     for (AccessoryBean turnout : csTurnouts) {
       AccessoryBean dbTurnout = PersistenceFactory.getService().getAccessoryByAddress(turnout.getAddress());
@@ -331,8 +321,8 @@ public class ControllerImpl implements CommandStation {
   }
 
   @Override
-  public void synchronizeSignalsWithController() {
-    List<AccessoryBean> csSignals = this.centralStation.getSignals();
+  public void synchronizeSignalsWithCommandStation() {
+    List<AccessoryBean> csSignals = this.commandStation.getSignals();
 
     for (AccessoryBean signal : csSignals) {
       AccessoryBean dbSignal = PersistenceFactory.getService().getAccessoryByAddress(signal.getAddress());
@@ -348,20 +338,20 @@ public class ControllerImpl implements CommandStation {
   @Override
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
     Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName());
-    centralStation.changeVelocity(locomotive.getUid().intValue(), 0);
-    centralStation.changeDirection(locomotive.getUid().intValue(), newDirection);
+    commandStation.changeVelocity(locomotive.getUid().intValue(), 0);
+    commandStation.changeDirection(locomotive.getUid().intValue(), newDirection);
   }
 
   @Override
   public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
-    centralStation.changeVelocity(locomotive.getUid().intValue(), newVelocity);
+    commandStation.changeVelocity(locomotive.getUid().intValue(), newVelocity);
   }
 
   @Override
   public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
-    centralStation.changeFunctionValue(locomotive.getUid().intValue(), functionNumber, newValue);
+    commandStation.changeFunctionValue(locomotive.getUid().intValue(), functionNumber, newValue);
   }
 
   @Override
@@ -377,7 +367,7 @@ public class ControllerImpl implements CommandStation {
     }
 
     Logger.trace("Change accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
-    centralStation.switchAccessory(address, val, switchTime);
+    commandStation.switchAccessory(address, val, switchTime);
   }
 
   @Override
@@ -432,15 +422,15 @@ public class ControllerImpl implements CommandStation {
 
   @Override
   public void addPowerEventListener(PowerEventListener listener) {
-    if (this.centralStation != null) {
-      this.centralStation.addPowerEventListener(listener);
+    if (this.commandStation != null) {
+      this.commandStation.addPowerEventListener(listener);
     }
   }
 
   @Override
   public void removePowerEventListener(PowerEventListener listener) {
-    if (this.centralStation != null) {
-      this.centralStation.removePowerEventListener(listener);
+    if (this.commandStation != null) {
+      this.commandStation.removePowerEventListener(listener);
     }
   }
 
@@ -456,16 +446,16 @@ public class ControllerImpl implements CommandStation {
 
   private class TrackMeasusementTask extends TimerTask {
 
-    private final ControllerImpl Controller;
+    private final DispatcherImpl Controller;
 
-    TrackMeasusementTask(ControllerImpl Controller) {
+    TrackMeasusementTask(DispatcherImpl Controller) {
       this.Controller = Controller;
     }
 
     @Override
     public void run() {
 
-      Map<Integer, MeasurementChannel> measurements = this.Controller.centralStation.getTrackMeasurements();
+      Map<Integer, MeasurementChannel> measurements = this.Controller.commandStation.getTrackMeasurements();
       for (MeasurementChannel ch : measurements.values()) {
         if (ch.isChanged()) {
           MeasurementEvent me = new MeasurementEvent(ch);
@@ -480,9 +470,9 @@ public class ControllerImpl implements CommandStation {
 
   private class SensorChangeEventListener implements SensorEventListener {
 
-    private final ControllerImpl trackController;
+    private final DispatcherImpl trackController;
 
-    SensorChangeEventListener(ControllerImpl trackController) {
+    SensorChangeEventListener(DispatcherImpl trackController) {
       this.trackController = trackController;
     }
 
@@ -505,9 +495,9 @@ public class ControllerImpl implements CommandStation {
 
   private class AccessoryChangeEventListener implements AccessoryEventListener {
 
-    private final ControllerImpl trackService;
+    private final DispatcherImpl trackService;
 
-    AccessoryChangeEventListener(ControllerImpl trackService) {
+    AccessoryChangeEventListener(DispatcherImpl trackService) {
       this.trackService = trackService;
     }
 
@@ -558,9 +548,9 @@ public class ControllerImpl implements CommandStation {
 
   private class LocomotiveFunctionChangeEventListener implements LocomotiveFunctionEventListener {
 
-    private final ControllerImpl trackService;
+    private final DispatcherImpl trackService;
 
-    LocomotiveFunctionChangeEventListener(ControllerImpl trackService) {
+    LocomotiveFunctionChangeEventListener(DispatcherImpl trackService) {
       this.trackService = trackService;
     }
 
@@ -584,9 +574,9 @@ public class ControllerImpl implements CommandStation {
 
   private class LocomotiveDirectionChangeEventListener implements LocomotiveDirectionEventListener {
 
-    private final ControllerImpl trackService;
+    private final DispatcherImpl trackService;
 
-    LocomotiveDirectionChangeEventListener(ControllerImpl trackService) {
+    LocomotiveDirectionChangeEventListener(DispatcherImpl trackService) {
       this.trackService = trackService;
     }
 
@@ -610,9 +600,9 @@ public class ControllerImpl implements CommandStation {
 
   private class LocomotiveSpeedChangeEventListener implements LocomotiveSpeedEventListener {
 
-    private final ControllerImpl trackService;
+    private final DispatcherImpl trackService;
 
-    LocomotiveSpeedChangeEventListener(ControllerImpl trackService) {
+    LocomotiveSpeedChangeEventListener(DispatcherImpl trackService) {
       this.trackService = trackService;
     }
 

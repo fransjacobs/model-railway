@@ -87,8 +87,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     buttons.put(31, f31TB);
     
     setEnabled(false);
-    if (CommandStationFactory.getCommandStation() != null) {
-      CommandStationFactory.getCommandStation().addLocomotiveFunctionEventListener(this);
+    if (CommandStationFactory.getDispatcher() != null) {
+      CommandStationFactory.getDispatcher().addLocomotiveFunctionEventListener(this);
     }
   }
   
@@ -181,12 +181,12 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   }
   
   private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
-    if (CommandStationFactory.getCommandStation() != null && this.locomotive != null) {
+    if (CommandStationFactory.getDispatcher() != null && this.locomotive != null) {
       FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " new Value: " + newValue + " Momentary: " + fb.isMomentary());
       
-      if (CommandStationFactory.getCommandStation() != null) {
-        CommandStationFactory.getCommandStation().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
+      if (CommandStationFactory.getDispatcher() != null) {
+        CommandStationFactory.getDispatcher().changeLocomotiveFunction(newValue, functionNumber, locomotiveBean);
       }
       if (fb.isMomentary() && newValue) {
         JToggleButton tb = this.buttons.get(fb.getNumber());
@@ -872,7 +872,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       testFrame.pack();
       testFrame.setLocationRelativeTo(null);
       
-      if (CommandStationFactory.getCommandStation() != null) {
+      if (CommandStationFactory.getDispatcher() != null) {
 
         //LocomotiveBean loc = CommandStationFactory.getTrackService().getLocomotive(new BigDecimal(16390));
         //LocomotiveBean loc = CommandStationFactory.getTrackService().getLocomotive(new BigDecimal(16394));

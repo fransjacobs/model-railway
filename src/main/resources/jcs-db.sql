@@ -179,10 +179,39 @@ create table jcs_properties (
 
 create unique index prop_pk_idx on jcs_properties (p_key);
 
-insert into jcs_properties (p_key,p_value) values ('commandStation.Marklin.6051','jcs.controller.marklin.m6051.M6051Impl');
-insert into jcs_properties (p_key,p_value) values ('commandStation.Marklin.CentralStation','jcs.controller.marklin.cs.MarklinCentralStationImpl');
-insert into jcs_properties (p_key,p_value) values ('commandStation.DCC_EX','jcs.controller.dcc_ex.DCC_EXImpl');
+drop table if exists command_stations;
+create table command_stations (
+  id                  varchar(255) not null,
+  name                varchar(255) not null,
+  class_name          varchar(255) not null,
+  default_cs          bool not null default false,
+  connection_type     varchar(255) not null,
+  serial_port         varchar(255),
+  ip_address          varchar(255),
+  network_port        integer,
+  auto_conf           bool not null default false, 
+  show                bool not null default true,
+  constraint command_stations_pk primary key ( id )
+);
 
+create unique index command_stations_pk_idx on command_stations (id);
+
+insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show) 
+values ('cs.Marklin.CentralStation','Marklin Central Station 2/3', 'jcs.controller.marklin.cs.MarklinCentralStationImpl', true, 'NETWORK', null, null,15731,true, true);
+
+insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show)
+values ('cs.DccEX.serial','DCC-EX Serial', 'jcs.controller.dccex.DccExSerialImpl', false, 'SERIAL', null, null, null, false, true);
+
+insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show) 
+values ('cs.DccEX.network','DCC-EX Network', 'jcs.controller.dccex.DccExNetworkImpl',false,'NETWORK', null, null, 2560, false, true);
+
+insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show)
+values ('cs.Marklin.6051','Marklin 6051', 'jcs.controller.marklin.m6051.M6051Impl', false,'SERIAL', null, null, null, false, false);
+
+
+insert into jcs_properties (p_key,p_value) values ('jcs.version','1.0.0');
+insert into jcs_properties (p_key,p_value) values ('jcs.db.version','1.0.0');
 insert into jcs_properties (p_key,p_value) values ('default.switchtime','500');
+insert into jcs_properties (p_key,p_value) values ('commandStation.Marklin.CentralStation','jcs.controller.marklin.cs.MarklinCentralStationImpl');
 
 commit;

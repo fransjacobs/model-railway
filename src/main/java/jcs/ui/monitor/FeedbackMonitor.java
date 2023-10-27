@@ -157,16 +157,16 @@ public class FeedbackMonitor extends JFrame {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-      if (CommandStationFactory.getCommandStation() != null) {
-        CommandStationFactory.getCommandStation().removeSensorEventListener(sensorTableModel);
+      if (CommandStationFactory.getDispatcher() != null) {
+        CommandStationFactory.getDispatcher().removeSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Removed sensor listener");
       }
       this.sensorTableModel.clear();
     }//GEN-LAST:event_formWindowClosed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-      if (CommandStationFactory.getCommandStation() != null) {
-        CommandStationFactory.getCommandStation().addSensorEventListener(sensorTableModel);
+      if (CommandStationFactory.getDispatcher() != null) {
+        CommandStationFactory.getDispatcher().addSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Added sensor listener");
       }
     }//GEN-LAST:event_formWindowActivated

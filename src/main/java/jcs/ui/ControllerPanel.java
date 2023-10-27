@@ -61,7 +61,7 @@ public class ControllerPanel extends JPanel {
   }
 
   void registerListeners() {
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (CommandStationFactory.getDispatcher() != null) {
       this.csModule1Panel.registerSensorListeners();
       this.csModule2Panel.registerSensorListeners();
       this.csModule3Panel.registerSensorListeners();
@@ -86,7 +86,7 @@ public class ControllerPanel extends JPanel {
   }
 
   void removeListeners() {
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (CommandStationFactory.getDispatcher() != null) {
       this.csModule1Panel.removeSensorListeners();
       this.csModule2Panel.removeSensorListeners();
       this.csModule3Panel.removeSensorListeners();
@@ -113,7 +113,7 @@ public class ControllerPanel extends JPanel {
   
   //TODO !
   private void postInit() {
-    //Find the number of feedback modules from the CommandStation LinkS88 busses
+    //Find the number of feedback modules from the Dispatcher LinkS88 busses
 //    if (CommandStationFactory.getTrackController() != null && CommandStationFactory.getTrackController().getLinkSxx() != null) {
 // 
 //      LinkSxx linkSxx = CommandStationFactory.getTrackController().getLinkSxx();

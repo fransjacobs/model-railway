@@ -25,6 +25,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import jcs.JCS;
+import jcs.controller.CommandStation;
+import jcs.controller.events.AccessoryEvent;
+import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEvent;
+import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEvent;
+import jcs.controller.events.LocomotiveFunctionEventListener;
+import jcs.controller.events.LocomotiveSpeedEvent;
+import jcs.controller.events.LocomotiveSpeedEventListener;
+import jcs.controller.events.PowerEvent;
+import jcs.controller.events.PowerEventListener;
+import jcs.controller.events.SensorEvent;
+import jcs.controller.events.SensorEventListener;
 import jcs.controller.marklin.cs.can.CanMessage;
 import jcs.controller.marklin.cs.can.CanMessageFactory;
 import static jcs.controller.marklin.cs.can.CanMessageFactory.getStatusDataConfigResponse;
@@ -45,18 +58,6 @@ import jcs.controller.marklin.cs3.AccessoryJSONParser;
 import jcs.controller.marklin.cs3.DeviceJSONParser;
 import jcs.controller.marklin.cs3.FunctionSvgToPngConverter;
 import jcs.controller.marklin.cs3.LocomotiveBeanJSONParser;
-import jcs.controller.events.AccessoryEvent;
-import jcs.controller.events.AccessoryEventListener;
-import jcs.controller.events.LocomotiveDirectionEvent;
-import jcs.controller.events.LocomotiveDirectionEventListener;
-import jcs.controller.events.LocomotiveFunctionEvent;
-import jcs.controller.events.LocomotiveFunctionEventListener;
-import jcs.controller.events.LocomotiveSpeedEvent;
-import jcs.controller.events.LocomotiveSpeedEventListener;
-import jcs.controller.events.PowerEvent;
-import jcs.controller.events.PowerEventListener;
-import jcs.controller.events.SensorEvent;
-import jcs.controller.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.Device;
 import jcs.entities.LocomotiveBean;
@@ -72,7 +73,7 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class MarklinCentralStationImpl implements MarklinCentralStation {
+public class MarklinCentralStationImpl implements CommandStation {
 
   private CSConnection connection;
   private boolean connected = false;
@@ -101,7 +102,7 @@ public class MarklinCentralStationImpl implements MarklinCentralStation {
   private int defaultSwitchTime;
 
   public MarklinCentralStationImpl() {
-    this(System.getProperty("skip.controller.autoconnect","true").equalsIgnoreCase("true"));
+    this(System.getProperty("skip.commandStation.autoconnect","true").equalsIgnoreCase("true"));
   }
 
   private MarklinCentralStationImpl(boolean autoConnect) {

@@ -394,11 +394,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       switch (tile.getTileType()) {
         case SENSOR ->
-          CommandStationFactory.getCommandStation().addSensorEventListener((SensorEventListener) tile);
+          CommandStationFactory.getDispatcher().addSensorEventListener((SensorEventListener) tile);
         case SWITCH ->
-          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+          CommandStationFactory.getDispatcher().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
-          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+          CommandStationFactory.getDispatcher().addAccessoryEventListener((AccessoryEventListener) tile);
 
         default -> {
           //Do nothing
@@ -652,7 +652,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
-      CommandStationFactory.getCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
+      CommandStationFactory.getDispatcher().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
@@ -664,7 +664,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       ab.toggle();
       Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
 
-      CommandStationFactory.getCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
+      CommandStationFactory.getDispatcher().switchAccessory(ab.getAccessoryValue(), ab);
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }

@@ -15,13 +15,12 @@
  */
 package jcs.persistence;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
@@ -36,6 +35,7 @@ import jcs.entities.enums.DecoderType;
 import jcs.persistence.util.PersistenceTestHelper;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1290,4 +1290,61 @@ public class PersistenceServiceTest {
 
     assertEquals(0, result.size());
   }
+  
+  
+  @Test
+  public void testCommandStations() {
+    System.out.println("commandSations");
+    PersistenceService instance = PersistenceFactory.getService();
+    
+    List<CommandStationBean> commandStations = instance.getCommandStations();
+    assertEquals(3, commandStations.size());
+    
+    for(CommandStationBean cs : commandStations) {
+      Logger.trace("## -> "+cs+" default: "+cs.isDefault()+" id: "+cs.getId());
+    } 
+    
+    CommandStationBean defCS = instance.getDefaultCommandStation();
+    
+    assertEquals("cs.Marklin.CentralStation", defCS.getId());
+    
+    defCS.setDefault(false);
+    
+    instance.persist(defCS);
+
+    defCS = instance.getCommandStation("cs.Marklin.CentralStation");
+ 
+    assertFalse(defCS.isDefault());
+    
+    defCS.setDefault(true);
+    
+    instance.persist(defCS);
+    
+    defCS = instance.getCommandStation("cs.Marklin.CentralStation");
+ 
+    assertTrue(defCS.isDefault());
+
+    defCS.setDefault(false);
+    
+    instance.persist(defCS);
+        
+    CommandStationBean defCS2 = instance.getDefaultCommandStation();
+    
+    assertNull(defCS2);
+    
+    defCS2 = instance.getCommandStation("cs.DccEX.network");
+
+    assertEquals("cs.DccEX.network", defCS2.getId());
+    assertFalse(defCS2.isDefault());
+    
+    defCS2.setDefault(true);
+    instance.persist(defCS2);
+    
+    
+    CommandStationBean defCS3 = instance.getDefaultCommandStation();
+    assertEquals("cs.DccEX.network", defCS3.getId());
+    
+    
+  }
+  
 }

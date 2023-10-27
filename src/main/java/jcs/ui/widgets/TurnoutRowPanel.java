@@ -208,9 +208,9 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
     if (this.turnout != null) {
       switch (value) {
         case RED ->
-          CommandStationFactory.getCommandStation().switchAccessory(AccessoryValue.RED, turnout);
+          CommandStationFactory.getDispatcher().switchAccessory(AccessoryValue.RED, turnout);
         case GREEN ->
-          CommandStationFactory.getCommandStation().switchAccessory(AccessoryValue.GREEN, turnout);
+          CommandStationFactory.getDispatcher().switchAccessory(AccessoryValue.GREEN, turnout);
       }
     }
   }
@@ -250,7 +250,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
       TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
       f.add(signalRowPanel);
 
-      CommandStationFactory.getCommandStation().addAccessoryEventListener(signalRowPanel);
+      CommandStationFactory.getDispatcher().addAccessoryEventListener(signalRowPanel);
 
     }
 

@@ -40,8 +40,8 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   }
 
   private void postInit() {
-    if (CommandStationFactory.getCommandStation() != null) {
-      CommandStationFactory.getCommandStation().addMeasurementEventListener(this);
+    if (CommandStationFactory.getDispatcher() != null) {
+      CommandStationFactory.getDispatcher().addMeasurementEventListener(this);
     }
   }
 

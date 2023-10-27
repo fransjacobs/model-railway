@@ -20,8 +20,8 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.CommandStation;
 import jcs.controller.CommandStationFactory;
+import jcs.controller.Dispatcher;
 import jcs.controller.events.PowerEvent;
 import jcs.controller.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
@@ -45,7 +45,7 @@ public class JCS extends Thread {
   private static JCS instance = null;
   private static JCSSplash splashScreen;
   private static PersistenceService persistentStore;
-  private static CommandStation trackController;
+  private static Dispatcher dispatcher;
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
@@ -110,7 +110,7 @@ public class JCS extends Thread {
 
     });
 
-//    if (!CommandStationFactory.getCommandStation().isConnected()) {
+//    if (!CommandStationFactory.getController().isConnected()) {
 //      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
 //        jcsFrame.connect(true);
 //      }
@@ -200,19 +200,20 @@ public class JCS extends Thread {
     persistentStore = PersistenceFactory.getService();
     if (persistentStore != null) {
       logProgress("Aquire Track Controller...");
-      trackController = CommandStationFactory.getCommandStation();
-      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect"))) {
-        if (trackController != null) {
-          boolean connected = trackController.connect();
-          if (connected) {
-            logProgress("Connected with Track Controller...");
+      dispatcher = CommandStationFactory.getDispatcher();
 
-            boolean power = trackController.isPowerOn();
+      if ("true".equalsIgnoreCase(System.getProperty("dispatcher.autoconnect"))) {
+        if (dispatcher != null) {
+          boolean connected = dispatcher.connect();
+          if (connected) {
+            logProgress("Connected with Command Station...");
+
+            boolean power = dispatcher.isPowerOn();
             logProgress("Track Power is " + (power ? "on" : "off"));
             Logger.info("Track Power is " + (power ? "on" : "off"));
-            trackController.addPowerEventListener(new JCS.Powerlistener());
+            dispatcher.addPowerEventListener(new JCS.Powerlistener());
           } else {
-            logProgress("Could NOT connect with Track Controller...");
+            logProgress("Could NOT connect with Command Station...");
           }
         }
       }

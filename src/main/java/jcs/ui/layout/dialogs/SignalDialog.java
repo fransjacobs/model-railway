@@ -93,7 +93,7 @@ public class SignalDialog extends javax.swing.JDialog {
 
       this.accessoryComboBoxModel.setSelectedItem(ab);
       //Unregister is properties might change
-      CommandStationFactory.getCommandStation().removeAccessoryEventListener(signal);
+      CommandStationFactory.getDispatcher().removeAccessoryEventListener(signal);
     }
   }
 
@@ -184,7 +184,7 @@ public class SignalDialog extends javax.swing.JDialog {
       if (this.signal != null && this.signal.getAccessoryBean() != null) {
         if (this.signal.getAccessoryBean().getName() != null) {
           PersistenceFactory.getService().persist((signal));
-          CommandStationFactory.getCommandStation().addAccessoryEventListener(signal);
+          CommandStationFactory.getDispatcher().addAccessoryEventListener(signal);
         } else {
           this.signal.setAccessoryBean(null);
           PersistenceFactory.getService().persist((signal));

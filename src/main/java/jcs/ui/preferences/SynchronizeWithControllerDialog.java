@@ -247,7 +247,7 @@ public class SynchronizeWithControllerDialog extends JDialog {
     public String doInBackground() {
       Logger.trace("Starting");
       ProgressListener pl = new ProgressListener(this.progressBar, this.textArea);
-      CommandStationFactory.getCommandStation().synchronizeLocomotivesWithController(pl);
+      CommandStationFactory.getDispatcher().synchronizeLocomotivesWithCommandStation(pl);
       return "done";
     }
 

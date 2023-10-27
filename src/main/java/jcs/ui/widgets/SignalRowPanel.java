@@ -264,9 +264,9 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
   }
 
   private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (CommandStationFactory.getDispatcher() != null) {
       //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
-      CommandStationFactory.getCommandStation().switchAccessory(value, signal);
+      CommandStationFactory.getDispatcher().switchAccessory(value, signal);
     }
   }
 
@@ -304,7 +304,7 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
       SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
       f.add(signalRowPanel);
 
-      CommandStationFactory.getCommandStation().addAccessoryEventListener(signalRowPanel);
+      CommandStationFactory.getDispatcher().addAccessoryEventListener(signalRowPanel);
     }
 
     f.pack();
