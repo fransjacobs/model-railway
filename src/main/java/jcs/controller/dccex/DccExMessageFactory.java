@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2023 frans.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,8 @@ package jcs.controller.dccex;
 
 /**
  *
- * @author Frans Jacobs
+ * @author frans
  */
-public interface DccExConnection extends AutoCloseable {
-
-  static final int MAX_ERRORS = 15;
-
-  static final int PORT = 2560;
+public class DccExMessageFactory {
   
-  //Connection Type Network or Serial
-
-  DccExMessage sendMessage(DccExMessage message);
-
-  //void setFeedbackListener(FeedbackListener feedbackListener);
-
-  //void setSystemListener(SystemListener systemListener);
-
-  //void setAccessoryListener(AccessoryListener accessoryListener);
-
-  //void setLocomotiveListener(LocomotiveListener locomotiveListener);
-
-  boolean isConnected();
-
 }
