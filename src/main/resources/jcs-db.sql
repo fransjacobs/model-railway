@@ -212,6 +212,5 @@ values ('cs.Marklin.6051','Marklin 6051', 'jcs.controller.marklin.m6051.M6051Imp
 insert into jcs_properties (p_key,p_value) values ('jcs.version','1.0.0');
 insert into jcs_properties (p_key,p_value) values ('jcs.db.version','1.0.0');
 insert into jcs_properties (p_key,p_value) values ('default.switchtime','500');
-insert into jcs_properties (p_key,p_value) values ('commandStation.Marklin.CentralStation','jcs.controller.marklin.cs.MarklinCentralStationImpl');
 
 commit;

@@ -202,7 +202,7 @@ public class JCS extends Thread {
       logProgress("Aquire Track Controller...");
       dispatcher = CommandStationFactory.getDispatcher();
 
-      if ("true".equalsIgnoreCase(System.getProperty("dispatcher.autoconnect"))) {
+      if ("true".equalsIgnoreCase(System.getProperty("dispatcher.autoconnect", "true"))) {
         if (dispatcher != null) {
           boolean connected = dispatcher.connect();
           if (connected) {
