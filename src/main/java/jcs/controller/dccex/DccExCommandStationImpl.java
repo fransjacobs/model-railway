@@ -16,9 +16,15 @@
 package jcs.controller.dccex;
 
 import java.awt.Image;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import jcs.JCS;
 import jcs.controller.CommandStation;
+import jcs.controller.dccex.connection.DccExConnectionFactory;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
@@ -26,26 +32,134 @@ import jcs.controller.events.LocomotiveSpeedEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.CommandStationBean;
+import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.Device;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.Direction;
+import org.tinylog.Logger;
 
 /**
  *
  * @author frans
  */
-public class DccExNetworkImpl implements CommandStation {
+public class DccExCommandStationImpl implements CommandStation {
+
+  private CommandStationBean commandStationBean;
+  private DccExConnection connection;
+  private boolean connected = false;
+  private final Map<Integer, Device> devices;
+  private Device mainDevice;
+
+  Map<Integer, MeasurementChannel> measurementChannels;
+
+  private final List<PowerEventListener> powerEventListeners;
+  private final List<AccessoryEventListener> accessoryEventListeners;
+  private final List<SensorEventListener> sensorEventListeners;
+
+  private final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
+  private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
+  private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
+
+  private ExecutorService executor;
+  private boolean power;
+
+  private boolean debug = false;
+
+  private int defaultSwitchTime;
+
+  public DccExCommandStationImpl() {
+    this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
+  }
+
+  public DccExCommandStationImpl(boolean autoConnect) {
+    devices = new HashMap<>();
+    measurementChannels = new HashMap<>();
+    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
+
+    powerEventListeners = new LinkedList<>();
+    sensorEventListeners = new LinkedList<>();
+    accessoryEventListeners = new LinkedList<>();
+
+    locomotiveFunctionEventListeners = new LinkedList<>();
+    locomotiveDirectionEventListeners = new LinkedList<>();
+    locomotiveSpeedEventListeners = new LinkedList<>();
+
+    executor = Executors.newCachedThreadPool();
+
+    //Can't auto connect yet as the commandStation Bean is not set....
+    //if (autoConnect) {
+    //  connect();
+    //}
+  }
 
   @Override
-  public boolean connect() {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public CommandStationBean getCommandStationBean() {
+    return commandStationBean;
+  }
+
+  @Override
+  public void setCommandStationBean(CommandStationBean commandStationBean) {
+    this.commandStationBean = commandStationBean;
+  }
+
+  @Override
+  public final boolean connect() {
+    if (!this.connected) {
+      Logger.trace("Connecting to a DCC-EX Command Station...");
+      if (executor == null || executor.isShutdown()) {
+        executor = Executors.newCachedThreadPool();
+      }
+
+      if (this.commandStationBean == null) {
+        Logger.error("No DCC-EX Command Station Configuration set!");
+        return false;
+      } else {
+        Logger.trace("Connect using " + this.commandStationBean.getConnectionType());
+      }
+
+      //TODO: can be a little more elegant...
+      if (ConnectionType.NETWORK == this.commandStationBean.getConnectionType()) {
+        DccExConnectionFactory.writeLastUsedIpAddressProperty(this.commandStationBean.getIpAddress());
+      }
+
+      this.connection = DccExConnectionFactory.getConnection(this.commandStationBean.getConnectionType());
+
+      if (connection != null) {
+        //Wait, if needed until the receiver thread has started
+        long now = System.currentTimeMillis();
+        long timeout = now + 1000L;
+
+        while (!connected && now < timeout) {
+          connected = connection.isConnected();
+          now = System.currentTimeMillis();
+        }
+
+        if (connected) {
+
+          JCS.logProgress("Obtaining Device information...");
+
+          DccExMessage deviceInfoRequest = new DccExMessage("<s>");
+          connection.sendMessage(deviceInfoRequest);
+          Logger.trace("Connected with: " + deviceInfoRequest);
+
+        } else {
+          Logger.warn("Can't connect with a DCC-EX Command Station!");
+          JCS.logProgress("Can't connect with DCC-EX Command Station!");
+        }
+
+      }
+    }
+
+    return this.connected;
   }
 
   @Override
   public boolean isConnected() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return this.connection != null && this.connection.isConnected();
   }
 
   @Override
@@ -59,12 +173,14 @@ public class DccExNetworkImpl implements CommandStation {
   }
 
   @Override
-  public boolean power(boolean on) {
+  public boolean power(boolean on
+  ) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void changeDirection(int locUid, Direction direction) {
+  public void changeDirection(int locUid, Direction direction
+  ) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -191,6 +307,27 @@ public class DccExNetworkImpl implements CommandStation {
   @Override
   public Map<Integer, MeasurementChannel> getTrackMeasurements() {
     throw new UnsupportedOperationException("Not supported yet.");
+  }
+  // For testing only
+
+  public static void main(String[] a) {
+
+    CommandStationBean csb = new CommandStationBean();
+    csb.setId("cs.DccEX.network");
+    csb.setName("DCC-EX Network");
+    csb.setClassName("jcs.controller.dccex.DccExCommandStationImpl");
+    csb.setConnectionSpecifier("NETWORK");
+    csb.setIpAddress("192.168.178.73");
+    csb.setNetworkPort(2560);
+    csb.setDefault(true);
+    csb.setAutoIpConfiguration(false);
+    csb.setShow(true);
+
+    CommandStation cs = new DccExCommandStationImpl();
+    cs.setCommandStationBean(csb);
+
+    cs.connect();
+
   }
 
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.dccex.serial;
+package jcs.controller.dccex.connection;
 
 import com.fazecast.jSerialComm.SerialPort;
 import jcs.controller.dccex.DccExConnection;

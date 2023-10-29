@@ -59,6 +59,7 @@ import jcs.controller.marklin.cs3.DeviceJSONParser;
 import jcs.controller.marklin.cs3.FunctionSvgToPngConverter;
 import jcs.controller.marklin.cs3.LocomotiveBeanJSONParser;
 import jcs.entities.AccessoryBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.Device;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.MeasurementChannel;
@@ -75,6 +76,7 @@ import org.tinylog.Logger;
  */
 public class MarklinCentralStationImpl implements CommandStation {
 
+  private CommandStationBean commandStationBean;
   private CSConnection connection;
   private boolean connected = false;
 
@@ -102,7 +104,17 @@ public class MarklinCentralStationImpl implements CommandStation {
   private int defaultSwitchTime;
 
   public MarklinCentralStationImpl() {
-    this(System.getProperty("skip.commandStation.autoconnect","true").equalsIgnoreCase("true"));
+    this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
+  }
+
+  @Override
+  public CommandStationBean getCommandStationBean() {
+    return commandStationBean;
+  }
+
+  @Override
+  public void setCommandStationBean(CommandStationBean commandStationBean) {
+    this.commandStationBean = commandStationBean;
   }
 
   private MarklinCentralStationImpl(boolean autoConnect) {

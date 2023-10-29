@@ -15,23 +15,28 @@
  */
 package jcs.controller;
 
-import jcs.entities.MeasurementChannel;
-import jcs.entities.Device;
 import java.awt.Image;
 import java.util.List;
 import java.util.Map;
-import jcs.entities.AccessoryBean;
-import jcs.entities.LocomotiveBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Direction;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
 import jcs.controller.events.LocomotiveSpeedEventListener;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
+import jcs.entities.AccessoryBean;
+import jcs.entities.CommandStationBean;
+import jcs.entities.Device;
+import jcs.entities.LocomotiveBean;
+import jcs.entities.MeasurementChannel;
+import jcs.entities.enums.AccessoryValue;
+import jcs.entities.enums.Direction;
 
 public interface CommandStation {
+
+  void setCommandStationBean(CommandStationBean commandStationBean);
+
+  CommandStationBean getCommandStationBean();
 
   boolean connect();
 
