@@ -22,10 +22,10 @@ import java.util.List;
  *
  * @author frans
  */
-public class DccExMessage {
+public class DccExMessage implements DccEx {
 
   private final String command;
-  private List<String> responses;
+  private final List<String> responses;
 
   public DccExMessage(String command) {
     this.command = command;
@@ -37,7 +37,20 @@ public class DccExMessage {
   }
 
   public String getFirstResponse() {
-    return this.responses.get(0);
+    if (this.responses.isEmpty()) {
+      return null;
+    } else {
+      return this.responses.get(0);
+    }
+  }
+
+  public String getFirstResponseContent() {
+    if (this.responses.isEmpty()) {
+      return null;
+    } else {
+      String first = this.responses.get(0);
+      return first.substring(2).replaceAll(">", "");
+    }
   }
 
   public void addResponse(String response) {
@@ -55,6 +68,42 @@ public class DccExMessage {
       String first = this.responses.get(0);
       return first.startsWith("<") && first.endsWith(">");
     }
+  }
+
+  public String getTXOpcode() {
+    //Opcode is the character just after the first "<"
+    int start = this.command.indexOf("<") + 1;
+    int end = this.command.indexOf(" ");
+    if (end == -1) {
+      end = this.command.length() - 1;
+    }
+    String opcode = this.command.substring(start, end);
+    return opcode;
+  }
+
+  public String getRXOpcode() {
+    if (this.responses.isEmpty()) {
+      return null;
+    }
+    String response = this.responses.get(0);
+    int start = response.indexOf("<") + 1;
+    int end = 2;
+    String opcode = response.substring(start, end);
+    return opcode;
+  }
+
+  public boolean isSystemMessage() {
+    String txOpcode = this.getTXOpcode();
+    String rxOpcode = this.getRXOpcode();
+
+    if (txOpcode != null) {
+      return SYSTEM_OPCODES.contains(txOpcode);
+    }
+    if (rxOpcode != null) {
+      return SYSTEM_OPCODES.contains(rxOpcode);
+    }
+
+    return false;
   }
 
   @Override

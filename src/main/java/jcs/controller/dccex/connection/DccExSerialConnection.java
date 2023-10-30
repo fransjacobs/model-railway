@@ -19,6 +19,7 @@ import com.fazecast.jSerialComm.SerialPort;
 import jcs.controller.dccex.DccExConnection;
 import jcs.controller.dccex.DccExMessage;
 import org.tinylog.Logger;
+import jcs.controller.dccex.events.DccExMessageListener;
 
 /**
  *
@@ -46,6 +47,11 @@ public class DccExSerialConnection implements DccExConnection {
 
   @Override
   public void close() throws Exception {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void setMessageListener(DccExMessageListener systemListener) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

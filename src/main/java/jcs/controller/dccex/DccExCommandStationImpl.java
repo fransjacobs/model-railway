@@ -25,6 +25,7 @@ import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.controller.CommandStation;
 import jcs.controller.dccex.connection.DccExConnectionFactory;
+import jcs.controller.dccex.events.DccExMessageListener;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
 import jcs.controller.events.LocomotiveFunctionEventListener;
@@ -140,6 +141,9 @@ public class DccExCommandStationImpl implements CommandStation {
 
         if (connected) {
 
+          DccExMessageListener systemEventListener = new MessageListener(this);
+          this.connection.setMessageListener(systemEventListener);
+
           JCS.logProgress("Obtaining Device information...");
 
           DccExMessage deviceInfoRequest = new DccExMessage("<s>");
@@ -164,7 +168,23 @@ public class DccExCommandStationImpl implements CommandStation {
 
   @Override
   public void disconnect() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    try {
+      if (connection != null) {
+        connection.close();
+        connected = false;
+      }
+
+      if (executor != null) {
+        executor.shutdown();
+      }
+      executor = null;
+      connection = null;
+
+      DccExConnectionFactory.disconnectAll();
+    } catch (Exception ex) {
+      Logger.error(ex);
+    }
+    Logger.trace("Disconnected");
   }
 
   @Override
@@ -328,6 +348,37 @@ public class DccExCommandStationImpl implements CommandStation {
 
     cs.connect();
 
+    while (1 == 1) {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+
+      }
+    }
+
+  }
+
+  private class MessageListener implements DccExMessageListener {
+
+    private final DccExCommandStationImpl commandStation;
+
+    MessageListener(DccExCommandStationImpl commandStation) {
+      this.commandStation = commandStation;
+    }
+
+    @Override
+    public void onMessage(DccExMessage message) {
+
+      Logger.trace(message.getCommand());
+
+      String response = message.getCommand();
+      if (response == null) {
+        return;
+      }
+
+      String opcode = message.getTXOpcode();
+
+    }
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2023 fransjacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.controller.dccex;
+package jcs.controller.dccex.events;
 
-import jcs.controller.dccex.events.DccExMessageListener;
+import jcs.controller.dccex.DccExMessage;
 
 /**
  *
- * @author Frans Jacobs
+ * @author fransjacobs
  */
-public interface DccExConnection extends AutoCloseable {
+public interface DccExMessageListener {
 
-  static final int MAX_ERRORS = 15;
-
-  static final int PORT = 2560;
-
-  DccExMessage sendMessage(DccExMessage message);
-
-  void setMessageListener(DccExMessageListener messageListener);
-
-  boolean isConnected();
+  void onMessage(DccExMessage message);
 
 }
