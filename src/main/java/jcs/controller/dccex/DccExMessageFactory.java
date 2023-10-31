@@ -21,4 +21,19 @@ package jcs.controller.dccex;
  */
 public class DccExMessageFactory {
   
+  
+  static String versionHarwareInfoRequest() {
+    return "<s>";
+  }
+  
+  static String changePowerRequest(boolean power) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("<");
+    sb.append((power?"1":"0"));
+    sb.append(">");
+    return sb.toString();
+  }
+  
+  
+  
 }

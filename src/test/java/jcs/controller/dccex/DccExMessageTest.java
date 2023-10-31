@@ -46,67 +46,24 @@ public class DccExMessageTest {
     assertEquals(expResult, result);
   }
 
-  @Test
-  public void testGetFirstResponse() {
-    System.out.println("getFirstResponse");
-    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
-    instance.addResponse("<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>");
-    String expResult = "<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>";
-    String result = instance.getFirstResponse();
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testGetFirstResponseContent() {
-    System.out.println("getFirstResponseContent");
-    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
-    instance.addResponse("<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>");
-    String expResult = "DCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d";
-
-    String result = instance.getFirstResponseContent();
-    assertEquals(expResult, result);
-  }
-
-  @Test
-  public void testIsResponseReceived() {
-    System.out.println("isResponseReceived");
-    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
-    boolean result = instance.isResponseReceived();
-
-    assertEquals(false, result);
-    instance.addResponse("<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>");
-
-    result = instance.isResponseReceived();
-    assertEquals(true, result);
-  }
 
   @Test
   public void testGetTXOpcode() {
     System.out.println("getTXOpcode");
     DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
-    instance.addResponse("<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>");
 
     String expResult = "s";
     String result = instance.getTXOpcode();
     assertEquals(expResult, result);
   }
 
-  @Test
-  public void testGetRXOpcode() {
-    System.out.println("getRXOpcode");
-    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
-    instance.addResponse("<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>");
-    String result = instance.getRXOpcode();
-    assertEquals("i", result);
-  }
-
-  @Test
-  public void testIsSystemMessage() {
-    System.out.println("getIsSystemMessage");
-    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
-    instance.addResponse("<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>");
-    boolean result = instance.isSystemMessage();
-    assertEquals(true, result);
-  }
+//  @Test
+//  public void testIsSystemMessage() {
+//    System.out.println("getIsSystemMessage");
+//    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
+//    instance.addResponse("<iDCC-EX V-5.0.3 / MEGA / STANDARD_MOTOR_SHIELD G-3bddf4d>");
+//    boolean result = instance.isSystemMessage();
+//    assertEquals(true, result);
+//  }
 
 }

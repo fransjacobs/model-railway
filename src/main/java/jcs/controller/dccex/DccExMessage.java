@@ -36,40 +36,6 @@ public class DccExMessage implements DccEx {
     return command;
   }
 
-  public String getFirstResponse() {
-    if (this.responses.isEmpty()) {
-      return null;
-    } else {
-      return this.responses.get(0);
-    }
-  }
-
-  public String getFirstResponseContent() {
-    if (this.responses.isEmpty()) {
-      return null;
-    } else {
-      String first = this.responses.get(0);
-      return first.substring(2).replaceAll(">", "");
-    }
-  }
-
-  public void addResponse(String response) {
-    this.responses.add(response);
-  }
-
-  public List<String> getResponses() {
-    return responses;
-  }
-
-  public boolean isResponseReceived() {
-    if (this.responses.isEmpty()) {
-      return false;
-    } else {
-      String first = this.responses.get(0);
-      return first.startsWith("<") && first.endsWith(">");
-    }
-  }
-
   public String getTXOpcode() {
     //Opcode is the character just after the first "<"
     int start = this.command.indexOf("<") + 1;
@@ -81,26 +47,11 @@ public class DccExMessage implements DccEx {
     return opcode;
   }
 
-  public String getRXOpcode() {
-    if (this.responses.isEmpty()) {
-      return null;
-    }
-    String response = this.responses.get(0);
-    int start = response.indexOf("<") + 1;
-    int end = 2;
-    String opcode = response.substring(start, end);
-    return opcode;
-  }
-
   public boolean isSystemMessage() {
     String txOpcode = this.getTXOpcode();
-    String rxOpcode = this.getRXOpcode();
 
     if (txOpcode != null) {
       return SYSTEM_OPCODES.contains(txOpcode);
-    }
-    if (rxOpcode != null) {
-      return SYSTEM_OPCODES.contains(rxOpcode);
     }
 
     return false;
@@ -111,14 +62,18 @@ public class DccExMessage implements DccEx {
     StringBuilder sb = new StringBuilder();
     sb.append("TX: ");
     sb.append(command);
-    sb.append(" # ");
-    sb.append(this.responses.size());
-    sb.append(" -> ");
-    for (String r : this.responses) {
-      sb.append(r);
-      sb.append(" ");
-    }
     return sb.toString();
+  }
+
+  public static String filterContent(String message) {
+    if (message.length() > 1 && message.startsWith("<")) {
+      String opcode = message.substring(1, 2);
+      String content = message.replaceAll("<", "").replaceAll(">", "").replaceFirst(opcode, "");
+      return content;
+    } else {
+      return message;
+    }
+
   }
 
 }

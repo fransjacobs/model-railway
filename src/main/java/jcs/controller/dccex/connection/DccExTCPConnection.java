@@ -24,9 +24,7 @@ import java.io.Writer;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import jcs.controller.dccex.DccExConnection;
-import jcs.controller.dccex.DccExMessage;
 import jcs.controller.dccex.events.DccExMessageListener;
 import org.tinylog.Logger;
 
@@ -40,8 +38,6 @@ class DccExTCPConnection implements DccExConnection {
   private Socket clientSocket;
   private Writer writer;
   private ClientMessageReceiver messageReceiver;
-
-  private static final long SHORT_TIMEOUT = 1000L;
 
   private boolean debug = false;
 
@@ -97,47 +93,16 @@ class DccExTCPConnection implements DccExConnection {
   }
 
   @Override
-  public synchronized DccExMessage sendMessage(DccExMessage message) {
-    ResponseCallback callback = new ResponseCallback(message);
-    this.messageReceiver.setReplyCallback(callback);
+  public void sendMessage(String message) {
     try {
-      writer.write(message.getCommand());
+      writer.write(message);
       writer.flush();
+      if(debug) {
+        Logger.trace("TX:" +message);
+      }
 
     } catch (IOException ex) {
       Logger.error(ex);
-    }
-    long now = System.currentTimeMillis();
-    long start = now;
-    long timeout = now + SHORT_TIMEOUT;
-
-    //Wait for the response, it looks like that my setup allways needs a little time before the full reply comes back
-    //there is no guarantee that a response received directly after a command is sent ....
-    //pause(20);
-    boolean responseComplete = callback.isResponseReceived();
-
-    while (!responseComplete && now < timeout) {
-      responseComplete = callback.isResponseReceived();
-      now = System.currentTimeMillis();
-    }
-
-    if (debug) {
-      if (responseComplete) {
-        Logger.trace("Got Response in " + (now - start) + " ms");
-      } else {
-        Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
-      }
-    }
-
-    this.messageReceiver.releaseReplyCallback();
-    return message;
-  }
-
-  private void pause(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException ex) {
-      Logger.warn(ex);
     }
   }
 
@@ -151,29 +116,9 @@ class DccExTCPConnection implements DccExConnection {
     return this.messageReceiver != null && this.messageReceiver.isRunning();
   }
 
-  private class ResponseCallback {
-
-    private final DccExMessage tx;
-
-    ResponseCallback(final DccExMessage tx) {
-      this.tx = tx;
-    }
-
-    public void addResponse(String rx) {
-      this.tx.addResponse(rx);
-    }
-
-    public synchronized boolean isResponseReceived() {
-      return tx.isResponseReceived();
-    }
-  }
-
   private class ClientMessageReceiver extends Thread {
-
     private boolean quit = true;
     private BufferedReader reader;
-    private ResponseCallback callBack;
-
     private DccExMessageListener messageListener;
 
     public ClientMessageReceiver(Socket socket) {
@@ -182,14 +127,6 @@ class DccExTCPConnection implements DccExConnection {
       } catch (IOException ex) {
         Logger.error(ex);
       }
-    }
-
-    void setReplyCallback(ResponseCallback callBack) {
-      this.callBack = callBack;
-    }
-
-    void releaseReplyCallback() {
-      this.callBack = null;
     }
 
     synchronized void quit() {
@@ -214,16 +151,7 @@ class DccExTCPConnection implements DccExConnection {
       while (isRunning()) {
         try {
           String message = reader.readLine();
-          if (this.callBack != null) {
-            this.callBack.addResponse(message);
-          } else {
-            DccExMessage rx = new DccExMessage(message);
-            if (this.messageListener != null) {
-              this.messageListener.onMessage(rx);
-            } else {
-              Logger.trace("->RX: " + message);
-            }
-          }
+          this.messageListener.onMessage(message);
         } catch (SocketException se) {
           Logger.error(se);
           quit();
@@ -239,29 +167,6 @@ class DccExTCPConnection implements DccExConnection {
         Logger.error(ex);
       }
     }
-  }
-
-  //Only for initial testing ...
-  public static void main(String[] a) throws UnknownHostException {
-    InetAddress inetAddr = InetAddress.getByName("192.168.178.73");
-    DccExTCPConnection c = new DccExTCPConnection(inetAddr);
-
-    DccExMessage versionHarwareRequest = new DccExMessage("<s>");
-    versionHarwareRequest = c.sendMessage(versionHarwareRequest);
-    Logger.trace(versionHarwareRequest);
-
-    DccExMessage currentRequest = new DccExMessage("<c>");
-    currentRequest = c.sendMessage(currentRequest);
-    Logger.trace(currentRequest);
-
-    DccExMessage supportedCabs = new DccExMessage("<#>");
-    supportedCabs = c.sendMessage(supportedCabs);
-    Logger.trace(supportedCabs);
-
-    DccExMessage trackConfig = new DccExMessage("<=>");
-    trackConfig = c.sendMessage(trackConfig);
-    Logger.trace(trackConfig);
-
   }
 
 }

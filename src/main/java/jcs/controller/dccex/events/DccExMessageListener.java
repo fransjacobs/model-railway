@@ -15,14 +15,12 @@
  */
 package jcs.controller.dccex.events;
 
-import jcs.controller.dccex.DccExMessage;
-
 /**
  *
  * @author fransjacobs
  */
 public interface DccExMessageListener {
 
-  void onMessage(DccExMessage message);
+  void onMessage(String message);
 
 }

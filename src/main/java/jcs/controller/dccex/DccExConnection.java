@@ -27,7 +27,7 @@ public interface DccExConnection extends AutoCloseable {
 
   static final int PORT = 2560;
 
-  DccExMessage sendMessage(DccExMessage message);
+  void sendMessage(String message);
 
   void setMessageListener(DccExMessageListener messageListener);
 
