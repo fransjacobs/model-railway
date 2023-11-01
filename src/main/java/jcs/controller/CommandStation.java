@@ -28,9 +28,9 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.Device;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Direction;
 
 public interface CommandStation {
 
@@ -50,7 +50,7 @@ public interface CommandStation {
 
   void changeDirection(int locUid, Direction direction);
 
-  void changeVelocity(int locUid, int speed);
+  void changeVelocity(int locUid, int speed, Direction direction);
 
   void changeFunctionValue(int locUid, int functionNumber, boolean flag);
 

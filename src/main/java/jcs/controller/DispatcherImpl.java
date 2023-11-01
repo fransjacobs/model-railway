@@ -50,10 +50,10 @@ import jcs.controller.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Direction;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -338,14 +338,14 @@ public class DispatcherImpl implements Dispatcher {
   @Override
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
     Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName());
-    commandStation.changeVelocity(locomotive.getUid().intValue(), 0);
+    commandStation.changeVelocity(locomotive.getUid().intValue(), 0, locomotive.getDirection());
     commandStation.changeDirection(locomotive.getUid().intValue(), newDirection);
   }
 
   @Override
   public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
-    commandStation.changeVelocity(locomotive.getUid().intValue(), newVelocity);
+    commandStation.changeVelocity(locomotive.getUid().intValue(), newVelocity, locomotive.getDirection());
   }
 
   @Override

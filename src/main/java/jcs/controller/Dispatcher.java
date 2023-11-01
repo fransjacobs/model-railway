@@ -24,7 +24,6 @@ import jcs.controller.events.MeasurementEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Direction;
 import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEventListener;
 
@@ -50,7 +49,7 @@ public interface Dispatcher {
 
   void removePowerEventListener(PowerEventListener listener);
 
-  void changeLocomotiveDirection(Direction direction, LocomotiveBean locomotive);
+  void changeLocomotiveDirection(LocomotiveBean.Direction direction, LocomotiveBean locomotive);
 
   void changeLocomotiveSpeed(Integer speed, LocomotiveBean locomotive);
 

@@ -17,7 +17,7 @@ package jcs.controller.marklin.cs;
 
 import jcs.controller.marklin.cs.can.parser.DirectionInfo;
 import jcs.controller.marklin.cs.can.CanMessage;
-import jcs.entities.enums.Direction;
+import jcs.entities.LocomotiveBean.Direction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

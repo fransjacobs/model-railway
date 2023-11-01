@@ -17,7 +17,7 @@ package jcs.controller.marklin.cs.can.parser;
 
 import java.io.Serializable;
 import jcs.controller.marklin.cs.can.CanMessage;
-import jcs.entities.enums.Direction;
+import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
 
 public class DirectionInfo implements Serializable {

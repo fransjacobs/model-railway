@@ -27,7 +27,7 @@ import jcs.controller.events.LocomotiveSpeedEventListener;
 import jcs.controller.events.PowerEvent;
 import jcs.controller.events.PowerEventListener;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.enums.Direction;
+import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
 
 /**
@@ -239,11 +239,11 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }// </editor-fold>//GEN-END:initComponents
 
   private void reverseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseButtonActionPerformed
-    changeDirection(Direction.get(evt.getActionCommand()));
+    changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
   }//GEN-LAST:event_reverseButtonActionPerformed
 
   private void forwardButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardButtonActionPerformed
-    changeDirection(Direction.get(evt.getActionCommand()));
+    changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
   }//GEN-LAST:event_forwardButtonActionPerformed
 
   private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
@@ -309,11 +309,11 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     }
   }
 
-  private void changeDirection(Direction direction) {
+  private void changeDirection(LocomotiveBean.Direction direction) {
     executor.execute(() -> changeDirection(direction, this.locomotiveBean));
   }
 
-  private void changeDirection(Direction newDirection, LocomotiveBean locomotiveBean) {
+  private void changeDirection(LocomotiveBean.Direction newDirection, LocomotiveBean locomotiveBean) {
     if (CommandStationFactory.getDispatcher() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
       Logger.trace("Changing direction of " + locomotiveBean + " to: " + newDirection);
       CommandStationFactory.getDispatcher().changeLocomotiveDirection(newDirection, locomotiveBean);
@@ -365,8 +365,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   public boolean isPower() {
     return power;
   }
-  
-  
 
   @Override
   public void onDirectionChange(LocomotiveDirectionEvent event) {

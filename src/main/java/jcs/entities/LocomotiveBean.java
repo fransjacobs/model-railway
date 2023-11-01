@@ -17,16 +17,17 @@ package jcs.entities;
 
 import java.awt.Image;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import jcs.entities.enums.DecoderType;
-import jcs.entities.enums.Direction;
 import jcs.persistence.util.ColumnPosition;
 
 @Table(name = "locomotives")
@@ -59,7 +60,6 @@ public class LocomotiveBean implements Serializable {
   private Image locIcon;
 
   private final Map<Integer, FunctionBean> functions;
-  //private List<LocomotiveFunction> locomotiveFunctions;
 
   public LocomotiveBean() {
     functions = new HashMap<>();
@@ -502,6 +502,95 @@ public class LocomotiveBean implements Serializable {
     }
     return Objects.equals(this.show, other.show);
     //return Objects.equals(this.locIcon, other.locIcon);
+  }
+
+  public enum Direction {
+    SAME("Same"), FORWARDS("Forwards"), BACKWARDS("Backwards"), SWITCH("Switch");
+
+    private final String direction;
+
+    private static final Map<String, Direction> ENUM_MAP;
+
+    Direction(String direction) {
+      this.direction = direction;
+    }
+
+    public String getDirection() {
+      return this.direction;
+    }
+
+    static {
+      Map<String, Direction> map = new ConcurrentHashMap<>();
+      for (Direction instance : Direction.values()) {
+        map.put(instance.getDirection(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static Direction get(String direction) {
+      return ENUM_MAP.get(direction);
+    }
+
+    private static int translate2MarklinValue(String value) {
+      return switch (value) {
+        case "Forwards" ->
+          1;
+        case "Backwards" ->
+          2;
+        case "Switch" ->
+          3;
+        default ->
+          0;
+      };
+    }
+
+    public int getMarklinValue() {
+      return translate2MarklinValue(this.direction);
+    }
+
+    private static int translate2DccExValue(String value) {
+      return switch (value) {
+        case "Forwards" ->
+          1;
+        case "Backwards" ->
+          0;
+        default ->
+          1;
+      };
+    }
+
+    public int getDccExValue() {
+      return translate2DccExValue(this.direction);
+    }
+
+    private static String translate2DirectionString(int value) {
+      return switch (value) {
+        case 1 ->
+          "Forwards";
+        case 2 ->
+          "Backwards";
+        case 3 ->
+          "Switch";
+        default ->
+          //"Same";
+          "Forwards";
+      };
+    }
+
+    public static Direction getDirection(int marklinValue) {
+      return ENUM_MAP.get(translate2DirectionString(marklinValue));
+    }
+
+    public Direction toggle() {
+      return switch (this.direction) {
+        case "Forwards" ->
+          BACKWARDS;
+        case "Backwards" ->
+          FORWARDS;
+        default ->
+          SAME;
+      };
+    }
   }
 
 }

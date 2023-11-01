@@ -17,9 +17,9 @@ package jcs.controller.marklin.m6050;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
-import jcs.entities.enums.Direction;
 import org.tinylog.Logger;
 
 /**

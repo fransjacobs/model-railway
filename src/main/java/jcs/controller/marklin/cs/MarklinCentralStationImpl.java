@@ -62,10 +62,10 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.Device;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.DecoderType;
-import jcs.entities.enums.Direction;
 import jcs.util.ByteUtil;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -540,7 +540,7 @@ public class MarklinCentralStationImpl implements CommandStation {
   }
 
   @Override
-  public void changeVelocity(int locUid, int speed) {
+  public void changeVelocity(int locUid, int speed, Direction direction) {
     if (this.power) {
       CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(locUid, speed, this.csUid));
       LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(message);

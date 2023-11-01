@@ -39,9 +39,9 @@ import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.Device;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.Direction;
 import org.tinylog.Logger;
 
 /**
@@ -212,13 +212,23 @@ public class DccExCommandStationImpl implements CommandStation {
   }
 
   @Override
-  public void changeDirection(int locUid, Direction direction) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void changeDirection(int address, Direction newDirection) {
+    if (this.power) {
+      int dir = newDirection.getDccExValue();
+
+      String message = DccExMessageFactory.cabChangeSpeedRequest(address, 0, dir);
+      this.connection.sendMessage(message);
+    }
   }
 
   @Override
-  public void changeVelocity(int locUid, int speed) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void changeVelocity(int address, int speed, Direction direction) {
+    if (this.power) {
+      int dir = direction.getDccExValue();
+
+      String message = DccExMessageFactory.cabChangeSpeedRequest(address, 0, dir);
+      this.connection.sendMessage(message);
+    }
   }
 
   @Override
@@ -461,9 +471,6 @@ public class DccExCommandStationImpl implements CommandStation {
     cs.power(true);
     Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
 
-    
-    
-    
     while (1 == 1) {
       try {
         Thread.sleep(1000);

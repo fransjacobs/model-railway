@@ -153,7 +153,7 @@ class DccExTCPConnection implements DccExConnection {
           String message = reader.readLine();
           this.messageListener.onMessage(message);
         } catch (SocketException se) {
-          Logger.error(se);
+          Logger.error(se.getMessage());
           quit();
         } catch (IOException ioe) {
           Logger.error(ioe);

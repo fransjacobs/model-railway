@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
@@ -338,7 +339,7 @@ public class Block extends AbstractTile implements Tile {
 
       String direction;
       if (locInBlock) {
-        direction = (jcs.entities.enums.Direction.FORWARDS == this.getBlockBean().getLocomotive().getDirection() ? ">" : "<");
+        direction = (LocomotiveBean.Direction.FORWARDS == this.getBlockBean().getLocomotive().getDirection() ? ">" : "<");
       } else {
         direction = "";
       }
