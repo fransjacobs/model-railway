@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.controller.CommandStation;
 import jcs.controller.dccex.connection.DccExConnectionFactory;
+import jcs.controller.dccex.events.CabEvent;
 import jcs.controller.dccex.events.DccExMessageListener;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEventListener;
@@ -38,6 +39,7 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.Device;
+import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
@@ -232,8 +234,11 @@ public class DccExCommandStationImpl implements CommandStation {
   }
 
   @Override
-  public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void changeFunctionValue(int address, int functionNumber, boolean flag) {
+    if (this.power) {
+      String message = DccExMessageFactory.cabChangeFunctionsRequest(address, functionNumber, flag);
+      this.connection.sendMessage(message);
+    }
   }
 
   @Override
@@ -365,12 +370,89 @@ public class DccExCommandStationImpl implements CommandStation {
     }
   }
 
+  private void notifyLocomotiveEventListeners(final CabEvent cabEvent) {
+    executor.execute(() -> fireLocomotiveEventListeners(cabEvent));
+  }
+
+  private void fireLocomotiveEventListeners(final CabEvent cabEvent) {
+    Logger.trace("Loc " + cabEvent.getAddress() + " has changes");
+
+    int speedDir = cabEvent.getSpeedDir();
+
+    int velocity;
+    int dir;
+    if (speedDir >= 128) {
+      //forwards
+      dir = 1;
+      velocity = speedDir - 128;
+      if (velocity >= 0) {
+        velocity = velocity - 1;
+        velocity = velocity * 8;
+      }
+    } else {
+      //backwards
+      dir = 0;
+      velocity = speedDir;
+      if (velocity >= 0) {
+        velocity = velocity - 1;
+        velocity = velocity * 8;
+      }
+    }
+    
+    List<FunctionBean> functions = cabEvent.getFunctionBeans();
+    
+    //Functionmap 0 all off 1 = F0 on 2 = F1 on 4 = F2 on 8 = F4 on
+    //3 = f0 and f1 on 5 f0 f2 etc. max 27 funct so 134217728 = F27
+
+    //speedbyte: Speed in DCC speedstep format .
+    //reverse - 2-127 = speed 1-126, 0 = stop
+    //forward - 130-255 = speed 1-126, 128 = stop
+    //FunctiMap: individual function states represented by the the bits in a byte
+    //Figure out the changes so
+    //  LocomotiveSpeedEvent se = new LocomotiveSpeedEvent(int cabEvent.getAddress(), cabEvent.int speed) {
+    //   for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+//        listener.onSpeedChange(speedEvent);
+//      }
+//      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+//        listener.onFunctionChange(functionEvent);
+//      }
+//    }
+  }
+
+//  private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
+//    executor.execute(() -> fireAllDirectionEventListeners(directionEvent));
+//  }
+//  private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
+//    if (directionEvent.isValid()) {
+//      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+//        listener.onDirectionChange(directionEvent);
+//      }
+//    }
+//  }
+//  private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent locomotiveEvent) {
+//    executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
+//  }
+//  private void fireAllLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
+//    if (speedEvent.isValid()) {
+//      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+//        listener.onSpeedChange(speedEvent);
+//      }
+//    }
+//  }
   private class MessageListener implements DccExMessageListener {
 
     private final DccExCommandStationImpl commandStation;
 
     MessageListener(DccExCommandStationImpl commandStation) {
       this.commandStation = commandStation;
+    }
+
+    private static int getIntValue(String s) {
+      int r = -1;
+      if (s != null && s.length() > 0) {
+        Integer.parseUnsignedInt(s);
+      }
+      return r;
     }
 
     @Override
@@ -414,8 +496,11 @@ public class DccExCommandStationImpl implements CommandStation {
             // Track current
             break;
           case "l":
-            // Locomotive changed. TODO: parameters
+            // Locomotive changed.
+            CabEvent ce = new CabEvent(content);
+            this.commandStation.notifyLocomotiveEventListeners(ce);
             break;
+
           case "=":
             // Locomotive changed. TODO: parameters
             break;
@@ -442,41 +527,55 @@ public class DccExCommandStationImpl implements CommandStation {
 
     System.setProperty("message.debug", "true");
 
-    CommandStationBean csb = new CommandStationBean();
-    csb.setId("cs.DccEX.network");
-    csb.setName("DCC-EX Network");
-    csb.setClassName("jcs.controller.dccex.DccExCommandStationImpl");
-    csb.setConnectionSpecifier("NETWORK");
-    csb.setIpAddress("192.168.178.73");
-    csb.setNetworkPort(2560);
-    csb.setDefault(true);
-    csb.setAutoIpConfiguration(false);
-    csb.setShow(true);
+    if (1 == 1) {
+      CommandStationBean csb = new CommandStationBean();
+      csb.setId("cs.DccEX.network");
+      csb.setName("DCC-EX Network");
+      csb.setClassName("jcs.controller.dccex.DccExCommandStationImpl");
+      csb.setConnectionSpecifier("NETWORK");
+      csb.setIpAddress("192.168.178.73");
+      csb.setNetworkPort(2560);
+      csb.setDefault(true);
+      csb.setAutoIpConfiguration(false);
+      csb.setShow(true);
 
-    CommandStation cs = new DccExCommandStationImpl();
-    cs.setCommandStationBean(csb);
+      CommandStation cs = new DccExCommandStationImpl();
+      cs.setCommandStationBean(csb);
 
-    cs.connect();
+      cs.connect();
 
-    ((DccExCommandStationImpl) cs).pause(500L);
+      ((DccExCommandStationImpl) cs).pause(500L);
 
-    cs.power(true);
-    Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
+      cs.power(true);
+      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
 
-    ((DccExCommandStationImpl) cs).pause(500L);
-    cs.power(false);
-    Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
+      ((DccExCommandStationImpl) cs).pause(500L);
+      cs.power(false);
+      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
 
-    ((DccExCommandStationImpl) cs).pause(500L);
-    cs.power(true);
-    Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
+      ((DccExCommandStationImpl) cs).pause(500L);
+      cs.power(true);
+      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
 
-    while (1 == 1) {
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
+      /////
+      ((DccExCommandStationImpl) cs).pause(500L);
+      cs.changeFunctionValue(8, 0, true);
 
+      ((DccExCommandStationImpl) cs).pause(1500L);
+
+      cs.changeFunctionValue(8, 1, true);
+
+      ((DccExCommandStationImpl) cs).pause(1500L);
+      cs.changeFunctionValue(8, 1, false);
+
+      while (1 == 1) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+
+        }
       }
+    } else {
     }
 
   }

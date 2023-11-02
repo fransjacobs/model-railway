@@ -69,7 +69,7 @@ public class DccExMessage implements DccEx {
     if (message.length() > 1 && message.startsWith("<")) {
       String opcode = message.substring(1, 2);
       String content = message.replaceAll("<", "").replaceAll(">", "").replaceFirst(opcode, "");
-      return content;
+      return content.trim();
     } else {
       return message;
     }

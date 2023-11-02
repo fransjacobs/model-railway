@@ -80,7 +80,7 @@ public class DccExMessageFactory {
    *
    * @param cabAddress the loco address
    * @param newSpeed the new loco speed
-   * @param direction the loco direction (1 forwards 0 backwrds)
+   * @param direction the loco direction (1 forwards 0 backwards)
    * @return the dcc-ex message
    */
   static String cabChangeSpeedRequest(int cabAddress, int newSpeed, int direction) {

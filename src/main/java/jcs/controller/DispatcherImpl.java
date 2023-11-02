@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -560,13 +561,15 @@ public class DispatcherImpl implements Dispatcher {
       FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
 
       if (dbfb != null) {
-        dbfb.setValue(fb.getValue());
-        if (!dbfb.isMomentary()) {
-          PersistenceFactory.getService().persist(dbfb);
-          functionEvent.setFunctionBean(dbfb);
-        }
-        for (LocomotiveFunctionEventListener fl : trackService.LocomotiveFunctionEventListeners) {
-          fl.onFunctionChange(functionEvent);
+        if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
+          dbfb.setValue(fb.getValue());
+          if (!dbfb.isMomentary()) {
+            PersistenceFactory.getService().persist(dbfb);
+            functionEvent.setFunctionBean(dbfb);
+          }
+          for (LocomotiveFunctionEventListener fl : trackService.LocomotiveFunctionEventListeners) {
+            fl.onFunctionChange(functionEvent);
+          }
         }
       }
     }
@@ -586,13 +589,15 @@ public class DispatcherImpl implements Dispatcher {
       LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
       if (dblb != null) {
-        Integer richtung = lb.getRichtung();
-        dblb.setRichtung(richtung);
-        PersistenceFactory.getService().persist(dblb);
-        directionEvent.setLocomotiveBean(dblb);
+        if (!Objects.equals(dblb.getRichtung(), lb.getRichtung())) {
+          Integer richtung = lb.getRichtung();
+          dblb.setRichtung(richtung);
+          PersistenceFactory.getService().persist(dblb);
+          directionEvent.setLocomotiveBean(dblb);
 
-        for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {
-          dl.onDirectionChange(directionEvent);
+          for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {
+            dl.onDirectionChange(directionEvent);
+          }
         }
       }
     }
@@ -613,13 +618,15 @@ public class DispatcherImpl implements Dispatcher {
         LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
 
         if (dblb != null) {
-          Integer velocity = lb.getVelocity();
-          dblb.setVelocity(velocity);
-          PersistenceFactory.getService().persist(dblb);
+          if (!Objects.equals(dblb.getVelocity(), lb.getVelocity())) {
+            Integer velocity = lb.getVelocity();
+            dblb.setVelocity(velocity);
+            PersistenceFactory.getService().persist(dblb);
 
-          speedEvent.setLocomotiveBean(dblb);
-          for (LocomotiveSpeedEventListener dl : this.trackService.locomotiveSpeedEventListeners) {
-            dl.onSpeedChange(speedEvent);
+            speedEvent.setLocomotiveBean(dblb);
+            for (LocomotiveSpeedEventListener dl : this.trackService.locomotiveSpeedEventListeners) {
+              dl.onSpeedChange(speedEvent);
+            }
           }
         }
       }

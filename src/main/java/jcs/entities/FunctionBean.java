@@ -79,6 +79,10 @@ public class FunctionBean implements Serializable {
     this(locomotiveId, number, null, null);
   }
 
+  public FunctionBean(Long locomotiveId, Integer number, Integer value) {
+    this(locomotiveId, number, null, value);
+  }
+
   public FunctionBean(Long locomotiveId, Integer number, Integer functionType, Integer value) {
     this(null, locomotiveId, number, functionType, value);
   }
