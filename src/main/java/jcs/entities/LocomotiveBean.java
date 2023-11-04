@@ -279,7 +279,7 @@ public class LocomotiveBean implements Serializable {
   @Transient
   public Direction getDirection() {
     if (this.richtung != null) {
-      return Direction.getDirection(this.richtung);
+      return Direction.getDirectionMarkin(this.richtung);
     } else {
       return Direction.FORWARDS;
     }
@@ -559,11 +559,22 @@ public class LocomotiveBean implements Serializable {
       };
     }
 
+    private static String translate2DccExDirectionString(int value) {
+      return switch (value) {
+        case 1 ->
+          "Forwards";
+        case 0 ->
+          "Backwards";
+        default ->
+          "Forwards";
+      };
+    }
+
     public int getDccExValue() {
       return translate2DccExValue(this.direction);
     }
 
-    private static String translate2DirectionString(int value) {
+    private static String translate2MarklinDirectionString(int value) {
       return switch (value) {
         case 1 ->
           "Forwards";
@@ -577,8 +588,12 @@ public class LocomotiveBean implements Serializable {
       };
     }
 
-    public static Direction getDirection(int marklinValue) {
-      return ENUM_MAP.get(translate2DirectionString(marklinValue));
+    public static Direction getDirectionMarkin(int marklinValue) {
+      return ENUM_MAP.get(translate2MarklinDirectionString(marklinValue));
+    }
+
+    public static Direction getDirectionDccEx(int dccExValue) {
+      return ENUM_MAP.get(translate2DccExDirectionString(dccExValue));
     }
 
     public Direction toggle() {

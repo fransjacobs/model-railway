@@ -37,7 +37,7 @@ public class DirectionInfo implements Serializable {
     byte[] data = locDirection.getResponse(0).getData();
     int dir = data[4];
 
-    this.direction = Direction.getDirection(dir);
+    this.direction = Direction.getDirectionMarkin(dir);
   }
 
   @Override

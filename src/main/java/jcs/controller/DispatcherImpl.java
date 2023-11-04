@@ -49,12 +49,14 @@ import jcs.controller.events.PowerEventListener;
 import jcs.controller.events.SensorEvent;
 import jcs.controller.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
+import jcs.entities.enums.DecoderType;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -74,6 +76,8 @@ public class DispatcherImpl implements Dispatcher {
 
   private final List<MeasurementEventListener> measurementEventListeners;
 
+  private final Set<Protocol> supportedProtocols;
+
   public DispatcherImpl() {
     this("true".equalsIgnoreCase(System.getProperty("skip.controller.autoconnect", "true")));
   }
@@ -86,7 +90,9 @@ public class DispatcherImpl implements Dispatcher {
     locomotiveSpeedEventListeners = new LinkedList<>();
     measurementEventListeners = new LinkedList<>();
 
-    if (autoConnectController) {
+    supportedProtocols = new HashSet<>();
+
+    if (autoConnectController && commandStation != null) {
       connect();
       Logger.trace(commandStation != null ? "Aquired " + commandStation.getClass().getSimpleName() : "Could not aquire a Command Station! " + (commandStation.isConnected() ? "Connected" : "NOT Connected"));
     } else {
@@ -109,6 +115,8 @@ public class DispatcherImpl implements Dispatcher {
       this.commandStation.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
       this.commandStation.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
       this.commandStation.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
+
+      this.supportedProtocols.addAll(this.commandStation.getCommandStationBean().supportedProtocols());
     }
 
     //TODO implement get the day end i.e. the current state of all Objects on track
@@ -339,20 +347,45 @@ public class DispatcherImpl implements Dispatcher {
   @Override
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
     Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName());
-    commandStation.changeVelocity(locomotive.getUid().intValue(), 0, locomotive.getDirection());
-    commandStation.changeDirection(locomotive.getUid().intValue(), newDirection);
+
+    int address;
+    if (this.supportedProtocols.size() == 1) {
+      address = locomotive.getAddress();
+    } else {
+      address = locomotive.getUid().intValue();
+    }
+    if (commandStation != null) {
+      commandStation.changeVelocity(address, 0, locomotive.getDirection());
+      commandStation.changeDirection(address, newDirection);
+    }
   }
 
   @Override
   public void changeLocomotiveSpeed(Integer newVelocity, LocomotiveBean locomotive) {
     Logger.trace("Changing velocity to " + newVelocity + " for " + locomotive.getName());
-    commandStation.changeVelocity(locomotive.getUid().intValue(), newVelocity, locomotive.getDirection());
+    int address;
+    if (this.supportedProtocols.size() == 1) {
+      address = locomotive.getAddress();
+    } else {
+      address = locomotive.getUid().intValue();
+    }
+    if (commandStation != null) {
+      commandStation.changeVelocity(address, newVelocity, locomotive.getDirection());
+    }
   }
 
   @Override
   public void changeLocomotiveFunction(Boolean newValue, Integer functionNumber, LocomotiveBean locomotive) {
     Logger.trace("Changing Function " + functionNumber + " to " + (newValue ? "on" : "off") + " on " + locomotive.getName());
-    commandStation.changeFunctionValue(locomotive.getUid().intValue(), functionNumber, newValue);
+    int address;
+    if (this.supportedProtocols.size() == 1) {
+      address = locomotive.getAddress();
+    } else {
+      address = locomotive.getUid().intValue();
+    }
+    if (commandStation != null) {
+      commandStation.changeFunctionValue(address, functionNumber, newValue);
+    }
   }
 
   @Override
@@ -560,6 +593,14 @@ public class DispatcherImpl implements Dispatcher {
       FunctionBean fb = functionEvent.getFunctionBean();
       FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
 
+      if (dbfb == null) {
+        //try via address and decoder type, assume DCC....
+        LocomotiveBean lb = PersistenceFactory.getService().getLocomotive(fb.getLocomotiveId().intValue(), DecoderType.DCC);
+        if (lb != null) {
+          dbfb = PersistenceFactory.getService().getLocomotiveFunction((long) lb.getId(), fb.getNumber());
+        }
+      }
+
       if (dbfb != null) {
         if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
           dbfb.setValue(fb.getValue());
@@ -587,6 +628,10 @@ public class DispatcherImpl implements Dispatcher {
     public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
       LocomotiveBean lb = directionEvent.getLocomotiveBean();
       LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
+      if (dblb == null) {
+        //try via address and decoder type
+        dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType());
+      }
 
       if (dblb != null) {
         if (!Objects.equals(dblb.getRichtung(), lb.getRichtung())) {
@@ -616,6 +661,10 @@ public class DispatcherImpl implements Dispatcher {
       LocomotiveBean lb = speedEvent.getLocomotiveBean();
       if (lb != null && lb.getId() != null) {
         LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
+        if (dblb == null) {
+          //try via address and decoder type
+          dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType());
+        }
 
         if (dblb != null) {
           if (!Objects.equals(dblb.getVelocity(), lb.getVelocity())) {

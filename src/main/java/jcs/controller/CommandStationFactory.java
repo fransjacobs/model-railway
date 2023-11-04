@@ -82,21 +82,33 @@ public class CommandStationFactory {
   }
 
   public static CommandStation getCommandStation() {
-    return CommandStationFactory.getInstance().getCommandStationImpl();
+    return getCommandStation(null);
   }
 
-  private CommandStation getCommandStationImpl() {
+  public static CommandStation getCommandStation(CommandStationBean commandStationBean) {
+    return CommandStationFactory.getInstance().getCommandStationImpl(commandStationBean);
+  }
+
+  private CommandStation getCommandStationImpl(CommandStationBean commandStationBean) {
     if (commandStation == null) {
-      instance.aquireCommandStation();
+      instance.aquireCommandStation(commandStationBean);
     }
     return commandStation;
   }
 
-  private boolean aquireCommandStation() {
-    CommandStationBean bean = PersistenceFactory.getService().getDefaultCommandStation();
+  private boolean aquireCommandStation(CommandStationBean commandStationBean) {
+    CommandStationBean bean;
+    if (commandStationBean != null) {
+      bean = commandStationBean;
+    } else {
+      bean = PersistenceFactory.getService().getDefaultCommandStation();
+    }
+
     String commandStationImplClassName = bean.getClassName();
 
     JCS.logProgress("Invoking CommandStation: " + commandStationImplClassName);
+
+    Logger.trace("Invoking CommandStation: " + commandStationImplClassName);
 
     try {
       this.commandStation = (CommandStation) Class.forName(commandStationImplClassName).getDeclaredConstructor().newInstance();
@@ -104,15 +116,21 @@ public class CommandStationFactory {
       Logger.error("Can't instantiate a '" + commandStationImplClassName + "' " + ex.getMessage());
     }
 
+    if (this.commandStation != null) {
+      this.commandStation.setCommandStationBean(bean);
+    }
+
     return this.commandStation != null;
   }
 
   private void loadPersistentJCSProperties() {
     JCS.logProgress("Obtain properties from Persistent store");
-    List<JCSPropertyBean> props = PersistenceFactory.getService().getProperties();
-    props.forEach(p -> {
-      System.setProperty(p.getKey(), p.getValue());
-    });
+    if (PersistenceFactory.getService() != null) {
+      List<JCSPropertyBean> props = PersistenceFactory.getService().getProperties();
+      props.forEach(p -> {
+        System.setProperty(p.getKey(), p.getValue());
+      });
+    }
   }
 
 }

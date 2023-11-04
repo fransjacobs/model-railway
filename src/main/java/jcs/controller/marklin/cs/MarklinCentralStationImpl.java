@@ -1093,7 +1093,7 @@ public class MarklinCentralStationImpl implements CommandStation {
       //            Logger.debug("Sending  member ping\n");
       //            List<PingResponse> prl = cs.membersPing();
       //            //Logger.info("Query direction of loc 12");
-      //            //DirectionInfo info = cs.getDirection(12, DecoderType.MM);
+      //            //DirectionInfo info = cs.getDirectionMarkin(12, DecoderType.MM);
       //            Logger.debug("got " + prl.size() + " responses");
       //            for (PingResponseParser device : prl) {
       //                Logger.debug(device);
@@ -1111,7 +1111,7 @@ public class MarklinCentralStationImpl implements CommandStation {
 
     //PingResponse pr2 = cs.memberPing();
     //Logger.info("Query direction of loc 12");
-    //DirectionInfo info = cs.getDirection(12, DecoderType.MM);
+    //DirectionInfo info = cs.getDirectionMarkin(12, DecoderType.MM);
     //cs3.pause(500L);
     //Logger.debug("Wait for 1m");
     //cs.pause(1000 * 60 * 1);

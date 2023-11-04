@@ -16,8 +16,10 @@
 package jcs.entities;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -42,6 +44,7 @@ public class CommandStationBean {
 
   private boolean autoIpConfiguration;
   private boolean show;
+  private String protocols;
 
   @Id
   @Column(name = "id")
@@ -151,6 +154,25 @@ public class CommandStationBean {
     this.show = show;
   }
 
+  @Column(name = "protocols", length = 255, nullable = false)
+  public String getProtocols() {
+    return protocols;
+  }
+
+  public void setProtocols(String protocols) {
+    this.protocols = protocols;
+  }
+
+  public Set<Protocol> supportedProtocols() {
+    Set<Protocol> ps = new HashSet<>();
+
+    String[] pss = this.protocols.split(",");
+    for (String ps1 : pss) {
+      ps.add(Protocol.get(ps1));
+    }
+    return ps;
+  }
+
   @Override
   public int hashCode() {
     int hash = 5;
@@ -160,6 +182,7 @@ public class CommandStationBean {
     hash = 53 * hash + (this.defaultCs ? 1 : 0);
     hash = 53 * hash + Objects.hashCode(this.connectionSpecifier);
     hash = 53 * hash + (this.show ? 1 : 0);
+    hash = 53 * hash + Objects.hashCode(this.protocols);
     return hash;
   }
 
@@ -188,6 +211,9 @@ public class CommandStationBean {
       return false;
     }
     if (!Objects.equals(this.className, other.className)) {
+      return false;
+    }
+    if (!Objects.equals(this.protocols, other.protocols)) {
       return false;
     }
     return Objects.equals(this.connectionSpecifier, other.connectionSpecifier);
@@ -228,7 +254,36 @@ public class CommandStationBean {
     public static Object[] toArray() {
       return ENUM_MAP.values().toArray();
     }
-
   }
 
+  public enum Protocol {
+    MM("mm"), MFX("mfx"), DCC("dcc"), SX("sx");
+
+    private final String protocol;
+
+    private static final Map<String, Protocol> ENUM_MAP;
+
+    Protocol(String protocol) {
+      this.protocol = protocol;
+    }
+
+    public String getProtocol() {
+      return this.protocol;
+    }
+
+    static {
+      Map<String, Protocol> map = new ConcurrentHashMap<>();
+      for (Protocol instance : Protocol.values()) {
+        map.put(instance.getProtocol(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static Protocol get(String protocol) {
+      if (protocol == null) {
+        return null;
+      }
+      return ENUM_MAP.get(protocol);
+    }
+  }
 }

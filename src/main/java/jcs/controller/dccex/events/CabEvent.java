@@ -19,6 +19,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.FunctionBean;
+import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
+import jcs.entities.enums.DecoderType;
 import org.tinylog.Logger;
 
 /**
@@ -32,13 +35,15 @@ public class CabEvent implements Serializable {
   private int speedDir = 0;
   private int funcMap = 0;
 
+  private Direction direction;
+  private Integer velocity;
+
   public CabEvent(String messageContent) {
     parseMessage(messageContent);
   }
 
   private void parseMessage(String message) {
     String[] response = message.split(" ");
-    //8 0 128 1
     for (int i = 0; i < response.length; i++) {
       Logger.trace("i: " + i + " val: " + response[i]);
       switch (i) {
@@ -64,7 +69,24 @@ public class CabEvent implements Serializable {
         }
       }
     }
-    Logger.trace("Address: " + address + " reg: " + reg + " speedDir: " + speedDir + " funcMap: " + funcMap);
+
+    //Translate the message int velocity, direction and functions
+    if (speedDir >= 128) {
+      this.direction = Direction.FORWARDS;
+
+      velocity = speedDir - 128;
+      if (velocity > 0) {
+        velocity = velocity - 1;
+        velocity = velocity * 8;
+      }
+    } else {
+      this.direction = Direction.BACKWARDS;
+      velocity = speedDir;
+      if (velocity > 0) {
+        velocity = velocity - 1;
+        velocity = velocity * 8;
+      }
+    }
 
   }
 
@@ -84,6 +106,14 @@ public class CabEvent implements Serializable {
     return funcMap;
   }
 
+  public Direction getDirection() {
+    return direction;
+  }
+
+  public Integer getVelocity() {
+    return velocity;
+  }
+
   public List<FunctionBean> getFunctionBeans() {
     List<FunctionBean> fbl = new ArrayList<>(28);
     String fms = Integer.toBinaryString(funcMap);
@@ -100,11 +130,24 @@ public class CabEvent implements Serializable {
 
     for (int i = 0; i < fma.length; i++) {
       char f = fma[i];
-      Logger.trace("F" + i + " " + f);
+      if (f == '1') {
+        Logger.trace("F" + i + " " + f);
+      }
       FunctionBean fb = new FunctionBean((long) address, i, (f == '1' ? 1 : 0));
       fbl.add(fb);
     }
     return fbl;
+  }
+
+  public LocomotiveBean getLocomotiveBean() {
+    LocomotiveBean lb = new LocomotiveBean();
+    lb.setId((long) this.address);
+    lb.setAddress(this.address);
+    lb.setDecoderTypeString(DecoderType.DCC.getDecoderType());
+    lb.setDirection(this.direction);
+    lb.setVelocity(velocity);
+    lb.addAllFunctions(getFunctionBeans());
+    return lb;
   }
 
 }

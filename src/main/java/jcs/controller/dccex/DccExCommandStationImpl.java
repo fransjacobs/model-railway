@@ -25,12 +25,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.controller.CommandStation;
+import jcs.controller.CommandStationFactory;
 import jcs.controller.dccex.connection.DccExConnectionFactory;
 import jcs.controller.dccex.events.CabEvent;
 import jcs.controller.dccex.events.DccExMessageListener;
 import jcs.controller.events.AccessoryEventListener;
+import jcs.controller.events.LocomotiveDirectionEvent;
 import jcs.controller.events.LocomotiveDirectionEventListener;
+import jcs.controller.events.LocomotiveFunctionEvent;
 import jcs.controller.events.LocomotiveFunctionEventListener;
+import jcs.controller.events.LocomotiveSpeedEvent;
 import jcs.controller.events.LocomotiveSpeedEventListener;
 import jcs.controller.events.PowerEvent;
 import jcs.controller.events.PowerEventListener;
@@ -127,8 +131,10 @@ public class DccExCommandStationImpl implements CommandStation {
       }
 
       //TODO: can be a little more elegant...
-      if (ConnectionType.NETWORK == this.commandStationBean.getConnectionType()) {
+      if (ConnectionType.NETWORK == this.commandStationBean.getConnectionType() && this.commandStationBean.getIpAddress() != null) {
         DccExConnectionFactory.writeLastUsedIpAddressProperty(this.commandStationBean.getIpAddress());
+      } else {
+        Logger.error("Can't connect IP Address not set");
       }
 
       this.connection = DccExConnectionFactory.getConnection(this.commandStationBean.getConnectionType());
@@ -224,11 +230,13 @@ public class DccExCommandStationImpl implements CommandStation {
   }
 
   @Override
-  public void changeVelocity(int address, int speed, Direction direction) {
+  public void changeVelocity(int address, int newSpeed, Direction direction) {
     if (this.power) {
       int dir = direction.getDccExValue();
+      //Scale the speed 0 == 0 1024 is max, DCC max is 0 128 roughly so divided by 8
+      int speed = newSpeed / 8;
 
-      String message = DccExMessageFactory.cabChangeSpeedRequest(address, 0, dir);
+      String message = DccExMessageFactory.cabChangeSpeedRequest(address, speed, dir);
       this.connection.sendMessage(message);
     }
   }
@@ -263,52 +271,52 @@ public class DccExCommandStationImpl implements CommandStation {
 
   @Override
   public void addSensorEventListener(SensorEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.sensorEventListeners.add(listener);
   }
 
   @Override
   public void removeSensorEventListener(SensorEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.sensorEventListeners.remove(listener);
   }
 
   @Override
   public void addAccessoryEventListener(AccessoryEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.accessoryEventListeners.add(listener);
   }
 
   @Override
   public void removeAccessoryEventListener(AccessoryEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.accessoryEventListeners.remove(listener);
   }
 
   @Override
   public void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.locomotiveFunctionEventListeners.add(listener);
   }
 
   @Override
   public void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.locomotiveFunctionEventListeners.remove(listener);
   }
 
   @Override
   public void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.locomotiveDirectionEventListeners.add(listener);
   }
 
   @Override
   public void removeLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.locomotiveDirectionEventListeners.remove(listener);
   }
 
   @Override
   public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.locomotiveSpeedEventListeners.add(listener);
   }
 
   @Override
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    this.locomotiveSpeedEventListeners.remove(listener);
   }
 
   @Override
@@ -375,70 +383,35 @@ public class DccExCommandStationImpl implements CommandStation {
   }
 
   private void fireLocomotiveEventListeners(final CabEvent cabEvent) {
-    Logger.trace("Loc " + cabEvent.getAddress() + " has changes");
+    //The Command echo of the DCC-EX protocol results is 3 different events:
+    //* Loco Speed Event
+    //* Loco Direction Event
+    //* Loco Function Events (1 event for each function so the subscriber has
 
-    int speedDir = cabEvent.getSpeedDir();
+    LocomotiveBean lb = cabEvent.getLocomotiveBean();
+    Logger.trace("Loc: " + lb.getId() + " Velocity: " + lb.getVelocity() + " Direction: " + lb.getDirection());
 
-    int velocity;
-    int dir;
-    if (speedDir >= 128) {
-      //forwards
-      dir = 1;
-      velocity = speedDir - 128;
-      if (velocity >= 0) {
-        velocity = velocity - 1;
-        velocity = velocity * 8;
-      }
-    } else {
-      //backwards
-      dir = 0;
-      velocity = speedDir;
-      if (velocity >= 0) {
-        velocity = velocity - 1;
-        velocity = velocity * 8;
+    LocomotiveDirectionEvent directionEvent = new LocomotiveDirectionEvent(lb);
+
+    for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+      listener.onDirectionChange(directionEvent);
+    }
+
+    LocomotiveSpeedEvent speedEvent = new LocomotiveSpeedEvent(lb);
+
+    for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+      listener.onSpeedChange(speedEvent);
+    }
+
+    List<FunctionBean> functions = cabEvent.getFunctionBeans();
+    for (FunctionBean fb : functions) {
+      LocomotiveFunctionEvent functionEvent = new LocomotiveFunctionEvent(fb);
+      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+        listener.onFunctionChange(functionEvent);
       }
     }
-    
-    List<FunctionBean> functions = cabEvent.getFunctionBeans();
-    
-    //Functionmap 0 all off 1 = F0 on 2 = F1 on 4 = F2 on 8 = F4 on
-    //3 = f0 and f1 on 5 f0 f2 etc. max 27 funct so 134217728 = F27
-
-    //speedbyte: Speed in DCC speedstep format .
-    //reverse - 2-127 = speed 1-126, 0 = stop
-    //forward - 130-255 = speed 1-126, 128 = stop
-    //FunctiMap: individual function states represented by the the bits in a byte
-    //Figure out the changes so
-    //  LocomotiveSpeedEvent se = new LocomotiveSpeedEvent(int cabEvent.getAddress(), cabEvent.int speed) {
-    //   for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
-//        listener.onSpeedChange(speedEvent);
-//      }
-//      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
-//        listener.onFunctionChange(functionEvent);
-//      }
-//    }
   }
 
-//  private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-//    executor.execute(() -> fireAllDirectionEventListeners(directionEvent));
-//  }
-//  private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-//    if (directionEvent.isValid()) {
-//      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
-//        listener.onDirectionChange(directionEvent);
-//      }
-//    }
-//  }
-//  private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent locomotiveEvent) {
-//    executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
-//  }
-//  private void fireAllLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
-//    if (speedEvent.isValid()) {
-//      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
-//        listener.onSpeedChange(speedEvent);
-//      }
-//    }
-//  }
   private class MessageListener implements DccExMessageListener {
 
     private final DccExCommandStationImpl commandStation;
@@ -539,9 +512,10 @@ public class DccExCommandStationImpl implements CommandStation {
       csb.setAutoIpConfiguration(false);
       csb.setShow(true);
 
-      CommandStation cs = new DccExCommandStationImpl();
-      cs.setCommandStationBean(csb);
+      CommandStation cs = CommandStationFactory.getCommandStation(csb);
 
+      //CommandStation cs = new DccExCommandStationImpl();
+      //cs.setCommandStationBean(csb);
       cs.connect();
 
       ((DccExCommandStationImpl) cs).pause(500L);
