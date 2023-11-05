@@ -124,7 +124,7 @@ public class DispatcherImpl implements Dispatcher {
 
     if (this.commandStation != null && this.commandStation.isConnected()) {
       //Start the measurments backgrount task
-      TrackMeasusementTask measurementTask = new TrackMeasusementTask(this);
+      TrackMeasurementTask measurementTask = new TrackMeasurementTask(this);
       Timer timer = new Timer("Timer");
 
       long delay = 5000L;
@@ -136,13 +136,19 @@ public class DispatcherImpl implements Dispatcher {
 
   @Override
   public boolean isConnected() {
-    return this.commandStation.isConnected();
+    if (this.commandStation != null) {
+      return this.commandStation.isConnected();
+    } else {
+      return false;
+    }
   }
 
   @Override
   public void disconnect() {
-    this.commandStation.disconnect();
-    this.commandStation = null;
+    if (this.commandStation != null) {
+      this.commandStation.disconnect();
+      this.commandStation = null;
+    }
   }
 
   public Image getLocomotiveImage(String imageName) {
@@ -478,17 +484,16 @@ public class DispatcherImpl implements Dispatcher {
     this.measurementEventListeners.remove(listener);
   }
 
-  private class TrackMeasusementTask extends TimerTask {
+  private class TrackMeasurementTask extends TimerTask {
 
     private final DispatcherImpl Controller;
 
-    TrackMeasusementTask(DispatcherImpl Controller) {
+    TrackMeasurementTask(DispatcherImpl Controller) {
       this.Controller = Controller;
     }
 
     @Override
     public void run() {
-
       Map<Integer, MeasurementChannel> measurements = this.Controller.commandStation.getTrackMeasurements();
       for (MeasurementChannel ch : measurements.values()) {
         if (ch.isChanged()) {

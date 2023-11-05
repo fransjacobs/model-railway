@@ -25,9 +25,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.controller.CommandStation;
-import jcs.controller.CommandStationFactory;
 import jcs.controller.dccex.connection.DccExConnectionFactory;
 import jcs.controller.dccex.events.CabEvent;
+import jcs.controller.dccex.events.DccExMeasurementEvent;
 import jcs.controller.dccex.events.DccExMessageListener;
 import jcs.controller.events.AccessoryEventListener;
 import jcs.controller.events.LocomotiveDirectionEvent;
@@ -48,6 +48,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.enums.AccessoryValue;
+import jcs.util.KeyValuePair;
 import org.tinylog.Logger;
 
 /**
@@ -98,11 +99,6 @@ public class DccExCommandStationImpl implements CommandStation {
     locomotiveSpeedEventListeners = new LinkedList<>();
 
     executor = Executors.newCachedThreadPool();
-
-    //Can't auto connect yet as the commandStation Bean is not set....
-    //if (autoConnect) {
-    //  connect();
-    //}
   }
 
   @Override
@@ -113,6 +109,14 @@ public class DccExCommandStationImpl implements CommandStation {
   @Override
   public void setCommandStationBean(CommandStationBean commandStationBean) {
     this.commandStationBean = commandStationBean;
+  }
+
+  private void initMeasurements() {
+    //Prepare the measurements as fa as I know DCC-EX has only track curren fro both PROG and MAIN 
+    this.connection.sendMessage(DccExMessageFactory.trackManagerConfigRequest());
+    this.connection.sendMessage(DccExMessageFactory.maxCurrentRequest());
+
+    this.connection.sendMessage(DccExMessageFactory.currentStatusRequest());
   }
 
   @Override
@@ -134,7 +138,7 @@ public class DccExCommandStationImpl implements CommandStation {
       if (ConnectionType.NETWORK == this.commandStationBean.getConnectionType() && this.commandStationBean.getIpAddress() != null) {
         DccExConnectionFactory.writeLastUsedIpAddressProperty(this.commandStationBean.getIpAddress());
       } else {
-        Logger.error("Can't connect IP Address not set");
+        Logger.error("Can't connect; IP Address not set");
       }
 
       this.connection = DccExConnectionFactory.getConnection(this.commandStationBean.getConnectionType());
@@ -155,6 +159,8 @@ public class DccExCommandStationImpl implements CommandStation {
 
           JCS.logProgress("Obtaining Device information...");
           connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
+
+          initMeasurements();
 
           //Wait a while to give the Command Station time to answer...
           pause(200);
@@ -363,7 +369,10 @@ public class DccExCommandStationImpl implements CommandStation {
 
   @Override
   public Map<Integer, MeasurementChannel> getTrackMeasurements() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    //Measure the currents
+    this.connection.sendMessage(DccExMessageFactory.currentStatusRequest());
+    this.pause(50);
+    return this.measurementChannels;
   }
 
   private void notifyPowerEventListeners(final PowerEvent powerEvent) {
@@ -382,12 +391,12 @@ public class DccExCommandStationImpl implements CommandStation {
     executor.execute(() -> fireLocomotiveEventListeners(cabEvent));
   }
 
+  /**
+   * The Command echo of the DCC-EX protocol results is 3 different events: - Loco Speed Event - Loco Direction Event - Loco Function Events (1 event for each function)
+   *
+   * @param cabEvent the cabEvent
+   */
   private void fireLocomotiveEventListeners(final CabEvent cabEvent) {
-    //The Command echo of the DCC-EX protocol results is 3 different events:
-    //* Loco Speed Event
-    //* Loco Direction Event
-    //* Loco Function Events (1 event for each function so the subscriber has
-
     LocomotiveBean lb = cabEvent.getLocomotiveBean();
     Logger.trace("Loc: " + lb.getId() + " Velocity: " + lb.getVelocity() + " Direction: " + lb.getDirection());
 
@@ -408,6 +417,76 @@ public class DccExCommandStationImpl implements CommandStation {
       LocomotiveFunctionEvent functionEvent = new LocomotiveFunctionEvent(fb);
       for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
         listener.onFunctionChange(functionEvent);
+      }
+    }
+  }
+
+  private void handleMeasurement(DccExMeasurementEvent measurementEvent) {
+    if ("=".equals(measurementEvent.getOpcode())) {
+      // config
+      KeyValuePair track = measurementEvent.getTrack();
+      if ("A".equals(track.getKey())) {
+        //Main, or channel 1
+        MeasurementChannel main = this.measurementChannels.get(1);
+        if (main == null) {
+          main = new MeasurementChannel();
+          measurementChannels.put(1, main);
+        }
+        main.setName(track.getValue());
+        main.setNumber(1);
+        main.setUnit("mA");
+        main.setStartValue(0.0);
+        main.setScale(1000);
+        main.setHumanValue(0.0);
+        main.setValue(0);
+      } else if ("B".equals(track.getKey())) {
+        //Prog, or channel 0
+        MeasurementChannel prog = this.measurementChannels.get(0);
+        if (prog == null) {
+          prog = new MeasurementChannel();
+          measurementChannels.put(0, prog);
+        }
+        prog.setName(track.getValue());
+        prog.setNumber(0);
+        prog.setUnit("mA");
+        prog.setStartValue(0.0);
+        prog.setScale(1000);
+        prog.setHumanValue(0.0);
+        prog.setValue(0);
+      }
+    } else if ("j".equals(measurementEvent.getOpcode())) {
+      if (measurementEvent.isMeasurement()) {
+        MeasurementChannel main = this.measurementChannels.get(1);
+        if (main == null) {
+          main = new MeasurementChannel();
+          measurementChannels.put(1, main);
+        }
+        main.setValue(measurementEvent.getCurrentMain());
+        main.setHumanValue((double) measurementEvent.getCurrentMain());
+
+        MeasurementChannel prog = this.measurementChannels.get(0);
+        if (prog == null) {
+          prog = new MeasurementChannel();
+          measurementChannels.put(0, prog);
+        }
+        prog.setValue(measurementEvent.getCurrentProg());
+        prog.setHumanValue((double) measurementEvent.getCurrentProg());
+      } else {
+        MeasurementChannel main = this.measurementChannels.get(1);
+        if (main == null) {
+          main = new MeasurementChannel();
+          measurementChannels.put(1, main);
+        }
+        main.setRangeMax(measurementEvent.getCurrentMainMax());
+        main.setEndValue((double) measurementEvent.getCurrentMainMax());
+
+        MeasurementChannel prog = this.measurementChannels.get(0);
+        if (prog == null) {
+          prog = new MeasurementChannel();
+          measurementChannels.put(0, prog);
+        }
+        prog.setRangeMax(measurementEvent.getCurrentProgMax());
+        prog.setEndValue((double) measurementEvent.getCurrentProgMax());
       }
     }
   }
@@ -473,9 +552,13 @@ public class DccExCommandStationImpl implements CommandStation {
             CabEvent ce = new CabEvent(content);
             this.commandStation.notifyLocomotiveEventListeners(ce);
             break;
-
           case "=":
-            // Locomotive changed. TODO: parameters
+            DccExMeasurementEvent me1 = new DccExMeasurementEvent(opcode, content);
+            this.commandStation.handleMeasurement(me1);
+            break;
+          case "j":
+            DccExMeasurementEvent me2 = new DccExMeasurementEvent(opcode, content);
+            this.commandStation.handleMeasurement(me2);
             break;
           case "H":
             // Turnout response. TODO: obtain the parameters
@@ -512,10 +595,9 @@ public class DccExCommandStationImpl implements CommandStation {
       csb.setAutoIpConfiguration(false);
       csb.setShow(true);
 
-      CommandStation cs = CommandStationFactory.getCommandStation(csb);
-
-      //CommandStation cs = new DccExCommandStationImpl();
-      //cs.setCommandStationBean(csb);
+      //CommandStation cs = CommandStationFactory.getCommandStation(csb);
+      CommandStation cs = new DccExCommandStationImpl();
+      cs.setCommandStationBean(csb);
       cs.connect();
 
       ((DccExCommandStationImpl) cs).pause(500L);
@@ -541,6 +623,13 @@ public class DccExCommandStationImpl implements CommandStation {
 
       ((DccExCommandStationImpl) cs).pause(1500L);
       cs.changeFunctionValue(8, 1, false);
+
+      //Check the measurements
+      ((DccExCommandStationImpl) cs).pause(1500L);
+
+      Logger.trace("#### Measurements....");
+
+      cs.getTrackMeasurements();
 
       while (1 == 1) {
         try {

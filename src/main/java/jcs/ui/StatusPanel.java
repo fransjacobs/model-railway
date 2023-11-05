@@ -80,16 +80,17 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
     setPreferredSize(new java.awt.Dimension(1200, 45));
     setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0));
 
-    voltageLbl.setText("0.00 V");
-    voltageLbl.setPreferredSize(new java.awt.Dimension(45, 20));
+    voltageLbl.setText("-");
+    voltageLbl.setToolTipText("");
+    voltageLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(voltageLbl);
 
-    currentLbl.setText("0.00 A");
-    currentLbl.setPreferredSize(new java.awt.Dimension(45, 20));
+    currentLbl.setText("-");
+    currentLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(currentLbl);
 
-    tempLbl.setText("0.0 C");
-    tempLbl.setPreferredSize(new java.awt.Dimension(45, 20));
+    tempLbl.setText("-");
+    tempLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(tempLbl);
 
     add(measurePanel);

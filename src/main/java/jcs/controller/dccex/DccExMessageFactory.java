@@ -31,6 +31,33 @@ public class DccExMessageFactory {
   }
 
   /**
+   * Request Current Status on the Track(s)
+   *
+   * @return the dcc-ex message
+   */
+  static String currentStatusRequest() {
+    return "<J I>";
+  }
+
+  /**
+   * Request max Current on the Track(s)
+   *
+   * @return the dcc-ex message
+   */
+  static String maxCurrentRequest() {
+    return "<J G>";
+  }
+
+  /**
+   * Request Track Manager Configuration
+   *
+   * @return the dcc-ex message
+   */
+  static String trackManagerConfigRequest() {
+    return "<=>";
+  }
+
+  /**
    * Request the DCC-EX version and hardware info, along with listing defined turnouts
    *
    * @return the dcc-ex message

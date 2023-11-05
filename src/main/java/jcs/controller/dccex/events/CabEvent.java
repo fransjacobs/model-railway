@@ -45,7 +45,6 @@ public class CabEvent implements Serializable {
   private void parseMessage(String message) {
     String[] response = message.split(" ");
     for (int i = 0; i < response.length; i++) {
-      Logger.trace("i: " + i + " val: " + response[i]);
       switch (i) {
         case 0 -> {
           if (response[i] != null) {
