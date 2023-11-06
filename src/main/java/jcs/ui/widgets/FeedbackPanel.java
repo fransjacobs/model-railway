@@ -27,9 +27,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.SensorEvent;
-import jcs.controller.events.SensorEventListener;
+import jcs.JCS;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
 
 /**
@@ -118,46 +118,46 @@ public class FeedbackPanel extends JPanel {
   }
 
   public void registerSensorListeners() {
-    if (CommandStationFactory.getDispatcher() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       initSensorListeners();
 
-      CommandStationFactory.getDispatcher().addSensorEventListener(p1);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p2);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p3);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p4);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p5);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p6);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p7);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p8);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p9);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p10);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p11);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p12);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p13);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p14);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p15);
-      CommandStationFactory.getDispatcher().addSensorEventListener(p16);
+      JCS.getJcsCommandStation().addSensorEventListener(p1);
+      JCS.getJcsCommandStation().addSensorEventListener(p2);
+      JCS.getJcsCommandStation().addSensorEventListener(p3);
+      JCS.getJcsCommandStation().addSensorEventListener(p4);
+      JCS.getJcsCommandStation().addSensorEventListener(p5);
+      JCS.getJcsCommandStation().addSensorEventListener(p6);
+      JCS.getJcsCommandStation().addSensorEventListener(p7);
+      JCS.getJcsCommandStation().addSensorEventListener(p8);
+      JCS.getJcsCommandStation().addSensorEventListener(p9);
+      JCS.getJcsCommandStation().addSensorEventListener(p10);
+      JCS.getJcsCommandStation().addSensorEventListener(p11);
+      JCS.getJcsCommandStation().addSensorEventListener(p12);
+      JCS.getJcsCommandStation().addSensorEventListener(p13);
+      JCS.getJcsCommandStation().addSensorEventListener(p14);
+      JCS.getJcsCommandStation().addSensorEventListener(p15);
+      JCS.getJcsCommandStation().addSensorEventListener(p16);
     }
   }
 
   public void removeSensorListeners() {
-    if (CommandStationFactory.getDispatcher() != null) {
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p1);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p2);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p3);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p4);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p5);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p6);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p7);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p8);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p9);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p10);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p11);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p12);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p13);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p14);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p15);
-      CommandStationFactory.getDispatcher().removeSensorEventListener(p16);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().removeSensorEventListener(p1);
+      JCS.getJcsCommandStation().removeSensorEventListener(p2);
+      JCS.getJcsCommandStation().removeSensorEventListener(p3);
+      JCS.getJcsCommandStation().removeSensorEventListener(p4);
+      JCS.getJcsCommandStation().removeSensorEventListener(p5);
+      JCS.getJcsCommandStation().removeSensorEventListener(p6);
+      JCS.getJcsCommandStation().removeSensorEventListener(p7);
+      JCS.getJcsCommandStation().removeSensorEventListener(p8);
+      JCS.getJcsCommandStation().removeSensorEventListener(p9);
+      JCS.getJcsCommandStation().removeSensorEventListener(p10);
+      JCS.getJcsCommandStation().removeSensorEventListener(p11);
+      JCS.getJcsCommandStation().removeSensorEventListener(p12);
+      JCS.getJcsCommandStation().removeSensorEventListener(p13);
+      JCS.getJcsCommandStation().removeSensorEventListener(p14);
+      JCS.getJcsCommandStation().removeSensorEventListener(p15);
+      JCS.getJcsCommandStation().removeSensorEventListener(p16);
 
       this.p1 = null;
       this.p2 = null;

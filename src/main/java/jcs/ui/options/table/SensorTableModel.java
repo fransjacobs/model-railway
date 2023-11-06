@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import jcs.controller.events.SensorEvent;
-import jcs.controller.events.SensorEventListener;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 

@@ -20,9 +20,9 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.MeasurementEvent;
-import jcs.controller.events.MeasurementEventListener;
+import jcs.JCS;
+import jcs.commandStation.events.MeasurementEvent;
+import jcs.commandStation.events.MeasurementEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -40,8 +40,8 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   }
 
   private void postInit() {
-    if (CommandStationFactory.getDispatcher() != null) {
-      CommandStationFactory.getDispatcher().addMeasurementEventListener(this);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().addMeasurementEventListener(this);
     }
   }
 
@@ -108,7 +108,6 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   private javax.swing.JLabel voltageLbl;
   // End of variables declaration//GEN-END:variables
 
-  
   //For standalone testing only
   public static void main(String args[]) {
     try {

@@ -48,9 +48,9 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
+import jcs.JCS;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.controller.CommandStationFactory;
 import jcs.ui.options.table.SignalTableModel;
 import org.tinylog.Logger;
 
@@ -505,7 +505,7 @@ public class SignalPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    CommandStationFactory.getDispatcher().synchronizeSignalsWithCommandStation();
+    JCS.getJcsCommandStation().synchronizeSignalsWithCommandStation();
     refresh();
   }
 

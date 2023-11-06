@@ -18,8 +18,8 @@ package jcs.ui;
 import java.awt.GridLayout;
 import java.util.Collections;
 import java.util.List;
+import jcs.JCS;
 import jcs.entities.AccessoryBean;
-import jcs.controller.CommandStationFactory;
 import jcs.ui.widgets.SignalRowPanel;
 import org.tinylog.Logger;
 
@@ -42,7 +42,7 @@ public class SignalsPanel extends javax.swing.JPanel {
   }
 
   public void refreshPanel() {
-    if (CommandStationFactory.getDispatcher() == null) {
+    if (JCS.getJcsCommandStation() == null) {
       return;
     }
     //stub
@@ -68,7 +68,7 @@ public class SignalsPanel extends javax.swing.JPanel {
       }
 
       this.add(signalRowPanel);
-      CommandStationFactory.getDispatcher().addAccessoryEventListener(signalRowPanel);
+      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
     }
     GridLayout gl = new GridLayout(rows, cols);
     this.setLayout(gl);

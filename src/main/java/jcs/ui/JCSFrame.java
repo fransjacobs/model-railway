@@ -55,8 +55,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import jcs.JCS;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.PowerEvent;
+import jcs.commandStation.events.PowerEvent;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
@@ -115,7 +114,7 @@ public class JCSFrame extends JFrame implements UICallback {
         this.setTitle("");
       }
 
-      if (CommandStationFactory.getDispatcher().isConnected()) {
+      if (JCS.getJcsCommandStation().isConnected()) {
         //this.locomotivesPanel.loadLocomotives();
         setControllerProperties();
       }
@@ -197,20 +196,20 @@ public class JCSFrame extends JFrame implements UICallback {
   }
 
   public void stop() {
-    if (CommandStationFactory.getDispatcher() != null) {
-      CommandStationFactory.getDispatcher().switchPower(false);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().switchPower(false);
     }
   }
 
   private void setControllerProperties() {
-    if (CommandStationFactory.getDispatcher() != null) {
-      if (CommandStationFactory.getDispatcher().getCommandStationName() != null) {
+    if (JCS.getJcsCommandStation() != null) {
+      if (JCS.getJcsCommandStation().getCommandStationName() != null) {
         this.connectButton.setSelected(true);
-        this.controllerDescriptionLbl.setText(CommandStationFactory.getDispatcher().getCommandStationName());
-        this.controllerCatalogNumberLbl.setText(CommandStationFactory.getDispatcher().getCommandStationArticleNumber());
-        this.controllerSerialNumberLbl.setText(CommandStationFactory.getDispatcher().getCommandStationSerialNumber());
-        this.controllerHostNameLbl.setText("CS-" + CommandStationFactory.getDispatcher().getCommandStationSerialNumber());
-        this.powerButton.setSelected(CommandStationFactory.getDispatcher().isPowerOn());
+        this.controllerDescriptionLbl.setText(JCS.getJcsCommandStation().getCommandStationName());
+        this.controllerCatalogNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationArticleNumber());
+        this.controllerSerialNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationSerialNumber());
+        this.controllerHostNameLbl.setText("CS-" + JCS.getJcsCommandStation().getCommandStationSerialNumber());
+        this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
       } else {
         this.connectButton.setSelected(false);
         this.controllerHostNameLbl.setText("Not Connected");
@@ -746,8 +745,8 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
       boolean on = ((JToggleButton) evt.getSource()).isSelected();
-      if (CommandStationFactory.getDispatcher() != null) {
-        CommandStationFactory.getDispatcher().switchPower(on);
+      if (JCS.getJcsCommandStation() != null) {
+        JCS.getJcsCommandStation().switchPower(on);
       }
     }//GEN-LAST:event_powerButtonActionPerformed
 
@@ -756,18 +755,18 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
 
   public void connect(boolean connect) {
-    if (CommandStationFactory.getDispatcher() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       if (connect) {
-        CommandStationFactory.getDispatcher().connect();
-        this.controllerDescriptionLbl.setText(CommandStationFactory.getDispatcher().getCommandStationName());
-        this.controllerCatalogNumberLbl.setText(CommandStationFactory.getDispatcher().getCommandStationArticleNumber());
-        this.controllerSerialNumberLbl.setText(CommandStationFactory.getDispatcher().getCommandStationSerialNumber());
-        this.controllerHostNameLbl.setText("CS3-" + CommandStationFactory.getDispatcher().getCommandStationSerialNumber());
+        JCS.getJcsCommandStation().connect();
+        this.controllerDescriptionLbl.setText(JCS.getJcsCommandStation().getCommandStationName());
+        this.controllerCatalogNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationArticleNumber());
+        this.controllerSerialNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationSerialNumber());
+        this.controllerHostNameLbl.setText("CS3-" + JCS.getJcsCommandStation().getCommandStationSerialNumber());
 
         //TrackControllerFactory.getTrackController().addPowerEventListener(new Powerlistener(this));
         this.connectMI.setText("Disconnect");
       } else {
-        CommandStationFactory.getDispatcher().disconnect();
+        JCS.getJcsCommandStation().disconnect();
         this.controllerDescriptionLbl.setText("-");
         this.controllerCatalogNumberLbl.setText("-");
         this.controllerSerialNumberLbl.setText("-");
@@ -830,8 +829,8 @@ public class JCSFrame extends JFrame implements UICallback {
 
   private String getTitleString() {
     String jcsVersion = JCS.getVersionInfo().getVersion();
-    if (CommandStationFactory.getDispatcher() != null && CommandStationFactory.getDispatcher().getCommandStationSerialNumber() != null) {
-      return "JCS " + "Connected to " + CommandStationFactory.getDispatcher().getCommandStationName();
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationSerialNumber() != null) {
+      return "JCS " + "Connected to " + JCS.getJcsCommandStation().getCommandStationName();
     } else {
       return "JCS " + jcsVersion + " - NOT Connected!";
     }

@@ -16,7 +16,7 @@
 package jcs.entities;
 
 import jcs.entities.Device;
-import jcs.controller.marklin.cs.can.CanMessage;
+import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

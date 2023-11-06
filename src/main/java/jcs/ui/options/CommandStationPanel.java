@@ -21,6 +21,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.ComboBoxModel;
@@ -39,6 +41,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.persistence.PersistenceFactory;
@@ -236,6 +240,15 @@ public class CommandStationPanel extends JPanel {
     testConnectionPanel.add(filler5);
 
     testConnectionBtn.setText("Test");
+    testConnectionBtn.addAncestorListener(new AncestorListener() {
+      public void ancestorAdded(AncestorEvent evt) {
+      }
+      public void ancestorMoved(AncestorEvent evt) {
+        testConnectionBtnAncestorMoved(evt);
+      }
+      public void ancestorRemoved(AncestorEvent evt) {
+      }
+    });
     testConnectionBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         testConnectionBtnActionPerformed(evt);
@@ -285,12 +298,22 @@ public class CommandStationPanel extends JPanel {
     ipAddressTF.setToolTipText("");
     ipAddressTF.setDoubleBuffered(true);
     ipAddressTF.setPreferredSize(new Dimension(150, 23));
+    ipAddressTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        ipAddressTFFocusLost(evt);
+      }
+    });
     connectionTypePanel.add(ipAddressTF);
 
     portLbl.setText("Port:");
     connectionTypePanel.add(portLbl);
 
     portSpinner.setModel(new SpinnerNumberModel(0, 0, 65563, 1));
+    portSpinner.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        portSpinnerFocusLost(evt);
+      }
+    });
     connectionTypePanel.add(portSpinner);
 
     autoConfChkBox.setText("Auto IP Configuration");
@@ -345,6 +368,18 @@ public class CommandStationPanel extends JPanel {
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     // TODO add your handling code here:
   }//GEN-LAST:event_saveBtnActionPerformed
+
+  private void ipAddressTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_ipAddressTFFocusLost
+    // TODO add your handling code here:
+  }//GEN-LAST:event_ipAddressTFFocusLost
+
+  private void portSpinnerFocusLost(FocusEvent evt) {//GEN-FIRST:event_portSpinnerFocusLost
+    // TODO add your handling code here:
+  }//GEN-LAST:event_portSpinnerFocusLost
+
+  private void testConnectionBtnAncestorMoved(AncestorEvent evt) {//GEN-FIRST:event_testConnectionBtnAncestorMoved
+    // TODO add your handling code here:
+  }//GEN-LAST:event_testConnectionBtnAncestorMoved
 
   public static void main(String args[]) {
     try {

@@ -45,7 +45,7 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
-import jcs.controller.CommandStationFactory;
+import jcs.commandStation.CommandStationFactory;
 import org.tinylog.Logger;
 
 /**
@@ -247,7 +247,7 @@ public class SynchronizeWithControllerDialog extends JDialog {
     public String doInBackground() {
       Logger.trace("Starting");
       ProgressListener pl = new ProgressListener(this.progressBar, this.textArea);
-      CommandStationFactory.getDispatcher().synchronizeLocomotivesWithCommandStation(pl);
+      JCS.getJcsCommandStation().synchronizeLocomotivesWithCommandStation(pl);
       return "done";
     }
 

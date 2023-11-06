@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import jcs.controller.CommandStationFactory;
+import jcs.JCS;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
@@ -111,9 +111,9 @@ public class SensorDialog extends javax.swing.JDialog {
       this.contactIdSpinner.setValue(this.sensor.getSensorBean().getContactId());
     }
 
-    if (CommandStationFactory.getDispatcher() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       //Unregister as properties might change
-      CommandStationFactory.getDispatcher().removeSensorEventListener(this.sensor);
+      JCS.getJcsCommandStation().removeSensorEventListener(this.sensor);
     }
 
   }
@@ -258,7 +258,7 @@ public class SensorDialog extends javax.swing.JDialog {
           PersistenceFactory.getService().persist(sensorBean);
 
           PersistenceFactory.getService().persist((sensor));
-          CommandStationFactory.getDispatcher().addSensorEventListener(sensor);
+          JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
       } else if (this.sensor != null && this.sensor.getSensorBean() == null) {
         SensorBean sensorBean = new SensorBean(this.nameTF.getText(), (Integer) this.deviceIdSpinner.getValue(), (Integer) contactIdSpinner.getValue());
@@ -269,7 +269,7 @@ public class SensorDialog extends javax.swing.JDialog {
           Logger.trace("Created " + sensorBean);
 
           PersistenceFactory.getService().persist((sensor));
-          CommandStationFactory.getDispatcher().addSensorEventListener(sensor);
+          JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
       }
 

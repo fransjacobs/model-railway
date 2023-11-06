@@ -19,13 +19,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.LocomotiveDirectionEvent;
-import jcs.controller.events.LocomotiveDirectionEventListener;
-import jcs.controller.events.LocomotiveSpeedEvent;
-import jcs.controller.events.LocomotiveSpeedEventListener;
-import jcs.controller.events.PowerEvent;
-import jcs.controller.events.PowerEventListener;
+import jcs.JCS;
+import jcs.commandStation.events.LocomotiveDirectionEvent;
+import jcs.commandStation.events.LocomotiveDirectionEventListener;
+import jcs.commandStation.events.LocomotiveSpeedEvent;
+import jcs.commandStation.events.LocomotiveSpeedEventListener;
+import jcs.commandStation.events.PowerEvent;
+import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
@@ -49,22 +49,22 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   private void postInit() {
-    if (CommandStationFactory.getDispatcher() != null) {
-      this.power = CommandStationFactory.getDispatcher().isPowerOn();
+    if (JCS.getJcsCommandStation() != null) {
+      this.power = JCS.getJcsCommandStation().isPowerOn();
 
-      CommandStationFactory.getDispatcher().addLocomotiveSpeedEventListener(this);
-      CommandStationFactory.getDispatcher().addLocomotiveDirectionEventListener(this);
-      CommandStationFactory.getDispatcher().addPowerEventListener(this);
+      JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(this);
+      JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(this);
+      JCS.getJcsCommandStation().addPowerEventListener(this);
     }
   }
 
   @Override
   public void setVisible(boolean aFlag) {
-    if (!aFlag && CommandStationFactory.getDispatcher() != null) {
-      CommandStationFactory.getDispatcher().removeLocomotiveSpeedEventListener(this);
-      CommandStationFactory.getDispatcher().removeLocomotiveDirectionEventListener(this);
-      CommandStationFactory.getDispatcher().removePowerEventListener(this);
-      CommandStationFactory.getDispatcher().removeLocomotiveFunctionEventListener(this.functionsPanel);
+    if (!aFlag && JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().removeLocomotiveSpeedEventListener(this);
+      JCS.getJcsCommandStation().removeLocomotiveDirectionEventListener(this);
+      JCS.getJcsCommandStation().removePowerEventListener(this);
+      JCS.getJcsCommandStation().removeLocomotiveFunctionEventListener(this.functionsPanel);
     }
     super.setVisible(aFlag);
   }
@@ -298,10 +298,10 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }//GEN-LAST:event_speedSliderStateChanged
 
   private void changeVelocity(int newVelocity, LocomotiveBean locomotiveBean) {
-    if (CommandStationFactory.getDispatcher() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+    if (JCS.getJcsCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
 
       Logger.trace("Changing speeed of " + locomotiveBean + " to: " + newVelocity);
-      CommandStationFactory.getDispatcher().changeLocomotiveSpeed(newVelocity, locomotiveBean);
+      JCS.getJcsCommandStation().changeLocomotiveSpeed(newVelocity, locomotiveBean);
 
       double max = this.speedGauge.getMaxValue();
       double gaugeValue = Math.round(max / 1000 * newVelocity);
@@ -314,9 +314,9 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   private void changeDirection(LocomotiveBean.Direction newDirection, LocomotiveBean locomotiveBean) {
-    if (CommandStationFactory.getDispatcher() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
+    if (JCS.getJcsCommandStation() != null && locomotiveBean != null && locomotiveBean.getId() != null) {
       Logger.trace("Changing direction of " + locomotiveBean + " to: " + newDirection);
-      CommandStationFactory.getDispatcher().changeLocomotiveDirection(newDirection, locomotiveBean);
+      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotiveBean);
     }
   }
 

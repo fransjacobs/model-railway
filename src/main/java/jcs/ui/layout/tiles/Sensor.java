@@ -21,8 +21,8 @@ import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.geom.Ellipse2D;
-import jcs.controller.events.SensorEvent;
-import jcs.controller.events.SensorEventListener;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 

@@ -20,10 +20,10 @@ import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.Dispatcher;
-import jcs.controller.events.PowerEvent;
-import jcs.controller.events.PowerEventListener;
+import jcs.commandStation.JCSCommandStation;
+import jcs.commandStation.JCSCommandStationImpl;
+import jcs.commandStation.events.PowerEvent;
+import jcs.commandStation.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
@@ -45,7 +45,7 @@ public class JCS extends Thread {
   private static JCS instance = null;
   private static JCSSplash splashScreen;
   private static PersistenceService persistentStore;
-  private static Dispatcher dispatcher;
+  private static JCSCommandStation jcsCommandStation;
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
@@ -75,6 +75,24 @@ public class JCS extends Thread {
 
   public static JCSFrame getParentFrame() {
     return jcsFrame;
+  }
+
+  public static PersistenceService getPersistenceService() {
+    if (persistentStore == null) {
+      persistentStore = PersistenceFactory.getService();
+    }
+    return persistentStore;
+  }
+
+  public static JCSCommandStation getJcsCommandStation() {
+    if (jcsCommandStation == null) {
+      if (getPersistenceService() != null) {
+        jcsCommandStation = new JCSCommandStationImpl();
+      } else {
+        Logger.error("Can't obtain the persistent store!");
+      }
+    }
+    return jcsCommandStation;
   }
 
   private void startGui() {
@@ -110,11 +128,6 @@ public class JCS extends Thread {
 
     });
 
-//    if (!CommandStationFactory.getController().isConnected()) {
-//      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
-//        jcsFrame.connect(true);
-//      }
-//    }
     JCS.logProgress("JCS started...");
 
     int mb = 1024 * 1024;
@@ -185,7 +198,7 @@ public class JCS extends Thread {
 
     logProgress("JCS is Starting...");
 
-    //Check the persistent properties prepare environment
+    //Check the persistent properties, prepare environment
     if (H2DatabaseUtil.databaseFileExists(false)) {
       //Database files are there so try to create connection
       logProgress("Connecting to existing Database...");
@@ -197,24 +210,22 @@ public class JCS extends Thread {
       H2DatabaseUtil.createDatabase();
     }
 
-    persistentStore = PersistenceFactory.getService();
-    if (persistentStore != null) {
-      logProgress("Aquire Track Controller...");
-      dispatcher = CommandStationFactory.getDispatcher();
+    logProgress("Starting JCS Command Station...");
+    persistentStore = getPersistenceService();
+    jcsCommandStation = getJcsCommandStation();
 
-      if ("true".equalsIgnoreCase(System.getProperty("dispatcher.autoconnect", "true"))) {
-        if (dispatcher != null) {
-          boolean connected = dispatcher.connect();
-          if (connected) {
-            logProgress("Connected with Command Station...");
+    if (persistentStore != null && jcsCommandStation != null) {
+      if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
+        boolean connected = jcsCommandStation.connect();
+        if (connected) {
+          logProgress("Connected with Command Station...");
 
-            boolean power = dispatcher.isPowerOn();
-            logProgress("Track Power is " + (power ? "on" : "off"));
-            Logger.info("Track Power is " + (power ? "on" : "off"));
-            dispatcher.addPowerEventListener(new JCS.Powerlistener());
-          } else {
-            logProgress("Could NOT connect with Command Station...");
-          }
+          boolean power = jcsCommandStation.isPowerOn();
+          logProgress("Track Power is " + (power ? "on" : "off"));
+          Logger.info("Track Power is " + (power ? "on" : "off"));
+          jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+        } else {
+          logProgress("Could NOT connect with Command Station...");
         }
       }
 

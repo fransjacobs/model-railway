@@ -19,12 +19,12 @@ import java.awt.Color;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.border.TitledBorder;
+import jcs.JCS;
+import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.controller.events.AccessoryEvent;
 import jcs.persistence.PersistenceFactory;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -110,7 +110,7 @@ public class SwitchPanel extends JPanel {
     button.setActionCommand((button.getText()));
     Integer address = Integer.valueOf(button.getActionCommand());
 
-    if (CommandStationFactory.getDispatcher() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       AccessoryBean ab = PersistenceFactory.getService().getAccessoryByAddress(address);
       if (ab != null) {
         button.setForeground(new Color(0, 153, 0));
@@ -120,7 +120,7 @@ public class SwitchPanel extends JPanel {
         button.setForeground(new Color(0, 0, 0));
       }
       AccessoryStatusListener asl = new AccessoryStatusListener(button, address);
-      CommandStationFactory.getDispatcher().addAccessoryEventListener(asl);
+      JCS.getJcsCommandStation().addAccessoryEventListener(asl);
     }
   }
 
@@ -418,9 +418,9 @@ public class SwitchPanel extends JPanel {
     AccessoryValue value = selected ? AccessoryValue.RED : AccessoryValue.GREEN;
     Logger.trace("ID: " + id + " Value: " + value);
 
-    if (CommandStationFactory.getDispatcher() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
-      CommandStationFactory.getDispatcher().switchAccessory(value, a);
+      JCS.getJcsCommandStation().switchAccessory(value, a);
     }
   }
 

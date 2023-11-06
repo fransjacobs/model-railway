@@ -198,16 +198,16 @@ create table command_stations (
 create unique index command_stations_pk_idx on command_stations (id);
 
 insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols) 
-values ('cs.Marklin.CentralStation','Marklin Central Station 2/3', 'jcs.controller.marklin.cs.MarklinCentralStationImpl', true, 'NETWORK', null, null,15731,true, true,'DCC,MFX,MM,SX');
+values ('cs.Marklin.CentralStation','Marklin Central Station 2/3', 'jcs.commandStation.marklin.cs.MarklinCentralStationImpl', true, 'NETWORK', null, null,15731,true, true,'DCC,MFX,MM,SX');
 
 insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols)
-values ('cs.DccEX.serial','DCC-EX Serial', 'jcs.controller.dccex.DccExCommandStationImpl', false, 'SERIAL', null, null, null, false, true,'DCC');
+values ('cs.DccEX.serial','DCC-EX Serial', 'jcs.commandStation.dccex.DccExCommandStationImpl', false, 'SERIAL', null, null, null, false, true,'DCC');
 
 insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols) 
-values ('cs.DccEX.network','DCC-EX Network', 'jcs.controller.dccex.DccExCommandStationImpl',false,'NETWORK', null, null, 2560, false, true,'DCC');
+values ('cs.DccEX.network','DCC-EX Network', 'jcs.commandStation.dccex.DccExCommandStationImpl',false,'NETWORK', null, null, 2560, false, true,'DCC');
 
 insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols)
-values ('cs.Marklin.6051','Marklin 6051', 'jcs.controller.marklin.m6051.M6051Impl', false,'SERIAL', null, null, null, false, false,'MM');
+values ('cs.Marklin.6051','Marklin 6051', 'jcs.commandStation.marklin.m6051.M6051Impl', false,'SERIAL', null, null, null, false, false,'MM');
 
 
 insert into jcs_properties (p_key,p_value) values ('jcs.version','1.0.0');

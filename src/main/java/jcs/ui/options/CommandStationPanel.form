@@ -222,6 +222,7 @@
                 <Property name="text" type="java.lang.String" value="Test"/>
               </Properties>
               <Events>
+                <EventHandler event="ancestorMoved" listener="javax.swing.event.AncestorListener" parameters="javax.swing.event.AncestorEvent" handler="testConnectionBtnAncestorMoved"/>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="testConnectionBtnActionPerformed"/>
               </Events>
             </Component>
@@ -506,6 +507,9 @@
                   <Dimension value="[150, 23]"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="ipAddressTFFocusLost"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="portLbl">
               <Properties>
@@ -518,6 +522,9 @@
                   <SpinnerModel initial="0" maximum="65563" minimum="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="portSpinnerFocusLost"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JCheckBox" name="autoConfChkBox">
               <Properties>

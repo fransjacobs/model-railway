@@ -22,12 +22,12 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import jcs.JCS;
+import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import jcs.entities.enums.SignalValue;
-import jcs.controller.events.AccessoryEvent;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -264,9 +264,8 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
   }
 
   private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
-    if (CommandStationFactory.getDispatcher() != null) {
-      //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
-      CommandStationFactory.getDispatcher().switchAccessory(value, signal);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().switchAccessory(value, signal);
     }
   }
 
@@ -304,7 +303,7 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
       SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
       f.add(signalRowPanel);
 
-      CommandStationFactory.getDispatcher().addAccessoryEventListener(signalRowPanel);
+      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
     }
 
     f.pack();

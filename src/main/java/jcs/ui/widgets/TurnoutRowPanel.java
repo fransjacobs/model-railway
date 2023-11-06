@@ -22,13 +22,13 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import jcs.JCS;
+import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.enums.AccessoryValue;
 import static jcs.entities.enums.AccessoryValue.GREEN;
 import static jcs.entities.enums.AccessoryValue.RED;
-import jcs.controller.events.AccessoryEvent;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.AccessoryEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -208,9 +208,9 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
     if (this.turnout != null) {
       switch (value) {
         case RED ->
-          CommandStationFactory.getDispatcher().switchAccessory(AccessoryValue.RED, turnout);
+          JCS.getJcsCommandStation().switchAccessory(AccessoryValue.RED, turnout);
         case GREEN ->
-          CommandStationFactory.getDispatcher().switchAccessory(AccessoryValue.GREEN, turnout);
+          JCS.getJcsCommandStation().switchAccessory(AccessoryValue.GREEN, turnout);
       }
     }
   }
@@ -250,8 +250,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
       TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
       f.add(signalRowPanel);
 
-      CommandStationFactory.getDispatcher().addAccessoryEventListener(signalRowPanel);
-
+      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
     }
 
     f.pack();
