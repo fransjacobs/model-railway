@@ -49,7 +49,7 @@ public class CommandStationFactory {
   public static CommandStation getCommandStation(CommandStationBean commandStationBean) {
     return CommandStationFactory.getInstance().getCommandStationImpl(commandStationBean);
   }
-
+  
   private CommandStation getCommandStationImpl(CommandStationBean commandStationBean) {
     if (commandStation == null) {
       instance.aquireCommandStation(commandStationBean);

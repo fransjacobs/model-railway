@@ -107,17 +107,12 @@ public class MarklinCentralStationImpl implements CommandStation {
     this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
   }
 
-  @Override
-  public CommandStationBean getCommandStationBean() {
-    return commandStationBean;
+  public MarklinCentralStationImpl(boolean autoConnect) {
+    this(autoConnect, null);
   }
 
-  @Override
-  public void setCommandStationBean(CommandStationBean commandStationBean) {
+  public MarklinCentralStationImpl(Boolean autoConnect, CommandStationBean commandStationBean) {
     this.commandStationBean = commandStationBean;
-  }
-
-  private MarklinCentralStationImpl(boolean autoConnect) {
     devices = new HashMap<>();
     measurementChannels = new HashMap<>();
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
@@ -136,6 +131,16 @@ public class MarklinCentralStationImpl implements CommandStation {
     if (autoConnect) {
       connect();
     }
+  }
+
+  @Override
+  public CommandStationBean getCommandStationBean() {
+    return commandStationBean;
+  }
+
+  @Override
+  public void setCommandStationBean(CommandStationBean commandStationBean) {
+    this.commandStationBean = commandStationBean;
   }
 
   int getCsUid() {

@@ -84,8 +84,12 @@ public class DccExCommandStationImpl implements CommandStation {
     this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
   }
 
-  public DccExCommandStationImpl(boolean autoConnect) {
-    //devices = new HashMap<>();
+  public DccExCommandStationImpl(Boolean autoConnect) {
+    this(autoConnect, null);
+  }
+
+  public DccExCommandStationImpl(Boolean autoConnect, CommandStationBean commandStationBean) {
+    this.commandStationBean = commandStationBean;
     measurementChannels = new HashMap<>();
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     defaultSwitchTime = Integer.getInteger("default.switchtime", 300);

@@ -19,10 +19,15 @@ import com.fazecast.jSerialComm.SerialPort;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.ComboBoxModel;
@@ -35,29 +40,35 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import jcs.commandStation.CommandStation;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.persistence.PersistenceFactory;
+import jcs.util.Ping;
 import org.tinylog.Logger;
 
 /**
  *
  * @author frans
  */
-public class CommandStationPanel extends JPanel {
+public class CommandStationPanel extends JPanel implements PropertyChangeListener {
 
   private CommandStationBean selectedCommandStation;
   private ComboBoxModel<CommandStationBean> commandStationComboBoxModel;
   private ComboBoxModel<ConnectionType> connectionTypeComboBoxModel;
   private ComboBoxModel<SerialPort> serialPortComboBoxModel;
+
+  private Task task;
 
   public CommandStationPanel() {
     initComponents();
@@ -96,6 +107,9 @@ public class CommandStationPanel extends JPanel {
     setFieldValues();
 
     showApplicableFields();
+
+    this.progressBar.setVisible(false);
+
   }
 
   private void setFieldValues() {
@@ -155,7 +169,6 @@ public class CommandStationPanel extends JPanel {
         }
       }
     }
-
   }
 
   /**
@@ -171,9 +184,10 @@ public class CommandStationPanel extends JPanel {
     commandStationComboBox = new JComboBox<>();
     defaultCommandStationChkBox = new JCheckBox();
     testConnectionPanel = new JPanel();
-    filler5 = new Box.Filler(new Dimension(200, 0), new Dimension(200, 0), new Dimension(200, 32767));
-    testConnectionBtn = new JButton();
     connectionTestResultLbl = new JLabel();
+    testConnectionBtn = new JButton();
+    filler3 = new Box.Filler(new Dimension(26, 0), new Dimension(26, 0), new Dimension(20, 32767));
+    progressBar = new JProgressBar();
     centerPanel = new JPanel();
     filler2 = new Box.Filler(new Dimension(40, 0), new Dimension(40, 0), new Dimension(40, 32767));
     connectionTypePanel = new JPanel();
@@ -196,9 +210,7 @@ public class CommandStationPanel extends JPanel {
     topPanel.setMinimumSize(new Dimension(1000, 50));
     topPanel.setPreferredSize(new Dimension(1000, 50));
     topPanel.setRequestFocusEnabled(false);
-    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout1.setAlignOnBaseline(true);
-    topPanel.setLayout(flowLayout1);
+    topPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
     commandStationSelectionPanel.setMinimumSize(new Dimension(400, 33));
     commandStationSelectionPanel.setPreferredSize(new Dimension(425, 33));
@@ -234,31 +246,34 @@ public class CommandStationPanel extends JPanel {
     topPanel.add(commandStationSelectionPanel);
 
     testConnectionPanel.setPreferredSize(new Dimension(550, 33));
-    FlowLayout flowLayout4 = new FlowLayout(FlowLayout.RIGHT);
+    FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
     flowLayout4.setAlignOnBaseline(true);
     testConnectionPanel.setLayout(flowLayout4);
-    testConnectionPanel.add(filler5);
 
+    connectionTestResultLbl.setText("Not Connected");
+    connectionTestResultLbl.setPreferredSize(new Dimension(222, 17));
+    testConnectionPanel.add(connectionTestResultLbl);
+    connectionTestResultLbl.getAccessibleContext().setAccessibleName("");
+
+    testConnectionBtn.setIcon(new ImageIcon(getClass().getResource("/media/connect-24.png"))); // NOI18N
     testConnectionBtn.setText("Test");
-    testConnectionBtn.addAncestorListener(new AncestorListener() {
-      public void ancestorAdded(AncestorEvent evt) {
-      }
-      public void ancestorMoved(AncestorEvent evt) {
-        testConnectionBtnAncestorMoved(evt);
-      }
-      public void ancestorRemoved(AncestorEvent evt) {
-      }
-    });
+    testConnectionBtn.setToolTipText("Test Connection");
+    testConnectionBtn.setFocusable(false);
+    testConnectionBtn.setMargin(new Insets(2, 2, 2, 2));
+    testConnectionBtn.setMaximumSize(new Dimension(60, 40));
+    testConnectionBtn.setMinimumSize(new Dimension(60, 40));
+    testConnectionBtn.setPreferredSize(new Dimension(60, 40));
+    testConnectionBtn.setVerticalAlignment(SwingConstants.TOP);
     testConnectionBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         testConnectionBtnActionPerformed(evt);
       }
     });
     testConnectionPanel.add(testConnectionBtn);
+    testConnectionPanel.add(filler3);
 
-    connectionTestResultLbl.setText("Not Connected");
-    testConnectionPanel.add(connectionTestResultLbl);
-    connectionTestResultLbl.getAccessibleContext().setAccessibleName("");
+    progressBar.setPreferredSize(new Dimension(200, 4));
+    testConnectionPanel.add(progressBar);
 
     topPanel.add(testConnectionPanel);
 
@@ -309,9 +324,9 @@ public class CommandStationPanel extends JPanel {
     connectionTypePanel.add(portLbl);
 
     portSpinner.setModel(new SpinnerNumberModel(0, 0, 65563, 1));
-    portSpinner.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent evt) {
-        portSpinnerFocusLost(evt);
+    portSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        portSpinnerStateChanged(evt);
       }
     });
     connectionTypePanel.add(portSpinner);
@@ -344,42 +359,140 @@ public class CommandStationPanel extends JPanel {
 
 
   private void testConnectionBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testConnectionBtnActionPerformed
-    // TODO add your handling code here:
+    Logger.trace(evt.getActionCommand());
+    this.progressBar.setVisible(true);
+
+    progressBar.setIndeterminate(true);
+
+    task = new Task();
+    task.addPropertyChangeListener(this);
+    task.execute();
   }//GEN-LAST:event_testConnectionBtnActionPerformed
 
   private void commandStationComboBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationComboBoxActionPerformed
     selectedCommandStation = (CommandStationBean) commandStationComboBoxModel.getSelectedItem();
     defaultCommandStationChkBox.setSelected(selectedCommandStation.isDefault());
-
     setFieldValues();
     showApplicableFields();
+
+    Logger.trace("Selected CS: " + this.selectedCommandStation.getName());
   }//GEN-LAST:event_commandStationComboBoxActionPerformed
 
   private void defaultCommandStationChkBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_defaultCommandStationChkBoxActionPerformed
     Logger.trace("Setting " + this.selectedCommandStation + " as default");
-    //TODO: in worker thread
     PersistenceFactory.getService().changeDefaultCommandStation(selectedCommandStation);
   }//GEN-LAST:event_defaultCommandStationChkBoxActionPerformed
 
   private void connectionTypeCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectionTypeCBActionPerformed
-    // TODO add your handling code here:
+    Logger.trace(evt.getActionCommand());
   }//GEN-LAST:event_connectionTypeCBActionPerformed
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
-    // TODO add your handling code here:
+    Logger.trace(evt.getActionCommand());
   }//GEN-LAST:event_saveBtnActionPerformed
 
   private void ipAddressTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_ipAddressTFFocusLost
-    // TODO add your handling code here:
+    Logger.trace("IP address:" + ipAddressTF.getText());
+    this.selectedCommandStation.setIpAddress(this.ipAddressTF.getText());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
   }//GEN-LAST:event_ipAddressTFFocusLost
 
-  private void portSpinnerFocusLost(FocusEvent evt) {//GEN-FIRST:event_portSpinnerFocusLost
-    // TODO add your handling code here:
-  }//GEN-LAST:event_portSpinnerFocusLost
+  private void portSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_portSpinnerStateChanged
+    Logger.trace("Port: " + this.portSpinner.getValue());
+    this.selectedCommandStation.setNetworkPort((Integer) this.portSpinner.getValue());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_portSpinnerStateChanged
 
-  private void testConnectionBtnAncestorMoved(AncestorEvent evt) {//GEN-FIRST:event_testConnectionBtnAncestorMoved
-    // TODO add your handling code here:
-  }//GEN-LAST:event_testConnectionBtnAncestorMoved
+  @Override
+  public void propertyChange(PropertyChangeEvent evt) {
+    if ("progress".equals(evt.getPropertyName())) {
+      int progress = (Integer) evt.getNewValue();
+      progressBar.setValue(progress);
+      progressBar.setIndeterminate(progress > 20);
+
+      if (task.isDone()) {
+        testConnectionBtn.setEnabled(true);
+      }
+    }
+
+    if ("done".equals(evt.getPropertyName())) {
+      Logger.trace("Done: " + evt.getNewValue());
+
+      this.connectionTestResultLbl.setText((String) evt.getNewValue());
+      this.progressBar.setVisible(false);
+    }
+  }
+
+  class Task extends SwingWorker<Void, Void> {
+
+    @Override
+    public Void doInBackground() {
+      setProgress(0);
+
+      if (ConnectionType.NETWORK == selectedCommandStation.getConnectionType()) {
+        String ip = selectedCommandStation.getIpAddress();
+
+        if (Ping.IsReachable(ip)) {
+          setProgress(10);
+          CommandStation commandStation = createCommandStation(selectedCommandStation);
+          setProgress(30);
+          boolean canConnect = checkConnection(commandStation);
+
+          setProgress(100);
+
+          Logger.trace("canConnect: " + canConnect);
+          if (canConnect) {
+            this.firePropertyChange("done", "", "Connection succeeded");
+          } else {
+            this.firePropertyChange("done", "", "Can't Connect");
+          }
+        } else {
+          setProgress(100);
+
+          this.firePropertyChange("done", "", "Can't Connect");
+        }
+      }
+      return null;
+    }
+
+    @Override
+    public void done() {
+      Toolkit.getDefaultToolkit().beep();
+      testConnectionBtn.setEnabled(true);
+
+      //connectionTestResultLbl.setText("");
+      //progressMonitor.setProgress(0);
+    }
+  }
+
+  private CommandStation createCommandStation(CommandStationBean commandStationBean) {
+    CommandStation commandStation = null;
+
+    String commandStationImplClassName = commandStationBean.getClassName();
+    try {
+      commandStation = (CommandStation) Class.forName(commandStationImplClassName).getDeclaredConstructor(Boolean.class, CommandStationBean.class).newInstance(false, commandStationBean);
+    } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
+      Logger.trace("Can't instantiate a '" + commandStationImplClassName + "' " + ex.getMessage());
+      Logger.trace(ex);
+    }
+    return commandStation;
+  }
+
+  private boolean checkConnection(final CommandStation commandStation) {
+    if (commandStation != null) {
+      if (commandStation.isConnected()) {
+        return true;
+      } else {
+        boolean canConnect = commandStation.connect();
+        if (canConnect) {
+          commandStation.disconnect();
+        }
+        return canConnect;
+      }
+    }
+    return false;
+
+  }
 
   public static void main(String args[]) {
     try {
@@ -424,10 +537,11 @@ public class CommandStationPanel extends JPanel {
   JCheckBox defaultCommandStationChkBox;
   Box.Filler filler1;
   Box.Filler filler2;
-  Box.Filler filler5;
+  Box.Filler filler3;
   JTextField ipAddressTF;
   JLabel portLbl;
   JSpinner portSpinner;
+  JProgressBar progressBar;
   JButton saveBtn;
   JComboBox<SerialPort> serialPortCB;
   JButton testConnectionBtn;
