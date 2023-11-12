@@ -194,6 +194,11 @@ public class DccExCommandStationImpl implements CommandStation {
   }
 
   @Override
+  public String getIp() {
+    return this.commandStationBean.getIpAddress();
+  }
+
+  @Override
   public void disconnect() {
     try {
       if (connection != null) {

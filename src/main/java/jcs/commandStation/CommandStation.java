@@ -99,5 +99,7 @@ public interface CommandStation {
   void clearCaches();
 
   Map<Integer, MeasurementChannel> getTrackMeasurements();
+  
+  String getIp(); 
 
 }

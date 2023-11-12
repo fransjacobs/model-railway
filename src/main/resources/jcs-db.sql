@@ -22,6 +22,7 @@ create table accessories (
   icon               varchar(255),
   icon_file          varchar(255),
   imported           varchar(255),
+
   constraint acce_pk primary key (id),
   constraint acce_address_un unique (decoder_type,address)
 );
@@ -46,12 +47,17 @@ create table locomotives (
   length             integer,
   show               bool not null default true,
   imported           varchar(255),
+
   constraint loco_pk primary key (id),
   constraint loco_addr_dety_un unique (address,decoder_type)
 );
 
 create unique index loco_pk_idx on locomotives (id);
 create unique index loco_addr_dety_un_idx on locomotives (address, decoder_type);
+
+ALTER TABLE locomotives ADD command_station_id varchar(255);
+update locomotives set command_station_id = 'cs.Marklin.CentralStation';
+ALTER TABLE locomotives ALTER COLUMN command_station_id VARCHAR(255) not null;
 
 create table locomotive_functions (
   id                 identity not null,

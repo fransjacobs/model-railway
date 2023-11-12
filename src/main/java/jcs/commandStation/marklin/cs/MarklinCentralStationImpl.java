@@ -155,6 +155,7 @@ public class MarklinCentralStationImpl implements CommandStation {
     }
   }
 
+  @Override
   public String getIp() {
     return CSConnectionFactory.getControllerIp();
   }

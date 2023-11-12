@@ -56,6 +56,7 @@ public class LocomotiveBean implements Serializable {
   private String block;
   private boolean show;
   private String imported;
+  private String commandStationId;
 
   private Image locIcon;
 
@@ -355,6 +356,15 @@ public class LocomotiveBean implements Serializable {
     this.imported = imported;
   }
 
+  @Column(name = "command_station_id", length = 255, nullable = false)
+  public String getCommandStationId() {
+    return commandStationId;
+  }
+
+  public void setCommandStationId(String commandStationId) {
+    this.commandStationId = commandStationId;
+  }
+
   @Transient
   public Map<Integer, FunctionBean> getFunctions() {
     return functions;
@@ -446,6 +456,9 @@ public class LocomotiveBean implements Serializable {
     hash = 53 * hash + Objects.hashCode(this.block);
     hash = 53 * hash + Objects.hashCode(this.locIcon);
     hash = 53 * hash + Objects.hashCode(this.show);
+    hash = 53 * hash + Objects.hashCode(this.imported);
+    hash = 53 * hash + Objects.hashCode(this.commandStationId);
+    
     return hash;
   }
 
@@ -498,6 +511,12 @@ public class LocomotiveBean implements Serializable {
       return false;
     }
     if (!Objects.equals(this.richtung, other.richtung)) {
+      return false;
+    }
+    if (!Objects.equals(this.imported, other.imported)) {
+      return false;
+    }
+    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
       return false;
     }
     return Objects.equals(this.show, other.show);

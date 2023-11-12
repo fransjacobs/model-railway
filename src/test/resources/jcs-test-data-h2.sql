@@ -26,12 +26,12 @@ insert into sensors (id,name,device_id,contact_id,status,previous_status,millis,
 	
 commit;
 
-insert into locomotives (id,name,uid,mfx_uid,address,icon,decoder_type,mfx_sid,tacho_max,v_min,velocity,richtung,commuter,length,show) values 
-(2,'BR 81 002',2,0,2,'DB BR 81 008','mm_prg',null,120,1,0,0,false,null,true),
-(8,'NS  6505',8, null, 8,'NS DHG 6505','mm_prg',NULL,120,0,0,0,false,null,true),
-(12,'BR 141 015-08',12,null,12,'DB BR 141 136-2','mm_prg',null ,120,0,0,0,false,NULL,true),
-(16389,'193 304-3 DB AG',16389,1945312555,5,'DB BR 193 304-3','mfx','0x5',160,5,0,0,false,null,true),   
-(49156,'NS Plan Y',49156,null, 4,'NS Plan Y','dcc',null,120,1,0,0,false,null,true);
+insert into locomotives (id,name,uid,mfx_uid,address,icon,decoder_type,mfx_sid,tacho_max,v_min,velocity,richtung,commuter,length,show,command_station_id) values 
+(2,'BR 81 002',2,0,2,'DB BR 81 008','mm_prg',null,120,1,0,0,false,null,true,'cs.Marklin.CentralStation'),
+(8,'NS  6505',8, null, 8,'NS DHG 6505','mm_prg',NULL,120,0,0,0,false,null,true,'cs.Marklin.CentralStation'),
+(12,'BR 141 015-08',12,null,12,'DB BR 141 136-2','mm_prg',null ,120,0,0,0,false,NULL,true,'cs.Marklin.CentralStation'),
+(16389,'193 304-3 DB AG',16389,1945312555,5,'DB BR 193 304-3','mfx','0x5',160,5,0,0,false,null,true,'cs.Marklin.CentralStation'),   
+(49156,'NS Plan Y',49156,null, 4,'NS Plan Y','dcc',null,120,1,0,0,false,null,true,'cs.Marklin.CentralStation');
 
 insert into locomotive_functions (locomotive_id,f_number,f_type,f_value) values
 (16389,5,20,0),

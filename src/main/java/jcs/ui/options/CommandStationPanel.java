@@ -415,6 +415,12 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     }
 
+    if ("ipAddress".equals(evt.getPropertyName())) {
+      Logger.trace("Found IP address: " + evt.getNewValue());
+      this.ipAddressTF.setText((String) evt.getNewValue());
+      PersistenceFactory.getService().persist(this.selectedCommandStation);
+    }
+
     if ("done".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
 
@@ -442,6 +448,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
           Logger.trace("canConnect: " + canConnect);
           if (canConnect) {
+            if (selectedCommandStation.isAutoIpConfiguration()) {
+              selectedCommandStation.setIpAddress(commandStation.getIp());
+              this.firePropertyChange("ipAddress", "", commandStation.getIp());
+            }
+
             this.firePropertyChange("done", "", "Connection succeeded");
           } else {
             this.firePropertyChange("done", "", "Can't Connect");
