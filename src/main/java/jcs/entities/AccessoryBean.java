@@ -39,48 +39,18 @@ public class AccessoryBean {
   private String icon;
   private String iconFile;
   private String imported;
+  private String commandStationId;
 
   public AccessoryBean() {
     this(null, null, null, null, null, null, null, null);
   }
 
-  public AccessoryBean(
-          String id,
-          Integer address,
-          String name,
-          String type,
-          Integer position,
-          Integer switchTime,
-          String decoderType,
-          String decoder) {
-    this(
-            id,
-            address,
-            name,
-            type,
-            position,
-            null,
-            switchTime,
-            decoderType,
-            decoder,
-            null,
-            null,
-            null);
+  public AccessoryBean(String id, Integer address, String name, String type, Integer position, Integer switchTime, String decoderType, String decoder) {
+    this(id, address, name, type, position, null, switchTime, decoderType, decoder, null, null, null);
   }
 
-  public AccessoryBean(
-          String id,
-          Integer address,
-          String name,
-          String type,
-          Integer position,
-          Integer states,
-          Integer switchTime,
-          String decoderType,
-          String decoder,
-          String group,
-          String icon,
-          String iconFile) {
+  public AccessoryBean(String id, Integer address, String name, String type, Integer position, Integer states, Integer switchTime, String decoderType,
+          String decoder, String group, String icon, String iconFile) {
     this.id = id;
     this.address = address;
     this.name = name;
@@ -266,6 +236,15 @@ public class AccessoryBean {
     this.imported = imported;
   }
 
+  @Column(name = "command_station_id", length = 255, nullable = false)
+  public String getCommandStationId() {
+    return commandStationId;
+  }
+
+  public void setCommandStationId(String commandStationId) {
+    this.commandStationId = commandStationId;
+  }
+
   @Transient
   public boolean isSignal() {
     if (this.group != null) {
@@ -334,6 +313,7 @@ public class AccessoryBean {
     hash = 53 * hash + Objects.hashCode(this.group);
     hash = 53 * hash + Objects.hashCode(this.icon);
     hash = 53 * hash + Objects.hashCode(this.iconFile);
+    hash = 53 * hash + Objects.hashCode(this.commandStationId);
     return hash;
   }
 
@@ -380,6 +360,9 @@ public class AccessoryBean {
       return false;
     }
     if (!Objects.equals(this.states, other.states)) {
+      return false;
+    }
+    if (!Objects.equals(this.commandStationId, other.commandStationId)) {
       return false;
     }
     return Objects.equals(this.switchTime, other.switchTime);

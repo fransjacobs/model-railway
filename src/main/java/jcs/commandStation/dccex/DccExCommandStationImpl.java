@@ -595,14 +595,14 @@ public class DccExCommandStationImpl implements CommandStation {
     if (1 == 1) {
       CommandStationBean csb = new CommandStationBean();
       csb.setId("cs.DccEX.network");
-      csb.setName("DCC-EX Network");
+      csb.setDescription("DCC-EX Network");
       csb.setClassName("jcs.controller.dccex.DccExCommandStationImpl");
-      csb.setConnectionSpecifier("NETWORK");
+      csb.setConnectVia("NETWORK");
       csb.setIpAddress("192.168.178.73");
       csb.setNetworkPort(2560);
       csb.setDefault(true);
-      csb.setAutoIpConfiguration(false);
-      csb.setShow(true);
+      csb.setIpAutoConfiguration(false);
+      csb.setEnabled(true);
 
       //CommandStation cs = CommandStationFactory.getCommandStation(csb);
       CommandStation cs = new DccExCommandStationImpl();

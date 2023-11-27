@@ -97,23 +97,9 @@ public class PersistenceServiceTest {
     sensors.add(s2);
 
     LocomotiveBean loco2
-            = new LocomotiveBean(
-                    2L,
-                    "BR 81 002",
-                    2L,
-                    0L,
-                    2,
-                    "DB BR 81 008",
-                    "mm_prg",
-                    null,
-                    120,
-                    1,
-                    0,
-                    0,
-                    false,
-                    null,
-                    true);
-    loco2.setCommandStationId("cs.Marklin.CentralStation");
+            = new LocomotiveBean(2L, "BR 81 002", 2L, 0L, 2, "DB BR 81 008",
+                    "mm_prg", null, 120, 1, 0, 0, false, null, true);
+    loco2.setCommandStationId("marklin.cs");
     locomotives.add(loco2);
 
     LocomotiveBean loco8
@@ -133,7 +119,7 @@ public class PersistenceServiceTest {
                     false,
                     null,
                     true);
-    loco8.setCommandStationId("cs.Marklin.CentralStation");
+    loco8.setCommandStationId("marklin.cs");
     locomotives.add(loco8);
 
     LocomotiveBean loco12
@@ -153,7 +139,7 @@ public class PersistenceServiceTest {
                     false,
                     null,
                     true);
-    loco12.setCommandStationId("cs.Marklin.CentralStation");
+    loco12.setCommandStationId("marklin.cs");
     locomotives.add(loco12);
 
     LocomotiveBean loco16389
@@ -174,7 +160,7 @@ public class PersistenceServiceTest {
                     null,
                     true);
 
-    loco16389.setCommandStationId("cs.Marklin.CentralStation");
+    loco16389.setCommandStationId("marklin.cs");
     locomotives.add(loco16389);
 
     LocomotiveBean loco49156
@@ -194,7 +180,7 @@ public class PersistenceServiceTest {
                     false,
                     null,
                     true);
-    loco49156.setCommandStationId("cs.Marklin.CentralStation");
+    loco49156.setCommandStationId("marklin.cs");
     locomotives.add(loco49156);
 
     FunctionBean fb16389_5 = new FunctionBean(1L, 16389L, 5, 20, 0);
@@ -240,20 +226,9 @@ public class PersistenceServiceTest {
     FunctionBean fb49156_4 = new FunctionBean(21L, 49156L, 4, 18, 0);
     functions.add(fb49156_4);
 
-    AccessoryBean w1
-            = new AccessoryBean(
-                    "1",
-                    1,
-                    "W 1R",
-                    "rechtsweiche",
-                    1,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "weichen",
-                    "005",
-                    "magicon_a_005_01.svg");
+    AccessoryBean w1 = new AccessoryBean("1", 1, "W 1R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
+    w1.setCommandStationId("marklin.cs");
+
     this.turnouts.add(w1);
     AccessoryBean w2
             = new AccessoryBean(
@@ -269,6 +244,7 @@ public class PersistenceServiceTest {
                     "weichen",
                     "006",
                     "magicon_a_006_01.svg");
+    w2.setCommandStationId("marklin.cs");
     this.turnouts.add(w2);
     AccessoryBean w6
             = new AccessoryBean(
@@ -284,6 +260,7 @@ public class PersistenceServiceTest {
                     "weichen",
                     "005",
                     "magicon_a_005_01.svg");
+    w6.setCommandStationId("marklin.cs");
     this.turnouts.add(w6);
     AccessoryBean w7
             = new AccessoryBean(
@@ -299,6 +276,7 @@ public class PersistenceServiceTest {
                     "weichen",
                     "006",
                     "magicon_a_006_01.svg");
+    w7.setCommandStationId("marklin.cs");
     this.turnouts.add(w7);
     AccessoryBean s15
             = new AccessoryBean(
@@ -314,6 +292,7 @@ public class PersistenceServiceTest {
                     "lichtsignale",
                     "019",
                     "magicon_a_019_00.svg");
+    s15.setCommandStationId("marklin.cs");
     this.signals.add(s15);
     AccessoryBean s19
             = new AccessoryBean(
@@ -329,6 +308,7 @@ public class PersistenceServiceTest {
                     "lichtsignale",
                     "015",
                     "magicon_a_015_00.svg");
+    s19.setCommandStationId("marklin.cs");
     this.signals.add(s19);
     AccessoryBean s25
             = new AccessoryBean(
@@ -344,6 +324,7 @@ public class PersistenceServiceTest {
                     "lichtsignale",
                     "027",
                     "magicon_a_027_00.svg");
+    s25.setCommandStationId("marklin.cs");
     this.signals.add(s25);
     AccessoryBean s41
             = new AccessoryBean(
@@ -359,6 +340,7 @@ public class PersistenceServiceTest {
                     "lichtsignale",
                     "026",
                     "magicon_a_026_00.svg");
+    s41.setCommandStationId("marklin.cs");
     this.signals.add(s41);
 
     TileBean bk1
@@ -785,7 +767,7 @@ public class PersistenceServiceTest {
     LocomotiveBean locomotive
             = new LocomotiveBean(80L, "DB BR 44 100", 16393L, 1945180593L, 80, "DB BR 44 100",
                     "mfx", "0x81", 80, 5, 0, 0, false, null, true);
-    locomotive.setCommandStationId("cs.Marklin.CentralStation");
+    locomotive.setCommandStationId("marklin.cs");
 
     locomotive.setImported("testcase");
 
@@ -834,24 +816,8 @@ public class PersistenceServiceTest {
   @Test
   public void testRemove_LocomotiveBean() {
     System.out.println("remove");
-    LocomotiveBean locomotiveBean
-            = new LocomotiveBean(
-                    70L,
-                    "To Be Removed",
-                    16370L,
-                    1945180570L,
-                    70,
-                    "To Be Removed",
-                    "mfx",
-                    "0x70",
-                    80,
-                    5,
-                    0,
-                    0,
-                    false,
-                    null,
-                    true);
-    locomotiveBean.setCommandStationId("cs.Marklin.CentralStation");
+    LocomotiveBean locomotiveBean = new LocomotiveBean(70L, "To Be Removed", 16370L, 1945180570L, 70, "To Be Removed", "mfx", "0x70", 80, 5, 0, 0, false, null, true);
+    locomotiveBean.setCommandStationId("marklin.cs");
 
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -891,6 +857,7 @@ public class PersistenceServiceTest {
     PersistenceService instance = PersistenceFactory.getService();
     List<AccessoryBean> expResult = this.signals;
     List<AccessoryBean> result = instance.getSignals();
+
     assertEquals(expResult, result);
     assertEquals(expResult, result);
   }
@@ -928,19 +895,10 @@ public class PersistenceServiceTest {
   public void testPersist_AccessoryBean() {
     System.out.println("persist");
     AccessoryBean accessory
-            = new AccessoryBean(
-                    "100",
-                    100,
-                    "W 100",
-                    "rechtsweiche",
-                    1,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "weichen",
-                    "005",
-                    "magicon_a_005_01.svg");
+            = new AccessoryBean("100", 100, "W 100", "rechtsweiche", 1, 2, 200, "mm",
+                    "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
+    accessory.setCommandStationId("marklin.cs");
+
     PersistenceService instance = PersistenceFactory.getService();
 
     AccessoryBean result = instance.persist(accessory);
@@ -982,6 +940,7 @@ public class PersistenceServiceTest {
                     "weichen",
                     "005",
                     "magicon_a_005_01.svg");
+    accessory.setCommandStationId("marklin.cs");
     PersistenceService instance = PersistenceFactory.getService();
 
     AccessoryBean result = instance.persist(accessory);
@@ -1348,7 +1307,7 @@ public class PersistenceServiceTest {
     PersistenceService instance = PersistenceFactory.getService();
 
     List<CommandStationBean> commandStations = instance.getCommandStations();
-    assertEquals(3, commandStations.size());
+    assertEquals(1, commandStations.size());
 
     for (CommandStationBean cs : commandStations) {
       Logger.trace("## -> " + cs + " default: " + cs.isDefault() + " id: " + cs.getId());
@@ -1356,13 +1315,13 @@ public class PersistenceServiceTest {
 
     CommandStationBean defCS = instance.getDefaultCommandStation();
 
-    assertEquals("cs.Marklin.CentralStation", defCS.getId());
+    assertEquals("marklin.cs", defCS.getId());
 
     defCS.setDefault(false);
 
     instance.persist(defCS);
 
-    defCS = instance.getCommandStation("cs.Marklin.CentralStation");
+    defCS = instance.getCommandStation("marklin.cs");
 
     assertFalse(defCS.isDefault());
 
@@ -1370,7 +1329,7 @@ public class PersistenceServiceTest {
 
     instance.persist(defCS);
 
-    defCS = instance.getCommandStation("cs.Marklin.CentralStation");
+    defCS = instance.getCommandStation("marklin.cs");
 
     assertTrue(defCS.isDefault());
 
@@ -1382,16 +1341,16 @@ public class PersistenceServiceTest {
 
     assertNull(defCS2);
 
-    defCS2 = instance.getCommandStation("cs.DccEX.network");
+    defCS2 = instance.getCommandStation("dcc-ex.network");
 
-    assertEquals("cs.DccEX.network", defCS2.getId());
+    assertEquals("dcc-ex.network", defCS2.getId());
     assertFalse(defCS2.isDefault());
 
     defCS2.setDefault(true);
     instance.persist(defCS2);
 
     CommandStationBean defCS3 = instance.getDefaultCommandStation();
-    assertEquals("cs.DccEX.network", defCS3.getId());
+    assertEquals("dcc-ex.network", defCS3.getId());
 
   }
 

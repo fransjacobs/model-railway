@@ -55,8 +55,9 @@ public class LocomotiveBean implements Serializable {
   private Integer length;
   private String block;
   private boolean show;
-  private String imported;
+  private String source;
   private String commandStationId;
+  private boolean manual;
 
   private Image locIcon;
 
@@ -349,11 +350,11 @@ public class LocomotiveBean implements Serializable {
 
   @Column(name = "imported", length = 255)
   public String getImported() {
-    return imported;
+    return source;
   }
 
   public void setImported(String imported) {
-    this.imported = imported;
+    this.source = imported;
   }
 
   @Column(name = "command_station_id", length = 255, nullable = false)
@@ -456,9 +457,9 @@ public class LocomotiveBean implements Serializable {
     hash = 53 * hash + Objects.hashCode(this.block);
     hash = 53 * hash + Objects.hashCode(this.locIcon);
     hash = 53 * hash + Objects.hashCode(this.show);
-    hash = 53 * hash + Objects.hashCode(this.imported);
+    hash = 53 * hash + Objects.hashCode(this.source);
     hash = 53 * hash + Objects.hashCode(this.commandStationId);
-    
+
     return hash;
   }
 
@@ -513,7 +514,7 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.richtung, other.richtung)) {
       return false;
     }
-    if (!Objects.equals(this.imported, other.imported)) {
+    if (!Objects.equals(this.source, other.source)) {
       return false;
     }
     if (!Objects.equals(this.commandStationId, other.commandStationId)) {

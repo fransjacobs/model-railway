@@ -18,8 +18,21 @@ package jcs.ui.options;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -38,61 +51,134 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import jcs.JCS;
+import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.options.table.LocomotiveTableModel;
 import org.tinylog.Logger;
 
 /**
  *
- * Welke properties zijn nodig voor een locomotief
- * voor welk command station
- * id
- * adres
- * decoder
- * naam
- * image
- * min speed
- * tacho max
- * speed
- * direction
- * uid (cs 3)
- * is die geimporteerd of met de hand gemaakt
- * moet die in de throttle worden getoond
- * 
- * 
+ * Welke properties zijn nodig voor een locomotief?<br>
+ * command station id<br>
+ * adress, decoder, naam, image, min speed, tacho max<br>
+ * uid (cs 3) is die geimporteerd of met de hand gemaakt<br>
+ * moet die in de throttle worden getoond is het een commuter
+ *
+ *
  * @author frans
  */
 public class LocomotivePreferencesPanel extends JPanel {
 
-  private final LocomotiveTableModel locoTableModel;
+  private final LocomotiveBeanListModel locoListModel;
+  private CommandStationBean commandStationBean;
 
   /**
    * Creates new form LocomotivePanel
    */
   public LocomotivePreferencesPanel() {
-    locoTableModel = new LocomotiveTableModel();
+    locoListModel = new LocomotiveBeanListModel();
 
     initComponents();
 
-    alignLocoTable();
-
-    //Select the firts row
-    if (locoTableModel.getRowCount() > 0) {
-      this.selectLoco(0);
-     
-    }
-
+    postInit();
   }
 
-  private void alignLocoTable() {
-    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-    centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+  private void postInit() {
+    if (PersistenceFactory.getService() != null) {
+      commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
+      this.commandStationLbl.setText(commandStationBean.getDescription());
+
+      List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStation(commandStationBean.getId());
+      this.locoListModel.addAll(locos);
+      this.synchronizeBtn.setVisible(commandStationBean.isLocomotiveSynchronizationSupport());
+    }
+  }
+
+  protected void setComponentValues(LocomotiveBean loco) {
+    if (loco != null) {
+      if (loco.getLocIcon() != null) {
+        this.imageLbl.setIcon(new ImageIcon(loco.getLocIcon()));
+        this.imageLbl.setText("");
+      } else {
+        this.iconTF.setText(loco.getIcon());
+      }
+      this.nameTF.setText(loco.getName());
+
+      this.addressSpinner.setValue(loco.getAddress());
+      this.decoderCB.setSelectedItem(loco.getDecoderTypeString());
+ 
+      if(loco.getvMin() != null) {
+        this.vMinSpinner.setValue(loco.getvMin());
+      }
+      if(loco.getTachoMax() != null) {
+        this.tachoMaxSpinner.setValue(loco.getTachoMax());
+      }
+            
+      if (loco.getLength() != null) {
+        this.lengthSpinner.setValue(loco.getLength());
+      } else {
+        this.lengthSpinner.setValue(0);
+      }
+      this.commuterCB.setSelected(loco.isCommuter());
+      this.showCB.setSelected(loco.isShow());
+
+    } else {
+      this.imageLbl.setText("ICON");
+
+      this.addressSpinner.setValue(0);
+      this.decoderCB.setSelectedItem("mm_prg");
+      this.nameTF.setText("");
+
+      this.lengthSpinner.setValue(0);
+      this.commuterCB.setSelected(false);
+      this.showCB.setSelected(true);
+
+    }
+  }
   
+  
+  
+  private LocomotiveBean getLocomotiveFromPersistentStore(LocomotiveBean locomotive) {
+    LocomotiveBean loco;
+    if (locomotive.getId() != null) {
+      loco = PersistenceFactory.getService().getLocomotive(locomotive.getId());
+    } else {
+      loco = PersistenceFactory.getService().getLocomotive(locomotive.getAddress(), locomotive.getDecoderType());
+    }
+    return loco;
+  }
+
+  protected LocomotiveBean setLocomotiveValues(LocomotiveBean loco) {
+    boolean show = this.showCB.isSelected();
+    boolean commuter = this.commuterCB.isSelected();
+    String name = this.nameTF.getText();
+
+    Integer length = (Integer) this.lengthSpinner.getValue();
+
+    LocomotiveBean loc;
+    if (loco != null) {
+      loc = loco;
+    } else {
+      loc = new LocomotiveBean();
+    }
+
+    //loc.setName(name);
+    loc.setLength(length);
+    loc.setShow(show);
+    loc.setCommuter(commuter);
+
+    return loc;
+  }
+
+
+  public void refresh() {
+    this.selectedLocomotive = null;
   }
 
   /**
@@ -104,36 +190,53 @@ public class LocomotivePreferencesPanel extends JPanel {
 
     selectedLocomotive = new LocomotiveBean();
     topPanel = new JPanel();
+    leftPanel = new JPanel();
+    commandStationNameLbl = new JLabel();
+    commandStationLbl = new JLabel();
+    rightPanel = new JPanel();
     synchronizeBtn = new JButton();
-    refreshBtn = new JButton();
     newBtn = new JButton();
+    refreshBtn = new JButton();
     locoDetailPanel = new JPanel();
     row1Panel = new JPanel();
+    synchronizedCB = new JCheckBox();
     imageLbl = new JLabel();
     row2Panel = new JPanel();
-    nameLbl = new JLabel();
-    nameTF = new JTextField();
-    row3Panel = new JPanel();
     addressLbl = new JLabel();
     addressSpinner = new JSpinner();
     decoderLabel = new JLabel();
     decoderCB = new JComboBox<>();
+    nameLbl = new JLabel();
+    nameTF = new JTextField();
+    row3Panel = new JPanel();
+    iconNameLbl = new JLabel();
+    iconTF = new JTextField();
+    iconFileDialogBtn = new JButton();
     row4Panel = new JPanel();
+    vMinLbl = new JLabel();
+    vMinSpinner = new JSpinner();
+    tachoMaxLbl = new JLabel();
+    tachoMaxSpinner = new JSpinner();
     row5Panel = new JPanel();
+    filler3 = new Box.Filler(new Dimension(100, 0), new Dimension(100, 0), new Dimension(100, 32767));
+    showCB = new JCheckBox();
+    filler4 = new Box.Filler(new Dimension(40, 0), new Dimension(95, 0), new Dimension(40, 32767));
+    commuterCB = new JCheckBox();
     row6Panel = new JPanel();
-    row7Panel = new JPanel();
-    row8Panel = new JPanel();
     lengthLbl = new JLabel();
     lengthSpinner = new JSpinner();
+    row7Panel = new JPanel();
+    row8Panel = new JPanel();
     row9Panel = new JPanel();
-    filler3 = new Box.Filler(new Dimension(100, 0), new Dimension(55, 0), new Dimension(100, 32767));
-    showCB = new JCheckBox();
-    commuterCB = new JCheckBox();
+    idNameLbl = new JLabel();
+    idLbl = new JLabel();
+    uidNameLbl = new JLabel();
+    uidLbl = new JLabel();
     filler2 = new Box.Filler(new Dimension(0, 50), new Dimension(0, 50), new Dimension(32767, 300));
     buttonPanel = new JPanel();
     westPanel = new JPanel();
-    jScrollPane1 = new JScrollPane();
-    jList1 = new JList<>();
+    locomotivesSP = new JScrollPane();
+    locomotiveList = new JList<>();
     bottomPanel = new JPanel();
     deleteBtn = new JButton();
     filler1 = new Box.Filler(new Dimension(100, 0), new Dimension(200, 0), new Dimension(150, 32767));
@@ -146,9 +249,24 @@ public class LocomotivePreferencesPanel extends JPanel {
     topPanel.setMinimumSize(new Dimension(1000, 50));
     topPanel.setPreferredSize(new Dimension(1000, 50));
     topPanel.setRequestFocusEnabled(false);
+    topPanel.setLayout(new GridLayout(1, 2));
+
+    FlowLayout flowLayout11 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout11.setAlignOnBaseline(true);
+    leftPanel.setLayout(flowLayout11);
+
+    commandStationNameLbl.setText("Command Station:");
+    leftPanel.add(commandStationNameLbl);
+
+    commandStationLbl.setFont(new Font("sansserif", 1, 13)); // NOI18N
+    commandStationLbl.setText("The Command Station");
+    leftPanel.add(commandStationLbl);
+
+    topPanel.add(leftPanel);
+
     FlowLayout flowLayout2 = new FlowLayout(FlowLayout.RIGHT);
     flowLayout2.setAlignOnBaseline(true);
-    topPanel.setLayout(flowLayout2);
+    rightPanel.setLayout(flowLayout2);
 
     synchronizeBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
     synchronizeBtn.setToolTipText("Synchronize Locomotives met CS 2/3");
@@ -160,19 +278,7 @@ public class LocomotivePreferencesPanel extends JPanel {
         synchronizeBtnActionPerformed(evt);
       }
     });
-    topPanel.add(synchronizeBtn);
-
-    refreshBtn.setIcon(new ImageIcon(getClass().getResource("/media/refresh-24.png"))); // NOI18N
-    refreshBtn.setToolTipText("Refresh Locomotives");
-    refreshBtn.setMaximumSize(new Dimension(40, 40));
-    refreshBtn.setMinimumSize(new Dimension(40, 40));
-    refreshBtn.setPreferredSize(new Dimension(40, 40));
-    refreshBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        refreshBtnActionPerformed(evt);
-      }
-    });
-    topPanel.add(refreshBtn);
+    rightPanel.add(synchronizeBtn);
 
     newBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
     newBtn.setToolTipText("Create new Locomotive");
@@ -184,7 +290,21 @@ public class LocomotivePreferencesPanel extends JPanel {
         newBtnActionPerformed(evt);
       }
     });
-    topPanel.add(newBtn);
+    rightPanel.add(newBtn);
+
+    refreshBtn.setIcon(new ImageIcon(getClass().getResource("/media/refresh-24.png"))); // NOI18N
+    refreshBtn.setToolTipText("Refresh Locomotives");
+    refreshBtn.setMaximumSize(new Dimension(40, 40));
+    refreshBtn.setMinimumSize(new Dimension(40, 40));
+    refreshBtn.setPreferredSize(new Dimension(40, 40));
+    refreshBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        refreshBtnActionPerformed(evt);
+      }
+    });
+    rightPanel.add(refreshBtn);
+
+    topPanel.add(rightPanel);
 
     add(topPanel, BorderLayout.NORTH);
 
@@ -198,7 +318,19 @@ public class LocomotivePreferencesPanel extends JPanel {
     flowLayout1.setAlignOnBaseline(true);
     row1Panel.setLayout(flowLayout1);
 
+    synchronizedCB.setText("Synchronized");
+    synchronizedCB.setToolTipText("Automatically imported from Command Station");
+    synchronizedCB.setHorizontalTextPosition(SwingConstants.LEADING);
+    synchronizedCB.setPreferredSize(new Dimension(100, 21));
+    synchronizedCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        synchronizedCBActionPerformed(evt);
+      }
+    });
+    row1Panel.add(synchronizedCB);
+
     imageLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    imageLbl.setToolTipText("The locomotive image");
     imageLbl.setPreferredSize(new Dimension(128, 48));
     row1Panel.add(imageLbl);
 
@@ -210,15 +342,48 @@ public class LocomotivePreferencesPanel extends JPanel {
     flowLayout3.setAlignOnBaseline(true);
     row2Panel.setLayout(flowLayout3);
 
+    addressLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    addressLbl.setLabelFor(addressSpinner);
+    addressLbl.setText("Address:");
+    addressLbl.setPreferredSize(new Dimension(100, 16));
+    row2Panel.add(addressLbl);
+
+    addressSpinner.setModel(new SpinnerNumberModel());
+    addressSpinner.setToolTipText("The locomotive address");
+    addressSpinner.setDoubleBuffered(true);
+    addressSpinner.setEditor(new JSpinner.NumberEditor(addressSpinner, ""));
+    addressSpinner.setMinimumSize(new Dimension(50, 26));
+    addressSpinner.setName(""); // NOI18N
+    addressSpinner.setNextFocusableComponent(nameTF);
+    addressSpinner.setPreferredSize(new Dimension(85, 26));
+    row2Panel.add(addressSpinner);
+
+    decoderLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+    decoderLabel.setLabelFor(decoderCB);
+    decoderLabel.setText("Decoder:");
+    decoderLabel.setPreferredSize(new Dimension(100, 16));
+    row2Panel.add(decoderLabel);
+
+    decoderCB.setModel(new DefaultComboBoxModel<>(new String[] { "mm_prg", "mfx", "dcc", "sx1" }));
+    decoderCB.setToolTipText("The Locomotive decoder");
+    decoderCB.setDoubleBuffered(true);
+    decoderCB.setPreferredSize(new Dimension(85, 26));
+    row2Panel.add(decoderCB);
+
     nameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     nameLbl.setLabelFor(nameTF);
-    nameLbl.setText("Name");
+    nameLbl.setText("Name:");
     nameLbl.setPreferredSize(new Dimension(100, 16));
     row2Panel.add(nameLbl);
 
-    nameTF.setEditable(false);
+    nameTF.setToolTipText("Name of the locomotive");
     nameTF.setMinimumSize(new Dimension(175, 26));
-    nameTF.setPreferredSize(new Dimension(225, 26));
+    nameTF.setPreferredSize(new Dimension(200, 26));
+    nameTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        nameTFFocusLost(evt);
+      }
+    });
     row2Panel.add(nameTF);
 
     locoDetailPanel.add(row2Panel);
@@ -229,30 +394,22 @@ public class LocomotivePreferencesPanel extends JPanel {
     flowLayout4.setAlignOnBaseline(true);
     row3Panel.setLayout(flowLayout4);
 
-    addressLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    addressLbl.setLabelFor(addressSpinner);
-    addressLbl.setText("Address");
-    addressLbl.setPreferredSize(new Dimension(100, 16));
-    row3Panel.add(addressLbl);
+    iconNameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    iconNameLbl.setText("Icon:");
+    iconNameLbl.setPreferredSize(new Dimension(100, 17));
+    row3Panel.add(iconNameLbl);
 
-    addressSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
-    addressSpinner.setDoubleBuffered(true);
-    addressSpinner.setEditor(new JSpinner.NumberEditor(addressSpinner, ""));
-    addressSpinner.setEnabled(false);
-    addressSpinner.setMinimumSize(new Dimension(50, 26));
-    addressSpinner.setName(""); // NOI18N
-    addressSpinner.setNextFocusableComponent(nameTF);
-    addressSpinner.setPreferredSize(new Dimension(70, 26));
-    row3Panel.add(addressSpinner);
+    iconTF.setPreferredSize(new Dimension(300, 26));
+    row3Panel.add(iconTF);
 
-    decoderLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-    decoderLabel.setText("Decoder");
-    decoderLabel.setPreferredSize(new Dimension(70, 16));
-    row3Panel.add(decoderLabel);
-
-    decoderCB.setModel(new DefaultComboBoxModel<>(new String[] { "mm_prg", "mfx", "dcc", "sx1" }));
-    decoderCB.setEnabled(false);
-    row3Panel.add(decoderCB);
+    iconFileDialogBtn.setText("...");
+    iconFileDialogBtn.setPreferredSize(new Dimension(26, 26));
+    iconFileDialogBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        iconFileDialogBtnActionPerformed(evt);
+      }
+    });
+    row3Panel.add(iconFileDialogBtn);
 
     locoDetailPanel.add(row3Panel);
 
@@ -261,6 +418,26 @@ public class LocomotivePreferencesPanel extends JPanel {
     FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT);
     flowLayout5.setAlignOnBaseline(true);
     row4Panel.setLayout(flowLayout5);
+
+    vMinLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    vMinLbl.setText("V min:");
+    vMinLbl.setPreferredSize(new Dimension(100, 17));
+    row4Panel.add(vMinLbl);
+
+    vMinSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+    vMinSpinner.setPreferredSize(new Dimension(85, 26));
+    row4Panel.add(vMinSpinner);
+
+    tachoMaxLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    tachoMaxLbl.setLabelFor(tachoMaxSpinner);
+    tachoMaxLbl.setText("Tacho Max:");
+    tachoMaxLbl.setPreferredSize(new Dimension(100, 17));
+    row4Panel.add(tachoMaxLbl);
+
+    tachoMaxSpinner.setModel(new SpinnerNumberModel(0, 0, 300, 1));
+    tachoMaxSpinner.setPreferredSize(new Dimension(85, 26));
+    row4Panel.add(tachoMaxSpinner);
+
     locoDetailPanel.add(row4Panel);
 
     row5Panel.setMinimumSize(new Dimension(380, 30));
@@ -268,6 +445,32 @@ public class LocomotivePreferencesPanel extends JPanel {
     FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
     flowLayout6.setAlignOnBaseline(true);
     row5Panel.setLayout(flowLayout6);
+    row5Panel.add(filler3);
+
+    showCB.setSelected(true);
+    showCB.setText("Show");
+    showCB.setToolTipText("Show the Locomotive");
+    showCB.setDoubleBuffered(true);
+    showCB.setPreferredSize(new Dimension(85, 26));
+    showCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showCBActionPerformed(evt);
+      }
+    });
+    row5Panel.add(showCB);
+    row5Panel.add(filler4);
+
+    commuterCB.setText("Commuter");
+    commuterCB.setToolTipText("A commuter Train");
+    commuterCB.setDoubleBuffered(true);
+    commuterCB.setPreferredSize(new Dimension(85, 26));
+    commuterCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        commuterCBActionPerformed(evt);
+      }
+    });
+    row5Panel.add(commuterCB);
+
     locoDetailPanel.add(row5Panel);
 
     row6Panel.setMinimumSize(new Dimension(380, 30));
@@ -275,6 +478,18 @@ public class LocomotivePreferencesPanel extends JPanel {
     FlowLayout flowLayout7 = new FlowLayout(FlowLayout.LEFT);
     flowLayout7.setAlignOnBaseline(true);
     row6Panel.setLayout(flowLayout7);
+
+    lengthLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    lengthLbl.setLabelFor(lengthSpinner);
+    lengthLbl.setText("Length");
+    lengthLbl.setPreferredSize(new Dimension(100, 16));
+    row6Panel.add(lengthLbl);
+
+    lengthSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
+    lengthSpinner.setDoubleBuffered(true);
+    lengthSpinner.setPreferredSize(new Dimension(85, 26));
+    row6Panel.add(lengthSpinner);
+
     locoDetailPanel.add(row6Panel);
 
     row7Panel.setMinimumSize(new Dimension(380, 30));
@@ -289,35 +504,28 @@ public class LocomotivePreferencesPanel extends JPanel {
     FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
     flowLayout8.setAlignOnBaseline(true);
     row8Panel.setLayout(flowLayout8);
-
-    lengthLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    lengthLbl.setText("Length");
-    lengthLbl.setPreferredSize(new Dimension(100, 16));
-    row8Panel.add(lengthLbl);
-
-    lengthSpinner.setModel(new SpinnerNumberModel());
-    lengthSpinner.setDoubleBuffered(true);
-    lengthSpinner.setPreferredSize(new Dimension(70, 26));
-    row8Panel.add(lengthSpinner);
-
     locoDetailPanel.add(row8Panel);
 
     row9Panel.setMinimumSize(new Dimension(380, 30));
     row9Panel.setPreferredSize(new Dimension(380, 30));
     row9Panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-    row9Panel.add(filler3);
 
-    showCB.setText("Show");
-    showCB.setToolTipText("Show the Locomotive");
-    showCB.setDoubleBuffered(true);
-    showCB.setHorizontalTextPosition(SwingConstants.LEADING);
-    row9Panel.add(showCB);
+    idNameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    idNameLbl.setText("Id:");
+    idNameLbl.setPreferredSize(new Dimension(100, 17));
+    row9Panel.add(idNameLbl);
 
-    commuterCB.setText("Commuter");
-    commuterCB.setToolTipText("A commuter Train");
-    commuterCB.setDoubleBuffered(true);
-    commuterCB.setHorizontalTextPosition(SwingConstants.LEADING);
-    row9Panel.add(commuterCB);
+    idLbl.setPreferredSize(new Dimension(85, 17));
+    row9Panel.add(idLbl);
+
+    uidNameLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    uidNameLbl.setText("UID:");
+    uidNameLbl.setToolTipText("MFX UID:");
+    uidNameLbl.setPreferredSize(new Dimension(100, 17));
+    row9Panel.add(uidNameLbl);
+
+    uidLbl.setPreferredSize(new Dimension(85, 17));
+    row9Panel.add(uidLbl);
 
     locoDetailPanel.add(row9Panel);
     locoDetailPanel.add(filler2);
@@ -330,18 +538,21 @@ public class LocomotivePreferencesPanel extends JPanel {
 
     add(locoDetailPanel, BorderLayout.CENTER);
 
-    westPanel.setMinimumSize(new Dimension(1000, 500));
-    westPanel.setPreferredSize(new Dimension(250, 500));
+    westPanel.setMinimumSize(new Dimension(175, 500));
+    westPanel.setPreferredSize(new Dimension(175, 500));
     westPanel.setLayout(new BorderLayout());
 
-    jList1.setModel(new AbstractListModel<String>() {
-      String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-      public int getSize() { return strings.length; }
-      public String getElementAt(int i) { return strings[i]; }
-    });
-    jScrollPane1.setViewportView(jList1);
+    locomotivesSP.setPreferredSize(new Dimension(175, 130));
 
-    westPanel.add(jScrollPane1, BorderLayout.CENTER);
+    locomotiveList.setModel(locoListModel);
+    locomotiveList.addListSelectionListener(new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent evt) {
+        locomotiveListValueChanged(evt);
+      }
+    });
+    locomotivesSP.setViewportView(locomotiveList);
+
+    westPanel.add(locomotivesSP, BorderLayout.CENTER);
 
     add(westPanel, BorderLayout.WEST);
 
@@ -379,39 +590,11 @@ public class LocomotivePreferencesPanel extends JPanel {
   }// </editor-fold>//GEN-END:initComponents
 
   private void newBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newBtnActionPerformed
-    this.locoTableModel.refresh();
-    alignLocoTable();
     Logger.trace("Create new Loco...");
 
-    this.selectedLocomotive = new LocomotiveBean();
-    this.selectedLocomotive.setId(locoTableModel.getRowCount() + 1L);
-    this.selectedLocomotive.setName("new Loco " + (locoTableModel.getRowCount() + 1));
-    this.selectedLocomotive.setvMin(0);
-    this.selectedLocomotive.setTachoMax(0);
     this.setComponentValues(selectedLocomotive);
   }//GEN-LAST:event_newBtnActionPerformed
 
-  private LocomotiveBean getLocomotiveFromPersistentStore(LocomotiveBean locomotive) {
-    LocomotiveBean loco;
-    if (locomotive.getId() != null) {
-      loco = PersistenceFactory.getService().getLocomotive(locomotive.getId());
-    } else {
-      loco = PersistenceFactory.getService().getLocomotive(locomotive.getAddress(), locomotive.getDecoderType());
-    }
-    return loco;
-  }
-
-  private void selectLoco(int row) {
-    LocomotiveBean loc = locoTableModel.getControllableDeviceAt(row);
-    if (loc != null) {
-      //Logger.trace("Selected row: " + row + ", Id: " + loc.getId() + " Address: " + loc.getAddress() + " Decoder: " + loc.getDecoderType());
-      selectedLocomotive = getLocomotiveFromPersistentStore(loc);
-      //locoDetailPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createCompoundBorder(), "Edit " + selectedLocomotive.getName()));
-      setComponentValues(selectedLocomotive);
-    } else {
-      Logger.trace("No loc found @ row " + row);
-    }
-  }
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     if (this.selectedLocomotive != null) {
@@ -421,8 +604,6 @@ public class LocomotivePreferencesPanel extends JPanel {
 
       selectedLocomotive = this.selectedLocomotive = PersistenceFactory.getService().persist(loco);
       setComponentValues(selectedLocomotive);
-      locoTableModel.refresh();
-      alignLocoTable();
     }
   }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -430,18 +611,8 @@ public class LocomotivePreferencesPanel extends JPanel {
     Logger.trace("Delete Loco: " + this.selectedLocomotive);
     PersistenceFactory.getService().remove(selectedLocomotive);
     this.selectedLocomotive = null;
-    this.locoTableModel.refresh();
     this.setComponentValues(selectedLocomotive);
-    alignLocoTable();
-
-    this.selectLoco(0);
   }//GEN-LAST:event_deleteBtnActionPerformed
-
-  public void refresh() {
-    this.selectedLocomotive = null;
-    this.locoTableModel.refresh();
-    alignLocoTable();
-  }
 
   private void synchronize() {
     JCS.getJcsCommandStation().synchronizeLocomotivesWithCommandStation(null);
@@ -457,59 +628,133 @@ public class LocomotivePreferencesPanel extends JPanel {
       synchronize();
     }//GEN-LAST:event_synchronizeBtnActionPerformed
 
-  protected LocomotiveBean setLocomotiveValues(LocomotiveBean loco) {
-    boolean show = this.showCB.isSelected();
-    boolean commuter = this.commuterCB.isSelected();
-    String name = this.nameTF.getText();
+  private void locomotiveListValueChanged(ListSelectionEvent evt) {//GEN-FIRST:event_locomotiveListValueChanged
+    if (!evt.getValueIsAdjusting()) {
 
-    Integer length = (Integer) this.lengthSpinner.getValue();
-
-    LocomotiveBean loc;
-    if (loco != null) {
-      loc = loco;
-    } else {
-      loc = new LocomotiveBean();
+      Logger.trace(this.locomotiveList.getSelectedValue());
     }
+  }//GEN-LAST:event_locomotiveListValueChanged
 
-    //loc.setName(name);
-    loc.setLength(length);
-    loc.setShow(show);
-    loc.setCommuter(commuter);
+  private void iconFileDialogBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_iconFileDialogBtnActionPerformed
+    Logger.trace(evt.getActionCommand());
+    JFrame parentFrame = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, this);
+    LocomotiveIconFileChooser fileDialog = new LocomotiveIconFileChooser(parentFrame, true);
+    fileDialog.setVisible(true);
 
-    return loc;
+    File iconFile = fileDialog.getSelectedIconFile();
+    if (iconFile != null) {
+      iconTF.setText(iconFile.getPath());
+
+      //try to show the image also
+      Image img = PersistenceFactory.getService().readImage(iconFile.getPath(), false);
+      if (img != null) {
+        img = PersistenceFactory.getService().getLocomotiveImage(iconFile.getPath());
+
+        this.imageLbl.setIcon(new ImageIcon(img));
+      }
+    }
+  }//GEN-LAST:event_iconFileDialogBtnActionPerformed
+
+  private void nameTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_nameTFFocusLost
+    // TODO add your handling code here:
+  }//GEN-LAST:event_nameTFFocusLost
+
+  private void commuterCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commuterCBActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_commuterCBActionPerformed
+
+  private void showCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showCBActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_showCBActionPerformed
+
+  private void synchronizedCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizedCBActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_synchronizedCBActionPerformed
+
+  class LocomotiveBeanByNameSorter implements Comparator<LocomotiveBean> {
+
+    @Override
+    public int compare(LocomotiveBean a, LocomotiveBean b) {
+      return a.getName().compareTo(b.getName());
+    }
   }
 
-  protected void setComponentValues(LocomotiveBean loco) {
-    if (loco != null) {
-      if (loco.getLocIcon() != null) {
-        this.imageLbl.setIcon(new ImageIcon(loco.getLocIcon()));
-        this.imageLbl.setText("");
-      } else {
-        this.imageLbl.setText(loco.getIcon());
+  class LocomotiveBeanListModel extends AbstractListModel<LocomotiveBean> {
+
+    private final List<LocomotiveBean> model;
+
+    public LocomotiveBeanListModel() {
+      model = new ArrayList<>();
+    }
+
+    @Override
+    public int getSize() {
+      return model.size();
+    }
+
+    @Override
+    public LocomotiveBean getElementAt(int index) {
+      return (LocomotiveBean) model.toArray()[index];
+    }
+
+    public void add(LocomotiveBean element) {
+      if (model.add(element)) {
+        Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+        fireContentsChanged(this, 0, getSize());
       }
+    }
 
-      this.addressSpinner.setValue(loco.getAddress());
-      this.decoderCB.setSelectedItem(loco.getDecoderTypeString());
-      this.nameTF.setText(loco.getName());
+    public void addAll(LocomotiveBean elements[]) {
+      Collection<LocomotiveBean> c = Arrays.asList(elements);
+      model.addAll(c);
+      Collections.sort(model, new LocomotiveBeanByNameSorter());
 
-      if (loco.getLength() != null) {
-        this.lengthSpinner.setValue(loco.getLength());
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    public void addAll(Collection<LocomotiveBean> elements) {
+      model.addAll(elements);
+      Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    public void clear() {
+      model.clear();
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    public boolean contains(LocomotiveBean element) {
+      return model.contains(element);
+    }
+
+    public LocomotiveBean firstElement() {
+      if (!model.isEmpty()) {
+        return model.get(0);
       } else {
-        this.lengthSpinner.setValue(0);
+        return null;
       }
-      this.commuterCB.setSelected(loco.isCommuter());
-      this.showCB.setSelected(loco.isShow());
+    }
 
-    } else {
-      this.imageLbl.setText("ICON");
+    public Iterator<LocomotiveBean> iterator() {
+      return model.iterator();
+    }
 
-      this.addressSpinner.setValue(0);
-      this.decoderCB.setSelectedItem("mm_prg");
-      this.nameTF.setText("");
+    public LocomotiveBean lastElement() {
+      if (!model.isEmpty()) {
+        return model.get(model.size() - 1);
+      } else {
+        return null;
+      }
+    }
 
-      this.lengthSpinner.setValue(0);
-      this.commuterCB.setSelected(false);
-      this.showCB.setSelected(true);
+    public boolean removeElement(LocomotiveBean element) {
+      boolean removed = model.remove(element);
+      if (removed) {
+        fireContentsChanged(this, 0, getSize());
+      }
+      return removed;
     }
   }
 
@@ -541,41 +786,58 @@ public class LocomotivePreferencesPanel extends JPanel {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private JLabel addressLbl;
+  JLabel addressLbl;
   private JSpinner addressSpinner;
-  private JPanel bottomPanel;
-  private JPanel buttonPanel;
-  private JCheckBox commuterCB;
+  JPanel bottomPanel;
+  JPanel buttonPanel;
+  JLabel commandStationLbl;
+  JLabel commandStationNameLbl;
+  JCheckBox commuterCB;
   private JComboBox<String> decoderCB;
-  private JLabel decoderLabel;
-  private JButton deleteBtn;
-  private Box.Filler filler1;
-  private Box.Filler filler2;
-  private Box.Filler filler3;
-  private JLabel imageLbl;
-  private JList<String> jList1;
-  private JScrollPane jScrollPane1;
-  private JLabel lengthLbl;
-  private JSpinner lengthSpinner;
-  private JPanel locoDetailPanel;
-  private JLabel nameLbl;
-  private JTextField nameTF;
-  private JButton newBtn;
-  private JButton refreshBtn;
-  private JPanel row1Panel;
-  private JPanel row2Panel;
-  private JPanel row3Panel;
-  private JPanel row4Panel;
-  private JPanel row5Panel;
-  private JPanel row6Panel;
-  private JPanel row7Panel;
-  private JPanel row8Panel;
-  private JPanel row9Panel;
-  private JButton saveBtn;
-  private LocomotiveBean selectedLocomotive;
-  private JCheckBox showCB;
-  private JButton synchronizeBtn;
-  private JPanel topPanel;
-  private JPanel westPanel;
+  JLabel decoderLabel;
+  JButton deleteBtn;
+  Box.Filler filler1;
+  Box.Filler filler2;
+  Box.Filler filler3;
+  Box.Filler filler4;
+  JButton iconFileDialogBtn;
+  JLabel iconNameLbl;
+  JTextField iconTF;
+  JLabel idLbl;
+  JLabel idNameLbl;
+  JLabel imageLbl;
+  JPanel leftPanel;
+  JLabel lengthLbl;
+  JSpinner lengthSpinner;
+  JPanel locoDetailPanel;
+  private JList<LocomotiveBean> locomotiveList;
+  JScrollPane locomotivesSP;
+  JLabel nameLbl;
+  JTextField nameTF;
+  JButton newBtn;
+  JButton refreshBtn;
+  JPanel rightPanel;
+  JPanel row1Panel;
+  JPanel row2Panel;
+  JPanel row3Panel;
+  JPanel row4Panel;
+  JPanel row5Panel;
+  JPanel row6Panel;
+  JPanel row7Panel;
+  JPanel row8Panel;
+  JPanel row9Panel;
+  JButton saveBtn;
+  LocomotiveBean selectedLocomotive;
+  JCheckBox showCB;
+  JButton synchronizeBtn;
+  JCheckBox synchronizedCB;
+  JLabel tachoMaxLbl;
+  JSpinner tachoMaxSpinner;
+  JPanel topPanel;
+  JLabel uidLbl;
+  JLabel uidNameLbl;
+  JLabel vMinLbl;
+  JSpinner vMinSpinner;
+  JPanel westPanel;
   // End of variables declaration//GEN-END:variables
 }

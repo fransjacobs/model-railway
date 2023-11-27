@@ -142,11 +142,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<FunctionBean> getLocomotiveFunctions(Long locomotiveId) {
-    List<FunctionBean> locFunctions
-            = database
-                    .where("locomotive_id=?", locomotiveId)
-                    .orderBy("f_number")
-                    .results(FunctionBean.class);
+    List<FunctionBean> locFunctions = database.where("locomotive_id=?", locomotiveId).orderBy("f_number").results(FunctionBean.class);
 
     for (FunctionBean fb : locFunctions) {
       fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
@@ -192,6 +188,18 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public List<LocomotiveBean> getLocomotives() {
     List<LocomotiveBean> locos = database.orderBy("id").results(LocomotiveBean.class);
+
+    for (LocomotiveBean loco : locos) {
+      loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
+
+    return locos;
+  }
+
+  @Override
+  public List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId) {
+    List<LocomotiveBean> locos = database.where("command_station_id=?", commandStationId).orderBy("id").results(LocomotiveBean.class);
 
     for (LocomotiveBean loco : locos) {
       loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
@@ -258,6 +266,7 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
+  @Override
   public Image getLocomotiveImage(String imageName) {
     if (!imageCache.containsKey(imageName)) {
       // Try to load the image from the file cache
@@ -265,13 +274,13 @@ public class H2PersistenceService implements PersistenceService {
       if (image != null) {
         int size = 100;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-        this.imageCache.put(
-                imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+        this.imageCache.put( imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
     return this.imageCache.get(imageName);
   }
 
+  @Override
   public Image getFunctionImage(String imageName) {
     if (!functionImageCache.containsKey(imageName)) {
       // Try to load the image from the file cache
@@ -286,25 +295,31 @@ public class H2PersistenceService implements PersistenceService {
     return this.functionImageCache.get(imageName);
   }
 
-  private Image readImage(String imageName, boolean function) {
+  @Override
+  public Image readImage(String imageName, boolean function) {
     Image image = null;
 
-    String serial = System.getProperty("cs.serial", "");
-    String path
-            = System.getProperty("user.home")
-            + File.separator
-            + "jcs"
-            + File.separator
-            + "cache"
-            + File.separator
-            + serial
-            + File.separator;
+    String path;
+    if (imageName.contains(File.separator)) {
+      //Contains path seperators so aumme it is a manual selected image
+      path = imageName;
+    } else {
+      //no path seperators so assume it is a synchonized command station icon
+      String serial = System.getProperty("cs.serial", "");
+      path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
+    }
 
     if (function) {
       path = path + "functions" + File.separator;
     }
 
-    File imgFile = new File(path + imageName.toLowerCase() + ".png");
+    File imgFile;
+    if(path.contains(".")) {
+      imgFile = new File(path);
+    } else {
+      imgFile = new File(path + imageName.toLowerCase() + ".png");
+    }
+    
     if (imgFile.exists()) {
       try {
         image = ImageIO.read(imgFile);
@@ -312,9 +327,10 @@ public class H2PersistenceService implements PersistenceService {
         Logger.trace("Image file " + imageName + ".png does not exists");
       }
     } else {
-      // should we attempt to obtian it now and cache it when available, but also when it is not
-      // avaliable put a marker so tha we are not trying over and over again...
-      // who should be responsable for the cache.. the vendor controller this class or?
+      //TODO:
+      // should we attempt to obtain it now and cache it when available, but also when it is not
+      // available put a marker so that we are not trying over and over again...
+      // who should be responsable for the cache... the command controller, this class, or?
     }
     return image;
   }
@@ -670,7 +686,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<CommandStationBean> getCommandStations() {
-    List<CommandStationBean> commandStationBeans = database.where("show=true").results(CommandStationBean.class);
+    List<CommandStationBean> commandStationBeans = database.where("enabled=true").results(CommandStationBean.class);
     return commandStationBeans;
   }
 

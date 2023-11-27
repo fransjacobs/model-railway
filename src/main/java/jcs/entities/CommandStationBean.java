@@ -34,17 +34,24 @@ import javax.persistence.Transient;
 public class CommandStationBean {
 
   private String id;
-  private String name;
+  private String description;
+  private String shortName;
   private String className;
-  private boolean defaultCs;
-  private String connectionSpecifier;
+  private String connectVia;
   private String serialPort;
   private String ipAddress;
   private Integer networkPort;
-
-  private boolean autoIpConfiguration;
-  private boolean show;
+  private boolean ipAutoConfiguration;
+  private boolean commandAndControlSupport;
+  private boolean feedbackSupport;
+  private boolean locomotiveSynchronizationSupport;
+  private boolean accessorySynchronizationSupport;
+  private boolean locomotiveImageSynchronizationSupport;
+  private boolean locomotiveFunctionSynchronizationSupport;
   private String protocols;
+  private boolean defaultCs;
+  private boolean enabled;
+  private String lastUsedSerial;
 
   @Id
   @Column(name = "id")
@@ -56,13 +63,22 @@ public class CommandStationBean {
     this.id = id;
   }
 
-  @Column(name = "name", nullable = false)
-  public String getName() {
-    return name;
+  @Column(name = "description", nullable = false)
+  public String getDescription() {
+    return description;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  @Column(name = "short_name", length = 255, nullable = false)
+  public String getShortName() {
+    return shortName;
+  }
+
+  public void setShortName(String shortName) {
+    this.shortName = shortName;
   }
 
   @Column(name = "class_name", length = 255, nullable = false)
@@ -74,28 +90,19 @@ public class CommandStationBean {
     this.className = className;
   }
 
-  @Column(name = "default_cs", nullable = false, columnDefinition = "default_cs boolean default '0'")
-  public boolean isDefault() {
-    return defaultCs;
+  @Column(name = "connect_via", length = 255, nullable = false)
+  public String getConnectVia() {
+    return connectVia;
   }
 
-  public void setDefault(boolean aFlag) {
-    this.defaultCs = aFlag;
-  }
-
-  @Column(name = "connection_type", length = 255, nullable = false)
-  public String getConnectionSpecifier() {
-    return connectionSpecifier;
-  }
-
-  public void setConnectionSpecifier(String connectionSpecifier) {
-    this.connectionSpecifier = connectionSpecifier;
+  public void setConnectVia(String connectVia) {
+    this.connectVia = connectVia;
   }
 
   @Transient
   public ConnectionType getConnectionType() {
-    if (connectionSpecifier != null) {
-      return ConnectionType.get(connectionSpecifier);
+    if (connectVia != null) {
+      return ConnectionType.get(connectVia);
     } else {
       return null;
     }
@@ -103,9 +110,9 @@ public class CommandStationBean {
 
   public void setConnectionType(ConnectionType connectionType) {
     if (connectionType == null) {
-      connectionSpecifier = null;
+      connectVia = null;
     } else {
-      connectionSpecifier = connectionType.getConnectionType();
+      connectVia = connectionType.getConnectionType();
     }
   }
 
@@ -136,22 +143,67 @@ public class CommandStationBean {
     this.networkPort = networkPort;
   }
 
-  @Column(name = "auto_conf", nullable = false, columnDefinition = "auto_conf bool default '0'")
-  public boolean isAutoIpConfiguration() {
-    return autoIpConfiguration;
+  @Column(name = "ip_auto_conf", nullable = false, columnDefinition = "ip_auto_conf bool default '0'")
+  public boolean isIpAutoConfiguration() {
+    return ipAutoConfiguration;
   }
 
-  public void setAutoIpConfiguration(boolean autoIpConfiguration) {
-    this.autoIpConfiguration = autoIpConfiguration;
+  public void setIpAutoConfiguration(boolean ipAutoConfiguration) {
+    this.ipAutoConfiguration = ipAutoConfiguration;
   }
 
-  @Column(name = "show", nullable = false, columnDefinition = "show bool default '1'")
-  public boolean isShow() {
-    return show;
+  @Column(name = "supports_command_control", nullable = false, columnDefinition = "supports_command_control bool default '1'")
+  public boolean isCommandAndControlSupport() {
+    return commandAndControlSupport;
   }
 
-  public void setShow(boolean show) {
-    this.show = show;
+  public void setCommandAndControlSupport(boolean commandAndControlSupport) {
+    this.commandAndControlSupport = commandAndControlSupport;
+  }
+
+  @Column(name = "supports_feedback", nullable = false, columnDefinition = "supports_feedback bool default '1'")
+  public boolean isFeedbackSupport() {
+    return feedbackSupport;
+  }
+
+  public void setFeedbackSupport(boolean feedbackSupport) {
+    this.feedbackSupport = feedbackSupport;
+  }
+
+  @Column(name = "supports_loco_synch", nullable = false, columnDefinition = "supports_loco_synch bool default '0'")
+  public boolean isLocomotiveSynchronizationSupport() {
+    return locomotiveSynchronizationSupport;
+  }
+
+  public void setLocomotiveSynchronizationSupport(boolean locomotiveSynchronizationSupport) {
+    this.locomotiveSynchronizationSupport = locomotiveSynchronizationSupport;
+  }
+
+  @Column(name = "supports_accessory_synch", nullable = false, columnDefinition = "supports_accessory_synch bool default '0'")
+  public boolean isAccessorySynchronizationSupport() {
+    return accessorySynchronizationSupport;
+  }
+
+  public void setAccessorySynchronizationSupport(boolean accessorySynchronizationSupport) {
+    this.accessorySynchronizationSupport = accessorySynchronizationSupport;
+  }
+
+  @Column(name = "supports_loco_image_synch", nullable = false, columnDefinition = "supports_loco_image_synch bool default '0'")
+  public boolean isLocomotiveImageSynchronizationSupport() {
+    return locomotiveImageSynchronizationSupport;
+  }
+
+  public void setLocomotiveImageSynchronizationSupport(boolean locomotiveImageSynchronizationSupport) {
+    this.locomotiveImageSynchronizationSupport = locomotiveImageSynchronizationSupport;
+  }
+
+  @Column(name = "supports_loco_function_synch", nullable = false, columnDefinition = "supports_loco_function_synch bool default '0'")
+  public boolean isLocomotiveFunctionSynchronizationSupport() {
+    return locomotiveFunctionSynchronizationSupport;
+  }
+
+  public void setLocomotiveFunctionSynchronizationSupport(boolean locomotiveFunctionSynchronizationSupport) {
+    this.locomotiveFunctionSynchronizationSupport = locomotiveFunctionSynchronizationSupport;
   }
 
   @Column(name = "protocols", length = 255, nullable = false)
@@ -161,6 +213,33 @@ public class CommandStationBean {
 
   public void setProtocols(String protocols) {
     this.protocols = protocols;
+  }
+
+  @Column(name = "default_cs", nullable = false, columnDefinition = "default_cs boolean default '0'")
+  public boolean isDefault() {
+    return defaultCs;
+  }
+
+  public void setDefault(boolean aFlag) {
+    this.defaultCs = aFlag;
+  }
+
+  @Column(name = "enabled", nullable = false, columnDefinition = "enabled bool default '0'")
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  @Column(name = "last_used_serial", length = 255, nullable = true)
+  public String getLastUsedSerial() {
+    return lastUsedSerial;
+  }
+
+  public void setLastUsedSerial(String lastUsedSerial) {
+    this.lastUsedSerial = lastUsedSerial;
   }
 
   public Set<Protocol> supportedProtocols() {
@@ -174,15 +253,32 @@ public class CommandStationBean {
   }
 
   @Override
+  public String toString() {
+    return description;
+  }
+
+  @Override
   public int hashCode() {
-    int hash = 5;
-    hash = 53 * hash + Objects.hashCode(this.id);
-    hash = 53 * hash + Objects.hashCode(this.name);
-    hash = 53 * hash + Objects.hashCode(this.className);
-    hash = 53 * hash + (this.defaultCs ? 1 : 0);
-    hash = 53 * hash + Objects.hashCode(this.connectionSpecifier);
-    hash = 53 * hash + (this.show ? 1 : 0);
-    hash = 53 * hash + Objects.hashCode(this.protocols);
+    int hash = 7;
+    hash = 23 * hash + Objects.hashCode(this.id);
+    hash = 23 * hash + Objects.hashCode(this.description);
+    hash = 23 * hash + Objects.hashCode(this.shortName);
+    hash = 23 * hash + Objects.hashCode(this.className);
+    hash = 23 * hash + Objects.hashCode(this.connectVia);
+    hash = 23 * hash + Objects.hashCode(this.serialPort);
+    hash = 23 * hash + Objects.hashCode(this.ipAddress);
+    hash = 23 * hash + Objects.hashCode(this.networkPort);
+    hash = 23 * hash + (this.ipAutoConfiguration ? 1 : 0);
+    hash = 23 * hash + (this.commandAndControlSupport ? 1 : 0);
+    hash = 23 * hash + (this.feedbackSupport ? 1 : 0);
+    hash = 23 * hash + (this.locomotiveSynchronizationSupport ? 1 : 0);
+    hash = 23 * hash + (this.accessorySynchronizationSupport ? 1 : 0);
+    hash = 23 * hash + (this.locomotiveImageSynchronizationSupport ? 1 : 0);
+    hash = 23 * hash + (this.locomotiveFunctionSynchronizationSupport ? 1 : 0);
+    hash = 23 * hash + Objects.hashCode(this.protocols);
+    hash = 23 * hash + (this.defaultCs ? 1 : 0);
+    hash = 23 * hash + (this.enabled ? 1 : 0);
+    hash = 23 * hash + Objects.hashCode(this.lastUsedSerial);
     return hash;
   }
 
@@ -198,30 +294,61 @@ public class CommandStationBean {
       return false;
     }
     final CommandStationBean other = (CommandStationBean) obj;
+    if (this.ipAutoConfiguration != other.ipAutoConfiguration) {
+      return false;
+    }
+    if (this.commandAndControlSupport != other.commandAndControlSupport) {
+      return false;
+    }
+    if (this.feedbackSupport != other.feedbackSupport) {
+      return false;
+    }
+    if (this.locomotiveSynchronizationSupport != other.locomotiveSynchronizationSupport) {
+      return false;
+    }
+    if (this.accessorySynchronizationSupport != other.accessorySynchronizationSupport) {
+      return false;
+    }
+    if (this.locomotiveImageSynchronizationSupport != other.locomotiveImageSynchronizationSupport) {
+      return false;
+    }
+    if (this.locomotiveFunctionSynchronizationSupport != other.locomotiveFunctionSynchronizationSupport) {
+      return false;
+    }
     if (this.defaultCs != other.defaultCs) {
       return false;
     }
-    if (this.show != other.show) {
+    if (this.enabled != other.enabled) {
       return false;
     }
     if (!Objects.equals(this.id, other.id)) {
       return false;
     }
-    if (!Objects.equals(this.name, other.name)) {
+    if (!Objects.equals(this.description, other.description)) {
+      return false;
+    }
+    if (!Objects.equals(this.shortName, other.shortName)) {
       return false;
     }
     if (!Objects.equals(this.className, other.className)) {
       return false;
     }
+    if (!Objects.equals(this.connectVia, other.connectVia)) {
+      return false;
+    }
+    if (!Objects.equals(this.serialPort, other.serialPort)) {
+      return false;
+    }
+    if (!Objects.equals(this.ipAddress, other.ipAddress)) {
+      return false;
+    }
     if (!Objects.equals(this.protocols, other.protocols)) {
       return false;
     }
-    return Objects.equals(this.connectionSpecifier, other.connectionSpecifier);
-  }
-
-  @Override
-  public String toString() {
-    return name;
+    if (!Objects.equals(this.lastUsedSerial, other.lastUsedSerial)) {
+      return false;
+    }
+    return Objects.equals(this.networkPort, other.networkPort);
   }
 
   public enum ConnectionType {

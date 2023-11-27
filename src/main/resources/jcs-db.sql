@@ -1,3 +1,4 @@
+drop table if exists command_stations cascade;
 drop table if exists accessories cascade;
 drop table if exists locomotive_functions cascade;
 drop table if exists locomotives cascade;
@@ -7,6 +8,31 @@ drop table if exists blocks cascade;
 drop table if exists routes cascade;
 drop table if exists route_elements cascade;
 drop table if exists jcs_properties cascade;
+
+create table command_stations (
+  id                            varchar(255) not null,
+  description                   varchar(255) not null,
+  short_name                    varchar(255) not null,
+  class_name                    varchar(255) not null,
+  connect_via                   varchar(255) not null,
+  serial_port                   varchar(255),
+  ip_address                    varchar(255),
+  network_port                  integer,
+  ip_auto_conf                  bool not null default false, 
+  supports_command_control      bool not null default true,
+  supports_feedback             bool not null default true,
+  supports_loco_synch           bool not null default false,
+  supports_accessory_synch      bool not null default false,
+  supports_loco_image_synch     bool not null default false,
+  supports_loco_function_synch  bool not null default false,
+  protocols                     varchar(255) default 'DCC' not null,
+  default_cs                    bool not null default false,
+  enabled                       bool not null default false,
+  last_used_serial              varchar(255),
+  constraint command_station_pk primary key ( id )
+);
+
+create unique index command_station_pk_idx on command_stations (id);
 
 create table accessories (
   id                 varchar(255) not null,
@@ -22,13 +48,15 @@ create table accessories (
   icon               varchar(255),
   icon_file          varchar(255),
   imported           varchar(255),
-
+  command_station_id VARCHAR(255) not null,
   constraint acce_pk primary key (id),
   constraint acce_address_un unique (decoder_type,address)
 );
 
 create unique index acce_address_un_idx on accessories (address, decoder_type);
 create unique index acce_pk_idx on accessories (id);
+
+alter table accessories add constraint acce_cost_fk foreign key (command_station_id) references command_stations(id);
 
 create table locomotives (
   id                 bigint not null,
@@ -54,6 +82,8 @@ create table locomotives (
 
 create unique index loco_pk_idx on locomotives (id);
 create unique index loco_addr_dety_un_idx on locomotives (address, decoder_type);
+
+alter table locomotives add constraint loco_cost_fk foreign key (command_station_id) references command_stations(id);
 
 create table locomotive_functions (
   id                 identity not null,
@@ -181,36 +211,11 @@ create table jcs_properties (
 
 create unique index prop_pk_idx on jcs_properties (p_key);
 
-drop table if exists command_stations;
-create table command_stations (
-  id                  varchar(255) not null,
-  name                varchar(255) not null,
-  class_name          varchar(255) not null,
-  default_cs          bool not null default false,
-  connection_type     varchar(255) not null,
-  serial_port         varchar(255),
-  ip_address          varchar(255),
-  network_port        integer,
-  auto_conf           bool not null default false, 
-  show                bool not null default true,
-  protocols           varchar(255) default 'DCC' not null,
-  constraint command_stations_pk primary key ( id )
-);
-
-create unique index command_stations_pk_idx on command_stations (id);
-
-insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols) 
-values ('cs.Marklin.CentralStation','Marklin Central Station 2/3', 'jcs.commandStation.marklin.cs.MarklinCentralStationImpl', true, 'NETWORK', null, null,15731,true, true,'DCC,MFX,MM,SX');
-
-insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols)
-values ('cs.DccEX.serial','DCC-EX Serial', 'jcs.commandStation.dccex.DccExCommandStationImpl', false, 'SERIAL', null, null, null, false, true,'DCC');
-
-insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols) 
-values ('cs.DccEX.network','DCC-EX Network', 'jcs.commandStation.dccex.DccExCommandStationImpl',false,'NETWORK', null, null, 2560, false, true,'DCC');
-
-insert into command_stations (id,name,class_name,default_cs,connection_type,serial_port,ip_address,network_port,auto_conf,show,protocols)
-values ('cs.Marklin.6051','Marklin 6051', 'jcs.commandStation.marklin.m6051.M6051Impl', false,'SERIAL', null, null, null, false, false,'MM');
-
+INSERT INTO command_stations (id,description,short_name,class_name,connect_via,serial_port,ip_address,network_port,ip_auto_conf,supports_command_control,supports_feedback,supports_loco_synch,supports_accessory_synch,supports_loco_image_synch,supports_loco_function_synch,protocols,default_cs,enabled,last_used_serial) VALUES
+	 ('marklin.cs','Marklin Central Station 2/3','CS','jcs.commandStation.marklin.cs.MarklinCentralStationImpl','NETWORK',NULL,NULL,15731,true,true,true,true,true,true,true,'DCC,MFX,MM',true,true,NULL),
+	 ('dcc-ex.serial','DCC-EX Serial','dcc-ex','jcs.commandStation.dccex.DccExCommandStationImpl','SERIAL',NULL,NULL,NULL,false,true,true,false,false,false,false,'DCC',false,false,NULL),
+	 ('dcc-ex.network','DCC-EX Network','dcc-ex','jcs.commandStation.dccex.DccExCommandStationImpl','NETWORK',NULL,'192.168.178.73',2560,false,true,true,false,false,false,false,'DCC',false,false,NULL),
+	 ('marklin.6051','Marklin 6051','M6051','jcs.commandStation.marklin.m6051.M6051Impl','SERIAL',NULL,NULL,NULL,false,true,true,false,false,false,false,'MM',false,false,NULL);
 
 insert into jcs_properties (p_key,p_value) values ('jcs.version','1.0.0');
 insert into jcs_properties (p_key,p_value) values ('jcs.db.version','1.0.0');

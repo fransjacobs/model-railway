@@ -15,6 +15,7 @@
  */
 package jcs.persistence;
 
+import java.awt.Image;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
@@ -55,6 +56,8 @@ public interface PersistenceService {
 
   // Locomotive
   List<LocomotiveBean> getLocomotives();
+
+  List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId);
 
   LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
 
@@ -125,8 +128,15 @@ public interface PersistenceService {
   CommandStationBean getCommandStation(String id);
 
   CommandStationBean getDefaultCommandStation();
-  
+
   CommandStationBean persist(CommandStationBean commandStationBean);
 
   CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean);
+
+  Image getLocomotiveImage(String imageName);
+
+  Image getFunctionImage(String imageName);
+
+  Image readImage(String imageName, boolean function);
+
 }
