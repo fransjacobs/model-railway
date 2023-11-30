@@ -29,7 +29,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -54,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import jcs.commandStation.CommandStation;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
+import jcs.entities.CommandStationBean.Protocol;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;
@@ -67,7 +71,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private CommandStationBean selectedCommandStation;
   private ComboBoxModel<CommandStationBean> commandStationComboBoxModel;
-  private ComboBoxModel<ConnectionType> connectionTypeComboBoxModel;
+  //private ComboBoxModel<ConnectionType> connectionTypeComboBoxModel;
   private ComboBoxModel<SerialPort> serialPortComboBoxModel;
 
   private Task task;
@@ -75,7 +79,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   public CommandStationPanel() {
     initComponents();
     if (PersistenceFactory.getService() != null) {
-
       initModels();
     }
   }
@@ -94,11 +97,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationComboBoxModel.setSelectedItem(selectedCommandStation);
     commandStationComboBox.setModel(commandStationComboBoxModel);
 
-    connectionTypeComboBoxModel = new DefaultComboBoxModel(ConnectionType.toArray());
-    this.connectionTypeCB.setModel(connectionTypeComboBoxModel);
-
+    //connectionTypeComboBoxModel = new DefaultComboBoxModel(ConnectionType.toArray());
     if (selectedCommandStation.getId() != null) {
-      defaultCommandStationChkBox.setSelected(true);
+      //defaultCommandStationChkBox.setSelected(true);
     }
 
     SerialPort comPorts[] = SerialPort.getCommPorts();
@@ -107,6 +108,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.serialPortCB.setModel(serialPortComboBoxModel);
 
     setFieldValues();
+    enableFields(false);
 
     showApplicableFields();
 
@@ -115,59 +117,124 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }
 
   private void setFieldValues() {
-    if (selectedCommandStation != null && selectedCommandStation.getConnectionType() != null) {
-      connectionTypeComboBoxModel.setSelectedItem(selectedCommandStation.getConnectionType());
-      this.autoConfChkBox.setSelected(this.selectedCommandStation.isIpAutoConfiguration());
-      this.ipAddressTF.setText(this.selectedCommandStation.getIpAddress());
-      if (this.selectedCommandStation.getNetworkPort() != null) {
+    if (selectedCommandStation != null) {
+      //String id = selectedCommandStation.getId();
+      //String description = selectedCommandStation.getDescription();
+
+      String shortName = selectedCommandStation.getShortName();
+      this.shortNameLbl.setText(shortName);
+      //String className = selectedCommandStation.getClassName();
+      //String connectVia = selectedCommandStation.getConnectVia();
+      this.networkRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK));
+      this.serialRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.SERIAL));
+
+      String serialPort = selectedCommandStation.getSerialPort();
+      if (serialPort != null) {
+        SerialPort comPort = SerialPort.getCommPort(serialPort);
+        this.serialPortComboBoxModel.setSelectedItem(comPort);
+      }
+
+      String ipAddress = selectedCommandStation.getIpAddress();
+      if (ipAddress != null) {
+        this.ipAddressTF.setText(this.selectedCommandStation.getIpAddress());
+      }
+
+      Integer networkPort = selectedCommandStation.getNetworkPort();
+      if (networkPort != null) {
         this.portSpinner.setValue(this.selectedCommandStation.getNetworkPort());
       } else {
         this.portSpinner.setValue(0);
       }
-    } else {
-      this.autoConfChkBox.setSelected(false);
-      this.ipAddressTF.setText("0.0.0.0");
-      this.portSpinner.setValue(0);
 
+      boolean ipAutoConfiguration = selectedCommandStation.isIpAutoConfiguration();
+      this.autoConfChkBox.setSelected(ipAutoConfiguration);
+
+      boolean commandAndControlSupport = selectedCommandStation.isCommandAndControlSupport();
+      this.commandControlCB.setSelected(commandAndControlSupport);
+
+      boolean feedbackSupport = selectedCommandStation.isFeedbackSupport();
+      this.feedbackSupportCB.setSelected(feedbackSupport);
+
+      boolean locomotiveSynchronizationSupport = selectedCommandStation.isLocomotiveSynchronizationSupport();
+      this.locomotiveSynchSupportCB.setSelected(locomotiveSynchronizationSupport);
+
+      boolean accessorySynchronizationSupport = selectedCommandStation.isAccessorySynchronizationSupport();
+      this.accessorySynchSupportCB.setSelected(accessorySynchronizationSupport);
+
+      boolean locomotiveImageSynchronizationSupport = selectedCommandStation.isLocomotiveImageSynchronizationSupport();
+      this.locomotiveImageSynchSupportCB.setSelected(locomotiveImageSynchronizationSupport);
+
+      boolean locomotiveFunctionSynchronizationSupport = selectedCommandStation.isLocomotiveFunctionSynchronizationSupport();
+      this.locomotiveFunctionSynchSupportCB.setSelected(locomotiveFunctionSynchronizationSupport);
+
+      //String protocols = selectedCommandStation.getProtocols();
+      Set<Protocol> protocols = selectedCommandStation.getSupportedProtocols();
+      this.mmRB.setSelected(protocols.contains(Protocol.MM));
+      this.mfxRB.setSelected(protocols.contains(Protocol.MFX));
+      this.dccRB.setSelected(protocols.contains(Protocol.DCC));
+      this.sxRB.setSelected(protocols.contains(Protocol.SX));
+
+      boolean defaultCs = selectedCommandStation.isDefault();
+      this.defaultCommandStationChkBox.setSelected(defaultCs);
+      boolean enabled = selectedCommandStation.isEnabled();
+      this.enabledCB.setSelected(enabled);
+
+      //String lastUsedSerial = selectedCommandStation.getLastUsedSerial();
     }
   }
 
+  private void enableFields(boolean enable) {
+    this.networkRB.setEnabled(enable);
+    this.serialRB.setEnabled(enable);
+
+    this.portSpinner.setEnabled(enable);
+
+    this.autoConfChkBox.setEnabled(enable);
+    this.commandControlCB.setEnabled(enable);
+    this.feedbackSupportCB.setEnabled(enable);
+    this.locomotiveSynchSupportCB.setEnabled(enable);
+    this.accessorySynchSupportCB.setEnabled(enable);
+    this.locomotiveImageSynchSupportCB.setEnabled(enable);
+    this.locomotiveFunctionSynchSupportCB.setEnabled(enable);
+
+    this.mmRB.setEnabled(enable);
+    this.mfxRB.setEnabled(enable);
+    this.dccRB.setEnabled(enable);
+    this.sxRB.setEnabled(enable);
+  }
+
   private void showApplicableFields() {
-    if (selectedCommandStation != null && selectedCommandStation.getConnectionType() != null) {
-      if (null == selectedCommandStation.getConnectionType()) {
+    if (selectedCommandStation != null && selectedCommandStation.getConnectionTypes() != null) {
+      if (null == selectedCommandStation.getConnectionTypes()) {
         this.serialPortCB.setVisible(false);
         this.ipAddressTF.setVisible(false);
         this.connectionPropertiesLbl.setVisible(false);
         this.portLbl.setVisible(false);
         this.portSpinner.setVisible(false);
       } else {
-        switch (selectedCommandStation.getConnectionType()) {
-          case NETWORK -> {
-            this.serialPortCB.setVisible(false);
-            this.ipAddressTF.setVisible(true);
-            this.connectionPropertiesLbl.setText("IP Address:");
-            this.connectionPropertiesLbl.setVisible(true);
-            this.portLbl.setVisible(true);
-            this.portSpinner.setVisible(true);
-            this.autoConfChkBox.setVisible(true);
-          }
-          case SERIAL -> {
-            this.serialPortCB.setVisible(true);
-            this.connectionPropertiesLbl.setText("Serial Port:");
-            this.connectionPropertiesLbl.setVisible(true);
-            this.ipAddressTF.setVisible(false);
-            this.portLbl.setVisible(false);
-            this.portSpinner.setVisible(false);
-            this.autoConfChkBox.setVisible(false);
-          }
-          default -> {
-            this.serialPortCB.setVisible(false);
-            this.ipAddressTF.setVisible(false);
-            this.connectionPropertiesLbl.setVisible(false);
-            this.portLbl.setVisible(false);
-            this.portSpinner.setVisible(false);
-            this.autoConfChkBox.setVisible(false);
-          }
+        if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK)) {
+          this.serialPortCB.setVisible(false);
+          this.ipAddressTF.setVisible(true);
+          this.connectionPropertiesLbl.setText("IP Address:");
+          this.connectionPropertiesLbl.setVisible(true);
+          this.portLbl.setVisible(true);
+          this.portSpinner.setVisible(true);
+          this.autoConfChkBox.setVisible(true);
+        } else if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.SERIAL)) {
+          this.serialPortCB.setVisible(true);
+          this.connectionPropertiesLbl.setText("Serial Port:");
+          this.connectionPropertiesLbl.setVisible(true);
+          this.ipAddressTF.setVisible(false);
+          this.portLbl.setVisible(false);
+          this.portSpinner.setVisible(false);
+          this.autoConfChkBox.setVisible(false);
+        } else {
+          this.serialPortCB.setVisible(false);
+          this.ipAddressTF.setVisible(false);
+          this.connectionPropertiesLbl.setVisible(false);
+          this.portLbl.setVisible(false);
+          this.portSpinner.setVisible(false);
+          this.autoConfChkBox.setVisible(false);
         }
       }
     }
@@ -180,6 +247,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    connectionTypeBG = new ButtonGroup();
     topPanel = new JPanel();
     commandStationSelectionPanel = new JPanel();
     commandStationLbl = new JLabel();
@@ -193,9 +261,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     filler4 = new Box.Filler(new Dimension(100, 0), new Dimension(100, 0), new Dimension(100, 32767));
     lastUsedSerialLbl = new JLabel();
     centerPanel = new JPanel();
-    connectionTypePanel = new JPanel();
+    connectionPanel = new JPanel();
     connectionTypeLbl = new JLabel();
-    connectionTypeCB = new JComboBox<>();
+    networkRB = new JRadioButton();
+    serialRB = new JRadioButton();
+    filler7 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     connectionPropertiesLbl = new JLabel();
     serialPortCB = new JComboBox<>();
     ipAddressTF = new JTextField();
@@ -228,19 +298,25 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     dccRB = new JRadioButton();
     sxRB = new JRadioButton();
     bottomPanel = new JPanel();
+    leftBottomPanel = new JPanel();
+    enableEditCB = new JCheckBox();
+    rightBottomPanel = new JPanel();
     filler1 = new Box.Filler(new Dimension(50, 0), new Dimension(200, 0), new Dimension(150, 32767));
     saveBtn = new JButton();
 
     setMinimumSize(new Dimension(1000, 600));
+    setName("Form"); // NOI18N
     setPreferredSize(new Dimension(1000, 600));
     setLayout(new BorderLayout());
 
     topPanel.setMinimumSize(new Dimension(1000, 50));
+    topPanel.setName("topPanel"); // NOI18N
     topPanel.setPreferredSize(new Dimension(1000, 50));
     topPanel.setRequestFocusEnabled(false);
     topPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
     commandStationSelectionPanel.setMinimumSize(new Dimension(400, 33));
+    commandStationSelectionPanel.setName("commandStationSelectionPanel"); // NOI18N
     commandStationSelectionPanel.setPreferredSize(new Dimension(525, 33));
     FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
     flowLayout2.setAlignOnBaseline(true);
@@ -251,9 +327,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationLbl.setText("Command Station:");
     commandStationLbl.setMaximumSize(new Dimension(110, 17));
     commandStationLbl.setMinimumSize(new Dimension(110, 17));
+    commandStationLbl.setName("commandStationLbl"); // NOI18N
     commandStationLbl.setPreferredSize(new Dimension(110, 17));
     commandStationSelectionPanel.add(commandStationLbl);
 
+    commandStationComboBox.setName("commandStationComboBox"); // NOI18N
     commandStationComboBox.setPreferredSize(new Dimension(200, 23));
     commandStationComboBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -261,14 +339,20 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     });
     commandStationSelectionPanel.add(commandStationComboBox);
+
+    filler5.setName("filler5"); // NOI18N
     commandStationSelectionPanel.add(filler5);
 
     shortNameLbl.setText("shortName");
+    shortNameLbl.setName("shortNameLbl"); // NOI18N
     commandStationSelectionPanel.add(shortNameLbl);
+
+    filler6.setName("filler6"); // NOI18N
     commandStationSelectionPanel.add(filler6);
 
     defaultCommandStationChkBox.setText("Set default");
     defaultCommandStationChkBox.setHorizontalTextPosition(SwingConstants.LEADING);
+    defaultCommandStationChkBox.setName("defaultCommandStationChkBox"); // NOI18N
     defaultCommandStationChkBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         defaultCommandStationChkBoxActionPerformed(evt);
@@ -278,6 +362,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     topPanel.add(commandStationSelectionPanel);
 
+    csPropertiesPanel.setName("csPropertiesPanel"); // NOI18N
     csPropertiesPanel.setPreferredSize(new Dimension(450, 33));
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
@@ -286,10 +371,14 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     enabledCB.setText("Enabled");
     enabledCB.setHorizontalAlignment(SwingConstants.CENTER);
     enabledCB.setHorizontalTextPosition(SwingConstants.LEFT);
+    enabledCB.setName("enabledCB"); // NOI18N
     csPropertiesPanel.add(enabledCB);
+
+    filler4.setName("filler4"); // NOI18N
     csPropertiesPanel.add(filler4);
 
     lastUsedSerialLbl.setText("serial");
+    lastUsedSerialLbl.setName("lastUsedSerialLbl"); // NOI18N
     csPropertiesPanel.add(lastUsedSerialLbl);
 
     topPanel.add(csPropertiesPanel);
@@ -297,69 +386,87 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     add(topPanel, BorderLayout.NORTH);
 
     centerPanel.setMinimumSize(new Dimension(1000, 540));
+    centerPanel.setName("centerPanel"); // NOI18N
     centerPanel.setPreferredSize(new Dimension(1000, 500));
     centerPanel.setLayout(new BorderLayout());
 
+    connectionPanel.setName("connectionPanel"); // NOI18N
     FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT);
     flowLayout3.setAlignOnBaseline(true);
-    connectionTypePanel.setLayout(flowLayout3);
+    connectionPanel.setLayout(flowLayout3);
 
     connectionTypeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
-    connectionTypeLbl.setText("Connection Type");
+    connectionTypeLbl.setText("Connection Type(s):");
+    connectionTypeLbl.setName("connectionTypeLbl"); // NOI18N
     connectionTypeLbl.setPreferredSize(new Dimension(115, 17));
-    connectionTypePanel.add(connectionTypeLbl);
+    connectionPanel.add(connectionTypeLbl);
 
-    connectionTypeCB.setEnabled(false);
-    connectionTypeCB.setPreferredSize(new Dimension(200, 23));
-    connectionTypeCB.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        connectionTypeCBActionPerformed(evt);
-      }
-    });
-    connectionTypePanel.add(connectionTypeCB);
+    connectionTypeBG.add(networkRB);
+    networkRB.setText("Network");
+    networkRB.setName("networkRB"); // NOI18N
+    connectionPanel.add(networkRB);
 
+    connectionTypeBG.add(serialRB);
+    serialRB.setText("Serial");
+    serialRB.setName("serialRB"); // NOI18N
+    connectionPanel.add(serialRB);
+
+    filler7.setName("filler7"); // NOI18N
+    connectionPanel.add(filler7);
+
+    connectionPropertiesLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     connectionPropertiesLbl.setText("Properties:");
+    connectionPropertiesLbl.setName("connectionPropertiesLbl"); // NOI18N
     connectionPropertiesLbl.setPreferredSize(new Dimension(100, 17));
-    connectionTypePanel.add(connectionPropertiesLbl);
+    connectionPanel.add(connectionPropertiesLbl);
 
+    serialPortCB.setName("serialPortCB"); // NOI18N
     serialPortCB.setPreferredSize(new Dimension(150, 23));
-    connectionTypePanel.add(serialPortCB);
+    connectionPanel.add(serialPortCB);
 
     ipAddressTF.setText("0.0.0.0");
     ipAddressTF.setToolTipText("");
     ipAddressTF.setDoubleBuffered(true);
+    ipAddressTF.setName("ipAddressTF"); // NOI18N
     ipAddressTF.setPreferredSize(new Dimension(150, 23));
     ipAddressTF.addFocusListener(new FocusAdapter() {
       public void focusLost(FocusEvent evt) {
         ipAddressTFFocusLost(evt);
       }
     });
-    connectionTypePanel.add(ipAddressTF);
+    connectionPanel.add(ipAddressTF);
 
     portLbl.setText("Port:");
-    connectionTypePanel.add(portLbl);
+    portLbl.setName("portLbl"); // NOI18N
+    connectionPanel.add(portLbl);
 
     portSpinner.setModel(new SpinnerNumberModel(0, 0, 65563, 1));
+    portSpinner.setName("portSpinner"); // NOI18N
     portSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         portSpinnerStateChanged(evt);
       }
     });
-    connectionTypePanel.add(portSpinner);
+    connectionPanel.add(portSpinner);
 
     autoConfChkBox.setText("Auto IP Configuration");
-    connectionTypePanel.add(autoConfChkBox);
+    autoConfChkBox.setName("autoConfChkBox"); // NOI18N
+    connectionPanel.add(autoConfChkBox);
 
-    centerPanel.add(connectionTypePanel, BorderLayout.NORTH);
+    centerPanel.add(connectionPanel, BorderLayout.NORTH);
 
+    capabilitiesPanel.setName("capabilitiesPanel"); // NOI18N
     VerticalFlowLayout verticalFlowLayout1 = new VerticalFlowLayout();
     verticalFlowLayout1.sethAlignment(0);
     verticalFlowLayout1.sethGap(15);
     capabilitiesPanel.setLayout(verticalFlowLayout1);
 
+    connectionTestPanel.setName("connectionTestPanel"); // NOI18N
     FlowLayout flowLayout9 = new FlowLayout(FlowLayout.RIGHT);
     flowLayout9.setAlignOnBaseline(true);
     connectionTestPanel.setLayout(flowLayout9);
+
+    filler3.setName("filler3"); // NOI18N
     connectionTestPanel.add(filler3);
 
     testConnectionBtn.setIcon(new ImageIcon(getClass().getResource("/media/connect-24.png"))); // NOI18N
@@ -372,6 +479,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     testConnectionBtn.setMargin(new Insets(2, 2, 2, 2));
     testConnectionBtn.setMaximumSize(new Dimension(60, 40));
     testConnectionBtn.setMinimumSize(new Dimension(60, 40));
+    testConnectionBtn.setName("testConnectionBtn"); // NOI18N
     testConnectionBtn.setPreferredSize(new Dimension(60, 40));
     testConnectionBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -379,32 +487,40 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     });
     connectionTestPanel.add(testConnectionBtn);
+
+    filler2.setName("filler2"); // NOI18N
     connectionTestPanel.add(filler2);
 
     connectionTestResultLbl.setText("Not Connected");
+    connectionTestResultLbl.setName("connectionTestResultLbl"); // NOI18N
     connectionTestResultLbl.setPreferredSize(new Dimension(222, 17));
     connectionTestPanel.add(connectionTestResultLbl);
     connectionTestResultLbl.getAccessibleContext().setAccessibleName("");
 
+    progressBar.setName("progressBar"); // NOI18N
     progressBar.setPreferredSize(new Dimension(200, 4));
     connectionTestPanel.add(progressBar);
 
     capabilitiesPanel.add(connectionTestPanel);
 
+    commandControlSupportPanel.setName("commandControlSupportPanel"); // NOI18N
     FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
     flowLayout4.setAlignOnBaseline(true);
     commandControlSupportPanel.setLayout(flowLayout4);
 
     commandControlCB.setText("Command and Control Support");
+    commandControlCB.setName("commandControlCB"); // NOI18N
     commandControlSupportPanel.add(commandControlCB);
 
     capabilitiesPanel.add(commandControlSupportPanel);
 
+    feedbackSupportPanel.setName("feedbackSupportPanel"); // NOI18N
     FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT);
     flowLayout5.setAlignOnBaseline(true);
     feedbackSupportPanel.setLayout(flowLayout5);
 
     feedbackSupportCB.setText("Feedback Support");
+    feedbackSupportCB.setName("feedbackSupportCB"); // NOI18N
     feedbackSupportCB.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         feedbackSupportCBActionPerformed(evt);
@@ -414,55 +530,71 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     capabilitiesPanel.add(feedbackSupportPanel);
 
+    locomotiveSynchSupportPanel.setName("locomotiveSynchSupportPanel"); // NOI18N
     FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
     flowLayout6.setAlignOnBaseline(true);
     locomotiveSynchSupportPanel.setLayout(flowLayout6);
 
     locomotiveSynchSupportCB.setText("Locomotive Synchronization Support");
+    locomotiveSynchSupportCB.setName("locomotiveSynchSupportCB"); // NOI18N
     locomotiveSynchSupportPanel.add(locomotiveSynchSupportCB);
 
     capabilitiesPanel.add(locomotiveSynchSupportPanel);
 
+    accessorySynchSupportPanel.setName("accessorySynchSupportPanel"); // NOI18N
     FlowLayout flowLayout7 = new FlowLayout(FlowLayout.LEFT);
     flowLayout7.setAlignOnBaseline(true);
     accessorySynchSupportPanel.setLayout(flowLayout7);
 
     accessorySynchSupportCB.setText("Accessory Synchronization Support");
+    accessorySynchSupportCB.setName("accessorySynchSupportCB"); // NOI18N
     accessorySynchSupportPanel.add(accessorySynchSupportCB);
 
     capabilitiesPanel.add(accessorySynchSupportPanel);
 
+    locomotiveImageSynchSupportPanel.setName("locomotiveImageSynchSupportPanel"); // NOI18N
+
     locomotiveImageSynchSupportCB.setText("Locomotive Image Synchronization Support");
+    locomotiveImageSynchSupportCB.setName("locomotiveImageSynchSupportCB"); // NOI18N
     locomotiveImageSynchSupportPanel.add(locomotiveImageSynchSupportCB);
 
     capabilitiesPanel.add(locomotiveImageSynchSupportPanel);
 
+    locomotiveFunctionSynchSupportPanel.setName("locomotiveFunctionSynchSupportPanel"); // NOI18N
     FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
     flowLayout8.setAlignOnBaseline(true);
     locomotiveFunctionSynchSupportPanel.setLayout(flowLayout8);
 
     locomotiveFunctionSynchSupportCB.setText("Locomotive Functions Synchronization Support");
+    locomotiveFunctionSynchSupportCB.setName("locomotiveFunctionSynchSupportCB"); // NOI18N
     locomotiveFunctionSynchSupportPanel.add(locomotiveFunctionSynchSupportCB);
 
     capabilitiesPanel.add(locomotiveFunctionSynchSupportPanel);
 
+    protocolPanel.setName("protocolPanel"); // NOI18N
+
     jLabel1.setText("Supported Protocols");
+    jLabel1.setName("jLabel1"); // NOI18N
     protocolPanel.add(jLabel1);
 
     mmRB.setText("MM");
     mmRB.setToolTipText("Marklin MM");
+    mmRB.setName("mmRB"); // NOI18N
     protocolPanel.add(mmRB);
 
     mfxRB.setText("MFX");
     mfxRB.setToolTipText("Marklin MFX");
+    mfxRB.setName("mfxRB"); // NOI18N
     protocolPanel.add(mfxRB);
 
     dccRB.setText("DCC");
     dccRB.setToolTipText("DCC");
+    dccRB.setName("dccRB"); // NOI18N
     protocolPanel.add(dccRB);
 
     sxRB.setText("SX");
     sxRB.setToolTipText("Selectrix");
+    sxRB.setName("sxRB"); // NOI18N
     protocolPanel.add(sxRB);
 
     capabilitiesPanel.add(protocolPanel);
@@ -471,22 +603,47 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     add(centerPanel, BorderLayout.CENTER);
 
-    bottomPanel.setPreferredSize(new Dimension(1014, 50));
+    bottomPanel.setName("bottomPanel"); // NOI18N
+    bottomPanel.setPreferredSize(new Dimension(1014, 40));
     bottomPanel.setRequestFocusEnabled(false);
-    FlowLayout flowLayout12 = new FlowLayout(FlowLayout.RIGHT);
-    flowLayout12.setAlignOnBaseline(true);
-    bottomPanel.setLayout(flowLayout12);
-    bottomPanel.add(filler1);
+    bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.LINE_AXIS));
+
+    leftBottomPanel.setName("leftBottomPanel"); // NOI18N
+    FlowLayout flowLayout11 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout11.setAlignOnBaseline(true);
+    leftBottomPanel.setLayout(flowLayout11);
+
+    enableEditCB.setText("Enable Edit");
+    enableEditCB.setName("enableEditCB"); // NOI18N
+    enableEditCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        enableEditCBActionPerformed(evt);
+      }
+    });
+    leftBottomPanel.add(enableEditCB);
+
+    bottomPanel.add(leftBottomPanel);
+
+    rightBottomPanel.setName("rightBottomPanel"); // NOI18N
+    FlowLayout flowLayout10 = new FlowLayout(FlowLayout.RIGHT);
+    flowLayout10.setAlignOnBaseline(true);
+    rightBottomPanel.setLayout(flowLayout10);
+
+    filler1.setName("filler1"); // NOI18N
+    rightBottomPanel.add(filler1);
 
     saveBtn.setIcon(new ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
     saveBtn.setToolTipText("Save and Exit");
     saveBtn.setEnabled(false);
+    saveBtn.setName("saveBtn"); // NOI18N
     saveBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         saveBtnActionPerformed(evt);
       }
     });
-    bottomPanel.add(saveBtn);
+    rightBottomPanel.add(saveBtn);
+
+    bottomPanel.add(rightBottomPanel);
 
     add(bottomPanel, BorderLayout.SOUTH);
   }// </editor-fold>//GEN-END:initComponents
@@ -517,10 +674,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     PersistenceFactory.getService().changeDefaultCommandStation(selectedCommandStation);
   }//GEN-LAST:event_defaultCommandStationChkBoxActionPerformed
 
-  private void connectionTypeCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectionTypeCBActionPerformed
-    Logger.trace(evt.getActionCommand());
-  }//GEN-LAST:event_connectionTypeCBActionPerformed
-
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     Logger.trace(evt.getActionCommand());
   }//GEN-LAST:event_saveBtnActionPerformed
@@ -540,6 +693,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   private void feedbackSupportCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_feedbackSupportCBActionPerformed
     // TODO add your handling code here:
   }//GEN-LAST:event_feedbackSupportCBActionPerformed
+
+  private void enableEditCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_enableEditCBActionPerformed
+    Logger.trace(evt.getActionCommand());
+  }//GEN-LAST:event_enableEditCBActionPerformed
 
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
@@ -573,7 +730,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     public Void doInBackground() {
       setProgress(0);
 
-      if (ConnectionType.NETWORK == selectedCommandStation.getConnectionType()) {
+      if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK)) {
         String ip = selectedCommandStation.getIpAddress();
 
         if (Ping.IsReachable(ip)) {
@@ -683,15 +840,16 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JComboBox<CommandStationBean> commandStationComboBox;
   JLabel commandStationLbl;
   JPanel commandStationSelectionPanel;
+  JPanel connectionPanel;
   JLabel connectionPropertiesLbl;
   JPanel connectionTestPanel;
   JLabel connectionTestResultLbl;
-  JComboBox<ConnectionType> connectionTypeCB;
+  ButtonGroup connectionTypeBG;
   JLabel connectionTypeLbl;
-  JPanel connectionTypePanel;
   JPanel csPropertiesPanel;
   JRadioButton dccRB;
   JCheckBox defaultCommandStationChkBox;
+  JCheckBox enableEditCB;
   JCheckBox enabledCB;
   JCheckBox feedbackSupportCB;
   JPanel feedbackSupportPanel;
@@ -701,9 +859,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   Box.Filler filler4;
   Box.Filler filler5;
   Box.Filler filler6;
+  Box.Filler filler7;
   JTextField ipAddressTF;
   JLabel jLabel1;
   JLabel lastUsedSerialLbl;
+  JPanel leftBottomPanel;
   JCheckBox locomotiveFunctionSynchSupportCB;
   JPanel locomotiveFunctionSynchSupportPanel;
   JCheckBox locomotiveImageSynchSupportCB;
@@ -712,12 +872,15 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JPanel locomotiveSynchSupportPanel;
   JRadioButton mfxRB;
   JRadioButton mmRB;
+  JRadioButton networkRB;
   JLabel portLbl;
   JSpinner portSpinner;
   JProgressBar progressBar;
   JPanel protocolPanel;
+  JPanel rightBottomPanel;
   JButton saveBtn;
   JComboBox<SerialPort> serialPortCB;
+  JRadioButton serialRB;
   JLabel shortNameLbl;
   JRadioButton sxRB;
   JButton testConnectionBtn;

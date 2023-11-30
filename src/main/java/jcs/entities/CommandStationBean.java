@@ -17,6 +17,7 @@ package jcs.entities;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -100,20 +101,36 @@ public class CommandStationBean {
   }
 
   @Transient
-  public ConnectionType getConnectionType() {
+  public Set<ConnectionType> getConnectionTypes() {
+    Set<ConnectionType> cts = new HashSet<>();
     if (connectVia != null) {
-      return ConnectionType.get(connectVia);
-    } else {
-      return null;
+      String[] ct = this.connectVia.split(",");
+      for (String ct1 : ct) {
+        cts.add(ConnectionType.get(ct1));
+      }
     }
+    return cts;
   }
 
-  public void setConnectionType(ConnectionType connectionType) {
-    if (connectionType == null) {
-      connectVia = null;
-    } else {
-      connectVia = connectionType.getConnectionType();
+  public void addConnectionType(ConnectionType connectionType) {
+    Set<ConnectionType> cts = new HashSet<>();
+    if (connectVia != null) {
+      String[] ct = this.connectVia.split(",");
+      for (String ct1 : ct) {
+        cts.add(ConnectionType.get(ct1));
+      }
     }
+    cts.add(connectionType);
+
+    StringBuilder sb = new StringBuilder();
+    Iterator<ConnectionType> cti = cts.iterator();
+    while (cti.hasNext()) {
+      sb.append(cti.next().getConnectionType());
+      if (cti.hasNext()) {
+        sb.append(",");
+      }
+    }
+    connectVia = sb.toString();
   }
 
   @Column(name = "serial_port", length = 255, nullable = true)
@@ -242,12 +259,14 @@ public class CommandStationBean {
     this.lastUsedSerial = lastUsedSerial;
   }
 
-  public Set<Protocol> supportedProtocols() {
+  @Transient
+  public Set<Protocol> getSupportedProtocols() {
     Set<Protocol> ps = new HashSet<>();
-
-    String[] pss = this.protocols.split(",");
-    for (String ps1 : pss) {
-      ps.add(Protocol.get(ps1));
+    if (protocols != null) {
+      String[] pss = this.protocols.split(",");
+      for (String ps1 : pss) {
+        ps.add(Protocol.get(ps1.toLowerCase()));
+      }
     }
     return ps;
   }

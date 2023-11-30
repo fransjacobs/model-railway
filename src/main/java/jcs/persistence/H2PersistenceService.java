@@ -686,7 +686,8 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<CommandStationBean> getCommandStations() {
-    List<CommandStationBean> commandStationBeans = database.where("enabled=true").results(CommandStationBean.class);
+    //List<CommandStationBean> commandStationBeans = database.where("enabled=true").results(CommandStationBean.class);
+    List<CommandStationBean> commandStationBeans = database.results(CommandStationBean.class);
     return commandStationBeans;
   }
 

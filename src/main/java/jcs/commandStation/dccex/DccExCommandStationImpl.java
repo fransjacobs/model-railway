@@ -135,17 +135,17 @@ public class DccExCommandStationImpl implements CommandStation {
         Logger.error("No DCC-EX Command Station Configuration set!");
         return false;
       } else {
-        Logger.trace("Connect using " + this.commandStationBean.getConnectionType());
+        Logger.trace("Connect using " + this.commandStationBean.getConnectionTypes());
       }
 
       //TODO: can be a little more elegant...
-      if (ConnectionType.NETWORK == this.commandStationBean.getConnectionType() && this.commandStationBean.getIpAddress() != null) {
+      if (ConnectionType.NETWORK == this.commandStationBean.getConnectionTypes() && this.commandStationBean.getIpAddress() != null) {
         DccExConnectionFactory.writeLastUsedIpAddressProperty(this.commandStationBean.getIpAddress());
       } else {
         Logger.error("Can't connect; IP Address not set");
       }
 
-      this.connection = DccExConnectionFactory.getConnection(this.commandStationBean.getConnectionType());
+      this.connection = DccExConnectionFactory.getConnection(this.commandStationBean.getConnectionTypes());
 
       if (connection != null) {
         //Wait, if needed until the receiver thread has started
