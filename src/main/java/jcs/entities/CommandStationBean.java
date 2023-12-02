@@ -271,6 +271,50 @@ public class CommandStationBean {
     return ps;
   }
 
+  public void addProtocol(Protocol protocol) {
+    Set<Protocol> ps = new HashSet<>();
+    if (protocols != null) {
+      String[] pts = this.protocols.split(",");
+      for (String pt : pts) {
+        ps.add(Protocol.get(pt.toLowerCase()));
+      }
+    }
+    ps.add(protocol);
+
+    StringBuilder sb = new StringBuilder();
+    Iterator<Protocol> pi = ps.iterator();
+    while (pi.hasNext()) {
+      sb.append(pi.next().getProtocol());
+      if (pi.hasNext()) {
+        sb.append(",");
+      }
+    }
+    protocols = sb.toString();
+  }
+
+  public void removeProtocol(Protocol protocol) {
+    Set<Protocol> ps = new HashSet<>();
+    if (protocols != null) {
+      String[] pts = this.protocols.split(",");
+      for (String pt : pts) {
+        ps.add(Protocol.get(pt.toLowerCase()));
+      }
+    }
+    ps.remove(protocol);
+
+    StringBuilder sb = new StringBuilder();
+    Iterator<Protocol> pi = ps.iterator();
+    while (pi.hasNext()) {
+      sb.append(pi.next().getProtocol());
+      if (pi.hasNext()) {
+        sb.append(",");
+      }
+    }
+    protocols = sb.toString();
+  }
+  
+  
+  
   @Override
   public String toString() {
     return description;

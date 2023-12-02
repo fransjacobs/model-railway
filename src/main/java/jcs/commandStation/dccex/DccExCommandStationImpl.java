@@ -138,14 +138,18 @@ public class DccExCommandStationImpl implements CommandStation {
         Logger.trace("Connect using " + this.commandStationBean.getConnectionTypes());
       }
 
+      ConnectionType conType;
       //TODO: can be a little more elegant...
-      if (ConnectionType.NETWORK == this.commandStationBean.getConnectionTypes() && this.commandStationBean.getIpAddress() != null) {
+      if (this.commandStationBean.getConnectionTypes().contains(ConnectionType.NETWORK) && this.commandStationBean.getIpAddress() != null) {
         DccExConnectionFactory.writeLastUsedIpAddressProperty(this.commandStationBean.getIpAddress());
+        conType = ConnectionType.NETWORK;
       } else {
         Logger.error("Can't connect; IP Address not set");
+
+        conType = ConnectionType.NETWORK;
       }
 
-      this.connection = DccExConnectionFactory.getConnection(this.commandStationBean.getConnectionTypes());
+      this.connection = DccExConnectionFactory.getConnection(conType);
 
       if (connection != null) {
         //Wait, if needed until the receiver thread has started

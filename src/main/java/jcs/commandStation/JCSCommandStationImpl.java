@@ -116,7 +116,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       this.commandStation.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
       this.commandStation.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
 
-      this.supportedProtocols.addAll(this.commandStation.getCommandStationBean().supportedProtocols());
+      this.supportedProtocols.addAll(this.commandStation.getCommandStationBean().getSupportedProtocols());
     }
 
     //TODO implement get the day end i.e. the current state of all Objects on track

@@ -110,23 +110,28 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     setFieldValues();
     enableFields(false);
 
-    showApplicableFields();
-
+    //showApplicableFields();
     this.progressBar.setVisible(false);
-
   }
 
   private void setFieldValues() {
     if (selectedCommandStation != null) {
-      //String id = selectedCommandStation.getId();
-      //String description = selectedCommandStation.getDescription();
-
-      String shortName = selectedCommandStation.getShortName();
-      this.shortNameLbl.setText(shortName);
-      //String className = selectedCommandStation.getClassName();
       //String connectVia = selectedCommandStation.getConnectVia();
       this.networkRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK));
       this.serialRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.SERIAL));
+
+      String id = selectedCommandStation.getId();
+      this.idTF.setText("Id: " + id);
+
+      String description = selectedCommandStation.getDescription();
+      this.descriptionTF.setText(description);
+
+      String shortName = selectedCommandStation.getShortName();
+      this.shortNameLbl.setText(shortName);
+      this.shortNameTF.setText(shortName);
+
+      String className = selectedCommandStation.getClassName();
+      this.classNameTF.setText(className);
 
       String serialPort = selectedCommandStation.getSerialPort();
       if (serialPort != null) {
@@ -179,17 +184,44 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       boolean enabled = selectedCommandStation.isEnabled();
       this.enabledCB.setSelected(enabled);
 
-      //String lastUsedSerial = selectedCommandStation.getLastUsedSerial();
+      String lastUsedSerial = selectedCommandStation.getLastUsedSerial();
+      if (lastUsedSerial != null) {
+        this.lastUsedSerialLbl.setVisible(true);
+        this.lastUsedSerialLbl.setText("CS Serial number: " + lastUsedSerial);
+      } else {
+        this.lastUsedSerialLbl.setVisible(false);
+      }
     }
   }
 
   private void enableFields(boolean enable) {
+    if (this.networkRB.isSelected()) {
+      this.serialPortCB.setVisible(false);
+      this.ipAddressTF.setVisible(true);
+
+      this.connectionPropertiesLbl.setText("IP Address:");
+
+      this.portLbl.setVisible(true);
+      this.portSpinner.setVisible(true);
+      this.autoConfChkBox.setVisible(true);
+      this.portSpinner.setEnabled(enable);
+      this.autoConfChkBox.setEnabled(enable);
+    }
+
+    if (this.serialRB.isSelected()) {
+      this.serialPortCB.setVisible(true);
+      this.ipAddressTF.setVisible(false);
+
+      this.connectionPropertiesLbl.setText("Serial Port:");
+
+      this.portLbl.setVisible(false);
+      this.portSpinner.setVisible(false);
+      this.autoConfChkBox.setVisible(false);
+    }
+
     this.networkRB.setEnabled(enable);
     this.serialRB.setEnabled(enable);
 
-    this.portSpinner.setEnabled(enable);
-
-    this.autoConfChkBox.setEnabled(enable);
     this.commandControlCB.setEnabled(enable);
     this.feedbackSupportCB.setEnabled(enable);
     this.locomotiveSynchSupportCB.setEnabled(enable);
@@ -201,43 +233,28 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.mfxRB.setEnabled(enable);
     this.dccRB.setEnabled(enable);
     this.sxRB.setEnabled(enable);
-  }
 
-  private void showApplicableFields() {
-    if (selectedCommandStation != null && selectedCommandStation.getConnectionTypes() != null) {
-      if (null == selectedCommandStation.getConnectionTypes()) {
-        this.serialPortCB.setVisible(false);
-        this.ipAddressTF.setVisible(false);
-        this.connectionPropertiesLbl.setVisible(false);
-        this.portLbl.setVisible(false);
-        this.portSpinner.setVisible(false);
-      } else {
-        if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK)) {
-          this.serialPortCB.setVisible(false);
-          this.ipAddressTF.setVisible(true);
-          this.connectionPropertiesLbl.setText("IP Address:");
-          this.connectionPropertiesLbl.setVisible(true);
-          this.portLbl.setVisible(true);
-          this.portSpinner.setVisible(true);
-          this.autoConfChkBox.setVisible(true);
-        } else if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.SERIAL)) {
-          this.serialPortCB.setVisible(true);
-          this.connectionPropertiesLbl.setText("Serial Port:");
-          this.connectionPropertiesLbl.setVisible(true);
-          this.ipAddressTF.setVisible(false);
-          this.portLbl.setVisible(false);
-          this.portSpinner.setVisible(false);
-          this.autoConfChkBox.setVisible(false);
-        } else {
-          this.serialPortCB.setVisible(false);
-          this.ipAddressTF.setVisible(false);
-          this.connectionPropertiesLbl.setVisible(false);
-          this.portLbl.setVisible(false);
-          this.portSpinner.setVisible(false);
-          this.autoConfChkBox.setVisible(false);
-        }
-      }
-    }
+    this.descriptionTF.setEnabled(enable);
+    this.classNameTF.setEnabled(enable);
+    this.idTF.setEnabled(enable);
+
+    //Only when editmode is on show the extra fields
+    this.nameLbl.setVisible(enable);
+    this.classNameLbl.setVisible(enable);
+    this.descriptionTF.setVisible(enable);
+    this.classNameTF.setVisible(enable);
+    this.idLbl.setVisible(enable);
+
+    this.shortNameTFLb.setVisible(enable);
+    this.shortNameTF.setEnabled(enable);
+    this.shortNameTF.setVisible(enable);
+
+    this.idTF.setVisible(enable);
+    this.newBtn.setEnabled(enable);
+    this.newBtn.setVisible(enable);
+
+    this.saveBtn.setVisible(enable);
+    this.saveBtn.setEnabled(enable);
   }
 
   /**
@@ -297,9 +314,21 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     mfxRB = new JRadioButton();
     dccRB = new JRadioButton();
     sxRB = new JRadioButton();
+    descPanel = new JPanel();
+    nameLbl = new JLabel();
+    descriptionTF = new JTextField();
+    filler9 = new Box.Filler(new Dimension(15, 0), new Dimension(15, 0), new Dimension(15, 32767));
+    classNameLbl = new JLabel();
+    classNameTF = new JTextField();
+    shortNameTFLb = new JLabel();
+    shortNameTF = new JTextField();
     bottomPanel = new JPanel();
     leftBottomPanel = new JPanel();
     enableEditCB = new JCheckBox();
+    newBtn = new JButton();
+    filler8 = new Box.Filler(new Dimension(30, 0), new Dimension(30, 0), new Dimension(30, 32767));
+    idLbl = new JLabel();
+    idTF = new JTextField();
     rightBottomPanel = new JPanel();
     filler1 = new Box.Filler(new Dimension(50, 0), new Dimension(200, 0), new Dimension(150, 32767));
     saveBtn = new JButton();
@@ -344,7 +373,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationSelectionPanel.add(filler5);
 
     shortNameLbl.setText("shortName");
+    shortNameLbl.setMaximumSize(new Dimension(70, 17));
+    shortNameLbl.setMinimumSize(new Dimension(70, 17));
     shortNameLbl.setName("shortNameLbl"); // NOI18N
+    shortNameLbl.setPreferredSize(new Dimension(70, 17));
     commandStationSelectionPanel.add(shortNameLbl);
 
     filler6.setName("filler6"); // NOI18N
@@ -372,6 +404,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     enabledCB.setHorizontalAlignment(SwingConstants.CENTER);
     enabledCB.setHorizontalTextPosition(SwingConstants.LEFT);
     enabledCB.setName("enabledCB"); // NOI18N
+    enabledCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        enabledCBActionPerformed(evt);
+      }
+    });
     csPropertiesPanel.add(enabledCB);
 
     filler4.setName("filler4"); // NOI18N
@@ -404,11 +441,21 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     connectionTypeBG.add(networkRB);
     networkRB.setText("Network");
     networkRB.setName("networkRB"); // NOI18N
+    networkRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        networkRBActionPerformed(evt);
+      }
+    });
     connectionPanel.add(networkRB);
 
     connectionTypeBG.add(serialRB);
     serialRB.setText("Serial");
     serialRB.setName("serialRB"); // NOI18N
+    serialRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        serialRBActionPerformed(evt);
+      }
+    });
     connectionPanel.add(serialRB);
 
     filler7.setName("filler7"); // NOI18N
@@ -510,6 +557,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     commandControlCB.setText("Command and Control Support");
     commandControlCB.setName("commandControlCB"); // NOI18N
+    commandControlCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        commandControlCBActionPerformed(evt);
+      }
+    });
     commandControlSupportPanel.add(commandControlCB);
 
     capabilitiesPanel.add(commandControlSupportPanel);
@@ -537,6 +589,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     locomotiveSynchSupportCB.setText("Locomotive Synchronization Support");
     locomotiveSynchSupportCB.setName("locomotiveSynchSupportCB"); // NOI18N
+    locomotiveSynchSupportCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        locomotiveSynchSupportCBActionPerformed(evt);
+      }
+    });
     locomotiveSynchSupportPanel.add(locomotiveSynchSupportCB);
 
     capabilitiesPanel.add(locomotiveSynchSupportPanel);
@@ -548,6 +605,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     accessorySynchSupportCB.setText("Accessory Synchronization Support");
     accessorySynchSupportCB.setName("accessorySynchSupportCB"); // NOI18N
+    accessorySynchSupportCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        accessorySynchSupportCBActionPerformed(evt);
+      }
+    });
     accessorySynchSupportPanel.add(accessorySynchSupportCB);
 
     capabilitiesPanel.add(accessorySynchSupportPanel);
@@ -556,6 +618,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     locomotiveImageSynchSupportCB.setText("Locomotive Image Synchronization Support");
     locomotiveImageSynchSupportCB.setName("locomotiveImageSynchSupportCB"); // NOI18N
+    locomotiveImageSynchSupportCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        locomotiveImageSynchSupportCBActionPerformed(evt);
+      }
+    });
     locomotiveImageSynchSupportPanel.add(locomotiveImageSynchSupportCB);
 
     capabilitiesPanel.add(locomotiveImageSynchSupportPanel);
@@ -567,6 +634,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     locomotiveFunctionSynchSupportCB.setText("Locomotive Functions Synchronization Support");
     locomotiveFunctionSynchSupportCB.setName("locomotiveFunctionSynchSupportCB"); // NOI18N
+    locomotiveFunctionSynchSupportCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        locomotiveFunctionSynchSupportCBActionPerformed(evt);
+      }
+    });
     locomotiveFunctionSynchSupportPanel.add(locomotiveFunctionSynchSupportCB);
 
     capabilitiesPanel.add(locomotiveFunctionSynchSupportPanel);
@@ -580,24 +652,92 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     mmRB.setText("MM");
     mmRB.setToolTipText("Marklin MM");
     mmRB.setName("mmRB"); // NOI18N
+    mmRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        mmRBActionPerformed(evt);
+      }
+    });
     protocolPanel.add(mmRB);
 
     mfxRB.setText("MFX");
     mfxRB.setToolTipText("Marklin MFX");
     mfxRB.setName("mfxRB"); // NOI18N
+    mfxRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        mfxRBActionPerformed(evt);
+      }
+    });
     protocolPanel.add(mfxRB);
 
     dccRB.setText("DCC");
     dccRB.setToolTipText("DCC");
     dccRB.setName("dccRB"); // NOI18N
+    dccRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        dccRBActionPerformed(evt);
+      }
+    });
     protocolPanel.add(dccRB);
 
     sxRB.setText("SX");
     sxRB.setToolTipText("Selectrix");
     sxRB.setName("sxRB"); // NOI18N
+    sxRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        sxRBActionPerformed(evt);
+      }
+    });
     protocolPanel.add(sxRB);
 
     capabilitiesPanel.add(protocolPanel);
+
+    descPanel.setName("descPanel"); // NOI18N
+
+    nameLbl.setText("Name:");
+    nameLbl.setName("nameLbl"); // NOI18N
+    descPanel.add(nameLbl);
+
+    descriptionTF.setText("description");
+    descriptionTF.setName("descriptionTF"); // NOI18N
+    descriptionTF.setPreferredSize(new Dimension(200, 23));
+    descriptionTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        descriptionTFFocusLost(evt);
+      }
+    });
+    descPanel.add(descriptionTF);
+
+    filler9.setName("filler9"); // NOI18N
+    descPanel.add(filler9);
+
+    classNameLbl.setText("Class name:");
+    classNameLbl.setName("classNameLbl"); // NOI18N
+    descPanel.add(classNameLbl);
+
+    classNameTF.setText("class name");
+    classNameTF.setName("classNameTF"); // NOI18N
+    classNameTF.setPreferredSize(new Dimension(350, 23));
+    classNameTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        classNameTFFocusLost(evt);
+      }
+    });
+    descPanel.add(classNameTF);
+
+    shortNameTFLb.setText("Shot Name:");
+    shortNameTFLb.setName("shortNameTFLb"); // NOI18N
+    descPanel.add(shortNameTFLb);
+
+    shortNameTF.setName("shortNameTF"); // NOI18N
+    shortNameTF.setPreferredSize(new Dimension(100, 23));
+    shortNameTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        shortNameTFFocusLost(evt);
+      }
+    });
+    descPanel.add(shortNameTF);
+
+    capabilitiesPanel.add(descPanel);
 
     centerPanel.add(capabilitiesPanel, BorderLayout.CENTER);
 
@@ -621,6 +761,34 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     });
     leftBottomPanel.add(enableEditCB);
+
+    newBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
+    newBtn.setToolTipText("Add a New Command Station");
+    newBtn.setEnabled(false);
+    newBtn.setName("newBtn"); // NOI18N
+    newBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        newBtnActionPerformed(evt);
+      }
+    });
+    leftBottomPanel.add(newBtn);
+
+    filler8.setName("filler8"); // NOI18N
+    leftBottomPanel.add(filler8);
+
+    idLbl.setText("id:");
+    idLbl.setName("idLbl"); // NOI18N
+    leftBottomPanel.add(idLbl);
+
+    idTF.setText("id");
+    idTF.setName("idTF"); // NOI18N
+    idTF.setPreferredSize(new Dimension(200, 23));
+    idTF.addFocusListener(new FocusAdapter() {
+      public void focusLost(FocusEvent evt) {
+        idTFFocusLost(evt);
+      }
+    });
+    leftBottomPanel.add(idTF);
 
     bottomPanel.add(leftBottomPanel);
 
@@ -664,8 +832,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     selectedCommandStation = (CommandStationBean) commandStationComboBoxModel.getSelectedItem();
     defaultCommandStationChkBox.setSelected(selectedCommandStation.isDefault());
     setFieldValues();
-    showApplicableFields();
-
+    this.enableFields(this.enableEditCB.isSelected());
     Logger.trace("Selected CS: " + this.selectedCommandStation.getDescription());
   }//GEN-LAST:event_commandStationComboBoxActionPerformed
 
@@ -676,6 +843,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     Logger.trace(evt.getActionCommand());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+
+    initModels();
   }//GEN-LAST:event_saveBtnActionPerformed
 
   private void ipAddressTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_ipAddressTFFocusLost
@@ -687,16 +857,104 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   private void portSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_portSpinnerStateChanged
     Logger.trace("Port: " + this.portSpinner.getValue());
     this.selectedCommandStation.setNetworkPort((Integer) this.portSpinner.getValue());
-    PersistenceFactory.getService().persist(this.selectedCommandStation);
   }//GEN-LAST:event_portSpinnerStateChanged
 
   private void feedbackSupportCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_feedbackSupportCBActionPerformed
-    // TODO add your handling code here:
+    this.selectedCommandStation.setFeedbackSupport(this.feedbackSupportCB.isSelected());
   }//GEN-LAST:event_feedbackSupportCBActionPerformed
 
   private void enableEditCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_enableEditCBActionPerformed
-    Logger.trace(evt.getActionCommand());
+    Logger.trace(evt.getActionCommand() + " " + this.enableEditCB.isSelected());
+    enableFields(this.enableEditCB.isSelected());
   }//GEN-LAST:event_enableEditCBActionPerformed
+
+  private void newBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newBtnActionPerformed
+    this.selectedCommandStation = new CommandStationBean();
+    this.selectedCommandStation.setId("new.cs");
+    setFieldValues();
+  }//GEN-LAST:event_newBtnActionPerformed
+
+  private void enabledCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_enabledCBActionPerformed
+    this.selectedCommandStation.setEnabled(this.enabledCB.isSelected());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_enabledCBActionPerformed
+
+  private void descriptionTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_descriptionTFFocusLost
+    this.selectedCommandStation.setDescription(this.descriptionTF.getText());
+  }//GEN-LAST:event_descriptionTFFocusLost
+
+  private void classNameTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_classNameTFFocusLost
+    this.selectedCommandStation.setClassName(this.classNameTF.getText());
+  }//GEN-LAST:event_classNameTFFocusLost
+
+  private void idTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_idTFFocusLost
+    this.selectedCommandStation.setId(this.idTF.getText());
+  }//GEN-LAST:event_idTFFocusLost
+
+  private void locomotiveFunctionSynchSupportCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_locomotiveFunctionSynchSupportCBActionPerformed
+    this.selectedCommandStation.setLocomotiveFunctionSynchronizationSupport(this.locomotiveFunctionSynchSupportCB.isSelected());
+  }//GEN-LAST:event_locomotiveFunctionSynchSupportCBActionPerformed
+
+  private void locomotiveImageSynchSupportCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_locomotiveImageSynchSupportCBActionPerformed
+    this.selectedCommandStation.setLocomotiveImageSynchronizationSupport(this.locomotiveImageSynchSupportCB.isSelected());
+  }//GEN-LAST:event_locomotiveImageSynchSupportCBActionPerformed
+
+  private void accessorySynchSupportCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_accessorySynchSupportCBActionPerformed
+    this.selectedCommandStation.setAccessorySynchronizationSupport(this.accessorySynchSupportCB.isSelected());
+  }//GEN-LAST:event_accessorySynchSupportCBActionPerformed
+
+  private void locomotiveSynchSupportCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_locomotiveSynchSupportCBActionPerformed
+    this.selectedCommandStation.setLocomotiveSynchronizationSupport(this.locomotiveSynchSupportCB.isSelected());
+  }//GEN-LAST:event_locomotiveSynchSupportCBActionPerformed
+
+  private void commandControlCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandControlCBActionPerformed
+    this.selectedCommandStation.setCommandAndControlSupport(this.commandControlCB.isSelected());
+  }//GEN-LAST:event_commandControlCBActionPerformed
+
+  private void networkRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_networkRBActionPerformed
+    this.enableFields(this.enableEditCB.isSelected());
+  }//GEN-LAST:event_networkRBActionPerformed
+
+  private void serialRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialRBActionPerformed
+    this.enableFields(this.enableEditCB.isSelected());
+  }//GEN-LAST:event_serialRBActionPerformed
+
+  private void shortNameTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_shortNameTFFocusLost
+    this.selectedCommandStation.setShortName(this.shortNameTF.getText());
+    this.shortNameLbl.setText(this.selectedCommandStation.getShortName());
+  }//GEN-LAST:event_shortNameTFFocusLost
+
+  private void mmRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_mmRBActionPerformed
+    if (this.mmRB.isSelected()) {
+      this.selectedCommandStation.addProtocol(Protocol.MM);
+    } else {
+      this.selectedCommandStation.removeProtocol(Protocol.MM);
+    }
+  }//GEN-LAST:event_mmRBActionPerformed
+
+  private void mfxRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_mfxRBActionPerformed
+    if (this.mfxRB.isSelected()) {
+      this.selectedCommandStation.addProtocol(Protocol.MFX);
+    } else {
+      this.selectedCommandStation.removeProtocol(Protocol.MFX);
+    }
+  }//GEN-LAST:event_mfxRBActionPerformed
+
+  private void dccRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_dccRBActionPerformed
+    if (this.dccRB.isSelected()) {
+      this.selectedCommandStation.addProtocol(Protocol.DCC);
+    } else {
+      this.selectedCommandStation.removeProtocol(Protocol.DCC);
+    }
+  }//GEN-LAST:event_dccRBActionPerformed
+
+  private void sxRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sxRBActionPerformed
+    if (this.sxRB.isSelected()) {
+      this.selectedCommandStation.addProtocol(Protocol.SX);
+    } else {
+      this.selectedCommandStation.removeProtocol(Protocol.SX);
+    }
+  }//GEN-LAST:event_sxRBActionPerformed
 
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
@@ -745,9 +1003,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
           if (canConnect) {
             if (selectedCommandStation.isIpAutoConfiguration()) {
               selectedCommandStation.setIpAddress(commandStation.getIp());
+
               this.firePropertyChange("ipAddress", "", commandStation.getIp());
             }
-
             this.firePropertyChange("done", "", "Connection succeeded");
           } else {
             this.firePropertyChange("done", "", "Can't Connect");
@@ -835,6 +1093,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JPanel bottomPanel;
   JPanel capabilitiesPanel;
   JPanel centerPanel;
+  JLabel classNameLbl;
+  JTextField classNameTF;
   JCheckBox commandControlCB;
   JPanel commandControlSupportPanel;
   JComboBox<CommandStationBean> commandStationComboBox;
@@ -849,6 +1109,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JPanel csPropertiesPanel;
   JRadioButton dccRB;
   JCheckBox defaultCommandStationChkBox;
+  JPanel descPanel;
+  JTextField descriptionTF;
   JCheckBox enableEditCB;
   JCheckBox enabledCB;
   JCheckBox feedbackSupportCB;
@@ -860,6 +1122,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   Box.Filler filler5;
   Box.Filler filler6;
   Box.Filler filler7;
+  Box.Filler filler8;
+  Box.Filler filler9;
+  JLabel idLbl;
+  JTextField idTF;
   JTextField ipAddressTF;
   JLabel jLabel1;
   JLabel lastUsedSerialLbl;
@@ -872,7 +1138,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JPanel locomotiveSynchSupportPanel;
   JRadioButton mfxRB;
   JRadioButton mmRB;
+  JLabel nameLbl;
   JRadioButton networkRB;
+  JButton newBtn;
   JLabel portLbl;
   JSpinner portSpinner;
   JProgressBar progressBar;
@@ -882,6 +1150,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JComboBox<SerialPort> serialPortCB;
   JRadioButton serialRB;
   JLabel shortNameLbl;
+  JTextField shortNameTF;
+  JLabel shortNameTFLb;
   JRadioButton sxRB;
   JButton testConnectionBtn;
   JPanel topPanel;
