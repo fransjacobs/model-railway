@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.JCS;
-import jcs.commandStation.CommandStation;
+import jcs.commandStation.AccessoryController;
+import jcs.commandStation.DecoderController;
+import jcs.commandStation.FeedbackController;
 import jcs.commandStation.dccex.connection.DccExConnectionFactory;
 import jcs.commandStation.dccex.events.CabEvent;
 import jcs.commandStation.dccex.events.DccExMeasurementEvent;
@@ -55,7 +57,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class DccExCommandStationImpl implements CommandStation {
+public class DccExCommandStationImpl implements DecoderController, AccessoryController, FeedbackController {
 
   private CommandStationBean commandStationBean;
   private DccExConnection connection;
@@ -80,15 +82,11 @@ public class DccExCommandStationImpl implements CommandStation {
 
   private int defaultSwitchTime;
 
-  public DccExCommandStationImpl() {
-    this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
+  public DccExCommandStationImpl(CommandStationBean commandStationBean) {
+    this(commandStationBean, System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
   }
 
-  public DccExCommandStationImpl(Boolean autoConnect) {
-    this(autoConnect, null);
-  }
-
-  public DccExCommandStationImpl(Boolean autoConnect, CommandStationBean commandStationBean) {
+  public DccExCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     this.commandStationBean = commandStationBean;
     measurementChannels = new HashMap<>();
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
@@ -108,11 +106,6 @@ public class DccExCommandStationImpl implements CommandStation {
   @Override
   public CommandStationBean getCommandStationBean() {
     return commandStationBean;
-  }
-
-  @Override
-  public void setCommandStationBean(CommandStationBean commandStationBean) {
-    this.commandStationBean = commandStationBean;
   }
 
   private void initMeasurements() {
@@ -609,8 +602,8 @@ public class DccExCommandStationImpl implements CommandStation {
       csb.setEnabled(true);
 
       //CommandStation cs = CommandStationFactory.getCommandStation(csb);
-      CommandStation cs = new DccExCommandStationImpl();
-      cs.setCommandStationBean(csb);
+      DccExCommandStationImpl cs = new DccExCommandStationImpl(csb);
+
       cs.connect();
 
       ((DccExCommandStationImpl) cs).pause(500L);

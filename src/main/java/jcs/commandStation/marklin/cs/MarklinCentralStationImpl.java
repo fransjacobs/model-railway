@@ -25,7 +25,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import jcs.JCS;
-import jcs.commandStation.CommandStation;
+import jcs.commandStation.AccessoryController;
+import jcs.commandStation.DecoderController;
+import jcs.commandStation.FeedbackController;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
@@ -74,7 +76,7 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class MarklinCentralStationImpl implements CommandStation {
+public class MarklinCentralStationImpl implements DecoderController, AccessoryController, FeedbackController {
 
   private CommandStationBean commandStationBean;
   private CSConnection connection;
@@ -103,11 +105,11 @@ public class MarklinCentralStationImpl implements CommandStation {
 
   private int defaultSwitchTime;
 
-  public MarklinCentralStationImpl() {
-    this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
+  public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
+    this(commandStationBean, System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
   }
 
-  public MarklinCentralStationImpl(boolean autoConnect) {
+  public MarklinCentralStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     this(autoConnect, null);
   }
 
@@ -136,11 +138,6 @@ public class MarklinCentralStationImpl implements CommandStation {
   @Override
   public CommandStationBean getCommandStationBean() {
     return commandStationBean;
-  }
-
-  @Override
-  public void setCommandStationBean(CommandStationBean commandStationBean) {
-    this.commandStationBean = commandStationBean;
   }
 
   int getCsUid() {
@@ -641,16 +638,23 @@ public class MarklinCentralStationImpl implements CommandStation {
 
   @Override
   public List<LocomotiveBean> getLocomotives() {
+    List<LocomotiveBean> locomotives;
     if (this.isCS3()) {
       //For the CS-3 use the JSON for everything as otherwise some function icons are missed
-      return getLocomotivesViaJSON();
+      locomotives = getLocomotivesViaJSON();
     } else {
       if (System.getProperty("locomotive.list.via", "can").equalsIgnoreCase("http")) {
-        return getLocomotivesViaHttp();
+        locomotives = getLocomotivesViaHttp();
       } else {
-        return getLocomotivesViaCAN();
+        locomotives = getLocomotivesViaCAN();
       }
     }
+
+    String csId = this.commandStationBean.getId();
+    for (LocomotiveBean loc : locomotives) {
+      loc.setCommandStationId(csId);
+    }
+    return locomotives;
   }
 
   List<AccessoryBean> getAccessoriesViaHttp() {
@@ -684,6 +688,12 @@ public class MarklinCentralStationImpl implements CommandStation {
     } else {
       accessories = getAccessoriesViaCan();
     }
+
+    String csId = this.commandStationBean.getId();
+    for (AccessoryBean ab : accessories) {
+      ab.setCommandStationId(csId);
+    }
+
     return accessories;
   }
 
@@ -1027,7 +1037,25 @@ public class MarklinCentralStationImpl implements CommandStation {
 //  
   public static void main(String[] a) {
     RunUtil.loadExternalProperties();
-    MarklinCentralStationImpl cs = new MarklinCentralStationImpl(false);
+
+    CommandStationBean csb = new CommandStationBean();
+    csb.setId("marklin.cs");
+    csb.setDescription("Marklin Central Station 2/3");
+    csb.setShortName("CS");
+    csb.setClassName("jcs.commandStation.marklin.cs.MarklinCentralStationImpl");
+    csb.setConnectVia("NETWORK");
+    csb.setCommandAndControlSupport(true);
+    csb.setAccessorySynchronizationSupport(true);
+    csb.setFeedbackSupport(true);
+    csb.setLocomotiveFunctionSynchronizationSupport(true);
+    csb.setLocomotiveImageSynchronizationSupport(true);
+    csb.setLocomotiveSynchronizationSupport(true);
+    csb.setNetworkPort(15731);
+    csb.setProtocols("DCC,MFX,MM");
+    csb.setDefault(true);
+    csb.setEnabled(true);
+
+    MarklinCentralStationImpl cs = new MarklinCentralStationImpl(csb, false);
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     if (cs.isConnected()) {

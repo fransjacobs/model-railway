@@ -15,9 +15,10 @@
  */
 package jcs.commandStation.marklin.cs;
 
+import jcs.entities.CommandStationBean;
 import org.junit.After;
-import org.junit.Before;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.tinylog.Logger;
 
 /**
@@ -28,13 +29,29 @@ public class MarklinCSTest {
 
   private static MarklinCentralStationImpl instance;
   private static boolean csAvailable = false;
-  
-  //controller.skip.init
 
+  //controller.skip.init
   public MarklinCSTest() {
     try {
       if (instance == null) {
-        instance = new MarklinCentralStationImpl();
+        CommandStationBean csb = new CommandStationBean();
+        csb.setId("marklin.cs");
+        csb.setDescription("Marklin Central Station 2/3");
+        csb.setShortName("CS");
+        csb.setClassName("jcs.commandStation.marklin.cs.MarklinCentralStationImpl");
+        csb.setConnectVia("NETWORK");
+        csb.setCommandAndControlSupport(true);
+        csb.setAccessorySynchronizationSupport(true);
+        csb.setFeedbackSupport(true);
+        csb.setLocomotiveFunctionSynchronizationSupport(true);
+        csb.setLocomotiveImageSynchronizationSupport(true);
+        csb.setLocomotiveSynchronizationSupport(true);
+        csb.setNetworkPort(15731);
+        csb.setProtocols("DCC,MFX,MM");
+        csb.setDefault(true);
+        csb.setEnabled(true);
+
+        instance = new MarklinCentralStationImpl(csb, false);
         pause(500);
         csAvailable = instance.connect();
 

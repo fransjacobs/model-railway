@@ -1307,7 +1307,7 @@ public class PersistenceServiceTest {
     PersistenceService instance = PersistenceFactory.getService();
 
     List<CommandStationBean> commandStations = instance.getCommandStations();
-    assertEquals(1, commandStations.size());
+    assertEquals(4, commandStations.size());
 
     for (CommandStationBean cs : commandStations) {
       Logger.trace("## -> " + cs + " default: " + cs.isDefault() + " id: " + cs.getId());

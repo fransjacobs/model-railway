@@ -45,7 +45,7 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
-import jcs.commandStation.CommandStationFactory;
+import jcs.commandStation.ControllerFactory;
 import org.tinylog.Logger;
 
 /**

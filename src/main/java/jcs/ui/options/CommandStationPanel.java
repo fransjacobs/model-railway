@@ -54,7 +54,6 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import jcs.commandStation.CommandStation;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.CommandStationBean.Protocol;
@@ -62,6 +61,7 @@ import jcs.persistence.PersistenceFactory;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;
 import org.tinylog.Logger;
+import jcs.commandStation.GenericController;
 
 /**
  *
@@ -71,7 +71,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private CommandStationBean selectedCommandStation;
   private ComboBoxModel<CommandStationBean> commandStationComboBoxModel;
-  //private ComboBoxModel<ConnectionType> connectionTypeComboBoxModel;
   private ComboBoxModel<SerialPort> serialPortComboBoxModel;
 
   private Task task;
@@ -97,11 +96,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationComboBoxModel.setSelectedItem(selectedCommandStation);
     commandStationComboBox.setModel(commandStationComboBoxModel);
 
-    //connectionTypeComboBoxModel = new DefaultComboBoxModel(ConnectionType.toArray());
-    if (selectedCommandStation.getId() != null) {
-      //defaultCommandStationChkBox.setSelected(true);
-    }
-
     SerialPort comPorts[] = SerialPort.getCommPorts();
 
     serialPortComboBoxModel = new DefaultComboBoxModel(comPorts);
@@ -110,7 +104,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     setFieldValues();
     enableFields(false);
 
-    //showApplicableFields();
     this.progressBar.setVisible(false);
   }
 
@@ -993,7 +986,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
         if (Ping.IsReachable(ip)) {
           setProgress(10);
-          CommandStation commandStation = createCommandStation(selectedCommandStation);
+          GenericController commandStation = createCommandStation(selectedCommandStation);
           setProgress(30);
           boolean canConnect = checkConnection(commandStation);
 
@@ -1029,12 +1022,12 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     }
   }
 
-  private CommandStation createCommandStation(CommandStationBean commandStationBean) {
-    CommandStation commandStation = null;
+  private GenericController createCommandStation(CommandStationBean commandStationBean) {
+    GenericController commandStation = null;
 
     String commandStationImplClassName = commandStationBean.getClassName();
     try {
-      commandStation = (CommandStation) Class.forName(commandStationImplClassName).getDeclaredConstructor(Boolean.class, CommandStationBean.class).newInstance(false, commandStationBean);
+      commandStation = (GenericController) Class.forName(commandStationImplClassName).getDeclaredConstructor(Boolean.class, CommandStationBean.class).newInstance(false, commandStationBean);
     } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
       Logger.trace("Can't instantiate a '" + commandStationImplClassName + "' " + ex.getMessage());
       Logger.trace(ex);
@@ -1042,7 +1035,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     return commandStation;
   }
 
-  private boolean checkConnection(final CommandStation commandStation) {
+  private boolean checkConnection(final GenericController commandStation) {
     if (commandStation != null) {
       if (commandStation.isConnected()) {
         return true;

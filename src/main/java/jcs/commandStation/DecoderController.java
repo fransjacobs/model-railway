@@ -18,31 +18,15 @@ package jcs.commandStation;
 import java.awt.Image;
 import java.util.List;
 import java.util.Map;
-import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.events.SensorEventListener;
-import jcs.entities.AccessoryBean;
-import jcs.entities.CommandStationBean;
-import jcs.entities.Device;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
-import jcs.entities.enums.AccessoryValue;
 
-public interface CommandStation {
-
-  void setCommandStationBean(CommandStationBean commandStationBean);
-
-  CommandStationBean getCommandStationBean();
-
-  boolean connect();
-
-  boolean isConnected();
-
-  void disconnect();
+public interface DecoderController extends GenericController {
 
   boolean isPower();
 
@@ -54,21 +38,9 @@ public interface CommandStation {
 
   void changeFunctionValue(int locUid, int functionNumber, boolean flag);
 
-  void switchAccessory(int address, AccessoryValue value);
-
-  void switchAccessory(int address, AccessoryValue value, int switchTime);
-
   void addPowerEventListener(PowerEventListener listener);
 
   void removePowerEventListener(PowerEventListener listener);
-
-  void addSensorEventListener(SensorEventListener listener);
-
-  void removeSensorEventListener(SensorEventListener listener);
-
-  void addAccessoryEventListener(AccessoryEventListener listener);
-
-  void removeAccessoryEventListener(AccessoryEventListener listener);
 
   void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener);
 
@@ -88,18 +60,5 @@ public interface CommandStation {
 
   Image getLocomotiveFunctionImage(String icon);
 
-  List<AccessoryBean> getSwitches();
-
-  List<AccessoryBean> getSignals();
-
-  Device getDevice();
-
-  List<Device> getDevices();
-
-  void clearCaches();
-
   Map<Integer, MeasurementChannel> getTrackMeasurements();
-  
-  String getIp(); 
-
 }
