@@ -43,7 +43,8 @@ public class CommandStationBean {
   private String ipAddress;
   private Integer networkPort;
   private boolean ipAutoConfiguration;
-  private boolean commandAndControlSupport;
+  private boolean decoderControlSupport;
+  private boolean accessoryControlSupport;
   private boolean feedbackSupport;
   private boolean locomotiveSynchronizationSupport;
   private boolean accessorySynchronizationSupport;
@@ -169,15 +170,28 @@ public class CommandStationBean {
     this.ipAutoConfiguration = ipAutoConfiguration;
   }
 
-  @Column(name = "supports_command_control", nullable = false, columnDefinition = "supports_command_control bool default '1'")
-  public boolean isCommandAndControlSupport() {
-    return commandAndControlSupport;
+  @Column(name = "supports_decoder_control", nullable = false, columnDefinition = "supports_decoder_control bool default '1'")
+  public boolean isDecoderControlSupport() {
+    return decoderControlSupport;
   }
 
-  public void setCommandAndControlSupport(boolean commandAndControlSupport) {
-    this.commandAndControlSupport = commandAndControlSupport;
+  public void setDecoderControlSupport(boolean decoderControlSupport) {
+    this.decoderControlSupport = decoderControlSupport;
   }
 
+  @Column(name = "supports_accessory_control", nullable = false, columnDefinition = "supports_accessory_control bool default '1'")
+  public boolean isAccessoryControlSupport() {
+    return accessoryControlSupport;
+  }
+
+  public void setAccessoryControlSupport(boolean accessoryControlSupport) {
+    this.accessoryControlSupport = accessoryControlSupport;
+  }
+
+  
+  
+  
+  
   @Column(name = "supports_feedback", nullable = false, columnDefinition = "supports_feedback bool default '1'")
   public boolean isFeedbackSupport() {
     return feedbackSupport;
@@ -332,7 +346,7 @@ public class CommandStationBean {
     hash = 23 * hash + Objects.hashCode(this.ipAddress);
     hash = 23 * hash + Objects.hashCode(this.networkPort);
     hash = 23 * hash + (this.ipAutoConfiguration ? 1 : 0);
-    hash = 23 * hash + (this.commandAndControlSupport ? 1 : 0);
+    hash = 23 * hash + (this.decoderControlSupport ? 1 : 0);
     hash = 23 * hash + (this.feedbackSupport ? 1 : 0);
     hash = 23 * hash + (this.locomotiveSynchronizationSupport ? 1 : 0);
     hash = 23 * hash + (this.accessorySynchronizationSupport ? 1 : 0);
@@ -360,7 +374,7 @@ public class CommandStationBean {
     if (this.ipAutoConfiguration != other.ipAutoConfiguration) {
       return false;
     }
-    if (this.commandAndControlSupport != other.commandAndControlSupport) {
+    if (this.decoderControlSupport != other.decoderControlSupport) {
       return false;
     }
     if (this.feedbackSupport != other.feedbackSupport) {

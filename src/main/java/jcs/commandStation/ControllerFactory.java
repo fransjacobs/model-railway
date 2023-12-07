@@ -106,7 +106,7 @@ public class ControllerFactory {
       bean = PersistenceFactory.getService().getDefaultCommandStation();
     }
 
-    if (bean.isCommandAndControlSupport() && bean.isEnabled()) {
+    if (bean.isDecoderControlSupport() && bean.isEnabled()) {
       String className = bean.getClassName();
       JCS.logProgress("Invoking CommandStation: " + className);
       Logger.trace("Invoking decoderController: " + className);
@@ -119,7 +119,7 @@ public class ControllerFactory {
       }
     }
 
-    if (decoderController != null && bean.isCommandAndControlSupport() && bean.isEnabled()) {
+    if (decoderController != null && bean.isDecoderControlSupport() && bean.isEnabled()) {
       accessoryControllers.put(bean.getId(), (AccessoryController) this.decoderController);
       Logger.trace("decoderController is also accessoryController.");
     }
@@ -136,7 +136,7 @@ public class ControllerFactory {
     List<CommandStationBean> beans = PersistenceFactory.getService().getCommandStations();
     //In case the AccessoryController is the same instance as the DecoderController, which is by example the case for a Marklin CS 3
     for (CommandStationBean bean : beans) {
-      if (bean.isCommandAndControlSupport() && bean.isEnabled()) {
+      if (bean.isAccessoryControlSupport() && bean.isEnabled()) {
         //Check the decoder controller which might be the same Object
         if (!accessoryControllers.containsKey(bean.getId())) {
           String className = bean.getClassName();
@@ -158,7 +158,7 @@ public class ControllerFactory {
     List<CommandStationBean> beans = PersistenceFactory.getService().getCommandStations();
     //In case the AccessoryController is the same instance as the DecoderController, which is by example the case for a Marklin CS 3
     for (CommandStationBean bean : beans) {
-      if (bean.isCommandAndControlSupport() && bean.isEnabled()) {
+      if (bean.isDecoderControlSupport() && bean.isEnabled()) {
         //Check the decoder controller which might be the same Object
         if (!feedbackControllers.containsKey(bean.getId())) {
           String className = bean.getClassName();

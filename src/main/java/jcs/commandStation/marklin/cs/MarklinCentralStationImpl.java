@@ -1044,7 +1044,7 @@ public class MarklinCentralStationImpl implements DecoderController, AccessoryCo
     csb.setShortName("CS");
     csb.setClassName("jcs.commandStation.marklin.cs.MarklinCentralStationImpl");
     csb.setConnectVia("NETWORK");
-    csb.setCommandAndControlSupport(true);
+    csb.setDecoderControlSupport(true);
     csb.setAccessorySynchronizationSupport(true);
     csb.setFeedbackSupport(true);
     csb.setLocomotiveFunctionSynchronizationSupport(true);

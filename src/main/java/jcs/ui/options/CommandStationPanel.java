@@ -54,6 +54,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import jcs.commandStation.GenericController;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.CommandStationBean.Protocol;
@@ -61,7 +62,6 @@ import jcs.persistence.PersistenceFactory;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;
 import org.tinylog.Logger;
-import jcs.commandStation.GenericController;
 
 /**
  *
@@ -147,8 +147,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       boolean ipAutoConfiguration = selectedCommandStation.isIpAutoConfiguration();
       this.autoConfChkBox.setSelected(ipAutoConfiguration);
 
-      boolean commandAndControlSupport = selectedCommandStation.isCommandAndControlSupport();
-      this.commandControlCB.setSelected(commandAndControlSupport);
+      boolean commandAndControlSupport = selectedCommandStation.isDecoderControlSupport();
+      this.decoderControlCB.setSelected(commandAndControlSupport);
+      
+      boolean accessorySupport = selectedCommandStation.isAccessoryControlSupport();
+      this.accessorySupportCB.setSelected(accessorySupport);
 
       boolean feedbackSupport = selectedCommandStation.isFeedbackSupport();
       this.feedbackSupportCB.setSelected(feedbackSupport);
@@ -215,7 +218,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.networkRB.setEnabled(enable);
     this.serialRB.setEnabled(enable);
 
-    this.commandControlCB.setEnabled(enable);
+    this.decoderControlCB.setEnabled(enable);
+    this.accessorySupportCB.setEnabled(enable);
     this.feedbackSupportCB.setEnabled(enable);
     this.locomotiveSynchSupportCB.setEnabled(enable);
     this.accessorySynchSupportCB.setEnabled(enable);
@@ -289,8 +293,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     connectionTestResultLbl = new JLabel();
     progressBar = new JProgressBar();
-    commandControlSupportPanel = new JPanel();
-    commandControlCB = new JCheckBox();
+    decoderControlSupportPanel = new JPanel();
+    decoderControlCB = new JCheckBox();
+    accessorySupportPanel = new JPanel();
+    accessorySupportCB = new JCheckBox();
     feedbackSupportPanel = new JPanel();
     feedbackSupportCB = new JCheckBox();
     locomotiveSynchSupportPanel = new JPanel();
@@ -543,21 +549,37 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     capabilitiesPanel.add(connectionTestPanel);
 
-    commandControlSupportPanel.setName("commandControlSupportPanel"); // NOI18N
+    decoderControlSupportPanel.setName("decoderControlSupportPanel"); // NOI18N
     FlowLayout flowLayout4 = new FlowLayout(FlowLayout.LEFT);
     flowLayout4.setAlignOnBaseline(true);
-    commandControlSupportPanel.setLayout(flowLayout4);
+    decoderControlSupportPanel.setLayout(flowLayout4);
 
-    commandControlCB.setText("Command and Control Support");
-    commandControlCB.setName("commandControlCB"); // NOI18N
-    commandControlCB.addActionListener(new ActionListener() {
+    decoderControlCB.setText("Decoder Control Support");
+    decoderControlCB.setName("decoderControlCB"); // NOI18N
+    decoderControlCB.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        commandControlCBActionPerformed(evt);
+        decoderControlCBActionPerformed(evt);
       }
     });
-    commandControlSupportPanel.add(commandControlCB);
+    decoderControlSupportPanel.add(decoderControlCB);
 
-    capabilitiesPanel.add(commandControlSupportPanel);
+    capabilitiesPanel.add(decoderControlSupportPanel);
+
+    accessorySupportPanel.setName("accessorySupportPanel"); // NOI18N
+    FlowLayout flowLayout12 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout12.setAlignOnBaseline(true);
+    accessorySupportPanel.setLayout(flowLayout12);
+
+    accessorySupportCB.setText("Accessory Support");
+    accessorySupportCB.setName("accessorySupportCB"); // NOI18N
+    accessorySupportCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        accessorySupportCBActionPerformed(evt);
+      }
+    });
+    accessorySupportPanel.add(accessorySupportCB);
+
+    capabilitiesPanel.add(accessorySupportPanel);
 
     feedbackSupportPanel.setName("feedbackSupportPanel"); // NOI18N
     FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT);
@@ -900,9 +922,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.selectedCommandStation.setLocomotiveSynchronizationSupport(this.locomotiveSynchSupportCB.isSelected());
   }//GEN-LAST:event_locomotiveSynchSupportCBActionPerformed
 
-  private void commandControlCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandControlCBActionPerformed
-    this.selectedCommandStation.setCommandAndControlSupport(this.commandControlCB.isSelected());
-  }//GEN-LAST:event_commandControlCBActionPerformed
+  private void decoderControlCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_decoderControlCBActionPerformed
+    this.selectedCommandStation.setDecoderControlSupport(this.decoderControlCB.isSelected());
+  }//GEN-LAST:event_decoderControlCBActionPerformed
 
   private void networkRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_networkRBActionPerformed
     this.enableFields(this.enableEditCB.isSelected());
@@ -948,6 +970,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       this.selectedCommandStation.removeProtocol(Protocol.SX);
     }
   }//GEN-LAST:event_sxRBActionPerformed
+
+  private void accessorySupportCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_accessorySupportCBActionPerformed
+    this.selectedCommandStation.setAccessoryControlSupport(this.accessorySupportCB.isSelected());
+  }//GEN-LAST:event_accessorySupportCBActionPerformed
 
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
@@ -1080,6 +1106,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  JCheckBox accessorySupportCB;
+  JPanel accessorySupportPanel;
   JCheckBox accessorySynchSupportCB;
   JPanel accessorySynchSupportPanel;
   JCheckBox autoConfChkBox;
@@ -1088,8 +1116,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JPanel centerPanel;
   JLabel classNameLbl;
   JTextField classNameTF;
-  JCheckBox commandControlCB;
-  JPanel commandControlSupportPanel;
   JComboBox<CommandStationBean> commandStationComboBox;
   JLabel commandStationLbl;
   JPanel commandStationSelectionPanel;
@@ -1101,6 +1127,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JLabel connectionTypeLbl;
   JPanel csPropertiesPanel;
   JRadioButton dccRB;
+  JCheckBox decoderControlCB;
+  JPanel decoderControlSupportPanel;
   JCheckBox defaultCommandStationChkBox;
   JPanel descPanel;
   JTextField descriptionTF;
