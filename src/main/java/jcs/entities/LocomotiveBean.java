@@ -60,6 +60,7 @@ public class LocomotiveBean implements Serializable {
   private boolean manual;
 
   private Image locIcon;
+  private CommandStationBean commandStationBean;
 
   private final Map<Integer, FunctionBean> functions;
 
@@ -70,35 +71,32 @@ public class LocomotiveBean implements Serializable {
   public LocomotiveBean(Long id, String name, Long uid, Long mfxUid, Integer address, String icon, String decoderTypeString,
           String mfxSid, Integer tachoMax, Integer vMin, Integer velocity, Integer direction, boolean commuter, Integer length, boolean show) {
 
-    this(id, name, null, uid, mfxUid, address, icon, decoderTypeString, mfxSid, tachoMax, vMin, null, null, null, null, velocity,
-            direction, null, null, commuter, length, show);
+    this(id, name, uid, address, icon, decoderTypeString, tachoMax, vMin, velocity,
+            direction, commuter, length, show);
   }
 
-  public LocomotiveBean(Long id, String name, String previousName, Long uid,
-          Long mfxUid, Integer address, String icon, String decoderTypeString,
-          String mfxSid, Integer tachoMax, Integer vMin, Integer accelerationDelay,
-          Integer brakeDelay, Integer volume, String spm, Integer velocity,
-          Integer direction, String mfxType, String block, boolean commuter, Integer length, boolean show) {
+  public LocomotiveBean(Long id, String name, Long uid, Integer address, String icon, String decoderTypeString,
+          Integer tachoMax, Integer vMin, Integer velocity, Integer direction, boolean commuter, Integer length, boolean show) {
 
     this.id = id;
     this.name = name;
-    this.previousName = previousName;
+    //this.previousName = previousName;
     this.uid = uid;
-    this.mfxUid = mfxUid;
+    //this.mfxUid = mfxUid;
     this.address = address;
     this.icon = icon;
     this.decoderTypeString = decoderTypeString;
-    this.mfxSid = mfxSid;
+    //this.mfxSid = mfxSid;
     this.tachoMax = tachoMax;
     this.vMin = vMin;
-    this.accelerationDelay = accelerationDelay;
-    this.brakeDelay = brakeDelay;
-    this.volume = volume;
-    this.spm = spm;
+    //this.accelerationDelay = accelerationDelay;
+    //this.brakeDelay = brakeDelay;
+    //this.volume = volume;
+    //this.spm = spm;
     this.velocity = velocity;
     this.richtung = direction;
-    this.mfxType = mfxType;
-    this.block = block;
+    //this.mfxType = mfxType;
+    //this.block = block;
     this.commuter = commuter;
     this.length = length;
     this.show = show;
@@ -127,14 +125,14 @@ public class LocomotiveBean implements Serializable {
     this.name = name;
   }
 
-  @Transient
-  public String getPreviousName() {
-    return previousName;
-  }
-
-  public void setPreviousName(String previousName) {
-    this.previousName = previousName;
-  }
+//  @Transient
+//  public String getPreviousName() {
+//    return previousName;
+//  }
+//
+//  public void setPreviousName(String previousName) {
+//    this.previousName = previousName;
+//  }
 
   @Column(name = "uid")
   @ColumnPosition(position = 2)
@@ -146,15 +144,15 @@ public class LocomotiveBean implements Serializable {
     this.uid = uid;
   }
 
-  @Column(name = "mfx_uid")
-  @ColumnPosition(position = 14)
-  public Long getMfxUid() {
-    return mfxUid;
-  }
-
-  public void setMfxUid(Long mfxUid) {
-    this.mfxUid = mfxUid;
-  }
+//  @Column(name = "mfx_uid")
+//  @ColumnPosition(position = 14)
+//  public Long getMfxUid() {
+//    return mfxUid;
+//  }
+//
+//  public void setMfxUid(Long mfxUid) {
+//    this.mfxUid = mfxUid;
+//  }
 
   @Column(name = "address", nullable = false)
   @ColumnPosition(position = 4)
@@ -221,42 +219,42 @@ public class LocomotiveBean implements Serializable {
     this.vMin = vMin;
   }
 
-  @Transient
-  public Integer getAccelerationDelay() {
-    return accelerationDelay;
-  }
+//  @Transient
+//  public Integer getAccelerationDelay() {
+//    return accelerationDelay;
+//  }
+//
+//  public void setAccelerationDelay(Integer accelerationDelay) {
+//    this.accelerationDelay = accelerationDelay;
+//  }
 
-  public void setAccelerationDelay(Integer accelerationDelay) {
-    this.accelerationDelay = accelerationDelay;
-  }
+//  @Transient
+//  public Integer getBrakeDelay() {
+//    return brakeDelay;
+//  }
+//
+//  public void setBrakeDelay(Integer brakeDelay) {
+//    this.brakeDelay = brakeDelay;
+//  }
 
-  @Transient
-  public Integer getBrakeDelay() {
-    return brakeDelay;
-  }
+//  @Transient
+//  public Integer getVolume() {
+//    return volume;
+//  }
+//
+//  public void setVolume(Integer volume) {
+//    this.volume = volume;
+//  }
 
-  public void setBrakeDelay(Integer brakeDelay) {
-    this.brakeDelay = brakeDelay;
-  }
-
-  @Transient
-  public Integer getVolume() {
-    return volume;
-  }
-
-  public void setVolume(Integer volume) {
-    this.volume = volume;
-  }
-
-  @Transient
-  public String getSpm() {
-    return spm;
-  }
-
-  @Transient
-  public void setSpm(String spm) {
-    this.spm = spm;
-  }
+//  @Transient
+//  public String getSpm() {
+//    return spm;
+//  }
+//
+//  @Transient
+//  public void setSpm(String spm) {
+//    this.spm = spm;
+//  }
 
   @Column(name = "velocity")
   @ColumnPosition(position = 7)
@@ -291,23 +289,23 @@ public class LocomotiveBean implements Serializable {
     this.richtung = direction.getMarklinValue();
   }
 
-  @Transient
-  public String getMfxType() {
-    return mfxType;
-  }
+//  @Transient
+//  public String getMfxType() {
+//    return mfxType;
+//  }
+//
+//  public void setMfxType(String mfxType) {
+//    this.mfxType = mfxType;
+//  }
 
-  public void setMfxType(String mfxType) {
-    this.mfxType = mfxType;
-  }
-
-  @Transient
-  public String getBlock() {
-    return block;
-  }
-
-  public void setBlock(String block) {
-    this.block = block;
-  }
+//  @Transient
+//  public String getBlock() {
+//    return block;
+//  }
+//
+//  public void setBlock(String block) {
+//    this.block = block;
+//  }
 
   @Column(name = "commuter", columnDefinition = "commuter bool default '0'")
   @ColumnPosition(position = 9)

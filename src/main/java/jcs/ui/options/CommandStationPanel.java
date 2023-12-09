@@ -149,7 +149,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
       boolean commandAndControlSupport = selectedCommandStation.isDecoderControlSupport();
       this.decoderControlCB.setSelected(commandAndControlSupport);
-      
+
       boolean accessorySupport = selectedCommandStation.isAccessoryControlSupport();
       this.accessorySupportCB.setSelected(accessorySupport);
 
@@ -183,7 +183,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       String lastUsedSerial = selectedCommandStation.getLastUsedSerial();
       if (lastUsedSerial != null) {
         this.lastUsedSerialLbl.setVisible(true);
-        this.lastUsedSerialLbl.setText("CS Serial number: " + lastUsedSerial);
+        this.lastUsedSerialLbl.setText("Serial number: " + lastUsedSerial);
       } else {
         this.lastUsedSerialLbl.setVisible(false);
       }
@@ -414,6 +414,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     csPropertiesPanel.add(filler4);
 
     lastUsedSerialLbl.setText("serial");
+    lastUsedSerialLbl.setDoubleBuffered(true);
     lastUsedSerialLbl.setName("lastUsedSerialLbl"); // NOI18N
     csPropertiesPanel.add(lastUsedSerialLbl);
 
@@ -835,7 +836,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   private void testConnectionBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testConnectionBtnActionPerformed
     Logger.trace(evt.getActionCommand());
     this.progressBar.setVisible(true);
-
     progressBar.setIndeterminate(true);
 
     task = new Task();
@@ -989,13 +989,23 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     if ("ipAddress".equals(evt.getPropertyName())) {
       Logger.trace("Found IP address: " + evt.getNewValue());
-      this.ipAddressTF.setText((String) evt.getNewValue());
+      ipAddressTF.setText((String) evt.getNewValue());
+      selectedCommandStation.setIpAddress(this.ipAddressTF.getText());
+      PersistenceFactory.getService().persist(this.selectedCommandStation);
+    }
+
+    if ("serial".equals(evt.getPropertyName())) {
+      Logger.trace("Found Serial: " + evt.getNewValue());
+      lastUsedSerialLbl.setText((String) evt.getNewValue());
+      selectedCommandStation.setLastUsedSerial(lastUsedSerialLbl.getText());
+      lastUsedSerialLbl.setText("Serial number: " + lastUsedSerialLbl.getText());
+
+      lastUsedSerialLbl.setVisible(true);
       PersistenceFactory.getService().persist(this.selectedCommandStation);
     }
 
     if ("done".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
-
       this.connectionTestResultLbl.setText((String) evt.getNewValue());
       this.progressBar.setVisible(false);
     }
@@ -1009,30 +1019,40 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
       if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK)) {
         String ip = selectedCommandStation.getIpAddress();
+        setProgress(10);
+        GenericController commandStation = createCommandStation(selectedCommandStation);
+        boolean canConnect = false;
+        setProgress(20);
 
-        if (Ping.IsReachable(ip)) {
-          setProgress(10);
-          GenericController commandStation = createCommandStation(selectedCommandStation);
-          setProgress(30);
-          boolean canConnect = checkConnection(commandStation);
-
-          setProgress(100);
-
-          Logger.trace("canConnect: " + canConnect);
+        if (ip == null && selectedCommandStation.isIpAutoConfiguration()) {
+          //Try to obtain the ip through auto configuration
+          canConnect = commandStation.connect();
           if (canConnect) {
-            if (selectedCommandStation.isIpAutoConfiguration()) {
-              selectedCommandStation.setIpAddress(commandStation.getIp());
-
-              this.firePropertyChange("ipAddress", "", commandStation.getIp());
-            }
-            this.firePropertyChange("done", "", "Connection succeeded");
-          } else {
-            this.firePropertyChange("done", "", "Can't Connect");
+            firePropertyChange("ipAddress", "", commandStation.getIp());
           }
-        } else {
-          setProgress(100);
+          setProgress(30);
 
-          this.firePropertyChange("done", "", "Can't Connect");
+        } else {
+          if (Ping.IsReachable(ip)) {
+            setProgress(10);
+            canConnect = commandStation.connect();
+            setProgress(20);
+          }
+        }
+
+        if (canConnect) {
+          //Let obtain some data
+          String sn = commandStation.getDevice().getSerialNumber();
+          selectedCommandStation.setLastUsedSerial(sn);
+          firePropertyChange("serial", "", sn);
+          setProgress(60);
+
+          commandStation.disconnect();
+          firePropertyChange("done", "", "Connection succeeded");
+          setProgress(1000);
+        } else {
+          firePropertyChange("done", "", "Can't Connect");
+          setProgress(1000);
         }
       }
       return null;
@@ -1042,9 +1062,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     public void done() {
       Toolkit.getDefaultToolkit().beep();
       testConnectionBtn.setEnabled(true);
-
-      //connectionTestResultLbl.setText("");
-      //progressMonitor.setProgress(0);
     }
   }
 
@@ -1074,7 +1091,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     }
     return false;
-
   }
 
   public static void main(String args[]) {

@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <NonVisualComponents>
-    <Component class="jcs.entities.LocomotiveBean" name="selectedLocomotive">
-    </Component>
-  </NonVisualComponents>
   <Properties>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1000, 600]"/>
@@ -641,7 +637,7 @@
               </StatementProvider>
               <Parameters>
                 <CodeExpression id="25_addressSpinner">
-                  <CodeVariable name="addressSpinner" type="8194" declaredType="javax.swing.JSpinner"/>
+                  <CodeVariable name="addressSpinner" type="8192" declaredType="javax.swing.JSpinner"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
                       <ComponentRef name="addressSpinner"/>
@@ -673,7 +669,7 @@
               </StatementProvider>
               <Parameters>
                 <CodeExpression id="27_decoderCB">
-                  <CodeVariable name="decoderCB" type="8194" declaredType="javax.swing.JComboBox"/>
+                  <CodeVariable name="decoderCB" type="8192" declaredType="javax.swing.JComboBox"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
                       <ComponentRef name="decoderCB"/>

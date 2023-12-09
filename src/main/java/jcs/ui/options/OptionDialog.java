@@ -148,7 +148,7 @@ public class OptionDialog extends javax.swing.JDialog {
     Component c = this.prefsTP.getSelectedComponent();
 
     if (c instanceof LocomotivePreferencesPanel) {
-      this.locomotivePanel.refresh();
+      //this.locomotivePanel.refresh();
     } else if (c instanceof TurnoutPreferencesPanel) {
       //this.turnoutPanel.refresh();
     } else if (c instanceof SignalPreferencesPanel) {

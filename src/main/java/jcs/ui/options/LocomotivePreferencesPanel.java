@@ -77,19 +77,18 @@ public class LocomotivePreferencesPanel extends JPanel {
 
   private final LocomotiveBeanListModel locoListModel;
   private CommandStationBean commandStationBean;
+  private LocomotiveBean selectedLocomotive;
 
   /**
    * Creates new form LocomotivePanel
    */
   public LocomotivePreferencesPanel() {
     locoListModel = new LocomotiveBeanListModel();
-
     initComponents();
-
-    postInit();
+    initModels();
   }
 
-  private void postInit() {
+  private void initModels() {
     if (PersistenceFactory.getService() != null) {
       commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
       this.commandStationLbl.setText(commandStationBean.getDescription());
@@ -97,36 +96,73 @@ public class LocomotivePreferencesPanel extends JPanel {
       List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStation(commandStationBean.getId());
       this.locoListModel.addAll(locos);
       this.synchronizeBtn.setVisible(commandStationBean.isLocomotiveSynchronizationSupport());
+
+      setFieldValues();
+      enableFields(selectedLocomotive != null);
     }
   }
 
-  protected void setComponentValues(LocomotiveBean loco) {
-    if (loco != null) {
-      if (loco.getLocIcon() != null) {
-        this.imageLbl.setIcon(new ImageIcon(loco.getLocIcon()));
+  private void setFieldValues() {
+    if (selectedLocomotive != null) {
+      Long id = selectedLocomotive.getId();
+      String name = selectedLocomotive.getName();
+      
+      //String previousName;
+      Long uid = selectedLocomotive.getUid();
+      
+      //Long mfxUid = selectedLocomotive.getMfxUid();
+      Integer address = selectedLocomotive.getAddress();
+      String icon = selectedLocomotive.getIcon();
+      String decoderTypeString = selectedLocomotive.getDecoderTypeString();
+      
+      //String mfxSid = selectedLocomotive.getMfxSid();
+      
+      Integer tachoMax = selectedLocomotive.getTachoMax();
+      Integer vMin = selectedLocomotive.getvMin();
+      
+      //Integer accelerationDelay = selectedLocomotive.getAccelerationDelay();
+      //Integer brakeDelay = selectedLocomotive.getBrakeDelay();
+      //Integer volume = selectedLocomotive.getVolume();
+      //String spm = selectedLocomotive.getSpm();
+      
+      Integer velocity = selectedLocomotive.getVelocity();
+      Integer richtung = selectedLocomotive.getRichtung();
+      
+      //String mfxType = selectedLocomotive.getMfxType();
+      boolean commuter = selectedLocomotive.isCommuter();
+      
+      Integer length = selectedLocomotive.getLength();
+      //String block = selectedLocomotive.getBlock();
+      boolean show = selectedLocomotive.isShow();
+      //String source= selectedLocomotive;
+      String commandStationId = selectedLocomotive.getCommandStationId();
+      //boolean manual= selectedLocomotive;
+
+      if (selectedLocomotive.getLocIcon() != null) {
+        //this.imageLbl.setIcon(new ImageIcon(selectedLocomotive.getIcon()));
         this.imageLbl.setText("");
       } else {
-        this.iconTF.setText(loco.getIcon());
+        //this.iconTF.setText(selectedLocomotive.getIcon());
       }
-      this.nameTF.setText(loco.getName());
+      this.nameTF.setText(selectedLocomotive.getName());
 
-      this.addressSpinner.setValue(loco.getAddress());
-      this.decoderCB.setSelectedItem(loco.getDecoderTypeString());
- 
-      if(loco.getvMin() != null) {
-        this.vMinSpinner.setValue(loco.getvMin());
+      this.addressSpinner.setValue(selectedLocomotive.getAddress());
+      this.decoderCB.setSelectedItem(selectedLocomotive.getDecoderTypeString());
+
+      if (selectedLocomotive.getvMin() != null) {
+        this.vMinSpinner.setValue(selectedLocomotive.getvMin());
       }
-      if(loco.getTachoMax() != null) {
-        this.tachoMaxSpinner.setValue(loco.getTachoMax());
+      if (selectedLocomotive.getTachoMax() != null) {
+        this.tachoMaxSpinner.setValue(selectedLocomotive.getTachoMax());
       }
-            
-      if (loco.getLength() != null) {
-        this.lengthSpinner.setValue(loco.getLength());
+
+      if (selectedLocomotive.getLength() != null) {
+        this.lengthSpinner.setValue(selectedLocomotive.getLength());
       } else {
         this.lengthSpinner.setValue(0);
       }
-      this.commuterCB.setSelected(loco.isCommuter());
-      this.showCB.setSelected(loco.isShow());
+      this.commuterCB.setSelected(selectedLocomotive.isCommuter());
+      this.showCB.setSelected(selectedLocomotive.isShow());
 
     } else {
       this.imageLbl.setText("ICON");
@@ -140,10 +176,54 @@ public class LocomotivePreferencesPanel extends JPanel {
       this.showCB.setSelected(true);
 
     }
+
   }
-  
-  
-  
+
+  private void enableFields(boolean enable) {
+
+  }
+
+//  protected void setComponentValues(LocomotiveBean loco) {
+//    if (loco != null) {
+//      if (loco.getLocIcon() != null) {
+//        this.imageLbl.setIcon(new ImageIcon(loco.getLocIcon()));
+//        this.imageLbl.setText("");
+//      } else {
+//        this.iconTF.setText(loco.getIcon());
+//      }
+//      this.nameTF.setText(loco.getName());
+//
+//      this.addressSpinner.setValue(loco.getAddress());
+//      this.decoderCB.setSelectedItem(loco.getDecoderTypeString());
+//
+//      if (loco.getvMin() != null) {
+//        this.vMinSpinner.setValue(loco.getvMin());
+//      }
+//      if (loco.getTachoMax() != null) {
+//        this.tachoMaxSpinner.setValue(loco.getTachoMax());
+//      }
+//
+//      if (loco.getLength() != null) {
+//        this.lengthSpinner.setValue(loco.getLength());
+//      } else {
+//        this.lengthSpinner.setValue(0);
+//      }
+//      this.commuterCB.setSelected(loco.isCommuter());
+//      this.showCB.setSelected(loco.isShow());
+//
+//    } else {
+//      this.imageLbl.setText("ICON");
+//
+//      this.addressSpinner.setValue(0);
+//      this.decoderCB.setSelectedItem("mm_prg");
+//      this.nameTF.setText("");
+//
+//      this.lengthSpinner.setValue(0);
+//      this.commuterCB.setSelected(false);
+//      this.showCB.setSelected(true);
+//
+//    }
+//  }
   private LocomotiveBean getLocomotiveFromPersistentStore(LocomotiveBean locomotive) {
     LocomotiveBean loco;
     if (locomotive.getId() != null) {
@@ -176,11 +256,9 @@ public class LocomotivePreferencesPanel extends JPanel {
     return loc;
   }
 
-
-  public void refresh() {
-    this.selectedLocomotive = null;
-  }
-
+//  public void refresh() {
+//    this.selectedLocomotive = null;
+//  }
   /**
    * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
    */
@@ -188,7 +266,6 @@ public class LocomotivePreferencesPanel extends JPanel {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    selectedLocomotive = new LocomotiveBean();
     topPanel = new JPanel();
     leftPanel = new JPanel();
     commandStationNameLbl = new JLabel();
@@ -592,7 +669,7 @@ public class LocomotivePreferencesPanel extends JPanel {
   private void newBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newBtnActionPerformed
     Logger.trace("Create new Loco...");
 
-    this.setComponentValues(selectedLocomotive);
+    //this.setComponentValues(selectedLocomotive);
   }//GEN-LAST:event_newBtnActionPerformed
 
 
@@ -603,7 +680,7 @@ public class LocomotivePreferencesPanel extends JPanel {
       Logger.trace("Save the Loco: " + this.selectedLocomotive);
 
       selectedLocomotive = this.selectedLocomotive = PersistenceFactory.getService().persist(loco);
-      setComponentValues(selectedLocomotive);
+      //setComponentValues(selectedLocomotive);
     }
   }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -611,17 +688,17 @@ public class LocomotivePreferencesPanel extends JPanel {
     Logger.trace("Delete Loco: " + this.selectedLocomotive);
     PersistenceFactory.getService().remove(selectedLocomotive);
     this.selectedLocomotive = null;
-    this.setComponentValues(selectedLocomotive);
+    //this.setComponentValues(selectedLocomotive);
   }//GEN-LAST:event_deleteBtnActionPerformed
 
   private void synchronize() {
     JCS.getJcsCommandStation().synchronizeLocomotivesWithCommandStation(null);
 
-    refresh();
+    //refresh();
   }
 
   private void refreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
-    refresh();
+    //refresh();
   }//GEN-LAST:event_refreshBtnActionPerformed
 
     private void synchronizeBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeBtnActionPerformed
@@ -630,8 +707,10 @@ public class LocomotivePreferencesPanel extends JPanel {
 
   private void locomotiveListValueChanged(ListSelectionEvent evt) {//GEN-FIRST:event_locomotiveListValueChanged
     if (!evt.getValueIsAdjusting()) {
-
       Logger.trace(this.locomotiveList.getSelectedValue());
+
+      this.selectedLocomotive = this.locomotiveList.getSelectedValue();
+      this.setFieldValues();
     }
   }//GEN-LAST:event_locomotiveListValueChanged
 
@@ -787,13 +866,13 @@ public class LocomotivePreferencesPanel extends JPanel {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   JLabel addressLbl;
-  private JSpinner addressSpinner;
+  JSpinner addressSpinner;
   JPanel bottomPanel;
   JPanel buttonPanel;
   JLabel commandStationLbl;
   JLabel commandStationNameLbl;
   JCheckBox commuterCB;
-  private JComboBox<String> decoderCB;
+  JComboBox<String> decoderCB;
   JLabel decoderLabel;
   JButton deleteBtn;
   Box.Filler filler1;
@@ -810,7 +889,7 @@ public class LocomotivePreferencesPanel extends JPanel {
   JLabel lengthLbl;
   JSpinner lengthSpinner;
   JPanel locoDetailPanel;
-  private JList<LocomotiveBean> locomotiveList;
+  JList<LocomotiveBean> locomotiveList;
   JScrollPane locomotivesSP;
   JLabel nameLbl;
   JTextField nameTF;
@@ -827,7 +906,6 @@ public class LocomotivePreferencesPanel extends JPanel {
   JPanel row8Panel;
   JPanel row9Panel;
   JButton saveBtn;
-  LocomotiveBean selectedLocomotive;
   JCheckBox showCB;
   JButton synchronizeBtn;
   JCheckBox synchronizedCB;

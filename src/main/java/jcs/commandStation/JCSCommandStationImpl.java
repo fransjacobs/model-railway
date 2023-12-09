@@ -65,7 +65,6 @@ import org.tinylog.Logger;
  */
 public class JCSCommandStationImpl implements JCSCommandStation {
 
-  //private CommandStation commandStation;
   private DecoderController decoderController;
   private List<AccessoryController> accessoryControllers;
   private List<FeedbackController> feedbackControllers;

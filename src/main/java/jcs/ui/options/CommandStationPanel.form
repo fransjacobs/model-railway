@@ -344,6 +344,7 @@
             <Component class="javax.swing.JLabel" name="lastUsedSerialLbl">
               <Properties>
                 <Property name="text" type="java.lang.String" value="serial"/>
+                <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="name" type="java.lang.String" value="lastUsedSerialLbl" noResource="true"/>
               </Properties>
             </Component>
