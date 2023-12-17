@@ -15,17 +15,18 @@
  */
 package jcs.commandStation;
 
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.MeasurementEventListener;
+import jcs.commandStation.events.PowerEventListener;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.events.SensorEventListener;
 
 /**
  * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For future use the implementation of the Repository could be changed to
@@ -93,6 +94,7 @@ public interface JCSCommandStation {
 
   void synchronizeSignalsWithCommandStation();
 
-  //Image getFunctionImage(String imageName);
-  //void updateGuiStatuses();
+  Image getLocomotiveImage(String imageName);
+
+  Image getLocomotiveFunctionImage(String imageName);
 }

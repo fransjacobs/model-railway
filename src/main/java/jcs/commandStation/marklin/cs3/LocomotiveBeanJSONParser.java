@@ -52,14 +52,14 @@ public class LocomotiveBeanJSONParser {
 
       lb.setId(id);
       lb.setName(locArray.getJSONObject(i).optString("name"));
-      lb.setPreviousName(locArray.getJSONObject(i).optString("internname"));
+      //lb.setPreviousName(locArray.getJSONObject(i).optString("internname"));
       lb.setUid(id);
 
       //appearantly the last 2 bytes van uid, so 0x4017 -> 0x17
-      if (uid != null && uid.length() > 2) {
-        String mfxSid = uid.substring(uid.length() - 2);
-        lb.setMfxSid("0x" + mfxSid);
-      }
+//      if (uid != null && uid.length() > 2) {
+//        String mfxSid = uid.substring(uid.length() - 2);
+//        lb.setMfxSid("0x" + mfxSid);
+//      }
 
       lb.setAddress(locArray.getJSONObject(i).getInt("address"));
 
@@ -71,17 +71,17 @@ public class LocomotiveBeanJSONParser {
 
       lb.setDecoderTypeString(locArray.getJSONObject(i).getString("dectyp"));
 
-      lb.setMfxSid(locArray.getJSONObject(i).getString("uid"));
+      //lb.setMfxSid(locArray.getJSONObject(i).getString("uid"));
 
       lb.setTachoMax(locArray.getJSONObject(i).getJSONObject("tachoLabels").getInt("speed"));
 
       lb.setvMin(locArray.getJSONObject(i).optInt("vmin"));
 
-      lb.setAccelerationDelay(locArray.getJSONObject(i).optInt("av"));
-      lb.setBrakeDelay(locArray.getJSONObject(i).optInt("bv"));
-      lb.setVolume(locArray.getJSONObject(i).optInt("volume"));
+      //lb.setAccelerationDelay(locArray.getJSONObject(i).optInt("av"));
+      //lb.setBrakeDelay(locArray.getJSONObject(i).optInt("bv"));
+      //lb.setVolume(locArray.getJSONObject(i).optInt("volume"));
 
-      lb.setSpm(locArray.getJSONObject(i).optString("spm", null));
+      //lb.setSpm(locArray.getJSONObject(i).optString("spm", null));
 
       lb.setVelocity(locArray.getJSONObject(i).getInt("speed"));
       lb.setRichtung(locArray.getJSONObject(i).getInt("dir"));

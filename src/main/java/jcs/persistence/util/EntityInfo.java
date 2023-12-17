@@ -16,7 +16,6 @@
 package jcs.persistence.util;
 
 import com.dieselpoint.norm.ColumnOrder;
-import com.dieselpoint.norm.DbException;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -327,9 +326,11 @@ public class EntityInfo<T> {
     applyDisplayColumnSettings();
   }
 
+  
+  //TODO: move this to a test class in test packsge
   public static void main(String[] a) {
 
-    LocomotiveBean loco16389 = new LocomotiveBean(16389L, "193 304-3 DB AG", 16389L, 1945312555L, 5, "DB BR 193 304-3", "mfx", "0x5", 160, 5, 0, 0, false, null, true);
+    LocomotiveBean loco16389 = new LocomotiveBean(16389L, "193 304-3 DB AG", 16389L, 5, "DB BR 193 304-3", "mfx", 160, 5, 0, 0, false, true);
 
     EntityInfo LocoInfo = new EntityInfo(LocomotiveBean.class);
 

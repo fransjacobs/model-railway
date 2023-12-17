@@ -19,7 +19,7 @@ import java.util.List;
 import jcs.entities.CommandStationBean;
 import jcs.entities.Device;
 
-public interface GenericController {
+interface GenericController {
 
   CommandStationBean getCommandStationBean();
 

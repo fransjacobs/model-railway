@@ -94,6 +94,16 @@
                 <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;CommandStationBean&gt;"/>
               </AuxValues>
             </Component>
+            <Component class="javax.swing.JCheckBox" name="defaultCommandStationChkBox">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Default"/>
+                <Property name="horizontalTextPosition" type="int" value="10"/>
+                <Property name="name" type="java.lang.String" value="defaultCommandStationChkBox" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="defaultCommandStationChkBoxActionPerformed"/>
+              </Events>
+            </Component>
             <Component class="javax.swing.Box$Filler" name="filler5">
               <Properties>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -142,16 +152,6 @@
               <AuxValues>
                 <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
               </AuxValues>
-            </Component>
-            <Component class="javax.swing.JCheckBox" name="defaultCommandStationChkBox">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Set default"/>
-                <Property name="horizontalTextPosition" type="int" value="10"/>
-                <Property name="name" type="java.lang.String" value="defaultCommandStationChkBox" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="defaultCommandStationChkBoxActionPerformed"/>
-              </Events>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -245,7 +245,23 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="7_filler5">
+                <CodeExpression id="7_defaultCommandStationChkBox">
+                  <CodeVariable name="defaultCommandStationChkBox" type="8192" declaredType="javax.swing.JCheckBox"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="defaultCommandStationChkBox"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="4_commandStationSelectionPanel"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="8_filler5">
                   <CodeVariable name="filler5" type="8192" declaredType="javax.swing.Box$Filler"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -261,7 +277,7 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="8_shortNameLbl">
+                <CodeExpression id="9_shortNameLbl">
                   <CodeVariable name="shortNameLbl" type="8192" declaredType="javax.swing.JLabel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -277,27 +293,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="9_filler6">
+                <CodeExpression id="10_filler6">
                   <CodeVariable name="filler6" type="8192" declaredType="javax.swing.Box$Filler"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
                       <ComponentRef name="filler6"/>
-                    </ExpressionProvider>
-                  </ExpressionOrigin>
-                </CodeExpression>
-              </Parameters>
-            </CodeStatement>
-            <CodeStatement>
-              <CodeExpression id="4_commandStationSelectionPanel"/>
-              <StatementProvider type="CodeMethod">
-                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
-              </StatementProvider>
-              <Parameters>
-                <CodeExpression id="10_defaultCommandStationChkBox">
-                  <CodeVariable name="defaultCommandStationChkBox" type="8192" declaredType="javax.swing.JCheckBox"/>
-                  <ExpressionOrigin>
-                    <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="defaultCommandStationChkBox"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -487,9 +487,6 @@
                 <Property name="horizontalAlignment" type="int" value="11"/>
                 <Property name="text" type="java.lang.String" value="Connection Type(s):"/>
                 <Property name="name" type="java.lang.String" value="connectionTypeLbl" noResource="true"/>
-                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                  <Dimension value="[115, 17]"/>
-                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JRadioButton" name="networkRB">

@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;
-import jcs.entities.enums.DecoderType;
 import org.tinylog.Logger;
 
 /**

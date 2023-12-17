@@ -29,11 +29,9 @@ public interface AccessoryController extends GenericController {
 //  boolean isConnected();
 //
 //  void disconnect();
-
 //  boolean isPower();
 //
 //  boolean power(boolean on);
-
   void switchAccessory(int address, AccessoryValue value);
 
   void switchAccessory(int address, AccessoryValue value, int switchTime);
@@ -51,5 +49,4 @@ public interface AccessoryController extends GenericController {
 //  List<Device> getDevices();
 //
 //  String getIp();
-
 }

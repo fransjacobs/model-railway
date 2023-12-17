@@ -33,15 +33,13 @@ import org.tinylog.Logger;
  */
 public class ControllerFactory {
 
-  private DecoderController decoderController;
-  private final Map<String, AccessoryController> accessoryControllers;
-  private final Map<String, FeedbackController> feedbackControllers;
+  private static DecoderController decoderController;
+  private static final Map<String, AccessoryController> accessoryControllers = new HashMap<>();
+  private static final Map<String, FeedbackController> feedbackControllers = new HashMap<>();
 
   private static ControllerFactory instance;
 
   private ControllerFactory() {
-    accessoryControllers = new HashMap<>();
-    feedbackControllers = new HashMap<>();
     loadPersistentJCSProperties();
   }
 
@@ -53,25 +51,20 @@ public class ControllerFactory {
   }
 
   public static DecoderController getDecoderController() {
-    return ControllerFactory.getDecoderController(null);
+    return ControllerFactory.getDecoderController(null, false);
   }
 
   public static AccessoryController getAccessoryController(String id) {
-    return ControllerFactory.instance.accessoryControllers.get(id);
+    return ControllerFactory.accessoryControllers.get(id);
   }
 
   public static FeedbackController getFeedbackController(String id) {
-    return ControllerFactory.instance.feedbackControllers.get(id);
+    return ControllerFactory.feedbackControllers.get(id);
   }
 
-  //Testing
-  public static DecoderController getDecoderController(CommandStationBean commandStationBean) {
-    return ControllerFactory.getInstance().getDecoderControllerImpl(commandStationBean);
-  }
-
-  private DecoderController getDecoderControllerImpl(CommandStationBean commandStationBean) {
+  public static synchronized DecoderController getDecoderController(CommandStationBean commandStationBean, boolean autoConnect) {
     if (decoderController == null || !decoderController.getCommandStationBean().equals(commandStationBean)) {
-      instance.instantiateDecoderController(commandStationBean);
+      decoderController = instantiateDecoderController(commandStationBean, autoConnect);
     }
     return decoderController;
   }
@@ -98,7 +91,7 @@ public class ControllerFactory {
     return new ArrayList<>(feedbackControllers.values());
   }
 
-  private boolean instantiateDecoderController(CommandStationBean commandStationBean) {
+  private static DecoderController instantiateDecoderController(CommandStationBean commandStationBean, boolean autoConnect) {
     CommandStationBean bean;
     if (commandStationBean != null) {
       bean = commandStationBean;
@@ -112,24 +105,26 @@ public class ControllerFactory {
       Logger.trace("Invoking decoderController: " + className);
 
       try {
-        Constructor c = Class.forName(className).getConstructor(CommandStationBean.class, Boolean.TYPE);
-        decoderController = (DecoderController) c.newInstance(commandStationBean, false);
+        Constructor c = Class.forName(className).getConstructor(Boolean.TYPE, CommandStationBean.class);
+        decoderController = (DecoderController) c.newInstance(autoConnect, commandStationBean);
       } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
         Logger.error("Can't instantiate a '" + className + "' " + ex.getMessage());
       }
     }
 
     if (decoderController != null && bean.isDecoderControlSupport() && bean.isEnabled()) {
-      accessoryControllers.put(bean.getId(), (AccessoryController) this.decoderController);
+      accessoryControllers.put(bean.getId(), (AccessoryController) decoderController);
       Logger.trace("decoderController is also accessoryController.");
     }
 
     if (decoderController != null && bean.isFeedbackSupport() && bean.isEnabled()) {
-      this.feedbackControllers.put(bean.getId(), (FeedbackController) this.decoderController);
+      feedbackControllers.put(bean.getId(), (FeedbackController) decoderController);
       Logger.trace("decoderController is also feedbackController.");
     }
 
-    return this.decoderController != null;
+    Logger.trace("CommandStationId: " + (decoderController.getCommandStationBean() != null ? decoderController.getCommandStationBean().getId() : "?"));
+
+    return decoderController;
   }
 
   private boolean instantiateAccessoryControllers() {
@@ -144,14 +139,14 @@ public class ControllerFactory {
           try {
             Constructor c = Class.forName(className).getConstructor(CommandStationBean.class, Boolean.TYPE);
             AccessoryController accessoryController = (AccessoryController) c.newInstance(bean, false);
-            this.accessoryControllers.put(bean.getId(), accessoryController);
+            accessoryControllers.put(bean.getId(), accessoryController);
           } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
             Logger.error("Can't instantiate a '" + className + "' " + ex.getMessage());
           }
         }
       }
     }
-    return !this.accessoryControllers.isEmpty();
+    return !accessoryControllers.isEmpty();
   }
 
   private boolean instantiateFeedbackControllers() {
@@ -166,14 +161,14 @@ public class ControllerFactory {
           try {
             Constructor c = Class.forName(className).getConstructor(CommandStationBean.class, Boolean.TYPE);
             FeedbackController feedbackController = (FeedbackController) c.newInstance(bean, false);
-            this.feedbackControllers.put(bean.getId(), feedbackController);
+            feedbackControllers.put(bean.getId(), feedbackController);
           } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
             Logger.error("Can't instantiate a '" + className + "' " + ex.getMessage());
           }
         }
       }
     }
-    return !this.feedbackControllers.isEmpty();
+    return !feedbackControllers.isEmpty();
   }
 
   private void loadPersistentJCSProperties() {
@@ -185,5 +180,4 @@ public class ControllerFactory {
       });
     }
   }
-
 }

@@ -17,7 +17,7 @@ package jcs.commandStation;
 
 import jcs.commandStation.events.SensorEventListener;
 
-public interface FeedbackController extends GenericController {
+public interface FeedbackController  extends GenericController {
 
   void addSensorEventListener(SensorEventListener listener);
 

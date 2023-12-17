@@ -37,28 +37,30 @@ public class FunctionSvgToPngConverter {
   private static final String GREY = "<style>.st0{fill:rgb(102, 102, 102);}</style>";
   private static final String BLACK = "<style>.st0{fill:rgb(0, 0, 0);}</style>";
 
-  private final Map<String, String> functionSvgCache;
+  private static final Map<String, String> functionSvgCache = new HashMap<>();
 
-  public FunctionSvgToPngConverter() {
+  static {
     ImageIO.scanForPlugins();
-    functionSvgCache = new HashMap<>();
   }
 
-  private String getCS3SvgName(String imageName) {
+//  public FunctionSvgToPngConverter() {
+//    ImageIO.scanForPlugins();
+//  }
+  private static String getCS3SvgName(String imageName) {
     //Remove te color
     //TODO prepend a 0 or 2 0 when number is only 1 or 2 long
     String svgName = imageName.replaceFirst("_ge_", "_");
     svgName = svgName.replaceFirst("_we_", "_");
     svgName = svgName.replaceFirst("_gr_", "_");
     svgName = svgName.toLowerCase();
-    return this.functionSvgCache.get(svgName);
+    return functionSvgCache.get(svgName);
   }
 
-  public BufferedImage getFunctionImageCS2(String imageName) {
+  public static BufferedImage getFunctionImageCS2(String imageName) {
     return getFunctionImageCS3(getCS3SvgName(imageName));
   }
 
-  public BufferedImage getFunctionImageCS3(String imageName) {
+  public static BufferedImage getFunctionImageCS3(String imageName) {
     String svgName = imageName.replace("_we_", "_").replace("_ge_", "_");
     String svg = getCS3SvgName(svgName);
 
@@ -132,15 +134,23 @@ public class FunctionSvgToPngConverter {
     return img;
   }
 
-  public void loadSvgCache(String json) {
-    this.functionSvgCache.clear();
+  public static void loadSvgCache(String json) {
+    functionSvgCache.clear();
     JSONObject jsonObject = new JSONObject(json);
     for (String key : jsonObject.keySet()) {
       String svg = jsonObject.getString(key);
       String svgName = key.substring(0, key.indexOf("."));
-      this.functionSvgCache.put(svgName, svg);
+      functionSvgCache.put(svgName, svg);
     }
-    Logger.trace("Loaded " + this.functionSvgCache.size() + " svg images");
+    Logger.trace("Loaded " + functionSvgCache.size() + " svg images");
+  }
+  
+  public static void clearSvgCache() {
+    functionSvgCache.clear();
+  }
+
+  public static boolean isSvgCacheLoaded() {
+    return !functionSvgCache.isEmpty();
   }
 
 }

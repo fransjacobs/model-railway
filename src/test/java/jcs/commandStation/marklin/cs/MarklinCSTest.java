@@ -51,7 +51,7 @@ public class MarklinCSTest {
         csb.setDefault(true);
         csb.setEnabled(true);
 
-        instance = new MarklinCentralStationImpl(csb, false);
+        instance = new MarklinCentralStationImpl(false, csb);
         pause(500);
         csAvailable = instance.connect();
 

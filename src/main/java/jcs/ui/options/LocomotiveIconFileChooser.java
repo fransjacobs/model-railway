@@ -18,6 +18,8 @@ package jcs.ui.options;
 import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.CommandStationBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -28,6 +30,8 @@ public class LocomotiveIconFileChooser extends javax.swing.JDialog {
 
   /**
    * Creates new form LocomotiveIconFileChooser
+   * @param parent
+   * @param modal
    */
   public LocomotiveIconFileChooser(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
@@ -37,7 +41,14 @@ public class LocomotiveIconFileChooser extends javax.swing.JDialog {
 
   private void postInit() {
     String defaultPath = System.getProperty("user.home") + File.separator + "jcs";
-    File jcsDir = new File(defaultPath);
+    //The path depends also on the sn of the commans station
+    CommandStationBean csb = PersistenceFactory.getService().getDefaultCommandStation();
+    String pathpart = "cache";
+    if(csb != null && csb.getLastUsedSerial() != null) {
+      pathpart = pathpart + File.separator + csb.getLastUsedSerial();
+    }
+    String path = defaultPath + File.separator + pathpart;
+    File jcsDir = new File(path);
     this.fileChooser.setCurrentDirectory(jcsDir);
     this.setLocationRelativeTo(null);
   }
@@ -75,7 +86,12 @@ public class LocomotiveIconFileChooser extends javax.swing.JDialog {
   public File getSelectedIconFile() {
     return this.fileChooser.getSelectedFile();
   }
-
+  
+  @Override
+  public void setVisible(boolean b) {
+    super.setVisible(b);
+  }
+  
   /**
    * @param args the command line arguments
    */
@@ -87,17 +103,15 @@ public class LocomotiveIconFileChooser extends javax.swing.JDialog {
     }
 
     /* Create and display the dialog */
-    java.awt.EventQueue.invokeLater(new Runnable() {
-      public void run() {
-        LocomotiveIconFileChooser dialog = new LocomotiveIconFileChooser(new javax.swing.JFrame(), true);
-        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-          @Override
-          public void windowClosing(java.awt.event.WindowEvent e) {
-            System.exit(0);
-          }
-        });
-        dialog.setVisible(true);
-      }
+    java.awt.EventQueue.invokeLater(() -> {
+      LocomotiveIconFileChooser dialog = new LocomotiveIconFileChooser(new javax.swing.JFrame(), true);
+      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        @Override
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          System.exit(0);
+        }
+      });
+      dialog.setVisible(true);
     });
   }
 

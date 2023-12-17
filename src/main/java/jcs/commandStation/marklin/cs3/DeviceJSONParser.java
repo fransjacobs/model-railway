@@ -15,8 +15,8 @@
  */
 package jcs.commandStation.marklin.cs3;
 
-import jcs.entities.Device;
 import jcs.commandStation.marklin.cs.SxxBus;
+import jcs.entities.Device;
 import jcs.entities.MeasurementChannel;
 import org.json.JSONArray;
 import org.json.JSONObject;

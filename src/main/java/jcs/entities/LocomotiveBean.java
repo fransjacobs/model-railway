@@ -27,7 +27,6 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import jcs.entities.enums.DecoderType;
 import jcs.persistence.util.ColumnPosition;
 
 @Table(name = "locomotives")
@@ -35,48 +34,52 @@ public class LocomotiveBean implements Serializable {
 
   private Long id;
   private String name;
-  private String previousName;
+  //private String previousName;
   private Long uid;
-  private Long mfxUid;
+  //private Long mfxUid;
   private Integer address;
   private String icon;
   private String decoderTypeString;
-  private String mfxSid;
+  //private String mfxSid;
   private Integer tachoMax;
   private Integer vMin;
-  private Integer accelerationDelay;
-  private Integer brakeDelay;
-  private Integer volume;
-  private String spm;
+  //private Integer accelerationDelay;
+  //private Integer brakeDelay;
+  //private Integer volume;
+  //private String spm;
   private Integer velocity;
   private Integer richtung;
-  private String mfxType;
+  //private String mfxType;
   private boolean commuter;
-  private Integer length;
-  private String block;
+  //private Integer length;
+  //private String block;
   private boolean show;
+
   private String source;
   private String commandStationId;
-  private boolean manual;
+  private boolean synchronize;
 
   private Image locIcon;
   private CommandStationBean commandStationBean;
 
+//  ALTER TABLE jcs.locomotives DROP COLUMN mfx_uid;
+//ALTER TABLE jcs.locomotives DROP COLUMN mfx_sid;
+//ALTER TABLE jcs.locomotives DROP COLUMN "length";
+//alter table locomotives add synchronize bool not null default false;  
   private final Map<Integer, FunctionBean> functions;
 
   public LocomotiveBean() {
     functions = new HashMap<>();
   }
 
-  public LocomotiveBean(Long id, String name, Long uid, Long mfxUid, Integer address, String icon, String decoderTypeString,
-          String mfxSid, Integer tachoMax, Integer vMin, Integer velocity, Integer direction, boolean commuter, Integer length, boolean show) {
+  public LocomotiveBean(Long id, String name, Long uid, Integer address, String icon, String decoderTypeString,
+          Integer tachoMax, Integer vMin, Integer velocity, Integer direction, boolean commuter, boolean show) {
 
-    this(id, name, uid, address, icon, decoderTypeString, tachoMax, vMin, velocity,
-            direction, commuter, length, show);
+    this(id, name, uid, address, icon, decoderTypeString, tachoMax, vMin, velocity, direction, commuter, show, false);
   }
 
-  public LocomotiveBean(Long id, String name, Long uid, Integer address, String icon, String decoderTypeString,
-          Integer tachoMax, Integer vMin, Integer velocity, Integer direction, boolean commuter, Integer length, boolean show) {
+  public LocomotiveBean(Long id, String name, Long uid, Integer address, String icon, String decoderTypeString, Integer tachoMax,
+           Integer vMin, Integer velocity, Integer direction, boolean commuter, boolean show, boolean synchronize) {
 
     this.id = id;
     this.name = name;
@@ -98,8 +101,9 @@ public class LocomotiveBean implements Serializable {
     //this.mfxType = mfxType;
     //this.block = block;
     this.commuter = commuter;
-    this.length = length;
+    //this.length = length;
     this.show = show;
+    this.synchronize = synchronize;
 
     functions = new HashMap<>();
   }
@@ -125,15 +129,6 @@ public class LocomotiveBean implements Serializable {
     this.name = name;
   }
 
-//  @Transient
-//  public String getPreviousName() {
-//    return previousName;
-//  }
-//
-//  public void setPreviousName(String previousName) {
-//    this.previousName = previousName;
-//  }
-
   @Column(name = "uid")
   @ColumnPosition(position = 2)
   public Long getUid() {
@@ -143,16 +138,6 @@ public class LocomotiveBean implements Serializable {
   public void setUid(Long uid) {
     this.uid = uid;
   }
-
-//  @Column(name = "mfx_uid")
-//  @ColumnPosition(position = 14)
-//  public Long getMfxUid() {
-//    return mfxUid;
-//  }
-//
-//  public void setMfxUid(Long mfxUid) {
-//    this.mfxUid = mfxUid;
-//  }
 
   @Column(name = "address", nullable = false)
   @ColumnPosition(position = 4)
@@ -186,17 +171,8 @@ public class LocomotiveBean implements Serializable {
 
   @Transient
   public DecoderType getDecoderType() {
-    return DecoderType.get(this.decoderTypeString);
-  }
-
-  @Column(name = "mfx_sid")
-  @ColumnPosition(position = 13)
-  public String getMfxSid() {
-    return mfxSid;
-  }
-
-  public void setMfxSid(String mfxSid) {
-    this.mfxSid = mfxSid;
+    DecoderType dt = DecoderType.get(this.decoderTypeString);
+    return dt;
   }
 
   @Column(name = "tacho_max")
@@ -218,43 +194,6 @@ public class LocomotiveBean implements Serializable {
   public void setvMin(Integer vMin) {
     this.vMin = vMin;
   }
-
-//  @Transient
-//  public Integer getAccelerationDelay() {
-//    return accelerationDelay;
-//  }
-//
-//  public void setAccelerationDelay(Integer accelerationDelay) {
-//    this.accelerationDelay = accelerationDelay;
-//  }
-
-//  @Transient
-//  public Integer getBrakeDelay() {
-//    return brakeDelay;
-//  }
-//
-//  public void setBrakeDelay(Integer brakeDelay) {
-//    this.brakeDelay = brakeDelay;
-//  }
-
-//  @Transient
-//  public Integer getVolume() {
-//    return volume;
-//  }
-//
-//  public void setVolume(Integer volume) {
-//    this.volume = volume;
-//  }
-
-//  @Transient
-//  public String getSpm() {
-//    return spm;
-//  }
-//
-//  @Transient
-//  public void setSpm(String spm) {
-//    this.spm = spm;
-//  }
 
   @Column(name = "velocity")
   @ColumnPosition(position = 7)
@@ -289,24 +228,6 @@ public class LocomotiveBean implements Serializable {
     this.richtung = direction.getMarklinValue();
   }
 
-//  @Transient
-//  public String getMfxType() {
-//    return mfxType;
-//  }
-//
-//  public void setMfxType(String mfxType) {
-//    this.mfxType = mfxType;
-//  }
-
-//  @Transient
-//  public String getBlock() {
-//    return block;
-//  }
-//
-//  public void setBlock(String block) {
-//    this.block = block;
-//  }
-
   @Column(name = "commuter", columnDefinition = "commuter bool default '0'")
   @ColumnPosition(position = 9)
   public boolean isCommuter() {
@@ -315,16 +236,6 @@ public class LocomotiveBean implements Serializable {
 
   public void setCommuter(boolean commuter) {
     this.commuter = commuter;
-  }
-
-  @Column(name = "length")
-  @ColumnPosition(position = 11)
-  public Integer getLength() {
-    return length;
-  }
-
-  public void setLength(Integer locLength) {
-    this.length = locLength;
   }
 
   @Column(name = "show", nullable = false, columnDefinition = "show bool default '1'")
@@ -364,6 +275,20 @@ public class LocomotiveBean implements Serializable {
     this.commandStationId = commandStationId;
   }
 
+  @Column(name = "synchronize", nullable = false, columnDefinition = "synchronize bool default '0'")
+  public boolean isSynchronize() {
+    return synchronize;
+  }
+
+  public void setSynchronize(boolean synchronize) {
+    this.synchronize = synchronize;
+  }
+
+  @Transient
+  public int getFunctionCount() {
+    return this.functions.size();
+  }
+
   @Transient
   public Map<Integer, FunctionBean> getFunctions() {
     return functions;
@@ -397,7 +322,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   public String toLogString() {
-    return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", uid=" + uid + ", mfxUid=" + mfxUid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", mfxSid=" + mfxSid + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", accelerationDelay=" + accelerationDelay + ", brakeDelay=" + brakeDelay + ", volume=" + volume + ", spm=" + spm + ", velocity=" + velocity + ", richtung=" + richtung + ", blocks=" + block + "}";
+    return "LocomotiveBean{" + "id=" + id + ", name=" + name + ", uid=" + uid + ", address=" + address + ", icon=" + icon + ", decoderType=" + decoderTypeString + ", tachoMax=" + tachoMax + ", vMin=" + vMin + ", velocity=" + velocity + ", richtung=" + richtung + "}";
   }
 
   //Convenience
@@ -436,26 +361,27 @@ public class LocomotiveBean implements Serializable {
     int hash = 7;
     hash = 53 * hash + Objects.hashCode(this.id);
     hash = 53 * hash + Objects.hashCode(this.name);
-    hash = 53 * hash + Objects.hashCode(this.previousName);
+    //hash = 53 * hash + Objects.hashCode(this.previousName);
     hash = 53 * hash + Objects.hashCode(this.uid);
-    hash = 53 * hash + Objects.hashCode(this.mfxUid);
+    //hash = 53 * hash + Objects.hashCode(this.mfxUid);
     hash = 53 * hash + Objects.hashCode(this.address);
     hash = 53 * hash + Objects.hashCode(this.icon);
     hash = 53 * hash + Objects.hashCode(this.decoderTypeString);
-    hash = 53 * hash + Objects.hashCode(this.mfxSid);
+    //hash = 53 * hash + Objects.hashCode(this.mfxSid);
     hash = 53 * hash + Objects.hashCode(this.tachoMax);
     hash = 53 * hash + Objects.hashCode(this.vMin);
-    hash = 53 * hash + Objects.hashCode(this.accelerationDelay);
-    hash = 53 * hash + Objects.hashCode(this.brakeDelay);
-    hash = 53 * hash + Objects.hashCode(this.volume);
-    hash = 53 * hash + Objects.hashCode(this.spm);
+    //hash = 53 * hash + Objects.hashCode(this.accelerationDelay);
+    //hash = 53 * hash + Objects.hashCode(this.brakeDelay);
+    //hash = 53 * hash + Objects.hashCode(this.volume);
+    //hash = 53 * hash + Objects.hashCode(this.spm);
     hash = 53 * hash + Objects.hashCode(this.velocity);
     hash = 53 * hash + Objects.hashCode(this.richtung);
-    hash = 53 * hash + Objects.hashCode(this.mfxType);
-    hash = 53 * hash + Objects.hashCode(this.block);
+    //hash = 53 * hash + Objects.hashCode(this.mfxType);
+    //hash = 53 * hash + Objects.hashCode(this.block);
     hash = 53 * hash + Objects.hashCode(this.locIcon);
     hash = 53 * hash + Objects.hashCode(this.show);
     hash = 53 * hash + Objects.hashCode(this.source);
+    hash = 53 * hash + Objects.hashCode(this.synchronize);
     hash = 53 * hash + Objects.hashCode(this.commandStationId);
 
     return hash;
@@ -482,19 +408,10 @@ public class LocomotiveBean implements Serializable {
     if (!Objects.equals(this.decoderTypeString, other.decoderTypeString)) {
       return false;
     }
-    if (!Objects.equals(this.mfxSid, other.mfxSid)) {
-      return false;
-    }
-    if (!Objects.equals(this.mfxType, other.mfxType)) {
-      return false;
-    }
     if (!Objects.equals(this.id, other.id)) {
       return false;
     }
     if (!Objects.equals(this.uid, other.uid)) {
-      return false;
-    }
-    if (!Objects.equals(this.mfxUid, other.mfxUid)) {
       return false;
     }
     if (!Objects.equals(this.address, other.address)) {
@@ -516,6 +433,9 @@ public class LocomotiveBean implements Serializable {
       return false;
     }
     if (!Objects.equals(this.commandStationId, other.commandStationId)) {
+      return false;
+    }
+    if (!Objects.equals(this.synchronize, other.synchronize)) {
       return false;
     }
     return Objects.equals(this.show, other.show);
@@ -623,6 +543,38 @@ public class LocomotiveBean implements Serializable {
         default ->
           SAME;
       };
+    }
+  }
+
+  public enum DecoderType {
+    MM("mm"), MM_DIL("mm2_dil8"), MFX("mfx"), MFXP("mfx+"), DCC("dcc"), SX1("sx1"), MM_PRG("mm_prg"), MM2_PRG("mm2_prg");
+
+    private final String decoderType;
+
+    private static final Map<String, DecoderType> ENUM_MAP;
+
+    DecoderType(String decoderType) {
+      this.decoderType = decoderType;
+    }
+
+    public String getDecoderType() {
+      return this.decoderType;
+    }
+
+    static {
+      Map<String, DecoderType> map = new ConcurrentHashMap<>();
+      for (DecoderType instance : DecoderType.values()) {
+        map.put(instance.getDecoderType(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static DecoderType get(String decoderType) {
+      if (decoderType == null) {
+        return null;
+      }
+      return ENUM_MAP.get(decoderType);
+
     }
   }
 

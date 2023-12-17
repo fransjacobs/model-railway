@@ -23,10 +23,11 @@ import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.DecoderType;
+
 
 /**
  * The Persistence Service takes care of all persistence functionality which is needed within the JCS Application

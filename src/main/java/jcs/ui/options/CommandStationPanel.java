@@ -20,14 +20,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Box;
@@ -54,7 +52,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import jcs.commandStation.GenericController;
+import jcs.commandStation.ControllerFactory;
+import jcs.commandStation.DecoderController;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.CommandStationBean.Protocol;
@@ -109,7 +108,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private void setFieldValues() {
     if (selectedCommandStation != null) {
-      //String connectVia = selectedCommandStation.getConnectVia();
       this.networkRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK));
       this.serialRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.SERIAL));
 
@@ -168,7 +166,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       boolean locomotiveFunctionSynchronizationSupport = selectedCommandStation.isLocomotiveFunctionSynchronizationSupport();
       this.locomotiveFunctionSynchSupportCB.setSelected(locomotiveFunctionSynchronizationSupport);
 
-      //String protocols = selectedCommandStation.getProtocols();
       Set<Protocol> protocols = selectedCommandStation.getSupportedProtocols();
       this.mmRB.setSelected(protocols.contains(Protocol.MM));
       this.mfxRB.setSelected(protocols.contains(Protocol.MFX));
@@ -266,10 +263,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationSelectionPanel = new JPanel();
     commandStationLbl = new JLabel();
     commandStationComboBox = new JComboBox<>();
+    defaultCommandStationChkBox = new JCheckBox();
     filler5 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     shortNameLbl = new JLabel();
     filler6 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
-    defaultCommandStationChkBox = new JCheckBox();
     csPropertiesPanel = new JPanel();
     enabledCB = new JCheckBox();
     filler4 = new Box.Filler(new Dimension(100, 0), new Dimension(100, 0), new Dimension(100, 32767));
@@ -368,6 +365,16 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     });
     commandStationSelectionPanel.add(commandStationComboBox);
 
+    defaultCommandStationChkBox.setText("Default");
+    defaultCommandStationChkBox.setHorizontalTextPosition(SwingConstants.LEADING);
+    defaultCommandStationChkBox.setName("defaultCommandStationChkBox"); // NOI18N
+    defaultCommandStationChkBox.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        defaultCommandStationChkBoxActionPerformed(evt);
+      }
+    });
+    commandStationSelectionPanel.add(defaultCommandStationChkBox);
+
     filler5.setName("filler5"); // NOI18N
     commandStationSelectionPanel.add(filler5);
 
@@ -380,16 +387,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     filler6.setName("filler6"); // NOI18N
     commandStationSelectionPanel.add(filler6);
-
-    defaultCommandStationChkBox.setText("Set default");
-    defaultCommandStationChkBox.setHorizontalTextPosition(SwingConstants.LEADING);
-    defaultCommandStationChkBox.setName("defaultCommandStationChkBox"); // NOI18N
-    defaultCommandStationChkBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        defaultCommandStationChkBoxActionPerformed(evt);
-      }
-    });
-    commandStationSelectionPanel.add(defaultCommandStationChkBox);
 
     topPanel.add(commandStationSelectionPanel);
 
@@ -435,7 +432,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     connectionTypeLbl.setHorizontalAlignment(SwingConstants.TRAILING);
     connectionTypeLbl.setText("Connection Type(s):");
     connectionTypeLbl.setName("connectionTypeLbl"); // NOI18N
-    connectionTypeLbl.setPreferredSize(new Dimension(115, 17));
     connectionPanel.add(connectionTypeLbl);
 
     connectionTypeBG.add(networkRB);
@@ -1020,7 +1016,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK)) {
         String ip = selectedCommandStation.getIpAddress();
         setProgress(10);
-        GenericController commandStation = createCommandStation(selectedCommandStation);
+        DecoderController commandStation = createCommandStation(selectedCommandStation);
         boolean canConnect = false;
         setProgress(20);
 
@@ -1060,25 +1056,15 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     @Override
     public void done() {
-      Toolkit.getDefaultToolkit().beep();
       testConnectionBtn.setEnabled(true);
     }
   }
 
-  private GenericController createCommandStation(CommandStationBean commandStationBean) {
-    GenericController commandStation = null;
-
-    String commandStationImplClassName = commandStationBean.getClassName();
-    try {
-      commandStation = (GenericController) Class.forName(commandStationImplClassName).getDeclaredConstructor(Boolean.class, CommandStationBean.class).newInstance(false, commandStationBean);
-    } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
-      Logger.trace("Can't instantiate a '" + commandStationImplClassName + "' " + ex.getMessage());
-      Logger.trace(ex);
-    }
-    return commandStation;
+  private DecoderController createCommandStation(CommandStationBean commandStationBean) {
+    return ControllerFactory.getDecoderController(commandStationBean, false);
   }
 
-  private boolean checkConnection(final GenericController commandStation) {
+  private boolean checkConnection(final DecoderController commandStation) {
     if (commandStation != null) {
       if (commandStation.isConnected()) {
         return true;

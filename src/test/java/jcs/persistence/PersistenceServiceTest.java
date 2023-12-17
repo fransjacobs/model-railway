@@ -24,6 +24,7 @@ import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
@@ -31,7 +32,6 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.DecoderType;
 import jcs.persistence.util.PersistenceTestHelper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -96,90 +96,26 @@ public class PersistenceServiceTest {
     SensorBean s2 = new SensorBean("65-2", "M2", 65, 2, 1, 1, 0, null);
     sensors.add(s2);
 
-    LocomotiveBean loco2
-            = new LocomotiveBean(2L, "BR 81 002", 2L, 0L, 2, "DB BR 81 008",
-                    "mm_prg", null, 120, 1, 0, 0, false, null, true);
+    //LocomotiveBean(Long id, String name, Long uid, Integer address, String icon, String decoderTypeString, Integer tachoMax
+    //             , Integer vMin, Integer velocity, Integer direction, boolean commuter, boolean show, boolean synchronize) {
+    LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
     loco2.setCommandStationId("marklin.cs");
     locomotives.add(loco2);
 
-    LocomotiveBean loco8
-            = new LocomotiveBean(
-                    8L,
-                    "NS  6505",
-                    8L,
-                    null,
-                    8,
-                    "NS DHG 6505",
-                    "mm_prg",
-                    null,
-                    120,
-                    0,
-                    0,
-                    0,
-                    false,
-                    null,
-                    true);
+    LocomotiveBean loco8 = new LocomotiveBean(8L, "NS  6505", 8L, 8, "NS DHG 6505", "mm_prg", 120, 0, 0, 0, false, true, false);
     loco8.setCommandStationId("marklin.cs");
     locomotives.add(loco8);
 
-    LocomotiveBean loco12
-            = new LocomotiveBean(
-                    12L,
-                    "BR 141 015-08",
-                    12L,
-                    null,
-                    12,
-                    "DB BR 141 136-2",
-                    "mm_prg",
-                    null,
-                    120,
-                    0,
-                    0,
-                    0,
-                    false,
-                    null,
-                    true);
+    LocomotiveBean loco12 = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 0, false, true, true);
     loco12.setCommandStationId("marklin.cs");
     locomotives.add(loco12);
 
-    LocomotiveBean loco16389
-            = new LocomotiveBean(
-                    16389L,
-                    "193 304-3 DB AG",
-                    16389L,
-                    1945312555L,
-                    5,
-                    "DB BR 193 304-3",
-                    "mfx",
-                    "0x5",
-                    160,
-                    5,
-                    0,
-                    0,
-                    false,
-                    null,
-                    true);
+    LocomotiveBean loco16389 = new LocomotiveBean(16389L, "193 304-3 DB AG", 16389L, 5, "DB BR 193 304-3", "mfx", 160, 5, 0, 0, false, true, true);
 
     loco16389.setCommandStationId("marklin.cs");
     locomotives.add(loco16389);
 
-    LocomotiveBean loco49156
-            = new LocomotiveBean(
-                    49156L,
-                    "NS Plan Y",
-                    49156L,
-                    null,
-                    4,
-                    "NS Plan Y",
-                    "dcc",
-                    null,
-                    120,
-                    1,
-                    0,
-                    0,
-                    false,
-                    null,
-                    true);
+    LocomotiveBean loco49156 = new LocomotiveBean(49156L, "NS Plan Y", 49156L, 4, "NS Plan Y", "dcc", 120, 1, 0, 0, false, true, false);
     loco49156.setCommandStationId("marklin.cs");
     locomotives.add(loco49156);
 
@@ -230,20 +166,19 @@ public class PersistenceServiceTest {
     w1.setCommandStationId("marklin.cs");
 
     this.turnouts.add(w1);
-    AccessoryBean w2
-            = new AccessoryBean(
-                    "2",
-                    2,
-                    "W 2L",
-                    "linksweiche",
-                    1,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "weichen",
-                    "006",
-                    "magicon_a_006_01.svg");
+    AccessoryBean w2 = new AccessoryBean(
+            "2",
+            2,
+            "W 2L",
+            "linksweiche",
+            1,
+            2,
+            200,
+            "mm",
+            "ein_alt",
+            "weichen",
+            "006",
+            "magicon_a_006_01.svg");
     w2.setCommandStationId("marklin.cs");
     this.turnouts.add(w2);
     AccessoryBean w6
@@ -668,17 +603,14 @@ public class PersistenceServiceTest {
       assertEquals(lbe.getId(), lbr.getId());
       assertEquals(lbe.getName(), lbr.getName());
       assertEquals(lbe.getUid(), lbr.getUid());
-      assertEquals(lbe.getMfxUid(), lbr.getMfxUid());
       assertEquals(lbe.getAddress(), lbr.getAddress());
       assertEquals(lbe.getIcon(), lbr.getIcon());
-      assertEquals(lbe.getMfxSid(), lbr.getMfxSid());
       assertEquals(lbe.getTachoMax(), lbr.getTachoMax());
       assertEquals(lbe.getvMin(), lbr.getvMin());
       assertEquals(lbe.getDecoderType(), lbr.getDecoderType());
       assertEquals(lbe.getVelocity(), lbr.getVelocity());
       assertEquals(lbe.getRichtung(), lbr.getRichtung());
       assertEquals(lbe.isCommuter(), lbr.isCommuter());
-      assertEquals(lbe.getLength(), lbr.getLength());
       assertEquals(lbe.isShow(), lbr.isShow());
     }
     assertEquals(expResult, result);
@@ -701,17 +633,14 @@ public class PersistenceServiceTest {
     assertEquals(expResult.getId(), result.getId());
     assertEquals(expResult.getName(), result.getName());
     assertEquals(expResult.getUid(), result.getUid());
-    assertEquals(expResult.getMfxUid(), result.getMfxUid());
     assertEquals(expResult.getAddress(), result.getAddress());
     assertEquals(expResult.getIcon(), result.getIcon());
-    assertEquals(expResult.getMfxSid(), result.getMfxSid());
     assertEquals(expResult.getTachoMax(), result.getTachoMax());
     assertEquals(expResult.getvMin(), result.getvMin());
     assertEquals(expResult.getDecoderType(), result.getDecoderType());
     assertEquals(expResult.getVelocity(), result.getVelocity());
     assertEquals(expResult.getRichtung(), result.getRichtung());
     assertEquals(expResult.isCommuter(), result.isCommuter());
-    assertEquals(expResult.getLength(), result.getLength());
     assertEquals(expResult.isShow(), result.isShow());
 
     assertEquals(expResult, result);
@@ -740,18 +669,16 @@ public class PersistenceServiceTest {
     assertEquals(expResult.getId(), result.getId());
     assertEquals(expResult.getName(), result.getName());
     assertEquals(expResult.getUid(), result.getUid());
-    assertEquals(expResult.getMfxUid(), result.getMfxUid());
     assertEquals(expResult.getAddress(), result.getAddress());
     assertEquals(expResult.getIcon(), result.getIcon());
-    assertEquals(expResult.getMfxSid(), result.getMfxSid());
     assertEquals(expResult.getTachoMax(), result.getTachoMax());
     assertEquals(expResult.getvMin(), result.getvMin());
     assertEquals(expResult.getDecoderType(), result.getDecoderType());
     assertEquals(expResult.getVelocity(), result.getVelocity());
     assertEquals(expResult.getRichtung(), result.getRichtung());
     assertEquals(expResult.isCommuter(), result.isCommuter());
-    assertEquals(expResult.getLength(), result.getLength());
     assertEquals(expResult.isShow(), result.isShow());
+    assertEquals(expResult.isSynchronize(), result.isSynchronize());
     assertEquals(expResult.getImported(), result.getImported());
     assertEquals(expResult.getCommandStationId(), result.getCommandStationId());
 
@@ -764,9 +691,7 @@ public class PersistenceServiceTest {
   @Test
   public void testPersist_LocomotiveBean() {
     System.out.println("persist");
-    LocomotiveBean locomotive
-            = new LocomotiveBean(80L, "DB BR 44 100", 16393L, 1945180593L, 80, "DB BR 44 100",
-                    "mfx", "0x81", 80, 5, 0, 0, false, null, true);
+    LocomotiveBean locomotive = new LocomotiveBean(80L, "DB BR 44 100", 16393L, 80, "DB BR 44 100", "mfx", 80, 5, 0, 0, false, true, false);
     locomotive.setCommandStationId("marklin.cs");
 
     locomotive.setImported("testcase");
@@ -816,7 +741,7 @@ public class PersistenceServiceTest {
   @Test
   public void testRemove_LocomotiveBean() {
     System.out.println("remove");
-    LocomotiveBean locomotiveBean = new LocomotiveBean(70L, "To Be Removed", 16370L, 1945180570L, 70, "To Be Removed", "mfx", "0x70", 80, 5, 0, 0, false, null, true);
+    LocomotiveBean locomotiveBean = new LocomotiveBean(70L, "To Be Removed", 16370L, 70, "To Be Removed", "mfx", 80, 5, 0, 0, false, true, false);
     locomotiveBean.setCommandStationId("marklin.cs");
 
     PersistenceService instance = PersistenceFactory.getService();

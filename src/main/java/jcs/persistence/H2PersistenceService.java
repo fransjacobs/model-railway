@@ -33,11 +33,11 @@ import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.DecoderType;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -168,10 +168,13 @@ public class H2PersistenceService implements PersistenceService {
   public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
     Object[] args = new Object[]{address, decoderType.getDecoderType()};
 
-    LocomotiveBean loco
-            = database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class);
-    loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-    loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    LocomotiveBean loco = database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class);
+    if (loco != null) {
+      if (loco.getIcon() != null) {
+        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      }
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
     return loco;
   }
 
@@ -274,7 +277,7 @@ public class H2PersistenceService implements PersistenceService {
       if (image != null) {
         int size = 100;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-        this.imageCache.put( imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+        this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
     return this.imageCache.get(imageName);
@@ -298,39 +301,44 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public Image readImage(String imageName, boolean function) {
     Image image = null;
+    if (imageName != null) {
+      String path;
+      if (imageName.contains(File.separator)) {
+        //Contains path seperators so assume it is a manual selected image
+        path = imageName;
+      } else {
+        //no path seperators so assume it is a synchonized command station icon
+        String serial = this.getDefaultCommandStation().getLastUsedSerial();
+        if (serial == null) {
+          serial = System.getProperty("cs.serial", "");
+        }
 
-    String path;
-    if (imageName.contains(File.separator)) {
-      //Contains path seperators so aumme it is a manual selected image
-      path = imageName;
-    } else {
-      //no path seperators so assume it is a synchonized command station icon
-      String serial = System.getProperty("cs.serial", "");
-      path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
-    }
-
-    if (function) {
-      path = path + "functions" + File.separator;
-    }
-
-    File imgFile;
-    if(path.contains(".")) {
-      imgFile = new File(path);
-    } else {
-      imgFile = new File(path + imageName.toLowerCase() + ".png");
-    }
-    
-    if (imgFile.exists()) {
-      try {
-        image = ImageIO.read(imgFile);
-      } catch (IOException e) {
-        Logger.trace("Image file " + imageName + ".png does not exists");
+        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
       }
-    } else {
-      //TODO:
-      // should we attempt to obtain it now and cache it when available, but also when it is not
-      // available put a marker so that we are not trying over and over again...
-      // who should be responsable for the cache... the command controller, this class, or?
+
+      if (function) {
+        path = path + "functions" + File.separator;
+      }
+
+      File imgFile;
+      if (path.contains(".")) {
+        imgFile = new File(path);
+      } else {
+        imgFile = new File(path + imageName.toLowerCase() + ".png");
+      }
+
+      if (imgFile.exists()) {
+        try {
+          image = ImageIO.read(imgFile);
+        } catch (IOException e) {
+          Logger.trace("Image file " + imageName + ".png does not exists");
+        }
+      } else {
+        //TODO:
+        // should we attempt to obtain it now and cache it when available, but also when it is not
+        // available put a marker so that we are not trying over and over again...
+        // who should be responsable for the cache... the command controller, this class, or?
+      }
     }
     return image;
   }

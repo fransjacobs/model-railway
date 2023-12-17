@@ -252,9 +252,8 @@ public class LocomotiveBeanParser {
       }
     }
 
-    LocomotiveBean lb = new LocomotiveBean(id, name, previousName, uid, mfxUid, address, icon, decoderType,
-            mfxSid, tachoMax, vMin, accelerationDelay, brakeDelay, volume, spm, velocity, direction, mfxType, block,
-            false, null, true);
+    LocomotiveBean lb = new LocomotiveBean(id, name, uid, address, icon, decoderType,
+            tachoMax, vMin, velocity, direction, false, true, true);
 
     //Ignore functions which have no functionType
     Logger.trace("Loc: " + name + " has " + locoFunctions.size() + " functions");

@@ -63,26 +63,24 @@ create table locomotives (
   id                 bigint not null,
   name               varchar(255) not null,
   uid                bigint,
-  mfx_uid            bigint,
   address            integer not null,
   icon               varchar(255),
   decoder_type       varchar(255) not null,
-  mfx_sid            varchar(255),
   tacho_max          integer,
   v_min              integer,
   velocity           integer,
   richtung           integer,
-  commuter           bool not null default false,
-  length             integer,
-  show               bool not null default true,
+  synchronize        bool not null default false,
   imported           varchar(255),
+  commuter           bool not null default false,
+  show               bool not null default true,
   command_station_id VARCHAR(255) not null,
   constraint loco_pk primary key (id),
-  constraint loco_addr_dety_un unique (address,decoder_type)
+  constraint loco_addr_dety_un unique (address,decoder_type,command_station_id)
 );
 
 create unique index loco_pk_idx on locomotives (id);
-create unique index loco_addr_dety_un_idx on locomotives (address, decoder_type);
+create unique index loco_addr_dety_un_idx on locomotives (address, decoder_type,command_station_id);
 
 alter table locomotives add constraint loco_cost_fk foreign key (command_station_id) references command_stations(id);
 

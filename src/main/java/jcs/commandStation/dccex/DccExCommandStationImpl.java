@@ -83,10 +83,10 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
   private int defaultSwitchTime;
 
   public DccExCommandStationImpl(CommandStationBean commandStationBean) {
-    this(commandStationBean, System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"));
+    this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"), commandStationBean);
   }
 
-  public DccExCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
+  public DccExCommandStationImpl(boolean autoConnect, CommandStationBean commandStationBean) {
     this.commandStationBean = commandStationBean;
     measurementChannels = new HashMap<>();
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");

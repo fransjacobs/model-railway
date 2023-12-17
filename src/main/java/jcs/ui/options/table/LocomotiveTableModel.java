@@ -72,7 +72,7 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
             case 2 ->
                 locomotive.getDecoderTypeString();
             case 3 ->
-                locomotive.getLength();
+                locomotive.isSynchronize();
             case 4 ->
                 locomotive.isCommuter();
             case 5 ->
@@ -92,7 +92,7 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
             case 2 ->
                 String.class;
             case 3 ->
-                Integer.class;
+                Boolean.class;
             case 4 ->
                 Boolean.class;
             case 5 ->
@@ -112,7 +112,7 @@ public class LocomotiveTableModel extends BeanTableModel<LocomotiveBean> {
             case 2 ->
                 locomotive.setDecoderTypeString((String) value);
             case 3 ->
-                locomotive.setLength((Integer) value);
+                locomotive.setSynchronize((Boolean) value);
             case 4 ->
                 locomotive.setCommuter((Boolean) value);
             case 5 ->

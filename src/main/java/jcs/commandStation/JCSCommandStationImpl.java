@@ -52,11 +52,11 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.SensorBean;
 import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.DecoderType;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -232,8 +232,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
   }
 
+  @Override
   public Image getLocomotiveImage(String imageName) {
     Image image = null;
+    
     if (decoderController != null) {
       image = decoderController.getLocomotiveImage(imageName);
       if (image != null) {
@@ -243,6 +245,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     return image;
   }
 
+  @Override
   public Image getLocomotiveFunctionImage(String imageName) {
     Image image = null;
     if (decoderController != null) {
@@ -370,7 +373,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
           loco.setName(dbLoco.getName());
           loco.setCommuter(dbLoco.isCommuter());
           loco.setShow(dbLoco.isShow());
-          loco.setLength(dbLoco.getLength());
 
           if (progressListener != null) {
             PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", dbLoco.getName(), "Updating " + loco.getId() + ", " + loco.getName());
