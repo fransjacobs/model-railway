@@ -213,6 +213,20 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId, Boolean show) {
+    Object[] args = new Object[]{commandStationId, (show ? 1 : 0)};
+
+    List<LocomotiveBean> locos = database.where("command_station_id=? and show=?", args).orderBy("id").results(LocomotiveBean.class);
+
+    for (LocomotiveBean loco : locos) {
+      loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
+
+    return locos;
+  }
+
+  @Override
   public FunctionBean persist(FunctionBean functionBean) {
     if (functionBean.getId() == null) {
       // Might be a new refresh of an existing function so let try to find it
@@ -308,16 +322,19 @@ public class H2PersistenceService implements PersistenceService {
         path = imageName;
       } else {
         //no path seperators so assume it is a synchonized command station icon
-        String serial = this.getDefaultCommandStation().getLastUsedSerial();
-        if (serial == null) {
-          serial = System.getProperty("cs.serial", "");
-        }
+//        String serial = this.getDefaultCommandStation().getLastUsedSerial();
+//        if (serial == null) {
+//          serial = System.getProperty("cs.serial", "");
+//        }
+//
+//        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
 
-        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
+        String sortName = this.getDefaultCommandStation().getShortName();
+        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + sortName + File.separator;
       }
 
       if (function) {
-        path = path + "functions" + File.separator;
+        path = path + "zfunctions" + File.separator;
       }
 
       File imgFile;
@@ -651,7 +668,6 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public BlockBean getBlock(String id) {
     BlockBean block = database.where("id = ?", id).first(BlockBean.class);
-
     return addReleatedObjects(block);
   }
 
@@ -713,8 +729,6 @@ public class H2PersistenceService implements PersistenceService {
   public CommandStationBean persist(CommandStationBean commandStationBean) {
     if (database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class) != null) {
       database.update(commandStationBean);
-
-      //database.sql("update command_stations set jcs_default = ? where id =?", commandStationBean.isDefault(), commandStationBean.getId()).execute();
     } else {
       Logger.warn("Can't Create CommandStation " + commandStationBean);
     }
@@ -723,15 +737,8 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean) {
-    //if (database.where("id=?", newDefaultCommandStationBean.getId()).first(CommandStationBean.class) != null) {
-    //The commandstation exists.
-    database.sql("update command_stations set default_cs = case when id = ? then true else false end", newDefaultCommandStationBean.getId()).execute();
-    //database.update(commandStationBean);
-
-    //database.sql("update command_stations set jcs_default = ? where id =?", commandStationBean.isDefault(), commandStationBean.getId()).execute();
-    // } else {
-    //  Logger.warn("Can't Update CommandStation " + newDefaultCommandStationBean);
-    //}
+    Object[] args = new Object[]{newDefaultCommandStationBean.getId(), newDefaultCommandStationBean.getId()};
+    database.sql("update command_stations set default_cs = case when id = ? then true else false end, enabled = case when id = ? then true else false end", args).execute();
     return newDefaultCommandStationBean;
   }
 

@@ -49,6 +49,7 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
@@ -79,6 +80,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private final List<MeasurementEventListener> measurementEventListeners;
 
   private final Set<Protocol> supportedProtocols;
+  private CommandStationBean commandStation;
 
   public JCSCommandStationImpl() {
     this("true".equalsIgnoreCase(System.getProperty("skip.controller.autoconnect", "true")));
@@ -111,13 +113,18 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     int accessoryCntrConnected = 0;
     int feedbackCntrConnected = 0;
 
-    if (decoderController == null) {
-      decoderController = ControllerFactory.getDecoderController();
+    this.commandStation = PersistenceFactory.getService().getDefaultCommandStation();
+
+    if (this.commandStation == null) {
+      Logger.error("No Default Command Station found!");
     }
 
     if (decoderController == null) {
-      //Still null(!)
-      Logger.warn("No DecoderController configured!");
+      decoderController = ControllerFactory.getDecoderController(commandStation,false);
+    }
+
+    if (decoderController == null) {
+      Logger.error("No DecoderController configured!");
     }
 
     if (accessoryControllers.isEmpty()) {
@@ -125,7 +132,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
 
     if (accessoryControllers.isEmpty()) {
-      //Still empty(!)
       Logger.warn("No Accessory Controllers configured!");
     }
 
@@ -134,7 +140,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
 
     if (feedbackControllers.isEmpty()) {
-      //Still empty(!)
       Logger.warn("No Feedback Controllers configured!");
     }
 
@@ -170,12 +175,15 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
     }
 
-    Logger.trace("Connected Controllers;  Decoder: " + decoderConnected + " Accessory #: " + accessoryCntrConnected + " Feeback #:" + feedbackCntrConnected);
+    Logger.trace("Connected Controllers:  Decoder: " + (decoderConnected?"Yes":"No") + " Accessory: " + accessoryCntrConnected + " Feedback:" + feedbackCntrConnected);
 
     if (decoderConnected) {
       this.decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
       this.decoderController.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
       this.decoderController.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
+      if (this.decoderController.getCommandStationBean() == null) {
+        Logger.error("NO CommandStation!");
+      }
       this.supportedProtocols.addAll(this.decoderController.getCommandStationBean().getSupportedProtocols());
 
       //Start the measurments backgrount task
@@ -235,7 +243,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   @Override
   public Image getLocomotiveImage(String imageName) {
     Image image = null;
-    
+
     if (decoderController != null) {
       image = decoderController.getLocomotiveImage(imageName);
       if (image != null) {

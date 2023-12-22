@@ -25,6 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
+import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -38,7 +39,9 @@ public class DriverCabFrame extends javax.swing.JFrame {
   private List<LocomotiveBean> filteredLocos;
   List<String> locoNames;
 
+  private CommandStationBean commandStation;
   private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
+  
 
   public DriverCabFrame() {
     initComponents();
@@ -54,6 +57,11 @@ public class DriverCabFrame extends javax.swing.JFrame {
 
   private void postInit() {
     this.driverCabPanel.setLocomotiveBean(null);
+    if (PersistenceFactory.getService() != null) {
+      this.commandStation = PersistenceFactory.getService().getDefaultCommandStation();
+    }
+    
+    
     loadLocomotives();
   }
 
@@ -63,7 +71,7 @@ public class DriverCabFrame extends javax.swing.JFrame {
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
       if (PersistenceFactory.getService() != null) {
-        locos.addAll(PersistenceFactory.getService().getLocomotives());
+        locos.addAll(PersistenceFactory.getService().getLocomotivesByCommandStation(commandStation.getId(),true));
       }
 
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());

@@ -26,6 +26,7 @@ import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.CommandStationBean;
+import org.tinylog.Logger;
 
 public abstract class AbstractController implements GenericController {
 
@@ -49,9 +50,9 @@ public abstract class AbstractController implements GenericController {
   }
 
   public AbstractController(boolean autoConnect, CommandStationBean commandStation) {
-    commandStationBean = commandStation;
-    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    this.commandStationBean = commandStation;
 
+    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     powerEventListeners = new LinkedList<>();
     sensorEventListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
@@ -63,6 +64,20 @@ public abstract class AbstractController implements GenericController {
     executor = Executors.newCachedThreadPool();
   }
 
+  @Override
+  public CommandStationBean getCommandStationBean() {
+    return commandStationBean;
+  }
+  
+  @Override
+  public boolean isConnected() {
+    return connected;
+  }
+
+  public boolean isPower() {
+    return this.power;
+  }
+    
   public void addPowerEventListener(PowerEventListener listener) {
     this.powerEventListeners.add(listener);
   }
@@ -109,6 +124,14 @@ public abstract class AbstractController implements GenericController {
 
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.remove(listener);
+  }
+
+  protected void pause(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException ex) {
+      Logger.error(ex);
+    }
   }
 
 }

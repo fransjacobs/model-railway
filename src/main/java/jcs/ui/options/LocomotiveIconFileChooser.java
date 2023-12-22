@@ -16,8 +16,6 @@
 package jcs.ui.options;
 
 import java.io.File;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.CommandStationBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -92,29 +90,6 @@ public class LocomotiveIconFileChooser extends javax.swing.JDialog {
     super.setVisible(b);
   }
   
-  /**
-   * @param args the command line arguments
-   */
-  public static void main(String args[]) {
-    try {
-      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.error("Can't set the LookAndFeel: " + ex);
-    }
-
-    /* Create and display the dialog */
-    java.awt.EventQueue.invokeLater(() -> {
-      LocomotiveIconFileChooser dialog = new LocomotiveIconFileChooser(new javax.swing.JFrame(), true);
-      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          System.exit(0);
-        }
-      });
-      dialog.setVisible(true);
-    });
-  }
-
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JFileChooser fileChooser;
   // End of variables declaration//GEN-END:variables

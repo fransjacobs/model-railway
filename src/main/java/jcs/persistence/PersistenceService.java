@@ -59,6 +59,8 @@ public interface PersistenceService {
   List<LocomotiveBean> getLocomotives();
 
   List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId);
+  
+  List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId, Boolean show);
 
   LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
 

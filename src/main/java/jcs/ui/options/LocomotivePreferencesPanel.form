@@ -1103,6 +1103,9 @@
                   <Dimension value="[85, 26]"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="vMinSpinnerStateChanged"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="tachoMaxLbl">
               <Properties>
@@ -1125,6 +1128,9 @@
                   <Dimension value="[85, 26]"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="tachoMaxSpinnerStateChanged"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="functionCountLbl">
               <Properties>
@@ -1147,6 +1153,9 @@
                   <Dimension value="[85, 23]"/>
                 </Property>
               </Properties>
+              <Events>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="functionCountSpinnerStateChanged"/>
+              </Events>
             </Component>
           </SubComponents>
           <LayoutCode>

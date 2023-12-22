@@ -97,6 +97,7 @@ public class ControllerFactory {
       bean = commandStationBean;
     } else {
       bean = PersistenceFactory.getService().getDefaultCommandStation();
+      Logger.trace("Default Command station: "+bean.getDescription()+" Decoder Support: "+bean.isDecoderControlSupport() );
     }
 
     if (bean.isDecoderControlSupport() && bean.isEnabled()) {
@@ -151,9 +152,9 @@ public class ControllerFactory {
 
   private boolean instantiateFeedbackControllers() {
     List<CommandStationBean> beans = PersistenceFactory.getService().getCommandStations();
-    //In case the AccessoryController is the same instance as the DecoderController, which is by example the case for a Marklin CS 3
+    //In case the FeedbackController is the same instance as the DecoderController, which is by example the case for a Marklin CS 3
     for (CommandStationBean bean : beans) {
-      if (bean.isDecoderControlSupport() && bean.isEnabled()) {
+      if (bean.isFeedbackSupport() && bean.isEnabled()) {
         //Check the decoder controller which might be the same Object
         if (!feedbackControllers.containsKey(bean.getId())) {
           String className = bean.getClassName();

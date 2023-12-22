@@ -18,20 +18,17 @@ package jcs.commandStation.dccex;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.JCS;
+import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
-import jcs.commandStation.FeedbackController;
 import jcs.commandStation.dccex.connection.DccExConnectionFactory;
 import jcs.commandStation.dccex.events.CabEvent;
 import jcs.commandStation.dccex.events.DccExMeasurementEvent;
 import jcs.commandStation.dccex.events.DccExMessageListener;
-import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEvent;
@@ -40,7 +37,6 @@ import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
@@ -55,57 +51,36 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author frans
+ * @author Frans Jacobs
  */
-public class DccExCommandStationImpl implements DecoderController, AccessoryController, FeedbackController {
+public class DccExCommandStationImpl extends AbstractController implements DecoderController, AccessoryController {
 
-  private CommandStationBean commandStationBean;
   private DccExConnection connection;
-  private boolean connected = false;
   //private final Map<Integer, Device> devices;
   private Device mainDevice;
 
   Map<Integer, MeasurementChannel> measurementChannels;
 
-  private final List<PowerEventListener> powerEventListeners;
-  private final List<AccessoryEventListener> accessoryEventListeners;
-  private final List<SensorEventListener> sensorEventListeners;
-
-  private final List<LocomotiveFunctionEventListener> locomotiveFunctionEventListeners;
-  private final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
-  private final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
-
-  private ExecutorService executor;
-  private boolean power;
-
-  private boolean debug = false;
-
   private int defaultSwitchTime;
 
   public DccExCommandStationImpl(CommandStationBean commandStationBean) {
-    this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"), commandStationBean);
+    this(false, commandStationBean);
   }
 
   public DccExCommandStationImpl(boolean autoConnect, CommandStationBean commandStationBean) {
-    this.commandStationBean = commandStationBean;
+    super(autoConnect, commandStationBean);
+    //this.commandStationBean = commandStationBean;
     measurementChannels = new HashMap<>();
-    debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
 
-    powerEventListeners = new LinkedList<>();
-    sensorEventListeners = new LinkedList<>();
-    accessoryEventListeners = new LinkedList<>();
-
-    locomotiveFunctionEventListeners = new LinkedList<>();
-    locomotiveDirectionEventListeners = new LinkedList<>();
-    locomotiveSpeedEventListeners = new LinkedList<>();
-
-    executor = Executors.newCachedThreadPool();
-  }
-
-  @Override
-  public CommandStationBean getCommandStationBean() {
-    return commandStationBean;
+    if (commandStationBean != null) {
+      if (autoConnect) {
+        Logger.trace("Perform auto connect");
+        connect();
+      }
+    } else {
+      Logger.error("Command Station NOT SET!");
+    }
   }
 
   private void initMeasurements() {
@@ -177,19 +152,6 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
     return this.connected;
   }
 
-  private void pause(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException ex) {
-      Logger.error(ex);
-    }
-  }
-
-  @Override
-  public boolean isConnected() {
-    return this.connection != null && this.connection.isConnected();
-  }
-
   @Override
   public String getIp() {
     return this.commandStationBean.getIpAddress();
@@ -217,11 +179,6 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
   }
 
   @Override
-  public boolean isPower() {
-    return this.power;
-  }
-
-  @Override
   public boolean power(boolean on) {
     if (connected) {
       this.connection.sendMessage(DccExMessageFactory.changePowerRequest(on));
@@ -233,7 +190,7 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
 
   @Override
   public void changeDirection(int address, Direction newDirection) {
-    if (this.power) {
+    if (power && connected) {
       int dir = newDirection.getDccExValue();
 
       String message = DccExMessageFactory.cabChangeSpeedRequest(address, 0, dir);
@@ -269,66 +226,6 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
   @Override
   public void switchAccessory(int address, AccessoryValue value, int switchTime) {
     throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void addPowerEventListener(PowerEventListener listener) {
-    this.powerEventListeners.add(listener);
-  }
-
-  @Override
-  public void removePowerEventListener(PowerEventListener listener) {
-    this.powerEventListeners.remove(listener);
-  }
-
-  @Override
-  public void addSensorEventListener(SensorEventListener listener) {
-    this.sensorEventListeners.add(listener);
-  }
-
-  @Override
-  public void removeSensorEventListener(SensorEventListener listener) {
-    this.sensorEventListeners.remove(listener);
-  }
-
-  @Override
-  public void addAccessoryEventListener(AccessoryEventListener listener) {
-    this.accessoryEventListeners.add(listener);
-  }
-
-  @Override
-  public void removeAccessoryEventListener(AccessoryEventListener listener) {
-    this.accessoryEventListeners.remove(listener);
-  }
-
-  @Override
-  public void addLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    this.locomotiveFunctionEventListeners.add(listener);
-  }
-
-  @Override
-  public void removeLocomotiveFunctionEventListener(LocomotiveFunctionEventListener listener) {
-    this.locomotiveFunctionEventListeners.remove(listener);
-  }
-
-  @Override
-  public void addLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
-    this.locomotiveDirectionEventListeners.add(listener);
-  }
-
-  @Override
-  public void removeLocomotiveDirectionEventListener(LocomotiveDirectionEventListener listener) {
-    this.locomotiveDirectionEventListeners.remove(listener);
-  }
-
-  @Override
-  public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    this.locomotiveSpeedEventListeners.add(listener);
-  }
-
-  @Override
-  public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
-    this.locomotiveSpeedEventListeners.remove(listener);
   }
 
   @Override
@@ -525,13 +422,13 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
         }
 
         switch (opcode) {
-          case "p":
+          case "p" -> {
             // Power on/off response. The character right after the opcode represents the power state
             boolean power = "1".equals(content);
             PowerEvent pe = new PowerEvent(power);
             this.commandStation.notifyPowerEventListeners(pe);
-            break;
-          case "i":
+          }
+          case "i" -> {
             // System information
             Device d = new Device();
             String[] dccexdev = content.split(" ");
@@ -549,36 +446,36 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
               }
             }
             this.commandStation.mainDevice = d;
-            break;
-          case "c":
-            // Track current
-            break;
-          case "l":
+          }
+          case "c" -> {
+          }
+          case "l" -> {
             // Locomotive changed.
             CabEvent ce = new CabEvent(content);
             this.commandStation.notifyLocomotiveEventListeners(ce);
-            break;
-          case "=":
+          }
+          case "=" -> {
             DccExMeasurementEvent me1 = new DccExMeasurementEvent(opcode, content);
             this.commandStation.handleMeasurement(me1);
-            break;
-          case "j":
+          }
+          case "j" -> {
             DccExMeasurementEvent me2 = new DccExMeasurementEvent(opcode, content);
             this.commandStation.handleMeasurement(me2);
-            break;
-          case "H":
-            // Turnout response. TODO: obtain the parameters
-            break;
-          case "q":
-            // Sensor/Input: ACTIVE to INACTIVE
-            break;
-          case "Q":
-            // Sensor/Input: INACTIVE to ACTIVE
-            break;
-          case "Y":
-            // Output response
-            break;
+          }
+          case "H" -> {
+          }
+          case "q" -> {
+          }
+          case "Q" -> {
+          }
+          case "Y" -> {
+          }
         }
+        // Track current
+        // Turnout response. TODO: obtain the parameters
+        // Sensor/Input: ACTIVE to INACTIVE
+        // Sensor/Input: INACTIVE to ACTIVE
+        // Output response
       }
     }
   }
@@ -591,15 +488,24 @@ public class DccExCommandStationImpl implements DecoderController, AccessoryCont
 
     if (1 == 1) {
       CommandStationBean csb = new CommandStationBean();
-      csb.setId("cs.DccEX.network");
+      csb.setId("dcc-ex.network");
       csb.setDescription("DCC-EX Network");
-      csb.setClassName("jcs.controller.dccex.DccExCommandStationImpl");
+      csb.setClassName("jcs.commandStation.dccex.DccExCommandStationImpl");
       csb.setConnectVia("NETWORK");
+      //csb.setConnectVia("SERIAL");
       csb.setIpAddress("192.168.178.73");
       csb.setNetworkPort(2560);
       csb.setDefault(true);
       csb.setIpAutoConfiguration(false);
       csb.setEnabled(true);
+      csb.setShortName("dcc-ex");
+      csb.setDecoderControlSupport(true);
+      csb.setAccessorySynchronizationSupport(false);
+      csb.setFeedbackSupport(false);
+      csb.setLocomotiveFunctionSynchronizationSupport(false);
+      csb.setLocomotiveImageSynchronizationSupport(false);
+      csb.setLocomotiveSynchronizationSupport(false);
+      csb.setProtocols("DCC");
 
       //CommandStation cs = CommandStationFactory.getCommandStation(csb);
       DccExCommandStationImpl cs = new DccExCommandStationImpl(csb);

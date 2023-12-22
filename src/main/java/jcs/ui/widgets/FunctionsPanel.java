@@ -132,30 +132,33 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       this.locomotive = locomotive;
       Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
-      Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
+      //Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
 
       for (FunctionBean fb : functions.values()) {
         Integer fnr = fb.getNumber();
         JToggleButton btn = this.buttons.get(fnr);
 
-        Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
+        //Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
 
         if (fb.getInActiveIconImage() != null) {
           btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
         } else {
           btn.setText("F" + fb.getNumber());
-          Logger.trace("Missing Icon: " + fb.getInActiveIcon());
+          //Logger.trace("Missing Icon: " + fb.getInActiveIcon()+" Button Text: "+btn.getText());
         }
 
         if (fb.getActiveIconImage() != null) {
           btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
         } else {
           btn.setText("F" + fb.getNumber());
-          Logger.trace("Missing Icon: " + fb.getActiveIcon());
+          //Logger.trace("Missing Icon: " + fb.getActiveIcon()+" Button Text: "+btn.getText());
         }
 
         boolean val = fb.getValue() == 1;
         btn.setSelected(val);
+        
+        //Logger.trace("Button "+btn.getActionCommand()+" selected: "+btn.isSelected());
+        
         btn.setActionCommand("F" + fb.getNumber());
         btn.setEnabled(true);
       }
@@ -177,7 +180,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
 
     executor.execute(() -> changeFunction(value, functionNumber, locomotive));
-
   }
 
   private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
@@ -259,10 +261,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f0TB.setBackground(new java.awt.Color(204, 204, 204));
     f0TB.setText("F0");
+    f0TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f0TB.setContentAreaFilled(false);
     f0TB.setDoubleBuffered(true);
     f0TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f0TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f0TB.setName("f0TB"); // NOI18N
+    f0TB.setOpaque(true);
     f0TB.setPreferredSize(new java.awt.Dimension(40, 40));
     f0TB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -274,10 +279,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f1TB.setBackground(new java.awt.Color(204, 204, 204));
     f1TB.setText("F2");
     f1TB.setActionCommand("F1");
+    f1TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f1TB.setContentAreaFilled(false);
     f1TB.setDoubleBuffered(true);
     f1TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f1TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f1TB.setName("f1TB"); // NOI18N
+    f1TB.setOpaque(true);
     f1TB.setPreferredSize(new java.awt.Dimension(40, 40));
     f1TB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -288,10 +296,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f2TB.setBackground(new java.awt.Color(204, 204, 204));
     f2TB.setText("F2");
+    f2TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f2TB.setContentAreaFilled(false);
     f2TB.setDoubleBuffered(true);
     f2TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f2TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f2TB.setName("f2TB"); // NOI18N
+    f2TB.setOpaque(true);
     f2TB.setPreferredSize(new java.awt.Dimension(40, 40));
     f2TB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -302,10 +313,13 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f3TB.setBackground(new java.awt.Color(204, 204, 204));
     f3TB.setText("F3");
+    f3TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f3TB.setContentAreaFilled(false);
     f3TB.setDoubleBuffered(true);
     f3TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f3TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f3TB.setName("f3TB"); // NOI18N
+    f3TB.setOpaque(true);
     f3TB.setPreferredSize(new java.awt.Dimension(40, 40));
     f3TB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -316,6 +330,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f4TB.setBackground(new java.awt.Color(204, 204, 204));
     f4TB.setText("F4");
+    f4TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f4TB.setContentAreaFilled(false);
     f4TB.setDoubleBuffered(true);
     f4TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f4TB.setMinimumSize(new java.awt.Dimension(40, 40));
@@ -330,6 +346,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f5TB.setBackground(new java.awt.Color(204, 204, 204));
     f5TB.setText("F5");
+    f5TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f5TB.setContentAreaFilled(false);
     f5TB.setDoubleBuffered(true);
     f5TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f5TB.setMinimumSize(new java.awt.Dimension(40, 40));
@@ -344,6 +362,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f6TB.setBackground(new java.awt.Color(204, 204, 204));
     f6TB.setText("F6");
+    f6TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f6TB.setContentAreaFilled(false);
     f6TB.setDoubleBuffered(true);
     f6TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f6TB.setMinimumSize(new java.awt.Dimension(40, 40));
@@ -358,6 +378,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f7TB.setBackground(new java.awt.Color(204, 204, 204));
     f7TB.setText("F7");
+    f7TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f7TB.setContentAreaFilled(false);
     f7TB.setDoubleBuffered(true);
     f7TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f7TB.setMinimumSize(new java.awt.Dimension(40, 40));
@@ -372,6 +394,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f8TB.setBackground(new java.awt.Color(204, 204, 204));
     f8TB.setText("F8");
+    f8TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f8TB.setContentAreaFilled(false);
     f8TB.setDoubleBuffered(true);
     f8TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f8TB.setMinimumSize(new java.awt.Dimension(40, 40));
@@ -386,6 +410,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f9TB.setBackground(new java.awt.Color(204, 204, 204));
     f9TB.setText("F9");
+    f9TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f9TB.setContentAreaFilled(false);
     f9TB.setDoubleBuffered(true);
     f9TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f9TB.setMinimumSize(new java.awt.Dimension(40, 40));
@@ -400,6 +426,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f10TB.setBackground(new java.awt.Color(204, 204, 204));
     f10TB.setText("F10");
+    f10TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f10TB.setContentAreaFilled(false);
     f10TB.setDoubleBuffered(true);
     f10TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f10TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -415,6 +443,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f11TB.setBackground(new java.awt.Color(204, 204, 204));
     f11TB.setText("F11");
+    f11TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f11TB.setContentAreaFilled(false);
     f11TB.setDoubleBuffered(true);
     f11TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f11TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -430,6 +460,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f12TB.setBackground(new java.awt.Color(204, 204, 204));
     f12TB.setText("F12");
+    f12TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f12TB.setContentAreaFilled(false);
     f12TB.setDoubleBuffered(true);
     f12TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f12TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -445,6 +477,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f13TB.setBackground(new java.awt.Color(204, 204, 204));
     f13TB.setText("F13");
+    f13TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f13TB.setContentAreaFilled(false);
     f13TB.setDoubleBuffered(true);
     f13TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f13TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -460,6 +494,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f14TB.setBackground(new java.awt.Color(204, 204, 204));
     f14TB.setText("F14");
+    f14TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f14TB.setContentAreaFilled(false);
     f14TB.setDoubleBuffered(true);
     f14TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f14TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -475,6 +511,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f15TB.setBackground(new java.awt.Color(204, 204, 204));
     f15TB.setText("F15");
+    f15TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f15TB.setContentAreaFilled(false);
     f15TB.setDoubleBuffered(true);
     f15TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f15TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -495,6 +533,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f16TB.setBackground(new java.awt.Color(204, 204, 204));
     f16TB.setText("F16");
+    f16TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f16TB.setContentAreaFilled(false);
     f16TB.setDoubleBuffered(true);
     f16TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f16TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -509,6 +549,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f17TB.setBackground(new java.awt.Color(204, 204, 204));
     f17TB.setText("F17");
+    f17TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f17TB.setContentAreaFilled(false);
     f17TB.setDoubleBuffered(true);
     f17TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f17TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -523,6 +565,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f18TB.setBackground(new java.awt.Color(204, 204, 204));
     f18TB.setText("F18");
+    f18TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f18TB.setContentAreaFilled(false);
     f18TB.setDoubleBuffered(true);
     f18TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f18TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -537,6 +581,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f19TB.setBackground(new java.awt.Color(204, 204, 204));
     f19TB.setText("F19");
+    f19TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f19TB.setContentAreaFilled(false);
     f19TB.setDoubleBuffered(true);
     f19TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f19TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -551,6 +597,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f20TB.setBackground(new java.awt.Color(204, 204, 204));
     f20TB.setText("F20");
+    f20TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f20TB.setContentAreaFilled(false);
     f20TB.setDoubleBuffered(true);
     f20TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f20TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -565,6 +613,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f21TB.setBackground(new java.awt.Color(204, 204, 204));
     f21TB.setText("F21");
+    f21TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f21TB.setContentAreaFilled(false);
     f21TB.setDoubleBuffered(true);
     f21TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f21TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -579,6 +629,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f22TB.setBackground(new java.awt.Color(204, 204, 204));
     f22TB.setText("F22");
+    f22TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f22TB.setContentAreaFilled(false);
     f22TB.setDoubleBuffered(true);
     f22TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f22TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -593,6 +645,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f23TB.setBackground(new java.awt.Color(204, 204, 204));
     f23TB.setText("F23");
+    f23TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f23TB.setContentAreaFilled(false);
     f23TB.setDoubleBuffered(true);
     f23TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f23TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -607,6 +661,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f24TB.setBackground(new java.awt.Color(204, 204, 204));
     f24TB.setText("F24");
+    f24TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f24TB.setContentAreaFilled(false);
     f24TB.setDoubleBuffered(true);
     f24TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f24TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -621,6 +677,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f25TB.setBackground(new java.awt.Color(204, 204, 204));
     f25TB.setText("F25");
+    f25TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f25TB.setContentAreaFilled(false);
     f25TB.setDoubleBuffered(true);
     f25TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f25TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -635,6 +693,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f26TB.setBackground(new java.awt.Color(204, 204, 204));
     f26TB.setText("F26");
+    f26TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f26TB.setContentAreaFilled(false);
     f26TB.setDoubleBuffered(true);
     f26TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f26TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -649,6 +709,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f27TB.setBackground(new java.awt.Color(204, 204, 204));
     f27TB.setText("F27");
+    f27TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f27TB.setContentAreaFilled(false);
     f27TB.setDoubleBuffered(true);
     f27TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f27TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -663,6 +725,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f28TB.setBackground(new java.awt.Color(204, 204, 204));
     f28TB.setText("F28");
+    f28TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f28TB.setContentAreaFilled(false);
     f28TB.setDoubleBuffered(true);
     f28TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f28TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -677,6 +741,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f29TB.setBackground(new java.awt.Color(204, 204, 204));
     f29TB.setText("F29");
+    f29TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f29TB.setContentAreaFilled(false);
     f29TB.setDoubleBuffered(true);
     f29TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f29TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -691,6 +757,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f30TB.setBackground(new java.awt.Color(204, 204, 204));
     f30TB.setText("F30");
+    f30TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f30TB.setContentAreaFilled(false);
     f30TB.setDoubleBuffered(true);
     f30TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f30TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -705,6 +773,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     f31TB.setBackground(new java.awt.Color(204, 204, 204));
     f31TB.setText("F31");
+    f31TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+    f31TB.setContentAreaFilled(false);
     f31TB.setDoubleBuffered(true);
     f31TB.setMargin(new java.awt.Insets(2, 2, 2, 2));
     f31TB.setMaximumSize(new java.awt.Dimension(40, 40));
@@ -874,9 +944,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
       if (JCS.getJcsCommandStation() != null) {
 
-        //LocomotiveBean loc = CommandStationFactory.getTrackService().getLocomotive(new BigDecimal(16390));
-        //LocomotiveBean loc = CommandStationFactory.getTrackService().getLocomotive(new BigDecimal(16394));
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16394L);
+        //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(49189L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(37L);
         Logger.debug(loc);
 
         testPanel.setLocomotive(loc);

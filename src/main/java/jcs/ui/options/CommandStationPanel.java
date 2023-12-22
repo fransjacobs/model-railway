@@ -848,8 +848,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }//GEN-LAST:event_commandStationComboBoxActionPerformed
 
   private void defaultCommandStationChkBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_defaultCommandStationChkBoxActionPerformed
-    Logger.trace("Setting " + this.selectedCommandStation + " as default");
+    Logger.trace("Setting " + selectedCommandStation + " as default");
     PersistenceFactory.getService().changeDefaultCommandStation(selectedCommandStation);
+    initModels();
   }//GEN-LAST:event_defaultCommandStationChkBoxActionPerformed
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed

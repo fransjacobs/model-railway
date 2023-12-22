@@ -41,6 +41,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
@@ -149,7 +150,6 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       this.iconTF.setText(icon);
 
       Image locIcon = selectedLocomotive.getLocIcon();
-      Logger.trace("LocIcon is " + (locIcon == null ? "null" : "not null"));
       if (locIcon == null) {
         if (commandStationBean.isDecoderControlSupport() && commandStationBean.isLocomotiveImageSynchronizationSupport() && icon != null) {
           locIcon = PersistenceFactory.getService().getLocomotiveImage(icon);
@@ -540,6 +540,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
     vMinSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
     vMinSpinner.setPreferredSize(new Dimension(85, 26));
+    vMinSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        vMinSpinnerStateChanged(evt);
+      }
+    });
     row4Panel.add(vMinSpinner);
 
     tachoMaxLbl.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -550,6 +555,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
     tachoMaxSpinner.setModel(new SpinnerNumberModel(0, 0, 300, 1));
     tachoMaxSpinner.setPreferredSize(new Dimension(85, 26));
+    tachoMaxSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        tachoMaxSpinnerStateChanged(evt);
+      }
+    });
     row4Panel.add(tachoMaxSpinner);
 
     functionCountLbl.setHorizontalAlignment(SwingConstants.TRAILING);
@@ -560,6 +570,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
     functionCountSpinner.setModel(new SpinnerNumberModel(0, 0, 32, 1));
     functionCountSpinner.setPreferredSize(new Dimension(85, 23));
+    functionCountSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        functionCountSpinnerStateChanged(evt);
+      }
+    });
     row4Panel.add(functionCountSpinner);
 
     locoDetailPanel.add(row4Panel);
@@ -706,16 +721,20 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
     locomotiveBean.setImported("Manual Updated");
 
+    locomotiveBean = crudFunctionBeans(locomotiveBean);
+
     return locomotiveBean;
   }
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     if (this.selectedLocomotive != null) {
       setLocomotiveValues(selectedLocomotive);
+
       Logger.trace("Saving Loco: " + selectedLocomotive);
+
       selectedLocomotive = PersistenceFactory.getService().persist(selectedLocomotive);
-      this.initModels();
-      this.locomotiveList.setSelectedValue(selectedLocomotive, true);
+      initModels();
+      locomotiveList.setSelectedValue(selectedLocomotive, true);
     }
   }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -848,6 +867,62 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       }
     }
   }//GEN-LAST:event_iconTFFocusLost
+
+  private void vMinSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_vMinSpinnerStateChanged
+    Integer vMin = (Integer) vMinSpinner.getValue();
+    this.selectedLocomotive.setvMin(vMin);
+  }//GEN-LAST:event_vMinSpinnerStateChanged
+
+  private void tachoMaxSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_tachoMaxSpinnerStateChanged
+    Integer tachoMax = (Integer) tachoMaxSpinner.getValue();
+    this.selectedLocomotive.setTachoMax(tachoMax);
+  }//GEN-LAST:event_tachoMaxSpinnerStateChanged
+
+  private void functionCountSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_functionCountSpinnerStateChanged
+
+  }//GEN-LAST:event_functionCountSpinnerStateChanged
+
+  private LocomotiveBean crudFunctionBeans(LocomotiveBean locomotiveBean) {
+    int functionCount = (int) this.functionCountSpinner.getValue();
+
+    long locomotiveId;
+    if (locomotiveBean.getId() != null) {
+      locomotiveId = locomotiveBean.getId();
+    } else {
+      locomotiveId = locomotiveBean.getAddress();
+    }
+
+    Map<Integer, FunctionBean> functions = locomotiveBean.getFunctions();
+    if (functionCount < functions.size()) {
+      //Remove the function at the end so
+      int difFn = functions.size() - functionCount;
+      int startIdx = functions.size() - difFn;
+      int max = functions.size();
+      for (int i = startIdx; i < max; i++) {
+        Logger.trace("Removing F" + i);
+        functions.remove(i);
+      }
+    }
+
+    if (functionCount > functions.size()) {
+      for (int i = 0; i < functionCount; i++) {
+        //Check if the function exists
+        if (functions.containsKey(i)) {
+          Logger.trace("Function F" + i + " exists");
+        } else {
+          Logger.trace("Function F" + i + " created");
+
+          int functionType = 50+ i;
+          FunctionBean fb = new FunctionBean(locomotiveId, i,functionType, 0);
+          //FunctionType wat are the types "F0,F1,F3,....F31....?
+          
+           //50 en hoger of zelf iets toevoegen?
+          functions.put(i, fb);
+        }
+      }
+    }
+    return locomotiveBean;
+  }
 
   class LocomotiveBeanByNameSorter implements Comparator<LocomotiveBean> {
 

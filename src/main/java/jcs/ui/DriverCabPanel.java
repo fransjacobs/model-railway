@@ -325,7 +325,10 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     this.functionsPanel.setLocomotive(locomotiveBean);
 
     if (locomotiveBean != null) {
-      int velocity = locomotiveBean.getVelocity();
+      int velocity = 0;
+      if (locomotiveBean.getVelocity() != null) {
+        velocity = locomotiveBean.getVelocity();
+      }
       double max = locomotiveBean.getTachoMax();
       int sliderValue = (int) Math.round(max / 1000 * velocity);
 
