@@ -165,10 +165,10 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
-    Object[] args = new Object[]{address, decoderType.getDecoderType()};
+  public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId) {
+    Object[] args = new Object[]{address, decoderType.getDecoderType(), commandStionId};
 
-    LocomotiveBean loco = database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class);
+    LocomotiveBean loco = database.where("address=? and decoder_type=? and command_station_id=?", args).first(LocomotiveBean.class);
     if (loco != null) {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));

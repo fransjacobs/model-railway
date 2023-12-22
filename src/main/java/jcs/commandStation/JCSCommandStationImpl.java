@@ -53,7 +53,6 @@ import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.MeasurementChannel;
 import jcs.entities.SensorBean;
@@ -120,7 +119,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
 
     if (decoderController == null) {
-      decoderController = ControllerFactory.getDecoderController(commandStation,false);
+      decoderController = ControllerFactory.getDecoderController(commandStation, false);
     }
 
     if (decoderController == null) {
@@ -175,7 +174,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
     }
 
-    Logger.trace("Connected Controllers:  Decoder: " + (decoderConnected?"Yes":"No") + " Accessory: " + accessoryCntrConnected + " Feedback:" + feedbackCntrConnected);
+    Logger.trace("Connected Controllers:  Decoder: " + (decoderConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback:" + feedbackCntrConnected);
 
     if (decoderConnected) {
       this.decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
@@ -186,32 +185,39 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
       this.supportedProtocols.addAll(this.decoderController.getCommandStationBean().getSupportedProtocols());
 
-      //Start the measurments backgrount task
-      TrackMeasurementTask measurementTask = new TrackMeasurementTask(this);
-      Timer timer = new Timer("Timer");
+      //Start the measurements background task
+      long measureInterval = Long.parseLong(System.getProperty("track.measurements.interval", "5"));
 
-      long delay = 5000L;
-      timer.schedule(measurementTask, 0, delay);
-    }
+      measureInterval = measureInterval * 1000;
 
-    if (accessoryCntrConnected > 0) {
-      for (AccessoryController ac : accessoryControllers) {
-        if (ac.isConnected()) {
-          ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
+      if (measureInterval > 0) {
+        TrackMeasurementTask measurementTask = new TrackMeasurementTask(this);
+        Timer timer = new Timer("Timer");
+        timer.schedule(measurementTask, 0, measureInterval);
+        Logger.debug("Started Track measurements with an interval of " + measureInterval + "s");
+      } else {
+        Logger.debug("Skipping Track measurements");
+      }
+
+      if (accessoryCntrConnected > 0) {
+        for (AccessoryController ac : accessoryControllers) {
+          if (ac.isConnected()) {
+            ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
+          }
         }
       }
-    }
 
-    if (feedbackCntrConnected > 0) {
-      for (FeedbackController fc : feedbackControllers) {
-        if (fc.isConnected()) {
-          fc.addSensorEventListener(new SensorChangeEventListener(this));
+      if (feedbackCntrConnected > 0) {
+        for (FeedbackController fc : feedbackControllers) {
+          if (fc.isConnected()) {
+            fc.addSensorEventListener(new SensorChangeEventListener(this));
+          }
         }
       }
-    }
 
-    //TODO implement get the day end i.e. the current state of all Objects on track
-    //JCS.logProgress("Obtaining the last state of all items...");
+      //TODO implement get the day end i.e. the current state of all Objects on track
+      //JCS.logProgress("Obtaining the last state of all items...");
+    }
     return decoderConnected;
   }
 
@@ -241,7 +247,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public Image getLocomotiveImage(String imageName) {
+  public Image getLocomotiveImage(String imageName
+  ) {
     Image image = null;
 
     if (decoderController != null) {
@@ -254,7 +261,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public Image getLocomotiveFunctionImage(String imageName) {
+  public Image getLocomotiveFunctionImage(String imageName
+  ) {
     Image image = null;
     if (decoderController != null) {
       image = decoderController.getLocomotiveFunctionImage(imageName);
@@ -474,7 +482,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
-    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName());
+    Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId());
 
     int address;
     if (this.supportedProtocols.size() == 1) {
@@ -723,14 +731,14 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       FunctionBean fb = functionEvent.getFunctionBean();
       FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
 
-      if (dbfb == null) {
-        //try via address and decoder type, assume DCC....
-        LocomotiveBean lb = PersistenceFactory.getService().getLocomotive(fb.getLocomotiveId().intValue(), DecoderType.DCC);
-        if (lb != null) {
-          dbfb = PersistenceFactory.getService().getLocomotiveFunction((long) lb.getId(), fb.getNumber());
-        }
-      }
-
+      //if (dbfb == null) {
+      //try via address and decoder type, assume DCC....
+      //LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(fb.getLocomotiveId());
+      //LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(fb.getAddress(), fb.getDecoderType(), fb.getCommandStationId());
+      //if (dblb != null) {
+      //  dbfb = PersistenceFactory.getService().getLocomotiveFunction((long) dbfb.getId(), fb.getNumber());
+      //}
+      //}
       if (dbfb != null) {
         if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
           dbfb.setValue(fb.getValue());
@@ -757,10 +765,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     @Override
     public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
       LocomotiveBean lb = directionEvent.getLocomotiveBean();
+
       LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
       if (dblb == null) {
         //try via address and decoder type
-        dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType());
+        dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType(), lb.getCommandStationId());
       }
 
       if (dblb != null) {
@@ -774,6 +783,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
             dl.onDirectionChange(directionEvent);
           }
         }
+      } else {
+        Logger.trace("No loc found for " + lb.toLogString());
       }
     }
   }
@@ -790,10 +801,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     public void onSpeedChange(LocomotiveSpeedEvent speedEvent) {
       LocomotiveBean lb = speedEvent.getLocomotiveBean();
       if (lb != null && lb.getId() != null) {
+
         LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
         if (dblb == null) {
           //try via address and decoder type
-          dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType());
+          dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType(), lb.getCommandStationId());
         }
 
         if (dblb != null) {
@@ -807,6 +819,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
               dl.onSpeedChange(speedEvent);
             }
           }
+        } else {
+          Logger.trace("No loc found for " + lb.toLogString());
         }
       }
     }

@@ -16,6 +16,7 @@
 package jcs.commandStation.events;
 
 import java.io.Serializable;
+import java.util.Objects;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
@@ -75,7 +76,27 @@ public class LocomotiveDirectionEvent implements Serializable {
   }
 
   public boolean isEventFor(LocomotiveBean locomotive) {
-    return this.locomotiveBean.getId().equals(locomotive.getId());
-  }
+    if (locomotive != null) {
+      Long id = locomotiveBean.getId();
 
+      String csId = locomotiveBean.getCommandStationId();
+      int address = locomotiveBean.getAddress();
+      LocomotiveBean.DecoderType decoderType = locomotiveBean.getDecoderType();
+
+      if (Objects.equals(id, locomotive.getId())) {
+        return true;
+      } else {
+        //Check also the logical key
+        if (!Objects.equals(csId, locomotive.getCommandStationId())) {
+          return false;
+        }
+        if (!Objects.equals(decoderType, locomotive.getDecoderType())) {
+          return false;
+        }
+        return Objects.equals(address, locomotive.getAddress());
+      }
+    } else {
+      return false;
+    }
+  }
 }

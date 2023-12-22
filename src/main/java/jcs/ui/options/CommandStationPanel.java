@@ -16,6 +16,7 @@
 package jcs.ui.options;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -96,7 +97,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationComboBox.setModel(commandStationComboBoxModel);
 
     SerialPort comPorts[] = SerialPort.getCommPorts();
-
     serialPortComboBoxModel = new DefaultComboBoxModel(comPorts);
     this.serialPortCB.setModel(serialPortComboBoxModel);
 
@@ -124,10 +124,14 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       String className = selectedCommandStation.getClassName();
       this.classNameTF.setText(className);
 
-      String serialPort = selectedCommandStation.getSerialPort();
-      if (serialPort != null) {
-        SerialPort comPort = SerialPort.getCommPort(serialPort);
-        this.serialPortComboBoxModel.setSelectedItem(comPort);
+      String portName = selectedCommandStation.getSerialPort();
+      if (portName != null) {
+        try {
+          SerialPort comPort = SerialPort.getCommPort(portName);
+          this.serialPortComboBoxModel.setSelectedItem(comPort);
+        } catch (SerialPortInvalidPortException ioe) {
+          Logger.warn("Can't find com port: " + portName + "; " + ioe.getMessage());
+        }
       }
 
       String ipAddress = selectedCommandStation.getIpAddress();
@@ -190,6 +194,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   private void enableFields(boolean enable) {
     if (this.networkRB.isSelected()) {
       this.serialPortCB.setVisible(false);
+      this.serialPortRefreshBtn.setVisible(false);
       this.ipAddressTF.setVisible(true);
 
       this.connectionPropertiesLbl.setText("IP Address:");
@@ -204,6 +209,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     if (this.serialRB.isSelected()) {
       this.serialPortCB.setVisible(true);
       this.ipAddressTF.setVisible(false);
+      this.serialPortRefreshBtn.setVisible(true);
 
       this.connectionPropertiesLbl.setText("Serial Port:");
 
@@ -279,6 +285,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     filler7 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     connectionPropertiesLbl = new JLabel();
     serialPortCB = new JComboBox<>();
+    serialPortRefreshBtn = new JButton();
     ipAddressTF = new JTextField();
     portLbl = new JLabel();
     portSpinner = new JSpinner();
@@ -342,8 +349,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     commandStationSelectionPanel.setMinimumSize(new Dimension(400, 33));
     commandStationSelectionPanel.setName("commandStationSelectionPanel"); // NOI18N
-    commandStationSelectionPanel.setPreferredSize(new Dimension(525, 33));
-    FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
+    commandStationSelectionPanel.setPreferredSize(new Dimension(525, 35));
+    FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT, 5, 2);
     flowLayout2.setAlignOnBaseline(true);
     commandStationSelectionPanel.setLayout(flowLayout2);
 
@@ -357,7 +364,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationSelectionPanel.add(commandStationLbl);
 
     commandStationComboBox.setName("commandStationComboBox"); // NOI18N
-    commandStationComboBox.setPreferredSize(new Dimension(200, 23));
+    commandStationComboBox.setPreferredSize(new Dimension(200, 30));
     commandStationComboBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         commandStationComboBoxActionPerformed(evt);
@@ -425,7 +432,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     centerPanel.setLayout(new BorderLayout());
 
     connectionPanel.setName("connectionPanel"); // NOI18N
-    FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT);
+    connectionPanel.setPreferredSize(new Dimension(1022, 45));
+    FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT, 5, 2);
     flowLayout3.setAlignOnBaseline(true);
     connectionPanel.setLayout(flowLayout3);
 
@@ -464,14 +472,30 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     connectionPanel.add(connectionPropertiesLbl);
 
     serialPortCB.setName("serialPortCB"); // NOI18N
-    serialPortCB.setPreferredSize(new Dimension(150, 23));
+    serialPortCB.setPreferredSize(new Dimension(150, 30));
+    serialPortCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        serialPortCBActionPerformed(evt);
+      }
+    });
     connectionPanel.add(serialPortCB);
+
+    serialPortRefreshBtn.setIcon(new ImageIcon(getClass().getResource("/media/sync-black-24.png"))); // NOI18N
+    serialPortRefreshBtn.setToolTipText("Refresh Serial Ports");
+    serialPortRefreshBtn.setMargin(new Insets(2, 2, 2, 2));
+    serialPortRefreshBtn.setName("serialPortRefreshBtn"); // NOI18N
+    serialPortRefreshBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        serialPortRefreshBtnActionPerformed(evt);
+      }
+    });
+    connectionPanel.add(serialPortRefreshBtn);
 
     ipAddressTF.setText("0.0.0.0");
     ipAddressTF.setToolTipText("");
     ipAddressTF.setDoubleBuffered(true);
     ipAddressTF.setName("ipAddressTF"); // NOI18N
-    ipAddressTF.setPreferredSize(new Dimension(150, 23));
+    ipAddressTF.setPreferredSize(new Dimension(150, 30));
     ipAddressTF.addFocusListener(new FocusAdapter() {
       public void focusLost(FocusEvent evt) {
         ipAddressTFFocusLost(evt);
@@ -485,6 +509,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     portSpinner.setModel(new SpinnerNumberModel(0, 0, 65563, 1));
     portSpinner.setName("portSpinner"); // NOI18N
+    portSpinner.setPreferredSize(new Dimension(100, 30));
     portSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         portSpinnerStateChanged(evt);
@@ -972,6 +997,41 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.selectedCommandStation.setAccessoryControlSupport(this.accessorySupportCB.isSelected());
   }//GEN-LAST:event_accessorySupportCBActionPerformed
 
+  private void serialPortRefreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialPortRefreshBtnActionPerformed
+    SerialPort comPorts[] = SerialPort.getCommPorts();
+    serialPortComboBoxModel = new DefaultComboBoxModel(comPorts);
+    serialPortCB.setModel(serialPortComboBoxModel);
+
+    String portName = selectedCommandStation.getSerialPort();
+    Logger.trace("Selected portName: " + portName);
+
+    if (portName != null) {
+      try {
+        SerialPort comPort = SerialPort.getCommPort(portName);
+        this.serialPortComboBoxModel.setSelectedItem(comPort);
+        Logger.trace("Selected ComPort: " + comPort);
+
+        if (comPort != null) {
+          this.serialPortComboBoxModel.setSelectedItem(comPort);
+        }
+      } catch (SerialPortInvalidPortException ioe) {
+        Logger.warn("Can't find com port: " + portName + "; " + ioe.getMessage());
+      }
+    }
+
+
+  }//GEN-LAST:event_serialPortRefreshBtnActionPerformed
+
+  private void serialPortCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialPortCBActionPerformed
+    SerialPort comPort = (SerialPort) serialPortComboBoxModel.getSelectedItem();
+
+    String portDescription = comPort.getSystemPortName();
+    
+    this.selectedCommandStation.setSerialPort(portDescription);
+    Logger.trace("Selected Comport: " + portDescription);
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_serialPortCBActionPerformed
+
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("progress".equals(evt.getPropertyName())) {
@@ -1172,6 +1232,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JPanel rightBottomPanel;
   JButton saveBtn;
   JComboBox<SerialPort> serialPortCB;
+  JButton serialPortRefreshBtn;
   JRadioButton serialRB;
   JLabel shortNameLbl;
   JTextField shortNameTF;

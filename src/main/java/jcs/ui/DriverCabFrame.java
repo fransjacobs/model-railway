@@ -60,8 +60,6 @@ public class DriverCabFrame extends javax.swing.JFrame {
     if (PersistenceFactory.getService() != null) {
       this.commandStation = PersistenceFactory.getService().getDefaultCommandStation();
     }
-    
-    
     loadLocomotives();
   }
 
@@ -140,7 +138,14 @@ public class DriverCabFrame extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void locoCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locoCBActionPerformed
-    Logger.trace(evt.getActionCommand() + " -> " + this.locomotiveComboBoxModel.getSelectedItem());
+    LocomotiveBean selLoc = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
+    if(selLoc != null) {
+      String name = selLoc.getName();
+      long id = selLoc.getId();
+      Logger.trace(evt.getActionCommand() + " -> " + name+" id: "+id);
+    } else {
+      Logger.trace(evt.getActionCommand() + " -> null");
+    }  
 
     if (((LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem()).getName() != null) {
       LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();

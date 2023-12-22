@@ -102,6 +102,11 @@ public class CommandStationBean {
   }
 
   @Transient
+  public ConnectionType getConnectionType() {
+    return getConnectionTypes().iterator().next();
+  }
+
+  @Transient
   public Set<ConnectionType> getConnectionTypes() {
     Set<ConnectionType> cts = new HashSet<>();
     if (connectVia != null) {
@@ -188,10 +193,6 @@ public class CommandStationBean {
     this.accessoryControlSupport = accessoryControlSupport;
   }
 
-  
-  
-  
-  
   @Column(name = "supports_feedback", nullable = false, columnDefinition = "supports_feedback bool default '1'")
   public boolean isFeedbackSupport() {
     return feedbackSupport;
@@ -326,9 +327,7 @@ public class CommandStationBean {
     }
     protocols = sb.toString();
   }
-  
-  
-  
+
   @Override
   public String toString() {
     return description;

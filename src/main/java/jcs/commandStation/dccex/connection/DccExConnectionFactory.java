@@ -36,6 +36,7 @@ public class DccExConnectionFactory {
   private InetAddress controllerHost;
 
   private static final String LAST_USED_IP_PROP_FILE = RunUtil.DEFAULT_PATH + "last-used-dcc-ex-ip.properties";
+  private static final String LAST_USED_COM_PORT_FILE = RunUtil.DEFAULT_PATH + "last-used-dcc-ex-serial.properties";
 
   private DccExConnectionFactory() {
   }
@@ -74,9 +75,16 @@ public class DccExConnectionFactory {
           Logger.warn("Can't find a DCC-EX Command Station host!");
           JCS.logProgress("Can't find a DCC-EX Command Station on the Network");
         }
+      } else if (ConnectionType.SERIAL == connectionType) {
+        String lastUsedSerial = RunUtil.readProperty(LAST_USED_COM_PORT_FILE, "dcc-ex-com-port");
+        if (lastUsedSerial != null) {
+          controllerConnection = new DccExSerialConnection(lastUsedSerial);
+        } else {
+          Logger.warn("Can't find a Serial Port!");
+          JCS.logProgress("Can't find a DCC-EX Can't find a Serial Port!");
+        }
       } else {
-        //TODO: Serial connection
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new RuntimeException("Unknown connection type or connection type not set.");
       }
     }
     return this.controllerConnection;
@@ -110,6 +118,12 @@ public class DccExConnectionFactory {
   public static void writeLastUsedIpAddressProperty(String ipAddress) {
     if (ipAddress != null) {
       RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "dcc-ex-ip-address", ipAddress);
+    }
+  }
+
+  public static void writeLastUsedSerialPortProperty(String comPort) {
+    if (comPort != null) {
+      RunUtil.writeProperty(LAST_USED_COM_PORT_FILE, "dcc-ex-com-port", comPort);
     }
   }
 

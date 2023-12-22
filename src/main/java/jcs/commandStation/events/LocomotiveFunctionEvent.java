@@ -36,18 +36,6 @@ public class LocomotiveFunctionEvent implements Serializable {
     parseMessage(message);
   }
 
-  
-//  public LocomotiveFunctionEvent(int address, int functionMap) {
-//    handleDccExResponse(address, functionMap);
-//  }
-
-//
-//  private void handleDccExResponse(int address, int functionMap) {
-//   FunctionBean fb = new FunctionBean(functionNumber, locomotiveId);
-//
-//  }
-//    
-    
   private void parseMessage(CanMessage message) {
     CanMessage resp;
     if (!message.isResponseMessage()) {
@@ -85,7 +73,11 @@ public class LocomotiveFunctionEvent implements Serializable {
   }
 
   public boolean isEventFor(FunctionBean function) {
-    return this.function.getNumber().equals(function.getNumber()) && this.function.getLocomotiveId().equals(function.getLocomotiveId());
+    if (function != null) {
+      return this.function.getNumber().equals(function.getNumber()) && this.function.getLocomotiveId().equals(function.getLocomotiveId());
+    } else {
+      return false;
+    }
   }
 
 }

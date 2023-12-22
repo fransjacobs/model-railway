@@ -55,6 +55,7 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(this);
       JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(this);
       JCS.getJcsCommandStation().addPowerEventListener(this);
+
     }
   }
 
@@ -372,8 +373,13 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   @Override
   public void onDirectionChange(LocomotiveDirectionEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
+    
+    Logger.trace("Evt: id: "+lb.getId()+" Addr: "+lb.getAddress()+" cid: "+lb.getCommandStationId()+" dir: "+lb.getDirection());
+ 
+    if(event.isEventFor(locomotiveBean)) {
+    //if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
+      Logger.trace(lb.getName() + " direction changed from " + this.locomotiveBean.getDirection() + " to " + lb.getDirection());
 
-    if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
       locomotiveBean.setRichtung(lb.getRichtung());
 
       if (Direction.BACKWARDS.equals(lb.getDirection())) {
@@ -388,7 +394,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   public void onSpeedChange(LocomotiveSpeedEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
 
-    if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
+    if(event.isEventFor(locomotiveBean)) {
+    //if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
       Logger.trace(lb.getName() + " Speed changed from " + this.locomotiveBean.getVelocity() + " to " + lb.getVelocity());
 
       locomotiveBean.setVelocity(lb.getVelocity());

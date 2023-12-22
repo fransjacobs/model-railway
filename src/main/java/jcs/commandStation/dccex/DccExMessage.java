@@ -73,7 +73,16 @@ public class DccExMessage implements DccEx {
     } else {
       return message;
     }
-
   }
 
+  public static String filterDisplayMessage(String message) {
+    if (message.length() > 2 && message.startsWith("<*")) {
+      String content = message.replaceAll("<*", "").replaceAll("\\*>", "");
+      return content.trim();
+    } else {
+      return message;
+    }
+  }
+  
+  
 }

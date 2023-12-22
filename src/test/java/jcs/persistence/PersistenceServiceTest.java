@@ -627,7 +627,7 @@ public class PersistenceServiceTest {
 
     PersistenceService instance = PersistenceFactory.getService();
     LocomotiveBean expResult = this.locomotives.get(1);
-    LocomotiveBean result = instance.getLocomotive(address, decoderType);
+    LocomotiveBean result = instance.getLocomotive(address, decoderType, "marklin.cs");
     assertEquals(expResult, result);
 
     assertEquals(expResult.getId(), result.getId());
@@ -711,7 +711,7 @@ public class PersistenceServiceTest {
     LocomotiveBean loco = instance.getLocomotive(80L);
     assertEquals(locomotive, loco);
 
-    LocomotiveBean loco2 = instance.getLocomotive(80, DecoderType.MFX);
+    LocomotiveBean loco2 = instance.getLocomotive(80, DecoderType.MFX, "marklin.cs");
     assertEquals(locomotive, loco2);
     assertEquals(loco2, result);
 
@@ -729,7 +729,7 @@ public class PersistenceServiceTest {
     loco.setIcon("new Icon");
     instance.persist(loco);
 
-    loco2 = instance.getLocomotive(80, DecoderType.MFX);
+    loco2 = instance.getLocomotive(80, DecoderType.MFX, "marklin.cs");
     assertEquals(loco, loco2);
 
     instance.remove(locomotive);
