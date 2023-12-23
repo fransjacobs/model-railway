@@ -108,8 +108,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private void setFieldValues() {
     if (selectedCommandStation != null) {
-      this.networkRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK));
-      this.serialRB.setSelected(selectedCommandStation.getConnectionTypes().contains(ConnectionType.SERIAL));
+      this.networkRB.setSelected(selectedCommandStation.getConnectionType() == ConnectionType.NETWORK);
+      this.serialRB.setSelected(selectedCommandStation.getConnectionType() == ConnectionType.SERIAL);
 
       String id = selectedCommandStation.getId();
       this.idTF.setText("Id: " + id);
@@ -188,10 +188,23 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       } else {
         this.lastUsedSerialLbl.setVisible(false);
       }
+
+      Set<ConnectionType> supportedConnectionTypes = selectedCommandStation.getSupportedConnectionTypes();
+      this.supConTypeNetworkRB.setSelected(supportedConnectionTypes.contains(ConnectionType.NETWORK));
+      this.supConTypeSerialRB.setSelected(supportedConnectionTypes.contains(ConnectionType.SERIAL));
     }
   }
 
   private void enableFields(boolean enable) {
+    Set<ConnectionType> supportedConnectionTypes = selectedCommandStation.getSupportedConnectionTypes();
+    if (supportedConnectionTypes.size() > 1) {
+      this.networkRB.setEnabled(supportedConnectionTypes.contains(ConnectionType.NETWORK));
+      this.serialRB.setEnabled(supportedConnectionTypes.contains(ConnectionType.SERIAL));
+    } else {
+      this.networkRB.setEnabled(false);
+      this.serialRB.setEnabled(false);
+    }
+
     if (this.networkRB.isSelected()) {
       this.serialPortCB.setVisible(false);
       this.serialPortRefreshBtn.setVisible(false);
@@ -218,9 +231,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       this.autoConfChkBox.setVisible(false);
     }
 
-    this.networkRB.setEnabled(enable);
-    this.serialRB.setEnabled(enable);
-
     this.decoderControlCB.setEnabled(enable);
     this.accessorySupportCB.setEnabled(enable);
     this.feedbackSupportCB.setEnabled(enable);
@@ -233,6 +243,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.mfxRB.setEnabled(enable);
     this.dccRB.setEnabled(enable);
     this.sxRB.setEnabled(enable);
+
+    this.supConTypeNetworkRB.setEnabled(enable);
+    this.supConTypeSerialRB.setEnabled(enable);
 
     this.descriptionTF.setEnabled(enable);
     this.classNameTF.setEnabled(enable);
@@ -248,6 +261,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.shortNameTFLb.setVisible(enable);
     this.shortNameTF.setEnabled(enable);
     this.shortNameTF.setVisible(enable);
+
+    this.supConTypeNetworkRB.setVisible(enable);
+    this.supConTypeSerialRB.setVisible(enable);
+    this.supportedConnectionTypesLbl.setVisible(enable);
 
     this.idTF.setVisible(enable);
     this.newBtn.setEnabled(enable);
@@ -312,11 +329,15 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     locomotiveFunctionSynchSupportPanel = new JPanel();
     locomotiveFunctionSynchSupportCB = new JCheckBox();
     protocolPanel = new JPanel();
-    jLabel1 = new JLabel();
+    supportedProtocolsLbl = new JLabel();
     mmRB = new JRadioButton();
     mfxRB = new JRadioButton();
     dccRB = new JRadioButton();
     sxRB = new JRadioButton();
+    filler10 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    supportedConnectionTypesLbl = new JLabel();
+    supConTypeNetworkRB = new JRadioButton();
+    supConTypeSerialRB = new JRadioButton();
     descPanel = new JPanel();
     nameLbl = new JLabel();
     descriptionTF = new JTextField();
@@ -682,9 +703,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     protocolPanel.setName("protocolPanel"); // NOI18N
 
-    jLabel1.setText("Supported Protocols");
-    jLabel1.setName("jLabel1"); // NOI18N
-    protocolPanel.add(jLabel1);
+    supportedProtocolsLbl.setText("Supported Protocols:");
+    supportedProtocolsLbl.setName("supportedProtocolsLbl"); // NOI18N
+    protocolPanel.add(supportedProtocolsLbl);
 
     mmRB.setText("MM");
     mmRB.setToolTipText("Marklin MM");
@@ -725,6 +746,32 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     });
     protocolPanel.add(sxRB);
+
+    filler10.setName("filler10"); // NOI18N
+    protocolPanel.add(filler10);
+
+    supportedConnectionTypesLbl.setText("Supported Connection Types:");
+    supportedConnectionTypesLbl.setName("supportedConnectionTypesLbl"); // NOI18N
+    protocolPanel.add(supportedConnectionTypesLbl);
+
+    supConTypeNetworkRB.setText("Network");
+    supConTypeNetworkRB.setToolTipText("");
+    supConTypeNetworkRB.setName("supConTypeNetworkRB"); // NOI18N
+    supConTypeNetworkRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        supConTypeNetworkRBActionPerformed(evt);
+      }
+    });
+    protocolPanel.add(supConTypeNetworkRB);
+
+    supConTypeSerialRB.setText("Serial");
+    supConTypeSerialRB.setName("supConTypeSerialRB"); // NOI18N
+    supConTypeSerialRB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        supConTypeSerialRBActionPerformed(evt);
+      }
+    });
+    protocolPanel.add(supConTypeSerialRB);
 
     capabilitiesPanel.add(protocolPanel);
 
@@ -949,10 +996,18 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }//GEN-LAST:event_decoderControlCBActionPerformed
 
   private void networkRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_networkRBActionPerformed
+    //this.enableFields(this.enableEditCB.isSelected());
+    this.selectedCommandStation.setConnectionType(ConnectionType.NETWORK);
+    Logger.trace("Connectiontypes set to: " + ConnectionType.NETWORK);
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
     this.enableFields(this.enableEditCB.isSelected());
   }//GEN-LAST:event_networkRBActionPerformed
 
   private void serialRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialRBActionPerformed
+    //this.enableFields(this.enableEditCB.isSelected());
+    this.selectedCommandStation.setConnectionType(ConnectionType.SERIAL);
+    Logger.trace("Connectiontypes set to: " + ConnectionType.SERIAL);
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
     this.enableFields(this.enableEditCB.isSelected());
   }//GEN-LAST:event_serialRBActionPerformed
 
@@ -1018,19 +1073,31 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
         Logger.warn("Can't find com port: " + portName + "; " + ioe.getMessage());
       }
     }
-
-
   }//GEN-LAST:event_serialPortRefreshBtnActionPerformed
 
   private void serialPortCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialPortCBActionPerformed
     SerialPort comPort = (SerialPort) serialPortComboBoxModel.getSelectedItem();
-
     String portDescription = comPort.getSystemPortName();
-    
     this.selectedCommandStation.setSerialPort(portDescription);
     Logger.trace("Selected Comport: " + portDescription);
     PersistenceFactory.getService().persist(this.selectedCommandStation);
   }//GEN-LAST:event_serialPortCBActionPerformed
+
+  private void supConTypeNetworkRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_supConTypeNetworkRBActionPerformed
+    if (this.supConTypeNetworkRB.isSelected()) {
+      this.selectedCommandStation.addSupportedConnectionType(ConnectionType.NETWORK);
+    } else {
+      this.selectedCommandStation.removeSupportedConnectionType(ConnectionType.NETWORK);
+    }
+  }//GEN-LAST:event_supConTypeNetworkRBActionPerformed
+
+  private void supConTypeSerialRBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_supConTypeSerialRBActionPerformed
+    if (this.supConTypeSerialRB.isSelected()) {
+      this.selectedCommandStation.addSupportedConnectionType(ConnectionType.SERIAL);
+    } else {
+      this.selectedCommandStation.removeSupportedConnectionType(ConnectionType.SERIAL);
+    }
+  }//GEN-LAST:event_supConTypeSerialRBActionPerformed
 
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
@@ -1074,42 +1141,72 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     public Void doInBackground() {
       setProgress(0);
 
-      if (selectedCommandStation.getConnectionTypes().contains(ConnectionType.NETWORK)) {
-        String ip = selectedCommandStation.getIpAddress();
-        setProgress(10);
-        DecoderController commandStation = createCommandStation(selectedCommandStation);
-        boolean canConnect = false;
-        setProgress(20);
-
-        if (ip == null && selectedCommandStation.isIpAutoConfiguration()) {
-          //Try to obtain the ip through auto configuration
-          canConnect = commandStation.connect();
-          if (canConnect) {
-            firePropertyChange("ipAddress", "", commandStation.getIp());
-          }
-          setProgress(30);
-
-        } else {
-          if (Ping.IsReachable(ip)) {
+      if (null == selectedCommandStation.getConnectionType()) {
+        firePropertyChange("done", "", "Can't Connect");
+        setProgress(100);
+      } else {
+        switch (selectedCommandStation.getConnectionType()) {
+          case NETWORK -> {
+            String ip = selectedCommandStation.getIpAddress();
             setProgress(10);
-            canConnect = commandStation.connect();
+            DecoderController commandStation = createCommandStation(selectedCommandStation);
+            boolean canConnect = false;
             setProgress(20);
+            if (ip == null && selectedCommandStation.isIpAutoConfiguration()) {
+              //Try to obtain the ip through auto configuration
+              canConnect = commandStation.connect();
+              if (canConnect) {
+                firePropertyChange("ipAddress", "", commandStation.getIp());
+              }
+              setProgress(30);
+
+            } else {
+              if (Ping.IsReachable(ip)) {
+                setProgress(10);
+                canConnect = commandStation.connect();
+                setProgress(20);
+              }
+            }
+            if (canConnect) {
+              //Let obtain some data
+              String sn = commandStation.getDevice().getSerialNumber();
+              selectedCommandStation.setLastUsedSerial(sn);
+              firePropertyChange("serial", "", sn);
+              setProgress(60);
+
+              commandStation.disconnect();
+              firePropertyChange("done", "", "Connection succeeded");
+              setProgress(100);
+            } else {
+              firePropertyChange("done", "", "Can't Connect");
+              setProgress(100);
+            }
           }
-        }
-
-        if (canConnect) {
-          //Let obtain some data
-          String sn = commandStation.getDevice().getSerialNumber();
-          selectedCommandStation.setLastUsedSerial(sn);
-          firePropertyChange("serial", "", sn);
-          setProgress(60);
-
-          commandStation.disconnect();
-          firePropertyChange("done", "", "Connection succeeded");
-          setProgress(1000);
-        } else {
-          firePropertyChange("done", "", "Can't Connect");
-          setProgress(1000);
+          case SERIAL -> {
+            String commPort = selectedCommandStation.getSerialPort();
+            setProgress(10);
+            if (commPort != null) {
+              try {
+                SerialPort comPort = SerialPort.getCommPort(commPort);
+                comPort.openPort();
+                if (comPort.isOpen()) {
+                  firePropertyChange("done", "", "Connection succeeded");
+                  setProgress(100);
+                  comPort.closePort();
+                } else {
+                  firePropertyChange("done", "", "Can't open port " + commPort + " connection failed");
+                  setProgress(100);
+                }
+              } catch (SerialPortInvalidPortException ioe) {
+                firePropertyChange("done", "", "Port " + commPort + " does not exist. Connection failed");
+                setProgress(100);
+              }
+            }
+          }
+          default -> {
+            firePropertyChange("done", "", "Can't Connect");
+            setProgress(100);
+          }
         }
       }
       return null;
@@ -1200,6 +1297,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JCheckBox feedbackSupportCB;
   JPanel feedbackSupportPanel;
   Box.Filler filler1;
+  Box.Filler filler10;
   Box.Filler filler2;
   Box.Filler filler3;
   Box.Filler filler4;
@@ -1211,7 +1309,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JLabel idLbl;
   JTextField idTF;
   JTextField ipAddressTF;
-  JLabel jLabel1;
   JLabel lastUsedSerialLbl;
   JPanel leftBottomPanel;
   JCheckBox locomotiveFunctionSynchSupportCB;
@@ -1237,6 +1334,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JLabel shortNameLbl;
   JTextField shortNameTF;
   JLabel shortNameTFLb;
+  JRadioButton supConTypeNetworkRB;
+  JRadioButton supConTypeSerialRB;
+  JLabel supportedConnectionTypesLbl;
+  JLabel supportedProtocolsLbl;
   JRadioButton sxRB;
   JButton testConnectionBtn;
   JPanel topPanel;

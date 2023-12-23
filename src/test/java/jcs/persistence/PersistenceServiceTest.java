@@ -1232,7 +1232,7 @@ public class PersistenceServiceTest {
     PersistenceService instance = PersistenceFactory.getService();
 
     List<CommandStationBean> commandStations = instance.getCommandStations();
-    assertEquals(4, commandStations.size());
+    assertEquals(3, commandStations.size());
 
     for (CommandStationBean cs : commandStations) {
       Logger.trace("## -> " + cs + " default: " + cs.isDefault() + " id: " + cs.getId());
@@ -1266,16 +1266,16 @@ public class PersistenceServiceTest {
 
     assertNull(defCS2);
 
-    defCS2 = instance.getCommandStation("dcc-ex.network");
+    defCS2 = instance.getCommandStation("dcc-ex");
 
-    assertEquals("dcc-ex.network", defCS2.getId());
+    assertEquals("dcc-ex", defCS2.getId());
     assertFalse(defCS2.isDefault());
 
     defCS2.setDefault(true);
     instance.persist(defCS2);
 
     CommandStationBean defCS3 = instance.getDefaultCommandStation();
-    assertEquals("dcc-ex.network", defCS3.getId());
+    assertEquals("dcc-ex", defCS3.getId());
 
   }
 

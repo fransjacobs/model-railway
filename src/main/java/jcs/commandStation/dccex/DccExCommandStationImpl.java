@@ -91,22 +91,20 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   @Override
   public final boolean connect() {
-    if (!this.connected) {
+    if (!connected) {
       Logger.trace("Connecting to a DCC-EX Command Station...");
       if (executor == null || executor.isShutdown()) {
         executor = Executors.newCachedThreadPool();
       }
 
-      if (this.commandStationBean == null) {
+      if (commandStationBean == null) {
         Logger.error("No DCC-EX Command Station Configuration set!");
         return false;
       } else {
-        Logger.trace("Connect using " + this.commandStationBean.getConnectionTypes());
+        Logger.trace("Connect using " + commandStationBean.getConnectionType());
       }
 
-      ConnectionType conType = this.commandStationBean.getConnectionType();
-      Logger.trace("Connecting via " + conType + "...");
-
+      ConnectionType conType = commandStationBean.getConnectionType();
       boolean canConnect = true;
       if (conType == ConnectionType.NETWORK) {
         if (commandStationBean.getIpAddress() != null) {
@@ -127,7 +125,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       }
 
       if (canConnect) {
-        this.connection = DccExConnectionFactory.getConnection(conType);
+        connection = DccExConnectionFactory.getConnection(conType);
 
         if (connection != null) {
           //Wait, if needed until the receiver thread has started
@@ -153,7 +151,17 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
             }
 
             //Wait a while to give the Command Station time to answer...
-            pause(200);
+            long waitTime = (conType == ConnectionType.NETWORK?200L:5000L);
+            Logger.trace("Wait for "+waitTime+" ms");
+            pause(waitTime);
+            
+            if (conType == ConnectionType.SERIAL) {
+              if(mainDevice == null) {  
+                connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
+                pause(5000L);
+              }
+            }  
+            
             Logger.trace("Connected with: " + (this.mainDevice != null ? this.mainDevice.getName() : "Unknown"));
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
           } else {
@@ -471,6 +479,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
                 }
               }
               this.commandStation.mainDevice = d;
+              Logger.trace("Main Device set to: "+d);
             }
             case "c" -> {
             }

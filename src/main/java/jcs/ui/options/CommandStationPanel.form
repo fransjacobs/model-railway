@@ -1643,10 +1643,10 @@
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
               <SubComponents>
-                <Component class="javax.swing.JLabel" name="jLabel1">
+                <Component class="javax.swing.JLabel" name="supportedProtocolsLbl">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Supported Protocols"/>
-                    <Property name="name" type="java.lang.String" value="jLabel1" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Supported Protocols:"/>
+                    <Property name="name" type="java.lang.String" value="supportedProtocolsLbl" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="mmRB">
@@ -1687,6 +1687,48 @@
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sxRBActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.Box$Filler" name="filler10">
+                  <Properties>
+                    <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[20, 32767]"/>
+                    </Property>
+                    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[20, 0]"/>
+                    </Property>
+                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[20, 0]"/>
+                    </Property>
+                    <Property name="name" type="java.lang.String" value="filler10" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalStrut"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="supportedConnectionTypesLbl">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Supported Connection Types:"/>
+                    <Property name="name" type="java.lang.String" value="supportedConnectionTypesLbl" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="supConTypeNetworkRB">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Network"/>
+                    <Property name="toolTipText" type="java.lang.String" value=""/>
+                    <Property name="name" type="java.lang.String" value="supConTypeNetworkRB" noResource="true"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="supConTypeNetworkRBActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="supConTypeSerialRB">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Serial"/>
+                    <Property name="name" type="java.lang.String" value="supConTypeSerialRB" noResource="true"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="supConTypeSerialRBActionPerformed"/>
                   </Events>
                 </Component>
               </SubComponents>

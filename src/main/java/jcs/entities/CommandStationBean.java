@@ -54,6 +54,7 @@ public class CommandStationBean {
   private boolean defaultCs;
   private boolean enabled;
   private String lastUsedSerial;
+  private String supConnTypesStr;
 
   @Id
   @Column(name = "id")
@@ -103,40 +104,12 @@ public class CommandStationBean {
 
   @Transient
   public ConnectionType getConnectionType() {
-    return getConnectionTypes().iterator().next();
+    return ConnectionType.get(connectVia);
   }
 
   @Transient
-  public Set<ConnectionType> getConnectionTypes() {
-    Set<ConnectionType> cts = new HashSet<>();
-    if (connectVia != null) {
-      String[] ct = this.connectVia.split(",");
-      for (String ct1 : ct) {
-        cts.add(ConnectionType.get(ct1));
-      }
-    }
-    return cts;
-  }
-
-  public void addConnectionType(ConnectionType connectionType) {
-    Set<ConnectionType> cts = new HashSet<>();
-    if (connectVia != null) {
-      String[] ct = this.connectVia.split(",");
-      for (String ct1 : ct) {
-        cts.add(ConnectionType.get(ct1));
-      }
-    }
-    cts.add(connectionType);
-
-    StringBuilder sb = new StringBuilder();
-    Iterator<ConnectionType> cti = cts.iterator();
-    while (cti.hasNext()) {
-      sb.append(cti.next().getConnectionType());
-      if (cti.hasNext()) {
-        sb.append(",");
-      }
-    }
-    connectVia = sb.toString();
+  public void setConnectionType(ConnectionType connectionType) {
+    this.connectVia = connectionType.getConnectionType();
   }
 
   @Column(name = "serial_port", length = 255, nullable = true)
@@ -272,6 +245,69 @@ public class CommandStationBean {
 
   public void setLastUsedSerial(String lastUsedSerial) {
     this.lastUsedSerial = lastUsedSerial;
+  }
+
+  @Column(name = "sup_conn_types", length = 255, nullable = false)
+  public String getSupConnTypesStr() {
+    return supConnTypesStr;
+  }
+
+  public void setSupConnTypesStr(String supConnTypesStr) {
+    this.supConnTypesStr = supConnTypesStr;
+  }
+
+  @Transient
+  public Set<ConnectionType> getSupportedConnectionTypes() {
+    Set<ConnectionType> cts = new HashSet<>();
+    if (supConnTypesStr != null) {
+      String[] ct = this.supConnTypesStr.split(",");
+      for (String ct1 : ct) {
+        cts.add(ConnectionType.get(ct1));
+      }
+    }
+    return cts;
+  }
+
+  public void addSupportedConnectionType(ConnectionType connectionType) {
+    Set<ConnectionType> cts = new HashSet<>();
+    if (supConnTypesStr != null) {
+      String[] ct = this.supConnTypesStr.split(",");
+      for (String ct1 : ct) {
+        cts.add(ConnectionType.get(ct1));
+      }
+    }
+    cts.add(connectionType);
+
+    StringBuilder sb = new StringBuilder();
+    Iterator<ConnectionType> cti = cts.iterator();
+    while (cti.hasNext()) {
+      sb.append(cti.next().getConnectionType());
+      if (cti.hasNext()) {
+        sb.append(",");
+      }
+    }
+    supConnTypesStr = sb.toString();
+  }
+
+  public void removeSupportedConnectionType(ConnectionType connectionType) {
+    Set<ConnectionType> cs = new HashSet<>();
+    if (supConnTypesStr != null) {
+      String[] cts = this.supConnTypesStr.split(",");
+      for (String ct : cts) {
+        cs.add(ConnectionType.get(ct.toUpperCase()));
+      }
+    }
+    cs.remove(connectionType);
+
+    StringBuilder sb = new StringBuilder();
+    Iterator<ConnectionType> ci = cs.iterator();
+    while (ci.hasNext()) {
+      sb.append(ci.next().getConnectionType());
+      if (ci.hasNext()) {
+        sb.append(",");
+      }
+    }
+    supConnTypesStr = sb.toString();
   }
 
   @Transient
