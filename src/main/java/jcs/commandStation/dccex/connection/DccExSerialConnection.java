@@ -32,9 +32,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class DccExSerialConnection implements DccExConnection {
-
-  private String portName;
+class DccExSerialConnection implements DccExConnection {
 
   private static SerialPort commPort;
   private Writer writer;
@@ -42,10 +40,8 @@ public class DccExSerialConnection implements DccExConnection {
 
   private SerialMessageReceiver messageReceiver;
 
-  public DccExSerialConnection(String portName) {
-    this.portName = portName;
+  DccExSerialConnection(String portName) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-
     obtainSerialPort(portName);
   }
 
@@ -81,8 +77,8 @@ public class DccExSerialConnection implements DccExConnection {
 
   @Override
   public boolean isConnected() {
-    if(commPort != null) {
-    return commPort.isOpen();
+    if (commPort != null) {
+      return commPort.isOpen();
     } else {
       return false;
     }
@@ -171,28 +167,4 @@ public class DccExSerialConnection implements DccExConnection {
     }
   }
 
-  //testing
-  public static void main(String[] a) {
-
-    String portName = "cu.usbmodem14201";
-
-    DccExSerialConnection sercon = new DccExSerialConnection(portName);
-    SerialPort comPort = DccExSerialConnection.commPort;
-
-    comPort.openPort();
-    comPort.setBaudRate(115200);
-
-//    PacketListener listener = sercon.createPacketListener();
-//    comPort.addDataListener(listener);
-
-    try {
-      Thread.sleep(15000);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    comPort.removeDataListener();
-    comPort.closePort();
-
-  }
 }

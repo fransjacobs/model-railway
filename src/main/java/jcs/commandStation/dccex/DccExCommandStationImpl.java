@@ -144,24 +144,20 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
             JCS.logProgress("Obtaining Device information...");
             connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
 
-            if (conType == ConnectionType.NETWORK) {
-              initMeasurements();
-            } else {
-              Logger.debug("Skipping periodic measurements over the serial port");
-            }
+            initMeasurements();
 
             //Wait a while to give the Command Station time to answer...
-            long waitTime = (conType == ConnectionType.NETWORK?200L:5000L);
-            Logger.trace("Wait for "+waitTime+" ms");
+            long waitTime = (conType == ConnectionType.NETWORK ? 200L : 3000L);
+            Logger.trace("Wait for " + waitTime + " ms");
             pause(waitTime);
-            
+
             if (conType == ConnectionType.SERIAL) {
-              if(mainDevice == null) {  
+              if (mainDevice == null) {
                 connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
-                pause(5000L);
+                //pause(5000L);
               }
-            }  
-            
+            }
+
             Logger.trace("Connected with: " + (this.mainDevice != null ? this.mainDevice.getName() : "Unknown"));
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
           } else {
@@ -479,7 +475,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
                 }
               }
               this.commandStation.mainDevice = d;
-              Logger.trace("Main Device set to: "+d);
+              Logger.trace("Main Device set to: " + d);
             }
             case "c" -> {
             }

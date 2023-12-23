@@ -126,6 +126,9 @@ public class LayoutPanel extends JPanel {
 
       this.straightDirectionBtn.setEnabled(!readonly);
       this.straightDirectionBtn.setVisible(!readonly);
+      
+      this.crossingBtn.setEnabled(!readonly);
+      this.crossingBtn.setVisible(!readonly);
 
       this.moveBtn.setEnabled(!readonly);
       this.moveBtn.setVisible(!readonly);
