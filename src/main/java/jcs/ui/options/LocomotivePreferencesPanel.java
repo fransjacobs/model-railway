@@ -742,6 +742,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     Logger.trace("Delete Loco: " + this.selectedLocomotive);
     PersistenceFactory.getService().remove(selectedLocomotive);
     this.selectedLocomotive = null;
+    this.initModels();
   }//GEN-LAST:event_deleteBtnActionPerformed
 
   private String storeImage(String imageName, Image image, boolean locomotive) {
