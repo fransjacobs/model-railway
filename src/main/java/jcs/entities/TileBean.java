@@ -28,7 +28,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import jcs.entities.enums.SignalType;
+import jcs.entities.AccessoryBean.SignalType;
 
 @Table(name = "tiles", indexes = {
   @Index(name = "tile_x_y", columnList = "x, y", unique = true)})

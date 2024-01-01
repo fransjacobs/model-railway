@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.marklin.cs3.can.parser;
 
-import jcs.entities.MeasurementChannel;
+import jcs.entities.ChannelBean;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.junit.Before;
 
@@ -29,10 +29,10 @@ public class ChannelDataParserTest {
   private CanMessage chan2;
   private CanMessage chan3;
   private CanMessage chan4;
-  private MeasurementChannel channel1;
-  private MeasurementChannel channel2;
-  private MeasurementChannel channel3;
-  private MeasurementChannel channel4;
+  private ChannelBean channel1;
+  private ChannelBean channel2;
+  private ChannelBean channel3;
+  private ChannelBean channel4;
 
   public ChannelDataParserTest() {
   }
@@ -47,7 +47,7 @@ public class ChannelDataParserTest {
     chan1.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x05, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
     chan1.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x26, 0x06, 0x63, 0x73, 0x45, (byte) 0x8c, 0x01, 0x05, 0x00, 0x00}));
 
-    this.channel1 = new MeasurementChannel();
+    this.channel1 = new ChannelBean();
     this.channel1.setNumber(1);
     this.channel1.setScale(-3);
     this.channel1.setColorMax(48);
@@ -71,7 +71,7 @@ public class ChannelDataParserTest {
     chan2.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x05, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
     chan2.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x26, 0x06, 0x63, 0x73, 0x45, (byte) 0x8c, 0x02, 0x05, 0x00, 0x00}));
 
-    this.channel2 = new MeasurementChannel();
+    this.channel2 = new ChannelBean();
     this.channel2.setNumber(2);
     this.channel2.setScale(-3);
     this.channel2.setColorMax(48);
@@ -95,7 +95,7 @@ public class ChannelDataParserTest {
     chan3.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x05, 0x08, 0x00, 0x56, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}));
     chan3.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x26, 0x06, 0x63, 0x73, 0x45, (byte) 0x8c, 0x03, 0x05, 0x00, 0x00}));
 
-    this.channel3 = new MeasurementChannel();
+    this.channel3 = new ChannelBean();
     this.channel3.setNumber(3);
     this.channel3.setScale(-3);
     this.channel3.setColorMax(192);
@@ -118,7 +118,7 @@ public class ChannelDataParserTest {
     chan4.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x04, 0x08, 0x00, 0x38, 0x30, 0x2e, 0x30, 0x00, 0x43, 0x00}));
     chan4.addResponse(new CanMessage(new byte[]{0x00, 0x3b, 0x03, 0x26, 0x06, 0x63, 0x73, 0x45, (byte) 0x8c, 0x04, 0x04, 0x00, 0x00}));
 
-    this.channel4 = new MeasurementChannel();
+    this.channel4 = new ChannelBean();
     this.channel4.setNumber(4);
     this.channel4.setScale(0);
     this.channel4.setColorMax(12);
@@ -141,8 +141,8 @@ public class ChannelDataParserTest {
 ////    ChannelDataParser instance = new ChannelDataParser(chan1);
 //    Logger.debug(instance);
 //
-//    MeasurementChannel expResult = channel1;
-//    MeasurementChannel result = instance.getChannel();
+//    ChannelBean expResult = channel1;
+//    ChannelBean result = instance.getChannel();
 //    assertEquals(expResult, result);
 //
 ////expected:<GFPChannel{unit=A, endValue=5.5, colorYellow=224, colorGreen=240, colorMax=48, colorRed=192, name=MAIN, number=1, scale=-3, rangeYellow=600, rangeGreen=576, rangeMax=552, rangeRed=660, startValue=0.0, value=null, humanValue=null}> 
@@ -155,8 +155,8 @@ public class ChannelDataParserTest {
 //    //ChannelDataParser instance = new ChannelDataParser(chan2);
 //    Logger.debug(instance);
 //
-//    MeasurementChannel expResult = channel2;
-//    MeasurementChannel result = instance.getChannel();
+//    ChannelBean expResult = channel2;
+//    ChannelBean result = instance.getChannel();
 //    assertEquals(expResult, result);
 //
 ////expected:<GFPChannel{unit=A, endValue=2.3, colorYellow=224, colorGreen=240, colorMax=48, colorRed=192, name=PROG, number=2, scale=-3, rangeYellow=561, rangeGreen=363, rangeMax=330, rangeRed=759, startValue=0.0, value=null, humanValue=null}>
@@ -169,8 +169,8 @@ public class ChannelDataParserTest {
 //    //ChannelDataParser instance = new ChannelDataParser(chan3);
 //    //Logger.debug(instance);
 //
-//    MeasurementChannel expResult = channel3;
-//    MeasurementChannel result = instance.getChannel();
+//    ChannelBean expResult = channel3;
+//    ChannelBean result = instance.getChannel();
 //    assertEquals(expResult, result);
 //  }
 
@@ -180,8 +180,8 @@ public class ChannelDataParserTest {
 //   // ChannelDataParser instance = new ChannelDataParser(chan4);
 //    //Logger.debug(instance);
 //
-//    MeasurementChannel expResult = channel4;
-//    MeasurementChannel result = instance.getChannel();
+//    ChannelBean expResult = channel4;
+//    ChannelBean result = instance.getChannel();
 //    assertEquals(expResult, result);
 //  }
 

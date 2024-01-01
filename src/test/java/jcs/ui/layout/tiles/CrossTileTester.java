@@ -23,9 +23,9 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
-import jcs.entities.enums.AccessoryValue;
 import org.tinylog.Logger;
 
 /**

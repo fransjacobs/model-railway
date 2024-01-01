@@ -15,7 +15,7 @@
  */
 package jcs.ui.layout.pathfinding.astar;
 
-import jcs.entities.enums.AccessoryValue;
+import jcs.entities.AccessoryBean.AccessoryValue;
 
 public class Edge<T> {
 

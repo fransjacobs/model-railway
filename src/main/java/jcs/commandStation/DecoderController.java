@@ -24,7 +24,7 @@ import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
-import jcs.entities.MeasurementChannel;
+import jcs.entities.ChannelBean;
 
 public interface DecoderController extends GenericController {
 
@@ -60,5 +60,5 @@ public interface DecoderController extends GenericController {
 
   Image getLocomotiveFunctionImage(String icon);
 
-  Map<Integer, MeasurementChannel> getTrackMeasurements();
+  Map<Integer, ChannelBean> getTrackMeasurements();
 }

@@ -48,6 +48,7 @@ import jcs.JCS;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
@@ -56,7 +57,6 @@ import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
-import jcs.entities.enums.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
@@ -662,7 +662,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (signal.getAccessoryBean() != null) {
       AccessoryBean ab = signal.getAccessoryBean();
       ab.toggle();
-      Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
+      Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getState());
 
       JCS.getJcsCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
     } else {

@@ -69,7 +69,7 @@ public class DriverCabFrame extends javax.swing.JFrame {
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
       if (PersistenceFactory.getService() != null) {
-        locos.addAll(PersistenceFactory.getService().getLocomotivesByCommandStation(commandStation.getId(),true));
+        locos.addAll(PersistenceFactory.getService().getLocomotivesByCommandStationId(commandStation.getId(),true));
       }
 
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());

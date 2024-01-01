@@ -26,17 +26,27 @@ As I am trying to do this project beside my work, family and other hobbies it is
 The aim of the program is to automate the running of trains on my layout.
 
 ### Supported Hardware
-As I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), hence the (current) hardware supported is the Maerklin CS-3 and also the CS-2.
-(allthough there are some differences between the CS2 and 3).
+As I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), the project started with support
+for only the Maerklin CS-3 and also the CS-2 (allthough there are some differences between the CS2 and 3).
+Recently I have aquired a DCC-EX so I have also added support fro DCC-EX now.
 
+#### Supported Command Stations
+* DCC-EX via Serial or Network
+* Marklin CS-2 (Using CAN bus to retrieve locomotive and accessory information)
+* Marklin CS-3 (Using JSON to retrieve locomotive and accessory information)
+** also supports the S88 link for sensors
+ 
 ## Current status
 Currently the following modules are build:
 
-* A Screen to edit/display de schematic Layout.
+* A HAL for command Stations such that other hardware then the Marklin CS 2/3 can be used.
+* Added support for DCC-EX JCS can function as a Throttle for DCC-EX.
+** DCC-EX can be connected either via serial port or network
 * Communication layer to "talk" to the Maerklin CS-3, (Included automatic discovery of the CS2/3 ip address).
 * A Screen to see Sensor / feedback events from the CS2/3
 * Locomotives overview (including automatic downloading of the Locomotive- and function button images) and control.
 * Turnout and Signals overview (Synchronized with the CS2/3) and control.
+* A Screen to edit/display de schematic Layout.
 
 ## Screenshots
 So here are a few screenshots of the Project:

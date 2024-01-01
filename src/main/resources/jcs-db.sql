@@ -41,21 +41,22 @@ create table accessories (
   address            integer not null,
   name               varchar(255) not null,
   type               varchar(255) not null,
-  position           integer,
+  state              integer,
   states             integer,
   switch_time        integer,
-  decoder_type       varchar(255),
+  protocol           varchar(255),
   decoder            varchar(255),
   accessory_group    varchar(255),
   icon               varchar(255),
   icon_file          varchar(255),
   imported           varchar(255),
-  command_station_id VARCHAR(255) not null,
+  command_station_id varchar(255) not null,
+  synchronize        bool not null default false,
   constraint acce_pk primary key (id),
-  constraint acce_address_un unique (decoder_type,address)
+  constraint acce_address_un unique (protocol, address, command_station_id)
 );
 
-create unique index acce_address_un_idx on accessories (address, decoder_type);
+create unique index acce_address_un_idx on accessories (address, protocol, command_station_id);
 create unique index acce_pk_idx on accessories (id);
 
 alter table accessories add constraint acce_cost_fk foreign key (command_station_id) references command_stations(id);
@@ -77,7 +78,7 @@ create table locomotives (
   show               bool not null default true,
   command_station_id VARCHAR(255) not null,
   constraint loco_pk primary key (id),
-  constraint loco_addr_dety_un unique (address,decoder_type,command_station_id)
+  constraint loco_addr_dety_un unique (address, decoder_type, command_station_id)
 );
 
 create unique index loco_pk_idx on locomotives (id);

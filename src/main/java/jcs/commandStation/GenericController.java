@@ -17,7 +17,8 @@ package jcs.commandStation;
 
 import java.util.List;
 import jcs.entities.CommandStationBean;
-import jcs.entities.Device;
+import jcs.entities.DeviceBean;
+import jcs.entities.InfoBean;
 
 interface GenericController {
 
@@ -29,12 +30,13 @@ interface GenericController {
 
   void disconnect();
 
-  Device getDevice();
+  InfoBean getCommandStationInfo();
 
-  List<Device> getDevices();
+  DeviceBean getDevice();
 
-  void clearCaches();
+  List<DeviceBean> getDevices();
 
+  //void clearCaches();
   String getIp();
 
 }

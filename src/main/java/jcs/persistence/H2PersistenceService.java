@@ -201,7 +201,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId) {
+  public List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId) {
     List<LocomotiveBean> locos = database.where("command_station_id=?", commandStationId).orderBy("id").results(LocomotiveBean.class);
 
     for (LocomotiveBean loco : locos) {
@@ -213,7 +213,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId, Boolean show) {
+  public List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId, Boolean show) {
     Object[] args = new Object[]{commandStationId, (show ? 1 : 0)};
 
     List<LocomotiveBean> locos = database.where("command_station_id=? and show=?", args).orderBy("id").results(LocomotiveBean.class);
@@ -322,13 +322,6 @@ public class H2PersistenceService implements PersistenceService {
         path = imageName;
       } else {
         //no path seperators so assume it is a synchonized command station icon
-//        String serial = this.getDefaultCommandStation().getLastUsedSerial();
-//        if (serial == null) {
-//          serial = System.getProperty("cs.serial", "");
-//        }
-//
-//        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + serial + File.separator;
-
         String sortName = this.getDefaultCommandStation().getShortName();
         path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + sortName + File.separator;
       }
@@ -358,6 +351,12 @@ public class H2PersistenceService implements PersistenceService {
       }
     }
     return image;
+  }
+
+  @Override
+  public List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId) {
+    List<AccessoryBean> accessories = database.where("command_station_id = ?", commandStationId).results(AccessoryBean.class);
+    return accessories;
   }
 
   @Override

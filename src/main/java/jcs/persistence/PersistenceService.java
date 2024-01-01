@@ -58,9 +58,9 @@ public interface PersistenceService {
   // Locomotive
   List<LocomotiveBean> getLocomotives();
 
-  List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId);
+  List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId);
   
-  List<LocomotiveBean> getLocomotivesByCommandStation(String commandStationId, Boolean show);
+  List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId, Boolean show);
 
   LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId);
 
@@ -77,6 +77,8 @@ public interface PersistenceService {
   void remove(LocomotiveBean locomotiveBean);
 
   // Accessories
+  List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
+  
   List<AccessoryBean> getTurnouts();
 
   List<AccessoryBean> getSignals();

@@ -15,7 +15,6 @@
  */
 package jcs.entities;
 
-import jcs.entities.Device;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.junit.After;
 import org.junit.Before;
@@ -68,40 +67,37 @@ public class DeviceTest {
   @Test
   public void testUpdateFromMessage() {
     System.out.println("updateFromMessage");
-    Device instance = new Device();
+    DeviceBean instance = new DeviceBean();
     instance.updateFromMessage(updateMessage);
 
     assertEquals("60214", instance.getArticleNumber());
-    assertEquals("Central Station 2", instance.getDeviceName());
-    assertEquals("13344", instance.getSerialNumber());
-    assertEquals(4, instance.getMeasureChannels());
-    assertEquals(2, instance.getConfigChannels());
+    assertEquals("Central Station 2", instance.getName());
+    assertEquals("13344", instance.getSerial());
+    //assertEquals(4, instance.getMeasureChannels());
+    //assertEquals(2, instance.getConfigChannels());
   }
 
   @Test
   public void testBuildFromMessage() {
     System.out.println("buildFromMessage");
-    Device instance = new Device();
-    instance.buildFromMessage(message);
-
+    DeviceBean instance = new DeviceBean(message);
     System.out.println(instance);
-
-    assertEquals(1129552448, instance.getUid());
+    assertEquals("0x43539a40", instance.getUid());
+    assertEquals((Integer) 1129552448, instance.getUidAsInt());
     assertEquals("853", instance.getVersion());
-    assertEquals(0, instance.getDeviceId());
+    assertEquals((Integer) 0, instance.getIdentifierAsInt());
   }
 
   @Test
   public void testBuildFromResponse() {
     System.out.println("buildFromResponse");
-    Device instance = new Device();
-    instance.buildFromMessage(response);
-
+    DeviceBean instance = new DeviceBean(response);
+  
     System.out.println(instance);
 
-    assertEquals(1129552449, instance.getUid());
+    assertEquals((Integer)1129552449, instance.getUidAsInt());
     assertEquals("1027", instance.getVersion());
-    assertEquals(65535, instance.getDeviceId());
+    assertEquals((Integer) 65535, instance.getIdentifierAsInt());
   }
 
 }

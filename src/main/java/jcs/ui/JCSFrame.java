@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import jcs.JCS;
 import jcs.commandStation.events.PowerEvent;
+import jcs.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
@@ -203,19 +204,19 @@ public class JCSFrame extends JFrame implements UICallback {
 
   private void setControllerProperties() {
     if (JCS.getJcsCommandStation() != null) {
-      if (JCS.getJcsCommandStation().getCommandStationName() != null) {
+      InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+      if (info != null) {
         this.connectButton.setSelected(true);
-        this.controllerDescriptionLbl.setText(JCS.getJcsCommandStation().getCommandStationName());
-        this.controllerCatalogNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationArticleNumber());
-        this.controllerSerialNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationSerialNumber());
-        this.controllerHostNameLbl.setText("CS-" + JCS.getJcsCommandStation().getCommandStationSerialNumber());
+        this.controllerDescriptionLbl.setText(info.getProductName());
+        this.controllerCatalogNumberLbl.setText(info.getArticleNumber());
+        this.controllerSerialNumberLbl.setText(info.getSerialNumber());
+        this.controllerHostNameLbl.setText(info.getHostname());
         this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
       } else {
         this.connectButton.setSelected(false);
         this.controllerHostNameLbl.setText("Not Connected");
         this.powerButton.setSelected(false);
       }
-
     }
   }
 
@@ -758,13 +759,17 @@ public class JCSFrame extends JFrame implements UICallback {
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
         JCS.getJcsCommandStation().connect();
-        this.controllerDescriptionLbl.setText(JCS.getJcsCommandStation().getCommandStationName());
-        this.controllerCatalogNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationArticleNumber());
-        this.controllerSerialNumberLbl.setText(JCS.getJcsCommandStation().getCommandStationSerialNumber());
-        this.controllerHostNameLbl.setText("CS3-" + JCS.getJcsCommandStation().getCommandStationSerialNumber());
 
-        //TrackControllerFactory.getTrackController().addPowerEventListener(new Powerlistener(this));
-        this.connectMI.setText("Disconnect");
+        InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+        if (info != null) {
+          this.connectButton.setSelected(true);
+          this.controllerDescriptionLbl.setText(info.getProductName());
+          this.controllerCatalogNumberLbl.setText(info.getArticleNumber());
+          this.controllerSerialNumberLbl.setText(info.getSerialNumber());
+          this.controllerHostNameLbl.setText(info.getHostname());
+          this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
+          this.connectMI.setText("Disconnect");
+        }
       } else {
         JCS.getJcsCommandStation().disconnect();
         this.controllerDescriptionLbl.setText("-");
@@ -779,7 +784,6 @@ public class JCSFrame extends JFrame implements UICallback {
     this.showFeedbackMonitorBtn.setEnabled(connect);
     this.setControllerProperties();
   }
-
 
     private void connectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
       boolean connect = ((JToggleButton) evt.getSource()).isSelected();
@@ -829,8 +833,10 @@ public class JCSFrame extends JFrame implements UICallback {
 
   private String getTitleString() {
     String jcsVersion = JCS.getVersionInfo().getVersion();
-    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationSerialNumber() != null) {
-      return "JCS " + "Connected to " + JCS.getJcsCommandStation().getCommandStationName();
+
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null) {
+      InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+      return "JCS " + "Connected to " + info.getProductName();
     } else {
       return "JCS " + jcsVersion + " - NOT Connected!";
     }

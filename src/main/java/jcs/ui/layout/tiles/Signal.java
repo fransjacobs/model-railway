@@ -23,16 +23,16 @@ import java.awt.Polygon;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.SignalType;
+import static jcs.entities.AccessoryBean.SignalType.HP012;
+import static jcs.entities.AccessoryBean.SignalType.HP012SH1;
+import static jcs.entities.AccessoryBean.SignalType.HP0SH1;
+import jcs.entities.AccessoryBean.SignalValue;
+import static jcs.entities.AccessoryBean.SignalValue.Hp0;
+import static jcs.entities.AccessoryBean.SignalValue.Hp0Sh1;
+import static jcs.entities.AccessoryBean.SignalValue.Hp1;
+import static jcs.entities.AccessoryBean.SignalValue.Hp2;
 import jcs.entities.TileBean;
-import jcs.entities.enums.SignalType;
-import static jcs.entities.enums.SignalType.HP012;
-import static jcs.entities.enums.SignalType.HP012SH1;
-import static jcs.entities.enums.SignalType.HP0SH1;
-import jcs.entities.enums.SignalValue;
-import static jcs.entities.enums.SignalValue.Hp0;
-import static jcs.entities.enums.SignalValue.Hp0Sh1;
-import static jcs.entities.enums.SignalValue.Hp1;
-import static jcs.entities.enums.SignalValue.Hp2;
 import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 
 public class Signal extends Straight implements Tile, AccessoryEventListener {

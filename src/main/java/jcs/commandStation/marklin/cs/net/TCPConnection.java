@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import jcs.commandStation.marklin.cs.can.CanMessage;
-import jcs.commandStation.marklin.cs.can.CanMessageFactory;
 import org.tinylog.Logger;
 import jcs.commandStation.marklin.cs.events.CanPingListener;
 import jcs.commandStation.marklin.cs.events.AccessoryListener;
@@ -358,44 +356,44 @@ class TCPConnection implements CSConnection {
     }
   }
 
-  public static void main(String[] a) throws UnknownHostException {
-    boolean cs3 = true;
-
-    InetAddress inetAddr;
-    if (cs3) {
-      inetAddr = InetAddress.getByName("192.168.178.180");
-    } else {
-      inetAddr = InetAddress.getByName("192.168.178.86");
-    }
-
-    int uid;
-    if (cs3) {
-      uid = 1668498828;
-    } else {
-      uid = 1129552448;
-    }
-
-    TCPConnection c = new TCPConnection(inetAddr);
-
-    while (!c.messageReceiver.isRunning()) {
-
-    }
-
-    //CanMessage m = c.sendCanMessage(CanMessageFactory.getMembersPing());
-    CanMessage m = c.sendCanMessage(CanMessageFactory.querySystem(uid));
-
-    Logger.trace("TX: " + m);
-    for (CanMessage r : m.getResponses()) {
-      Logger.trace("RSP: " + r);
-    }
-
-    CanMessage m2 = c.sendCanMessage(CanMessageFactory.querySystem(uid));
-
-    Logger.trace("TX: " + m2);
-    for (CanMessage r : m2.getResponses()) {
-      Logger.trace("RSP: " + r);
-    }
-
-  }
+//  public static void main(String[] a) throws UnknownHostException {
+//    boolean cs3 = true;
+//
+//    InetAddress inetAddr;
+//    if (cs3) {
+//      inetAddr = InetAddress.getByName("192.168.178.180");
+//    } else {
+//      inetAddr = InetAddress.getByName("192.168.178.86");
+//    }
+//
+//    int uid;
+//    if (cs3) {
+//      uid = 1668498828;
+//    } else {
+//      uid = 1129552448;
+//    }
+//
+//    TCPConnection c = new TCPConnection(inetAddr);
+//
+//    while (!c.messageReceiver.isRunning()) {
+//
+//    }
+//
+//    //CanMessage m = c.sendCanMessage(CanMessageFactory.getMembersPing());
+//    CanMessage m = c.sendCanMessage(CanMessageFactory.querySystem(uid));
+//
+//    Logger.trace("TX: " + m);
+//    for (CanMessage r : m.getResponses()) {
+//      Logger.trace("RSP: " + r);
+//    }
+//
+//    CanMessage m2 = c.sendCanMessage(CanMessageFactory.querySystem(uid));
+//
+//    Logger.trace("TX: " + m2);
+//    for (CanMessage r : m2.getResponses()) {
+//      Logger.trace("RSP: " + r);
+//    }
+//
+//  }
 
 }

@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,14 +49,15 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
-import jcs.entities.MeasurementChannel;
+import jcs.entities.ChannelBean;
+import jcs.entities.InfoBean;
 import jcs.entities.SensorBean;
-import jcs.entities.enums.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -66,8 +67,8 @@ import org.tinylog.Logger;
 public class JCSCommandStationImpl implements JCSCommandStation {
 
   private DecoderController decoderController;
-  private List<AccessoryController> accessoryControllers;
-  private List<FeedbackController> feedbackControllers;
+  private Map<String, AccessoryController> accessoryControllers;
+  private Map<String, FeedbackController> feedbackControllers;
 
   private final List<SensorEventListener> sensorEventListeners;
   private final List<AccessoryEventListener> accessoryEventListeners;
@@ -86,8 +87,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   private JCSCommandStationImpl(boolean autoConnectController) {
-    accessoryControllers = new ArrayList<>();
-    feedbackControllers = new ArrayList<>();
+    accessoryControllers = new HashMap<>();
+    feedbackControllers = new HashMap<>();
 
     sensorEventListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
@@ -95,7 +96,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     locomotiveDirectionEventListeners = new LinkedList<>();
     locomotiveSpeedEventListeners = new LinkedList<>();
     measurementEventListeners = new LinkedList<>();
-
     supportedProtocols = new HashSet<>();
 
     if (autoConnectController && decoderController != null || accessoryControllers.isEmpty() || feedbackControllers.isEmpty()) {
@@ -112,10 +112,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     int accessoryCntrConnected = 0;
     int feedbackCntrConnected = 0;
 
-    this.commandStation = PersistenceFactory.getService().getDefaultCommandStation();
+    commandStation = PersistenceFactory.getService().getDefaultCommandStation();
 
-    if (this.commandStation == null) {
+    if (commandStation == null) {
       Logger.error("No Default Command Station found!");
+      return false;
     }
 
     if (decoderController == null) {
@@ -124,34 +125,43 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
     if (decoderController == null) {
       Logger.error("No DecoderController configured!");
+      return false;
     }
 
     if (accessoryControllers.isEmpty()) {
-      accessoryControllers.addAll(ControllerFactory.getAccessoryControllers());
+      List<AccessoryController> acl = ControllerFactory.getAccessoryControllers();
+      for (AccessoryController ac : acl) {
+        accessoryControllers.put(ac.getCommandStationBean().getId(), ac);
+      }
     }
 
+    //TODO: a warning log in the main screen
     if (accessoryControllers.isEmpty()) {
       Logger.warn("No Accessory Controllers configured!");
     }
 
     if (feedbackControllers.isEmpty()) {
-      feedbackControllers.addAll(ControllerFactory.getFeedbackControllers());
+      List<FeedbackController> fcl = ControllerFactory.getFeedbackControllers();
+      for (FeedbackController fc : fcl) {
+        feedbackControllers.put(fc.getCommandStationBean().getId(), fc);
+      }
     }
 
+    //TODO: a warning log in the main screen
     if (feedbackControllers.isEmpty()) {
       Logger.warn("No Feedback Controllers configured!");
     }
 
     if (decoderController != null) {
-      if (decoderController.isConnected()) {
-        decoderConnected = true;
-      } else {
+      decoderConnected = decoderController.isConnected();
+      if (!decoderConnected) {
         decoderConnected = decoderController.connect();
       }
     }
 
+    //Connect the Accessories controllers if needed
     if (!accessoryControllers.isEmpty()) {
-      for (AccessoryController ac : accessoryControllers) {
+      for (AccessoryController ac : accessoryControllers.values()) {
         if (ac.isConnected()) {
           accessoryCntrConnected++;
         } else {
@@ -162,8 +172,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
     }
 
+    //Connect the Feedback Controllers controllers if needed
     if (!feedbackControllers.isEmpty()) {
-      for (FeedbackController fc : feedbackControllers) {
+      for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
           feedbackCntrConnected++;
         } else {
@@ -180,14 +191,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       this.decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
       this.decoderController.addLocomotiveDirectionEventListener(new LocomotiveDirectionChangeEventListener(this));
       this.decoderController.addLocomotiveSpeedEventListener(new LocomotiveSpeedChangeEventListener(this));
-      if (this.decoderController.getCommandStationBean() == null) {
-        Logger.error("NO CommandStation!");
-      }
-      this.supportedProtocols.addAll(this.decoderController.getCommandStationBean().getSupportedProtocols());
+
+      this.supportedProtocols.addAll(decoderController.getCommandStationBean().getSupportedProtocols());
 
       //Start the measurements background task
       long measureInterval = Long.parseLong(System.getProperty("track.measurements.interval", "5"));
-
       measureInterval = measureInterval * 1000;
 
       if (measureInterval > 0) {
@@ -200,7 +208,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
 
       if (accessoryCntrConnected > 0) {
-        for (AccessoryController ac : accessoryControllers) {
+        for (AccessoryController ac : accessoryControllers.values()) {
           if (ac.isConnected()) {
             ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
           }
@@ -208,7 +216,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
 
       if (feedbackCntrConnected > 0) {
-        for (FeedbackController fc : feedbackControllers) {
+        for (FeedbackController fc : feedbackControllers.values()) {
           if (fc.isConnected()) {
             fc.addSensorEventListener(new SensorChangeEventListener(this));
           }
@@ -216,15 +224,14 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
 
       //TODO implement get the day end i.e. the current state of all Objects on track
-      //JCS.logProgress("Obtaining the last state of all items...");
     }
     return decoderConnected;
   }
 
   @Override
   public boolean isConnected() {
-    if (this.decoderController != null) {
-      return this.decoderController.isConnected();
+    if (decoderController != null) {
+      return decoderController.isConnected();
     } else {
       return false;
     }
@@ -232,18 +239,23 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void disconnect() {
-    if (this.decoderController != null) {
-      this.decoderController.disconnect();
-      this.decoderController = null;
+    if (decoderController != null) {
+      decoderController.disconnect();
+      decoderController = null;
     }
 
-    for (AccessoryController ac : accessoryControllers) {
+    for (AccessoryController ac : accessoryControllers.values()) {
       ac.disconnect();
     }
 
-    for (FeedbackController fc : feedbackControllers) {
+    for (FeedbackController fc : feedbackControllers.values()) {
       fc.disconnect();
     }
+
+    //Enable command station switching so
+    this.decoderController = null;
+    this.accessoryControllers.clear();
+    this.feedbackControllers.clear();
   }
 
   @Override
@@ -308,10 +320,19 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
+  public InfoBean getCommandStationInfo() {
+    if (this.decoderController.getDevice() != null) {
+      return this.decoderController.getCommandStationInfo();
+    } else {
+      return null;
+    }
+  }
+
+  //@Override
   public String getCommandStationName() {
     if (this.decoderController != null) {
       if (this.decoderController.getDevice() != null) {
-        return this.decoderController.getDevice().getDeviceName();
+        return this.decoderController.getDevice().getName();
       } else {
         return decoderController.getCommandStationBean().getDescription();
       }
@@ -320,16 +341,16 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
   }
 
-  @Override
+  //@Override
   public String getCommandStationSerialNumber() {
     if (this.decoderController != null && this.decoderController.getDevice() != null) {
-      return this.decoderController.getDevice().getSerialNumber();
+      return this.decoderController.getDevice().getSerial();
     } else {
       return null;
     }
   }
 
-  @Override
+  //@Override
   public String getCommandStationArticleNumber() {
     if (this.decoderController != null && this.decoderController.getDevice() != null) {
       return this.decoderController.getDevice().getArticleNumber();
@@ -355,130 +376,130 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     return power;
   }
 
-  @Override
-  public void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener) {
-    if (decoderController != null && this.decoderController.getCommandStationBean().isLocomotiveSynchronizationSupport()) {
-      List<LocomotiveBean> fromController = this.decoderController.getLocomotives();
+  //@Override
+//  public void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener) {
+//    if (decoderController != null && this.decoderController.getCommandStationBean().isLocomotiveSynchronizationSupport()) {
+//      List<LocomotiveBean> fromController = this.decoderController.getLocomotives();
+//
+//      String importedFrom;
+//      if (this.decoderController.getDevice() != null) {
+//        importedFrom = this.decoderController.getDevice().getArticleNumber();
+//        importedFrom = importedFrom + this.decoderController.getDevice().getSerial();
+//      } else {
+//        //There are some rare situations which occur mainly during lots of testing, where the device is not found ins 10 s or so...
+//        importedFrom = "CS2-xxxxxx";
+//      }
+//
+//      Set<String> functionImageNames = new HashSet<>();
+//      //Map<String,String> functionImageNames =  new HashMap();
+//
+//      //TODO show the progress...
+//      if (progressListener != null) {
+//        PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Controller reports " + fromController.size() + " Locomotives");
+//        progressListener.propertyChange(pce);
+//      }
+//
+//      for (LocomotiveBean loco : fromController) {
+//        Long id = loco.getId();
+//        LocomotiveBean dbLoco = PersistenceFactory.getService().getLocomotive(id);
+//
+//        if (dbLoco != null && loco.getId().equals(dbLoco.getId())) {
+//          Logger.trace("Loco id: " + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString() + " Exists");
+//
+//          // Keep the name, commuter, show and lenght
+//          loco.setName(dbLoco.getName());
+//          loco.setCommuter(dbLoco.isCommuter());
+//          loco.setShow(dbLoco.isShow());
+//
+//          if (progressListener != null) {
+//            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", dbLoco.getName(), "Updating " + loco.getId() + ", " + loco.getName());
+//            progressListener.propertyChange(pce);
+//          }
+//        } else {
+//          Logger.trace("New Loco, id:" + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString());
+//
+//          if (progressListener != null) {
+//            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Inserting " + loco.getId() + ", " + loco.getName());
+//            progressListener.propertyChange(pce);
+//          }
+//        }
+//        try {
+//          loco.setImported(importedFrom);
+//          PersistenceFactory.getService().persist(loco);
+//
+//          //Also cache the locomotive Image
+//          if (progressListener != null) {
+//            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Getting Icon for " + loco.getName());
+//            progressListener.propertyChange(pce);
+//          }
+//          getLocomotiveImage(loco.getIcon());
+//
+//          //Function icons...
+//          Set<FunctionBean> functions = loco.getFunctions().values().stream().collect(Collectors.toSet());
+//          for (FunctionBean fb : functions) {
+//
+//            String aIcon = fb.getActiveIcon();
+//            String iIcon = fb.getInActiveIcon();
+//            functionImageNames.add(aIcon);
+//            functionImageNames.add(iIcon);
+//          }
+//        } catch (Exception e) {
+//          Logger.error(e);
+//        }
+//      }
+//
+//      //Now get all the function images in one batch
+//      Logger.trace("Trying to get " + functionImageNames.size() + " function images");
+//      for (String functionImage : functionImageNames) {
+//        boolean available = getLocomotiveFunctionImage(functionImage) != null;
+//        Logger.trace("Function Image " + functionImage + " is " + (available ? "available" : "NOT available"));
+//      }
+//
+//      //this.decoderController.clearCaches();
+//    }
+//  }
 
-      String importedFrom;
-      if (this.decoderController.getDevice() != null) {
-        importedFrom = this.decoderController.getDevice().isCS3() ? "CS3-" : "CS2-";
-        importedFrom = importedFrom + this.decoderController.getDevice().getSerialNumber();
-      } else {
-        //There are some rare situations which occur mainly during lots of testing, where the device is not found ins 10 s or so...
-        importedFrom = "CS2-xxxxxx";
-      }
+//  @Override
+//  public void synchronizeTurnoutsWithCommandStation() {
+//    List<AccessoryBean> turnouts = new LinkedList<>();
+//
+//    for (AccessoryController ac : this.accessoryControllers.values()) {
+//      if (ac.getCommandStationBean().isAccessorySynchronizationSupport()) {
+//        turnouts.addAll(ac.getSwitches());
+//      }
+//    }
+//
+//    for (AccessoryBean turnout : turnouts) {
+//      AccessoryBean dbTurnout = PersistenceFactory.getService().getAccessoryByAddress(turnout.getAddress());
+//      if (dbTurnout != null) {
+//        turnout.setId(dbTurnout.getId());
+//      }
+//
+//      Logger.trace(turnout.toLogString());
+//      PersistenceFactory.getService().persist(turnout);
+//    }
+//  }
 
-      Set<String> functionImageNames = new HashSet<>();
-      //Map<String,String> functionImageNames =  new HashMap();
-
-      //TODO show the progress...
-      if (progressListener != null) {
-        PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Controller reports " + fromController.size() + " Locomotives");
-        progressListener.propertyChange(pce);
-      }
-
-      for (LocomotiveBean loco : fromController) {
-        Long id = loco.getId();
-        LocomotiveBean dbLoco = PersistenceFactory.getService().getLocomotive(id);
-
-        if (dbLoco != null && loco.getId().equals(dbLoco.getId())) {
-          Logger.trace("Loco id: " + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString() + " Exists");
-
-          // Keep the name, commuter, show and lenght
-          loco.setName(dbLoco.getName());
-          loco.setCommuter(dbLoco.isCommuter());
-          loco.setShow(dbLoco.isShow());
-
-          if (progressListener != null) {
-            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", dbLoco.getName(), "Updating " + loco.getId() + ", " + loco.getName());
-            progressListener.propertyChange(pce);
-          }
-        } else {
-          Logger.trace("New Loco, id:" + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString());
-
-          if (progressListener != null) {
-            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Inserting " + loco.getId() + ", " + loco.getName());
-            progressListener.propertyChange(pce);
-          }
-        }
-        try {
-          loco.setImported(importedFrom);
-          PersistenceFactory.getService().persist(loco);
-
-          //Also cache the locomotive Image
-          if (progressListener != null) {
-            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Getting Icon for " + loco.getName());
-            progressListener.propertyChange(pce);
-          }
-          getLocomotiveImage(loco.getIcon());
-
-          //Function icons...
-          Set<FunctionBean> functions = loco.getFunctions().values().stream().collect(Collectors.toSet());
-          for (FunctionBean fb : functions) {
-
-            String aIcon = fb.getActiveIcon();
-            String iIcon = fb.getInActiveIcon();
-            functionImageNames.add(aIcon);
-            functionImageNames.add(iIcon);
-          }
-        } catch (Exception e) {
-          Logger.error(e);
-        }
-      }
-
-      //Now get all the function images in one batch
-      Logger.trace("Trying to get " + functionImageNames.size() + " function images");
-      for (String functionImage : functionImageNames) {
-        boolean available = getLocomotiveFunctionImage(functionImage) != null;
-        Logger.trace("Function Image " + functionImage + " is " + (available ? "available" : "NOT available"));
-      }
-
-      this.decoderController.clearCaches();
-    }
-  }
-
-  @Override
-  public void synchronizeTurnoutsWithCommandStation() {
-    List<AccessoryBean> turnouts = new LinkedList<>();
-
-    for (AccessoryController ac : this.accessoryControllers) {
-      if (ac.getCommandStationBean().isAccessorySynchronizationSupport()) {
-        turnouts.addAll(ac.getSwitches());
-      }
-    }
-
-    for (AccessoryBean turnout : turnouts) {
-      AccessoryBean dbTurnout = PersistenceFactory.getService().getAccessoryByAddress(turnout.getAddress());
-      if (dbTurnout != null) {
-        turnout.setId(dbTurnout.getId());
-      }
-
-      Logger.trace(turnout.toLogString());
-      PersistenceFactory.getService().persist(turnout);
-    }
-  }
-
-  @Override
-  public void synchronizeSignalsWithCommandStation() {
-    List<AccessoryBean> signals = new LinkedList<>();
-
-    for (AccessoryController ac : this.accessoryControllers) {
-      if (ac.getCommandStationBean().isAccessorySynchronizationSupport()) {
-        signals.addAll(ac.getSignals());
-      }
-    }
-
-    for (AccessoryBean signal : signals) {
-      AccessoryBean dbSignal = PersistenceFactory.getService().getAccessoryByAddress(signal.getAddress());
-      if (dbSignal != null) {
-        signal.setId(dbSignal.getId());
-      }
-
-      Logger.trace(signal.toLogString());
-      PersistenceFactory.getService().persist(signal);
-    }
-  }
+//  @Override
+//  public void synchronizeSignalsWithCommandStation() {
+//    List<AccessoryBean> signals = new LinkedList<>();
+//
+//    for (AccessoryController ac : this.accessoryControllers.values()) {
+//      if (ac.getCommandStationBean().isAccessorySynchronizationSupport()) {
+//        signals.addAll(ac.getSignals());
+//      }
+//    }
+//
+//    for (AccessoryBean signal : signals) {
+//      AccessoryBean dbSignal = PersistenceFactory.getService().getAccessoryByAddress(signal.getAddress());
+//      if (dbSignal != null) {
+//        signal.setId(dbSignal.getId());
+//      }
+//
+//      Logger.trace(signal.toLogString());
+//      PersistenceFactory.getService().persist(signal);
+//    }
+//  }
 
   @Override
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
@@ -530,15 +551,15 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     int switchTime = accessory.getSwitchTime();
     AccessoryValue val = value;
     if (accessory.isSignal() && accessory.getStates() > 2) {
-      if (accessory.getPosition() > 1) {
+      if (accessory.getState() > 1) {
         address = address + 1;
-        val = AccessoryValue.cs3Get(accessory.getPosition() - 2);
+        val = AccessoryValue.cs3Get(accessory.getState() - 2);
       }
     }
 
     Logger.trace("Change accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
 
-    for (AccessoryController ac : this.accessoryControllers) {
+    for (AccessoryController ac : this.accessoryControllers.values()) {
       ac.switchAccessory(address, val, switchTime);
     }
   }
@@ -627,8 +648,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
     @Override
     public void run() {
-      Map<Integer, MeasurementChannel> measurements = this.Controller.decoderController.getTrackMeasurements();
-      for (MeasurementChannel ch : measurements.values()) {
+      Map<Integer, ChannelBean> measurements = this.Controller.decoderController.getTrackMeasurements();
+      for (ChannelBean ch : measurements.values()) {
         if (ch.isChanged()) {
           MeasurementEvent me = new MeasurementEvent(ch);
           Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());
@@ -686,8 +707,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
           dbab = PersistenceFactory.getService().getAccessoryByAddress(address);
           if (dbab != null && dbab.isSignal() && dbab.getStates() > 2) {
             ab.setAddress(address);
-            int p = ab.getPosition() + 2;
-            ab.setPosition(p);
+            int p = ab.getState() + 2;
+            ab.setState(p);
           } else {
             dbab = null;
           }
@@ -698,7 +719,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         //set all properties
         ab.setId(dbab.getId());
         ab.setDecoder(dbab.getDecoder());
-        ab.setDecoderType(dbab.getDecoderType());
+        ab.setDecType(dbab.getDecType());
         ab.setName(dbab.getName());
         ab.setType(dbab.getType());
         ab.setGroup(dbab.getGroup());
@@ -734,7 +755,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       //if (dbfb == null) {
       //try via address and decoder type, assume DCC....
       //LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(fb.getLocomotiveId());
-      //LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(fb.getAddress(), fb.getDecoderType(), fb.getCommandStationId());
+      //LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(fb.getAddress(), fb.getProtocol(), fb.getCommandStationId());
       //if (dblb != null) {
       //  dbfb = PersistenceFactory.getService().getLocomotiveFunction((long) dbfb.getId(), fb.getNumber());
       //}

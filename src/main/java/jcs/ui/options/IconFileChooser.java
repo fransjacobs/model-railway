@@ -24,14 +24,14 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LocomotiveIconFileChooser extends javax.swing.JDialog {
+public class IconFileChooser extends javax.swing.JDialog {
 
   /**
    * Creates new form LocomotiveIconFileChooser
    * @param parent
    * @param modal
    */
-  public LocomotiveIconFileChooser(java.awt.Frame parent, boolean modal) {
+  public IconFileChooser(java.awt.Frame parent, boolean modal) {
     super(parent, modal);
     initComponents();
     postInit();

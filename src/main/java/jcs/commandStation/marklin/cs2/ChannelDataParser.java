@@ -17,7 +17,7 @@ package jcs.commandStation.marklin.cs2;
 
 import java.io.Serializable;
 import java.util.List;
-import jcs.entities.MeasurementChannel;
+import jcs.entities.ChannelBean;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
@@ -62,8 +62,8 @@ public class ChannelDataParser implements Serializable {
     return packets;
   }
 
-  public MeasurementChannel parseConfigMessage(CanMessage message) {
-    MeasurementChannel channel = new MeasurementChannel();
+  public ChannelBean parseConfigMessage(CanMessage message) {
+    ChannelBean channel = new ChannelBean();
     if (message.getCommand() == CanMessage.STATUS_CONFIG) {
       List<CanMessage> responses = message.getResponses();
       int packets = getNumberOfPackets(message);
@@ -175,7 +175,7 @@ public class ChannelDataParser implements Serializable {
     return channel;
   }
 
-  public MeasurementChannel parseUpdateMessage(CanMessage message, MeasurementChannel channel) {
+  public ChannelBean parseUpdateMessage(CanMessage message, ChannelBean channel) {
     if (message.getCommand() == CanMessage.SYSTEM_COMMAND && message.getSubCommand() == CanMessage.SYSTEM_SUB_STATUS) {
       CanMessage response = message.getResponse();
       byte[] data = response.getData();

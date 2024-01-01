@@ -82,15 +82,9 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
+ * Dialog panel for importing and editing locomotive settings
  *
- * Welke properties zijn nodig voor een locomotief?<br>
- * command station id<br>
- * adress, decoder, naam, image, min speed, tacho max<br>
- * uid (cs 3) is die geimporteerd of met de hand gemaakt<br>
- * moet die in de throttle worden getoond is het een commuter
- *
- *
- * @author frans
+ * @author Frans Jacobs
  */
 public class LocomotivePreferencesPanel extends JPanel implements PropertyChangeListener {
 
@@ -101,9 +95,6 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
   private SynchronizationTask task;
 
-  /**
-   * Creates new form LocomotivePanel
-   */
   public LocomotivePreferencesPanel() {
     locoListModel = new LocomotiveBeanListModel();
     decoderTypes = new DefaultComboBoxModel(DecoderType.values());
@@ -118,7 +109,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       commandStationLbl.setText(commandStationBean.getDescription());
 
       locoListModel.clear();
-      List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStation(commandStationBean.getId());
+      List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStationId(commandStationBean.getId());
       this.locoListModel.addAll(locos);
 
       setFieldValues();
@@ -662,7 +653,9 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
     bottomPanel.setPreferredSize(new Dimension(1000, 50));
     bottomPanel.setRequestFocusEnabled(false);
-    bottomPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+    FlowLayout flowLayout12 = new FlowLayout(FlowLayout.RIGHT);
+    flowLayout12.setAlignOnBaseline(true);
+    bottomPanel.setLayout(flowLayout12);
     bottomPanel.add(filler1);
 
     saveBtn.setIcon(new ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
@@ -698,14 +691,10 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     enableFields(this.selectedLocomotive != null);
 
     setFieldValues();
-    //this.setComponentValues(selectedLocomotive);
   }//GEN-LAST:event_newBtnActionPerformed
 
   private LocomotiveBean setLocomotiveValues(LocomotiveBean locomotiveBean) {
-
     if (locomotiveBean.getId() == null) {
-      //A new one so use the address as ID
-      //TODO Check whether it is possible...
       long id = (long) locomotiveBean.getAddress();
       locomotiveBean.setId(id);
       locomotiveBean.setUid(id);
@@ -720,7 +709,6 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     }
 
     locomotiveBean.setImported("Manual Updated");
-
     locomotiveBean = crudFunctionBeans(locomotiveBean);
 
     return locomotiveBean;
@@ -801,7 +789,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
   private void iconFileDialogBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_iconFileDialogBtnActionPerformed
     Logger.trace(evt.getActionCommand());
     JFrame parentFrame = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, this);
-    LocomotiveIconFileChooser fileDialog = new LocomotiveIconFileChooser(parentFrame, true);
+    IconFileChooser fileDialog = new IconFileChooser(parentFrame, true);
     fileDialog.setVisible(true);
 
     File iconFile = fileDialog.getSelectedIconFile();
@@ -909,15 +897,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       for (int i = 0; i < functionCount; i++) {
         //Check if the function exists
         if (functions.containsKey(i)) {
-          Logger.trace("Function F" + i + " exists");
+          //Logger.trace("Function F" + i + " exists");
         } else {
-          Logger.trace("Function F" + i + " created");
-
+          //Logger.trace("Function F" + i + " created");
           int functionType = 50+ i;
           FunctionBean fb = new FunctionBean(locomotiveId, i,functionType, 0);
-          //FunctionType wat are the types "F0,F1,F3,....F31....?
-          
-           //50 en hoger of zelf iets toevoegen?
           functions.put(i, fb);
         }
       }
@@ -1143,13 +1127,14 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
     @Override
     public void done() {
-      //refresh the locos
       initModels();
       synchronizeBtn.setEnabled(commandStationBean.isLocomotiveSynchronizationSupport());
 
     }
   }
 
+  
+  //Testing
   public static void main(String args[]) {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");

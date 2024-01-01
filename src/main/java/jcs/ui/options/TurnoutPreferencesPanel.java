@@ -446,7 +446,7 @@ public class TurnoutPreferencesPanel extends JPanel {
 
     selectedTurnout.setName("W " + idl);
     selectedTurnout.setId(idl + "");
-    selectedTurnout.setPosition(0);
+    selectedTurnout.setState(0);
 
     setComponentValues(selectedTurnout);
     Logger.debug("Created new Turnout..." + this.selectedTurnout);
@@ -474,7 +474,7 @@ public class TurnoutPreferencesPanel extends JPanel {
       this.selectedTurnout.setId(t.getId());
       Logger.debug("Found turnout with id " + t.getId());
     } else {
-      this.selectedTurnout.setPosition(0);
+      this.selectedTurnout.setState(0);
     }
 
     selectedTurnout = PersistenceFactory.getService().persist(selectedTurnout);
@@ -503,7 +503,7 @@ public class TurnoutPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    JCS.getJcsCommandStation().synchronizeTurnoutsWithCommandStation();
+    //JCS.getJcsCommandStation().synchronizeTurnoutsWithCommandStation();
     refresh();
   }
 
@@ -538,9 +538,9 @@ public class TurnoutPreferencesPanel extends JPanel {
       this.nameTF.setText(turnout.getName());
       this.typeTF.setText(turnout.getType());
       this.switchTimeSpinner.setValue(turnout.getSwitchTime());
-      this.decoderTypeTF.setText(turnout.getDecoderType());
+      this.decoderTypeTF.setText(turnout.getDecType());
       this.decoderTF.setText(turnout.getDecoder());
-      this.positionSpinner.setValue(turnout.getPosition());
+      this.positionSpinner.setValue(turnout.getState());
     } else {
       this.idSpinner.setValue(0);
       this.nameTF.setText("");

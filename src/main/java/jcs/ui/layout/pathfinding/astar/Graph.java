@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean.Orientation;
-import jcs.entities.enums.AccessoryValue;
 import org.tinylog.Logger;
 
 public class Graph {

@@ -26,8 +26,12 @@ import jcs.JCS;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.SignalValue;
+import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.AccessoryBean.SignalValue;
+import static jcs.entities.AccessoryBean.SignalValue.Hp0;
+import static jcs.entities.AccessoryBean.SignalValue.Hp0Sh1;
+import static jcs.entities.AccessoryBean.SignalValue.Hp1;
+import static jcs.entities.AccessoryBean.SignalValue.Hp2;
 import org.tinylog.Logger;
 
 /**

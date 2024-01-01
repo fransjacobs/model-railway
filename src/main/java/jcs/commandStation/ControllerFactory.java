@@ -54,6 +54,13 @@ public class ControllerFactory {
     return ControllerFactory.getDecoderController(null, false);
   }
 
+  public static AccessoryController getAccessoryController(CommandStationBean commandStationBean) {
+    if(ControllerFactory.accessoryControllers.isEmpty()) {
+      instantiateAccessoryControllers();
+    }
+    return ControllerFactory.accessoryControllers.get(commandStationBean.getId());
+  }
+
   public static AccessoryController getAccessoryController(String id) {
     return ControllerFactory.accessoryControllers.get(id);
   }
@@ -75,7 +82,7 @@ public class ControllerFactory {
 
   private List<AccessoryController> getAccessoryControllerImpls() {
     if (accessoryControllers.isEmpty()) {
-      instance.instantiateAccessoryControllers();
+      instantiateAccessoryControllers();
     }
     return new ArrayList<>(accessoryControllers.values());
   }
@@ -128,7 +135,7 @@ public class ControllerFactory {
     return decoderController;
   }
 
-  private boolean instantiateAccessoryControllers() {
+  private static boolean instantiateAccessoryControllers() {
     List<CommandStationBean> beans = PersistenceFactory.getService().getCommandStations();
     //In case the AccessoryController is the same instance as the DecoderController, which is by example the case for a Marklin CS 3
     for (CommandStationBean bean : beans) {
@@ -138,8 +145,8 @@ public class ControllerFactory {
           String className = bean.getClassName();
           Logger.trace("Invoking accessoryController: " + className);
           try {
-            Constructor c = Class.forName(className).getConstructor(CommandStationBean.class, Boolean.TYPE);
-            AccessoryController accessoryController = (AccessoryController) c.newInstance(bean, false);
+            Constructor c = Class.forName(className).getConstructor(Boolean.TYPE, CommandStationBean.class);
+            AccessoryController accessoryController = (AccessoryController) c.newInstance(true, bean);
             accessoryControllers.put(bean.getId(), accessoryController);
           } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
             Logger.error("Can't instantiate a '" + className + "' " + ex.getMessage());

@@ -23,7 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import jcs.entities.enums.AccessoryValue;
+import jcs.entities.AccessoryBean.AccessoryValue;
 
 @Table(name = "route_elements", indexes = {
   @Index(name = "roel_rout_node+tile_idx", columnList = "route_id,node_id,tile_id", unique = true)})

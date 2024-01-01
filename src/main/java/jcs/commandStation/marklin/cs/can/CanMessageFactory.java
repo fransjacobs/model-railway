@@ -17,7 +17,7 @@ package jcs.commandStation.marklin.cs.can;
 
 import java.util.ArrayList;
 import java.util.List;
-import jcs.entities.enums.AccessoryValue;
+import jcs.entities.AccessoryBean.AccessoryValue;
 
 /**
  * Factory for creating CAN Messages

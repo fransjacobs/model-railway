@@ -1169,7 +1169,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
             }
             if (canConnect) {
               //Let obtain some data
-              String sn = commandStation.getDevice().getSerialNumber();
+              String sn = commandStation.getDevice().getSerial();
               selectedCommandStation.setLastUsedSerial(sn);
               firePropertyChange("serial", "", sn);
               setProgress(60);

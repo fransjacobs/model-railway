@@ -25,10 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
+import jcs.entities.AccessoryBean.AccessoryValue;
+import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
+import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Direction.LEFT;
 import static jcs.entities.TileBean.Direction.RIGHT;
-import jcs.entities.enums.AccessoryValue;
 
 public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
 

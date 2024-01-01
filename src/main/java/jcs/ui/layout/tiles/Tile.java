@@ -22,11 +22,11 @@ import java.awt.Shape;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.Set;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
-import jcs.entities.enums.AccessoryValue;
 
 /**
  * @author frans

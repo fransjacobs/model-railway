@@ -18,8 +18,8 @@ package jcs.commandStation.events;
 import java.io.Serializable;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.AccessoryBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.SignalValue;
+import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.AccessoryBean.SignalValue;
 import org.tinylog.Logger;
 
 public class AccessoryEvent implements Serializable {

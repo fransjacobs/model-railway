@@ -18,20 +18,10 @@ package jcs.commandStation;
 import java.util.List;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.enums.AccessoryValue;
+import jcs.entities.AccessoryBean.AccessoryValue;
 
 public interface AccessoryController extends GenericController {
 
-//  CommandStationBean getCommandStationBean();
-//
-//  boolean connect();
-//
-//  boolean isConnected();
-//
-//  void disconnect();
-//  boolean isPower();
-//
-//  boolean power(boolean on);
   void switchAccessory(int address, AccessoryValue value);
 
   void switchAccessory(int address, AccessoryValue value, int switchTime);
@@ -40,13 +30,10 @@ public interface AccessoryController extends GenericController {
 
   void removeAccessoryEventListener(AccessoryEventListener listener);
 
-  List<AccessoryBean> getSwitches();
+  List<AccessoryBean> getAccessories();
 
-  List<AccessoryBean> getSignals();
+  //List<AccessoryBean> getSwitches();
 
-//  Device getDevice();
-//
-//  List<Device> getDevices();
-//
-//  String getIp();
+  //List<AccessoryBean> getSignals();
+
 }

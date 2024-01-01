@@ -16,7 +16,6 @@
 package jcs.commandStation;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
@@ -25,8 +24,9 @@ import jcs.commandStation.events.MeasurementEventListener;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.enums.AccessoryValue;
 
 /**
  * The Track repository contain all track item which are used on the Track This can be Locomotives, Turnouts, Signals, etc There For future use the implementation of the Repository could be changed to
@@ -82,17 +82,19 @@ public interface JCSCommandStation {
 
   void removeMeasurementListener(MeasurementEventListener listener);
 
-  String getCommandStationName();
+  InfoBean getCommandStationInfo();
+  
+  //String getCommandStationName();
 
-  String getCommandStationSerialNumber();
+  //String getCommandStationSerialNumber();
 
-  String getCommandStationArticleNumber();
+  //String getCommandStationArticleNumber();
 
-  void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener);
+  //void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener);
 
-  void synchronizeTurnoutsWithCommandStation();
+  //void synchronizeTurnoutsWithCommandStation();
 
-  void synchronizeSignalsWithCommandStation();
+  //void synchronizeSignalsWithCommandStation();
 
   Image getLocomotiveImage(String imageName);
 

@@ -34,25 +34,15 @@ public class LocomotiveBean implements Serializable {
 
   private Long id;
   private String name;
-  //private String previousName;
   private Long uid;
-  //private Long mfxUid;
   private Integer address;
   private String icon;
   private String decoderTypeString;
-  //private String mfxSid;
   private Integer tachoMax;
   private Integer vMin;
-  //private Integer accelerationDelay;
-  //private Integer brakeDelay;
-  //private Integer volume;
-  //private String spm;
   private Integer velocity;
   private Integer richtung;
-  //private String mfxType;
   private boolean commuter;
-  //private Integer length;
-  //private String block;
   private boolean show;
 
   private String source;
@@ -361,23 +351,14 @@ public class LocomotiveBean implements Serializable {
     int hash = 7;
     hash = 53 * hash + Objects.hashCode(this.id);
     hash = 53 * hash + Objects.hashCode(this.name);
-    //hash = 53 * hash + Objects.hashCode(this.previousName);
     hash = 53 * hash + Objects.hashCode(this.uid);
-    //hash = 53 * hash + Objects.hashCode(this.mfxUid);
     hash = 53 * hash + Objects.hashCode(this.address);
     hash = 53 * hash + Objects.hashCode(this.icon);
     hash = 53 * hash + Objects.hashCode(this.decoderTypeString);
-    //hash = 53 * hash + Objects.hashCode(this.mfxSid);
     hash = 53 * hash + Objects.hashCode(this.tachoMax);
     hash = 53 * hash + Objects.hashCode(this.vMin);
-    //hash = 53 * hash + Objects.hashCode(this.accelerationDelay);
-    //hash = 53 * hash + Objects.hashCode(this.brakeDelay);
-    //hash = 53 * hash + Objects.hashCode(this.volume);
-    //hash = 53 * hash + Objects.hashCode(this.spm);
     hash = 53 * hash + Objects.hashCode(this.velocity);
     hash = 53 * hash + Objects.hashCode(this.richtung);
-    //hash = 53 * hash + Objects.hashCode(this.mfxType);
-    //hash = 53 * hash + Objects.hashCode(this.block);
     hash = 53 * hash + Objects.hashCode(this.locIcon);
     hash = 53 * hash + Objects.hashCode(this.show);
     hash = 53 * hash + Objects.hashCode(this.source);
@@ -439,7 +420,6 @@ public class LocomotiveBean implements Serializable {
       return false;
     }
     return Objects.equals(this.show, other.show);
-    //return Objects.equals(this.locIcon, other.locIcon);
   }
 
   public enum Direction {

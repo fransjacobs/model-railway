@@ -1,4 +1,4 @@
-  /*
+/*
  * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +19,11 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import jcs.entities.AccessoryBean;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.tinylog.Logger;
 
 /**
@@ -34,138 +33,192 @@ import org.tinylog.Logger;
 public class AccessoryBeanParser {
 
   public final static String MAGNETARTIKEL = "magnetartikel.cs2";
+  public final static String MAGS_JSON = "mags.json";
 
-  private static final String ACCESSORY_START = "[magnetartikel]";
-  private static final String VERSION = "version";
-  //private static final String MINOR = ".minor";
-  //private static final String MAJOR = ".major";
-
-  private static final String NAME = ".name";
-  private static final String ID = ".id";
-  private static final String TYPE = ".typ";
-  private static final String STELLUNG = ".stellung";
-  private static final String SCHALTZEIT = ".schaltzeit";
-  private static final String DECTYP = ".dectyp";
-  private static final String DECODER = ".decoder";
-
-  private static final String ARTIKEL = "artikel";
-  //private static final String UNGERADE = ".ungerade";
-
-  //private static final String DEFAULT_TYPE = "std_rot_gruen";
-  //private static final String DEFAULT_RED_TYPE = "std_rot";
-  //private static final String DEFAULT_GREEN_TYPE = "std_gruen";
-
-  //private static final String TURNOUT_R = "rechtsweiche";
-  //private static final String TURNOUT_L = "linksweiche";
-  //private static final String TURNOUT_X = "y_weiche";
-  //private static final String TURNOUT_3 = "dreiwegweiche";
-
-  //private static final String ENTKUPPLUNGSGLEIS = "entkupplungsgleis";
-  //private static final String ENTKUPPLUNGSGLEIS_1 = "entkupplungsgleis_1";
-
-  //private static final String LIGHT_SIGNAL_HP01 = "lichtsignal_HP01";
-  //private static final String LIGHT_SIGNAL_HP02 = "lichtsignal_HP02";
-  //private static final String LIGHT_SIGNAL_HP012 = "lichtsignal_HP012";
-  //private static final String LIGHT_SIGNAL_HP012_SH01 = "lichtsignal_HP012_SH01";
-  //private static final String LIGHT_SIGNAL_SH01 = "lichtsignal_SH01";
-
-  //private static final String FORM_SIGNAL_HP01 = "formsignal_HP01";
-  //private static final String FORM_SIGNAL_HP02 = "formsignal_HP02";
-  //private static final String FORM_SIGNAL_HP012 = "formsignal_HP012";
-  //private static final String FORM_SIGNAL_HP012_SH01 = "formsignal_HP012_SH01";
-  //private static final String FORM_SIGNAL_SH01 = "formsignal_SH01";
-
-  //private static final String URC_SIGNAL_HP01 = "urc_lichtsignal_HP01";
-  //private static final String URC_SIGNAL_HP012 = "urc_lichtsignal_HP012";
-  //private static final String URC_SIGNAL_HP012_SH01 = "urc_lichtsignal_HP012_SH01";
-  //private static final String URC_SIGNAL_SH01 = "urc_lichtsignal_SH01";
-
-  public List<AccessoryBean> parseAccessoryFile(String gafile) {
+  public static List<AccessoryBean> parseAccessoryFile(String file, String commandStationId, String source) {
     List<AccessoryBean> accessories = new LinkedList<>();
-    List<String> items = Arrays.asList(gafile.split("\n"));
-    Map<String, String> mags = new HashMap<>();
+    String[] lines = file.split("\n");
 
-    String ps = "";
-    for (String s : items) {
-      s = s.trim();
-      //Logger.trace("Line: " + s);
-      switch (s) {
-        case ACCESSORY_START -> {
-        }
-        case VERSION -> {
+    AccessoryBean ab = new AccessoryBean();
+    for (String line : lines) {
+      int eqidx = line.indexOf("=");
+      if (eqidx == -1) {
+        eqidx = line.length();
+      }
+      String key = line.substring(0, eqidx).trim();
+      String value = line.substring(eqidx).replace("=", "").trim();
 
+      Logger.trace("key: " + key + " value: " + value);
+      switch (key) {
+        case "[magnetartikel]" -> {
+          //Start of the file
         }
-        case ARTIKEL -> {
-          if (mags.containsKey(NAME)) {
-            AccessoryBean sa = createAccessory(mags);
-            if (sa != null) {
-              accessories.add(sa);
-            }
+        case "version" -> {
+          //version of the file
+        }
+        case ".minor" -> {
+          //Minor version of the file
+        }
+        case "artikel" -> {
+          //Start of a new article, save the previous if applicable
+          if (ab.getId() != null) {
+            //TODO: Derive the icon....
+            accessories.add(ab);
           }
-          mags.clear();
+          ab = new AccessoryBean();
+          ab.setSynchronize(true);
+          ab.setSource(source + ":"+MAGNETARTIKEL);
+          ab.setCommandStationId(commandStationId);
         }
-        default -> {
-          if (s.contains("=")) {
-            String[] kp = s.split("=");
-            String key = kp[0];
-            String val = kp[1];
-            mags.put(key, val);
-
-            if (VERSION.equals(ps)) {
-              Logger.trace("Version = " + val);
-            }
-
+        case ".name" -> {
+          ab.setName(value);
+        }
+        case ".id" -> {
+          ab.setId(value);
+          int addr = Integer.parseInt(value);
+          ab.setAddress(addr);
+        }
+        case ".typ" -> {
+          ab.setType(value);
+          ab.setStates(deriveStates(value));
+        }
+        case ".stellung" -> {
+          int pos = Integer.parseInt(value);
+          ab.setState(pos);
+        }
+        case ".schaltzeit" -> {
+          int st = Integer.parseInt(value);
+          ab.setSwitchTime(st);
+        }
+        case ".dectyp" -> {
+          if (value.toLowerCase().contains("mm")) {
+            ab.setDecType("mm");
           } else {
-            Logger.trace("Tag?: " + s);
+            ab.setDecType("dcc");
           }
         }
-      }
-      ps = s;
-    }
-    // parse the last Accessory
-    if (mags.containsKey(NAME)) {
-      AccessoryBean sa = createAccessory(mags);
-      if (sa != null) {
-        accessories.add(sa);
+        case ".decoder" -> {
+          ab.setDecoder(value);
+        }
       }
     }
+    accessories.add(ab);
     return accessories;
   }
 
-  private AccessoryBean createAccessory(Map<String, String> ma) {
-    Integer address = Integer.valueOf(ma.get(ID));
-    String name = ma.get(NAME);
-    String type = ma.get(TYPE);
+  private static int deriveStates(String type) {
+    return switch (type) {
+      case "std_rot_gruen" ->
+        2;
+      case "std_rot" ->
+        1;
+      case "std_gruen" ->
+        1;
+      case "rechtsweiche" ->
+        2;
+      case "linksweiche" ->
+        2;
+      case "y_weiche" ->
+        2;
+      case "dreiwegweiche" ->
+        3;
+      case "entkupplungsgleis" ->
+        1;
+      case "entkupplungsgleis_1" ->
+        1;
+      case "lichtsignal_HP01" ->
+        2;
+      case "lichtsignal_HP02" ->
+        2;
+      case "lichtsignal_HP012" ->
+        3;
+      case "lichtsignal_HP012_SH01" ->
+        4;
+      case "lichtsignal_SH01" ->
+        2;
+      case "formsignal_HP01" ->
+        2;
+      case "formsignal_HP02" ->
+        2;
+      case "formsignal_HP012" ->
+        3;
+      case "formsignal_HP012_SH01" ->
+        4;
+      case "formsignal_SH01" ->
+        2;
+      case "urc_lichtsignal_HP01" ->
+        2;
+      case "urc_lichtsignal_HP012" ->
+        3;
+      case "urc_lichtsignal_HP012_SH01" ->
+        4;
+      case "urc_lichtsignal_SH01" ->
+        2;
+      default ->
+        2;
+    };
+  }
 
-    Integer position = null;
-    if (ma.get(STELLUNG) != null) {
-      position = Integer.valueOf(ma.get(STELLUNG));
+  public static List<AccessoryBean> parseAccessoryJSON(String json, String commandStationId, String source) {
+    List<AccessoryBean> accessories = new LinkedList<>();
+    JSONArray aa = new JSONArray(json);
+    for (int i = 0; i < aa.length(); i++) {
+      AccessoryBean ab = new AccessoryBean();
+      ab.setSynchronize(true);
+      ab.setSource(source + ":"+MAGS_JSON);
+      ab.setCommandStationId(commandStationId);
+
+      JSONObject ajo = aa.getJSONObject(i);
+
+      ab.setName(ajo.getString("name"));
+
+      ab.setId(ajo.getInt("id") + "");
+
+      ab.setAddress(ajo.optInt("address"));
+
+      ab.setIcon(ajo.optString("icon"));
+      ab.setIconFile(ajo.optString("iconFile"));
+
+      ab.setType(ajo.getString("typ"));
+      ab.setGroup(ajo.getString("group"));
+
+      ab.setSwitchTime(ajo.optInt("schaltzeit"));
+      ab.setStates(ajo.getInt("states"));
+      ab.setState(ajo.getInt("state"));
+
+      ab.setDecType(ajo.optString("prot"));
+      ab.setDecoder(ajo.optString("dectyp"));
+
+      //For now JCS only support Turnout and Signals
+      String grp = ab.getGroup();
+      if (grp.equals("weichen") || grp.equals("lichtsignale") | grp.equals("formsignale")) {
+        accessories.add(ab);
+      }
     }
 
-    Integer switchTime = null;
-    if (ma.get(SCHALTZEIT) != null) {
-      switchTime = Integer.valueOf(ma.get(SCHALTZEIT));
-    }
-
-    String decoderType = ma.get(DECTYP);
-    String decoder = ma.get(DECODER);
-    
-    String id = address+"";
-
-    return new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
+    return accessories;
   }
 
   public static void main(String[] a) throws Exception {
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
 
-    String magsFile = Files.readString(path);
-
-    AccessoryBeanParser lp = new AccessoryBeanParser();
-    List<AccessoryBean> accessories = lp.parseAccessoryFile(magsFile);
-
-    for (AccessoryBean accessory : accessories) {
-      Logger.trace((accessory.isSignal() ? "Signal" : "Turnout") + ": " + accessory);
+    Path accessoryFile = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magnetartikel.cs2");
+    String file = Files.readString(accessoryFile);
+    List<AccessoryBean> accessories = AccessoryBeanParser.parseAccessoryFile(file, "marklin.cs", "CS");
+    for (AccessoryBean acc : accessories) {
+      Logger.trace(acc.toLogString());
     }
+    Logger.trace("Total " + accessories.size());
+
+    Path accessoryJson = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
+
+    String json = Files.readString(accessoryJson);
+    accessories = AccessoryBeanParser.parseAccessoryJSON(json, "marklin.cs", "CS");
+
+    for (AccessoryBean acc : accessories) {
+      Logger.trace(acc.toLogString());
+    }
+    Logger.trace("Total " + accessories.size());
+
   }
 
 }

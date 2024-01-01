@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.BlockBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
@@ -31,7 +32,6 @@ import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
-import jcs.entities.enums.AccessoryValue;
 import jcs.persistence.util.PersistenceTestHelper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -836,13 +836,13 @@ public class PersistenceServiceTest {
     assertEquals(accessory, ab);
 
     accessory.setName("WWWWW");
-    accessory.setImported("test");
+    accessory.setSource("test");
 
     instance.persist(accessory);
     ab = instance.getAccessoryByAddress(expResult.getAddress());
     assertEquals(accessory, ab);
 
-    assertEquals("test", ab.getImported());
+    assertEquals("test", ab.getSource());
   }
 
   /**

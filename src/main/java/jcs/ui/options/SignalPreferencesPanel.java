@@ -448,7 +448,7 @@ public class SignalPreferencesPanel extends JPanel {
 
     selectedSignal.setName("W " + idl);
     selectedSignal.setId(idl + "");
-    selectedSignal.setPosition(0);
+    selectedSignal.setState(0);
 
     setComponentValues(selectedSignal);
     Logger.debug("Created new Signal..." + this.selectedSignal);
@@ -476,7 +476,7 @@ public class SignalPreferencesPanel extends JPanel {
       this.selectedSignal.setId(t.getId());
       Logger.debug("Found signal with id " + t.getId());
     } else {
-      this.selectedSignal.setPosition(0);
+      this.selectedSignal.setState(0);
     }
 
     selectedSignal = PersistenceFactory.getService().persist(selectedSignal);
@@ -505,7 +505,7 @@ public class SignalPreferencesPanel extends JPanel {
   }
 
   private void synchronize() {
-    JCS.getJcsCommandStation().synchronizeSignalsWithCommandStation();
+    //JCS.getJcsCommandStation().synchronizeSignalsWithCommandStation();
     refresh();
   }
 
@@ -541,9 +541,9 @@ public class SignalPreferencesPanel extends JPanel {
       this.nameTF.setText(signal.getName());
       this.typeTF.setText(signal.getType());
       this.switchTimeSpinner.setValue(signal.getSwitchTime());
-      this.decoderTypeTF.setText(signal.getDecoderType());
+      this.decoderTypeTF.setText(signal.getDecType());
       this.decoderTF.setText(signal.getDecoder());
-      this.positionSpinner.setValue(signal.getPosition());
+      this.positionSpinner.setValue(signal.getState());
     } else {
       this.idSpinner.setValue(0);
       this.nameTF.setText("");

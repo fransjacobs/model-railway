@@ -23,7 +23,7 @@ import jcs.JCS;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.enums.AccessoryValue;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 

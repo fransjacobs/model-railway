@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.events;
 
-import jcs.entities.MeasurementChannel;
+import jcs.entities.ChannelBean;
 
 /**
  *
@@ -23,13 +23,13 @@ import jcs.entities.MeasurementChannel;
  */
 public class MeasurementEvent {
 
-  private final MeasurementChannel measurementChannel;
+  private final ChannelBean measurementChannel;
 
-  public MeasurementEvent(MeasurementChannel measurementChannel) {
+  public MeasurementEvent(ChannelBean measurementChannel) {
     this.measurementChannel = measurementChannel;
   }
 
-  public MeasurementChannel getMeasurementChannel() {
+  public ChannelBean getMeasurementChannel() {
     return measurementChannel;
   }
 
