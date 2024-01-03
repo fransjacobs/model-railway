@@ -752,6 +752,8 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     newAccessory.setSource("Manual Inserted");
     
     newAccessory.setProtocol(Protocol.MM);
+    newAccessory.setSynchronize(false);
+    
 
     this.accessoryListModel.add(newAccessory);
     this.accessoryList.setSelectedValue(newAccessory, true);
