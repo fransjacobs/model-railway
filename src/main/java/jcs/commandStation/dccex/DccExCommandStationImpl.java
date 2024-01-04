@@ -29,6 +29,8 @@ import jcs.commandStation.dccex.connection.DccExConnectionFactory;
 import jcs.commandStation.dccex.events.CabEvent;
 import jcs.commandStation.dccex.events.DccExMeasurementEvent;
 import jcs.commandStation.dccex.events.DccExMessageListener;
+import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEvent;
@@ -39,14 +41,14 @@ import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.DeviceBean;
 import jcs.entities.FunctionBean;
+import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
-import jcs.entities.ChannelBean;
-import jcs.entities.InfoBean;
 import jcs.util.KeyValuePair;
 import org.tinylog.Logger;
 
@@ -55,26 +57,26 @@ import org.tinylog.Logger;
  * @author Frans Jacobs
  */
 public class DccExCommandStationImpl extends AbstractController implements DecoderController, AccessoryController {
-  
+
   private DccExConnection connection;
   //private final Map<Integer, DeviceBean> devices;
 
   private InfoBean infoBean;
   private DeviceBean mainDevice;
-  
+
   Map<Integer, ChannelBean> measurementChannels;
-  
+
   private int defaultSwitchTime;
-  
+
   public DccExCommandStationImpl(CommandStationBean commandStationBean) {
     this(false, commandStationBean);
   }
-  
+
   public DccExCommandStationImpl(boolean autoConnect, CommandStationBean commandStationBean) {
     super(autoConnect, commandStationBean);
     measurementChannels = new HashMap<>();
     defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
-    
+
     if (commandStationBean != null) {
       if (autoConnect) {
         Logger.trace("Perform auto connect");
@@ -84,14 +86,14 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       Logger.error("Command Station NOT SET!");
     }
   }
-  
+
   private void initMeasurements() {
     //Prepare the measurements as fa as I know DCC-EX has only track curren fro both PROG and MAIN 
     this.connection.sendMessage(DccExMessageFactory.trackManagerConfigRequest());
     this.connection.sendMessage(DccExMessageFactory.maxCurrentRequest());
     this.connection.sendMessage(DccExMessageFactory.currentStatusRequest());
   }
-  
+
   @Override
   public final boolean connect() {
     if (!connected) {
@@ -99,14 +101,14 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       if (executor == null || executor.isShutdown()) {
         executor = Executors.newCachedThreadPool();
       }
-      
+
       if (commandStationBean == null) {
         Logger.error("No DCC-EX Command Station Configuration set!");
         return false;
       } else {
         Logger.trace("Connect using " + commandStationBean.getConnectionType());
       }
-      
+
       ConnectionType conType = commandStationBean.getConnectionType();
       boolean canConnect = true;
       if (conType == ConnectionType.NETWORK) {
@@ -117,7 +119,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
           Logger.error("Can't connect; IP Address not set");
         }
       }
-      
+
       if (conType == ConnectionType.SERIAL) {
         if (commandStationBean.getSerialPort() != null) {
           DccExConnectionFactory.writeLastUsedSerialPortProperty(commandStationBean.getSerialPort());
@@ -126,24 +128,24 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
           Logger.error("Can't connect; ComPort not set");
         }
       }
-      
+
       if (canConnect) {
         connection = DccExConnectionFactory.getConnection(conType);
-        
+
         if (connection != null) {
           //Wait, if needed until the receiver thread has started
           long now = System.currentTimeMillis();
           long timeout = now + 1000L;
-          
+
           while (!connected && now < timeout) {
             connected = connection.isConnected();
             now = System.currentTimeMillis();
           }
-          
+
           if (connected) {
             DccExMessageListener systemEventListener = new MessageListener(this);
             this.connection.setMessageListener(systemEventListener);
-            
+
             JCS.logProgress("Obtaining Device information...");
             connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
 
@@ -155,22 +157,22 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
               this.infoBean.setHostname(this.commandStationBean.getIpAddress());
             } else {
               this.infoBean.setHostname(this.commandStationBean.getSerialPort());
-            }            
-            
+            }
+
             initMeasurements();
 
             //Wait a while to give the Command Station time to answer...
             long waitTime = (conType == ConnectionType.NETWORK ? 200L : 3000L);
             Logger.trace("Wait for " + waitTime + " ms");
             pause(waitTime);
-            
+
             if (conType == ConnectionType.SERIAL) {
               if (mainDevice == null) {
                 connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
                 //pause(5000L);
               }
             }
-            
+
             Logger.trace("Connected with: " + (this.mainDevice != null ? this.mainDevice.getName() : "Unknown"));
             JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
           } else {
@@ -182,12 +184,12 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     }
     return this.connected;
   }
-  
+
   @Override
   public String getIp() {
     return this.commandStationBean.getIpAddress();
   }
-  
+
   @Override
   public void disconnect() {
     try {
@@ -195,20 +197,20 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
         connection.close();
         connected = false;
       }
-      
+
       if (executor != null) {
         executor.shutdown();
       }
       executor = null;
       connection = null;
-      
+
       DccExConnectionFactory.disconnectAll();
     } catch (Exception ex) {
       Logger.error(ex);
     }
     Logger.trace("Disconnected");
   }
-  
+
   @Override
   public boolean power(boolean on) {
     if (connected) {
@@ -218,29 +220,29 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     }
     return this.power;
   }
-  
+
   @Override
   public void changeDirection(int address, Direction newDirection) {
     if (power && connected) {
       int dir = newDirection.getDccExValue();
-      
+
       String message = DccExMessageFactory.cabChangeSpeedRequest(address, 0, dir);
       this.connection.sendMessage(message);
     }
   }
-  
+
   @Override
   public void changeVelocity(int address, int newSpeed, Direction direction) {
     if (power && connected) {
       int dir = direction.getDccExValue();
       //Scale the speed 0 == 0 1024 is max, DCC max is 0 128 roughly so divided by 8
       int speed = newSpeed / 8;
-      
+
       String message = DccExMessageFactory.cabChangeSpeedRequest(address, speed, dir);
       this.connection.sendMessage(message);
     }
   }
-  
+
   @Override
   public void changeFunctionValue(int address, int functionNumber, boolean flag) {
     if (this.power) {
@@ -248,27 +250,48 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       this.connection.sendMessage(message);
     }
   }
-  
+
+  //Direct approach no feed back...
+  //maybe register the accessories and then via id?
   @Override
   public void switchAccessory(int address, AccessoryValue value) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    switchAccessory(address, value, 200);
   }
-  
+
   @Override
   public void switchAccessory(int address, AccessoryValue value, int switchTime) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    if (this.power) {
+      String activate = AccessoryValue.GREEN == value ? "0" : "1";
+      String message = DccExMessageFactory.activateAccessory(address, activate);
+      this.connection.sendMessage(message);
+
+      AccessoryBean ab = new AccessoryBean();
+      ab.setAddress(address);
+      ab.setAccessoryValue(value);
+      String id = address + "";
+      if (id.length() == 1) {
+        id = "00" + id;
+      } else if (id.length() == 2) {
+        id = "0" + id;
+      }
+      ab.setId(id);
+      ab.setCommandStationId(this.commandStationBean.getId());
+
+      AccessoryEvent ae = new AccessoryEvent(ab);
+      notifyAccessoryEventListeners(ae);
+    }
   }
-  
+
   @Override
   public List<LocomotiveBean> getLocomotives() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   @Override
   public Image getLocomotiveImage(String icon) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   @Override
   public Image getLocomotiveFunctionImage(String icon) {
     throw new UnsupportedOperationException("Not supported yet.");
@@ -276,36 +299,36 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   @Override
   public List<AccessoryBean> getAccessories() {
-    throw new UnsupportedOperationException("Not supported yet."); 
+    throw new UnsupportedOperationException("Not supported yet.");
   }
-    
+
   //@Override
   public List<AccessoryBean> getSwitches() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   //@Override
   public List<AccessoryBean> getSignals() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   @Override
   public DeviceBean getDevice() {
     return this.mainDevice;
   }
-  
+
   @Override
   public List<DeviceBean> getDevices() {
     List<DeviceBean> devices = new ArrayList<>();
     devices.add(this.mainDevice);
     return devices;
   }
-  
+
   @Override
   public InfoBean getCommandStationInfo() {
     return this.infoBean;
   }
-  
+
   @Override
   public Map<Integer, ChannelBean> getTrackMeasurements() {
     //Measure the currents
@@ -313,21 +336,25 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     this.pause(50);
     return this.measurementChannels;
   }
-  
+
   private void notifyPowerEventListeners(final PowerEvent powerEvent) {
     this.power = powerEvent.isPower();
     executor.execute(() -> fireAllPowerEventListeners(powerEvent));
   }
-  
+
   private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
     this.power = powerEvent.isPower();
     for (PowerEventListener listener : powerEventListeners) {
       listener.onPowerChange(powerEvent);
     }
   }
-  
+
   private void notifyLocomotiveEventListeners(final CabEvent cabEvent) {
     executor.execute(() -> fireLocomotiveEventListeners(cabEvent));
+  }
+
+  private void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
+    executor.execute(() -> fireAllAccessoryEventListeners(accessoryEvent));
   }
 
   /**
@@ -338,29 +365,35 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   private void fireLocomotiveEventListeners(final CabEvent cabEvent) {
     LocomotiveBean lb = cabEvent.getLocomotiveBean();
     Logger.trace("Loc id: " + lb.getId() + " address: " + lb.getAddress() + " Velocity: " + lb.getVelocity() + " Direction: " + lb.getDirection());
-    
+
     LocomotiveDirectionEvent directionEvent = new LocomotiveDirectionEvent(lb);
     Logger.trace("Notifing " + this.locomotiveDirectionEventListeners.size() + " loc direction listeners with Loc: " + lb.getId() + " address: " + lb.getAddress() + " Direction: " + lb.getDirection());
     for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
       listener.onDirectionChange(directionEvent);
     }
-    
+
     LocomotiveSpeedEvent speedEvent = new LocomotiveSpeedEvent(lb);
     Logger.trace("Notifing " + this.locomotiveSpeedEventListeners.size() + " loc speed listeners with Loc: " + lb.getId() + " address: " + lb.getAddress() + " Velocity: " + lb.getVelocity());
     for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
       listener.onSpeedChange(speedEvent);
     }
-    
+
     List<FunctionBean> functions = cabEvent.getFunctionBeans();
     for (FunctionBean fb : functions) {
       LocomotiveFunctionEvent functionEvent = new LocomotiveFunctionEvent(fb);
-      
+
       for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
         listener.onFunctionChange(functionEvent);
       }
     }
   }
-  
+
+  private void fireAllAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
+    for (AccessoryEventListener listener : this.accessoryEventListeners) {
+      listener.onAccessoryChange(accessoryEvent);
+    }
+  }
+
   private void handleMeasurement(DccExMeasurementEvent measurementEvent) {
     if ("=".equals(measurementEvent.getOpcode())) {
       // config
@@ -403,7 +436,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
         }
         main.setValue(measurementEvent.getCurrentMain());
         main.setHumanValue((double) measurementEvent.getCurrentMain());
-        
+
         ChannelBean prog = this.measurementChannels.get(0);
         if (prog == null) {
           prog = new ChannelBean();
@@ -419,7 +452,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
         }
         main.setRangeMax(measurementEvent.getCurrentMainMax());
         main.setEndValue((double) measurementEvent.getCurrentMainMax());
-        
+
         ChannelBean prog = this.measurementChannels.get(0);
         if (prog == null) {
           prog = new ChannelBean();
@@ -430,15 +463,15 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       }
     }
   }
-  
+
   private class MessageListener implements DccExMessageListener {
-    
+
     private final DccExCommandStationImpl commandStation;
-    
+
     MessageListener(DccExCommandStationImpl commandStation) {
       this.commandStation = commandStation;
     }
-    
+
     private static int getIntValue(String s) {
       int r = -1;
       if (s != null && s.length() > 0) {
@@ -446,7 +479,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       }
       return r;
     }
-    
+
     @Override
     public void onMessage(String message) {
       try {
@@ -459,7 +492,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
             opcode = message.substring(1, 2);
             content = DccExMessage.filterContent(message);
           }
-          
+
           if (debug) {
             if ("".equals(opcode)) {
               Logger.trace("Display message: " + content);
@@ -467,7 +500,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
               Logger.trace("Opcode: " + opcode + " Content: " + content);
             }
           }
-          
+
           switch (opcode) {
             case "p" -> {
               // Power on/off response. The character right after the opcode represents the power state
@@ -525,7 +558,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
           // Sensor/Input: INACTIVE to ACTIVE
           // Output response
         }
-        
+
       } catch (Exception e) {
         Logger.trace("Error in Message: '" + message + "' -> " + e.getMessage());
       }
@@ -535,17 +568,17 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 //////////////////////////////////////////////////////////////////////////////////////  
   // For testing only
   public static void main(String[] a) {
-    
+
     System.setProperty("message.debug", "true");
-    
+
     if (1 == 1) {
       CommandStationBean csb = new CommandStationBean();
       csb.setId("dcc-ex.network");
-      csb.setDescription("DCC-EX Network");
+      csb.setDescription("DCC-EX");
       csb.setClassName("jcs.commandStation.dccex.DccExCommandStationImpl");
-      //csb.setConnectVia("NETWORK");
-      csb.setConnectVia("SERIAL");
-      csb.setSerialPort("cu.usbmodem14201");
+      csb.setConnectVia("NETWORK");
+      //csb.setConnectVia("SERIAL");
+      //csb.setSerialPort("cu.usbmodem14201");
       csb.setIpAddress("192.168.178.73");
       csb.setNetworkPort(2560);
       csb.setDefault(true);
@@ -562,50 +595,59 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
       //CommandStation cs = CommandStationFactory.getCommandStation(csb);
       DccExCommandStationImpl cs = new DccExCommandStationImpl(csb);
-      
+
       cs.connect();
-      
+
       ((DccExCommandStationImpl) cs).pause(500L);
-      
-      cs.power(true);
-      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
-      
-      ((DccExCommandStationImpl) cs).pause(500L);
-      cs.power(false);
-      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
-      
-      ((DccExCommandStationImpl) cs).pause(500L);
+
       cs.power(true);
       Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
 
+//      ((DccExCommandStationImpl) cs).pause(500L);
+//      cs.power(false);
+//      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
+//      
+//      ((DccExCommandStationImpl) cs).pause(500L);
+//      cs.power(true);
+//      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
       /////
       ((DccExCommandStationImpl) cs).pause(500L);
-      cs.changeFunctionValue(8, 0, true);
-      
-      ((DccExCommandStationImpl) cs).pause(1500L);
-      
-      cs.changeFunctionValue(8, 1, true);
-      
-      ((DccExCommandStationImpl) cs).pause(1500L);
-      cs.changeFunctionValue(8, 1, false);
+//      cs.changeFunctionValue(8, 0, true);
+//      
+//      ((DccExCommandStationImpl) cs).pause(1500L);
+//      
+//      cs.changeFunctionValue(8, 1, true);
+//      
+//      ((DccExCommandStationImpl) cs).pause(1500L);
+//      cs.changeFunctionValue(8, 1, false);
 
-      //Check the measurements
-      ((DccExCommandStationImpl) cs).pause(1500L);
-      
-      Logger.trace("#### Measurements....");
-      
-      cs.getTrackMeasurements();
-      
-      while (1 == 1) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          
-        }
-      }
-    } else {
+      cs.switchAccessory(2, AccessoryValue.RED);
+      ((DccExCommandStationImpl) cs).pause(500L);
+      cs.switchAccessory(2, AccessoryValue.GREEN);
+      ((DccExCommandStationImpl) cs).pause(500L);
+      cs.switchAccessory(2, AccessoryValue.RED);
+      ((DccExCommandStationImpl) cs).pause(500L);
+      cs.switchAccessory(2, AccessoryValue.GREEN);
+      ((DccExCommandStationImpl) cs).pause(500L);
+      cs.switchAccessory(2, AccessoryValue.RED);
+// 
+//      //Check the measurements
+//      ((DccExCommandStationImpl) cs).pause(1500L);
+//      
+//      Logger.trace("#### Measurements....");
+//      
+//      cs.getTrackMeasurements();
+//      
+//      while (1 == 1) {
+//        try {
+//          Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//          
+//        }
+//      }
+//    } else {
     }
-    
+
   }
-  
+
 }

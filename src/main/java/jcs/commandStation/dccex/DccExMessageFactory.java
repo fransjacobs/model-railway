@@ -192,4 +192,137 @@ public class DccExMessageFactory {
     return "<D SPEED128>";
   }
 
+  /**
+   * Store (save) this definition to EEPROM
+   *
+   * @return the dcc-ex message
+   */
+  static String store() {
+    return "<E>";
+  }
+
+  /**
+   * Deletes a turnout by Id
+   *
+   * @param id identifier of the Turnout/Point
+   *
+   * @return the dcc-ex message
+   */
+  static String delete(String id) {
+    return "<T " + id + ">";
+  }
+
+  /**
+   * Define turnout/point on a DCC Accessory Decoder with the specified address and subaddress
+   *
+   * @param id identifier of the Turnout/Point
+   * @param address ranges from 0 to 511
+   * @param subAddress ranges from 0 to 3
+   * @return dcc-ex message
+   */
+  static String defineAccessory(String id, int address, int subAddress) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("<T ");
+    sb.append(id);
+    sb.append(" DCC ");
+    sb.append(address);
+    sb.append(" ");
+    sb.append(subAddress);
+    sb.append(">");
+    return sb.toString();
+  }
+
+  /**
+   * Define turnout/point on a DCC Accessory Decoder with the specified linear address
+   *
+   * @param id identifier of the Turnout/Point
+   * @param address ranges from 1 (address 1/subaddress 0) to 2044 (address 511/subaddress 3)
+   * @return dcc-ex message
+   */
+  static String defineAccessory(String id, int address) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("<T ");
+    sb.append(id);
+    sb.append(" DCC ");
+    sb.append(address);
+    sb.append(">");
+    return sb.toString();
+  }
+
+  /**
+   * Request a list all defined turnouts/Points
+   *
+   * @return dcc-ex message
+   */
+  static String requestDefinedAccessoryList() {
+    return "<T>";
+  }
+
+  /**
+   * Throw or Close a defined turnout/point
+   *
+   * @param id identifier of the Turnout/Point
+   * @param state one of: 1 = Throw, T = Throw, 0 = Close, C = Close, X = eXamine
+   * @return dcc-ex message
+   */
+  static String setAccessoryState(String id, String state) {
+    return "<T " + id + " " + state + ">";
+  }
+
+  /**
+   * Request details of a specific Turnout/Point
+   *
+   * @param id unique id of the Turnout/Point
+   * @return dcc-ex message
+   */
+  static String requestDefinedAccessoryState(String id) {
+    return "J T " + id + ">";
+  }
+
+  /**
+   * Request the list of defined turnout/Point IDs
+   *
+   * @return dcc-ex message
+   */
+  static String requestDefinedAccessoryIdList() {
+    return "<J T>";
+  }
+
+  /**
+   * Control an Accessory Decoder with Address and Subaddress
+   *
+   * @param address the primary address of the decoder controlling the turnout (0-511)
+   * @param subAddress the subaddress of the decoder controlling this turnout (0-3)
+   * @param activate one of 0=off, deactivate, straight or Closed; 1=on, activate, turn or thrown
+   * @return dcc-ex message
+   */
+  static String activateAccessory(int address, int subAddress, String activate) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("<a ");
+    sb.append(address);
+    sb.append(" ");
+    sb.append(subAddress);
+    sb.append(" ");
+    sb.append(activate);
+    sb.append(">");
+    return sb.toString();
+  }
+
+  /**
+   * Control an Accessory Decoder with linear address
+   *
+   * @param linear address of the decoder controlling this turnout (1-2044)
+   * @param activate one of 0=off, deactivate, straight or Closed; 1=on, activate, turn or thrown
+   * @return dcc-ex message
+   */
+  static String activateAccessory(int address, String activate) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("<a ");
+    sb.append(address);
+    sb.append(" ");
+    sb.append(activate);
+    sb.append(">");
+    return sb.toString();
+  }
+
 }
