@@ -276,7 +276,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     });
     f0f15Panel.add(f0TB);
 
-    f1TB.setBackground(new java.awt.Color(204, 204, 204));
     f1TB.setText("F2");
     f1TB.setActionCommand("F1");
     f1TB.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -945,7 +944,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       if (JCS.getJcsCommandStation() != null) {
 
         //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(49189L);
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(37L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16398L);
         Logger.debug(loc);
 
         testPanel.setLocomotive(loc);

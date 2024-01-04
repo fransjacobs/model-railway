@@ -60,8 +60,10 @@ import jcs.commandStation.marklin.cs3.FunctionSvgToPngConverter;
 import jcs.commandStation.marklin.cs3.LocomotiveBeanJSONParser;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.DeviceBean;
+import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import static jcs.entities.LocomotiveBean.DecoderType.DCC;
@@ -69,8 +71,6 @@ import static jcs.entities.LocomotiveBean.DecoderType.MFX;
 import static jcs.entities.LocomotiveBean.DecoderType.MFXP;
 import static jcs.entities.LocomotiveBean.DecoderType.SX1;
 import jcs.entities.LocomotiveBean.Direction;
-import jcs.entities.ChannelBean;
-import jcs.entities.InfoBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -121,7 +121,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   public boolean isCS3() {
     if (mainDevice != null) {
-      String articleNumber = this.mainDevice.getArticleNumber();
+      String articleNumber = mainDevice.getArticleNumber();
       return "60216".equals(articleNumber) || "60226".equals(articleNumber);
     } else {
       return false;
@@ -136,13 +136,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public final synchronized boolean connect() {
     if (!connected) {
-      Logger.trace("Connecting to a Central Station " + (this.commandStationBean != null ? commandStationBean.getDescription() : "Unknown"));
+      Logger.trace("Connecting to a Central Station " + (commandStationBean != null ? commandStationBean.getDescription() : "Unknown"));
       if (executor == null || executor.isShutdown()) {
         executor = Executors.newCachedThreadPool();
       }
 
       CSConnection csConnection = CSConnectionFactory.getConnection();
-      this.connection = csConnection;
+      connection = csConnection;
 
       if (connection != null) {
         //Wait, if needed until the receiver thread has started
@@ -173,7 +173,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
           JCS.logProgress("Obtaining Device information...");
 
-          this.infoBean = getCSInfo();
+          infoBean = getCSInfo();
 
           //request all members on the Marklin CAN bus to give a response
           long start = System.currentTimeMillis();
@@ -220,7 +220,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   //Based on the info in this file it is quicker to know whether the CS is a version 2 or 3.
   //In case of a 3 the data can ve retreived via JSON else use CAN
   private InfoBean getCSInfo() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String geraet = httpCon.getInfoFile();
     InfoBean ib = new InfoBean(geraet, true);
 
@@ -228,6 +228,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //CS3
       String json = httpCon.getInfoJSON();
       ib = new InfoBean(json, false);
+      httpCon.setCs3(true);
     }
     return ib;
   }
@@ -242,7 +243,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
    * @return
    */
   private void getAppDevicesCs3() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
 
     String devJson = httpCon.getDevicesJSON();
     List<DeviceBean> devs = DeviceJSONParser.parse(devJson);
@@ -262,7 +263,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         Logger.trace("MainDevice: " + d);
       }
     }
-    Logger.trace("Found " + this.devices.size() + " devices connected to CS3");
+    Logger.trace("Found " + devices.size() + " devices connected to CS3");
   }
 
   @Override
@@ -323,10 +324,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-//  @Override
-//  public boolean isConnected() {
-//    return connected;
-//  }
   @Override
   public void disconnect() {
     try {
@@ -565,13 +562,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-//  private void pause(long millis) {
-//    try {
-//      Thread.sleep(millis);
-//    } catch (InterruptedException ex) {
-//      Logger.error(ex);
-//    }
-//  }
   @Override
   public void switchAccessory(int address, AccessoryValue value) {
     switchAccessory(address, value, this.defaultSwitchTime);
@@ -628,14 +618,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   List<LocomotiveBean> getLocomotivesViaHttp() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String csLocos = httpCon.getLocomotivesFile();
     LocomotiveBeanParser lp = new LocomotiveBeanParser();
     return lp.parseLocomotivesFile(csLocos);
   }
 
   List<LocomotiveBean> getLocomotivesViaJSON() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String json = httpCon.getLocomotivesJSON();
     LocomotiveBeanJSONParser lp = new LocomotiveBeanJSONParser();
     return lp.parseLocomotives(json);
@@ -655,7 +645,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
     }
 
-    String csId = this.commandStationBean.getId();
+    String csId = commandStationBean.getId();
     for (LocomotiveBean loc : locomotives) {
       loc.setCommandStationId(csId);
     }
@@ -663,7 +653,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   List<AccessoryBean> getAccessoriesViaHttp() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(isCS3());
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     if (isCS3() && System.getProperty("accessory.list.via", "JSON").equalsIgnoreCase("JSON")) {
       String json = httpCon.getAccessoriesJSON();
       return AccessoryBeanParser.parseAccessoryJSON(json, commandStationBean.getId(), commandStationBean.getShortName());
@@ -709,18 +699,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public Image getLocomotiveImage(String icon) {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     Image locIcon = httpCon.getLocomotiveImage(icon);
     return locIcon;
   }
 
-//  @Override
-//  public void clearCaches() {
-//    FunctionSvgToPngConverter.clearSvgCache();
-//  }
   @Override
   public Image getLocomotiveFunctionImage(String icon) {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection(this.isCS3());
+    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     if (this.isCS3()) {
       if (!FunctionSvgToPngConverter.isSvgCacheLoaded()) {
         Logger.trace("Loading SVG Cache");

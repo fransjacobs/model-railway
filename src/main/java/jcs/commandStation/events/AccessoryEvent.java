@@ -50,7 +50,7 @@ public class AccessoryEvent implements Serializable {
       address = address + 1;
       String id = address+"";
 
-      this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null);
+      this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null,null);
       if (resp.getDlc() == CanMessage.DLC_8) {
         int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
         this.accessoryBean.setSwitchTime(switchTime);

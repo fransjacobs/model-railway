@@ -57,10 +57,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private void connect() {
-    Logger.debug("Connecting to: "
-            + System.getProperty("norm.jdbcUrl")
-            + " with db user: "
-            + System.getProperty("norm.user"));
+    Logger.debug("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
     database = new Database();
     database.setSqlMaker(new H2SqlMaker());
   }
@@ -122,7 +119,6 @@ public class H2PersistenceService implements PersistenceService {
     SensorBean prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
 
     if (prev != null) {
-
       // sensor.setName(prev.getName());
       database.update(sensor);
     } else {
@@ -153,13 +149,10 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number) {
-    FunctionBean fb
-            = database
-                    .where("locomotive_id=? and f_number=?", locomotiveId, number)
-                    .first(FunctionBean.class);
+    FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
     if (fb != null) {
-      fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
-      fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
+      fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
+      fb.setActiveIconImage(getFunctionImage(fb.getActiveIcon()));
     }
     return fb;
   }
@@ -305,8 +298,7 @@ public class H2PersistenceService implements PersistenceService {
       if (image != null) {
         int size = 30;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-        this.functionImageCache.put(
-                imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+        this.functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
     return this.functionImageCache.get(imageName);
@@ -322,8 +314,8 @@ public class H2PersistenceService implements PersistenceService {
         path = imageName;
       } else {
         //no path seperators so assume it is a synchonized command station icon
-        String sortName = this.getDefaultCommandStation().getShortName();
-        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + sortName + File.separator;
+        String shortName = getDefaultCommandStation().getShortName().toLowerCase();
+        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
       }
 
       if (function) {

@@ -37,27 +37,27 @@ import org.tinylog.Logger;
  * @author Frans Jacobs
  */
 public class HTTPConnection {
-
+  
   private final InetAddress csAddress;
-  private final boolean cs3;
-
+  private boolean cs3;
+  
   private final static String HTTP = "http://";
   private final static String CONFIG = "/config/";
   private final static String LOCOMOTIVE = "lokomotive.cs2";
   private final static String LOCOMOTIVE_JSON = "/app/api/loks";
-
+  
   private final static String MAGNETARTIKEL = "magnetartikel.cs2";
   private final static String ACCESSORIES_URL = "/app/api/mags";
-
+  
   private final static String DEVICE = "geraet.vrs";
-
+  
   private final static String IMAGE_FOLDER_CS3 = "/app/assets/lok/";
   private final static String IMAGE_FOLDER_CS2 = "/icons/";
   private final static String FUNCTION_IMAGE_FOLDER = "/fcticons/";
-
+  
   private final static String FUNCTION_SVG_URL = "/images/svgSprites/fcticons.json";
   private final static String ACCESSORIES_SVG_URL = "/images/svgSprites/magicons.json";
-
+  
   private final static String CS3_INFO_JSON = "/app/api/info";
   private final static String DEVICES = "/app/api/devs";
 
@@ -68,22 +68,24 @@ public class HTTPConnection {
   //  http://cs3host/app/api/info
   //
   HTTPConnection(InetAddress csAddress) {
-    this(csAddress, true);
-  }
-
-  HTTPConnection(InetAddress csAddress, boolean cs3) {
     this.csAddress = csAddress;
-    this.cs3 = cs3;
+    //Assume a CS2
+    this.cs3 = false;
   }
-
+  
   public boolean isConnected() {
     return csAddress != null && csAddress.getHostAddress() != null;
   }
-
+  
+  public void setCs3(boolean cs3) {
+    this.cs3 = cs3;
+    Logger.trace("Changed Connection settings for a " + (cs3 ? "CS3" : "CS2"));
+  }
+  
   private static String fixURL(String url) {
     return url.replace(" ", "%20");
   }
-
+  
   public String getLocomotivesFile() {
     StringBuilder locs = new StringBuilder();
     try {
@@ -103,7 +105,7 @@ public class HTTPConnection {
     }
     return locs.toString();
   }
-
+  
   public String getLocomotivesJSON() {
     StringBuilder loks = new StringBuilder();
     try {
@@ -123,7 +125,7 @@ public class HTTPConnection {
     }
     return loks.toString();
   }
-
+  
   public String getAccessoriesFile() {
     StringBuilder locs = new StringBuilder();
     try {
@@ -143,7 +145,7 @@ public class HTTPConnection {
     }
     return locs.toString();
   }
-
+  
   public String getFunctionsSvgJSON() {
     StringBuilder json = new StringBuilder();
     try {
@@ -163,7 +165,7 @@ public class HTTPConnection {
     }
     return json.toString();
   }
-
+  
   public String getAccessoriesSvgJSON() {
     StringBuilder json = new StringBuilder();
     try {
@@ -183,7 +185,7 @@ public class HTTPConnection {
     }
     return json.toString();
   }
-
+  
   public String getAccessoriesJSON() {
     StringBuilder json = new StringBuilder();
     try {
@@ -203,7 +205,7 @@ public class HTTPConnection {
     }
     return json.toString();
   }
-
+  
   public String getDevicesJSON() {
     StringBuilder device = new StringBuilder();
     if (this.csAddress != null && csAddress.getHostAddress() != null) {
@@ -227,7 +229,7 @@ public class HTTPConnection {
     }
     return device.toString();
   }
-
+  
   public String getInfoFile() {
     StringBuilder device = new StringBuilder();
     try {
@@ -247,7 +249,7 @@ public class HTTPConnection {
     }
     return device.toString();
   }
-    
+  
   public String getInfoJSON() {
     StringBuilder device = new StringBuilder();
     if (this.csAddress != null && csAddress.getHostAddress() != null) {
@@ -271,17 +273,17 @@ public class HTTPConnection {
     }
     return device.toString();
   }
-
+  
   public Image getLocomotiveImage(String imageName) {
     BufferedImage image = null;
     try {
       URL url;
-      if (this.cs3) {
+      if (cs3) {
         url = new URL(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS3 + imageName + ".png"));
       } else {
         url = new URL(fixURL(HTTP + csAddress.getHostAddress() + IMAGE_FOLDER_CS2 + imageName + ".png"));
       }
-
+      
       Logger.trace("image URL: " + url);
       image = ImageIO.read(url);
     } catch (MalformedURLException ex) {
@@ -291,11 +293,11 @@ public class HTTPConnection {
     }
     return image;
   }
-
+  
   public Image getFunctionImageCS2(String imageName) {
     BufferedImage image = null;
     String iurl = fixURL(HTTP + csAddress.getHostAddress() + FUNCTION_IMAGE_FOLDER + imageName + ".png");
-
+    
     try {
       URL url = new URL(iurl);
       image = ImageIO.read(url);
@@ -309,18 +311,19 @@ public class HTTPConnection {
     }
     return image;
   }
-
+  
   public static void main(String[] args) throws Exception {
     boolean cs3 = true;
-
+    
     InetAddress inetAddr;
     if (cs3) {
       inetAddr = InetAddress.getByName("192.168.178.180");
     } else {
       inetAddr = InetAddress.getByName("192.168.178.86");
     }
-    HTTPConnection hc = new HTTPConnection(inetAddr, cs3);
-
+    HTTPConnection hc = new HTTPConnection(inetAddr);
+    hc.setCs3(cs3);
+    
     String serial;
     if (cs3) {
       serial = "2374";
@@ -342,23 +345,23 @@ public class HTTPConnection {
     Path info = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "info.json");
     String json = hc.getInfoJSON();
     Files.writeString(info, json);
-
+    
     Path devices = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "devices.json");
     json = hc.getDevicesJSON();
     Files.writeString(devices, json);
-
+    
     Path locomotives = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "locomotives.json");
     json = hc.getLocomotivesJSON();
     Files.writeString(locomotives, json);
-
+    
     Path accessories = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "mags.json");
     json = hc.getAccessoriesJSON();
     Files.writeString(accessories, json);
-
+    
     Path fcticons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "fcticons.json");
     json = hc.getFunctionsSvgJSON();
     Files.writeString(fcticons, json);
-
+    
     Path magicons = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "magicons.json");
     json = hc.getAccessoriesSvgJSON();
     Files.writeString(magicons, json);
@@ -368,8 +371,5 @@ public class HTTPConnection {
     Logger.trace(file);
     Files.writeString(accessoryFile, file);
     
-    
-    
-
   }
 }

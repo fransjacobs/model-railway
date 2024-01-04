@@ -19,8 +19,8 @@
 package jcs.commandStation.marklin.cs.net;
 
 import org.junit.After;
-import org.junit.Before;
 import static org.junit.Assert.*;
+import org.junit.Before;
 
 /**
  *
@@ -98,7 +98,7 @@ public class CSConnectionFactoryTest {
         System.out.println("getHTTPConnectionImpl");
         CSConnectionFactory instance = null;
         HTTPConnection expResult = null;
-        HTTPConnection result = instance.getHTTPConnectionImpl(true);
+        HTTPConnection result = instance.getHTTPConnectionImpl();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -111,7 +111,7 @@ public class CSConnectionFactoryTest {
     public void testGetHTTPConnection() {
         System.out.println("getHTTPConnection");
         HTTPConnection expResult = null;
-        HTTPConnection result = CSConnectionFactory.getHTTPConnection(true);
+        HTTPConnection result = CSConnectionFactory.getHTTPConnection();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

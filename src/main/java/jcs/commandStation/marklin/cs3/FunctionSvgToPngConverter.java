@@ -33,7 +33,9 @@ public class FunctionSvgToPngConverter {
   private static final String SVG_NAME_SPACE = "<svg version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
 
   private static final String YELLOW = "<style>.st0{fill:rgb(220, 160, 10);}</style>";
-  private static final String WHITE = "<style>.st0{fill:rgb(255, 255, 255);}</style>";
+  //private static final String WHITE = "<style>.st0{fill:rgb(255, 255, 255);}</style>";
+  private static final String WHITE = "<style>.st0{fill:rgb(105, 105, 105);}</style>";
+  
   private static final String GREY = "<style>.st0{fill:rgb(102, 102, 102);}</style>";
   private static final String BLACK = "<style>.st0{fill:rgb(0, 0, 0);}</style>";
 
@@ -92,9 +94,13 @@ public class FunctionSvgToPngConverter {
         rep = "fill=\"#DCA00A\"";
         rep1 = "<path fill=\"rgb(220, 160, 10)\" ";
       }
+//      case "we" -> {
+//        rep = "fill=\"#FFFFFF\"";
+//        rep1 = "<path fill=\"rgb(255, 255, 255)\" ";
+//      }
       case "we" -> {
         rep = "fill=\"#FFFFFF\"";
-        rep1 = "<path fill=\"rgb(255, 255, 255)\" ";
+        rep1 = "<path fill=\"rgb(105, 105, 105)\" ";
       }
       case "gr" -> {
         rep = "fill=\"#666666\"";

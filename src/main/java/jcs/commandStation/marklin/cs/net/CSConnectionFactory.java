@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.marklin.cs.net;
 
-import jcs.util.Ping;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -26,6 +25,7 @@ import jcs.JCS;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.marklin.cs.can.CanMessageFactory;
 import jcs.util.NetworkUtil;
+import jcs.util.Ping;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -41,7 +41,7 @@ public class CSConnectionFactory {
   private CSConnection controllerConnection;
   private HTTPConnection httpConnection;
   private InetAddress controllerHost;
-
+  
   private static final String BROADCAST_ADDRESS = "255.255.255.255";
 
   private static final String LAST_USED_IP_PROP_FILE = RunUtil.DEFAULT_PATH + "last-used-marklin-cs-ip.properties";
@@ -111,18 +111,18 @@ public class CSConnectionFactory {
     instance.httpConnection = null;
   }
 
-  HTTPConnection getHTTPConnectionImpl(boolean cs3) {
+  HTTPConnection getHTTPConnectionImpl() {
     if (controllerConnection == null) {
       getConnectionImpl();
     }
     if (httpConnection == null) {
-      httpConnection = new HTTPConnection(controllerHost, cs3);
+      httpConnection = new HTTPConnection(controllerHost);
     }
-    return this.httpConnection;
+    return httpConnection;
   }
 
-  public static HTTPConnection getHTTPConnection(boolean cs3) {
-    return getInstance().getHTTPConnectionImpl(cs3);
+  public static HTTPConnection getHTTPConnection() {
+    return getInstance().getHTTPConnectionImpl();
   }
 
   void sendMobileAppPing() {

@@ -164,7 +164,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
       }
       this.statesSpinner.setValue(states);
 
-      Integer state = selectedAccessory.getState();
+      //Integer state = selectedAccessory.getState();
       if (null == selectedAccessory.getAccessoryValue()) {
         this.currentGreenStateLabel.setVisible(false);
         this.currentRedStateLabel.setVisible(false);
@@ -200,9 +200,8 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
       String iconFile = selectedAccessory.getIconFile();
       this.iconTF.setText(iconFile);
 
-      String source = selectedAccessory.getSource();
-      String commandStationId = selectedAccessory.getCommandStationId();
-
+      //String source = selectedAccessory.getSource();
+      //String commandStationId = selectedAccessory.getCommandStationId();
       boolean synch = selectedAccessory.isSynchronize();
       synchronizeCB.setSelected(synch);
     } else {
@@ -239,7 +238,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     boolean showGrp = selectedAccessory != null && selectedAccessory.getGroup() != null;
     this.groupLbl.setVisible(showGrp);
     this.groupLabel.setVisible(showGrp);
-    
+
     boolean enableFields = enable && !this.synchronizeCB.isSelected();
     this.nameTF.setEnabled(enableFields);
     this.addressSpinner.setEnabled(enableFields);
@@ -253,9 +252,6 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     this.statesSpinner.setEnabled(enableFields);
 
     this.saveBtn.setEnabled(!this.synchronizeCB.isSelected() && enable);
-
-    //this.showCB.setEnabled(enable);
-    //this.commuterCB.setEnabled(enable);
   }
 
   /**
@@ -750,10 +746,9 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     AccessoryBean newAccessory = new AccessoryBean();
     newAccessory.setCommandStationId(commandStationBean.getId());
     newAccessory.setSource("Manual Inserted");
-    
+
     newAccessory.setProtocol(Protocol.MM);
     newAccessory.setSynchronize(false);
-    
 
     this.accessoryListModel.add(newAccessory);
     this.accessoryList.setSelectedValue(newAccessory, true);
@@ -762,21 +757,18 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed
 
-  private AccessoryBean setAccessoryValues(AccessoryBean accessoryBean) {
-    if (accessoryBean.getId() == null) {
-      long id = (long) accessoryBean.getAddress();
-    }
-
-    accessoryBean.setSource("Manual Updated");
-    //locomotiveBean = crudFunctionBeans(accessoryBean);
-
-    return accessoryBean;
-  }
-
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
-    if (this.selectedAccessory != null) {
-      //setLocomotiveValues(selectedAccessory);
-
+    if (selectedAccessory != null) {
+      if (!selectedAccessory.isSynchronize() && selectedAccessory.getId() == null) {
+        //a new manual created accessory, derive the id from the address
+        String id = selectedAccessory.getAddress().toString();
+        if (id.length() == 1) {
+          id = "00" + id;
+        } else if (id.length() == 2) {
+          id = "0" + id;
+        }
+        selectedAccessory.setId(id);
+      }
       Logger.trace("Saving: " + selectedAccessory.toLogString());
 
       selectedAccessory = PersistenceFactory.getService().persist(selectedAccessory);
@@ -786,12 +778,11 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
   }//GEN-LAST:event_saveBtnActionPerformed
 
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
-    Logger.trace("Delete: " + this.selectedAccessory.toLogString());
+    Logger.trace("Delete: " + selectedAccessory.toLogString());
     PersistenceFactory.getService().remove(selectedAccessory);
-    this.selectedAccessory = null;
-    this.initModels();
+    selectedAccessory = null;
+    initModels();
   }//GEN-LAST:event_deleteBtnActionPerformed
-
 
   private void refreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_refreshBtnActionPerformed
     this.initModels();
@@ -847,7 +838,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
 
   private void synchronizeCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_synchronizeCBActionPerformed
     enableFields(this.selectedAccessory != null);
-    if(this.selectedAccessory != null) {
+    if (this.selectedAccessory != null) {
       this.selectedAccessory.setSynchronize(this.synchronizeCB.isSelected());
     }
   }//GEN-LAST:event_synchronizeCBActionPerformed
@@ -862,8 +853,8 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
   }//GEN-LAST:event_addressSpinnerStateChanged
 
   private void protocolCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_protocolCBActionPerformed
-    if(this.selectedAccessory != null) {
-      this.selectedAccessory.setProtocol((Protocol)protocolCB.getSelectedItem());
+    if (this.selectedAccessory != null) {
+      this.selectedAccessory.setProtocol((Protocol) protocolCB.getSelectedItem());
     }
   }//GEN-LAST:event_protocolCBActionPerformed
 

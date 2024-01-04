@@ -830,10 +830,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
   }//GEN-LAST:event_synchronizeCBActionPerformed
 
   private void addressSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_addressSpinnerStateChanged
-    Logger.trace("New address: " + this.addressSpinner.getValue());
-    this.selectedLocomotive.setAddress((Integer) this.addressSpinner.getValue());
-    long uid = this.selectedLocomotive.getAddress();
-    this.selectedLocomotive.setUid(uid);
+    if(this.selectedLocomotive != null) {
+      this.selectedLocomotive.setAddress((Integer) this.addressSpinner.getValue());
+      long uid = this.selectedLocomotive.getAddress();
+      this.selectedLocomotive.setUid(uid);
+    }
   }//GEN-LAST:event_addressSpinnerStateChanged
 
   private void decoderCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_decoderCBActionPerformed
