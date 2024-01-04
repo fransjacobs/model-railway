@@ -44,20 +44,20 @@ public class AccessoryBean {
   private boolean synchronize;
 
   public AccessoryBean() {
-    this(null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null, null);
   }
 
-  public AccessoryBean(String id, Integer address, String name, String type, Integer position, Integer switchTime, String protocol, String decoder) {
-    this(id, address, name, type, position, null, switchTime, protocol, decoder, null, null, null);
+  public AccessoryBean(String id, Integer address, String name, String type, Integer state, Integer switchTime, String protocol, String decoder,String commandStationId) {
+    this(id, address, name, type, state, null, switchTime, protocol, decoder, null, null, null,commandStationId);
   }
 
-  public AccessoryBean(String id, Integer address, String name, String type, Integer position, Integer states, Integer switchTime, String protocol,
-          String decoder, String group, String icon, String iconFile) {
+  public AccessoryBean(String id, Integer address, String name, String type, Integer state, Integer states, Integer switchTime, String protocol,
+          String decoder, String group, String icon, String iconFile,String commandStationId) {
     this.id = id;
     this.address = address;
     this.name = name;
     this.type = type;
-    this.state = position;
+    this.state = state;
     this.switchTime = switchTime;
     this.decType = protocol;
     this.decoder = decoder;
@@ -65,6 +65,7 @@ public class AccessoryBean {
     this.icon = icon;
     this.iconFile = iconFile;
     this.states = states;
+    this.commandStationId = commandStationId;
   }
 
   @Id

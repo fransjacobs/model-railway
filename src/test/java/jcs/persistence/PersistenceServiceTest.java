@@ -64,8 +64,8 @@ public class PersistenceServiceTest {
     sensors = new ArrayList<>();
     locomotives = new LinkedList<>();
     functions = new LinkedList<>();
-    turnouts = new LinkedList<>();
-    signals = new LinkedList<>();
+    turnouts = new ArrayList<>();
+    signals = new ArrayList<>();
     tiles = new ArrayList<>();
     routes = new ArrayList<>();
     blocks = new ArrayList<>();
@@ -161,135 +161,42 @@ public class PersistenceServiceTest {
     functions.add(fb49156_3);
     FunctionBean fb49156_4 = new FunctionBean(21L, 49156L, 4, 18, 0);
     functions.add(fb49156_4);
-
-    AccessoryBean w1 = new AccessoryBean("1", 1, "W 1R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
-    w1.setCommandStationId("marklin.cs");
-
+//
+    AccessoryBean w1 = new AccessoryBean("1", 1, "W 1R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
+    w1.setSynchronize(true);
     this.turnouts.add(w1);
-    AccessoryBean w2 = new AccessoryBean(
-            "2",
-            2,
-            "W 2L",
-            "linksweiche",
-            1,
-            2,
-            200,
-            "mm",
-            "ein_alt",
-            "weichen",
-            "006",
-            "magicon_a_006_01.svg");
-    w2.setCommandStationId("marklin.cs");
-    this.turnouts.add(w2);
-    AccessoryBean w6
-            = new AccessoryBean(
-                    "6",
-                    6,
-                    "W 6R",
-                    "rechtsweiche",
-                    1,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "weichen",
-                    "005",
-                    "magicon_a_005_01.svg");
-    w6.setCommandStationId("marklin.cs");
-    this.turnouts.add(w6);
-    AccessoryBean w7
-            = new AccessoryBean(
-                    "7",
-                    7,
-                    "W 7L",
-                    "linksweiche",
-                    1,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "weichen",
-                    "006",
-                    "magicon_a_006_01.svg");
-    w7.setCommandStationId("marklin.cs");
-    this.turnouts.add(w7);
-    AccessoryBean s15
-            = new AccessoryBean(
-                    "15",
-                    15,
-                    "S 15",
-                    "lichtsignal_SH01",
-                    0,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "lichtsignale",
-                    "019",
-                    "magicon_a_019_00.svg");
-    s15.setCommandStationId("marklin.cs");
-    this.signals.add(s15);
-    AccessoryBean s19
-            = new AccessoryBean(
-                    "19",
-                    19,
-                    "S 19",
-                    "lichtsignal_HP01",
-                    0,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "lichtsignale",
-                    "015",
-                    "magicon_a_015_00.svg");
-    s19.setCommandStationId("marklin.cs");
-    this.signals.add(s19);
-    AccessoryBean s25
-            = new AccessoryBean(
-                    "25",
-                    25,
-                    "S 25/26",
-                    "urc_lichtsignal_HP012_SH01",
-                    0,
-                    4,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "lichtsignale",
-                    "027",
-                    "magicon_a_027_00.svg");
-    s25.setCommandStationId("marklin.cs");
-    this.signals.add(s25);
-    AccessoryBean s41
-            = new AccessoryBean(
-                    "41",
-                    41,
-                    "S 41",
-                    "urc_lichtsignal_HP012",
-                    0,
-                    3,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "lichtsignale",
-                    "026",
-                    "magicon_a_026_00.svg");
-    s41.setCommandStationId("marklin.cs");
-    this.signals.add(s41);
 
-    TileBean bk1
-            = new TileBean(
-                    "bk-1",
-                    TileBean.TileType.BLOCK,
-                    Orientation.EAST,
-                    Direction.CENTER,
-                    320,
-                    140,
-                    null,
-                    null,
-                    null);
+    AccessoryBean w2 = new AccessoryBean("2", 2, "W 2L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg", "marklin.cs");
+    w2.setSynchronize(true);
+    this.turnouts.add(w2);
+
+    AccessoryBean w6 = new AccessoryBean("6", 6, "W 6R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
+    w6.setSynchronize(true);
+    this.turnouts.add(w6);
+
+    AccessoryBean w7 = new AccessoryBean("7", 7, "W 7L", "linksweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "006", "magicon_a_006_01.svg", "marklin.cs");
+    w7.setSynchronize(true);
+    this.turnouts.add(w7);
+
+    AccessoryBean s15 = new AccessoryBean("15", 15, "S 15", "lichtsignal_SH01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "019", "magicon_a_019_00.svg", "marklin.cs");
+    s15.setSynchronize(true);
+    this.signals.add(s15);
+
+    AccessoryBean s19 = new AccessoryBean("19", 19, "S 19", "lichtsignal_HP01", 0, 2, 200, "mm", "ein_alt", "lichtsignale", "015", "magicon_a_015_00.svg", "marklin.cs");
+    s19.setSynchronize(true);
+    this.signals.add(s19);
+
+    AccessoryBean s25 = new AccessoryBean("25", 25, "S 25/26", "urc_lichtsignal_HP012_SH01", 0, 4, 200, "mm", "ein_alt", "lichtsignale", "027", "magicon_a_027_00.svg", "marklin.cs");
+    s25.setSynchronize(true);
+    this.signals.add(s25);
+
+    AccessoryBean s41 = new AccessoryBean("41", 41, "S 41", "urc_lichtsignal_HP012", 0, 3, 200, "mm", "ein_alt", "lichtsignale", "026", "magicon_a_026_00.svg", "marklin.cs");
+    s41.setSynchronize(true);
+    this.signals.add(s41);
+//
+    TileBean bk1 = new TileBean("bk-1", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 320, 140, null, null, null);
     tiles.add(bk1);
+
     TileBean bk2
             = new TileBean(
                     "bk-2",
@@ -386,17 +293,8 @@ public class PersistenceServiceTest {
                     "2",
                     null);
     tiles.add(sw1);
-    TileBean sw2
-            = new TileBean(
-                    "sw-2",
-                    TileBean.TileType.SWITCH,
-                    Orientation.EAST,
-                    Direction.RIGHT,
-                    580,
-                    180,
-                    null,
-                    null,
-                    null);
+
+    TileBean sw2 = new TileBean("sw-2", TileBean.TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 580, 180, null, null, null);
     tiles.add(sw2);
 
     RouteBean bk1pbk2m = new RouteBean("[bk-1+]->[bk-2-]", "bk-1", "+", "bk-2", "-", "red", false);
@@ -415,9 +313,7 @@ public class PersistenceServiceTest {
     bk1pbk2m.setRouteElements(rel);
     this.routes.add(bk1pbk2m);
 
-    RouteBean bk2mbk1p
-            = new RouteBean("[bk-2-]->[bk-1+]", "bk-2", "-", "bk-1", "+", "yellow", false);
-
+    RouteBean bk2mbk1p = new RouteBean("[bk-2-]->[bk-1+]", "bk-2", "-", "bk-1", "+", "yellow", false);
     this.routes.add(bk2mbk1p);
 
     BlockBean block1 = new BlockBean(bk1);
@@ -783,7 +679,8 @@ public class PersistenceServiceTest {
     List<AccessoryBean> expResult = this.signals;
     List<AccessoryBean> result = instance.getSignals();
 
-    assertEquals(expResult, result);
+    //expected: java.util.ArrayList<[S 15, S 19, S 25/26, S 41]>
+    // but was: java.util.ArrayList<[S 15, S 19, S 25/26, S 41]>    
     assertEquals(expResult, result);
   }
 
@@ -820,8 +717,7 @@ public class PersistenceServiceTest {
   public void testPersist_AccessoryBean() {
     System.out.println("persist");
     AccessoryBean accessory
-            = new AccessoryBean("100", 100, "W 100", "rechtsweiche", 1, 2, 200, "mm",
-                    "ein_alt", "weichen", "005", "magicon_a_005_01.svg");
+            = new AccessoryBean("100", 100, "W 100", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
     accessory.setCommandStationId("marklin.cs");
 
     PersistenceService instance = PersistenceFactory.getService();
@@ -851,20 +747,7 @@ public class PersistenceServiceTest {
   @Test
   public void testRemove_AccessoryBean() {
     System.out.println("remove");
-    AccessoryBean accessory
-            = new AccessoryBean(
-                    "101",
-                    101,
-                    "W 101",
-                    "rechtsweiche",
-                    1,
-                    2,
-                    200,
-                    "mm",
-                    "ein_alt",
-                    "weichen",
-                    "005",
-                    "magicon_a_005_01.svg");
+    AccessoryBean accessory = new AccessoryBean("101", 101, "W 101", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
     accessory.setCommandStationId("marklin.cs");
     PersistenceService instance = PersistenceFactory.getService();
 

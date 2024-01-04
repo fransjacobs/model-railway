@@ -59,7 +59,7 @@ insert into locomotive_functions (locomotive_id,f_number,f_type,f_value) values
 
 commit;	
 
-insert into accessories (id,address,name,type,position,states,switch_time,protocol,decoder,accessory_group,icon,icon_file,command_station_id,synchronize) values
+insert into accessories (id,address,name,type,state,states,switch_time,protocol,decoder,accessory_group,icon,icon_file,command_station_id,synchronize) values
 	 ('1',1,'W 1R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg','marklin.cs',true),
 	 ('2',2,'W 2L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg','marklin.cs',true),
 	 ('6',6,'W 6R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg','marklin.cs',true),

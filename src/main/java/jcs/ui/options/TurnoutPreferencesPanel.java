@@ -45,7 +45,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
-import jcs.JCS;
 import jcs.entities.AccessoryBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.options.table.TurnoutTableModel;
@@ -526,7 +525,7 @@ public class TurnoutPreferencesPanel extends JPanel {
     String decoder = this.decoderTF.getText();
     Integer position = (Integer) this.positionSpinner.getValue();
 
-    AccessoryBean turnout = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder);
+    AccessoryBean turnout = new AccessoryBean(id, address, name, type, position, switchTime, decoderType, decoder, null);
 
     return turnout;
   }

@@ -419,7 +419,7 @@ public class SwitchPanel extends JPanel {
     Logger.trace("ID: " + id + " Value: " + value);
 
     if (JCS.getJcsCommandStation() != null) {
-      AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null);
+      AccessoryBean a = new AccessoryBean(id, address, (name != null ? name : actionCommand), null, (selected ? 1 : 0), null, null, null,null);
       JCS.getJcsCommandStation().switchAccessory(value, a);
     }
   }
