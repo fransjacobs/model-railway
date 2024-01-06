@@ -563,16 +563,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public void switchAccessory(int address, AccessoryValue value) {
+  public void switchAccessory(Integer address, AccessoryValue value) {
     switchAccessory(address, value, this.defaultSwitchTime);
   }
 
   @Override
-  public void switchAccessory(int address, AccessoryValue value, int switchTime) {
+  public void switchAccessory(Integer address, AccessoryValue value, Integer switchTime) {
     if (this.power && this.connected) {
       //make sure a time is set!
       int st;
-      if (switchTime == 0) {
+      if (switchTime == null || switchTime == 0) {
         st = this.defaultSwitchTime;
       } else {
         st = switchTime;
@@ -679,22 +679,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       accessories = getAccessoriesViaCan();
     }
     return accessories;
-  }
-
-  //@Override
-  public List<AccessoryBean> getSwitches() {
-    List<AccessoryBean> accessories = this.getAccessories();
-    List<AccessoryBean> turnouts = accessories.stream().filter(t -> !t.isSignal()).collect(Collectors.toList());
-
-    return turnouts;
-  }
-
-  //@Override
-  public List<AccessoryBean> getSignals() {
-    List<AccessoryBean> accessories = this.getAccessories();
-    List<AccessoryBean> signals = accessories.stream().filter(t -> t.isSignal()).collect(Collectors.toList());
-
-    return signals;
   }
 
   @Override

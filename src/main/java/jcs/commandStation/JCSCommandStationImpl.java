@@ -17,8 +17,6 @@ package jcs.commandStation;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +31,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
@@ -50,13 +47,13 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
+import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
-import jcs.entities.ChannelBean;
-import jcs.entities.InfoBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -458,7 +455,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 //      //this.decoderController.clearCaches();
 //    }
 //  }
-
 //  @Override
 //  public void synchronizeTurnoutsWithCommandStation() {
 //    List<AccessoryBean> turnouts = new LinkedList<>();
@@ -479,7 +475,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 //      PersistenceFactory.getService().persist(turnout);
 //    }
 //  }
-
 //  @Override
 //  public void synchronizeSignalsWithCommandStation() {
 //    List<AccessoryBean> signals = new LinkedList<>();
@@ -500,7 +495,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 //      PersistenceFactory.getService().persist(signal);
 //    }
 //  }
-
   @Override
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
     Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId());
@@ -546,14 +540,25 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public void switchAccessory(AccessoryValue value, AccessoryBean accessory) {
-    int address = accessory.getAddress();
-    int switchTime = accessory.getSwitchTime();
+  public void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
+    Integer address = accessory.getAddress();
+    Integer switchTime = accessory.getSwitchTime();
     AccessoryValue val = value;
-    if (accessory.isSignal() && accessory.getStates() > 2) {
+    Integer states = accessory.getStates();
+    Integer state = accessory.getState();
+
+    if (states == null) {
+      states = 2;
+    }
+    if (state == null) {
+      state = AccessoryValue.RED == val ? 0 : 1;
+    }
+
+    if (states > 2) {
       if (accessory.getState() > 1) {
         address = address + 1;
-        val = AccessoryValue.cs3Get(accessory.getState() - 2);
+        //val = AccessoryValue.cs3Get(state - 2);
+        val = AccessoryValue.get(state - 2);
       }
     }
 
@@ -641,9 +646,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private class TrackMeasurementTask extends TimerTask {
 
     private final JCSCommandStationImpl Controller;
+    private boolean debuglog = false;
 
     TrackMeasurementTask(JCSCommandStationImpl Controller) {
       this.Controller = Controller;
+      this.debuglog = System.getProperty("debug.measurements", "false").equalsIgnoreCase("true");
     }
 
     @Override
@@ -652,7 +659,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       for (ChannelBean ch : measurements.values()) {
         if (ch.isChanged()) {
           MeasurementEvent me = new MeasurementEvent(ch);
-          Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());
+          if (debuglog) {
+            Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());
+          }
           for (MeasurementEventListener mel : this.Controller.measurementEventListeners) {
             mel.onMeasurement(me);
           }
@@ -697,9 +706,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     @Override
     public void onAccessoryChange(AccessoryEvent event) {
       AccessoryBean ab = event.getAccessoryBean();
-
+      
       int address = ab.getAddress();
-      AccessoryBean dbab = PersistenceFactory.getService().getAccessoryByAddress(ab.getAddress());
+      String commandStationId = ab.getCommandStationId();
+      
+      AccessoryBean dbab = PersistenceFactory.getService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
       if (dbab == null) {
         //check if address is even, might be the second address of a signal
         if (address % 2 == 0) {
@@ -726,10 +737,12 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         ab.setIcon(dbab.getIcon());
         ab.setIconFile(dbab.getIconFile());
         ab.setStates(dbab.getStates());
+        ab.setCommandStationId(dbab.getCommandStationId());
         //might be set by the event
         if (ab.getSwitchTime() == null) {
           ab.setSwitchTime(dbab.getSwitchTime());
         }
+       
         PersistenceFactory.getService().persist(ab);
 
         for (AccessoryEventListener al : this.trackService.accessoryEventListeners) {

@@ -208,9 +208,9 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
     if (this.turnout != null) {
       switch (value) {
         case RED ->
-          JCS.getJcsCommandStation().switchAccessory(AccessoryValue.RED, turnout);
+          JCS.getJcsCommandStation().switchAccessory(turnout, AccessoryValue.RED);
         case GREEN ->
-          JCS.getJcsCommandStation().switchAccessory(AccessoryValue.GREEN, turnout);
+          JCS.getJcsCommandStation().switchAccessory(turnout, AccessoryValue.GREEN);
       }
     }
   }

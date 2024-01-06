@@ -254,12 +254,12 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   //Direct approach no feed back...
   //maybe register the accessories and then via id?
   @Override
-  public void switchAccessory(int address, AccessoryValue value) {
-    switchAccessory(address, value, 200);
+  public void switchAccessory(Integer address, AccessoryValue value) {
+    switchAccessory(address, value, null);
   }
 
   @Override
-  public void switchAccessory(int address, AccessoryValue value, int switchTime) {
+  public void switchAccessory(Integer address, AccessoryValue value, Integer switchTime) {
     if (this.power) {
       String activate = AccessoryValue.GREEN == value ? "0" : "1";
       String message = DccExMessageFactory.activateAccessory(address, activate);
@@ -299,16 +299,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   @Override
   public List<AccessoryBean> getAccessories() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  //@Override
-  public List<AccessoryBean> getSwitches() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  //@Override
-  public List<AccessoryBean> getSignals() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

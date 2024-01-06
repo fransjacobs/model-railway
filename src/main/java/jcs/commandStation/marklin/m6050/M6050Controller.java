@@ -56,9 +56,11 @@ public class M6050Controller { //implements ControllerService {
   private final SerialPortImpl p50;
   private M6050CommandHandler commandHandler;
 
-  //private final List<ControllerEventListener> controllerEventListeners;
   private final ExecutorService executor;
 
+  //	 ('marklin.6051','Marklin 6051','M6051','jcs.commandStation.marklin.m6051.M6051Impl','SERIAL',NULL,NULL,0,false,true,true,false,false,false,false,false,'MM',false,false,NULL,'SERIAL');
+
+  //Old 6050 interface used some 6 years ago. Attempt to port into JCS but not right now
   public M6050Controller() {
     portname = ""; //RunUtil.getDefaultPortname();
     p50 = new SerialPortImpl(portname);

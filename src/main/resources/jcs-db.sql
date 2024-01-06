@@ -214,8 +214,7 @@ create unique index prop_pk_idx on jcs_properties (p_key);
 
 INSERT INTO jcs.command_stations (id,description,short_name,class_name,connect_via,serial_port,ip_address,network_port,ip_auto_conf,supports_decoder_control,supports_accessory_control,supports_feedback,supports_loco_synch,supports_accessory_synch,supports_loco_image_synch,supports_loco_function_synch,protocols,default_cs,enabled,last_used_serial,sup_conn_types) VALUES
 	 ('marklin.cs','Marklin Central Station 2/3','CS','jcs.commandStation.marklin.cs.MarklinCentralStationImpl','NETWORK',NULL,'192.168.178.180',15731,true,true,true,true,true,true,true,true,'DCC,MFX,MM',true,true,NULL,'NETWORK'),
-	 ('dcc-ex','DCC-EX','dcc-ex','jcs.commandStation.dccex.DccExCommandStationImpl','NETWORK',NULL,'192.168.178.73',2560,false,true,true,false,false,false,false,false,'DCC',false,false,NULL,'NETWORK,SERIAL'),
-	 ('marklin.6051','Marklin 6051','M6051','jcs.commandStation.marklin.m6051.M6051Impl','SERIAL',NULL,NULL,0,false,true,true,false,false,false,false,false,'MM',false,false,NULL,'SERIAL');
+	 ('dcc-ex','DCC-EX','dcc-ex','jcs.commandStation.dccex.DccExCommandStationImpl','NETWORK',NULL,'192.168.178.73',2560,false,true,true,false,false,false,false,false,'DCC',false,false,NULL,'NETWORK,SERIAL');
 
 insert into jcs_properties (p_key,p_value) values ('jcs.version','1.0.0');
 insert into jcs_properties (p_key,p_value) values ('jcs.db.version','1.0.0');

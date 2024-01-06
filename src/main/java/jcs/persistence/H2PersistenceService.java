@@ -368,15 +368,24 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public AccessoryBean getAccessory(String id) {
     AccessoryBean accessoryBean = database.where("id=?", id).first(AccessoryBean.class);
+    return accessoryBean;
+  }
 
+  @Override
+  public AccessoryBean getAccessoryByAddressAndCommandStationId(Integer address, String commandStationId) {
+    String cid = commandStationId;
+    if (cid == null) {
+      cid = getDefaultCommandStation().getId();
+    }
+
+    Object[] args = new Object[]{address, cid};
+    AccessoryBean accessoryBean = database.where("address=? and command_station_id=?", args).first(AccessoryBean.class);
     return accessoryBean;
   }
 
   @Override
   public AccessoryBean getAccessoryByAddress(Integer address) {
-    AccessoryBean accessoryBean = database.where("address=?", address).first(AccessoryBean.class);
-
-    return accessoryBean;
+    return getAccessoryByAddressAndCommandStationId(address, null);
   }
 
   @Override

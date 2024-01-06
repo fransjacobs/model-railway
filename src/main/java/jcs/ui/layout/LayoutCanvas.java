@@ -652,7 +652,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
-      JCS.getJcsCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
+      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
     } else {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
@@ -664,7 +664,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       ab.toggle();
       Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getState());
 
-      JCS.getJcsCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
+      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }

@@ -716,9 +716,7 @@ public class PersistenceServiceTest {
   @Test
   public void testPersist_AccessoryBean() {
     System.out.println("persist");
-    AccessoryBean accessory
-            = new AccessoryBean("100", 100, "W 100", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
-    accessory.setCommandStationId("marklin.cs");
+    AccessoryBean accessory = new AccessoryBean("100", 100, "W 100", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
 
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -735,7 +733,7 @@ public class PersistenceServiceTest {
     accessory.setSource("test");
 
     instance.persist(accessory);
-    ab = instance.getAccessoryByAddress(expResult.getAddress());
+    ab = instance.getAccessoryByAddressAndCommandStationId(expResult.getAddress(),"marklin.cs");
     assertEquals(accessory, ab);
 
     assertEquals("test", ab.getSource());
@@ -748,13 +746,12 @@ public class PersistenceServiceTest {
   public void testRemove_AccessoryBean() {
     System.out.println("remove");
     AccessoryBean accessory = new AccessoryBean("101", 101, "W 101", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
-    accessory.setCommandStationId("marklin.cs");
     PersistenceService instance = PersistenceFactory.getService();
 
     AccessoryBean result = instance.persist(accessory);
     assertEquals(accessory, result);
 
-    AccessoryBean ab = instance.getAccessoryByAddress(accessory.getAddress());
+    AccessoryBean ab = instance.getAccessoryByAddressAndCommandStationId(accessory.getAddress(),"marklin.cs");
 
     assertEquals(accessory, ab);
 
@@ -1115,7 +1112,7 @@ public class PersistenceServiceTest {
     PersistenceService instance = PersistenceFactory.getService();
 
     List<CommandStationBean> commandStations = instance.getCommandStations();
-    assertEquals(3, commandStations.size());
+    assertEquals(2, commandStations.size());
 
     for (CommandStationBean cs : commandStations) {
       Logger.trace("## -> " + cs + " default: " + cs.isDefault() + " id: " + cs.getId());

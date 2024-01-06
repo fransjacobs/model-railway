@@ -28,7 +28,6 @@ import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 
-
 /**
  * The Persistence Service takes care of all persistence functionality which is needed within the JCS Application
  *
@@ -59,7 +58,7 @@ public interface PersistenceService {
   List<LocomotiveBean> getLocomotives();
 
   List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId);
-  
+
   List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId, Boolean show);
 
   LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId);
@@ -78,10 +77,12 @@ public interface PersistenceService {
 
   // Accessories
   List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
-  
+
   List<AccessoryBean> getTurnouts();
 
   List<AccessoryBean> getSignals();
+
+  AccessoryBean getAccessoryByAddressAndCommandStationId(Integer address, String commandStationId);
 
   AccessoryBean getAccessory(String id);
 

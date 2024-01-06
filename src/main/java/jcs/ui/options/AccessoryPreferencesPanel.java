@@ -149,6 +149,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
       Integer switchTime = selectedAccessory.getSwitchTime();
       if (switchTime == null) {
         switchTime = 200;
+        selectedAccessory.setSwitchTime(switchTime);
       }
       this.switchTimeSpinner.setValue(switchTime);
 
@@ -161,6 +162,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
       Integer states = selectedAccessory.getStates();
       if (states == null) {
         states = 2;
+        selectedAccessory.setStates(states);
       }
       this.statesSpinner.setValue(states);
 
@@ -193,14 +195,19 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
         } else {
           groupLabel.setText("other");
         }
+        selectedAccessory.setGroup(groupLabel.getText());
       } else {
         groupLabel.setText(group);
       }
-      String icon = selectedAccessory.getIcon();
+      //String icon = selectedAccessory.getIcon();
       String iconFile = selectedAccessory.getIconFile();
       this.iconTF.setText(iconFile);
 
-      //String source = selectedAccessory.getSource();
+      String source = selectedAccessory.getSource();
+      if(source == null) {
+        selectedAccessory.setSource("Manual Inserted");
+      }
+      
       //String commandStationId = selectedAccessory.getCommandStationId();
       boolean synch = selectedAccessory.isSynchronize();
       synchronizeCB.setSelected(synch);
@@ -246,8 +253,10 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     this.typeCB.setEnabled(enableFields);
     this.decoderTF.setEnabled(enableFields);
 
-    this.iconTF.setEnabled(enableFields);
-    this.iconFileDialogBtn.setEnabled(enableFields);
+    boolean acsup = this.commandStationBean.isAccessorySynchronizationSupport();
+    this.iconTF.setEnabled(enableFields && acsup);    
+    this.iconFileDialogBtn.setEnabled(enableFields && acsup);
+    
     this.switchTimeSpinner.setEnabled(enableFields);
     this.statesSpinner.setEnabled(enableFields);
 
@@ -634,7 +643,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     switchTimeLbl.setPreferredSize(new Dimension(100, 17));
     row5Panel.add(switchTimeLbl);
 
-    switchTimeSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+    switchTimeSpinner.setModel(new SpinnerNumberModel(0, 0, null, 10));
     switchTimeSpinner.setDoubleBuffered(true);
     switchTimeSpinner.setPreferredSize(new Dimension(85, 26));
     switchTimeSpinner.addChangeListener(new ChangeListener() {
@@ -844,7 +853,6 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
   }//GEN-LAST:event_synchronizeCBActionPerformed
 
   private void addressSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_addressSpinnerStateChanged
-    Logger.trace("New address: " + this.addressSpinner.getValue());
     if (selectedAccessory != null) {
       selectedAccessory.setAddress((Integer) addressSpinner.getValue());
       long uid = this.selectedAccessory.getAddress();

@@ -936,36 +936,36 @@
                 <Property name="axis" type="int" value="3"/>
               </Layout>
               <SubComponents>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel1">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel1">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel1" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(1)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(1)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel2">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel2">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel2" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(2)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(2)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel3">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel3">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel3" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(3)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(3)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel4">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel4">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel4" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(4)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(4)"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -993,36 +993,36 @@
                 <Property name="axis" type="int" value="3"/>
               </Layout>
               <SubComponents>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel5">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel5">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel5" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(5)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(5)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel6">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel6">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel6" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(6)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(6)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel7">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel7">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel7" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(7)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(7)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel8">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel8">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel8" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(8)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(8)"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -1049,36 +1049,36 @@
                 <Property name="axis" type="int" value="3"/>
               </Layout>
               <SubComponents>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel9">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel9">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel9" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(9)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(9)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel10">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel10">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel10" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(10)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(10)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel11">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel11">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel11" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(11)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(11)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel12">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel12">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel12" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(12)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(12)"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -1105,36 +1105,36 @@
                 <Property name="axis" type="int" value="3"/>
               </Layout>
               <SubComponents>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel13">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel13">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel13" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(13)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(13)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel14">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel14">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel14" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(14)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(14)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel15">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel15">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel15" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(15)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(15)"/>
                   </AuxValues>
                 </Component>
-                <Component class="jcs.ui.widgets.SwitchPanel" name="switchPanel16">
+                <Component class="jcs.ui.widgets.AccessoryKeyPanel16" name="switchPanel16">
                   <Properties>
                     <Property name="name" type="java.lang.String" value="switchPanel16" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new SwitchPanel(16)"/>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new jcs.ui.widgets.AccessoryKeyPanel16(16)"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

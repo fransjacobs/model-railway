@@ -56,7 +56,7 @@ public interface JCSCommandStation {
 
   void changeLocomotiveFunction(Boolean value, Integer functionNumber, LocomotiveBean locomotive);
 
-  void switchAccessory(AccessoryValue value, AccessoryBean accessory);
+  void switchAccessory(AccessoryBean accessory, AccessoryValue value);
 
   void addAccessoryEventListener(AccessoryEventListener listener);
 
@@ -83,19 +83,13 @@ public interface JCSCommandStation {
   void removeMeasurementListener(MeasurementEventListener listener);
 
   InfoBean getCommandStationInfo();
-  
+
   //String getCommandStationName();
-
   //String getCommandStationSerialNumber();
-
   //String getCommandStationArticleNumber();
-
   //void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener);
-
   //void synchronizeTurnoutsWithCommandStation();
-
   //void synchronizeSignalsWithCommandStation();
-
   Image getLocomotiveImage(String imageName);
 
   Image getLocomotiveFunctionImage(String imageName);

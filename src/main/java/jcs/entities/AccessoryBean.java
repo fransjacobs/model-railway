@@ -149,14 +149,14 @@ public class AccessoryBean {
   @Transient
   public AccessoryValue getAccessoryValue() {
     if (this.state != null) {
-      return AccessoryValue.cs3Get(this.state);
+      return AccessoryValue.get(this.state);
     } else {
       return AccessoryValue.OFF;
     }
   }
 
   public void setAccessoryValue(AccessoryValue accessoryValue) {
-    this.setState(accessoryValue.getCS3Value());
+    this.setState(accessoryValue.getState());
   }
 
   @Transient
@@ -459,35 +459,38 @@ public class AccessoryBean {
       };
     }
 
-    private static int translate2CS3Value(String value) {
-      return switch (value) {
-        case "Red" ->
-          0;
-        case "Green" ->
-          1;
-        default ->
-          -1;
-      };
+//    private static int translate2CS3Value(String value) {
+//      return switch (value) {
+//        case "Red" ->
+//          0;
+//        case "Green" ->
+//          1;
+//        default ->
+//          -1;
+//      };
+//    }
+
+    public Integer getState() {
+      //return translate2CS3Value(this.value);
+      return AccessoryValue.GREEN.getValue().equals(this.value)?1:0;
     }
 
-    public int getCS3Value() {
-      return translate2CS3Value(this.value);
+    public static AccessoryValue get(Integer state) {
+      return 1==state?GREEN:RED;
+      //return ENUM_MAP.get(translateCS3Value(cs2Value));
     }
+ 
+//    private static String translateCS3Value(int value) {
+//      return switch (value) {
+//        case 0 ->
+//          "Red";
+//        case 1 ->
+//          "Green";
+//        default ->
+//          "Off";
+//      };
+//    }
 
-    private static String translateCS3Value(int value) {
-      return switch (value) {
-        case 0 ->
-          "Red";
-        case 1 ->
-          "Green";
-        default ->
-          "Off";
-      };
-    }
-
-    public static AccessoryValue cs3Get(int cs2Value) {
-      return ENUM_MAP.get(translateCS3Value(cs2Value));
-    }
   }
 
   public enum SignalValue {

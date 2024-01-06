@@ -269,7 +269,7 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
 
   private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().switchAccessory(value, signal);
+      JCS.getJcsCommandStation().switchAccessory(signal,value);
     }
   }
 

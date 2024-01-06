@@ -17,9 +17,11 @@ package jcs.ui;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -40,8 +42,7 @@ public class DriverCabFrame extends javax.swing.JFrame {
   List<String> locoNames;
 
   private CommandStationBean commandStation;
-  private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
-  
+  private LocomotiveBeanComboBoxModel locomotiveComboBoxModel;
 
   public DriverCabFrame() {
     initComponents();
@@ -69,10 +70,13 @@ public class DriverCabFrame extends javax.swing.JFrame {
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
       if (PersistenceFactory.getService() != null) {
-        locos.addAll(PersistenceFactory.getService().getLocomotivesByCommandStationId(commandStation.getId(),true));
+        locos.addAll(PersistenceFactory.getService().getLocomotivesByCommandStationId(commandStation.getId(), true));
       }
 
-      locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
+      locomotiveComboBoxModel = new LocomotiveBeanComboBoxModel();
+      locomotiveComboBoxModel.removeAllElements();
+      locomotiveComboBoxModel.addAll(locos);
+      
       this.locoCB.setModel(locomotiveComboBoxModel);
 
       locoNames = new ArrayList<>(locos.size());
@@ -139,13 +143,13 @@ public class DriverCabFrame extends javax.swing.JFrame {
 
   private void locoCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locoCBActionPerformed
     LocomotiveBean selLoc = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
-    if(selLoc != null) {
+    if (selLoc != null) {
       String name = selLoc.getName();
       long id = selLoc.getId();
-      Logger.trace(evt.getActionCommand() + " -> " + name+" id: "+id);
+      Logger.trace(evt.getActionCommand() + " -> " + name + " id: " + id);
     } else {
       Logger.trace(evt.getActionCommand() + " -> null");
-    }  
+    }
 
     if (((LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem()).getName() != null) {
       LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
@@ -164,8 +168,99 @@ public class DriverCabFrame extends javax.swing.JFrame {
       this.locoLabel.setIcon(null);
       this.locoLabel.setText(null);
     }
-
   }//GEN-LAST:event_locoCBActionPerformed
+
+  class LocomotiveBeanByNameSorter implements Comparator<LocomotiveBean> {
+
+    @Override
+    public int compare(LocomotiveBean a, LocomotiveBean b) {
+      //Avoid null pointers
+      String aa = a.getName();
+      if (aa == null) {
+        aa = "000";
+      }
+      String bb = b.getName();
+      if (bb == null) {
+        bb = "000";
+      }
+
+      return aa.compareTo(bb);
+    }
+  }
+
+  class LocomotiveBeanComboBoxModel extends DefaultComboBoxModel<LocomotiveBean> {
+
+    private final List<LocomotiveBean> model;
+
+    public LocomotiveBeanComboBoxModel() {
+      model = new ArrayList<>();
+    }
+
+    @Override
+    public void addAll(int index, Collection<? extends LocomotiveBean> elements) {
+      model.addAll(index, elements);
+      Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void addAll(Collection<? extends LocomotiveBean> elements) {
+      model.addAll(elements);
+      Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void addElement(LocomotiveBean element) {
+      if (model.add(element)) {
+        Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+        fireContentsChanged(this, 0, getSize());
+      }
+    }
+
+    @Override
+    public LocomotiveBean getElementAt(int index) {
+      return (LocomotiveBean) model.toArray()[index];
+    }
+
+    @Override
+    public int getIndexOf(Object object) {
+      return this.model.indexOf(object);
+    }
+
+    @Override
+    public int getSize() {
+      return model.size();
+    }
+
+    @Override
+    public void insertElementAt(LocomotiveBean locomotiveBean, int index) {
+      this.model.add(index, locomotiveBean);
+      this.fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void removeAllElements() {
+      model.clear();
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void removeElement(Object anObject) {
+      int index = this.getIndexOf(anObject);
+      removeElementAt(index);
+    }
+
+    @Override
+    public void removeElementAt(int index) {
+      this.model.remove(index);
+      fireContentsChanged(this, 0, getSize());
+    }
+
+  }
 
   public static void main(String args[]) {
     try {
