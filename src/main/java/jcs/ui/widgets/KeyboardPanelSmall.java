@@ -29,6 +29,9 @@ import org.tinylog.Logger;
  */
 public class KeyboardPanelSmall extends javax.swing.JPanel {
 
+//jcs.ui.widgets.AccessoryKeyPanel8  
+  
+  
   /**
    * Creates new form AccessoryKeyboard
    */
@@ -50,16 +53,40 @@ public class KeyboardPanelSmall extends javax.swing.JPanel {
     keyPanel3 = new AccessoryKeyPanel8(3);
     keyPanel4 = new AccessoryKeyPanel8(4);
     keyboardPanel2 = new javax.swing.JPanel();
-    keyPanel5 = new jcs.ui.widgets.AccessoryKeyPanel8();
-    keyPanel6 = new jcs.ui.widgets.AccessoryKeyPanel8();
-    keyPanel7 = new jcs.ui.widgets.AccessoryKeyPanel8();
-    keyPanel8 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    keyPanel5 = new AccessoryKeyPanel8(5);
+    keyPanel6 = new AccessoryKeyPanel8(6);
+    keyPanel7 = new AccessoryKeyPanel8(7);
+    keyPanel8 = new AccessoryKeyPanel8(8);
     keyboardPanel3 = new javax.swing.JPanel();
+    accessoryKeyPanel81 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel82 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel83 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel84 = new jcs.ui.widgets.AccessoryKeyPanel8();
     keyboardPanel4 = new javax.swing.JPanel();
+    accessoryKeyPanel85 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel86 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel87 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel88 = new jcs.ui.widgets.AccessoryKeyPanel8();
     keyboardPanel5 = new javax.swing.JPanel();
+    accessoryKeyPanel89 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel810 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel811 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel812 = new jcs.ui.widgets.AccessoryKeyPanel8();
     keyboardPanel6 = new javax.swing.JPanel();
+    accessoryKeyPanel813 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel814 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel815 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel816 = new jcs.ui.widgets.AccessoryKeyPanel8();
     keyboardPanel7 = new javax.swing.JPanel();
+    accessoryKeyPanel817 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel818 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel819 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel820 = new jcs.ui.widgets.AccessoryKeyPanel8();
     keyboardPanel8 = new javax.swing.JPanel();
+    accessoryKeyPanel821 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel822 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel823 = new jcs.ui.widgets.AccessoryKeyPanel8();
+    accessoryKeyPanel824 = new jcs.ui.widgets.AccessoryKeyPanel8();
 
     setLayout(new java.awt.BorderLayout());
 
@@ -82,18 +109,84 @@ public class KeyboardPanelSmall extends javax.swing.JPanel {
     keyboardPanel2.add(keyPanel8);
 
     keyboardsTP.addTab("33 - 65", keyboardPanel2);
+
+    keyboardPanel3.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    keyboardPanel3.add(accessoryKeyPanel81);
+    keyboardPanel3.add(accessoryKeyPanel82);
+    keyboardPanel3.add(accessoryKeyPanel83);
+    keyboardPanel3.add(accessoryKeyPanel84);
+
     keyboardsTP.addTab("65 - 97", keyboardPanel3);
+
+    keyboardPanel4.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    keyboardPanel4.add(accessoryKeyPanel85);
+    keyboardPanel4.add(accessoryKeyPanel86);
+    keyboardPanel4.add(accessoryKeyPanel87);
+    keyboardPanel4.add(accessoryKeyPanel88);
+
     keyboardsTP.addTab("98 - 131", keyboardPanel4);
+
+    keyboardPanel5.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    keyboardPanel5.add(accessoryKeyPanel89);
+    keyboardPanel5.add(accessoryKeyPanel810);
+    keyboardPanel5.add(accessoryKeyPanel811);
+    keyboardPanel5.add(accessoryKeyPanel812);
+
     keyboardsTP.addTab("132 - 164", keyboardPanel5);
+
+    keyboardPanel6.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    keyboardPanel6.add(accessoryKeyPanel813);
+    keyboardPanel6.add(accessoryKeyPanel814);
+    keyboardPanel6.add(accessoryKeyPanel815);
+    keyboardPanel6.add(accessoryKeyPanel816);
+
     keyboardsTP.addTab("165 - 197", keyboardPanel6);
-    keyboardsTP.addTab("tab7", keyboardPanel7);
-    keyboardsTP.addTab("tab8", keyboardPanel8);
+
+    keyboardPanel7.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    keyboardPanel7.add(accessoryKeyPanel817);
+    keyboardPanel7.add(accessoryKeyPanel818);
+    keyboardPanel7.add(accessoryKeyPanel819);
+    keyboardPanel7.add(accessoryKeyPanel820);
+
+    keyboardsTP.addTab("198 - 230", keyboardPanel7);
+
+    keyboardPanel8.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    keyboardPanel8.add(accessoryKeyPanel821);
+    keyboardPanel8.add(accessoryKeyPanel822);
+    keyboardPanel8.add(accessoryKeyPanel823);
+    keyboardPanel8.add(accessoryKeyPanel824);
+
+    keyboardsTP.addTab("231 - 263", keyboardPanel8);
 
     add(keyboardsTP, java.awt.BorderLayout.PAGE_START);
   }// </editor-fold>//GEN-END:initComponents
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel81;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel810;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel811;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel812;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel813;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel814;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel815;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel816;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel817;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel818;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel819;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel82;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel820;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel821;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel822;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel823;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel824;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel83;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel84;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel85;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel86;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel87;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel88;
+  private jcs.ui.widgets.AccessoryKeyPanel8 accessoryKeyPanel89;
   private jcs.ui.widgets.AccessoryKeyPanel8 keyPanel1;
   private jcs.ui.widgets.AccessoryKeyPanel8 keyPanel2;
   private jcs.ui.widgets.AccessoryKeyPanel8 keyPanel3;
