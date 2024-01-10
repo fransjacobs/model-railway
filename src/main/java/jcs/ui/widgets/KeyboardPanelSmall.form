@@ -153,8 +153,8 @@
         <Container class="javax.swing.JPanel" name="keyboardPanel2">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="33 - 65">
-                <Property name="tabTitle" type="java.lang.String" value="33 - 65"/>
+              <JTabbedPaneConstraints tabName="33 - 64">
+                <Property name="tabTitle" type="java.lang.String" value="33 - 64"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -272,19 +272,31 @@
         <Container class="javax.swing.JPanel" name="keyboardPanel3">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="65 - 97">
-                <Property name="tabTitle" type="java.lang.String" value="65 - 97"/>
+              <JTabbedPaneConstraints tabName="65 - 96">
+                <Property name="tabTitle" type="java.lang.String" value="65 - 96"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
           <SubComponents>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel81">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel9">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(9)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel82">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel10">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(10)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel83">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel11">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(11)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel84">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel12">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(12)"/>
+              </AuxValues>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -316,11 +328,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="15_accessoryKeyPanel81">
-                  <CodeVariable name="accessoryKeyPanel81" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="15_keyPanel9">
+                  <CodeVariable name="keyPanel9" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel81"/>
+                      <ComponentRef name="keyPanel9"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -332,11 +344,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="16_accessoryKeyPanel82">
-                  <CodeVariable name="accessoryKeyPanel82" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="16_keyPanel10">
+                  <CodeVariable name="keyPanel10" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel82"/>
+                      <ComponentRef name="keyPanel10"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -348,11 +360,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="17_accessoryKeyPanel83">
-                  <CodeVariable name="accessoryKeyPanel83" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="17_keyPanel11">
+                  <CodeVariable name="keyPanel11" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel83"/>
+                      <ComponentRef name="keyPanel11"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -364,11 +376,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="18_accessoryKeyPanel84">
-                  <CodeVariable name="accessoryKeyPanel84" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="18_keyPanel12">
+                  <CodeVariable name="keyPanel12" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel84"/>
+                      <ComponentRef name="keyPanel12"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -379,19 +391,31 @@
         <Container class="javax.swing.JPanel" name="keyboardPanel4">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="98 - 131">
-                <Property name="tabTitle" type="java.lang.String" value="98 - 131"/>
+              <JTabbedPaneConstraints tabName="97 - 128">
+                <Property name="tabTitle" type="java.lang.String" value="97 - 128"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
           <SubComponents>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel85">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel13">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(13)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel86">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel14">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(14)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel87">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel15">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(15)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel88">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel16">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(16)"/>
+              </AuxValues>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -423,11 +447,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="21_accessoryKeyPanel85">
-                  <CodeVariable name="accessoryKeyPanel85" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="21_keyPanel13">
+                  <CodeVariable name="keyPanel13" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel85"/>
+                      <ComponentRef name="keyPanel13"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -439,11 +463,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="22_accessoryKeyPanel86">
-                  <CodeVariable name="accessoryKeyPanel86" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="22_keyPanel14">
+                  <CodeVariable name="keyPanel14" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel86"/>
+                      <ComponentRef name="keyPanel14"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -455,11 +479,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="23_accessoryKeyPanel87">
-                  <CodeVariable name="accessoryKeyPanel87" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="23_keyPanel15">
+                  <CodeVariable name="keyPanel15" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel87"/>
+                      <ComponentRef name="keyPanel15"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -471,11 +495,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="24_accessoryKeyPanel88">
-                  <CodeVariable name="accessoryKeyPanel88" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="24_keyPanel16">
+                  <CodeVariable name="keyPanel16" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel88"/>
+                      <ComponentRef name="keyPanel16"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -486,19 +510,31 @@
         <Container class="javax.swing.JPanel" name="keyboardPanel5">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="132 - 164">
-                <Property name="tabTitle" type="java.lang.String" value="132 - 164"/>
+              <JTabbedPaneConstraints tabName="129 - 160">
+                <Property name="tabTitle" type="java.lang.String" value="129 - 160"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
           <SubComponents>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel89">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel17">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(17)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel810">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel18">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(18)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel811">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel19">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(19)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel812">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel20">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(20)"/>
+              </AuxValues>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -530,11 +566,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="27_accessoryKeyPanel89">
-                  <CodeVariable name="accessoryKeyPanel89" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="27_keyPanel17">
+                  <CodeVariable name="keyPanel17" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel89"/>
+                      <ComponentRef name="keyPanel17"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -546,11 +582,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="28_accessoryKeyPanel810">
-                  <CodeVariable name="accessoryKeyPanel810" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="28_keyPanel18">
+                  <CodeVariable name="keyPanel18" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel810"/>
+                      <ComponentRef name="keyPanel18"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -562,11 +598,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="29_accessoryKeyPanel811">
-                  <CodeVariable name="accessoryKeyPanel811" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="29_keyPanel19">
+                  <CodeVariable name="keyPanel19" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel811"/>
+                      <ComponentRef name="keyPanel19"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -578,11 +614,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="30_accessoryKeyPanel812">
-                  <CodeVariable name="accessoryKeyPanel812" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="30_keyPanel20">
+                  <CodeVariable name="keyPanel20" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel812"/>
+                      <ComponentRef name="keyPanel20"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -593,19 +629,31 @@
         <Container class="javax.swing.JPanel" name="keyboardPanel6">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="165 - 197">
-                <Property name="tabTitle" type="java.lang.String" value="165 - 197"/>
+              <JTabbedPaneConstraints tabName="161 - 192">
+                <Property name="tabTitle" type="java.lang.String" value="161 - 192"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
           <SubComponents>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel813">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel21">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(21)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel814">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel22">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(22)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel815">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel23">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(23)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel816">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel24">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(24)"/>
+              </AuxValues>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -637,11 +685,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="33_accessoryKeyPanel813">
-                  <CodeVariable name="accessoryKeyPanel813" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="33_keyPanel21">
+                  <CodeVariable name="keyPanel21" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel813"/>
+                      <ComponentRef name="keyPanel21"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -653,11 +701,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="34_accessoryKeyPanel814">
-                  <CodeVariable name="accessoryKeyPanel814" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="34_keyPanel22">
+                  <CodeVariable name="keyPanel22" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel814"/>
+                      <ComponentRef name="keyPanel22"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -669,11 +717,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="35_accessoryKeyPanel815">
-                  <CodeVariable name="accessoryKeyPanel815" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="35_keyPanel23">
+                  <CodeVariable name="keyPanel23" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel815"/>
+                      <ComponentRef name="keyPanel23"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -685,11 +733,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="36_accessoryKeyPanel816">
-                  <CodeVariable name="accessoryKeyPanel816" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="36_keyPanel24">
+                  <CodeVariable name="keyPanel24" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel816"/>
+                      <ComponentRef name="keyPanel24"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -700,19 +748,31 @@
         <Container class="javax.swing.JPanel" name="keyboardPanel7">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="198 - 230">
-                <Property name="tabTitle" type="java.lang.String" value="198 - 230"/>
+              <JTabbedPaneConstraints tabName="193 - 224">
+                <Property name="tabTitle" type="java.lang.String" value="193 - 224"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
           <SubComponents>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel817">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel25">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(25)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel818">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel26">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(26)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel819">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel27">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(27)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel820">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel28">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(28)"/>
+              </AuxValues>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -744,11 +804,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="39_accessoryKeyPanel817">
-                  <CodeVariable name="accessoryKeyPanel817" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="39_keyPanel25">
+                  <CodeVariable name="keyPanel25" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel817"/>
+                      <ComponentRef name="keyPanel25"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -760,11 +820,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="40_accessoryKeyPanel818">
-                  <CodeVariable name="accessoryKeyPanel818" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="40_keyPanel26">
+                  <CodeVariable name="keyPanel26" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel818"/>
+                      <ComponentRef name="keyPanel26"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -776,11 +836,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="41_accessoryKeyPanel819">
-                  <CodeVariable name="accessoryKeyPanel819" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="41_keyPanel27">
+                  <CodeVariable name="keyPanel27" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel819"/>
+                      <ComponentRef name="keyPanel27"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -792,11 +852,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="42_accessoryKeyPanel820">
-                  <CodeVariable name="accessoryKeyPanel820" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="42_keyPanel28">
+                  <CodeVariable name="keyPanel28" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel820"/>
+                      <ComponentRef name="keyPanel28"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -807,19 +867,31 @@
         <Container class="javax.swing.JPanel" name="keyboardPanel8">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="231 - 263">
-                <Property name="tabTitle" type="java.lang.String" value="231 - 263"/>
+              <JTabbedPaneConstraints tabName="225 - 256">
+                <Property name="tabTitle" type="java.lang.String" value="225 - 256"/>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
           <SubComponents>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel821">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel29">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(29)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel822">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel30">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(30)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel823">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel31">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(31)"/>
+              </AuxValues>
             </Component>
-            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="accessoryKeyPanel824">
+            <Component class="jcs.ui.widgets.AccessoryKeyPanel8" name="keyPanel32">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new AccessoryKeyPanel8(32)"/>
+              </AuxValues>
             </Component>
           </SubComponents>
           <LayoutCode>
@@ -851,11 +923,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="45_accessoryKeyPanel821">
-                  <CodeVariable name="accessoryKeyPanel821" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="45_keyPanel29">
+                  <CodeVariable name="keyPanel29" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel821"/>
+                      <ComponentRef name="keyPanel29"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -867,11 +939,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="46_accessoryKeyPanel822">
-                  <CodeVariable name="accessoryKeyPanel822" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="46_keyPanel30">
+                  <CodeVariable name="keyPanel30" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel822"/>
+                      <ComponentRef name="keyPanel30"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -883,11 +955,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="47_accessoryKeyPanel823">
-                  <CodeVariable name="accessoryKeyPanel823" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="47_keyPanel31">
+                  <CodeVariable name="keyPanel31" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel823"/>
+                      <ComponentRef name="keyPanel31"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>
@@ -899,11 +971,11 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="48_accessoryKeyPanel824">
-                  <CodeVariable name="accessoryKeyPanel824" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
+                <CodeExpression id="48_keyPanel32">
+                  <CodeVariable name="keyPanel32" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel8"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
-                      <ComponentRef name="accessoryKeyPanel824"/>
+                      <ComponentRef name="keyPanel32"/>
                     </ExpressionProvider>
                   </ExpressionOrigin>
                 </CodeExpression>

@@ -72,7 +72,6 @@ public class AccessoryKeyPanel8 extends JPanel {
   @Override
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
-
     this.tb1.setEnabled(enabled);
     this.tb2.setEnabled(enabled);
     this.tb3.setEnabled(enabled);
