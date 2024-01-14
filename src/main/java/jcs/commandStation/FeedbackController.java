@@ -15,11 +15,18 @@
  */
 package jcs.commandStation;
 
+import java.util.List;
 import jcs.commandStation.events.SensorEventListener;
+import jcs.entities.DeviceBean;
+import jcs.entities.FeedbackModuleBean;
 
-public interface FeedbackController  extends GenericController {
+public interface FeedbackController extends GenericController {
 
   void addSensorEventListener(SensorEventListener listener);
 
   void removeSensorEventListener(SensorEventListener listener);
+
+  DeviceBean getFeedbackDevice();
+
+  List<FeedbackModuleBean> getFeedbackModules();
 }

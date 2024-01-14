@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import jcs.entities.ChannelBean;
 import jcs.entities.DeviceBean;
 import org.json.JSONObject;
 import org.tinylog.Logger;
@@ -54,8 +55,23 @@ public class DeviceJSONParser {
 
     List<DeviceBean> devices = DeviceJSONParser.parse(devicesFile);
 
+//    for (DeviceBean dev : devices) {
+//      Logger.trace(dev);
+//    }
+
     for (DeviceBean dev : devices) {
-      Logger.trace(dev);
+      if (dev.isFeedbackDevice()) {
+        Logger.trace(dev);
+
+        List<ChannelBean> cbl = dev.getChannels();
+        for (ChannelBean cb : cbl) {
+          if (cb.isS88Bus()) {
+            Logger.debug(cb);
+          }
+        }
+
+      }
     }
+
   }
 }

@@ -63,6 +63,7 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.DeviceBean;
+import jcs.entities.FeedbackModuleBean;
 import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
@@ -85,6 +86,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private InfoBean infoBean;
   private final Map<Integer, DeviceBean> devices;
   private DeviceBean mainDevice;
+  private DeviceBean feedbackDevice;
   private int csUid;
 
   Map<Integer, ChannelBean> analogChannels;
@@ -262,8 +264,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         this.mainDevice = d;
         Logger.trace("MainDevice: " + d);
       }
+
+      if ("60883".equals(an)) {
+        this.feedbackDevice = d;
+        Logger.trace("FeedbackDevice: " + d);
+      }
+
     }
-    Logger.trace("Found " + devices.size() + " devices connected to CS3");
+    Logger.trace("Found " + devices.size() + " devices");
   }
 
   @Override
@@ -279,6 +287,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public InfoBean getCommandStationInfo() {
     return infoBean;
+  }
+
+  @Override
+  public DeviceBean getFeedbackDevice() {
+    return this.feedbackDevice;
+  }
+
+  @Override
+  public List<FeedbackModuleBean> getFeedbackModules() {
+    return null;
   }
 
   /**

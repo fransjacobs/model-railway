@@ -38,9 +38,9 @@ public class DeviceBean {
   public static final String TEMP = "TEMP";
 
   public static final String BUS0 = "Auswertung 1 - 16";
-  public static final String BUS1 = "Länge Bus 1 (RJ45-1)";
-  public static final String BUS2 = "Länge Bus 2 (RJ45-2)";
-  public static final String BUS3 = "Länge Bus 3 (6-Polig)";
+  public static final String BUS1 = "Bus 1 (RJ45-1)";
+  public static final String BUS2 = "Bus 2 (RJ45-2)";
+  public static final String BUS3 = "Bus 3 (6-Polig)";
 
   private String uid;
   private String name;
@@ -122,6 +122,7 @@ public class DeviceBean {
     this.identifier = identifier;
   }
 
+  @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")
   public Integer getIdentifierAsInt() {
     String id = this.identifier.replace("0x", "");
     return Integer.parseInt(id, 16);
@@ -251,9 +252,9 @@ public class DeviceBean {
 
         ChannelBean cb = new ChannelBean(kanal.toString());
         this.channels.add(cb);
-
-        if (cb.getName() != null) {
-          switch (cb.getName()) {
+        String n = cb.getName();
+        if (n != null) {
+          switch (n) {
             case MAIN ->
               this.analogChannels.put(MAIN, cb);
             case PROG ->
@@ -262,25 +263,12 @@ public class DeviceBean {
               this.analogChannels.put(TEMP, cb);
             case VOLT ->
               this.analogChannels.put(VOLT, cb);
-            case BUS0 -> {
-              Integer busNr = cb.getNumber() - 1;
-              //Bus 0 has no value so set it to 1 as it is 1 module, the link S88 itself
-              cb.setValue(1);
-              this.sensorBuses.put(busNr, cb);
-            }
-            case BUS1 -> {
-              Integer busNr = cb.getNumber() - 1;
-              this.sensorBuses.put(busNr, cb);
-            }
-            case BUS2 -> {
-              Integer busNr = cb.getNumber() - 1;
-              this.sensorBuses.put(busNr, cb);
-            }
-            case BUS3 -> {
-              Integer busNr = cb.getNumber() - 1;
-              this.sensorBuses.put(busNr, cb);
-            }
           }
+          if ((n.contains(BUS0) || n.contains(BUS1) || n.contains(BUS2) || n.contains(BUS3)) && cb.isS88Bus()) {
+            Integer busNr = cb.getNumber() - 1;
+            this.sensorBuses.put(busNr, cb);
+          }
+
         }
       }
     }
@@ -459,23 +447,28 @@ public class DeviceBean {
   }
 
   public int getBusLength(Integer busNr) {
-    if (busNr == 0) {
-      //the LinkSxx self is 0
-      return 1;
-    } else if (this.sensorBuses.containsKey(busNr)) {
-      ChannelBean bus = this.sensorBuses.get(busNr);
-      if (bus.getValue() == null) {
-        return 0;
+    if (this.isFeedbackDevice()) {
+      ChannelBean cb = this.sensorBuses.get(busNr);
+      if (cb != null) {
+        if (busNr == 0) {
+          return 1;
+        } else {
+          return cb.getValue();
+        }
       } else {
-        return bus.getValue();
+        return 0;
       }
     } else {
-      return 0;
+      return -1;
     }
   }
 
   public Integer getLinkS88ContactIdOffset(int busNr) {
-    return busNr * 1000;
+    return (busNr - 1) * 1000;
+  }
+
+  public boolean isFeedbackDevice() {
+    return "Link S88".equals(typeName);
   }
 
   @Override

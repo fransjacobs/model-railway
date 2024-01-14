@@ -55,9 +55,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import jcs.commandStation.ControllerFactory;
 import jcs.commandStation.DecoderController;
+import jcs.commandStation.FeedbackController;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.CommandStationBean.Protocol;
+import jcs.entities.DeviceBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;
@@ -192,6 +194,39 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       Set<ConnectionType> supportedConnectionTypes = selectedCommandStation.getSupportedConnectionTypes();
       this.supConTypeNetworkRB.setSelected(supportedConnectionTypes.contains(ConnectionType.NETWORK));
       this.supConTypeSerialRB.setSelected(supportedConnectionTypes.contains(ConnectionType.SERIAL));
+
+      if (feedbackSupport) {
+        String fbid = selectedCommandStation.getFeedbackModuleIdentifier();
+        if (fbid != null) {
+          int node = Integer.parseInt(fbid);
+          this.nodeSpinner.setValue(node);
+        }
+
+        Integer channelCount = selectedCommandStation.getFeedbackChannelCount();
+        if (channelCount != null) {
+          this.channelCountSpinner.setValue(channelCount);
+        }
+        Integer bus0Lenght = selectedCommandStation.getFeedbackBus0ModuleCount();
+        if (bus0Lenght != null) {
+          this.bus0Spinner.setValue(bus0Lenght);
+        }
+
+        Integer bus1Lenght = selectedCommandStation.getFeedbackBus1ModuleCount();
+        if (bus1Lenght != null) {
+          this.bus1Spinner.setValue(bus1Lenght);
+        }
+
+        Integer bus2Lenght = selectedCommandStation.getFeedbackBus2ModuleCount();
+        if (bus2Lenght != null) {
+          this.bus2Spinner.setValue(bus2Lenght);
+        }
+
+        Integer bus3Lenght = selectedCommandStation.getFeedbackBus3ModuleCount();
+        if (bus3Lenght != null) {
+          this.bus3Spinner.setValue(bus3Lenght);
+        }
+
+      }
     }
   }
 
@@ -234,6 +269,16 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     this.decoderControlCB.setEnabled(enable);
     this.accessorySupportCB.setEnabled(enable);
     this.feedbackSupportCB.setEnabled(enable);
+
+    boolean fbEnable = this.feedbackSupportCB.isSelected();
+    this.nodeSpinner.setEnabled(fbEnable);
+
+    this.channelCountSpinner.setEnabled(fbEnable);
+    this.bus0Spinner.setEnabled(fbEnable);
+    this.bus1Spinner.setEnabled(fbEnable);
+    this.bus2Spinner.setEnabled(fbEnable);
+    this.bus3Spinner.setEnabled(fbEnable);
+
     this.locomotiveSynchSupportCB.setEnabled(enable);
     this.accessorySynchSupportCB.setEnabled(enable);
     this.locomotiveImageSynchSupportCB.setEnabled(enable);
@@ -320,6 +365,19 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     accessorySupportCB = new JCheckBox();
     feedbackSupportPanel = new JPanel();
     feedbackSupportCB = new JCheckBox();
+    FeedbackPropertiesPanel = new JPanel();
+    feedbackIdLbl = new JLabel();
+    nodeSpinner = new JSpinner();
+    channelCountLbl = new JLabel();
+    channelCountSpinner = new JSpinner();
+    bus0Lbl = new JLabel();
+    bus0Spinner = new JSpinner();
+    bus1Lbl = new JLabel();
+    bus1Spinner = new JSpinner();
+    bus2Lbl = new JLabel();
+    bus2Spinner = new JSpinner();
+    bus3Lbl = new JLabel();
+    bus3Spinner = new JSpinner();
     locomotiveSynchSupportPanel = new JPanel();
     locomotiveSynchSupportCB = new JCheckBox();
     accessorySynchSupportPanel = new JPanel();
@@ -639,6 +697,115 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     feedbackSupportPanel.add(feedbackSupportCB);
 
     capabilitiesPanel.add(feedbackSupportPanel);
+
+    FeedbackPropertiesPanel.setName("FeedbackPropertiesPanel"); // NOI18N
+    FlowLayout flowLayout13 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout13.setAlignOnBaseline(true);
+    FeedbackPropertiesPanel.setLayout(flowLayout13);
+
+    feedbackIdLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    feedbackIdLbl.setLabelFor(nodeSpinner);
+    feedbackIdLbl.setText("Feedback Id:");
+    feedbackIdLbl.setName("feedbackIdLbl"); // NOI18N
+    feedbackIdLbl.setPreferredSize(new Dimension(90, 17));
+    FeedbackPropertiesPanel.add(feedbackIdLbl);
+
+    nodeSpinner.setModel(new SpinnerNumberModel(0, 0, 256, 1));
+    nodeSpinner.setName("nodeSpinner"); // NOI18N
+    nodeSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        nodeSpinnerStateChanged(evt);
+      }
+    });
+    FeedbackPropertiesPanel.add(nodeSpinner);
+
+    channelCountLbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    channelCountLbl.setLabelFor(channelCountSpinner);
+    channelCountLbl.setText("Channel Count:");
+    channelCountLbl.setName("channelCountLbl"); // NOI18N
+    channelCountLbl.setPreferredSize(new Dimension(90, 17));
+    FeedbackPropertiesPanel.add(channelCountLbl);
+    channelCountLbl.getAccessibleContext().setAccessibleName("Channel Count");
+
+    channelCountSpinner.setModel(new SpinnerNumberModel(0, 0, 32, 1));
+    channelCountSpinner.setName("channelCountSpinner"); // NOI18N
+    channelCountSpinner.setPreferredSize(new Dimension(50, 23));
+    channelCountSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        channelCountSpinnerStateChanged(evt);
+      }
+    });
+    FeedbackPropertiesPanel.add(channelCountSpinner);
+
+    bus0Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    bus0Lbl.setLabelFor(bus0Spinner);
+    bus0Lbl.setText("Ch 0 Modules:");
+    bus0Lbl.setName("bus0Lbl"); // NOI18N
+    bus0Lbl.setPreferredSize(new Dimension(90, 17));
+    FeedbackPropertiesPanel.add(bus0Lbl);
+
+    bus0Spinner.setModel(new SpinnerNumberModel(0, 0, 32, 1));
+    bus0Spinner.setName("bus0Spinner"); // NOI18N
+    bus0Spinner.setPreferredSize(new Dimension(50, 23));
+    bus0Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        bus0SpinnerStateChanged(evt);
+      }
+    });
+    FeedbackPropertiesPanel.add(bus0Spinner);
+
+    bus1Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    bus1Lbl.setLabelFor(bus1Spinner);
+    bus1Lbl.setText("Ch 1 Modules:");
+    bus1Lbl.setName("bus1Lbl"); // NOI18N
+    bus1Lbl.setPreferredSize(new Dimension(90, 17));
+    FeedbackPropertiesPanel.add(bus1Lbl);
+
+    bus1Spinner.setModel(new SpinnerNumberModel(0, 0, 32, 1));
+    bus1Spinner.setName("bus1Spinner"); // NOI18N
+    bus1Spinner.setPreferredSize(new Dimension(50, 23));
+    bus1Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        bus1SpinnerStateChanged(evt);
+      }
+    });
+    FeedbackPropertiesPanel.add(bus1Spinner);
+
+    bus2Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    bus2Lbl.setLabelFor(bus2Spinner);
+    bus2Lbl.setText("Ch 2 Modules:");
+    bus2Lbl.setName("bus2Lbl"); // NOI18N
+    bus2Lbl.setPreferredSize(new Dimension(90, 17));
+    FeedbackPropertiesPanel.add(bus2Lbl);
+
+    bus2Spinner.setModel(new SpinnerNumberModel(0, 0, 32, 1));
+    bus2Spinner.setName("bus2Spinner"); // NOI18N
+    bus2Spinner.setPreferredSize(new Dimension(50, 23));
+    bus2Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        bus2SpinnerStateChanged(evt);
+      }
+    });
+    FeedbackPropertiesPanel.add(bus2Spinner);
+
+    bus3Lbl.setHorizontalAlignment(SwingConstants.TRAILING);
+    bus3Lbl.setLabelFor(bus3Spinner);
+    bus3Lbl.setText("Ch 3 Modules:");
+    bus3Lbl.setName("bus3Lbl"); // NOI18N
+    bus3Lbl.setPreferredSize(new Dimension(90, 17));
+    FeedbackPropertiesPanel.add(bus3Lbl);
+
+    bus3Spinner.setModel(new SpinnerNumberModel(0, 0, 32, 1));
+    bus3Spinner.setName("bus3Spinner"); // NOI18N
+    bus3Spinner.setPreferredSize(new Dimension(50, 23));
+    bus3Spinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        bus3SpinnerStateChanged(evt);
+      }
+    });
+    FeedbackPropertiesPanel.add(bus3Spinner);
+
+    capabilitiesPanel.add(FeedbackPropertiesPanel);
 
     locomotiveSynchSupportPanel.setName("locomotiveSynchSupportPanel"); // NOI18N
     FlowLayout flowLayout6 = new FlowLayout(FlowLayout.LEFT);
@@ -1099,6 +1266,36 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     }
   }//GEN-LAST:event_supConTypeSerialRBActionPerformed
 
+  private void channelCountSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_channelCountSpinnerStateChanged
+    this.selectedCommandStation.setFeedbackChannelCount((Integer) this.channelCountSpinner.getValue());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_channelCountSpinnerStateChanged
+
+  private void bus0SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_bus0SpinnerStateChanged
+    this.selectedCommandStation.setFeedbackBus0ModuleCount((Integer) this.bus0Spinner.getValue());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_bus0SpinnerStateChanged
+
+  private void bus1SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_bus1SpinnerStateChanged
+    this.selectedCommandStation.setFeedbackBus1ModuleCount((Integer) this.bus1Spinner.getValue());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_bus1SpinnerStateChanged
+
+  private void bus2SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_bus2SpinnerStateChanged
+    this.selectedCommandStation.setFeedbackBus2ModuleCount((Integer) this.bus2Spinner.getValue());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_bus2SpinnerStateChanged
+
+  private void bus3SpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_bus3SpinnerStateChanged
+    this.selectedCommandStation.setFeedbackBus3ModuleCount((Integer) this.bus3Spinner.getValue());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_bus3SpinnerStateChanged
+
+  private void nodeSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_nodeSpinnerStateChanged
+    this.selectedCommandStation.setFeedbackModuleIdentifier(this.nodeSpinner.getValue().toString());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_nodeSpinnerStateChanged
+
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("progress".equals(evt.getPropertyName())) {
@@ -1115,7 +1312,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       Logger.trace("Found IP address: " + evt.getNewValue());
       ipAddressTF.setText((String) evt.getNewValue());
       selectedCommandStation.setIpAddress(this.ipAddressTF.getText());
-      PersistenceFactory.getService().persist(this.selectedCommandStation);
     }
 
     if ("serial".equals(evt.getPropertyName())) {
@@ -1123,15 +1319,50 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       lastUsedSerialLbl.setText((String) evt.getNewValue());
       selectedCommandStation.setLastUsedSerial(lastUsedSerialLbl.getText());
       lastUsedSerialLbl.setText("Serial number: " + lastUsedSerialLbl.getText());
-
       lastUsedSerialLbl.setVisible(true);
-      PersistenceFactory.getService().persist(this.selectedCommandStation);
+    }
+
+    if ("node".equals(evt.getPropertyName())) {
+      Logger.trace("Node id: " + evt.getNewValue());
+      selectedCommandStation.setFeedbackModuleIdentifier("" + evt.getNewValue());
+      this.nodeSpinner.setValue(evt.getNewValue());
+    }
+
+    if ("channels".equals(evt.getPropertyName())) {
+      Logger.trace("Feedback channel count: " + evt.getNewValue());
+      selectedCommandStation.setFeedbackChannelCount((Integer) evt.getNewValue());
+      this.channelCountSpinner.setValue(evt.getNewValue());
+    }
+
+    if ("bus0".equals(evt.getPropertyName())) {
+      Logger.trace("Bus 0 Lenght: " + evt.getNewValue());
+      selectedCommandStation.setFeedbackBus0ModuleCount((Integer) evt.getNewValue());
+      bus0Spinner.setValue(evt.getNewValue());
+    }
+
+    if ("bus1".equals(evt.getPropertyName())) {
+      Logger.trace("Bus 1 Lenght: " + evt.getNewValue());
+      selectedCommandStation.setFeedbackBus1ModuleCount((Integer) evt.getNewValue());
+      bus1Spinner.setValue(evt.getNewValue());
+    }
+
+    if ("bus2".equals(evt.getPropertyName())) {
+      Logger.trace("Bus 2 Lenght: " + evt.getNewValue());
+      selectedCommandStation.setFeedbackBus2ModuleCount((Integer) evt.getNewValue());
+      bus2Spinner.setValue(evt.getNewValue());
+    }
+
+    if ("bus3".equals(evt.getPropertyName())) {
+      Logger.trace("Bus 3 Lenght: " + evt.getNewValue());
+      selectedCommandStation.setFeedbackBus3ModuleCount((Integer) evt.getNewValue());
+      bus3Spinner.setValue(evt.getNewValue());
     }
 
     if ("done".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
       this.connectionTestResultLbl.setText((String) evt.getNewValue());
       this.progressBar.setVisible(false);
+      PersistenceFactory.getService().persist(this.selectedCommandStation);
     }
   }
 
@@ -1168,15 +1399,48 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
               }
             }
             if (canConnect) {
-              //Let obtain some data
-              String sn = commandStation.getDevice().getSerial();
-              selectedCommandStation.setLastUsedSerial(sn);
-              firePropertyChange("serial", "", sn);
-              setProgress(60);
+              //Let obtain some data fail safe
+              try {
+                String sn = commandStation.getDevice().getSerial();
+                firePropertyChange("serial", "", sn);
+                setProgress(50);
+
+                if (commandStation instanceof FeedbackController) {
+                  DeviceBean fbDevice = ((FeedbackController) commandStation).getFeedbackDevice();
+                  if (fbDevice != null) {
+                    Logger.trace(fbDevice.getName() + " Supports Feedback");
+                    String id = fbDevice.getIdentifier();
+
+                    int node = Integer.parseInt(id.replace("0x", ""), 16);
+                    firePropertyChange("node", selectedCommandStation.getFeedbackModuleIdentifier(), node);
+
+                    Integer channelCount = fbDevice.getSensorBuses().size();
+                    firePropertyChange("channels", selectedCommandStation.getFeedbackChannelCount(), channelCount);
+
+                    Integer bus0 = fbDevice.getBusLength(0);
+                    firePropertyChange("bus0", selectedCommandStation.getFeedbackBus0ModuleCount(), bus0);
+
+                    Integer bus1 = fbDevice.getBusLength(1);
+                    firePropertyChange("bus1", selectedCommandStation.getFeedbackBus1ModuleCount(), bus1);
+
+                    Integer bus2 = fbDevice.getBusLength(2);
+                    firePropertyChange("bus2", selectedCommandStation.getFeedbackBus2ModuleCount(), bus2);
+
+                    Integer bus3 = fbDevice.getBusLength(3);
+                    firePropertyChange("bus3", selectedCommandStation.getFeedbackBus3ModuleCount(), bus0);
+
+                    Logger.trace("ID: " + id + " Node: " + node + " Bus 0: " + bus0 + " Bus 1: " + bus1 + " Bus 2: " + bus2 + " Bus 3: " + bus3);
+                  }
+                }
+              } catch (RuntimeException e) {
+                Logger.warn("Error in data retrieval " + e.getMessage());
+              }
+              setProgress(90);
 
               commandStation.disconnect();
               firePropertyChange("done", "", "Connection succeeded");
               setProgress(100);
+
             } else {
               firePropertyChange("done", "", "Can't Connect");
               setProgress(100);
@@ -1209,6 +1473,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
           }
         }
       }
+      // } // catch (Exeption e) 
       return null;
     }
 
@@ -1266,14 +1531,25 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  JPanel FeedbackPropertiesPanel;
   JCheckBox accessorySupportCB;
   JPanel accessorySupportPanel;
   JCheckBox accessorySynchSupportCB;
   JPanel accessorySynchSupportPanel;
   JCheckBox autoConfChkBox;
   JPanel bottomPanel;
+  JLabel bus0Lbl;
+  JSpinner bus0Spinner;
+  JLabel bus1Lbl;
+  JSpinner bus1Spinner;
+  JLabel bus2Lbl;
+  JSpinner bus2Spinner;
+  JLabel bus3Lbl;
+  JSpinner bus3Spinner;
   JPanel capabilitiesPanel;
   JPanel centerPanel;
+  JLabel channelCountLbl;
+  JSpinner channelCountSpinner;
   JLabel classNameLbl;
   JTextField classNameTF;
   JComboBox<CommandStationBean> commandStationComboBox;
@@ -1294,6 +1570,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JTextField descriptionTF;
   JCheckBox enableEditCB;
   JCheckBox enabledCB;
+  JLabel feedbackIdLbl;
   JCheckBox feedbackSupportCB;
   JPanel feedbackSupportPanel;
   Box.Filler filler1;
@@ -1322,6 +1599,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JLabel nameLbl;
   JRadioButton networkRB;
   JButton newBtn;
+  JSpinner nodeSpinner;
   JLabel portLbl;
   JSpinner portSpinner;
   JProgressBar progressBar;

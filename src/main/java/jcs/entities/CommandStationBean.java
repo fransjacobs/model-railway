@@ -56,6 +56,13 @@ public class CommandStationBean {
   private String lastUsedSerial;
   private String supConnTypesStr;
 
+  private String feedbackModuleIdentifier;
+  private Integer feedbackChannelCount;
+  private Integer feedbackBus0ModuleCount;
+  private Integer feedbackBus1ModuleCount;
+  private Integer feedbackBus2ModuleCount;
+  private Integer feedbackBus3ModuleCount;
+
   @Id
   @Column(name = "id")
   public String getId() {
@@ -256,6 +263,60 @@ public class CommandStationBean {
     this.supConnTypesStr = supConnTypesStr;
   }
 
+  @Column(name = "feedback_module_id", length = 255, nullable = true)
+  public String getFeedbackModuleIdentifier() {
+    return feedbackModuleIdentifier;
+  }
+
+  public void setFeedbackModuleIdentifier(String feedbackModuleIdentifier) {
+    this.feedbackModuleIdentifier = feedbackModuleIdentifier;
+  }
+
+  @Column(name = "feedback_bus_count", nullable = true)
+  public Integer getFeedbackChannelCount() {
+    return feedbackChannelCount;
+  }
+
+  public void setFeedbackChannelCount(Integer feedbackChannelCount) {
+    this.feedbackChannelCount = feedbackChannelCount;
+  }
+
+  @Column(name = "feedback_bus_0_module_count", nullable = true)
+  public Integer getFeedbackBus0ModuleCount() {
+    return feedbackBus0ModuleCount;
+  }
+
+  public void setFeedbackBus0ModuleCount(Integer feedbackBus0ModuleCount) {
+    this.feedbackBus0ModuleCount = feedbackBus0ModuleCount;
+  }
+
+  @Column(name = "feedback_bus_1_module_count", nullable = true)
+  public Integer getFeedbackBus1ModuleCount() {
+    return feedbackBus1ModuleCount;
+  }
+
+  public void setFeedbackBus1ModuleCount(Integer feedbackBus1ModuleCount) {
+    this.feedbackBus1ModuleCount = feedbackBus1ModuleCount;
+  }
+
+  @Column(name = "feedback_bus_2_module_count", nullable = true)
+  public Integer getFeedbackBus2ModuleCount() {
+    return feedbackBus2ModuleCount;
+  }
+
+  public void setFeedbackBus2ModuleCount(Integer feedbackBus2ModuleCount) {
+    this.feedbackBus2ModuleCount = feedbackBus2ModuleCount;
+  }
+
+  @Column(name = "feedback_bus_3_module_count", nullable = true)
+  public Integer getFeedbackBus3ModuleCount() {
+    return feedbackBus3ModuleCount;
+  }
+
+  public void setFeedbackBus3ModuleCount(Integer feedbackBus3ModuleCount) {
+    this.feedbackBus3ModuleCount = feedbackBus3ModuleCount;
+  }
+
   @Transient
   public Set<ConnectionType> getSupportedConnectionTypes() {
     Set<ConnectionType> cts = new HashSet<>();
@@ -371,26 +432,34 @@ public class CommandStationBean {
 
   @Override
   public int hashCode() {
-    int hash = 7;
-    hash = 23 * hash + Objects.hashCode(this.id);
-    hash = 23 * hash + Objects.hashCode(this.description);
-    hash = 23 * hash + Objects.hashCode(this.shortName);
-    hash = 23 * hash + Objects.hashCode(this.className);
-    hash = 23 * hash + Objects.hashCode(this.connectVia);
-    hash = 23 * hash + Objects.hashCode(this.serialPort);
-    hash = 23 * hash + Objects.hashCode(this.ipAddress);
-    hash = 23 * hash + Objects.hashCode(this.networkPort);
-    hash = 23 * hash + (this.ipAutoConfiguration ? 1 : 0);
-    hash = 23 * hash + (this.decoderControlSupport ? 1 : 0);
-    hash = 23 * hash + (this.feedbackSupport ? 1 : 0);
-    hash = 23 * hash + (this.locomotiveSynchronizationSupport ? 1 : 0);
-    hash = 23 * hash + (this.accessorySynchronizationSupport ? 1 : 0);
-    hash = 23 * hash + (this.locomotiveImageSynchronizationSupport ? 1 : 0);
-    hash = 23 * hash + (this.locomotiveFunctionSynchronizationSupport ? 1 : 0);
-    hash = 23 * hash + Objects.hashCode(this.protocols);
-    hash = 23 * hash + (this.defaultCs ? 1 : 0);
-    hash = 23 * hash + (this.enabled ? 1 : 0);
-    hash = 23 * hash + Objects.hashCode(this.lastUsedSerial);
+    int hash = 5;
+    hash = 67 * hash + Objects.hashCode(this.id);
+    hash = 67 * hash + Objects.hashCode(this.description);
+    hash = 67 * hash + Objects.hashCode(this.shortName);
+    hash = 67 * hash + Objects.hashCode(this.className);
+    hash = 67 * hash + Objects.hashCode(this.connectVia);
+    hash = 67 * hash + Objects.hashCode(this.serialPort);
+    hash = 67 * hash + Objects.hashCode(this.ipAddress);
+    hash = 67 * hash + Objects.hashCode(this.networkPort);
+    hash = 67 * hash + (this.ipAutoConfiguration ? 1 : 0);
+    hash = 67 * hash + (this.decoderControlSupport ? 1 : 0);
+    hash = 67 * hash + (this.accessoryControlSupport ? 1 : 0);
+    hash = 67 * hash + (this.feedbackSupport ? 1 : 0);
+    hash = 67 * hash + (this.locomotiveSynchronizationSupport ? 1 : 0);
+    hash = 67 * hash + (this.accessorySynchronizationSupport ? 1 : 0);
+    hash = 67 * hash + (this.locomotiveImageSynchronizationSupport ? 1 : 0);
+    hash = 67 * hash + (this.locomotiveFunctionSynchronizationSupport ? 1 : 0);
+    hash = 67 * hash + Objects.hashCode(this.protocols);
+    hash = 67 * hash + (this.defaultCs ? 1 : 0);
+    hash = 67 * hash + (this.enabled ? 1 : 0);
+    hash = 67 * hash + Objects.hashCode(this.lastUsedSerial);
+    hash = 67 * hash + Objects.hashCode(this.supConnTypesStr);
+    hash = 67 * hash + Objects.hashCode(this.feedbackModuleIdentifier);
+    hash = 67 * hash + Objects.hashCode(this.feedbackChannelCount);
+    hash = 67 * hash + Objects.hashCode(this.feedbackBus0ModuleCount);
+    hash = 67 * hash + Objects.hashCode(this.feedbackBus1ModuleCount);
+    hash = 67 * hash + Objects.hashCode(this.feedbackBus2ModuleCount);
+    hash = 67 * hash + Objects.hashCode(this.feedbackBus3ModuleCount);
     return hash;
   }
 
@@ -410,6 +479,9 @@ public class CommandStationBean {
       return false;
     }
     if (this.decoderControlSupport != other.decoderControlSupport) {
+      return false;
+    }
+    if (this.accessoryControlSupport != other.accessoryControlSupport) {
       return false;
     }
     if (this.feedbackSupport != other.feedbackSupport) {
@@ -460,7 +532,28 @@ public class CommandStationBean {
     if (!Objects.equals(this.lastUsedSerial, other.lastUsedSerial)) {
       return false;
     }
-    return Objects.equals(this.networkPort, other.networkPort);
+    if (!Objects.equals(this.supConnTypesStr, other.supConnTypesStr)) {
+      return false;
+    }
+    if (!Objects.equals(this.feedbackModuleIdentifier, other.feedbackModuleIdentifier)) {
+      return false;
+    }
+    if (!Objects.equals(this.networkPort, other.networkPort)) {
+      return false;
+    }
+    if (!Objects.equals(this.feedbackChannelCount, other.feedbackChannelCount)) {
+      return false;
+    }
+    if (!Objects.equals(this.feedbackBus0ModuleCount, other.feedbackBus0ModuleCount)) {
+      return false;
+    }
+    if (!Objects.equals(this.feedbackBus1ModuleCount, other.feedbackBus1ModuleCount)) {
+      return false;
+    }
+    if (!Objects.equals(this.feedbackBus2ModuleCount, other.feedbackBus2ModuleCount)) {
+      return false;
+    }
+    return Objects.equals(this.feedbackBus3ModuleCount, other.feedbackBus3ModuleCount);
   }
 
   public enum ConnectionType {

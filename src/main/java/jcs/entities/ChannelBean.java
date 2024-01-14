@@ -287,6 +287,11 @@ public class ChannelBean {
     }
   }
 
+  public boolean isS88Bus() {
+    boolean bus = this.name != null && (this.name.contains("Bus 1 (RJ45-1)") || this.name.contains("Bus 2 (RJ45-2)") || this.name.contains("Bus 3 (6-Polig)") || this.name.contains("Auswertung 1 - 16"));
+    return bus && this.number != null && this.number < 5;
+  }
+
   private static double round(double value, int places) {
     if (places < 0) {
       throw new IllegalArgumentException();

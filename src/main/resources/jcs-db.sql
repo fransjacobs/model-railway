@@ -31,6 +31,12 @@ create table command_stations (
   enabled                       bool not null default false,
   last_used_serial              varchar(255),
   sup_conn_types                varchar(255) not null,
+  feedback_module_id            varchar(255),
+  feedback_bus_count            integer,
+  feedback_bus_0_module_count   integer,        
+  feedback_bus_1_module_count   integer,        
+  feedback_bus_2_module_count   integer,        
+  feedback_bus_3_module_count   integer,        
   constraint command_station_pk primary key ( id )
 );
 
