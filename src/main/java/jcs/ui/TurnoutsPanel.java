@@ -19,10 +19,15 @@
 package jcs.ui;
 
 import java.awt.GridLayout;
-import java.util.Collections;
+import java.net.URL;
 import java.util.List;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
 import jcs.entities.AccessoryBean;
+import jcs.persistence.PersistenceFactory;
 import jcs.ui.widgets.TurnoutRowPanel;
 import org.tinylog.Logger;
 
@@ -48,9 +53,8 @@ public class TurnoutsPanel extends javax.swing.JPanel {
     if (JCS.getJcsCommandStation() == null) {
       return;
     }
-    //stub
-    List<AccessoryBean> turnouts = Collections.EMPTY_LIST; // CommandStationFactory.getTrackService().getSwitches();
 
+    List<AccessoryBean> turnouts = PersistenceFactory.getService().getTurnouts();
     Logger.trace("There are " + turnouts.size() + " turnouts...");
 
     this.removeAll();
@@ -99,4 +103,37 @@ public class TurnoutsPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
+  
+  //Testing
+  public static void main(String args[]) {
+    try {
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.error("Can't set the LookAndFeel: " + ex);
+    }
+
+    java.awt.EventQueue.invokeLater(() -> {
+      TurnoutsPanel testPanel = new TurnoutsPanel();
+      JFrame testFrame = new JFrame("ControllerPanel Tester");
+      //this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
+      URL iconUrl = ControllerPanel.class.getResource("/media/jcs-train-2-512.png");
+      if (iconUrl != null) {
+        testFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+      }
+
+      JFrame.setDefaultLookAndFeelDecorated(true);
+      testFrame.add(testPanel);
+
+      testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+        @Override
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          System.exit(0);
+        }
+      });
+      testFrame.pack();
+      testFrame.setLocationRelativeTo(null);
+      testFrame.setVisible(true);
+    });
+  }
+
 }

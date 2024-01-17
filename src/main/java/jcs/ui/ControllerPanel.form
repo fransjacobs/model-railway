@@ -877,9 +877,9 @@
         </Container>
       </SubComponents>
     </Container>
-    <Component class="jcs.ui.widgets.KeyboardPanelWide" name="keyboardPanelWide1">
+    <Component class="jcs.ui.widgets.KeyboardPanelWide" name="keyboardPanel">
       <Properties>
-        <Property name="name" type="java.lang.String" value="keyboardPanelWide1" noResource="true"/>
+        <Property name="name" type="java.lang.String" value="keyboardPanel" noResource="true"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
