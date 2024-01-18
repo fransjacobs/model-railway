@@ -28,6 +28,7 @@ import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
+import org.tinylog.Logger;
 
 /**
  * Diagnostic panel for a feedback module
@@ -94,9 +95,11 @@ public class FeedbackPanel extends JPanel {
     if (this.contactIdOffset == null) {
       this.contactIdOffset = 0;
     }
-
+    
     int port = 1;
     p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+
+    Logger.trace("Port "+(port-1)+", device: "+deviceId+" module: "+moduleNumber+" offset: "+contactIdOffset+" Contact Addres: "+p1.contactId);
     p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
@@ -225,6 +228,7 @@ public class FeedbackPanel extends JPanel {
   @Override
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
+    
   }
 
   private class FeedbackPort implements SensorEventListener {

@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 frans.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui;
 
@@ -23,7 +20,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.net.URL;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -32,10 +30,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.JCS;
-import jcs.commandStation.marklin.cs.can.CanMessage;
-import jcs.commandStation.marklin.cs3.events.CanMessageEvent;
-import jcs.commandStation.marklin.cs3.events.CanMessageListener;
+import jcs.entities.CommandStationBean;
+import jcs.persistence.PersistenceFactory;
 import jcs.ui.widgets.FeedbackPanel;
 import org.tinylog.Logger;
 
@@ -45,152 +41,82 @@ import org.tinylog.Logger;
  */
 public class SensorModulePanel extends JPanel {
 
+  private List<FeedbackPanel> feedbackPanels;
+
   /**
    * Creates new form FeedbackMonitorPanel
    */
   public SensorModulePanel() {
+    feedbackPanels = new ArrayList<>();
     initComponents();
     postInit();
   }
 
-  void registerListeners() {
-    if (JCS.getJcsCommandStation() != null) {
-      this.bus0Mod1Panel.registerSensorListeners();
-      //this.csModule2Panel.registerSensorListeners();
-      //this.csModule3Panel.registerSensorListeners();
-      //this.csModule4Panel.registerSensorListeners();
-
-      this.bus1Module1Panel.registerSensorListeners();
-      this.bus1Module2Panel.registerSensorListeners();
-      this.bus1Module3Panel.registerSensorListeners();
-      //this.bus1Module4Panel.registerSensorListeners();
-
-      this.bus2Module1Panel.registerSensorListeners();
-      //this.bus2Module2Panel.registerSensorListeners();
-      //this.bus2Module3Panel.registerSensorListeners();
-      //this.bus2Module4Panel.registerSensorListeners();
-
-      this.bus3Mod1Panel.registerSensorListeners();
-      //this.bus3Module2Panel.registerSensorListeners();
-      //this.bus3Module3Panel.registerSensorListeners();
-      //this.bus3Module4Panel.registerSensorListeners();
-      Logger.trace("Added Sensor Listeners...");
-    }
-  }
-
-  void removeListeners() {
-    if (JCS.getJcsCommandStation() != null) {
-      this.bus0Mod1Panel.removeSensorListeners();
-      //this.csModule2Panel.removeSensorListeners();
-      //this.csModule3Panel.removeSensorListeners();
-      //this.csModule4Panel.removeSensorListeners();
-
-      this.bus1Module1Panel.removeSensorListeners();
-      this.bus1Module2Panel.removeSensorListeners();
-      this.bus1Module3Panel.removeSensorListeners();
-      //this.bus1Module4Panel.removeSensorListeners();
-
-      this.bus2Module1Panel.removeSensorListeners();
-      //this.bus2Module2Panel.removeSensorListeners();
-      //this.bus2Module3Panel.removeSensorListeners();
-      //this.bus2Module4Panel.removeSensorListeners();
-
-      this.bus3Mod1Panel.removeSensorListeners();
-      //this.bus3Module2Panel.removeSensorListeners();
-      //this.bus3Module3Panel.removeSensorListeners();
-      //this.bus3Module4Panel.removeSensorListeners();
-      Logger.trace("Removed Sensor Listeners...");
-    }
-  }
-
-  //TODO !
   private void postInit() {
-    //Find the number of feedback modules from the JCSCommandStation LinkS88 busses
-//    if (CommandStationFactory.getTrackController() != null && CommandStationFactory.getTrackController().getLinkSxx() != null) {
-// 
-//      LinkSxx linkSxx = CommandStationFactory.getTrackController().getLinkSxx();
-//      int deviceId = linkSxx.getDeviceId();
-//      //For now support only a max of 4 modules per bus, which
-//      //should be sufficient for most tracks ;)
-//      this.csModule1Panel.setContactIdOffset(0);
-//      this.csModule1Panel.setDeviceId(deviceId);
-//
-//      this.csModule2Panel.setContactIdOffset(0);
-//      this.csModule2Panel.setDeviceId(deviceId);
-//
-//      this.csModule3Panel.setContactIdOffset(0);
-//      this.csModule3Panel.setDeviceId(deviceId);
-//
-//      this.csModule4Panel.setContactIdOffset(0);
-//      this.csModule4Panel.setDeviceId(deviceId);
-//
-//      int bus1Offset = linkSxx.getContactIdOffset(1);
-//      this.bus1Module1Panel.setContactIdOffset(bus1Offset);
-//      this.bus1Module1Panel.setDeviceId(deviceId);
-//
-//      this.bus1Module2Panel.setContactIdOffset(bus1Offset);
-//      this.bus1Module2Panel.setDeviceId(deviceId);
-//
-//      this.bus1Module3Panel.setContactIdOffset(bus1Offset);
-//      this.bus1Module3Panel.setDeviceId(deviceId);
-//
-//      this.bus1Module4Panel.setContactIdOffset(bus1Offset);
-//      this.bus1Module4Panel.setDeviceId(deviceId);
-//
-//      int bus2Offset = linkSxx.getContactIdOffset(2);
-//      this.bus2Module1Panel.setContactIdOffset(bus2Offset);
-//      this.bus2Module1Panel.setDeviceId(deviceId);
-//
-//      this.bus2Module2Panel.setContactIdOffset(bus2Offset);
-//      this.bus2Module2Panel.setDeviceId(deviceId);
-//      this.bus2Module2Panel.registerSensorListeners();
-//
-//      this.bus2Module3Panel.setContactIdOffset(bus2Offset);
-//      this.bus2Module3Panel.setDeviceId(deviceId);
-//
-//      this.bus2Module4Panel.setContactIdOffset(bus2Offset);
-//      this.bus2Module4Panel.setDeviceId(deviceId);
-//
-//      int bus3Offset = linkSxx.getContactIdOffset(3);
-//      this.bus3Module1Panel.setContactIdOffset(bus3Offset);
-//      this.bus3Module1Panel.setDeviceId(deviceId);
-//
-//      this.bus3Module2Panel.setContactIdOffset(bus3Offset);
-//      this.bus3Module2Panel.setDeviceId(deviceId);
-//
-//      this.bus3Module3Panel.setContactIdOffset(bus3Offset);
-//      this.bus3Module3Panel.setDeviceId(deviceId);
-//
-//      this.bus3Module4Panel.setContactIdOffset(bus3Offset);
-//      this.bus3Module4Panel.setDeviceId(deviceId);
-//    }
-  }
+    if (PersistenceFactory.getService() != null) {
+      List<CommandStationBean> fbcl = new ArrayList<>();
+      List<CommandStationBean> csl = PersistenceFactory.getService().getCommandStations();
+      int bus0len = 0;
+      int bus1len = 0;
+      int bus2len = 0;
+      int bus3len = 0;
+      int deviceId = 0;
+      for (CommandStationBean fbc : csl) {
+        if (fbc.isFeedbackSupport()) {
+          fbcl.add(fbc);
+          bus0len = bus0len + fbc.getFeedbackBus0ModuleCount();
+          bus1len = bus1len + fbc.getFeedbackBus1ModuleCount();
+          bus2len = bus2len + fbc.getFeedbackBus2ModuleCount();
+          bus3len = bus3len + fbc.getFeedbackBus3ModuleCount();
+          deviceId = Integer.parseInt(fbc.getFeedbackModuleIdentifier());
+        }
+      }
+      Logger.trace("Device Id: " + deviceId + " bus 0: " + bus0len + " bus 1: " + bus1len + " bus 2: " + bus2len + " bus 3: " + bus3len);
 
-  private class MessageListener implements CanMessageListener {
+      //Assume there is always 1 module for bus 0
+      this.feedbackPanels.add(bus0Mod1Panel);
+      //Bus 0
+      bus0Mod1Panel.setEnabled(bus0len > 0);
+      bus0Mod1Panel.setTitle("Bus 0 Module 1");
+      bus0Mod1Panel.setDeviceId(deviceId);
+      bus0Mod1Panel.setContactIdOffset(0);
+      if (bus0len > 0) {
+        bus0Mod1Panel.registerSensorListeners();
+      }
+      for (int i = 1; i < bus0len; i++) {
+        FeedbackPanel bus0ModXPanel = new FeedbackPanel((i+1), deviceId, 0);
+        bus0ModXPanel.setTitle("Bus 0 Module "+(i+1));
+        feedbackPanels.add(bus0ModXPanel);
+        bus0ModXPanel.registerSensorListeners();
+        this.bus0Panel.add(bus0ModXPanel);
+      }
 
-    private final SensorModulePanel diagnosticPanel;
+      //Bus 1
+      for (int i = 0; i < bus1len; i++) {
+        FeedbackPanel bus1ModXPanel = new FeedbackPanel((i+1), deviceId, 1000);
+        bus1ModXPanel.setTitle("Node "+deviceId+" Bus 1 Module "+(i+1));
+        feedbackPanels.add(bus1ModXPanel);
+        bus1ModXPanel.registerSensorListeners();
+        this.bus1Panel.add(bus1ModXPanel);
+      }
 
-    MessageListener(SensorModulePanel panel) {
-      diagnosticPanel = panel;
+      //Bus 2
+      for (int i = 0; i < bus2len; i++) {
+        FeedbackPanel bus2ModXPanel = new FeedbackPanel((i+1), deviceId, 2000);
+        bus2ModXPanel.setTitle("Node "+deviceId+" Bus 2 Module "+(i+1));
+        bus2ModXPanel.registerSensorListeners();
+        this.bus2Panel.add(bus2ModXPanel);
+      }
+
+      //Bus 3
+      for (int i = 0; i < bus3len; i++) {
+        FeedbackPanel bus3ModXPanel = new FeedbackPanel((i+1), deviceId, 3000);
+        bus3ModXPanel.setTitle("Node "+deviceId+" Bus 3 Module "+(i+1));
+        feedbackPanels.add(bus3ModXPanel);
+        bus3ModXPanel.registerSensorListeners();
+        this.bus3Panel.add(bus3ModXPanel);
+      }
     }
-
-    @Override
-    public void onCanMessage(CanMessageEvent canEvent) {
-      CanMessage msg = canEvent.getCanMessage();
-
-      StringBuilder sb = new StringBuilder();
-      SimpleDateFormat sdf = new SimpleDateFormat("HH24:mm:ss.S");
-      sb.append(sdf.format(canEvent.getEventDate()));
-      sb.append(" ");
-      sb.append(canEvent.getSourceAddress().getHostName());
-      sb.append(" ");
-      //sb.append(canEvent.getCanMessage().getMessageName());
-      sb.append(" ");
-      sb.append(canEvent.getCanMessage());
-      sb.append("\n");
-
-    }
-
   }
 
   /**
@@ -206,15 +132,10 @@ public class SensorModulePanel extends JPanel {
     bus0Mod1Panel = new FeedbackPanel(1);
     bus1SP = new JScrollPane();
     bus1Panel = new JPanel();
-    bus1Module1Panel = new FeedbackPanel(5);
-    bus1Module2Panel = new FeedbackPanel(6);
-    bus1Module3Panel = new FeedbackPanel(7);
     bus2SP = new JScrollPane();
     bus2Panel = new JPanel();
-    bus2Module1Panel = new FeedbackPanel(5);
     bus3SP = new JScrollPane();
     bus3Panel = new JPanel();
-    bus3Mod1Panel = new FeedbackPanel(5);
 
     setName("Form"); // NOI18N
     setPreferredSize(new Dimension(780, 150));
@@ -268,21 +189,6 @@ public class SensorModulePanel extends JPanel {
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT, 1, 1);
     flowLayout1.setAlignOnBaseline(true);
     bus1Panel.setLayout(flowLayout1);
-
-    bus1Module1Panel.setName("bus1Module1Panel"); // NOI18N
-    bus1Module1Panel.setTitle("Module 1");
-    bus1Panel.add(bus1Module1Panel);
-
-    bus1Module2Panel.setModuleNumber(2);
-    bus1Module2Panel.setName("bus1Module2Panel"); // NOI18N
-    bus1Module2Panel.setTitle("Module 2");
-    bus1Panel.add(bus1Module2Panel);
-
-    bus1Module3Panel.setModuleNumber(3);
-    bus1Module3Panel.setName("bus1Module3Panel"); // NOI18N
-    bus1Module3Panel.setTitle("Module 3");
-    bus1Panel.add(bus1Module3Panel);
-
     bus1SP.setViewportView(bus1Panel);
 
     feedbackSensorTP.addTab("Bus 1", bus1SP);
@@ -297,11 +203,6 @@ public class SensorModulePanel extends JPanel {
     FlowLayout flowLayout3 = new FlowLayout(FlowLayout.LEFT, 1, 1);
     flowLayout3.setAlignOnBaseline(true);
     bus2Panel.setLayout(flowLayout3);
-
-    bus2Module1Panel.setName("bus2Module1Panel"); // NOI18N
-    bus2Module1Panel.setTitle("Module 1");
-    bus2Panel.add(bus2Module1Panel);
-
     bus2SP.setViewportView(bus2Panel);
 
     feedbackSensorTP.addTab("Bus 2", bus2SP);
@@ -316,11 +217,6 @@ public class SensorModulePanel extends JPanel {
     FlowLayout flowLayout5 = new FlowLayout(FlowLayout.LEFT, 1, 1);
     flowLayout5.setAlignOnBaseline(true);
     bus3Panel.setLayout(flowLayout5);
-
-    bus3Mod1Panel.setName("bus3Mod1Panel"); // NOI18N
-    bus3Mod1Panel.setTitle("Module 1");
-    bus3Panel.add(bus3Mod1Panel);
-
     bus3SP.setViewportView(bus3Panel);
 
     feedbackSensorTP.addTab("Bus 3", bus3SP);
@@ -329,26 +225,21 @@ public class SensorModulePanel extends JPanel {
   }// </editor-fold>//GEN-END:initComponents
 
     private void formComponentShown(ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-      registerListeners();
+      // registerListeners();
     }//GEN-LAST:event_formComponentShown
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-      removeListeners();
+      // removeListeners();
     }//GEN-LAST:event_formComponentHidden
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private FeedbackPanel bus0Mod1Panel;
   private JPanel bus0Panel;
   private JScrollPane bus0SP;
-  private FeedbackPanel bus1Module1Panel;
-  private FeedbackPanel bus1Module2Panel;
-  private FeedbackPanel bus1Module3Panel;
   private JPanel bus1Panel;
   private JScrollPane bus1SP;
-  private FeedbackPanel bus2Module1Panel;
   private JPanel bus2Panel;
   private JScrollPane bus2SP;
-  private FeedbackPanel bus3Mod1Panel;
   private JPanel bus3Panel;
   private JScrollPane bus3SP;
   private JTabbedPane feedbackSensorTP;
