@@ -40,30 +40,12 @@ public class VerticalFlowLayout implements LayoutManager, Serializable {
   private int hGap;
   private int vGap;
 
-  /**
-   * Description of the Field
-   */
   public final static int TOP = 0;
-  /**
-   * Description of the Field
-   */
   public final static int CENTER = 1;
-  /**
-   * Description of the Field
-   */
   public final static int BOTTOM = 2;
-  /**
-   * Description of the Field
-   */
   public final static int LEFT = 3;
-  /**
-   * Description of the Field
-   */
   public final static int RIGHT = 4;
 
-  /**
-   * Constructor for the VerticalFlowLayout object
-   */
   public VerticalFlowLayout() {
     this(CENTER, TOP, 5, 5);
   }
@@ -123,9 +105,9 @@ public class VerticalFlowLayout implements LayoutManager, Serializable {
   }
 
   /**
-   * Gets the Halignment attribute of the VerticalFlowLayout object
+   * Gets the Horizontal alignment attribute of the VerticalFlowLayout object
    *
-   * @return The Halignment value
+   * @return The Horizontal alignment value
    */
   public int gethAlignment() {
     return hAlignment;
@@ -268,7 +250,6 @@ public class VerticalFlowLayout implements LayoutManager, Serializable {
       Dimension targetSize = target.getSize();
 
       switch (vAlignment) {
-
         case TOP ->
           y = insets.top;
         case CENTER ->
@@ -290,7 +271,6 @@ public class VerticalFlowLayout implements LayoutManager, Serializable {
 
             int x = 0;
             switch (hAlignment) {
-
               case LEFT ->
                 x = insets.left;
               case CENTER ->

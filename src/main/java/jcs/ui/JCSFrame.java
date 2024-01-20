@@ -61,7 +61,9 @@ import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
 import jcs.ui.options.CommandStationDialog;
+import jcs.ui.options.CommandStationPanel;
 import jcs.ui.options.OptionDialog;
+import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.UICallback;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -116,7 +118,6 @@ public class JCSFrame extends JFrame implements UICallback {
       }
 
       if (JCS.getJcsCommandStation().isConnected()) {
-        //this.locomotivesPanel.loadLocomotives();
         setControllerProperties();
       }
 
@@ -170,7 +171,6 @@ public class JCSFrame extends JFrame implements UICallback {
 
   public void showLocomotives() {
     Logger.debug("Show Locomotives");
-
     handlePreferences();
   }
 
@@ -184,12 +184,17 @@ public class JCSFrame extends JFrame implements UICallback {
     card.show(this.centerPanel, "signalsPanel");
   }
 
-  public void showDiagnostics() {
+  public void showKeyboards() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "diagnosticPanel");
-
   }
 
+  public void showSettings() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "settingsPanel");
+  }
+  
+  
   public void showDesignLayoutPanel() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "designPanel");
@@ -224,6 +229,7 @@ public class JCSFrame extends JFrame implements UICallback {
     if (this.feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
       feedbackMonitor = new FeedbackMonitor();
+      FrameMonitor.registerFrame(feedbackMonitor, FeedbackMonitor.class.getName());
     }
     this.feedbackMonitor.showMonitor();
   }
@@ -235,7 +241,7 @@ public class JCSFrame extends JFrame implements UICallback {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    jPanel5 = new JPanel();
+    toolbarPanel = new JPanel();
     jcsToolBar = new JToolBar();
     connectButton = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
@@ -244,19 +250,21 @@ public class JCSFrame extends JFrame implements UICallback {
     showOverviewBtn = new JButton();
     showEditDesignBtn = new JButton();
     filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    showDiagnosticsBtn = new JButton();
+    showKeyboardBtn = new JButton();
     filler5 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    showSettingsBtn = new JButton();
+    filler9 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     showFeedbackMonitorBtn = new JButton();
     filler8 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     statusPanel = new StatusPanel();
     mainPanel = new JPanel();
     locoDisplaySP = new JSplitPane();
     centerPanel = new JPanel();
-    settingsPanel = new JPanel();
-    jLabel1 = new JLabel();
-    diagnosticPanel = new ControllerPanel();
+    keyboardSensorMessagePanel = new KeyboardSensorPanel();
     layoutPanel = new LayoutPanel();
     overviewPanel = new LayoutPanel(true);
+    settingsPanel = new JPanel();
+    commandStationPanel = new CommandStationPanel();
     leftPanel = new JPanel();
     jPanel6 = new JPanel();
     launchDriverCabBtn = new JButton();
@@ -300,10 +308,10 @@ public class JCSFrame extends JFrame implements UICallback {
       }
     });
 
-    jPanel5.setName("jPanel5"); // NOI18N
+    toolbarPanel.setName("toolbarPanel"); // NOI18N
     FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
     flowLayout8.setAlignOnBaseline(true);
-    jPanel5.setLayout(flowLayout8);
+    toolbarPanel.setLayout(flowLayout8);
 
     jcsToolBar.setBorderPainted(false);
     jcsToolBar.setDoubleBuffered(true);
@@ -402,28 +410,46 @@ public class JCSFrame extends JFrame implements UICallback {
     filler3.setName("filler3"); // NOI18N
     jcsToolBar.add(filler3);
 
-    showDiagnosticsBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
-    showDiagnosticsBtn.setToolTipText("Diagnostics");
-    showDiagnosticsBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
-    showDiagnosticsBtn.setDoubleBuffered(true);
-    showDiagnosticsBtn.setFocusable(false);
-    showDiagnosticsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    showDiagnosticsBtn.setMargin(new Insets(0, 0, 0, 0));
-    showDiagnosticsBtn.setMaximumSize(new Dimension(40, 40));
-    showDiagnosticsBtn.setMinimumSize(new Dimension(40, 40));
-    showDiagnosticsBtn.setName("showDiagnosticsBtn"); // NOI18N
-    showDiagnosticsBtn.setPreferredSize(new Dimension(40, 40));
-    showDiagnosticsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    showDiagnosticsBtn.addActionListener(new ActionListener() {
+    showKeyboardBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
+    showKeyboardBtn.setToolTipText("Diagnostics");
+    showKeyboardBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+    showKeyboardBtn.setDoubleBuffered(true);
+    showKeyboardBtn.setFocusable(false);
+    showKeyboardBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    showKeyboardBtn.setMargin(new Insets(0, 0, 0, 0));
+    showKeyboardBtn.setMaximumSize(new Dimension(40, 40));
+    showKeyboardBtn.setMinimumSize(new Dimension(40, 40));
+    showKeyboardBtn.setName("showKeyboardBtn"); // NOI18N
+    showKeyboardBtn.setPreferredSize(new Dimension(40, 40));
+    showKeyboardBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    showKeyboardBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        showDiagnosticsBtnActionPerformed(evt);
+        showKeyboardBtnActionPerformed(evt);
       }
     });
-    jcsToolBar.add(showDiagnosticsBtn);
-    showDiagnosticsBtn.getAccessibleContext().setAccessibleName("Switchboard");
+    jcsToolBar.add(showKeyboardBtn);
+    showKeyboardBtn.getAccessibleContext().setAccessibleName("Switchboard");
 
     filler5.setName("filler5"); // NOI18N
     jcsToolBar.add(filler5);
+
+    showSettingsBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
+    showSettingsBtn.setFocusable(false);
+    showSettingsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    showSettingsBtn.setMaximumSize(new Dimension(40, 40));
+    showSettingsBtn.setMinimumSize(new Dimension(40, 40));
+    showSettingsBtn.setName("showSettingsBtn"); // NOI18N
+    showSettingsBtn.setPreferredSize(new Dimension(40, 40));
+    showSettingsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    showSettingsBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showSettingsBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(showSettingsBtn);
+
+    filler9.setName("filler9"); // NOI18N
+    jcsToolBar.add(filler9);
 
     showFeedbackMonitorBtn.setIcon(new ImageIcon(getClass().getResource("/media/monitor-24.png"))); // NOI18N
     showFeedbackMonitorBtn.setFocusable(false);
@@ -443,9 +469,9 @@ public class JCSFrame extends JFrame implements UICallback {
     filler8.setName("filler8"); // NOI18N
     jcsToolBar.add(filler8);
 
-    jPanel5.add(jcsToolBar);
+    toolbarPanel.add(jcsToolBar);
 
-    getContentPane().add(jPanel5, BorderLayout.NORTH);
+    getContentPane().add(toolbarPanel, BorderLayout.NORTH);
 
     statusPanel.setName("statusPanel"); // NOI18N
     getContentPane().add(statusPanel, BorderLayout.SOUTH);
@@ -465,21 +491,9 @@ public class JCSFrame extends JFrame implements UICallback {
     centerPanel.setPreferredSize(new Dimension(1010, 900));
     centerPanel.setLayout(new CardLayout());
 
-    settingsPanel.setMinimumSize(new Dimension(1000, 750));
-    settingsPanel.setName("settingsPanel"); // NOI18N
-    settingsPanel.setOpaque(false);
-    settingsPanel.setPreferredSize(new Dimension(885, 750));
-
-    jLabel1.setText("Settings");
-    jLabel1.setName("jLabel1"); // NOI18N
-    settingsPanel.add(jLabel1);
-
-    centerPanel.add(settingsPanel, "settingsPanel");
-    settingsPanel.getAccessibleContext().setAccessibleName("settingPanel");
-
-    diagnosticPanel.setMinimumSize(new Dimension(885, 840));
-    diagnosticPanel.setName("diagnosticPanel"); // NOI18N
-    centerPanel.add(diagnosticPanel, "diagnosticPanel");
+    keyboardSensorMessagePanel.setMinimumSize(new Dimension(885, 840));
+    keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
+    centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
     layoutPanel.setMinimumSize(new Dimension(885, 160));
     layoutPanel.setName("layoutPanel"); // NOI18N
@@ -489,6 +503,16 @@ public class JCSFrame extends JFrame implements UICallback {
     overviewPanel.setName("overviewPanel"); // NOI18N
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
+
+    settingsPanel.setName("settingsPanel"); // NOI18N
+    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout1.setAlignOnBaseline(true);
+    settingsPanel.setLayout(flowLayout1);
+
+    commandStationPanel.setName("commandStationPanel"); // NOI18N
+    settingsPanel.add(commandStationPanel);
+
+    centerPanel.add(settingsPanel, "settingsPanel");
 
     locoDisplaySP.setRightComponent(centerPanel);
 
@@ -714,9 +738,9 @@ public class JCSFrame extends JFrame implements UICallback {
       showLocomotives();
     }//GEN-LAST:event_showLocosMIActionPerformed
 
-    private void showDiagnosticsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDiagnosticsBtnActionPerformed
-      showDiagnostics();
-    }//GEN-LAST:event_showDiagnosticsBtnActionPerformed
+    private void showKeyboardBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showKeyboardBtnActionPerformed
+      showKeyboards();
+    }//GEN-LAST:event_showKeyboardBtnActionPerformed
 
     private void quitMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_quitMIActionPerformed
       this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
@@ -800,7 +824,7 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_editLayoutActionPerformed
 
     private void showKeyboardActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showKeyboardActionPerformed
-      showDiagnostics();
+      showKeyboards();
     }//GEN-LAST:event_showKeyboardActionPerformed
 
     private void showSensorMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSensorMonitorActionPerformed
@@ -830,6 +854,10 @@ public class JCSFrame extends JFrame implements UICallback {
     csd.setLocationRelativeTo(null);
     csd.setVisible(true);
   }//GEN-LAST:event_commandStationsMIActionPerformed
+
+  private void showSettingsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSettingsBtnActionPerformed
+    showSettings();
+  }//GEN-LAST:event_showSettingsBtnActionPerformed
 
   private String getTitleString() {
     String jcsVersion = JCS.getVersionInfo().getVersion();
@@ -881,6 +909,7 @@ public class JCSFrame extends JFrame implements UICallback {
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPanel bottomLeftPanel;
   private JPanel centerPanel;
+  private CommandStationPanel commandStationPanel;
   private JMenuItem commandStationsMI;
   private JToggleButton connectButton;
   private JMenuItem connectMI;
@@ -892,7 +921,6 @@ public class JCSFrame extends JFrame implements UICallback {
   private JLabel controllerLbl;
   private JLabel controllerSerialLbl;
   private JLabel controllerSerialNumberLbl;
-  private ControllerPanel diagnosticPanel;
   private JMenuItem editLayout;
   private JMenu fileMenu;
   private Box.Filler filler1;
@@ -902,15 +930,15 @@ public class JCSFrame extends JFrame implements UICallback {
   private Box.Filler filler6;
   private Box.Filler filler7;
   private Box.Filler filler8;
-  private JLabel jLabel1;
+  private Box.Filler filler9;
   private JPanel jPanel1;
   private JPanel jPanel2;
   private JPanel jPanel3;
   private JPanel jPanel4;
-  private JPanel jPanel5;
   private JPanel jPanel6;
   private JMenuBar jcsMenuBar;
   private JToolBar jcsToolBar;
+  private KeyboardSensorPanel keyboardSensorMessagePanel;
   private JButton launchDriverCabBtn;
   private LayoutPanel layoutPanel;
   private JPanel leftPanel;
@@ -921,15 +949,17 @@ public class JCSFrame extends JFrame implements UICallback {
   private JToggleButton powerButton;
   private JMenuItem quitMI;
   private JPanel settingsPanel;
-  private JButton showDiagnosticsBtn;
   private JButton showEditDesignBtn;
   private JButton showFeedbackMonitorBtn;
   private JMenuItem showHome;
   private JMenuItem showKeyboard;
+  private JButton showKeyboardBtn;
   private JMenuItem showLocosMI;
   private JButton showOverviewBtn;
   private JMenuItem showSensorMonitor;
+  private JButton showSettingsBtn;
   private StatusPanel statusPanel;
+  private JPanel toolbarPanel;
   private JMenu toolsMenu;
   private JMenu viewMenu;
   // End of variables declaration//GEN-END:variables

@@ -15,6 +15,9 @@
  */
 package jcs.ui;
 
+import java.awt.Taskbar;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -30,6 +34,8 @@ import jcs.JCS;
 import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.util.MacOsAdapter;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -76,7 +82,7 @@ public class DriverCabFrame extends javax.swing.JFrame {
       locomotiveComboBoxModel = new LocomotiveBeanComboBoxModel();
       locomotiveComboBoxModel.removeAllElements();
       locomotiveComboBoxModel.addAll(locos);
-      
+
       this.locoCB.setModel(locomotiveComboBoxModel);
 
       locoNames = new ArrayList<>(locos.size());
@@ -259,8 +265,16 @@ public class DriverCabFrame extends javax.swing.JFrame {
       this.model.remove(index);
       fireContentsChanged(this, 0, getSize());
     }
-
   }
+
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  private jcs.ui.DriverCabPanel driverCabPanel;
+  private javax.swing.Box.Filler filler1;
+  private javax.swing.Box.Filler filler2;
+  private javax.swing.JComboBox<LocomotiveBean> locoCB;
+  private javax.swing.JLabel locoLabel;
+  private javax.swing.JPanel northPanel;
+  // End of variables declaration//GEN-END:variables
 
   public static void main(String args[]) {
     try {
@@ -272,8 +286,26 @@ public class DriverCabFrame extends javax.swing.JFrame {
       Logger.error(ex);
     }
 
+    //String frameImageUrl = "/media/jcs-train-64.png";
+    String frameImageUrl = "/media/jcs-train-2-512.png";
+
     java.awt.EventQueue.invokeLater(() -> {
       DriverCabFrame driverFrame = new DriverCabFrame();
+
+      if (RunUtil.isMacOSX()) {
+        MacOsAdapter.setMacOsProperties();
+        Taskbar taskbar = Taskbar.getTaskbar();
+        try {
+          BufferedImage img = ImageIO.read(DriverCabFrame.class.getResource(frameImageUrl));
+          taskbar.setIconImage(img);
+        } catch (IOException | UnsupportedOperationException | SecurityException ex) {
+          Logger.warn("Error: " + ex.getMessage());
+        }
+      }
+      URL iconUrl = KeyboardSensorPanel.class.getResource(frameImageUrl);
+      if (iconUrl != null) {
+        driverFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+      }
 
       driverFrame.pack();
       driverFrame.setLocationRelativeTo(null);
@@ -281,13 +313,4 @@ public class DriverCabFrame extends javax.swing.JFrame {
       driverFrame.setResizable(false);
     });
   }
-
-  // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.DriverCabPanel driverCabPanel;
-  private javax.swing.Box.Filler filler1;
-  private javax.swing.Box.Filler filler2;
-  private javax.swing.JComboBox<LocomotiveBean> locoCB;
-  private javax.swing.JLabel locoLabel;
-  private javax.swing.JPanel northPanel;
-  // End of variables declaration//GEN-END:variables
 }

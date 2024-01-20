@@ -29,6 +29,7 @@ import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
+import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.MacOsAdapter;
 import jcs.ui.util.ProcessFactory;
 import jcs.util.RunUtil;
@@ -94,7 +95,7 @@ public class JCS extends Thread {
     }
     return jcsCommandStation;
   }
-
+  
   private void startGui() {
     JCS.logProgress("Check OS...");
 
@@ -105,27 +106,25 @@ public class JCS extends Thread {
 
     java.awt.EventQueue.invokeLater(() -> {
       jcsFrame = new JCSFrame();
+      
       if (RunUtil.isMacOSX()) {
         osAdapter.setUiCallback(jcsFrame);
       }
 
-      URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
-      //URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
+      //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
+      URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
       if (iconUrl != null) {
         jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
       }
 
-      jcsFrame.pack();
-      jcsFrame.setLocationRelativeTo(null);
+      FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
+
       jcsFrame.setVisible(true);
-
       jcsFrame.toFront();
-
       jcsFrame.showOverviewPanel();
       if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
         jcsFrame.connect(true);
       }
-
     });
 
     JCS.logProgress("JCS started...");

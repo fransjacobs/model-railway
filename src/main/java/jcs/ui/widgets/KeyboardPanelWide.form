@@ -3,11 +3,11 @@
 <Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1010, 850]"/>
+      <Dimension value="[975, 315]"/>
     </Property>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1010, 850]"/>
+      <Dimension value="[975, 315]"/>
     </Property>
   </Properties>
   <Events>
@@ -24,40 +24,46 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,109,0,0,3,-124"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,59,0,0,3,-46"/>
   </AuxValues>
-
-  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
   <SubComponents>
     <Container class="javax.swing.JTabbedPane" name="keyboardTP">
       <Properties>
+        <Property name="tabLayoutPolicy" type="int" value="1"/>
+        <Property name="tabPlacement" type="int" value="2"/>
+        <Property name="alignmentY" type="float" value="1.0"/>
+        <Property name="autoscrolls" type="boolean" value="true"/>
+        <Property name="doubleBuffered" type="boolean" value="true"/>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[885, 400]"/>
+          <Dimension value="[975, 325]"/>
         </Property>
         <Property name="name" type="java.lang.String" value="keyboardTP" noResource="true"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[885, 400]"/>
+          <Dimension value="[975, 325]"/>
         </Property>
         <Property name="requestFocusEnabled" type="boolean" value="false"/>
+        <Property name="selectedComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="keyboardsPanel0"/>
+        </Property>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-          <BorderConstraints direction="Center"/>
-        </Constraint>
-      </Constraints>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
-        <Container class="javax.swing.JPanel" name="keyboardsPanel">
+        <Container class="javax.swing.JPanel" name="keyboardsPanel0">
           <Properties>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[1200, 400]"/>
+              <Dimension value="[900, 315]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="keyboardsPanel" noResource="true"/>
+            <Property name="name" type="java.lang.String" value="keyboardsPanel0" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[885, 390]"/>
+              <Dimension value="[900, 315]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="keyboardTP"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="1 - 64">
@@ -101,11 +107,63 @@
           </SubComponents>
           <LayoutCode>
             <CodeStatement>
-              <CodeExpression id="1_keyboardsPanel">
-                <CodeVariable name="keyboardsPanel" type="8194" declaredType="javax.swing.JPanel"/>
+              <CodeExpression id="1_verticalFlowLayout1">
+                <CodeVariable name="verticalFlowLayout1" type="4096" declaredType="jcs.ui.swing.layout.VerticalFlowLayout"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="CodeConstructor">
+                    <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
+                  </ExpressionProvider>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeExpression">
+                <CodeExpression id="1_verticalFlowLayout1"/>
+              </StatementProvider>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="1_verticalFlowLayout1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setvGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="2">
+                  <ExpressionOrigin>
+                    <Value type="int" value="3"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="1_verticalFlowLayout1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="3">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="1_verticalFlowLayout1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethAlignment" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="4">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="5_keyboardsPanel0">
+                <CodeVariable name="keyboardsPanel0" type="8194" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
-                    <ComponentRef name="keyboardsPanel"/>
+                    <ComponentRef name="keyboardsPanel0"/>
                   </ExpressionProvider>
                 </ExpressionOrigin>
               </CodeExpression>
@@ -113,22 +171,16 @@
                 <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="2">
-                  <ExpressionOrigin>
-                    <ExpressionProvider type="CodeConstructor">
-                      <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
-                    </ExpressionProvider>
-                  </ExpressionOrigin>
-                </CodeExpression>
+                <CodeExpression id="1_verticalFlowLayout1"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="1_keyboardsPanel"/>
+              <CodeExpression id="5_keyboardsPanel0"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="3_switchPanel1">
+                <CodeExpression id="6_switchPanel1">
                   <CodeVariable name="switchPanel1" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -139,12 +191,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="1_keyboardsPanel"/>
+              <CodeExpression id="5_keyboardsPanel0"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="4_switchPanel2">
+                <CodeExpression id="7_switchPanel2">
                   <CodeVariable name="switchPanel2" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -155,12 +207,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="1_keyboardsPanel"/>
+              <CodeExpression id="5_keyboardsPanel0"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="5_switchPanel3">
+                <CodeExpression id="8_switchPanel3">
                   <CodeVariable name="switchPanel3" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -171,12 +223,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="1_keyboardsPanel"/>
+              <CodeExpression id="5_keyboardsPanel0"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="6_switchPanel4">
+                <CodeExpression id="9_switchPanel4">
                   <CodeVariable name="switchPanel4" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -191,14 +243,21 @@
         <Container class="javax.swing.JPanel" name="keyboardsPanel1">
           <Properties>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[1200, 400]"/>
+              <Dimension value="[900, 315]"/>
             </Property>
             <Property name="name" type="java.lang.String" value="keyboardsPanel1" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[885, 390]"/>
+              <Dimension value="[900, 315]"/>
             </Property>
             <Property name="requestFocusEnabled" type="boolean" value="false"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="65 - 128"/>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
+            <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="keyboardTP"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="65 - 128">
@@ -242,7 +301,59 @@
           </SubComponents>
           <LayoutCode>
             <CodeStatement>
-              <CodeExpression id="7_keyboardsPanel1">
+              <CodeExpression id="10_verticalFlowLayout2">
+                <CodeVariable name="verticalFlowLayout2" type="4096" declaredType="jcs.ui.swing.layout.VerticalFlowLayout"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="CodeConstructor">
+                    <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
+                  </ExpressionProvider>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeExpression">
+                <CodeExpression id="10_verticalFlowLayout2"/>
+              </StatementProvider>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="10_verticalFlowLayout2"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="11">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="10_verticalFlowLayout2"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setvGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="12">
+                  <ExpressionOrigin>
+                    <Value type="int" value="3"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="10_verticalFlowLayout2"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethAlignment" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="13">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="14_keyboardsPanel1">
                 <CodeVariable name="keyboardsPanel1" type="8194" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
@@ -254,22 +365,16 @@
                 <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="8">
-                  <ExpressionOrigin>
-                    <ExpressionProvider type="CodeConstructor">
-                      <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
-                    </ExpressionProvider>
-                  </ExpressionOrigin>
-                </CodeExpression>
+                <CodeExpression id="10_verticalFlowLayout2"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="7_keyboardsPanel1"/>
+              <CodeExpression id="14_keyboardsPanel1"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="9_switchPanel5">
+                <CodeExpression id="15_switchPanel5">
                   <CodeVariable name="switchPanel5" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -280,12 +385,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="7_keyboardsPanel1"/>
+              <CodeExpression id="14_keyboardsPanel1"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="10_switchPanel6">
+                <CodeExpression id="16_switchPanel6">
                   <CodeVariable name="switchPanel6" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -296,12 +401,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="7_keyboardsPanel1"/>
+              <CodeExpression id="14_keyboardsPanel1"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="11_switchPanel7">
+                <CodeExpression id="17_switchPanel7">
                   <CodeVariable name="switchPanel7" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -312,12 +417,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="7_keyboardsPanel1"/>
+              <CodeExpression id="14_keyboardsPanel1"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="12_switchPanel8">
+                <CodeExpression id="18_switchPanel8">
                   <CodeVariable name="switchPanel8" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -332,13 +437,19 @@
         <Container class="javax.swing.JPanel" name="keyboardsPanel2">
           <Properties>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[1200, 400]"/>
+              <Dimension value="[900, 315]"/>
             </Property>
             <Property name="name" type="java.lang.String" value="keyboardsPanel2" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[885, 390]"/>
+              <Dimension value="[900, 315]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="129 - 192"/>
+            <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="keyboardTP"/>
+            </Property>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="129 - 192">
@@ -382,7 +493,59 @@
           </SubComponents>
           <LayoutCode>
             <CodeStatement>
-              <CodeExpression id="13_keyboardsPanel2">
+              <CodeExpression id="19_verticalFlowLayout3">
+                <CodeVariable name="verticalFlowLayout3" type="4096" declaredType="jcs.ui.swing.layout.VerticalFlowLayout"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="CodeConstructor">
+                    <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
+                  </ExpressionProvider>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeExpression">
+                <CodeExpression id="19_verticalFlowLayout3"/>
+              </StatementProvider>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="19_verticalFlowLayout3"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="20">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="19_verticalFlowLayout3"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setvGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="21">
+                  <ExpressionOrigin>
+                    <Value type="int" value="3"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="19_verticalFlowLayout3"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethAlignment" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="22">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="23_keyboardsPanel2">
                 <CodeVariable name="keyboardsPanel2" type="8194" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
@@ -394,22 +557,16 @@
                 <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="14">
-                  <ExpressionOrigin>
-                    <ExpressionProvider type="CodeConstructor">
-                      <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
-                    </ExpressionProvider>
-                  </ExpressionOrigin>
-                </CodeExpression>
+                <CodeExpression id="19_verticalFlowLayout3"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="13_keyboardsPanel2"/>
+              <CodeExpression id="23_keyboardsPanel2"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="15_switchPanel9">
+                <CodeExpression id="24_switchPanel9">
                   <CodeVariable name="switchPanel9" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -420,12 +577,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="13_keyboardsPanel2"/>
+              <CodeExpression id="23_keyboardsPanel2"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="16_switchPanel10">
+                <CodeExpression id="25_switchPanel10">
                   <CodeVariable name="switchPanel10" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -436,12 +593,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="13_keyboardsPanel2"/>
+              <CodeExpression id="23_keyboardsPanel2"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="17_switchPanel11">
+                <CodeExpression id="26_switchPanel11">
                   <CodeVariable name="switchPanel11" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -452,12 +609,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="13_keyboardsPanel2"/>
+              <CodeExpression id="23_keyboardsPanel2"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="18_switchPanel12">
+                <CodeExpression id="27_switchPanel12">
                   <CodeVariable name="switchPanel12" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -472,13 +629,16 @@
         <Container class="javax.swing.JPanel" name="keyboardsPanel3">
           <Properties>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[1200, 400]"/>
+              <Dimension value="[895, 300]"/>
             </Property>
             <Property name="name" type="java.lang.String" value="keyboardsPanel3" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[885, 390]"/>
+              <Dimension value="[895, 300]"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="193 - 256"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="193 - 256">
@@ -522,7 +682,59 @@
           </SubComponents>
           <LayoutCode>
             <CodeStatement>
-              <CodeExpression id="19_keyboardsPanel3">
+              <CodeExpression id="28_verticalFlowLayout4">
+                <CodeVariable name="verticalFlowLayout4" type="4096" declaredType="jcs.ui.swing.layout.VerticalFlowLayout"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="CodeConstructor">
+                    <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
+                  </ExpressionProvider>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeExpression">
+                <CodeExpression id="28_verticalFlowLayout4"/>
+              </StatementProvider>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="28_verticalFlowLayout4"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="29">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="28_verticalFlowLayout4"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setvGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="30">
+                  <ExpressionOrigin>
+                    <Value type="int" value="3"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="28_verticalFlowLayout4"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="sethAlignment" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="31">
+                  <ExpressionOrigin>
+                    <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="32_keyboardsPanel3">
                 <CodeVariable name="keyboardsPanel3" type="8194" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
@@ -534,22 +746,16 @@
                 <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="20">
-                  <ExpressionOrigin>
-                    <ExpressionProvider type="CodeConstructor">
-                      <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
-                    </ExpressionProvider>
-                  </ExpressionOrigin>
-                </CodeExpression>
+                <CodeExpression id="28_verticalFlowLayout4"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="19_keyboardsPanel3"/>
+              <CodeExpression id="32_keyboardsPanel3"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="21_switchPanel13">
+                <CodeExpression id="33_switchPanel13">
                   <CodeVariable name="switchPanel13" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -560,12 +766,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="19_keyboardsPanel3"/>
+              <CodeExpression id="32_keyboardsPanel3"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="22_switchPanel14">
+                <CodeExpression id="34_switchPanel14">
                   <CodeVariable name="switchPanel14" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -576,12 +782,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="19_keyboardsPanel3"/>
+              <CodeExpression id="32_keyboardsPanel3"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="23_switchPanel15">
+                <CodeExpression id="35_switchPanel15">
                   <CodeVariable name="switchPanel15" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -592,12 +798,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="19_keyboardsPanel3"/>
+              <CodeExpression id="32_keyboardsPanel3"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="24_switchPanel16">
+                <CodeExpression id="36_switchPanel16">
                   <CodeVariable name="switchPanel16" type="8194" declaredType="jcs.ui.widgets.AccessoryKeyPanel16"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -612,4 +818,85 @@
       </SubComponents>
     </Container>
   </SubComponents>
+  <LayoutCode>
+    <CodeStatement>
+      <CodeExpression id="37_flowLayout1">
+        <CodeVariable name="flowLayout1" type="4096" declaredType="java.awt.FlowLayout"/>
+        <ExpressionOrigin>
+          <ExpressionProvider type="CodeConstructor">
+            <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int, int, int"/>
+          </ExpressionProvider>
+          <Parameters>
+            <CodeExpression id="38">
+              <ExpressionOrigin>
+                <Value type="int" value="0"/>
+              </ExpressionOrigin>
+            </CodeExpression>
+            <CodeExpression id="39">
+              <ExpressionOrigin>
+                <Value type="int" value="0"/>
+              </ExpressionOrigin>
+            </CodeExpression>
+            <CodeExpression id="40">
+              <ExpressionOrigin>
+                <Value type="int" value="0"/>
+              </ExpressionOrigin>
+            </CodeExpression>
+          </Parameters>
+        </ExpressionOrigin>
+      </CodeExpression>
+      <StatementProvider type="CodeExpression">
+        <CodeExpression id="37_flowLayout1"/>
+      </StatementProvider>
+      <Parameters>
+        <CodeExpression id="38"/>
+        <CodeExpression id="39"/>
+        <CodeExpression id="40"/>
+      </Parameters>
+    </CodeStatement>
+    <CodeStatement>
+      <CodeExpression id="37_flowLayout1"/>
+      <StatementProvider type="CodeMethod">
+        <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
+      </StatementProvider>
+      <Parameters>
+        <CodeExpression id="41">
+          <ExpressionOrigin>
+            <Value type="boolean" value="true"/>
+          </ExpressionOrigin>
+        </CodeExpression>
+      </Parameters>
+    </CodeStatement>
+    <CodeStatement>
+      <CodeExpression id="42">
+        <ExpressionOrigin>
+          <ExpressionProvider type="ComponentRef">
+            <ComponentRef name="."/>
+          </ExpressionProvider>
+        </ExpressionOrigin>
+      </CodeExpression>
+      <StatementProvider type="CodeMethod">
+        <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+      </StatementProvider>
+      <Parameters>
+        <CodeExpression id="37_flowLayout1"/>
+      </Parameters>
+    </CodeStatement>
+    <CodeStatement>
+      <CodeExpression id="42"/>
+      <StatementProvider type="CodeMethod">
+        <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+      </StatementProvider>
+      <Parameters>
+        <CodeExpression id="43_keyboardTP">
+          <CodeVariable name="keyboardTP" type="8194" declaredType="javax.swing.JTabbedPane"/>
+          <ExpressionOrigin>
+            <ExpressionProvider type="ComponentRef">
+              <ComponentRef name="keyboardTP"/>
+            </ExpressionProvider>
+          </ExpressionOrigin>
+        </CodeExpression>
+      </Parameters>
+    </CodeStatement>
+  </LayoutCode>
 </Form>

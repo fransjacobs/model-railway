@@ -156,7 +156,7 @@ public class AccessoryKeyPanel16 extends JPanel {
     setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true), "1 - 16"));
     setMinimumSize(new java.awt.Dimension(890, 75));
     setPreferredSize(new java.awt.Dimension(890, 75));
-    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 1);
+    java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 1);
     flowLayout1.setAlignOnBaseline(true);
     setLayout(flowLayout1);
 

@@ -116,7 +116,7 @@ public class TurnoutsPanel extends javax.swing.JPanel {
       TurnoutsPanel testPanel = new TurnoutsPanel();
       JFrame testFrame = new JFrame("ControllerPanel Tester");
       //this.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/media/jcs-train-64.png")));
-      URL iconUrl = ControllerPanel.class.getResource("/media/jcs-train-2-512.png");
+      URL iconUrl = KeyboardSensorPanel.class.getResource("/media/jcs-train-2-512.png");
       if (iconUrl != null) {
         testFrame.setIconImage(new ImageIcon(iconUrl).getImage());
       }
