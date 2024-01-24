@@ -54,6 +54,8 @@ public interface PersistenceService {
 
   void remove(SensorBean sensor);
 
+  List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len);
+
   // Locomotive
   List<LocomotiveBean> getLocomotives();
 

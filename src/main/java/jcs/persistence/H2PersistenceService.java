@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.AccessoryBean;
@@ -134,6 +135,80 @@ public class H2PersistenceService implements PersistenceService {
 
     int rows = database.delete(sensor).getRowsAffected();
     Logger.trace(sensor + " rows + " + rows + " deleted");
+  }
+
+  @Override
+  public List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len) {
+    Map<String, SensorBean> sensorBeans = new HashMap<>();
+
+    if (bus0len != null) {
+      for (int i = 0; i < (bus0len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        //ensure a leading zero for sorting   
+        String cn = ((i + 1) > 9 ? "" : "0") + (i + 1);
+        if (cn.length() == 2) {
+          cn = "00" + cn;
+        } else if (cn.length() == 3) {
+          cn = "0" + cn;
+        }
+        String id = deviceId + "-" + cn;
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 1));
+        sb.setName("B0-S-" + (i + 1));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    if (bus1len != null) {
+      for (int i = 0; i < (bus1len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        String id = deviceId + "-" + (i + 1001);
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 1001));
+        sb.setName("B1-S-" + (i + 1001));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    if (bus2len != null) {
+      for (int i = 0; i < (bus2len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        String id = deviceId + "-" + (i + 2001);
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 2001));
+        sb.setName("B2-S-" + (i + 2001));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    if (bus3len != null) {
+      for (int i = 0; i < (bus3len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        String id = deviceId + "-" + (i + 3001);
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 3001));
+        sb.setName("B3-S-" + (i + 3001));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    List<SensorBean> existing = this.getSensors();
+    for (SensorBean sb : existing) {
+      if (!sensorBeans.containsKey(sb.getId())) {
+        Logger.trace("Removing " + sb);
+        this.remove(sb);
+      }
+    }
+
+    for (SensorBean sb : sensorBeans.values()) {
+      this.persist(sb);
+    }
+
+    return this.getSensors();
   }
 
   @Override

@@ -378,6 +378,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     bus2Spinner = new JSpinner();
     bus3Lbl = new JLabel();
     bus3Spinner = new JSpinner();
+    recreateSensorsBtn = new JButton();
     locomotiveSynchSupportPanel = new JPanel();
     locomotiveSynchSupportCB = new JCheckBox();
     accessorySynchSupportPanel = new JPanel();
@@ -415,9 +416,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     filler1 = new Box.Filler(new Dimension(50, 0), new Dimension(200, 0), new Dimension(150, 32767));
     saveBtn = new JButton();
 
-    setMinimumSize(new Dimension(1000, 600));
+    setMinimumSize(new Dimension(1080, 600));
     setName("Form"); // NOI18N
-    setPreferredSize(new Dimension(1000, 600));
+    setPreferredSize(new Dimension(1080, 600));
     setLayout(new BorderLayout());
 
     topPanel.setMinimumSize(new Dimension(1000, 50));
@@ -507,7 +508,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     centerPanel.setMinimumSize(new Dimension(1000, 540));
     centerPanel.setName("centerPanel"); // NOI18N
-    centerPanel.setPreferredSize(new Dimension(1000, 500));
+    centerPanel.setPreferredSize(new Dimension(1075, 500));
     centerPanel.setLayout(new BorderLayout());
 
     connectionPanel.setName("connectionPanel"); // NOI18N
@@ -618,16 +619,16 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     testConnectionBtn.setIcon(new ImageIcon(getClass().getResource("/media/connect-24.png"))); // NOI18N
     testConnectionBtn.setText("Test");
-    testConnectionBtn.setToolTipText("Test Connection");
+    testConnectionBtn.setToolTipText("Test Connection and refresh Sensor Settings if applicable");
     testConnectionBtn.setDoubleBuffered(true);
     testConnectionBtn.setFocusable(false);
     testConnectionBtn.setHorizontalTextPosition(SwingConstants.LEADING);
     testConnectionBtn.setIconTextGap(2);
     testConnectionBtn.setMargin(new Insets(2, 2, 2, 2));
-    testConnectionBtn.setMaximumSize(new Dimension(60, 40));
-    testConnectionBtn.setMinimumSize(new Dimension(60, 40));
+    testConnectionBtn.setMaximumSize(new Dimension(65, 40));
+    testConnectionBtn.setMinimumSize(new Dimension(65, 40));
     testConnectionBtn.setName("testConnectionBtn"); // NOI18N
-    testConnectionBtn.setPreferredSize(new Dimension(60, 40));
+    testConnectionBtn.setPreferredSize(new Dimension(65, 40));
     testConnectionBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         testConnectionBtnActionPerformed(evt);
@@ -699,6 +700,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     capabilitiesPanel.add(feedbackSupportPanel);
 
     FeedbackPropertiesPanel.setName("FeedbackPropertiesPanel"); // NOI18N
+    FeedbackPropertiesPanel.setPreferredSize(new Dimension(1075, 33));
     FlowLayout flowLayout13 = new FlowLayout(FlowLayout.LEFT);
     flowLayout13.setAlignOnBaseline(true);
     FeedbackPropertiesPanel.setLayout(flowLayout13);
@@ -804,6 +806,15 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     });
     FeedbackPropertiesPanel.add(bus3Spinner);
+
+    recreateSensorsBtn.setText("Re-create Sensors");
+    recreateSensorsBtn.setName("recreateSensorsBtn"); // NOI18N
+    recreateSensorsBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        recreateSensorsBtnActionPerformed(evt);
+      }
+    });
+    FeedbackPropertiesPanel.add(recreateSensorsBtn);
 
     capabilitiesPanel.add(FeedbackPropertiesPanel);
 
@@ -1296,6 +1307,22 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     PersistenceFactory.getService().persist(this.selectedCommandStation);
   }//GEN-LAST:event_nodeSpinnerStateChanged
 
+  private void recreateSensorsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_recreateSensorsBtnActionPerformed
+
+    recreateSensors();
+  }//GEN-LAST:event_recreateSensorsBtnActionPerformed
+
+  private void recreateSensors() {
+    Integer deviceId = Integer.parseInt(this.selectedCommandStation.getFeedbackModuleIdentifier());
+    Integer bus0 = this.selectedCommandStation.getFeedbackBus0ModuleCount();
+    Integer bus1 = this.selectedCommandStation.getFeedbackBus1ModuleCount();
+    Integer bus2 = this.selectedCommandStation.getFeedbackBus2ModuleCount();
+    Integer bus3 = this.selectedCommandStation.getFeedbackBus3ModuleCount();
+
+    PersistenceFactory.getService().generateSensorBeans(deviceId, bus0, bus1, bus2, bus3);
+
+  }
+
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("progress".equals(evt.getPropertyName())) {
@@ -1493,21 +1520,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     return ControllerFactory.getDecoderController(commandStationBean, false);
   }
 
-  private boolean checkConnection(final DecoderController commandStation) {
-    if (commandStation != null) {
-      if (commandStation.isConnected()) {
-        return true;
-      } else {
-        boolean canConnect = commandStation.connect();
-        if (canConnect) {
-          commandStation.disconnect();
-        }
-        return canConnect;
-      }
-    }
-    return false;
-  }
-
   public static void main(String args[]) {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
@@ -1528,6 +1540,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
           System.exit(0);
         }
       });
+
       testDialog.pack();
       testDialog.setLocationRelativeTo(null);
 
@@ -1610,6 +1623,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JSpinner portSpinner;
   JProgressBar progressBar;
   JPanel protocolPanel;
+  JButton recreateSensorsBtn;
   JPanel rightBottomPanel;
   JButton saveBtn;
   JComboBox<SerialPort> serialPortCB;

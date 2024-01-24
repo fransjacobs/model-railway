@@ -7,11 +7,11 @@
   </NonVisualComponents>
   <Properties>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1000, 600]"/>
+      <Dimension value="[1080, 600]"/>
     </Property>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1000, 600]"/>
+      <Dimension value="[1080, 600]"/>
     </Property>
   </Properties>
   <AuxValues>
@@ -24,7 +24,7 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="0"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,88,0,0,4,1"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,2,88,0,0,4,51"/>
   </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
@@ -473,7 +473,7 @@
         </Property>
         <Property name="name" type="java.lang.String" value="centerPanel" noResource="true"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[1000, 500]"/>
+          <Dimension value="[1075, 500]"/>
         </Property>
       </Properties>
       <Constraints>
@@ -906,7 +906,7 @@
                       <Image iconType="3" name="/media/connect-24.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Test"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Test Connection"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Test Connection and refresh Sensor Settings if applicable"/>
                     <Property name="doubleBuffered" type="boolean" value="true"/>
                     <Property name="focusable" type="boolean" value="false"/>
                     <Property name="horizontalTextPosition" type="int" value="10"/>
@@ -915,14 +915,14 @@
                       <Insets value="[2, 2, 2, 2]"/>
                     </Property>
                     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[60, 40]"/>
+                      <Dimension value="[65, 40]"/>
                     </Property>
                     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[60, 40]"/>
+                      <Dimension value="[65, 40]"/>
                     </Property>
                     <Property name="name" type="java.lang.String" value="testConnectionBtn" noResource="true"/>
                     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-                      <Dimension value="[60, 40]"/>
+                      <Dimension value="[65, 40]"/>
                     </Property>
                   </Properties>
                   <Events>
@@ -1363,6 +1363,9 @@
             <Container class="javax.swing.JPanel" name="FeedbackPropertiesPanel">
               <Properties>
                 <Property name="name" type="java.lang.String" value="FeedbackPropertiesPanel" noResource="true"/>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[1075, 33]"/>
+                </Property>
               </Properties>
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="feedbackIdLbl">
@@ -1525,6 +1528,15 @@
                   </Properties>
                   <Events>
                     <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="bus3SpinnerStateChanged"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JButton" name="recreateSensorsBtn">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Re-create Sensors"/>
+                    <Property name="name" type="java.lang.String" value="recreateSensorsBtn" noResource="true"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="recreateSensorsBtnActionPerformed"/>
                   </Events>
                 </Component>
               </SubComponents>
@@ -1773,6 +1785,22 @@
                     </CodeExpression>
                   </Parameters>
                 </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="64_FeedbackPropertiesPanel"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="77_recreateSensorsBtn">
+                      <CodeVariable name="recreateSensorsBtn" type="8192" declaredType="javax.swing.JButton"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="recreateSensorsBtn"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
               </LayoutCode>
             </Container>
             <Container class="javax.swing.JPanel" name="locomotiveSynchSupportPanel">
@@ -1792,14 +1820,14 @@
               </SubComponents>
               <LayoutCode>
                 <CodeStatement>
-                  <CodeExpression id="77_flowLayout6">
+                  <CodeExpression id="78_flowLayout6">
                     <CodeVariable name="flowLayout6" type="4096" declaredType="java.awt.FlowLayout"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="CodeConstructor">
                         <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                       </ExpressionProvider>
                       <Parameters>
-                        <CodeExpression id="78">
+                        <CodeExpression id="79">
                           <ExpressionOrigin>
                             <Value type="int" value="0"/>
                           </ExpressionOrigin>
@@ -1808,19 +1836,19 @@
                     </ExpressionOrigin>
                   </CodeExpression>
                   <StatementProvider type="CodeExpression">
-                    <CodeExpression id="77_flowLayout6"/>
+                    <CodeExpression id="78_flowLayout6"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="78"/>
+                    <CodeExpression id="79"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="77_flowLayout6"/>
+                  <CodeExpression id="78_flowLayout6"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="79">
+                    <CodeExpression id="80">
                       <ExpressionOrigin>
                         <Value type="boolean" value="true"/>
                       </ExpressionOrigin>
@@ -1828,7 +1856,7 @@
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="80_locomotiveSynchSupportPanel">
+                  <CodeExpression id="81_locomotiveSynchSupportPanel">
                     <CodeVariable name="locomotiveSynchSupportPanel" type="8192" declaredType="javax.swing.JPanel"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="ComponentRef">
@@ -1840,16 +1868,16 @@
                     <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="77_flowLayout6"/>
+                    <CodeExpression id="78_flowLayout6"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="80_locomotiveSynchSupportPanel"/>
+                  <CodeExpression id="81_locomotiveSynchSupportPanel"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="81_locomotiveSynchSupportCB">
+                    <CodeExpression id="82_locomotiveSynchSupportCB">
                       <CodeVariable name="locomotiveSynchSupportCB" type="8192" declaredType="javax.swing.JCheckBox"/>
                       <ExpressionOrigin>
                         <ExpressionProvider type="ComponentRef">
@@ -1878,14 +1906,14 @@
               </SubComponents>
               <LayoutCode>
                 <CodeStatement>
-                  <CodeExpression id="82_flowLayout7">
+                  <CodeExpression id="83_flowLayout7">
                     <CodeVariable name="flowLayout7" type="4096" declaredType="java.awt.FlowLayout"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="CodeConstructor">
                         <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                       </ExpressionProvider>
                       <Parameters>
-                        <CodeExpression id="83">
+                        <CodeExpression id="84">
                           <ExpressionOrigin>
                             <Value type="int" value="0"/>
                           </ExpressionOrigin>
@@ -1894,19 +1922,19 @@
                     </ExpressionOrigin>
                   </CodeExpression>
                   <StatementProvider type="CodeExpression">
-                    <CodeExpression id="82_flowLayout7"/>
+                    <CodeExpression id="83_flowLayout7"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="83"/>
+                    <CodeExpression id="84"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="82_flowLayout7"/>
+                  <CodeExpression id="83_flowLayout7"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="84">
+                    <CodeExpression id="85">
                       <ExpressionOrigin>
                         <Value type="boolean" value="true"/>
                       </ExpressionOrigin>
@@ -1914,7 +1942,7 @@
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="85_accessorySynchSupportPanel">
+                  <CodeExpression id="86_accessorySynchSupportPanel">
                     <CodeVariable name="accessorySynchSupportPanel" type="8192" declaredType="javax.swing.JPanel"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="ComponentRef">
@@ -1926,16 +1954,16 @@
                     <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="82_flowLayout7"/>
+                    <CodeExpression id="83_flowLayout7"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="85_accessorySynchSupportPanel"/>
+                  <CodeExpression id="86_accessorySynchSupportPanel"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="86_accessorySynchSupportCB">
+                    <CodeExpression id="87_accessorySynchSupportCB">
                       <CodeVariable name="accessorySynchSupportCB" type="8192" declaredType="javax.swing.JCheckBox"/>
                       <ExpressionOrigin>
                         <ExpressionProvider type="ComponentRef">
@@ -1982,14 +2010,14 @@
               </SubComponents>
               <LayoutCode>
                 <CodeStatement>
-                  <CodeExpression id="87_flowLayout8">
+                  <CodeExpression id="88_flowLayout8">
                     <CodeVariable name="flowLayout8" type="4096" declaredType="java.awt.FlowLayout"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="CodeConstructor">
                         <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                       </ExpressionProvider>
                       <Parameters>
-                        <CodeExpression id="88">
+                        <CodeExpression id="89">
                           <ExpressionOrigin>
                             <Value type="int" value="0"/>
                           </ExpressionOrigin>
@@ -1998,19 +2026,19 @@
                     </ExpressionOrigin>
                   </CodeExpression>
                   <StatementProvider type="CodeExpression">
-                    <CodeExpression id="87_flowLayout8"/>
+                    <CodeExpression id="88_flowLayout8"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="88"/>
+                    <CodeExpression id="89"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="87_flowLayout8"/>
+                  <CodeExpression id="88_flowLayout8"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="89">
+                    <CodeExpression id="90">
                       <ExpressionOrigin>
                         <Value type="boolean" value="true"/>
                       </ExpressionOrigin>
@@ -2018,7 +2046,7 @@
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="90_locomotiveFunctionSynchSupportPanel">
+                  <CodeExpression id="91_locomotiveFunctionSynchSupportPanel">
                     <CodeVariable name="locomotiveFunctionSynchSupportPanel" type="8192" declaredType="javax.swing.JPanel"/>
                     <ExpressionOrigin>
                       <ExpressionProvider type="ComponentRef">
@@ -2030,16 +2058,16 @@
                     <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="87_flowLayout8"/>
+                    <CodeExpression id="88_flowLayout8"/>
                   </Parameters>
                 </CodeStatement>
                 <CodeStatement>
-                  <CodeExpression id="90_locomotiveFunctionSynchSupportPanel"/>
+                  <CodeExpression id="91_locomotiveFunctionSynchSupportPanel"/>
                   <StatementProvider type="CodeMethod">
                     <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
                   </StatementProvider>
                   <Parameters>
-                    <CodeExpression id="91_locomotiveFunctionSynchSupportCB">
+                    <CodeExpression id="92_locomotiveFunctionSynchSupportCB">
                       <CodeVariable name="locomotiveFunctionSynchSupportCB" type="8192" declaredType="javax.swing.JCheckBox"/>
                       <ExpressionOrigin>
                         <ExpressionProvider type="ComponentRef">
@@ -2230,7 +2258,7 @@
           </SubComponents>
           <LayoutCode>
             <CodeStatement>
-              <CodeExpression id="92_verticalFlowLayout1">
+              <CodeExpression id="93_verticalFlowLayout1">
                 <CodeVariable name="verticalFlowLayout1" type="4096" declaredType="jcs.ui.swing.layout.VerticalFlowLayout"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="CodeConstructor">
@@ -2239,16 +2267,16 @@
                 </ExpressionOrigin>
               </CodeExpression>
               <StatementProvider type="CodeExpression">
-                <CodeExpression id="92_verticalFlowLayout1"/>
+                <CodeExpression id="93_verticalFlowLayout1"/>
               </StatementProvider>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="92_verticalFlowLayout1"/>
+              <CodeExpression id="93_verticalFlowLayout1"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="sethAlignment" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="93">
+                <CodeExpression id="94">
                   <ExpressionOrigin>
                     <Value type="int" value="0"/>
                   </ExpressionOrigin>
@@ -2256,12 +2284,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="92_verticalFlowLayout1"/>
+              <CodeExpression id="93_verticalFlowLayout1"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="sethGap" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="94">
+                <CodeExpression id="95">
                   <ExpressionOrigin>
                     <Value type="int" value="15"/>
                   </ExpressionOrigin>
@@ -2269,7 +2297,7 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel">
+              <CodeExpression id="96_capabilitiesPanel">
                 <CodeVariable name="capabilitiesPanel" type="8192" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
@@ -2281,11 +2309,11 @@
                 <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="92_verticalFlowLayout1"/>
+                <CodeExpression id="93_verticalFlowLayout1"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
@@ -2294,7 +2322,7 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
@@ -2303,7 +2331,7 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
@@ -2312,7 +2340,7 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
@@ -2321,7 +2349,7 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
@@ -2330,30 +2358,30 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="80_locomotiveSynchSupportPanel"/>
+                <CodeExpression id="81_locomotiveSynchSupportPanel"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="85_accessorySynchSupportPanel"/>
+                <CodeExpression id="86_accessorySynchSupportPanel"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="96_locomotiveImageSynchSupportPanel">
+                <CodeExpression id="97_locomotiveImageSynchSupportPanel">
                   <CodeVariable name="locomotiveImageSynchSupportPanel" type="8192" declaredType="javax.swing.JPanel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2364,21 +2392,21 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="90_locomotiveFunctionSynchSupportPanel"/>
+                <CodeExpression id="91_locomotiveFunctionSynchSupportPanel"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="97_protocolPanel">
+                <CodeExpression id="98_protocolPanel">
                   <CodeVariable name="protocolPanel" type="8192" declaredType="javax.swing.JPanel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2389,12 +2417,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="95_capabilitiesPanel"/>
+              <CodeExpression id="96_capabilitiesPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="98_descPanel">
+                <CodeExpression id="99_descPanel">
                   <CodeVariable name="descPanel" type="8192" declaredType="javax.swing.JPanel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2489,14 +2517,14 @@
           </SubComponents>
           <LayoutCode>
             <CodeStatement>
-              <CodeExpression id="99_flowLayout11">
+              <CodeExpression id="100_flowLayout11">
                 <CodeVariable name="flowLayout11" type="4096" declaredType="java.awt.FlowLayout"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="CodeConstructor">
                     <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                   </ExpressionProvider>
                   <Parameters>
-                    <CodeExpression id="100">
+                    <CodeExpression id="101">
                       <ExpressionOrigin>
                         <Value type="int" value="0"/>
                       </ExpressionOrigin>
@@ -2505,19 +2533,19 @@
                 </ExpressionOrigin>
               </CodeExpression>
               <StatementProvider type="CodeExpression">
-                <CodeExpression id="99_flowLayout11"/>
+                <CodeExpression id="100_flowLayout11"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="100"/>
+                <CodeExpression id="101"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="99_flowLayout11"/>
+              <CodeExpression id="100_flowLayout11"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="101">
+                <CodeExpression id="102">
                   <ExpressionOrigin>
                     <Value type="boolean" value="true"/>
                   </ExpressionOrigin>
@@ -2525,7 +2553,7 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="102_leftBottomPanel">
+              <CodeExpression id="103_leftBottomPanel">
                 <CodeVariable name="leftBottomPanel" type="8192" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
@@ -2537,16 +2565,16 @@
                 <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="99_flowLayout11"/>
+                <CodeExpression id="100_flowLayout11"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="102_leftBottomPanel"/>
+              <CodeExpression id="103_leftBottomPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="103_enableEditCB">
+                <CodeExpression id="104_enableEditCB">
                   <CodeVariable name="enableEditCB" type="8192" declaredType="javax.swing.JCheckBox"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2557,12 +2585,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="102_leftBottomPanel"/>
+              <CodeExpression id="103_leftBottomPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="104_newBtn">
+                <CodeExpression id="105_newBtn">
                   <CodeVariable name="newBtn" type="8192" declaredType="javax.swing.JButton"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2573,12 +2601,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="102_leftBottomPanel"/>
+              <CodeExpression id="103_leftBottomPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="105_filler8">
+                <CodeExpression id="106_filler8">
                   <CodeVariable name="filler8" type="8192" declaredType="javax.swing.Box$Filler"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2589,12 +2617,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="102_leftBottomPanel"/>
+              <CodeExpression id="103_leftBottomPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="106_idLbl">
+                <CodeExpression id="107_idLbl">
                   <CodeVariable name="idLbl" type="8192" declaredType="javax.swing.JLabel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2605,12 +2633,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="102_leftBottomPanel"/>
+              <CodeExpression id="103_leftBottomPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="107_idTF">
+                <CodeExpression id="108_idTF">
                   <CodeVariable name="idTF" type="8192" declaredType="javax.swing.JTextField"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2660,14 +2688,14 @@
           </SubComponents>
           <LayoutCode>
             <CodeStatement>
-              <CodeExpression id="108_flowLayout10">
+              <CodeExpression id="109_flowLayout10">
                 <CodeVariable name="flowLayout10" type="4096" declaredType="java.awt.FlowLayout"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="CodeConstructor">
                     <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
                   </ExpressionProvider>
                   <Parameters>
-                    <CodeExpression id="109">
+                    <CodeExpression id="110">
                       <ExpressionOrigin>
                         <Value type="int" value="2"/>
                       </ExpressionOrigin>
@@ -2676,19 +2704,19 @@
                 </ExpressionOrigin>
               </CodeExpression>
               <StatementProvider type="CodeExpression">
-                <CodeExpression id="108_flowLayout10"/>
+                <CodeExpression id="109_flowLayout10"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="109"/>
+                <CodeExpression id="110"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="108_flowLayout10"/>
+              <CodeExpression id="109_flowLayout10"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="110">
+                <CodeExpression id="111">
                   <ExpressionOrigin>
                     <Value type="boolean" value="true"/>
                   </ExpressionOrigin>
@@ -2696,7 +2724,7 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="111_rightBottomPanel">
+              <CodeExpression id="112_rightBottomPanel">
                 <CodeVariable name="rightBottomPanel" type="8192" declaredType="javax.swing.JPanel"/>
                 <ExpressionOrigin>
                   <ExpressionProvider type="ComponentRef">
@@ -2708,16 +2736,16 @@
                 <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="108_flowLayout10"/>
+                <CodeExpression id="109_flowLayout10"/>
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="111_rightBottomPanel"/>
+              <CodeExpression id="112_rightBottomPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="112_filler1">
+                <CodeExpression id="113_filler1">
                   <CodeVariable name="filler1" type="8192" declaredType="javax.swing.Box$Filler"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -2728,12 +2756,12 @@
               </Parameters>
             </CodeStatement>
             <CodeStatement>
-              <CodeExpression id="111_rightBottomPanel"/>
+              <CodeExpression id="112_rightBottomPanel"/>
               <StatementProvider type="CodeMethod">
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="113_saveBtn">
+                <CodeExpression id="114_saveBtn">
                   <CodeVariable name="saveBtn" type="8192" declaredType="javax.swing.JButton"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">

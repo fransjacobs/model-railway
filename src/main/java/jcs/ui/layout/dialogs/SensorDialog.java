@@ -16,10 +16,12 @@
 package jcs.ui.layout.dialogs;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import jcs.JCS;
 import jcs.entities.SensorBean;
@@ -36,7 +38,7 @@ import org.tinylog.Logger;
 public class SensorDialog extends javax.swing.JDialog {
 
   private final Sensor sensor;
-  private ComboBoxModel<SensorBean> sensorComboBoxModel;
+  private final SensorBeanComboBoxModel sensorComboBoxModel;
 
   /**
    * Creates new form SensorDialog
@@ -47,6 +49,7 @@ public class SensorDialog extends javax.swing.JDialog {
   public SensorDialog(java.awt.Frame parent, Tile tile) {
     super(parent, true);
     this.sensor = (Sensor) tile;
+    sensorComboBoxModel = new SensorBeanComboBoxModel();
     initComponents();
 
     postInit();
@@ -87,13 +90,17 @@ public class SensorDialog extends javax.swing.JDialog {
     SensorBean emptyBean = new SensorBean();
     filtered.add(emptyBean);
 
-    sensorComboBoxModel = new DefaultComboBoxModel(filtered.toArray());
+    sensorComboBoxModel.removeAllElements();
+    sensorComboBoxModel.addAll(filtered);
     this.sensorCB.setModel(sensorComboBoxModel);
 
     SensorBean sb = this.sensor.getSensorBean();
     if (sb == null) {
       sb = emptyBean;
+      //Use the SensorTileId as id
+      sb.setId(this.sensor.getId());
     }
+
     this.sensor.setSensorBean(sb);
     this.sensorComboBoxModel.setSelectedItem(sb);
 
@@ -115,7 +122,6 @@ public class SensorDialog extends javax.swing.JDialog {
       //Unregister as properties might change
       JCS.getJcsCommandStation().removeSensorEventListener(this.sensor);
     }
-
   }
 
   /**
@@ -296,6 +302,97 @@ public class SensorDialog extends javax.swing.JDialog {
       this.contactIdSpinner.setValue(0);
     }
   }//GEN-LAST:event_sensorCBActionPerformed
+
+  class SensorBeanByIdSorter implements Comparator<SensorBean> {
+
+    @Override
+    public int compare(SensorBean a, SensorBean b) {
+      //Avoid null pointers
+      String aa = a.getId();
+      if (aa == null) {
+        aa = "000";
+      }
+      String bb = b.getId();
+      if (bb == null) {
+        bb = "000";
+      }
+
+      return aa.compareTo(bb);
+    }
+  }
+
+  class SensorBeanComboBoxModel extends DefaultComboBoxModel<SensorBean> {
+
+    private final List<SensorBean> model;
+
+    public SensorBeanComboBoxModel() {
+      model = new ArrayList<>();
+    }
+
+    @Override
+    public void addAll(int index, Collection<? extends SensorBean> elements) {
+      model.addAll(index, elements);
+      Collections.sort(model, new SensorBeanByIdSorter());
+
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void addAll(Collection<? extends SensorBean> elements) {
+      model.addAll(elements);
+      Collections.sort(model, new SensorBeanByIdSorter());
+
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void addElement(SensorBean element) {
+      if (model.add(element)) {
+        Collections.sort(model, new SensorBeanByIdSorter());
+
+        fireContentsChanged(this, 0, getSize());
+      }
+    }
+
+    @Override
+    public SensorBean getElementAt(int index) {
+      return (SensorBean) model.toArray()[index];
+    }
+
+    @Override
+    public int getIndexOf(Object object) {
+      return this.model.indexOf(object);
+    }
+
+    @Override
+    public int getSize() {
+      return model.size();
+    }
+
+    @Override
+    public void insertElementAt(SensorBean sensorBean, int index) {
+      this.model.add(index, sensorBean);
+      this.fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void removeAllElements() {
+      model.clear();
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void removeElement(Object anObject) {
+      int index = this.getIndexOf(anObject);
+      removeElementAt(index);
+    }
+
+    @Override
+    public void removeElementAt(int index) {
+      this.model.remove(index);
+      fireContentsChanged(this, 0, getSize());
+    }
+  }
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
