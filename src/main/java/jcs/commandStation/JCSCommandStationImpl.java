@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
@@ -373,128 +374,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     return power;
   }
 
-  //@Override
-//  public void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener) {
-//    if (decoderController != null && this.decoderController.getCommandStationBean().isLocomotiveSynchronizationSupport()) {
-//      List<LocomotiveBean> fromController = this.decoderController.getLocomotives();
-//
-//      String importedFrom;
-//      if (this.decoderController.getDevice() != null) {
-//        importedFrom = this.decoderController.getDevice().getArticleNumber();
-//        importedFrom = importedFrom + this.decoderController.getDevice().getSerial();
-//      } else {
-//        //There are some rare situations which occur mainly during lots of testing, where the device is not found ins 10 s or so...
-//        importedFrom = "CS2-xxxxxx";
-//      }
-//
-//      Set<String> functionImageNames = new HashSet<>();
-//      //Map<String,String> functionImageNames =  new HashMap();
-//
-//      //TODO show the progress...
-//      if (progressListener != null) {
-//        PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Controller reports " + fromController.size() + " Locomotives");
-//        progressListener.propertyChange(pce);
-//      }
-//
-//      for (LocomotiveBean loco : fromController) {
-//        Long id = loco.getId();
-//        LocomotiveBean dbLoco = PersistenceFactory.getService().getLocomotive(id);
-//
-//        if (dbLoco != null && loco.getId().equals(dbLoco.getId())) {
-//          Logger.trace("Loco id: " + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString() + " Exists");
-//
-//          // Keep the name, commuter, show and lenght
-//          loco.setName(dbLoco.getName());
-//          loco.setCommuter(dbLoco.isCommuter());
-//          loco.setShow(dbLoco.isShow());
-//
-//          if (progressListener != null) {
-//            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", dbLoco.getName(), "Updating " + loco.getId() + ", " + loco.getName());
-//            progressListener.propertyChange(pce);
-//          }
-//        } else {
-//          Logger.trace("New Loco, id:" + loco.getId() + ", " + loco.getName() + " Addres: " + loco.getAddress() + " Decoder: " + loco.getDecoderTypeString());
-//
-//          if (progressListener != null) {
-//            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Inserting " + loco.getId() + ", " + loco.getName());
-//            progressListener.propertyChange(pce);
-//          }
-//        }
-//        try {
-//          loco.setImported(importedFrom);
-//          PersistenceFactory.getService().persist(loco);
-//
-//          //Also cache the locomotive Image
-//          if (progressListener != null) {
-//            PropertyChangeEvent pce = new PropertyChangeEvent(this, "synchProcess", null, "Getting Icon for " + loco.getName());
-//            progressListener.propertyChange(pce);
-//          }
-//          getLocomotiveImage(loco.getIcon());
-//
-//          //Function icons...
-//          Set<FunctionBean> functions = loco.getFunctions().values().stream().collect(Collectors.toSet());
-//          for (FunctionBean fb : functions) {
-//
-//            String aIcon = fb.getActiveIcon();
-//            String iIcon = fb.getInActiveIcon();
-//            functionImageNames.add(aIcon);
-//            functionImageNames.add(iIcon);
-//          }
-//        } catch (Exception e) {
-//          Logger.error(e);
-//        }
-//      }
-//
-//      //Now get all the function images in one batch
-//      Logger.trace("Trying to get " + functionImageNames.size() + " function images");
-//      for (String functionImage : functionImageNames) {
-//        boolean available = getLocomotiveFunctionImage(functionImage) != null;
-//        Logger.trace("Function Image " + functionImage + " is " + (available ? "available" : "NOT available"));
-//      }
-//
-//      //this.decoderController.clearCaches();
-//    }
-//  }
-//  @Override
-//  public void synchronizeTurnoutsWithCommandStation() {
-//    List<AccessoryBean> turnouts = new LinkedList<>();
-//
-//    for (AccessoryController ac : this.accessoryControllers.values()) {
-//      if (ac.getCommandStationBean().isAccessorySynchronizationSupport()) {
-//        turnouts.addAll(ac.getSwitches());
-//      }
-//    }
-//
-//    for (AccessoryBean turnout : turnouts) {
-//      AccessoryBean dbTurnout = PersistenceFactory.getService().getAccessoryByAddress(turnout.getAddress());
-//      if (dbTurnout != null) {
-//        turnout.setId(dbTurnout.getId());
-//      }
-//
-//      Logger.trace(turnout.toLogString());
-//      PersistenceFactory.getService().persist(turnout);
-//    }
-//  }
-//  @Override
-//  public void synchronizeSignalsWithCommandStation() {
-//    List<AccessoryBean> signals = new LinkedList<>();
-//
-//    for (AccessoryController ac : this.accessoryControllers.values()) {
-//      if (ac.getCommandStationBean().isAccessorySynchronizationSupport()) {
-//        signals.addAll(ac.getSignals());
-//      }
-//    }
-//
-//    for (AccessoryBean signal : signals) {
-//      AccessoryBean dbSignal = PersistenceFactory.getService().getAccessoryByAddress(signal.getAddress());
-//      if (dbSignal != null) {
-//        signal.setId(dbSignal.getId());
-//      }
-//
-//      Logger.trace(signal.toLogString());
-//      PersistenceFactory.getService().persist(signal);
-//    }
-//  }
   @Override
   public void changeLocomotiveDirection(Direction newDirection, LocomotiveBean locomotive) {
     Logger.debug("Changing direction to " + newDirection + " for: " + locomotive.getName() + " id: " + locomotive.getId());
@@ -643,6 +522,21 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     this.measurementEventListeners.remove(listener);
   }
 
+  @Override
+  public DecoderController getDecoderController() {
+    return decoderController;
+  }
+
+  @Override
+  public List<AccessoryController> getAccessoryControllers() {
+    return accessoryControllers.values().stream().collect(Collectors.toList());
+  }
+
+  @Override
+  public List<FeedbackController> getFeedbackControllers() {
+    return feedbackControllers.values().stream().collect(Collectors.toList());
+  }
+
   private class TrackMeasurementTask extends TimerTask {
 
     private final JCSCommandStationImpl Controller;
@@ -706,10 +600,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     @Override
     public void onAccessoryChange(AccessoryEvent event) {
       AccessoryBean ab = event.getAccessoryBean();
-      
+
       int address = ab.getAddress();
       String commandStationId = ab.getCommandStationId();
-      
+
       AccessoryBean dbab = PersistenceFactory.getService().getAccessoryByAddressAndCommandStationId(address, commandStationId);
       if (dbab == null) {
         //check if address is even, might be the second address of a signal
@@ -742,7 +636,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         if (ab.getSwitchTime() == null) {
           ab.setSwitchTime(dbab.getSwitchTime());
         }
-       
+
         PersistenceFactory.getService().persist(ab);
 
         for (AccessoryEventListener al : this.trackService.accessoryEventListeners) {
@@ -765,14 +659,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       FunctionBean fb = functionEvent.getFunctionBean();
       FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
 
-      //if (dbfb == null) {
-      //try via address and decoder type, assume DCC....
-      //LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(fb.getLocomotiveId());
-      //LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(fb.getAddress(), fb.getProtocol(), fb.getCommandStationId());
-      //if (dblb != null) {
-      //  dbfb = PersistenceFactory.getService().getLocomotiveFunction((long) dbfb.getId(), fb.getNumber());
-      //}
-      //}
       if (dbfb != null) {
         if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
           dbfb.setValue(fb.getValue());

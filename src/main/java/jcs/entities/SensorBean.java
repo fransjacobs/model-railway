@@ -25,10 +25,10 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Table(
-    name = "sensors",
-    indexes = {
-      @Index(name = "sens_devi_cont_idx", columnList = "device_id, contact_id", unique = true)
-    })
+        name = "sensors",
+        indexes = {
+          @Index(name = "sens_devi_cont_idx", columnList = "device_id, contact_id", unique = true)
+        })
 public class SensorBean implements Serializable {
 
   private String id;
@@ -45,12 +45,12 @@ public class SensorBean implements Serializable {
   }
 
   public SensorBean(
-      Integer deviceId,
-      Integer contactId,
-      Integer status,
-      Integer previousStatus,
-      Integer millis,
-      Date lastUpdated) {
+          Integer deviceId,
+          Integer contactId,
+          Integer status,
+          Integer previousStatus,
+          Integer millis,
+          Date lastUpdated) {
     this(null, null, deviceId, contactId, status, previousStatus, millis, lastUpdated);
   }
 
@@ -59,25 +59,25 @@ public class SensorBean implements Serializable {
   }
 
   public SensorBean(
-      String name,
-      Integer deviceId,
-      Integer contactId,
-      Integer status,
-      Integer previousStatus,
-      Integer millis,
-      Date lastUpdated) {
+          String name,
+          Integer deviceId,
+          Integer contactId,
+          Integer status,
+          Integer previousStatus,
+          Integer millis,
+          Date lastUpdated) {
     this(null, name, deviceId, contactId, status, previousStatus, millis, lastUpdated);
   }
 
   public SensorBean(
-      String id,
-      String name,
-      Integer deviceId,
-      Integer contactId,
-      Integer status,
-      Integer previousStatus,
-      Integer millis,
-      Date lastUpdated) {
+          String id,
+          String name,
+          Integer deviceId,
+          Integer contactId,
+          Integer status,
+          Integer previousStatus,
+          Integer millis,
+          Date lastUpdated) {
     this.id = id;
     this.name = name;
     this.status = status;
@@ -144,6 +144,28 @@ public class SensorBean implements Serializable {
 
   public void setPreviousStatus(Integer previousStatus) {
     this.previousStatus = previousStatus;
+  }
+
+  @Transient
+  public void toggle() {
+    if (status == null) {
+      status = 0;
+    }
+    previousStatus = status;
+    Date lastChanged = this.lastUpdated;
+    if (lastChanged == null) {
+      lastChanged = new Date();
+    }
+    if (status == 0) {
+      status = 1;
+    } else {
+      status = 0;
+    }
+    lastUpdated = new Date();
+    long prev = lastChanged.getTime();
+    long now = lastUpdated.getTime();
+    Long m = (now - prev) / 10;
+    this.millis = m.intValue();
   }
 
   @Column(name = "millis")
@@ -275,22 +297,22 @@ public class SensorBean implements Serializable {
 
   public String toLogString() {
     return "SensorBean{"
-        + "id="
-        + id
-        + ", name="
-        + name
-        + ", deviceId="
-        + deviceId
-        + ", contactId="
-        + contactId
-        + ", status="
-        + status
-        + ", previousStatus="
-        + previousStatus
-        + ", millis="
-        + millis
-        + ", lastUpdated="
-        + lastUpdated
-        + '}';
+            + "id="
+            + id
+            + ", name="
+            + name
+            + ", deviceId="
+            + deviceId
+            + ", contactId="
+            + contactId
+            + ", status="
+            + status
+            + ", previousStatus="
+            + previousStatus
+            + ", millis="
+            + millis
+            + ", lastUpdated="
+            + lastUpdated
+            + '}';
   }
 }

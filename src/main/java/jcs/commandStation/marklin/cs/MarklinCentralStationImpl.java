@@ -733,14 +733,15 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-  private void fireAllSensorEventListeners(final SensorEvent sensorEvent) {
+  @Override
+  public void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
       listener.onSensorChange(sensorEvent);
     }
   }
-
+  
   private void notifySensorEventListeners(final SensorEvent sensorEvent) {
-    executor.execute(() -> fireAllSensorEventListeners(sensorEvent));
+    executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }
 
   private void fireAllAccessoryEventListeners(final AccessoryEvent accessoryEvent) {

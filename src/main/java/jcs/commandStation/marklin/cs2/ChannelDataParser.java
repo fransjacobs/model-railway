@@ -17,8 +17,8 @@ package jcs.commandStation.marklin.cs2;
 
 import java.io.Serializable;
 import java.util.List;
-import jcs.entities.ChannelBean;
 import jcs.commandStation.marklin.cs.can.CanMessage;
+import jcs.entities.ChannelBean;
 import jcs.util.ByteUtil;
 import org.tinylog.Logger;
 
@@ -127,6 +127,9 @@ public class ChannelDataParser implements Serializable {
         strArr = new byte[len];
         System.arraycopy(data, idx, strArr, 0, strArr.length);
         String startVal = ByteUtil.bytesToString(strArr);
+        if(startVal == null) {
+          startVal = "0.0";
+        }
         double startValDouble = Double.parseDouble(startVal);
         channel.setStartValue(startValDouble);
 

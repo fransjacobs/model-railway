@@ -27,8 +27,12 @@ import org.tinylog.Logger;
  */
 public class SensorEvent {
 
-  private SensorBean sensor;
-  private final CanMessage message;
+  private SensorBean sensorBean;
+  private CanMessage message;
+
+  public SensorEvent(SensorBean sensorBean) {
+    this.sensorBean = sensorBean;
+  }
 
   public SensorEvent(CanMessage message, Date eventDate) {
     this.message = message;
@@ -54,14 +58,14 @@ public class SensorEvent {
 
       Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
 
-      this.sensor = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
+      this.sensorBean = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
     } else {
       Logger.warn("Can't parse message, not a Sensor Response! " + resp);
     }
   }
 
   public SensorBean getSensorBean() {
-    return sensor;
+    return sensorBean;
   }
 
   public CanMessage getMessage() {

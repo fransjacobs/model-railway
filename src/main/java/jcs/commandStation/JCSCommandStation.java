@@ -16,6 +16,7 @@
 package jcs.commandStation;
 
 import java.awt.Image;
+import java.util.List;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
@@ -84,13 +85,14 @@ public interface JCSCommandStation {
 
   InfoBean getCommandStationInfo();
 
-  //String getCommandStationName();
-  //String getCommandStationSerialNumber();
-  //String getCommandStationArticleNumber();
-  //void synchronizeLocomotivesWithCommandStation(PropertyChangeListener progressListener);
-  //void synchronizeTurnoutsWithCommandStation();
-  //void synchronizeSignalsWithCommandStation();
   Image getLocomotiveImage(String imageName);
 
   Image getLocomotiveFunctionImage(String imageName);
+
+  DecoderController getDecoderController();
+
+  List<AccessoryController> getAccessoryControllers();
+
+  List<FeedbackController> getFeedbackControllers();
+
 }
