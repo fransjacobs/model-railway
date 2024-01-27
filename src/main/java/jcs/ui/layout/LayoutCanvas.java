@@ -738,7 +738,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         }
         case BLOCK -> {
           Logger.trace("Show BlockDialog for " + tile.getId());
-          BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile);
+          BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile, this);
           bd.setVisible(true);
         }
         default -> {
@@ -792,7 +792,16 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     this.xyMI.setVisible(true);
-    this.xyMI.setText(tile.getId() + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
+
+    String extra = "";
+    if (tile instanceof Sensor s) {
+      if (s.getSensorBean() != null) {
+        extra = " " + s.getSensorBean().getName();
+      }
+    }
+
+    this.xyMI.setText(tile.getId() + extra + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
+
     this.propertiesMI.setVisible(showProperties);
     this.flipHorizontalMI.setVisible(showFlip);
     this.flipVerticalMI.setVisible(showFlip);
@@ -905,7 +914,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
   }//GEN-LAST:event_leftMIActionPerformed
 
-  private Tile findTile(Point cp) {
+  public Tile findTile(Point cp) {
     Tile result = this.tiles.get(cp);
     if (result == null) {
       //Logger.trace("Using alternative points...");

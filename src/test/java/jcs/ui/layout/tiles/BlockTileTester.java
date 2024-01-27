@@ -52,6 +52,7 @@ public class BlockTileTester extends JFrame {
     bbe.setId(tileEast.getId());
     bbe.setTileId(tileEast.getId());
     bbe.setLocomotive(lok1);
+    bbe.setDescription(tileEast.getId());
     //bbe.setReverseArrival(true);
     ((Block) tileEast).setBlockBean(bbe);
 

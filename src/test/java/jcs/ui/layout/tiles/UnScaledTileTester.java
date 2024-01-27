@@ -23,6 +23,8 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
 import org.tinylog.Logger;
 
@@ -38,7 +40,7 @@ public class UnScaledTileTester extends JFrame {
     super(title);
 
     // tile = new Straight(Orientation.EAST, 250, 250);
-    tile = new StraightDirection(Orientation.EAST, 250, 250);
+    //tile = new StraightDirection(Orientation.EAST, 250, 250);
     // tile = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
     // ((Signal) tile).setSignalValue(SignalValue.Hp0);
     // tile = new Curved(Orientation.EAST, 250, 250);
@@ -47,6 +49,17 @@ public class UnScaledTileTester extends JFrame {
     // tile = new End(Orientation.EAST, 250, 250);
     // tile = new Crossing(Orientation.NORTH, 250, 250);
     //tile = new Cross(Orientation.NORTH, Direction.LEFT, 250, 750);
+    tile = new Block(Orientation.EAST, 750, 250);
+    tile.setId("bk-1");
+
+    LocomotiveBean lok = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 2, false, true);
+
+    BlockBean bbe = new BlockBean();
+    bbe.setId(tile.getId());
+    bbe.setTileId(tile.getId());
+    bbe.setLocomotive(lok);
+    //bbe.setReverseArrival(true);
+    //((Block) tile).setBlockBean(bbe);
 
     ((AbstractTile) tile).setScaleImage(false);
   }
@@ -79,8 +92,8 @@ public class UnScaledTileTester extends JFrame {
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     // app.pack();
-    app.setSize(500, 500);
-    //app.setSize(1000, 500);
+    //app.setSize(500, 500);
+    app.setSize(1500, 500);
     //app.setSize(500, 1000);
 
     app.setLocation(

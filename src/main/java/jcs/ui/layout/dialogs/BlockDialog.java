@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.dialogs;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +26,10 @@ import javax.swing.JTextField;
 import jcs.entities.BlockBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.Sensor;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -35,6 +39,7 @@ import org.tinylog.Logger;
 public class BlockDialog extends javax.swing.JDialog {
 
   private final Block block;
+  private final LayoutCanvas layoutCanvas;
 
   private ComboBoxModel<SensorBean> plusSensorComboBoxModel;
   private ComboBoxModel<SensorBean> minSensorComboBoxModel;
@@ -44,10 +49,12 @@ public class BlockDialog extends javax.swing.JDialog {
    *
    * @param parent
    * @param block
+   * @param layoutCanvas
    */
-  public BlockDialog(java.awt.Frame parent, Block block) {
+  public BlockDialog(java.awt.Frame parent, Block block, LayoutCanvas layoutCanvas) {
     super(parent, true);
     this.block = block;
+    this.layoutCanvas = layoutCanvas;
     initComponents();
 
     postInit();
@@ -91,7 +98,7 @@ public class BlockDialog extends javax.swing.JDialog {
 
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
-        Logger.tags("bb is null for "+this.block.getId());
+        Logger.tags("bb is null for " + this.block.getId());
         bb = new BlockBean();
         bb.setTile(block);
         bb.setTileId(this.block.getId());
@@ -130,6 +137,8 @@ public class BlockDialog extends javax.swing.JDialog {
 
       this.blockIdTF.setText(this.block.getId());
       this.blockNameTF.setText(bb.getDescription());
+      String desc = this.block.getBlockBean().getDescription();
+      this.saveExitBtn.setEnabled((desc != null && desc.length() > 1));
 
       if (plusSb != null) {
         this.plusSensorComboBoxModel.setSelectedItem(plusSb);
@@ -141,10 +150,39 @@ public class BlockDialog extends javax.swing.JDialog {
       } else {
         this.minSensorComboBoxModel.setSelectedItem(emptyBean);
       }
-
-      //Unregister as properties might change
-      //ControllerFactory.getController().removeAccessoryListener(block);
     }
+  }
+
+  private void autoLink() {
+    //Try to link the sensors automatically
+    Point pnp = this.block.getNeighborPoint("+");
+    Point mnp = this.block.getNeighborPoint("-");
+
+    Logger.trace("Neighbor point +: " + pnp + " -: " + mnp);
+
+    Tile neighborPlus = this.layoutCanvas.findTile(pnp);
+    Tile neighborMin = this.layoutCanvas.findTile(mnp);
+
+    if (neighborPlus != null && neighborPlus instanceof Sensor) {
+      Sensor ps = (Sensor) neighborPlus;
+      SensorBean plusSb = ps.getSensorBean();
+      if (plusSb != null) {
+        this.block.getBlockBean().setPlusSensorBean(plusSb);
+        this.plusSensorComboBoxModel.setSelectedItem(plusSb);
+        Logger.trace("Auto linked Plus Sensor: " + ps + " " + plusSb.getName());
+      }
+    }
+
+    if (neighborMin != null && neighborMin instanceof Sensor) {
+      Sensor ms = (Sensor) neighborMin;
+      SensorBean minSb = ms.getSensorBean();
+      if (minSb != null) {
+        this.block.getBlockBean().setMinSensorBean(minSb);
+        this.minSensorComboBoxModel.setSelectedItem(minSb);
+        Logger.trace("Auto linked Min Sensor: " + ms + " " + minSb.getName());
+      }
+    }
+
   }
 
   /**
@@ -162,10 +200,12 @@ public class BlockDialog extends javax.swing.JDialog {
     namePanel = new javax.swing.JPanel();
     blockDescLbl = new javax.swing.JLabel();
     blockNameTF = new javax.swing.JTextField();
-    plusSensorPanel = new javax.swing.JPanel();
+    autoLinkPanel = new javax.swing.JPanel();
+    autoLinkLbl = new javax.swing.JLabel();
+    autoLinkButton = new javax.swing.JButton();
+    sensorPanel = new javax.swing.JPanel();
     plusSensorLbl = new javax.swing.JLabel();
     plusSensorCB = new javax.swing.JComboBox<>();
-    minSensorPanel = new javax.swing.JPanel();
     minSensorLbl = new javax.swing.JLabel();
     minSensorCB = new javax.swing.JComboBox<>();
     saveExitPanel = new javax.swing.JPanel();
@@ -173,7 +213,9 @@ public class BlockDialog extends javax.swing.JDialog {
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Block Properties");
-    setMinimumSize(new java.awt.Dimension(290, 200));
+    setBounds(new java.awt.Rectangle(0, 25, 340, 250));
+    setMinimumSize(new java.awt.Dimension(340, 250));
+    setPreferredSize(new java.awt.Dimension(340, 250));
     getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
     headingPanel.setMinimumSize(new java.awt.Dimension(290, 40));
@@ -192,6 +234,7 @@ public class BlockDialog extends javax.swing.JDialog {
     deviceIdPanel.setLayout(flowLayout2);
 
     blockIdLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    blockIdLbl.setLabelFor(blockIdTF);
     blockIdLbl.setText("Id:");
     blockIdLbl.setPreferredSize(new java.awt.Dimension(100, 16));
     deviceIdPanel.add(blockIdLbl);
@@ -219,6 +262,7 @@ public class BlockDialog extends javax.swing.JDialog {
     namePanel.setLayout(flowLayout1);
 
     blockDescLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    blockDescLbl.setLabelFor(blockNameTF);
     blockDescLbl.setText("Name:");
     blockDescLbl.setToolTipText("");
     blockDescLbl.setPreferredSize(new java.awt.Dimension(100, 16));
@@ -239,44 +283,60 @@ public class BlockDialog extends javax.swing.JDialog {
 
     getContentPane().add(namePanel);
 
-    plusSensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    autoLinkPanel.setPreferredSize(new java.awt.Dimension(290, 40));
     java.awt.FlowLayout flowLayout7 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout7.setAlignOnBaseline(true);
-    plusSensorPanel.setLayout(flowLayout7);
+    autoLinkPanel.setLayout(flowLayout7);
+
+    autoLinkLbl.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+    autoLinkLbl.setLabelFor(autoLinkButton);
+    autoLinkLbl.setText("Auto link");
+    autoLinkLbl.setPreferredSize(new java.awt.Dimension(100, 17));
+    autoLinkPanel.add(autoLinkLbl);
+
+    autoLinkButton.setText("Link");
+    autoLinkButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        autoLinkButtonActionPerformed(evt);
+      }
+    });
+    autoLinkPanel.add(autoLinkButton);
+
+    getContentPane().add(autoLinkPanel);
+
+    sensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout3.setAlignOnBaseline(true);
+    sensorPanel.setLayout(flowLayout3);
 
     plusSensorLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    plusSensorLbl.setText("Plus Sensor:");
+    plusSensorLbl.setLabelFor(plusSensorCB);
+    plusSensorLbl.setText("Sensors +:");
     plusSensorLbl.setDoubleBuffered(true);
     plusSensorLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    plusSensorPanel.add(plusSensorLbl);
+    sensorPanel.add(plusSensorLbl);
 
     plusSensorCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         plusSensorCBActionPerformed(evt);
       }
     });
-    plusSensorPanel.add(plusSensorCB);
-
-    getContentPane().add(plusSensorPanel);
-
-    minSensorPanel.setPreferredSize(new java.awt.Dimension(290, 40));
-    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout3.setAlignOnBaseline(true);
-    minSensorPanel.setLayout(flowLayout3);
+    sensorPanel.add(plusSensorCB);
 
     minSensorLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    minSensorLbl.setText("Min. Sensor:");
-    minSensorLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    minSensorPanel.add(minSensorLbl);
+    minSensorLbl.setLabelFor(minSensorCB);
+    minSensorLbl.setText("-:");
+    minSensorLbl.setPreferredSize(new java.awt.Dimension(10, 17));
+    sensorPanel.add(minSensorLbl);
 
     minSensorCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         minSensorCBActionPerformed(evt);
       }
     });
-    minSensorPanel.add(minSensorCB);
+    sensorPanel.add(minSensorCB);
 
-    getContentPane().add(minSensorPanel);
+    getContentPane().add(sensorPanel);
 
     saveExitPanel.setPreferredSize(new java.awt.Dimension(290, 50));
     java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
@@ -324,10 +384,14 @@ public class BlockDialog extends javax.swing.JDialog {
 
   private void blockNameTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blockNameTFActionPerformed
     this.block.getBlockBean().setDescription(((JTextField) evt.getSource()).getText());
+    String desc = this.block.getBlockBean().getDescription();
+    this.saveExitBtn.setEnabled((desc != null && desc.length() > 1));
   }//GEN-LAST:event_blockNameTFActionPerformed
 
   private void blockNameTFFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_blockNameTFFocusLost
     this.block.getBlockBean().setDescription(((JTextField) evt.getSource()).getText());
+    String desc = this.block.getBlockBean().getDescription();
+    this.saveExitBtn.setEnabled((desc != null && desc.length() > 1));
   }//GEN-LAST:event_blockNameTFFocusLost
 
   private void blockIdTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_blockIdTFActionPerformed
@@ -338,7 +402,14 @@ public class BlockDialog extends javax.swing.JDialog {
     this.block.getBlockBean().setTileId(((JTextField) evt.getSource()).getText());
   }//GEN-LAST:event_blockIdTFFocusLost
 
+  private void autoLinkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoLinkButtonActionPerformed
+    autoLink();
+  }//GEN-LAST:event_autoLinkButtonActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton autoLinkButton;
+  private javax.swing.JLabel autoLinkLbl;
+  private javax.swing.JPanel autoLinkPanel;
   private javax.swing.JLabel blockDescLbl;
   private javax.swing.JLabel blockIdLbl;
   private javax.swing.JTextField blockIdTF;
@@ -348,12 +419,11 @@ public class BlockDialog extends javax.swing.JDialog {
   private javax.swing.JPanel headingPanel;
   private javax.swing.JComboBox<SensorBean> minSensorCB;
   private javax.swing.JLabel minSensorLbl;
-  private javax.swing.JPanel minSensorPanel;
   private javax.swing.JPanel namePanel;
   private javax.swing.JComboBox<SensorBean> plusSensorCB;
   private javax.swing.JLabel plusSensorLbl;
-  private javax.swing.JPanel plusSensorPanel;
   private javax.swing.JButton saveExitBtn;
   private javax.swing.JPanel saveExitPanel;
+  private javax.swing.JPanel sensorPanel;
   // End of variables declaration//GEN-END:variables
 }
