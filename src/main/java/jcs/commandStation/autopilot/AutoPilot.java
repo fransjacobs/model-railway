@@ -29,6 +29,30 @@ import org.tinylog.Logger;
  */
 public class AutoPilot {
 
+  private static AutoPilot instance = null;
+  
+  
+  private AutoPilot() {
+    
+  }
+  
+  public static AutoPilot getInstance() {
+    if(instance == null) {
+      instance =  new AutoPilot();
+    }
+    return instance;
+  }
+  
+  
+  public void initialize() {
+    getOnTrackLocomotives();
+  }
+  
+  public void startAllLocomotives(boolean start) {
+    Logger.trace((start?"Starting":"Stopping")+ " auto drive");
+  }
+  
+  
   //Fort started a list of locomotives is needed which are on the track ie assigned to a Tile
   private List<LocomotiveBean> getOnTrackLocomotives() {
     //direct query call or derive?

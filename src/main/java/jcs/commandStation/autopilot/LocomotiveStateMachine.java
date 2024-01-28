@@ -13,10 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package jcs.commandStation.autopilot;
 
 /**
  * @author fransjacobs
  */
-public class LocomotiveStateMachine {}
+public class LocomotiveStateMachine { 
+
+//what are the states
+  
+  // a loc can be in a block just stayng there: IDLE
+  // When The auto drive in initiated a loc in a blok can become active so INIT
+  // A lok can set a route PREPARING
+  // A loc can start when the route is found and locked PREPARED
+  // A lok can start driveing DRIVING
+  // A lok has hit the enter block sensor BRAKING
+  // A lok has hit the in or occupance sensor STOP
+  // A lok has stopped in a blok and is waiting for a new adventure WAIT
+  // A lok is decativated will not start again -> IDLE
+  // A lok has wiated and can start again -> PREPARING
+  // A lok is preparing but cant find a valid route -> WAIT
+
+}
