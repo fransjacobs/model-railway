@@ -63,8 +63,10 @@ public class BlockTileTester extends JFrame {
     bbs.setId(tileSouth.getId());
     bbs.setTileId(tileSouth.getId());
     lok2.setDirection(lok2.getDirection().toggle());
-    //bbs.setLocomotive(lok2);
-    bbs.setReverseArrival(true);
+    bbs.setDescription(tileSouth.getId());
+
+    bbs.setLocomotive(lok2);
+    //bbs.setReverseArrival(true);
     ((Block) tileSouth).setBlockBean(bbs);
 
     tileWest = new Block(Orientation.WEST, 250, 190);
@@ -73,7 +75,8 @@ public class BlockTileTester extends JFrame {
     bbw.setId(tileWest.getId());
     bbw.setTileId(tileWest.getId());
     bbw.setLocomotive(lok2);
-    // bbw.setReverseArrival(true);
+    bbw.setDescription(tileWest.getId());
+    //bbw.setReverseArrival(true);
     ((Block) tileWest).setBlockBean(bbw);
 
     tileNorth = new Block(Orientation.NORTH, 340, 190);
@@ -84,6 +87,14 @@ public class BlockTileTester extends JFrame {
     //bbn.setLocomotive(lok2);
     bbn.setReverseArrival(true);
     ((Block) tileNorth).setBlockBean(bbn);
+    
+    
+    Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());
+    Logger.trace("West: "+ ((Block)tileWest).getLocomotiveBlockSuffix());
+    Logger.trace("North: "+ ((Block)tileNorth).getLocomotiveBlockSuffix());
+    Logger.trace("South: "+ ((Block)tileSouth).getLocomotiveBlockSuffix());
+    
+    
   }
 
   @Override

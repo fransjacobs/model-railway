@@ -113,6 +113,8 @@ public interface PersistenceService {
 
   RouteBean getRoute(String id);
 
+  List<RouteBean> getRoutes(String fromTileId, String fromSuffix);
+
   RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix);
 
   RouteBean persist(RouteBean routeBean);

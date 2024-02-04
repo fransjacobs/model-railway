@@ -16,11 +16,17 @@
 package jcs.commandStation.autopilot;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -30,57 +36,72 @@ import org.tinylog.Logger;
 public class AutoPilot {
 
   private static AutoPilot instance = null;
-  
-  
+
+  Map<Integer, LocomotiveBean> syncMap = Collections.synchronizedMap(new HashMap<>());
+
   private AutoPilot() {
-    
+
   }
-  
+
   public static AutoPilot getInstance() {
-    if(instance == null) {
-      instance =  new AutoPilot();
+    if (instance == null) {
+      instance = new AutoPilot();
     }
     return instance;
   }
-  
-  
+
   public void initialize() {
     getOnTrackLocomotives();
   }
-  
-  public void startAllLocomotives(boolean start) {
-    Logger.trace((start?"Starting":"Stopping")+ " auto drive");
-  }
-  
-  
-  //Fort started a list of locomotives is needed which are on the track ie assigned to a Tile
-  private List<LocomotiveBean> getOnTrackLocomotives() {
-    //direct query call or derive?
-    //Loc can only be in a block, so strart there
-    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-    Logger.trace("There are " + blocks.size() + " blocks");
 
+  public void startAllLocomotives(boolean start) {
+    Logger.trace((start ? "Starting" : "Stopping") + " auto drive for All locomotives on the track");
+
+    getOnTrackLocomotives();
+  }
+
+  public void startLocomotive(LocomotiveBean locomotiveBean, boolean start) {
+    Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
+  }
+
+  private List<LocomotiveBean> getOnTrackLocomotives() {
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     //filter..
     List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
 
     Logger.trace("There are " + occupiedBlocks.size() + " occupied blocks");
-    
+
     List<LocomotiveBean> activeLocomotives = new ArrayList<>();
-    for(BlockBean occupiedBlock : occupiedBlocks) {
-      activeLocomotives.add(occupiedBlock.getLocomotive());
-    }
-    
-    if(Logger.isDebugEnabled()) {
-      Logger.debug("There are "+activeLocomotives.size()+" Active Locomotives: ");
-      for(LocomotiveBean loc : activeLocomotives) {
-        Logger.debug(loc);
+    for (BlockBean occupiedBlock : occupiedBlocks) {
+      LocomotiveBean dbl = PersistenceFactory.getService().getLocomotive(occupiedBlock.getLocomotiveId());
+      if (dbl != null) {
+        activeLocomotives.add(dbl);
       }
     }
-    
-    //For each locomotive we need to start a State machine Thread
-    
 
-    return null;
+    if (Logger.isDebugEnabled()) {
+      Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
+      for (LocomotiveBean loc : activeLocomotives) {
+        Logger.trace(loc);
+      }
+    }
+    return activeLocomotives;
+  }
+
+  public RouteBean findRoute(BlockBean from, LocomotiveBean locomotive) {
+    Block block = (Block) TileFactory.createTile(PersistenceFactory.getService().getTileBean(from.getTileId()), true, true);
+    String suffix = block.getLocomotiveBlockSuffix();
+    Logger.trace("Trying to find routes for: " + block.getId() + " suffix " + suffix + " Loc: " + locomotive.getName() + " Direction: " + locomotive.getDirection());
+    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(from.getTileId(), suffix);
+
+    Logger.trace("Found " + routes.size() + " routes");
+
+    if (routes.isEmpty()) {
+      return null;
+    } else {
+      //Lets use the first; may be later randomize
+      return routes.get(0);
+    }
   }
 
   public static void main(String[] a) {

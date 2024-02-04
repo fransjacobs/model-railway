@@ -635,8 +635,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public RouteBean getRoute(
-          String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
+  public RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
     RouteBean route = database.where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args).first(RouteBean.class);
     if (route != null) {
@@ -644,6 +643,18 @@ public class H2PersistenceService implements PersistenceService {
       route.setRouteElements(routeElements);
     }
     return route;
+  }
+
+  @Override
+  public List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
+    Object[] args = new Object[]{fromTileId, fromSuffix};
+    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ?", args).results(RouteBean.class);
+
+    for (RouteBean r : routes) {
+      List<RouteElementBean> routeElements = getRouteElements(r.getId());
+      r.setRouteElements(routeElements);
+    }
+    return routes;
   }
 
   @Override

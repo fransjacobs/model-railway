@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -83,6 +84,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
+
+        this.startLocButton.setEnabled(true);
       }
 
       if (bb.getLocomotive() != null) {
@@ -94,8 +97,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
         } else {
           this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
+        this.startLocButton.setEnabled(true);
+
       } else {
         this.locomotiveCB.setSelectedItem(emptyBean);
+        this.startLocButton.setEnabled(false);
       }
     }
   }
@@ -121,11 +127,14 @@ public class BlockControlDialog extends javax.swing.JDialog {
     locomotivePanel = new javax.swing.JPanel();
     locomotiveLbl = new javax.swing.JLabel();
     locomotiveCB = new javax.swing.JComboBox<>();
-    saveExitPanel = new javax.swing.JPanel();
+    bottomPanel = new javax.swing.JPanel();
+    leftPanel = new javax.swing.JPanel();
+    startLocButton = new javax.swing.JToggleButton();
+    rightPanel = new javax.swing.JPanel();
     saveExitBtn = new javax.swing.JButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    setTitle("Block Properties");
+    setTitle("Block Control Properties");
     setMinimumSize(new java.awt.Dimension(290, 200));
     getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
@@ -215,21 +224,47 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     getContentPane().add(locomotivePanel);
 
-    saveExitPanel.setPreferredSize(new java.awt.Dimension(290, 50));
-    java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
+    bottomPanel.setPreferredSize(new java.awt.Dimension(290, 50));
+    java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
     flowLayout4.setAlignOnBaseline(true);
-    saveExitPanel.setLayout(flowLayout4);
+    bottomPanel.setLayout(flowLayout4);
+
+    leftPanel.setPreferredSize(new java.awt.Dimension(145, 50));
+    java.awt.FlowLayout flowLayout7 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout7.setAlignOnBaseline(true);
+    leftPanel.setLayout(flowLayout7);
+
+    startLocButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/circle-stop.png"))); // NOI18N
+    startLocButton.setToolTipText("Start Locomotive");
+    startLocButton.setPreferredSize(new java.awt.Dimension(35, 35));
+    startLocButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-24.png"))); // NOI18N
+    startLocButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        startLocButtonActionPerformed(evt);
+      }
+    });
+    leftPanel.add(startLocButton);
+
+    bottomPanel.add(leftPanel);
+
+    rightPanel.setPreferredSize(new java.awt.Dimension(145, 50));
+    java.awt.FlowLayout flowLayout6 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
+    flowLayout6.setAlignOnBaseline(true);
+    rightPanel.setLayout(flowLayout6);
 
     saveExitBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
     saveExitBtn.setToolTipText("Save and Exit");
+    saveExitBtn.setPreferredSize(new java.awt.Dimension(35, 35));
     saveExitBtn.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         saveExitBtnActionPerformed(evt);
       }
     });
-    saveExitPanel.add(saveExitBtn);
+    rightPanel.add(saveExitBtn);
 
-    getContentPane().add(saveExitPanel);
+    bottomPanel.add(rightPanel);
+
+    getContentPane().add(bottomPanel);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -259,6 +294,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
       this.locomotiveIconLbl.setText(selected.getName());
     }
 
+    if (this.block.getBlockBean().getLocomotiveId() != null) {
+      this.startLocButton.setEnabled(true);
+    } else {
+      this.startLocButton.setEnabled(false);
+    }
 
   }//GEN-LAST:event_locomotiveCBActionPerformed
 
@@ -267,22 +307,32 @@ public class BlockControlDialog extends javax.swing.JDialog {
     this.block.getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
   }//GEN-LAST:event_reverseArrivalCBActionPerformed
 
+  private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed
+    LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
+    if(loc != null) {
+      AutoPilot.getInstance().startLocomotive(loc, this.startLocButton.isSelected());
+    }
+  }//GEN-LAST:event_startLocButtonActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   javax.swing.JLabel blockDescLbl;
   javax.swing.JLabel blockIdLbl;
   javax.swing.JTextField blockIdTF;
   javax.swing.JTextField blockNameTF;
+  javax.swing.JPanel bottomPanel;
   javax.swing.JPanel deviceIdPanel;
   javax.swing.JLabel headingLbl;
   javax.swing.JPanel headingPanel;
-  private javax.swing.JComboBox<LocomotiveBean> locomotiveCB;
+  javax.swing.JPanel leftPanel;
+  javax.swing.JComboBox<LocomotiveBean> locomotiveCB;
   javax.swing.JLabel locomotiveIconLbl;
   javax.swing.JPanel locomotiveImagePanel;
   javax.swing.JLabel locomotiveLbl;
   javax.swing.JPanel locomotivePanel;
   javax.swing.JPanel namePanel;
   javax.swing.JCheckBox reverseArrivalCB;
+  javax.swing.JPanel rightPanel;
   javax.swing.JButton saveExitBtn;
-  javax.swing.JPanel saveExitPanel;
+  javax.swing.JToggleButton startLocButton;
   // End of variables declaration//GEN-END:variables
 }

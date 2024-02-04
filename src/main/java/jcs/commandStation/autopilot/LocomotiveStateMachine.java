@@ -18,7 +18,8 @@ package jcs.commandStation.autopilot;
 /**
  * @author fransjacobs
  */
-public class LocomotiveStateMachine { 
+public class LocomotiveStateMachine extends Thread { 
+
 
 //what are the states
   
@@ -33,5 +34,23 @@ public class LocomotiveStateMachine {
   // A lok is decativated will not start again -> IDLE
   // A lok has wiated and can start again -> PREPARING
   // A lok is preparing but cant find a valid route -> WAIT
+
+
+
+  @Override
+  public String toString() {
+    return super.toString();
+  }
+
+  @Override
+  public void run() {
+    super.run();
+  }
+
+  @Override
+  public void start() {
+    super.start();
+  }
+
 
 }
