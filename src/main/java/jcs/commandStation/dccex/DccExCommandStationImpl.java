@@ -59,8 +59,6 @@ import org.tinylog.Logger;
 public class DccExCommandStationImpl extends AbstractController implements DecoderController, AccessoryController {
 
   private DccExConnection connection;
-  //private final Map<Integer, DeviceBean> devices;
-
   private InfoBean infoBean;
   private DeviceBean mainDevice;
 

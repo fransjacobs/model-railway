@@ -50,41 +50,47 @@ public class DccExConnectionFactory {
 
   DccExConnection getConnectionImpl(ConnectionType connectionType) {
     if (controllerConnection == null) {
-      if (ConnectionType.NETWORK == connectionType) {
-        String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "dcc-ex-ip-address");
-        if (lastUsedIp != null) {
-          try {
-            if (Ping.IsReachable(lastUsedIp)) {
-              this.controllerHost = InetAddress.getByName(lastUsedIp);
-            } else {
-              Logger.trace("IP Address: " + lastUsedIp + " is not reachable");
-            }
-          } catch (UnknownHostException ex) {
-            Logger.trace("DCC-EX IP: " + lastUsedIp + " is invalid!");
-            lastUsedIp = null;
-          }
-        }
-
-        if (controllerHost != null) {
-          if (lastUsedIp == null) {
-            writeLastUsedIpAddressProperty(controllerHost.getHostAddress());
-          }
-          Logger.trace("DCC-EX ip: " + controllerHost.getHostName());
-          controllerConnection = new DccExTCPConnection(controllerHost);
-        } else {
-          Logger.warn("Can't find a DCC-EX Command Station host!");
-          JCS.logProgress("Can't find a DCC-EX Command Station on the Network");
-        }
-      } else if (ConnectionType.SERIAL == connectionType) {
-        String lastUsedSerial = RunUtil.readProperty(LAST_USED_COM_PORT_FILE, "dcc-ex-com-port");
-        if (lastUsedSerial != null) {
-          controllerConnection = new DccExSerialConnection(lastUsedSerial);
-        } else {
-          Logger.warn("Can't find a Serial Port!");
-          JCS.logProgress("Can't find a DCC-EX Can't find a Serial Port!");
-        }
-      } else {
+      if (null == connectionType) {
         throw new RuntimeException("Unknown connection type or connection type not set.");
+      } else {
+        switch (connectionType) {
+          case NETWORK -> {
+            String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "dcc-ex-ip-address");
+            if (lastUsedIp != null) {
+              try {
+                if (Ping.IsReachable(lastUsedIp)) {
+                  this.controllerHost = InetAddress.getByName(lastUsedIp);
+                } else {
+                  Logger.trace("IP Address: " + lastUsedIp + " is not reachable");
+                }
+              } catch (UnknownHostException ex) {
+                Logger.trace("DCC-EX IP: " + lastUsedIp + " is invalid!");
+                lastUsedIp = null;
+              }
+            }
+            if (controllerHost != null) {
+              if (lastUsedIp == null) {
+                writeLastUsedIpAddressProperty(controllerHost.getHostAddress());
+              }
+              Logger.trace("DCC-EX ip: " + controllerHost.getHostName());
+              controllerConnection = new DccExTCPConnection(controllerHost);
+            } else {
+              Logger.warn("Last used IP Address not set!");
+              JCS.logProgress("Can't find a DCC-EX Command Station on the Network");
+            }
+          }
+          case SERIAL -> {
+            String lastUsedSerial = RunUtil.readProperty(LAST_USED_COM_PORT_FILE, "dcc-ex-com-port");
+            if (lastUsedSerial != null) {
+              controllerConnection = new DccExSerialConnection(lastUsedSerial);
+            } else {
+              Logger.warn("Last used SerialPort not set!");
+              JCS.logProgress("Can't find a DCC-EX Can't find a Serial Port!");
+            }
+          }
+          default ->
+            throw new RuntimeException("Unknown connection type or connection type not set.");
+        }
       }
     }
     return this.controllerConnection;

@@ -222,6 +222,9 @@ INSERT INTO jcs.command_stations (id,description,short_name,class_name,connect_v
 	 ('marklin.cs','Marklin Central Station 2/3','CS','jcs.commandStation.marklin.cs.MarklinCentralStationImpl','NETWORK',NULL,'192.168.178.180',15731,true,true,true,true,true,true,true,true,'DCC,MFX,MM',true,true,NULL,'NETWORK'),
 	 ('dcc-ex','DCC-EX','dcc-ex','jcs.commandStation.dccex.DccExCommandStationImpl','NETWORK',NULL,'192.168.178.73',2560,false,true,true,false,false,false,false,false,'DCC',false,false,NULL,'NETWORK,SERIAL');
 
+INSERT INTO command_stations (id, description, short_name, class_name, connect_via, serial_port, ip_address, network_port, ip_auto_conf, supports_decoder_control, supports_accessory_control, supports_feedback, supports_loco_synch, supports_accessory_synch, supports_loco_image_synch, supports_loco_function_synch, protocols, default_cs, enabled, last_used_serial, sup_conn_types, feedback_module_id, feedback_bus_count, feedback_bus_0_module_count, feedback_bus_1_module_count, feedback_bus_2_module_count, feedback_bus_3_module_count)
+VALUES ('hsi-s88', 'HSI S88', 'HSI', 'jcs.commandStation.hsis88.HSIImpl', 'SERIAL', null, NULL, 0, false, false, false, true, false, false, false, false, '', false, true, NULL, 'SERIAL', '0', 1, 6, 0, 0, 0);
+
 insert into jcs_properties (p_key,p_value) values ('jcs.version','1.0.0');
 insert into jcs_properties (p_key,p_value) values ('jcs.db.version','1.0.0');
 insert into jcs_properties (p_key,p_value) values ('default.switchtime','500');

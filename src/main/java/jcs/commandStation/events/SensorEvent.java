@@ -27,6 +27,8 @@ import org.tinylog.Logger;
  */
 public class SensorEvent {
 
+  //TODO move away the Commnad station specific messages
+  
   private SensorBean sensorBean;
   private CanMessage message;
 
@@ -38,7 +40,7 @@ public class SensorEvent {
     this.message = message;
     parseMessage(message, eventDate);
   }
-
+  
   private void parseMessage(CanMessage message, Date eventDate) {
     CanMessage resp;
     if (!message.isResponseMessage()) {

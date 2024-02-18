@@ -45,7 +45,7 @@ public class CommandStationDialog extends javax.swing.JDialog {
     exitBtn = new javax.swing.JButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    setPreferredSize(new java.awt.Dimension(1024, 750));
+    setPreferredSize(new java.awt.Dimension(1080, 750));
     getContentPane().add(commandStationPanel1, java.awt.BorderLayout.CENTER);
 
     southPanel.setPreferredSize(new java.awt.Dimension(1024, 50));

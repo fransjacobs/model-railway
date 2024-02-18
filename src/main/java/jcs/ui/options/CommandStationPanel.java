@@ -73,19 +73,24 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private CommandStationBean selectedCommandStation;
   private ComboBoxModel<CommandStationBean> commandStationComboBoxModel;
-  private ComboBoxModel<SerialPort> serialPortComboBoxModel;
+  private ComboBoxModel<String> serialPortComboBoxModel;
 
   private Task task;
 
   public CommandStationPanel() {
     initComponents();
     if (PersistenceFactory.getService() != null) {
-      initModels();
+      initModels(null);
     }
   }
 
-  private void initModels() {
-    selectedCommandStation = PersistenceFactory.getService().getDefaultCommandStation();
+  private void initModels(CommandStationBean selected) {
+    if (selected == null) {
+      selectedCommandStation = PersistenceFactory.getService().getDefaultCommandStation();
+    } else {
+      selectedCommandStation = selected;
+    }
+
     List<CommandStationBean> commandStations = PersistenceFactory.getService().getCommandStations();
 
     if (selectedCommandStation == null) {
@@ -99,7 +104,12 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     commandStationComboBox.setModel(commandStationComboBoxModel);
 
     SerialPort comPorts[] = SerialPort.getCommPorts();
-    serialPortComboBoxModel = new DefaultComboBoxModel(comPorts);
+    String[] ports = new String[comPorts.length];
+    for (int i = 0; i < comPorts.length; i++) {
+      ports[i] = comPorts[i].getSystemPortName();
+    }
+
+    serialPortComboBoxModel = new DefaultComboBoxModel(ports);
     this.serialPortCB.setModel(serialPortComboBoxModel);
 
     setFieldValues();
@@ -110,6 +120,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private void setFieldValues() {
     if (selectedCommandStation != null) {
+
       this.networkRB.setSelected(selectedCommandStation.getConnectionType() == ConnectionType.NETWORK);
       this.serialRB.setSelected(selectedCommandStation.getConnectionType() == ConnectionType.SERIAL);
 
@@ -130,7 +141,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       if (portName != null) {
         try {
           SerialPort comPort = SerialPort.getCommPort(portName);
-          this.serialPortComboBoxModel.setSelectedItem(comPort);
+          this.serialPortComboBoxModel.setSelectedItem(comPort.getSystemPortName());
         } catch (SerialPortInvalidPortException ioe) {
           Logger.warn("Can't find com port: " + portName + "; " + ioe.getMessage());
         }
@@ -197,7 +208,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
       if (feedbackSupport) {
         String fbid = selectedCommandStation.getFeedbackModuleIdentifier();
-        if (fbid != null) {
+        if (fbid != null && !"".equals(fbid)) {
           int node = Integer.parseInt(fbid);
           this.nodeSpinner.setValue(node);
         }
@@ -242,6 +253,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
     if (this.networkRB.isSelected()) {
       this.serialPortCB.setVisible(false);
+      this.serialPortCB.setPreferredSize(new Dimension(150, 30));
       this.serialPortRefreshBtn.setVisible(false);
       this.ipAddressTF.setVisible(true);
 
@@ -255,6 +267,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     }
 
     if (this.serialRB.isSelected()) {
+      this.serialPortCB.setPreferredSize(new Dimension(250, 30));
       this.serialPortCB.setVisible(true);
       this.ipAddressTF.setVisible(false);
       this.serialPortRefreshBtn.setVisible(true);
@@ -1100,14 +1113,14 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   private void defaultCommandStationChkBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_defaultCommandStationChkBoxActionPerformed
     Logger.trace("Setting " + selectedCommandStation + " as default");
     PersistenceFactory.getService().changeDefaultCommandStation(selectedCommandStation);
-    initModels();
+    initModels(null);
   }//GEN-LAST:event_defaultCommandStationChkBoxActionPerformed
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     Logger.trace(evt.getActionCommand());
+    CommandStationBean csb = this.selectedCommandStation;
     PersistenceFactory.getService().persist(this.selectedCommandStation);
-
-    initModels();
+    initModels(csb);
   }//GEN-LAST:event_saveBtnActionPerformed
 
   private void ipAddressTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_ipAddressTFFocusLost
@@ -1133,6 +1146,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   private void newBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_newBtnActionPerformed
     this.selectedCommandStation = new CommandStationBean();
     this.selectedCommandStation.setId("new.cs");
+    this.selectedCommandStation.setConnectionType(ConnectionType.NETWORK);
+
+    ((DefaultComboBoxModel) commandStationComboBoxModel).addElement(selectedCommandStation);
+    this.commandStationComboBoxModel.setSelectedItem(selectedCommandStation);
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed
 
@@ -1232,7 +1249,12 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
 
   private void serialPortRefreshBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialPortRefreshBtnActionPerformed
     SerialPort comPorts[] = SerialPort.getCommPorts();
-    serialPortComboBoxModel = new DefaultComboBoxModel(comPorts);
+
+    String[] ports = new String[comPorts.length];
+    for (int i = 0; i < comPorts.length; i++) {
+      ports[i] = comPorts[i].getSystemPortName();
+    }
+    serialPortComboBoxModel = new DefaultComboBoxModel(ports);
     serialPortCB.setModel(serialPortComboBoxModel);
 
     String portName = selectedCommandStation.getSerialPort();
@@ -1245,7 +1267,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
         Logger.trace("Selected ComPort: " + comPort);
 
         if (comPort != null) {
-          this.serialPortComboBoxModel.setSelectedItem(comPort);
+          this.serialPortComboBoxModel.setSelectedItem(comPort.getSystemPortName());
         }
       } catch (SerialPortInvalidPortException ioe) {
         Logger.warn("Can't find com port: " + portName + "; " + ioe.getMessage());
@@ -1254,7 +1276,10 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }//GEN-LAST:event_serialPortRefreshBtnActionPerformed
 
   private void serialPortCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_serialPortCBActionPerformed
-    SerialPort comPort = (SerialPort) serialPortComboBoxModel.getSelectedItem();
+    String port = serialPortComboBoxModel.getSelectedItem().toString();
+
+    SerialPort comPort = SerialPort.getCommPort(port);
+
     String portDescription = comPort.getSystemPortName();
     this.selectedCommandStation.setSerialPort(portDescription);
     Logger.trace("Selected Comport: " + portDescription);
@@ -1308,7 +1333,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }//GEN-LAST:event_nodeSpinnerStateChanged
 
   private void recreateSensorsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_recreateSensorsBtnActionPerformed
-
     recreateSensors();
   }//GEN-LAST:event_recreateSensorsBtnActionPerformed
 
@@ -1320,7 +1344,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     Integer bus3 = this.selectedCommandStation.getFeedbackBus3ModuleCount();
 
     PersistenceFactory.getService().generateSensorBeans(deviceId, bus0, bus1, bus2, bus3);
-
   }
 
   @Override
@@ -1433,8 +1456,8 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
                   firePropertyChange("serial", "", sn);
                   setProgress(50);
 
-                  if (commandStation instanceof FeedbackController) {
-                    DeviceBean fbDevice = ((FeedbackController) commandStation).getFeedbackDevice();
+                  if (commandStation instanceof FeedbackController feedbackController) {
+                    DeviceBean fbDevice = feedbackController.getFeedbackDevice();
                     if (fbDevice != null) {
                       Logger.trace(fbDevice.getName() + " Supports Feedback");
                       String id = fbDevice.getIdentifier();
@@ -1626,7 +1649,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JButton recreateSensorsBtn;
   JPanel rightBottomPanel;
   JButton saveBtn;
-  JComboBox<SerialPort> serialPortCB;
+  JComboBox<String> serialPortCB;
   JButton serialPortRefreshBtn;
   JRadioButton serialRB;
   JLabel shortNameLbl;
