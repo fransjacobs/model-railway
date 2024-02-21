@@ -55,7 +55,7 @@ public class ControllerFactory {
   }
 
   public static AccessoryController getAccessoryController(CommandStationBean commandStationBean) {
-    if(ControllerFactory.accessoryControllers.isEmpty()) {
+    if (ControllerFactory.accessoryControllers.isEmpty()) {
       instantiateAccessoryControllers();
     }
     return ControllerFactory.accessoryControllers.get(commandStationBean.getId());
@@ -104,7 +104,7 @@ public class ControllerFactory {
       bean = commandStationBean;
     } else {
       bean = PersistenceFactory.getService().getDefaultCommandStation();
-      Logger.trace("Default Command station: "+bean.getDescription()+" Decoder Support: "+bean.isDecoderControlSupport() );
+      Logger.trace("Default Command station: " + bean.getDescription() + " Decoder Support: " + bean.isDecoderControlSupport());
     }
 
     if (bean.isDecoderControlSupport() && bean.isEnabled()) {
@@ -113,8 +113,8 @@ public class ControllerFactory {
       Logger.trace("Invoking decoderController: " + className);
 
       try {
-        Constructor c = Class.forName(className).getConstructor(Boolean.TYPE, CommandStationBean.class);
-        decoderController = (DecoderController) c.newInstance(autoConnect, commandStationBean);
+        Constructor c = Class.forName(className).getConstructor(CommandStationBean.class, Boolean.TYPE);
+        decoderController = (DecoderController) c.newInstance(commandStationBean, autoConnect);
       } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
         Logger.error("Can't instantiate a '" + className + "' " + ex.getMessage());
       }
@@ -145,8 +145,8 @@ public class ControllerFactory {
           String className = bean.getClassName();
           Logger.trace("Invoking accessoryController: " + className);
           try {
-            Constructor c = Class.forName(className).getConstructor(Boolean.TYPE, CommandStationBean.class);
-            AccessoryController accessoryController = (AccessoryController) c.newInstance(true, bean);
+            Constructor c = Class.forName(className).getConstructor(CommandStationBean.class, Boolean.TYPE);
+            AccessoryController accessoryController = (AccessoryController) c.newInstance(bean, true);
             accessoryControllers.put(bean.getId(), accessoryController);
           } catch (ClassNotFoundException | InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException ex) {
             Logger.error("Can't instantiate a '" + className + "' " + ex.getMessage());

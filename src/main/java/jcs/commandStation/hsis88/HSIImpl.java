@@ -25,6 +25,7 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
+import static jcs.commandStation.hsis88.HSIConnection.COMMAND_VERSION;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.DeviceBean;
@@ -46,17 +47,19 @@ public class HSIImpl extends AbstractController implements FeedbackController {
   private final Map<Integer, DeviceBean> devices;
   private DeviceBean mainDevice;
   private DeviceBean feedbackDevice;
-  
-  private final Map<Integer,SensorBean> sensors;
+
+  private final Map<Integer, SensorBean> sensors;
 
   public HSIImpl(CommandStationBean commandStationBean) {
-    this(false, commandStationBean);
+    this(commandStationBean, false);
   }
 
-  public HSIImpl(boolean autoConnect, CommandStationBean commandStationBean) {
+  public HSIImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     devices = new HashMap<>();
     sensors = new HashMap<>();
+    this.executor = Executors.newCachedThreadPool();
+
     if (commandStationBean != null) {
       if (autoConnect) {
         Logger.trace("Perform auto connect");
@@ -90,7 +93,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
 
       if (connection != null) {
         long now = System.currentTimeMillis();
-        long timeout = now + 1000L;
+        long timeout = now + 5000L;
 
         while (!connected && now < timeout) {
           connected = connection.isConnected();
@@ -105,9 +108,10 @@ public class HSIImpl extends AbstractController implements FeedbackController {
           HSIMessageListener messageListener = new HSIFeedbackListener(this);
           connection.addMessageListener(messageListener);
 
+          //Wait a while until the interface is ready
+          pause(3000);
           JCS.logProgress("Obtaining Device information...");
-          connection.sendMessage("v\r");
-          info = connection.sendMessage("v\r");
+          info = connection.sendMessage(COMMAND_VERSION);
 
           //Create Info
           this.infoBean = new InfoBean();
@@ -134,7 +138,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
           }
           this.mainDevice = d;
           this.devices.put(0, d);
-          
+
           //Query the S88 Modules ?
           //connection.sendMessage("m\r");          
           //this.connection.setFeedbackListener(feedbackListener);  
@@ -202,10 +206,6 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     }
   }
 
-  private void notifySensorEventListeners(final SensorEvent sensorEvent) {
-    executor.execute(() -> fireSensorEventListeners(sensorEvent));
-  }
-
   private class HSIFeedbackListener implements HSIMessageListener {
 
     private final HSIImpl hsiImpl;
@@ -216,62 +216,66 @@ public class HSIImpl extends AbstractController implements FeedbackController {
 
     @Override
     public void onMessage(final HSIMessage message) {
-      Logger.trace(message);
+      //Logger.trace(message);
+      executor.execute(() -> hsiImpl.fireSensorEvents(message));
     }
   }
 
-  private List<SensorEvent> createSensorEvents(HSIMessage message) {
+  private void fireSensorEvents(HSIMessage message) {
     List<SensorEvent> events = new LinkedList<>();
-    
     List<HSIMessage.S88Module> changedModules = message.getModules();
-    
-    for(HSIMessage.S88Module module : changedModules) {
-      //Each moduel has 16 contacts
+
+    for (HSIMessage.S88Module module : changedModules) {
+      //Each module has 16 contacts
       int moduleNr = module.getModuleNumber();
       int low = module.getLowByte();
       int high = module.getHighByte();
-        
-      //To be continued      
-      
+      int[] contacts = new int[16];
+
+      for (int i = 0; i < 8; i++) {
+        int m = ((int) Math.pow(2, i));
+        int lv = (low & m) > 0 ? 1 : 0;
+        int hv = (high & m) > 0 ? 1 : 0;
+        contacts[i] = lv;
+        contacts[(i + 8)] = hv;
+      }
+
+      int contactOffset = (moduleNr - 1) * 16;
+      for (int i = 0; i < contacts.length; i++) {
+        Integer key = contactOffset + i + 1;
+
+        SensorBean sb;
+        if (this.sensors.containsKey(key)) {
+          //Update 
+          sb = sensors.get((i + 1));
+          if (!sb.getStatus().equals(contacts[i])) {
+            sb.setPreviousStatus(sb.getStatus());
+            sb.setStatus(contacts[i]);
+
+            SensorEvent se = new SensorEvent(sb);
+            events.add(se);
+
+            Logger.trace("U: " + sb.toLogString());
+          }
+        } else {
+          sb = new SensorBean(0, key, contacts[i]);
+          this.sensors.put(sb.getContactId(), sb);
+
+          SensorEvent se = new SensorEvent(sb);
+          events.add(se);
+
+          Logger.trace("A: " + sb.toLogString());
+        }
+      }
+
+      //Inform the sensor listeners
+      Logger.trace("Informing " + sensorEventListeners.size() + " sensorListeners with " + events.size() + " events");
+      for (SensorEvent sensorEvent : events) {
+        fireSensorEventListeners(sensorEvent);
+      }
     }
-    
-    
-    
-    return events;
   }
-  
-  
-// private class CanFeedbackMessageListener implements FeedbackListener {
-//
-//    private final MarklinCentralStationImpl controller;
-//
-//    CanFeedbackMessageListener(MarklinCentralStationImpl controller) {
-//      this.controller = controller;
-//    }
-//
-//    @Override
-//    public void onFeedbackMessage(final CanMessage message) {
-//      int cmd = message.getCommand();
-//      switch (cmd) {
-//        case CanMessage.S88_EVENT_RESPONSE -> {
-//          if (CanMessage.DLC_8 == message.getDlc()) {
-//            SensorEvent sme = new SensorEvent(message, new Date());
-//            if (sme.getSensorBean() != null) {
-//              controller.notifySensorEventListeners(sme);
-//            }
-//          }
-//        }
-//      }
-//    }
-//  }
-  
-  
-  
-  
-  
-  
-  
-//  
+
   public static void main(String[] a) {
     RunUtil.loadExternalProperties();
 
@@ -294,7 +298,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     csb.setEnabled(true);
 
     //HSIConnectionFactory.logComports();
-    HSIImpl cs = new HSIImpl(false, csb);
+    HSIImpl cs = new HSIImpl(csb, false);
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     if (cs.isConnected()) {

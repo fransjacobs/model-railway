@@ -94,10 +94,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private int defaultSwitchTime;
 
   public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
-    this(false, commandStationBean);
+    this(commandStationBean, false);
   }
 
-  public MarklinCentralStationImpl(boolean autoConnect, CommandStationBean commandStationBean) {
+  public MarklinCentralStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     devices = new HashMap<>();
     analogChannels = new HashMap<>();
@@ -740,7 +740,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       listener.onSensorChange(sensorEvent);
     }
   }
-  
+
   private void notifySensorEventListeners(final SensorEvent sensorEvent) {
     executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }
@@ -978,7 +978,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     csb.setDefault(true);
     csb.setEnabled(true);
 
-    MarklinCentralStationImpl cs = new MarklinCentralStationImpl(false, csb);
+    MarklinCentralStationImpl cs = new MarklinCentralStationImpl(csb, false);
     Logger.debug((cs.connect() ? "Connected" : "NOT Connected"));
 
     if (cs.isConnected()) {

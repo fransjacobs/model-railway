@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
@@ -41,6 +42,8 @@ public abstract class AbstractController implements GenericController {
   protected final List<LocomotiveDirectionEventListener> locomotiveDirectionEventListeners;
   protected final List<LocomotiveSpeedEventListener> locomotiveSpeedEventListeners;
 
+  protected final List<DisconnectionEventListener> disconnectionEventListeners;
+
   protected ExecutorService executor;
   protected boolean power;
   protected boolean debug = false;
@@ -61,6 +64,8 @@ public abstract class AbstractController implements GenericController {
     locomotiveDirectionEventListeners = new LinkedList<>();
     locomotiveSpeedEventListeners = new LinkedList<>();
 
+    disconnectionEventListeners = new LinkedList<>();
+
     executor = Executors.newCachedThreadPool();
   }
 
@@ -68,16 +73,24 @@ public abstract class AbstractController implements GenericController {
   public CommandStationBean getCommandStationBean() {
     return commandStationBean;
   }
-  
+
   @Override
   public boolean isConnected() {
     return connected;
   }
 
+  public void addDisconnectionEventListener(DisconnectionEventListener listener) {
+    this.disconnectionEventListeners.add(listener);
+  }
+
+  public void removeDisconnectionEventListener(DisconnectionEventListener listener) {
+    this.disconnectionEventListeners.remove(listener);
+  }
+
   public boolean isPower() {
     return this.power;
   }
-    
+
   public void addPowerEventListener(PowerEventListener listener) {
     this.powerEventListeners.add(listener);
   }

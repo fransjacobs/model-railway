@@ -204,25 +204,25 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       } else {
         Logger.debug("Skipping Track measurements");
       }
-
-      if (accessoryCntrConnected > 0) {
-        for (AccessoryController ac : accessoryControllers.values()) {
-          if (ac.isConnected()) {
-            ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
-          }
-        }
-      }
-
-      if (feedbackCntrConnected > 0) {
-        for (FeedbackController fc : feedbackControllers.values()) {
-          if (fc.isConnected()) {
-            fc.addSensorEventListener(new SensorChangeEventListener(this));
-          }
-        }
-      }
-
-      //TODO implement get the day end i.e. the current state of all Objects on track
     }
+
+    if (accessoryCntrConnected > 0) {
+      for (AccessoryController ac : accessoryControllers.values()) {
+        if (ac.isConnected()) {
+          ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
+        }
+      }
+    }
+
+    if (feedbackCntrConnected > 0) {
+      for (FeedbackController fc : feedbackControllers.values()) {
+        if (fc.isConnected()) {
+          fc.addSensorEventListener(new SensorChangeEventListener(this));
+        }
+      }
+    }
+
+    //TODO implement get the day end i.e. the current state of all Objects on track
     return decoderConnected;
   }
 

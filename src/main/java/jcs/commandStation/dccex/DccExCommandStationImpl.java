@@ -67,10 +67,10 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   private int defaultSwitchTime;
 
   public DccExCommandStationImpl(CommandStationBean commandStationBean) {
-    this(false, commandStationBean);
+    this(commandStationBean, false);
   }
 
-  public DccExCommandStationImpl(boolean autoConnect, CommandStationBean commandStationBean) {
+  public DccExCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     measurementChannels = new HashMap<>();
     defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
@@ -186,6 +186,10 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   @Override
   public String getIp() {
     return this.commandStationBean.getIpAddress();
+  }
+
+  public int getDefaultSwitchTime() {
+    return defaultSwitchTime;
   }
 
   @Override

@@ -64,6 +64,7 @@ class HSISerialConnection implements HSIConnection {
 
       HSISerialPortListener listener = new HSISerialPortListener(this);
       commPort.addDataListener(listener);
+
     } catch (SerialPortInvalidPortException ioe) {
       Logger.error("Can't find com port: " + portName + "; " + ioe.getMessage());
     }
