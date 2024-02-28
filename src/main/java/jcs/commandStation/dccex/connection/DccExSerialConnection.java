@@ -16,16 +16,19 @@
 package jcs.commandStation.dccex.connection;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortEvent;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
-import com.fazecast.jSerialComm.SerialPortTimeoutException;
-import java.io.BufferedReader;
+import com.fazecast.jSerialComm.SerialPortMessageListener;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import jcs.commandStation.dccex.DccExConnection;
-import jcs.commandStation.dccex.events.DccExMessageListener;
+import static jcs.commandStation.dccex.DccExConnection.MESSAGE_DELIMITER;
+import jcs.commandStation.dccex.DccExMessage;
+import jcs.commandStation.dccex.DccExMessageFactory;
 import org.tinylog.Logger;
 
 /**
@@ -36,34 +39,58 @@ class DccExSerialConnection implements DccExConnection {
 
   private static SerialPort commPort;
   private Writer writer;
+  private boolean portOpen = false;
   private boolean debug = false;
 
-  private SerialMessageReceiver messageReceiver;
+  private final List<DccExMessageListener> dccExListeners;
+  private ResponseCallback responseCallback;
+  private static final long TIMEOUT = 3000L;
+
+  private final List<DccExMessage> startupMessages;
 
   DccExSerialConnection(String portName) {
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    dccExListeners = new ArrayList<>();
+    startupMessages = new ArrayList<>();
+
     obtainSerialPort(portName);
+  }
+
+  private void pause(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      Logger.trace(e.getMessage());
+    }
   }
 
   private void obtainSerialPort(String portName) {
     try {
       commPort = SerialPort.getCommPort(portName);
-
+      //TODO: DCC-EX settings are hardware determined, but for the future make it configurable
       commPort.setBaudRate(115200);
-      commPort.openPort();
+      commPort.setNumDataBits(8);
+      commPort.setNumStopBits(1);
+      commPort.setParity(0);
+
+      portOpen = commPort.openPort();
       commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
       writer = new BufferedWriter(new OutputStreamWriter(commPort.getOutputStream()));
 
-      messageReceiver = new SerialMessageReceiver(commPort);
-      messageReceiver.setDaemon(true);
-      messageReceiver.start();
+      DccExSerialPortListener listener = new DccExSerialPortListener(this);
+      commPort.addDataListener(listener);
     } catch (SerialPortInvalidPortException ioe) {
       Logger.error("Can't find com port: " + portName + "; " + ioe.getMessage());
     }
   }
 
   @Override
-  public void sendMessage(String message) {
+  public synchronized String sendMessage(String message) {
+    String response = message;
+    String rxOpcode = DccExMessageFactory.getResponseOpcodeFor(message);
+    if (rxOpcode != null) {
+      this.responseCallback = new ResponseCallback(message);
+    }
     try {
       writer.write(message);
       writer.flush();
@@ -73,97 +100,166 @@ class DccExSerialConnection implements DccExConnection {
     } catch (IOException ex) {
       Logger.error(ex);
     }
+
+    if (responseCallback != null) {
+      long now = System.currentTimeMillis();
+      long start = now;
+      long timeout = now + TIMEOUT;
+
+      //Wait for the response
+      boolean responseComplete = responseCallback.isResponseComplete();
+      while (!responseComplete && now < timeout) {
+        pause(10);
+        responseComplete = responseCallback.isResponseComplete();
+        now = System.currentTimeMillis();
+      }
+
+      response = responseCallback.getResponse();
+      if (debug) {
+        if (responseComplete) {
+          Logger.trace("Got Response in " + (now - start) + " ms");
+        } else {
+          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
+        }
+      }
+    }
+
+    responseCallback = null;
+    return response;
+
+  }
+
+  private void messageReceived(DccExMessage dccExMessage) {
+    //Logger.trace((dccExMessage.isDiagnosticMessage() ? "D" : "N") + ": " + dccExMessage.getMessage());
+    if (dccExListeners.isEmpty()) {
+      startupMessages.add(dccExMessage);
+    } else {
+      for (DccExMessageListener listener : dccExListeners) {
+        listener.onMessage(dccExMessage);
+      }
+    }
   }
 
   @Override
   public boolean isConnected() {
-    if (commPort != null) {
-      return commPort.isOpen();
-    } else {
-      return false;
+    return portOpen;
+  }
+
+  private void disconnected() {
+    try {
+      Logger.trace("Port is Disconnected");
+      close();
+    } catch (Exception e) {
+      Logger.error("Error while trying to close port " + e.getMessage());
     }
   }
 
   @Override
   public void close() throws Exception {
-    this.messageReceiver.quit();
+    dccExListeners.clear();
+    startupMessages.clear();
+    portOpen = false;
     if (writer != null) {
-      try {
-        writer.close();
-      } catch (IOException ex) {
-        Logger.error("Can't close output. Cause: " + ex.getMessage());
-        Logger.trace(ex);
-      }
+      writer.close();
     }
+    commPort.removeDataListener();
     commPort.closePort();
+
   }
 
   @Override
   public void setMessageListener(DccExMessageListener messageListener) {
-    if (messageReceiver != null) {
-      this.messageReceiver.setMessageListener(messageListener);
-    }
-  }
-
-  public static SerialPort[] listComPorts() {
-    SerialPort[] comPorts = SerialPort.getCommPorts();
-    for (SerialPort comPort : comPorts) {
-      Logger.trace(comPort.getDescriptivePortName() + "; " + comPort.getSystemPortName());
-    }
-    return comPorts;
-  }
-
-  private class SerialMessageReceiver extends Thread {
-
-    private boolean quit = true;
-    private BufferedReader reader;
-    private DccExMessageListener messageListener;
-
-    public SerialMessageReceiver(SerialPort serialPort) {
-      try {
-        reader = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
-      } catch (Exception ex) {
-        Logger.error(ex);
+    Boolean firstListener = dccExListeners.isEmpty();
+    this.dccExListeners.add(messageListener);
+    if (firstListener) {
+      for (DccExMessage m : startupMessages) {
+        messageReceived(m);
       }
     }
+  }
 
-    synchronized void quit() {
-      this.quit = true;
-    }
+  public List<DccExMessage> getStartupMessages() {
+    return this.startupMessages;
+  }
 
-    synchronized boolean isRunning() {
-      return !this.quit;
-    }
+  private final class DccExSerialPortListener implements SerialPortMessageListener {
 
-    void setMessageListener(DccExMessageListener messageListener) {
-      this.messageListener = messageListener;
+    private final DccExSerialConnection dccExSerialConnection;
+
+    DccExSerialPortListener(DccExSerialConnection hsiSerialConnection) {
+      this.dccExSerialConnection = hsiSerialConnection;
     }
 
     @Override
-    public void run() {
-      this.quit = false;
-      Thread.currentThread().setName("DCC-EX-SERIAL-RX");
+    public int getListeningEvents() {
+      return SerialPort.LISTENING_EVENT_DATA_RECEIVED | SerialPort.LISTENING_EVENT_PORT_DISCONNECTED;
+    }
 
-      Logger.trace("Started listening on port " + commPort.getSystemPortName() + " ...");
+    @Override
+    public byte[] getMessageDelimiter() {
+      return MESSAGE_DELIMITER.getBytes();
+    }
 
-      while (isRunning()) {
-        try {
-          String message = reader.readLine();
-          this.messageListener.onMessage(message);
-        } catch (SerialPortTimeoutException se) {
-          Logger.error(se.getMessage());
-          quit();
-        } catch (IOException ioe) {
-          Logger.error(ioe);
+    @Override
+    public boolean delimiterIndicatesEndOfMessage() {
+      return true;
+    }
+
+    @Override
+    public void serialEvent(SerialPortEvent event) {
+      switch (event.getEventType()) {
+        case SerialPort.LISTENING_EVENT_PORT_DISCONNECTED -> {
+          this.dccExSerialConnection.disconnected();
+        }
+        case SerialPort.LISTENING_EVENT_DATA_RECEIVED -> {
+          byte[] message = event.getReceivedData();
+
+          if (responseCallback != null && responseCallback.isSubscribedfor(message)) {
+            //a "synchroneous" response
+            responseCallback.setResponse(message);
+          } else {
+            //a "asynchroneous" response
+            DccExMessage ddcExm = new DccExMessage(message);
+            dccExSerialConnection.messageReceived(ddcExm);
+          }
         }
       }
+    }
+  }
 
-      Logger.debug("Stop receiving");
-      try {
-        reader.close();
-      } catch (IOException ex) {
-        Logger.error(ex);
+  private class ResponseCallback {
+
+    private final String tx;
+    private final String rxOpcode;
+    private String rx;
+
+    ResponseCallback(final String tx) {
+      this.tx = tx;
+      this.rxOpcode = DccExMessageFactory.getResponseOpcodeFor(tx);
+      Logger.trace("Expected response opcode: " + this.rxOpcode);
+    }
+
+    boolean isSubscribedfor(final byte[] rx) {
+      String response = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
+      String opcode = response.substring(1, 2);
+
+      return opcode.equals(rxOpcode);
+    }
+
+    void setResponse(byte[] rx) {
+      this.rx = new String(rx).replaceAll("\n", "").replaceAll("\r", "");
+    }
+
+    String getResponse() {
+      if (this.rx != null) {
+        return this.rx;
+      } else {
+        return tx;
       }
+    }
+
+    boolean isResponseComplete() {
+      return rx != null && !rx.isBlank() && rx.startsWith("<") && rx.endsWith(">");
     }
   }
 

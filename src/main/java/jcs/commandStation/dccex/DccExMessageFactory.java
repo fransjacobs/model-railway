@@ -15,11 +15,34 @@
  */
 package jcs.commandStation.dccex;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author frans
  */
 public class DccExMessageFactory {
+
+  private static final Map<String, String> txRx = new HashMap<>();
+
+  static {
+    txRx.put("0", "p");
+    txRx.put("1", "p");
+    txRx.put("J", "j");
+    txRx.put("=", "=");
+    txRx.put("D", "S");
+    txRx.put("s", "i");
+  }
+
+  public static String getResponseOpcode(String txOpcode) {
+    return txRx.get(txOpcode);
+  }
+
+  public static String getResponseOpcodeFor(String message) {
+    String opcode = message.substring(1, 2);
+    return txRx.get(opcode);
+  }
 
   /**
    * Request Current on the Track(s)

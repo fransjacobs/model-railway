@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.dccex;
 
-import jcs.commandStation.dccex.events.DccExMessageListener;
+import jcs.commandStation.dccex.connection.DccExMessageListener;
 
 /**
  *
@@ -25,9 +25,11 @@ public interface DccExConnection extends AutoCloseable {
 
   static final int MAX_ERRORS = 15;
 
-  static final int PORT = 2560;
+  static final int DEFAULT_NETWORK_PORT = 2560;
 
-  void sendMessage(String message);
+  static final String MESSAGE_DELIMITER = ">\n";
+
+  String sendMessage(String message);
 
   void setMessageListener(DccExMessageListener messageListener);
 

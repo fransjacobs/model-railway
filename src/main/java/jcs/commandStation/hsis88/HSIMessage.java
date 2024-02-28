@@ -133,25 +133,4 @@ public class HSIMessage {
       return "HSI msg {" + "length=" + length + ", responseIdentifier=" + responseIdentifier + ", numberOfModules=" + numberOfModules + ", modules=" + modules + "}";
     }
   }
-
-  public static void main(String[] a) {
-
-    byte[] message = new byte[]{(byte) 105, 6, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0, 6, 0, 0, 13};
-
-    Logger.trace("message:\n" + Arrays.toString(message) + "\n[" + message.length + "]");
-
-    HSIMessage m = new HSIMessage(message);
-
-    Logger.trace(m);
-
-    message = new byte[]{109, 6, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0, 6, 0, 0, 13};
-
-    Logger.trace("Mode T:\n" + new String(message));
-
-    message = new byte[]{10, 86, 101, 114, 46, 32, 49, 46, 48, 51, 32, 47, 32, 49, 53, 46, 48, 57, 46, 50, 51, 47, 83, 56, 56, 45, 85, 83, 66, 45, 72, 83, 73, 47, 40, 99, 41, 32, 71, 46, 67, 108, 101, 109, 101, 110, 115, 13};
-
-    Logger.trace("Mode T:\n" + new String(message));
-
-  }
-
 }

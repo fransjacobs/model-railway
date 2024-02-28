@@ -24,48 +24,56 @@ import java.util.List;
  */
 public class DccExMessage implements DccEx {
 
-  private final String command;
-  private final List<String> responses;
+  private final String message;
 
-  public DccExMessage(String command) {
-    this.command = command;
-    this.responses = new ArrayList<>();
+  public DccExMessage(byte[] message) {
+    this(new String(message).replace("\n", "").replace("\r", ""));
   }
 
-  public String getCommand() {
-    return command;
+  public DccExMessage(String message) {
+    this.message = message;
   }
 
-  public String getTXOpcode() {
-    //Opcode is the character just after the first "<"
-    int start = this.command.indexOf("<") + 1;
-    int end = this.command.indexOf(" ");
-    if (end == -1) {
-      end = this.command.length() - 1;
-    }
-    String opcode = this.command.substring(start, end);
-    return opcode;
+  public String getMessage() {
+    return message;
+  }
+
+  public String getOpcode() {
+    int start = message.indexOf("<") + 1;
+    return message.substring(start, start + 1);
   }
 
   public boolean isSystemMessage() {
-    String txOpcode = this.getTXOpcode();
+    String opcode = this.getOpcode();
 
-    if (txOpcode != null) {
-      return SYSTEM_OPCODES.contains(txOpcode);
+    if (opcode != null) {
+      return SYSTEM_OPCODES.contains(opcode);
     }
 
     return false;
+  }
+
+  public boolean isValid() {
+    return message.startsWith("<") && message.endsWith(">");
+  }
+
+  public boolean isNormalMessage() {
+    return this.message.substring(0, 1).equals("<") && !this.message.substring(1, 1).equals("*");
+  }
+
+  public boolean isDiagnosticMessage() {
+    return this.message.substring(0, 2).equals("<*");
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("TX: ");
-    sb.append(command);
+    sb.append(message);
     return sb.toString();
   }
 
-  public static String filterContent(String message) {
+  public String getFilteredContent() {
     if (message.length() > 1 && message.startsWith("<")) {
       String opcode = message.substring(1, 2);
       String content = message.replaceAll("<", "").replaceAll(">", "").replaceFirst(opcode, "");
@@ -75,7 +83,7 @@ public class DccExMessage implements DccEx {
     }
   }
 
-  public static String filterDisplayMessage(String message) {
+  public String getFilteredDiagnosticMessage() {
     if (message.length() > 2 && message.startsWith("<*")) {
       String content = message.replaceAll("<*", "").replaceAll("\\*>", "");
       return content.trim();
@@ -83,6 +91,4 @@ public class DccExMessage implements DccEx {
       return message;
     }
   }
-  
-  
 }

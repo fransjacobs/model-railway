@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import jcs.commandStation.dccex.DccExConnection;
-import jcs.commandStation.dccex.events.DccExMessageListener;
 import org.tinylog.Logger;
 
 /**
@@ -50,7 +49,7 @@ class DccExTCPConnection implements DccExConnection {
   private void checkConnection() {
     try {
       if (clientSocket == null || !clientSocket.isConnected()) {
-        clientSocket = new Socket(dccExAddress, PORT);
+        clientSocket = new Socket(dccExAddress, DEFAULT_NETWORK_PORT);
         clientSocket.setKeepAlive(true);
         clientSocket.setTcpNoDelay(true);
         writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
@@ -93,7 +92,7 @@ class DccExTCPConnection implements DccExConnection {
   }
 
   @Override
-  public void sendMessage(String message) {
+  public String sendMessage(String message) {
     try {
       writer.write(message);
       writer.flush();
@@ -104,6 +103,8 @@ class DccExTCPConnection implements DccExConnection {
     } catch (IOException ex) {
       Logger.error(ex);
     }
+    //Stub
+    return null;
   }
 
   @Override

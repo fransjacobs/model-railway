@@ -43,20 +43,20 @@ public class DccExMessageTest {
     System.out.println("getCommand");
     DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
     String expResult = "<s>";
-    String result = instance.getCommand();
+    String result = instance.getMessage();
     assertEquals(expResult, result);
   }
 
 
-  @Test
-  public void testGetTXOpcode() {
-    System.out.println("getTXOpcode");
-    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
-
-    String expResult = "s";
-    String result = instance.getTXOpcode();
-    assertEquals(expResult, result);
-  }
+//  @Test
+//  public void testGetTXOpcode() {
+//    System.out.println("getTXOpcode");
+//    DccExMessage instance = new DccExMessage(DccExMessage.REQ_VERSION_HARDWARE_TURNOUTS);
+//
+//    String expResult = "s";
+//    String result = instance.getTXOpcode();
+//    assertEquals(expResult, result);
+//  }
 
 //  @Test
 //  public void testIsSystemMessage() {

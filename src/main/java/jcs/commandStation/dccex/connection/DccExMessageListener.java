@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.dccex.events;
+package jcs.commandStation.dccex.connection;
+
+import jcs.commandStation.dccex.DccExMessage;
 
 /**
  *
@@ -21,6 +23,9 @@ package jcs.commandStation.dccex.events;
  */
 public interface DccExMessageListener {
 
+  @Deprecated
   void onMessage(String message);
+
+  void onMessage(DccExMessage message);
 
 }

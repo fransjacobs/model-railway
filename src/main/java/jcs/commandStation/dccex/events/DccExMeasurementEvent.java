@@ -35,6 +35,10 @@ public class DccExMeasurementEvent implements Serializable {
   private String opcode;
   private String messageContent;
 
+  public DccExMeasurementEvent(String message) {
+    this(message.substring(1, 2), message.replaceAll("<", "").replaceAll(">", ""));
+  }
+
   public DccExMeasurementEvent(String opcode, String messageContent) {
     this.opcode = opcode;
     this.messageContent = messageContent;
