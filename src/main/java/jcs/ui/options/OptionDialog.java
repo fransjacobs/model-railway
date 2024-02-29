@@ -68,8 +68,7 @@ public class OptionDialog extends javax.swing.JDialog {
     prefsTP = new JTabbedPane();
     commandStationPanel = new CommandStationPanel();
     locomotivePanel = new LocomotivePreferencesPanel();
-    turnoutPanel = new TurnoutPreferencesPanel();
-    signalPanel = new SignalPreferencesPanel();
+    accessoryPreferencesPanel = new AccessoryPreferencesPanel();
     propertiesPanel = new PropertiesPanel();
     southPanel = new JPanel();
     closeBtn = new JButton();
@@ -103,11 +102,8 @@ public class OptionDialog extends javax.swing.JDialog {
     locomotivePanel.setName("locomotivePanel"); // NOI18N
     prefsTP.addTab("Locomotives", locomotivePanel);
 
-    turnoutPanel.setName("turnoutPanel"); // NOI18N
-    prefsTP.addTab("Turnouts", turnoutPanel);
-
-    signalPanel.setName("signalPanel"); // NOI18N
-    prefsTP.addTab("Signals", signalPanel);
+    accessoryPreferencesPanel.setName("accessoryPreferencesPanel"); // NOI18N
+    prefsTP.addTab("Accessories", accessoryPreferencesPanel);
 
     propertiesPanel.setName("propertiesPanel"); // NOI18N
     prefsTP.addTab("Properties", propertiesPanel);
@@ -149,10 +145,8 @@ public class OptionDialog extends javax.swing.JDialog {
 
     if (c instanceof LocomotivePreferencesPanel) {
       //this.locomotivePanel.refresh();
-    } else if (c instanceof TurnoutPreferencesPanel) {
+    } else if (c instanceof AccessoryPreferencesPanel) {
       //this.turnoutPanel.refresh();
-    } else if (c instanceof SignalPreferencesPanel) {
-      //this.signalPanel.refresh();
     } else if (c instanceof PropertiesPanel) {
       //this.propertiesPanel.refresh();
     }
@@ -184,15 +178,14 @@ public class OptionDialog extends javax.swing.JDialog {
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private AccessoryPreferencesPanel accessoryPreferencesPanel;
   private JPanel centerPanel;
   private JButton closeBtn;
   private CommandStationPanel commandStationPanel;
   private LocomotivePreferencesPanel locomotivePanel;
   private JTabbedPane prefsTP;
   private PropertiesPanel propertiesPanel;
-  private SignalPreferencesPanel signalPanel;
   private JPanel southPanel;
   private JPanel topPanel;
-  private TurnoutPreferencesPanel turnoutPanel;
   // End of variables declaration//GEN-END:variables
 }

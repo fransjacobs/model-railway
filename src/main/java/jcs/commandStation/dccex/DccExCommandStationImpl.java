@@ -91,16 +91,21 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   private void initMeasurements() {
     //Prepare the measurements as far as I know DCC-EX has only track current for both PROG and MAIN 
     String response = connection.sendMessage(DccExMessageFactory.trackManagerConfigRequest());
-    DccExMeasurementEvent crq = new DccExMeasurementEvent(response);
-    handleMeasurement(crq);
-
+    if (response != null) {
+      DccExMeasurementEvent crq = new DccExMeasurementEvent(response);
+      handleMeasurement(crq);
+    }
     response = connection.sendMessage(DccExMessageFactory.maxCurrentRequest());
-    DccExMeasurementEvent mcrq = new DccExMeasurementEvent(response);
-    handleMeasurement(mcrq);
+    if (response != null) {
+      DccExMeasurementEvent mcrq = new DccExMeasurementEvent(response);
+      handleMeasurement(mcrq);
+    }
 
     response = this.connection.sendMessage(DccExMessageFactory.currentStatusRequest());
-    DccExMeasurementEvent csrq = new DccExMeasurementEvent(response);
-    handleMeasurement(csrq);
+    if (response != null) {
+      DccExMeasurementEvent csrq = new DccExMeasurementEvent(response);
+      handleMeasurement(csrq);
+    }
   }
 
   @Override
@@ -587,7 +592,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
             }
             case "l" -> {
               // Locomotive changed.
-              CabEvent ce = new CabEvent(content);
+              CabEvent ce = new CabEvent(content, this.commandStation.getCommandStationBean().getId());
               this.commandStation.notifyLocomotiveEventListeners(ce);
             }
             case "=" -> {

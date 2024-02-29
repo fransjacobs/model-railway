@@ -107,26 +107,14 @@
                 </Constraint>
               </Constraints>
             </Component>
-            <Component class="jcs.ui.options.TurnoutPreferencesPanel" name="turnoutPanel">
+            <Component class="jcs.ui.options.AccessoryPreferencesPanel" name="accessoryPreferencesPanel">
               <Properties>
-                <Property name="name" type="java.lang.String" value="turnoutPanel" noResource="true"/>
+                <Property name="name" type="java.lang.String" value="accessoryPreferencesPanel" noResource="true"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="Turnouts">
-                    <Property name="tabTitle" type="java.lang.String" value="Turnouts"/>
-                  </JTabbedPaneConstraints>
-                </Constraint>
-              </Constraints>
-            </Component>
-            <Component class="jcs.ui.options.SignalPreferencesPanel" name="signalPanel">
-              <Properties>
-                <Property name="name" type="java.lang.String" value="signalPanel" noResource="true"/>
-              </Properties>
-              <Constraints>
-                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                  <JTabbedPaneConstraints tabName="Signals">
-                    <Property name="tabTitle" type="java.lang.String" value="Signals"/>
+                  <JTabbedPaneConstraints tabName="Accessories">
+                    <Property name="tabTitle" type="java.lang.String" value="Accessories"/>
                   </JTabbedPaneConstraints>
                 </Constraint>
               </Constraints>

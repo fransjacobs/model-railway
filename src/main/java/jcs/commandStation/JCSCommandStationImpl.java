@@ -54,6 +54,7 @@ import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
 import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
@@ -658,6 +659,15 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     public void onFunctionChange(LocomotiveFunctionEvent functionEvent) {
       FunctionBean fb = functionEvent.getFunctionBean();
       FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
+
+      if (dbfb == null) {
+        //try via loc address and decoder type
+        Integer address = fb.getLocomotiveId().intValue();
+        LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
+        if (dblb != null) {
+          dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
+        }
+      }
 
       if (dbfb != null) {
         if (!Objects.equals(dbfb.getValue(), fb.getValue())) {

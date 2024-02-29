@@ -78,6 +78,7 @@ import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -676,7 +677,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     Logger.trace("Create new Loco...");
     LocomotiveBean newLoco = new LocomotiveBean();
     newLoco.setCommandStationId(commandStationBean.getId());
-    newLoco.setRichtung(0);
+    newLoco.setDirection(Direction.FORWARDS);
     newLoco.setVelocity(0);
     newLoco.setImported("Manual Inserted");
 

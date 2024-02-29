@@ -55,6 +55,9 @@ public class FunctionBean implements Serializable {
   private Image inActiveIconImage;
   private Image activeIconImage;
 
+  private String commandStationId;
+  private String decoderTypeString;
+
   /**
    * <p>
    * Entity to model a Locomotive Function.</p>
@@ -257,6 +260,24 @@ public class FunctionBean implements Serializable {
   @Transient
   public String getInActiveIcon() {
     return getIconName(false);
+  }
+
+  @Transient
+  public String getCommandStationId() {
+    return commandStationId;
+  }
+
+  public void setCommandStationId(String commandStationId) {
+    this.commandStationId = commandStationId;
+  }
+
+  @Transient
+  public String getDecoderTypeString() {
+    return decoderTypeString;
+  }
+
+  public void setDecoderTypeString(String decoderTypeString) {
+    this.decoderTypeString = decoderTypeString;
   }
 
   @Override

@@ -37,8 +37,10 @@ public class CabEvent implements Serializable {
 
   private Direction direction;
   private Integer velocity;
+  private final String commandStationId;
 
-  public CabEvent(String messageContent) {
+  public CabEvent(String messageContent, String commandStationId) {
+    this.commandStationId = commandStationId;
     parseMessage(messageContent);
   }
 
@@ -113,6 +115,10 @@ public class CabEvent implements Serializable {
     return velocity;
   }
 
+  public String getCommandStationId() {
+    return commandStationId;
+  }
+
   public List<FunctionBean> getFunctionBeans() {
     List<FunctionBean> fbl = new ArrayList<>(28);
     String fms = Integer.toBinaryString(funcMap);
@@ -133,6 +139,9 @@ public class CabEvent implements Serializable {
         Logger.trace("F" + i + " " + f);
       }
       FunctionBean fb = new FunctionBean((long) address, i, (f == '1' ? 1 : 0));
+      fb.setCommandStationId(commandStationId);
+      fb.setDecoderTypeString(DecoderType.DCC.getDecoderType());
+
       fbl.add(fb);
     }
     return fbl;
@@ -142,6 +151,7 @@ public class CabEvent implements Serializable {
     LocomotiveBean lb = new LocomotiveBean();
     lb.setId((long) this.address);
     lb.setAddress(this.address);
+    lb.setCommandStationId(commandStationId);
     lb.setDecoderTypeString(DecoderType.DCC.getDecoderType());
     lb.setDirection(this.direction);
     lb.setVelocity(velocity);

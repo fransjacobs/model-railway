@@ -429,14 +429,19 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public List<AccessoryBean> getTurnouts() {
     String typeClause = "%weiche";
-    List<AccessoryBean> turnouts = database.where("type like ?", typeClause).results(AccessoryBean.class);
+    String csid = getDefaultCommandStation().getId();
+    Object[] args = new Object[]{typeClause, csid};
+    List<AccessoryBean> turnouts = database.where("type like ? and command_station_id = ?", args).results(AccessoryBean.class);
     return turnouts;
   }
 
   @Override
   public List<AccessoryBean> getSignals() {
     String typeClause = "%signal%";
-    List<AccessoryBean> signals = database.where("type like ?", typeClause).results(AccessoryBean.class);
+    String csid = getDefaultCommandStation().getId();
+    Object[] args = new Object[]{typeClause, csid};
+
+    List<AccessoryBean> signals = database.where("type like ? and command_station_id = ?", args).results(AccessoryBean.class);
     return signals;
   }
 

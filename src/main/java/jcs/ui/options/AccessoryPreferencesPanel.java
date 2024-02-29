@@ -370,7 +370,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     rightPanel.add(synchronizeBtn);
 
     newBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png"))); // NOI18N
-    newBtn.setToolTipText("Create new Locomotive");
+    newBtn.setToolTipText("Create new Accessory");
     newBtn.setMaximumSize(new Dimension(40, 40));
     newBtn.setMinimumSize(new Dimension(40, 40));
     newBtn.setPreferredSize(new Dimension(40, 40));
@@ -754,9 +754,12 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     Logger.trace("Create new Accessory...");
     AccessoryBean newAccessory = new AccessoryBean();
     newAccessory.setCommandStationId(commandStationBean.getId());
+    List<AccessoryBean> accessories = PersistenceFactory.getService().getAccessoriesByCommandStationId(commandStationBean.getId());
+    int last = accessories.size();
+    newAccessory.setId((last+1)+"");
     newAccessory.setSource("Manual Inserted");
 
-    newAccessory.setProtocol(Protocol.MM);
+    newAccessory.setProtocol(Protocol.DCC);
     newAccessory.setSynchronize(false);
 
     this.accessoryListModel.add(newAccessory);
