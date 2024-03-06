@@ -29,6 +29,7 @@ import jcs.commandStation.dccex.DccExConnection;
 import static jcs.commandStation.dccex.DccExConnection.MESSAGE_DELIMITER;
 import jcs.commandStation.dccex.DccExMessage;
 import jcs.commandStation.dccex.DccExMessageFactory;
+import jcs.commandStation.events.DisconnectionEvent;
 import org.tinylog.Logger;
 
 /**
@@ -37,6 +38,7 @@ import org.tinylog.Logger;
  */
 class DccExSerialConnection implements DccExConnection {
 
+  private final String lastUsedPortName;
   private static SerialPort commPort;
   private Writer writer;
   private boolean portOpen = false;
@@ -49,6 +51,7 @@ class DccExSerialConnection implements DccExConnection {
   private final List<DccExMessage> startupMessages;
 
   DccExSerialConnection(String portName) {
+    lastUsedPortName = portName;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     dccExListeners = new ArrayList<>();
     startupMessages = new ArrayList<>();
@@ -126,11 +129,9 @@ class DccExSerialConnection implements DccExConnection {
 
     responseCallback = null;
     return response;
-
   }
 
   private void messageReceived(DccExMessage dccExMessage) {
-    //Logger.trace((dccExMessage.isDiagnosticMessage() ? "D" : "N") + ": " + dccExMessage.getMessage());
     if (dccExListeners.isEmpty()) {
       startupMessages.add(dccExMessage);
     } else {
@@ -142,12 +143,22 @@ class DccExSerialConnection implements DccExConnection {
 
   @Override
   public boolean isConnected() {
+    if (!portOpen) {
+      obtainSerialPort(lastUsedPortName);
+    }
     return portOpen;
   }
 
   private void disconnected() {
     try {
-      Logger.trace("Port is Disconnected");
+      Logger.trace("Port " + commPort.getSystemPortName() + " is Disconnected");
+
+      String msg = commPort.getDescriptivePortName() + " [" + commPort.getSystemPortName() + "]";
+      DisconnectionEvent de = new DisconnectionEvent(msg);
+
+      for (DccExMessageListener listener : dccExListeners) {
+        listener.onDisconnect(de);
+      }
       close();
     } catch (Exception e) {
       Logger.error("Error while trying to close port " + e.getMessage());
@@ -164,7 +175,6 @@ class DccExSerialConnection implements DccExConnection {
     }
     commPort.removeDataListener();
     commPort.closePort();
-
   }
 
   @Override

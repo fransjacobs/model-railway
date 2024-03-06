@@ -23,6 +23,8 @@ import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import static jcs.commandStation.hsis88.HSIConnection.COMMAND_VERSION;
@@ -199,6 +201,13 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     Logger.trace("Disconnected");
   }
 
+  private void fireAllDisconnectionEventListeners(final DisconnectionEvent disconnectionEvent) {
+    for (DisconnectionEventListener listener : this.disconnectionEventListeners) {
+      listener.onDisconnect(disconnectionEvent);
+    }
+    disconnect();
+  }
+
   @Override
   public void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
@@ -216,8 +225,12 @@ public class HSIImpl extends AbstractController implements FeedbackController {
 
     @Override
     public void onMessage(final HSIMessage message) {
-      //Logger.trace(message);
       executor.execute(() -> hsiImpl.fireSensorEvents(message));
+    }
+
+    @Override
+    public void onDisconnect(DisconnectionEvent event) {
+      this.hsiImpl.fireAllDisconnectionEventListeners(event);
     }
   }
 
@@ -264,7 +277,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
           SensorEvent se = new SensorEvent(sb);
           events.add(se);
 
-          Logger.trace("A: " + sb.toLogString());
+          //Logger.trace("A: " + sb.toLogString());
         }
       }
 
@@ -274,6 +287,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
         fireSensorEventListeners(sensorEvent);
       }
     }
+
   }
 
   public static void main(String[] a) {

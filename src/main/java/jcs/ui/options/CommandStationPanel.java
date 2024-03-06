@@ -137,13 +137,15 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       String className = selectedCommandStation.getClassName();
       this.classNameTF.setText(className);
 
-      String portName = selectedCommandStation.getSerialPort();
-      if (portName != null) {
-        try {
-          SerialPort comPort = SerialPort.getCommPort(portName);
-          this.serialPortComboBoxModel.setSelectedItem(comPort.getSystemPortName());
-        } catch (SerialPortInvalidPortException ioe) {
-          Logger.warn("Can't find com port: " + portName + "; " + ioe.getMessage());
+      if (ConnectionType.SERIAL == selectedCommandStation.getConnectionType()) {
+        String portName = selectedCommandStation.getSerialPort();
+        if (portName != null) {
+          try {
+            SerialPort comPort = SerialPort.getCommPort(portName);
+            this.serialPortComboBoxModel.setSelectedItem(comPort.getSystemPortName());
+          } catch (SerialPortInvalidPortException ioe) {
+            Logger.warn("Can't find com port: " + portName + "; " + ioe.getMessage());
+          }
         }
       }
 

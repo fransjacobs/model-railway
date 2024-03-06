@@ -79,10 +79,12 @@ public abstract class AbstractController implements GenericController {
     return connected;
   }
 
+  @Override
   public void addDisconnectionEventListener(DisconnectionEventListener listener) {
     this.disconnectionEventListeners.add(listener);
   }
 
+  @Override
   public void removeDisconnectionEventListener(DisconnectionEventListener listener) {
     this.disconnectionEventListeners.remove(listener);
   }

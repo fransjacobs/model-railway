@@ -25,6 +25,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import jcs.commandStation.dccex.DccExConnection;
+import jcs.commandStation.dccex.DccExMessage;
+import jcs.commandStation.dccex.DccExMessageFactory;
 import org.tinylog.Logger;
 
 /**
@@ -36,9 +38,12 @@ class DccExTCPConnection implements DccExConnection {
   private final InetAddress dccExAddress;
   private Socket clientSocket;
   private Writer writer;
+  private ResponseCallback responseCallback;
+
   private ClientMessageReceiver messageReceiver;
 
   private boolean debug = false;
+  private static final long TIMEOUT = 3000L;
 
   DccExTCPConnection(InetAddress csAddress) {
     dccExAddress = csAddress;
@@ -91,20 +96,57 @@ class DccExTCPConnection implements DccExConnection {
     }
   }
 
+  private void pause(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      Logger.trace(e.getMessage());
+    }
+  }
+
   @Override
-  public String sendMessage(String message) {
+  public synchronized String sendMessage(String message) {
+    String response = message;
+    String rxOpcode = DccExMessageFactory.getResponseOpcodeFor(message);
+    if (rxOpcode != null) {
+      this.responseCallback = new ResponseCallback(message);
+    }
+
     try {
       writer.write(message);
       writer.flush();
-      if(debug) {
-        Logger.trace("TX:" +message);
+      if (debug) {
+        Logger.trace("TX:" + message);
       }
 
     } catch (IOException ex) {
       Logger.error(ex);
     }
-    //Stub
-    return null;
+    if (responseCallback != null) {
+      long now = System.currentTimeMillis();
+      long start = now;
+      long timeout = now + TIMEOUT;
+
+      //Wait for the response
+      boolean responseComplete = responseCallback.isResponseComplete();
+      while (!responseComplete && now < timeout) {
+        pause(10);
+        responseComplete = responseCallback.isResponseComplete();
+        now = System.currentTimeMillis();
+      }
+
+      response = responseCallback.getResponse();
+      if (debug) {
+        if (responseComplete) {
+          Logger.trace("Got Response in " + (now - start) + " ms");
+        } else {
+          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
+        }
+      }
+    }
+
+    responseCallback = null;
+    return response;
   }
 
   @Override
@@ -118,6 +160,7 @@ class DccExTCPConnection implements DccExConnection {
   }
 
   private class ClientMessageReceiver extends Thread {
+
     private boolean quit = true;
     private BufferedReader reader;
     private DccExMessageListener messageListener;
@@ -152,9 +195,20 @@ class DccExTCPConnection implements DccExConnection {
       while (isRunning()) {
         try {
           String message = reader.readLine();
-          this.messageListener.onMessage(message);
+
+          if (responseCallback != null && responseCallback.isSubscribedfor(message)) {
+            //a "synchroneous" response
+            responseCallback.setResponse(message);
+          } else {
+            //a "asynchroneous" response
+            DccExMessage msg = new DccExMessage(message);
+            this.messageListener.onMessage(msg);
+          }
         } catch (SocketException se) {
           Logger.error(se.getMessage());
+          
+          //TODO:hook a disconnection event here some where
+          
           quit();
         } catch (IOException ioe) {
           Logger.error(ioe);
@@ -167,6 +221,41 @@ class DccExTCPConnection implements DccExConnection {
       } catch (IOException ex) {
         Logger.error(ex);
       }
+    }
+  }
+
+  private class ResponseCallback {
+
+    private final String tx;
+    private final String rxOpcode;
+    private String rx;
+
+    ResponseCallback(final String tx) {
+      this.tx = tx;
+      this.rxOpcode = DccExMessageFactory.getResponseOpcodeFor(tx);
+      Logger.trace("Expected response opcode: " + this.rxOpcode);
+    }
+
+    boolean isSubscribedfor(final String response) {
+      String rsp = response.replaceAll("\n", "").replaceAll("\r", "");
+      String opcode = rsp.substring(1, 2);
+      return opcode.equals(rxOpcode);
+    }
+
+    void setResponse(String response) {
+      this.rx = response.replaceAll("\n", "").replaceAll("\r", "");
+    }
+
+    String getResponse() {
+      if (this.rx != null) {
+        return this.rx;
+      } else {
+        return tx;
+      }
+    }
+
+    boolean isResponseComplete() {
+      return rx != null && !rx.isBlank() && rx.startsWith("<") && rx.endsWith(">");
     }
   }
 

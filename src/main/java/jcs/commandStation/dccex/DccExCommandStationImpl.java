@@ -31,6 +31,8 @@ import jcs.commandStation.dccex.events.DccExMeasurementEvent;
 import jcs.commandStation.dccex.connection.DccExMessageListener;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEvent;
@@ -180,12 +182,39 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
                 Logger.trace("Main Device found in " + (now - start) + " ms");
               }
             } else {
-              if (debug) {
+              if (conType == ConnectionType.NETWORK) {
+                //When using the net work the DCC-EX does not braodcast all kind of setting so ask them
+                JCS.logProgress("Obtaining Device information...");
+                String response = connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
+                Logger.trace(response);
+
+                DccExMessage rsp = new DccExMessage(response);
+
+                if ("i".equals(rsp.getOpcode())) {
+                  String content = rsp.getFilteredContent();
+                  DeviceBean d = new DeviceBean();
+                  String[] dccexdev = content.split(" ");
+                  d.setName(content);
+                  for (int i = 0; i < dccexdev.length; i++) {
+                    switch (i) {
+                      case 0 ->
+                        d.setName(dccexdev[i]);
+                      case 1 ->
+                        d.setVersion(dccexdev[i]);
+                      case 5 ->
+                        d.setTypeName(dccexdev[i]);
+                      case 6 ->
+                        d.setSerial(dccexdev[i]);
+                    }
+                  }
+                  this.mainDevice = d;
+                  Logger.trace("Main Device set to: " + d);
+                }
+
+              }
+              if (debug && mainDevice == null) {
                 Logger.trace("No Main Device found in " + (now - start) + " ms");
               }
-              JCS.logProgress("Obtaining Device information...");
-              String response = connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
-              Logger.trace(response);
             }
 
             //Create Info
@@ -270,9 +299,13 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   @Override
   public boolean power(boolean on) {
     if (connected) {
-      this.connection.sendMessage(DccExMessageFactory.changePowerRequest(on));
-      //Let the Commandstation process the message
-      pause(20);
+      String response = this.connection.sendMessage(DccExMessageFactory.changePowerRequest(on));
+      DccExMessage rm = new DccExMessage(response);
+      if ("p".equals(rm.getOpcode())) {
+        this.power = "1".equals(rm.getFilteredContent());
+        PowerEvent pe = new PowerEvent(power);
+        fireAllPowerEventListeners(pe);
+      }
     }
     return this.power;
   }
@@ -381,6 +414,13 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     this.connection.sendMessage(DccExMessageFactory.currentStatusRequest());
     this.pause(50);
     return this.measurementChannels;
+  }
+
+  private void fireAllDisconnectionEventListeners(final DisconnectionEvent disconnectionEvent) {
+    for (DisconnectionEventListener listener : this.disconnectionEventListeners) {
+      listener.onDisconnect(disconnectionEvent);
+    }
+    disconnect();
   }
 
   private void notifyPowerEventListeners(final PowerEvent powerEvent) {
@@ -525,24 +565,16 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       this.commandStation = commandStation;
     }
 
-    private static int getIntValue(String s) {
-      int r = -1;
-      if (s != null && s.length() > 0) {
-        Integer.parseUnsignedInt(s);
-      }
-      return r;
-    }
-
-    @Override
-    public void onMessage(String message) {
-      onMessage(new DccExMessage(message));
-    }
-
+//    private static int getIntValue(String s) {
+//      int r = -1;
+//      if (s != null && s.length() > 0) {
+//        Integer.parseUnsignedInt(s);
+//      }
+//      return r;
+//    }
     @Override
     public void onMessage(DccExMessage message) {
       try {
-
-        //if (message.length() > 1 && message.startsWith("<")) {
         if (message.isValid()) {
           String opcode = "";
           String content;
@@ -623,6 +655,12 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
         Logger.trace("Error in Message: '" + message + "' -> " + e.getMessage());
       }
     }
+
+    @Override
+    public void onDisconnect(DisconnectionEvent event) {
+      this.commandStation.fireAllDisconnectionEventListeners(event);
+    }
+
   }
 
 //////////////////////////////////////////////////////////////////////////////////////  

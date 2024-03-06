@@ -96,8 +96,6 @@ public class PersistenceServiceTest {
     SensorBean s2 = new SensorBean("65-2", "M2", 65, 2, 1, 1, 0, null);
     sensors.add(s2);
 
-    //LocomotiveBean(Long id, String name, Long uid, Integer address, String icon, String decoderTypeString, Integer tachoMax
-    //             , Integer vMin, Integer velocity, Integer direction, boolean commuter, boolean show, boolean synchronize) {
     LocomotiveBean loco2 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
     loco2.setCommandStationId("marklin.cs");
     locomotives.add(loco2);
@@ -161,7 +159,7 @@ public class PersistenceServiceTest {
     functions.add(fb49156_3);
     FunctionBean fb49156_4 = new FunctionBean(21L, 49156L, 4, 18, 0);
     functions.add(fb49156_4);
-//
+
     AccessoryBean w1 = new AccessoryBean("1", 1, "W 1R", "rechtsweiche", 1, 2, 200, "mm", "ein_alt", "weichen", "005", "magicon_a_005_01.svg", "marklin.cs");
     w1.setSynchronize(true);
     this.turnouts.add(w1);
@@ -193,45 +191,15 @@ public class PersistenceServiceTest {
     AccessoryBean s41 = new AccessoryBean("41", 41, "S 41", "urc_lichtsignal_HP012", 0, 3, 200, "mm", "ein_alt", "lichtsignale", "026", "magicon_a_026_00.svg", "marklin.cs");
     s41.setSynchronize(true);
     this.signals.add(s41);
-//
+
     TileBean bk1 = new TileBean("bk-1", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 320, 140, null, null, null);
     tiles.add(bk1);
 
-    TileBean bk2
-            = new TileBean(
-                    "bk-2",
-                    TileBean.TileType.BLOCK,
-                    Orientation.EAST,
-                    Direction.CENTER,
-                    420,
-                    140,
-                    null,
-                    null,
-                    null);
+    TileBean bk2 = new TileBean("bk-2", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 420, 140, null, null, null);
     tiles.add(bk2);
-    TileBean ct2
-            = new TileBean(
-                    "ct-2",
-                    TileBean.TileType.CURVED,
-                    Orientation.EAST,
-                    Direction.CENTER,
-                    260,
-                    140,
-                    null,
-                    null,
-                    null);
+    TileBean ct2 = new TileBean("ct-2", TileBean.TileType.CURVED, Orientation.EAST, Direction.CENTER, 260, 140, null, null, null);
     tiles.add(ct2);
-    TileBean ct5
-            = new TileBean(
-                    "ct-5",
-                    TileBean.TileType.CURVED,
-                    Orientation.SOUTH,
-                    Direction.CENTER,
-                    180,
-                    380,
-                    null,
-                    null,
-                    null);
+    TileBean ct5 = new TileBean("ct-5", TileBean.TileType.CURVED, Orientation.SOUTH, Direction.CENTER, 180, 380, null, null, null);
     tiles.add(ct5);
     TileBean se5
             = new TileBean(
@@ -269,29 +237,9 @@ public class PersistenceServiceTest {
                     "15",
                     null);
     tiles.add(si3);
-    TileBean st1
-            = new TileBean(
-                    "st-1",
-                    TileBean.TileType.STRAIGHT,
-                    Orientation.EAST,
-                    Direction.CENTER,
-                    300,
-                    180,
-                    null,
-                    null,
-                    null);
+    TileBean st1 = new TileBean("st-1", TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 300, 180, null, null, null);
     tiles.add(st1);
-    TileBean sw1
-            = new TileBean(
-                    "sw-1",
-                    TileBean.TileType.SWITCH,
-                    Orientation.WEST,
-                    Direction.LEFT,
-                    260,
-                    180,
-                    null,
-                    "2",
-                    null);
+    TileBean sw1 = new TileBean("sw-1", TileBean.TileType.SWITCH, Orientation.WEST, Direction.LEFT, 260, 180, null, "2", null);
     tiles.add(sw1);
 
     TileBean sw2 = new TileBean("sw-2", TileBean.TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 580, 180, null, null, null);
@@ -663,6 +611,9 @@ public class PersistenceServiceTest {
   public void testGetTurnouts() {
     System.out.println("getTurnouts");
     PersistenceService instance = PersistenceFactory.getService();
+    //Make sure the right commans station is default
+    CommandStationBean csb = instance.getCommandStation("marklin.cs");
+    instance.changeDefaultCommandStation(csb);
 
     List<AccessoryBean> expResult = this.turnouts;
     List<AccessoryBean> result = instance.getTurnouts();
@@ -676,6 +627,10 @@ public class PersistenceServiceTest {
   public void testGetSignals() {
     System.out.println("getSignals");
     PersistenceService instance = PersistenceFactory.getService();
+    //Make sure the right commans station is default
+    CommandStationBean csb = instance.getCommandStation("marklin.cs");
+    instance.changeDefaultCommandStation(csb);
+
     List<AccessoryBean> expResult = this.signals;
     List<AccessoryBean> result = instance.getSignals();
 
@@ -733,7 +688,7 @@ public class PersistenceServiceTest {
     accessory.setSource("test");
 
     instance.persist(accessory);
-    ab = instance.getAccessoryByAddressAndCommandStationId(expResult.getAddress(),"marklin.cs");
+    ab = instance.getAccessoryByAddressAndCommandStationId(expResult.getAddress(), "marklin.cs");
     assertEquals(accessory, ab);
 
     assertEquals("test", ab.getSource());
@@ -751,7 +706,7 @@ public class PersistenceServiceTest {
     AccessoryBean result = instance.persist(accessory);
     assertEquals(accessory, result);
 
-    AccessoryBean ab = instance.getAccessoryByAddressAndCommandStationId(accessory.getAddress(),"marklin.cs");
+    AccessoryBean ab = instance.getAccessoryByAddressAndCommandStationId(accessory.getAddress(), "marklin.cs");
 
     assertEquals(accessory, ab);
 

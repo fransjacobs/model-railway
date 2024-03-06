@@ -16,16 +16,16 @@
 package jcs.commandStation.dccex.connection;
 
 import jcs.commandStation.dccex.DccExMessage;
+import jcs.commandStation.events.DisconnectionEvent;
 
 /**
  *
- * @author fransjacobs
+ * @author Frans Jacobs
  */
 public interface DccExMessageListener {
 
-  @Deprecated
-  void onMessage(String message);
-
   void onMessage(DccExMessage message);
+
+  void onDisconnect(DisconnectionEvent event);
 
 }

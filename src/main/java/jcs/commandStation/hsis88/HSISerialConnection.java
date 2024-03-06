@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import jcs.commandStation.events.DisconnectionEvent;
 import org.tinylog.Logger;
 
 /**
@@ -33,6 +34,7 @@ import org.tinylog.Logger;
  */
 class HSISerialConnection implements HSIConnection {
 
+  private final String lastUsedPortName;
   private static SerialPort commPort;
   private boolean debug = false;
   private boolean portOpen = false;
@@ -44,6 +46,8 @@ class HSISerialConnection implements HSIConnection {
   private static final long TIMEOUT = 3000L;
 
   HSISerialConnection(String portName) {
+    lastUsedPortName = portName;
+
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     feedbackListeners = new ArrayList<>();
     obtainSerialPort(portName);
@@ -64,7 +68,6 @@ class HSISerialConnection implements HSIConnection {
 
       HSISerialPortListener listener = new HSISerialPortListener(this);
       commPort.addDataListener(listener);
-
     } catch (SerialPortInvalidPortException ioe) {
       Logger.error("Can't find com port: " + portName + "; " + ioe.getMessage());
     }
@@ -158,12 +161,22 @@ class HSISerialConnection implements HSIConnection {
 
   @Override
   public boolean isConnected() {
+    if (!portOpen) {
+      obtainSerialPort(lastUsedPortName);
+    }
     return portOpen;
   }
 
   private void disconnected() {
     try {
-      Logger.trace("Port is Disconnected");
+      Logger.trace("Port " + commPort.getSystemPortName() + " is Disconnected");
+
+      String msg = commPort.getDescriptivePortName() + " [" + commPort.getSystemPortName() + "]";
+      DisconnectionEvent de = new DisconnectionEvent(msg);
+
+      for (HSIMessageListener listener : feedbackListeners) {
+        listener.onDisconnect(de);
+      }
       close();
     } catch (Exception e) {
       Logger.error("Error while trying to close port " + e.getMessage());

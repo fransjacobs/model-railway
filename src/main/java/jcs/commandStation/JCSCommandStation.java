@@ -18,6 +18,7 @@ package jcs.commandStation;
 import java.awt.Image;
 import java.util.List;
 import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
@@ -46,6 +47,8 @@ public interface JCSCommandStation {
   boolean isConnected();
 
   void disconnect();
+
+  void addDisconnectionEventListener(DisconnectionEventListener listener);
 
   void addPowerEventListener(PowerEventListener listener);
 

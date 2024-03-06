@@ -55,6 +55,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import jcs.JCS;
+import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.PowerEvent;
 import jcs.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
@@ -72,7 +74,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class JCSFrame extends JFrame implements UICallback {
+public class JCSFrame extends JFrame implements UICallback, DisconnectionEventListener {
 
   private final Map<KeyStroke, Action> actionMap;
   private FeedbackMonitor feedbackMonitor;
@@ -193,8 +195,7 @@ public class JCSFrame extends JFrame implements UICallback {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "settingsPanel");
   }
-  
-  
+
   public void showDesignLayoutPanel() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "designPanel");
@@ -793,6 +794,7 @@ public class JCSFrame extends JFrame implements UICallback {
           this.controllerHostNameLbl.setText(info.getHostname());
           this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
           this.connectMI.setText("Disconnect");
+
         }
       } else {
         JCS.getJcsCommandStation().disconnect();
@@ -804,6 +806,8 @@ public class JCSFrame extends JFrame implements UICallback {
         this.connectMI.setText("Connect");
       }
     }
+    JCS.getJcsCommandStation().addDisconnectionEventListener(this);
+
     this.powerButton.setEnabled(connect);
     this.showFeedbackMonitorBtn.setEnabled(connect);
     this.setControllerProperties();
@@ -876,6 +880,15 @@ public class JCSFrame extends JFrame implements UICallback {
   }
 
   @Override
+  public void onDisconnect(DisconnectionEvent event) {
+    JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is disconnected.", "Disconnection error", JOptionPane.ERROR_MESSAGE);
+
+    this.controllerHostNameLbl.setText("Disconnected");
+    this.connectMI.setText("Connect");
+    this.connectButton.setSelected(false);
+  }
+
+  @Override
   public boolean handleQuitRequest() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
     return result == JOptionPane.YES_OPTION;
@@ -883,8 +896,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
   @Override
   public void handleAbout() {
-    ImageIcon jcsIcon = new ImageIcon(JCSFrame.class
-            .getResource("/media/jcs-train-64.png"));
+    ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
     JOptionPane.showMessageDialog(this, "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
   }
 

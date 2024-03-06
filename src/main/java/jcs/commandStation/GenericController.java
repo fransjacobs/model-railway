@@ -16,6 +16,7 @@
 package jcs.commandStation;
 
 import java.util.List;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.entities.CommandStationBean;
 import jcs.entities.DeviceBean;
 import jcs.entities.InfoBean;
@@ -30,13 +31,16 @@ interface GenericController {
 
   void disconnect();
 
+  void addDisconnectionEventListener(DisconnectionEventListener listener);
+
+  void removeDisconnectionEventListener(DisconnectionEventListener listener);
+
   InfoBean getCommandStationInfo();
 
   DeviceBean getDevice();
 
   List<DeviceBean> getDevices();
 
-  //void clearCaches();
   String getIp();
 
 }
