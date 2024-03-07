@@ -22,6 +22,7 @@ import jcs.commandStation.dccex.DccExConnection;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.util.Ping;
 import jcs.util.RunUtil;
+import jcs.util.SerialPortUtil;
 import org.tinylog.Logger;
 
 /**
@@ -82,7 +83,12 @@ public class DccExConnectionFactory {
           case SERIAL -> {
             String lastUsedSerial = RunUtil.readProperty(LAST_USED_COM_PORT_FILE, "dcc-ex-com-port");
             if (lastUsedSerial != null) {
-              controllerConnection = new DccExSerialConnection(lastUsedSerial);
+              if (SerialPortUtil.portSystemNameExists(lastUsedSerial)) {
+                controllerConnection = new DccExSerialConnection(lastUsedSerial);
+              } else {
+                Logger.warn("Last used serial port: " + lastUsedSerial + " not found in the available ports!");
+                JCS.logProgress("DCC-EX Can't find a Serial Port " + lastUsedSerial + "!");
+              }
             } else {
               Logger.warn("Last used SerialPort not set!");
               JCS.logProgress("Can't find a DCC-EX Can't find a Serial Port!");

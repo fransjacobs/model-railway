@@ -18,6 +18,7 @@ package jcs.commandStation.hsis88;
 import jcs.JCS;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.util.RunUtil;
+import jcs.util.SerialPortUtil;
 import org.tinylog.Logger;
 
 /**
@@ -45,7 +46,12 @@ public class HSIConnectionFactory {
     if (controllerConnection == null) {
       String lastUsedSerial = RunUtil.readProperty(LAST_USED_COM_PORT_FILE, "hsi-s88-com-port");
       if (lastUsedSerial != null) {
-        controllerConnection = new HSISerialConnection(lastUsedSerial);
+        if (SerialPortUtil.portSystemNameExists(lastUsedSerial)) {
+          controllerConnection = new HSISerialConnection(lastUsedSerial);
+        } else {
+          Logger.warn("Last used serial port: "+lastUsedSerial+" not found in the available ports!");
+          JCS.logProgress("HSI-S88 Can't find a Serial Port " + lastUsedSerial + "!");
+        }
       } else {
         Logger.warn("Last used serial port not available.");
         JCS.logProgress("HSI-S88 Can't find a Serial Port!");

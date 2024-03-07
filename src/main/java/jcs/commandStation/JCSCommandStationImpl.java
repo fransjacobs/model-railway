@@ -252,17 +252,19 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void disconnect() {
+    for (FeedbackController fc : feedbackControllers.values()) {
+      if (fc != decoderController) {
+        fc.disconnect();
+      }
+    }
+    for (AccessoryController ac : accessoryControllers.values()) {
+      if (ac != decoderController) {
+        ac.disconnect();
+      }
+    }
+
     if (decoderController != null) {
       decoderController.disconnect();
-      decoderController = null;
-    }
-
-    for (AccessoryController ac : accessoryControllers.values()) {
-      ac.disconnect();
-    }
-
-    for (FeedbackController fc : feedbackControllers.values()) {
-      fc.disconnect();
     }
 
     //Enable command station switching so
@@ -334,7 +336,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public InfoBean getCommandStationInfo() {
-    if (this.decoderController.getDevice() != null) {
+    if (this.decoderController != null && this.decoderController.getDevice() != null) {
       return this.decoderController.getCommandStationInfo();
     } else {
       return null;
@@ -515,9 +517,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void addDisconnectionEventListener(DisconnectionEventListener listener) {
-
-    this.decoderController.addDisconnectionEventListener(listener);
-
+    if (this.decoderController != null) {
+      this.decoderController.addDisconnectionEventListener(listener);
+    }
     for (AccessoryController ac : this.accessoryControllers.values()) {
       if (ac != this.decoderController) {
         ac.addDisconnectionEventListener(listener);

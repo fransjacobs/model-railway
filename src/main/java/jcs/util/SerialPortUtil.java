@@ -16,6 +16,8 @@
 package jcs.util;
 
 import com.fazecast.jSerialComm.SerialPort;
+import java.util.HashSet;
+import java.util.Set;
 import org.tinylog.Logger;
 
 /**
@@ -24,11 +26,26 @@ import org.tinylog.Logger;
  */
 public class SerialPortUtil {
 
+  public static boolean portSystemNameExists(String systemPortName) {
+    Set<String> ports = new HashSet<>();
+    SerialPort[] spa = listComPorts();
+    for (SerialPort sp : spa) {
+      ports.add(sp.getSystemPortName());
+    }
+    return ports.contains(systemPortName);
+  }
+
+  public static boolean portDescriptiveNameExists(String systemPortName) {
+    Set<String> ports = new HashSet<>();
+    SerialPort[] spa = listComPorts();
+    for (SerialPort sp : spa) {
+      ports.add(sp.getDescriptivePortName());
+    }
+    return ports.contains(systemPortName);
+  }
+
   public static SerialPort[] listComPorts() {
     SerialPort[] comPorts = SerialPort.getCommPorts();
-    for (SerialPort comPort : comPorts) {
-      Logger.trace(comPort.getDescriptivePortName() + "; " + comPort.getSystemPortName());
-    }
     return comPorts;
   }
 

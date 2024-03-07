@@ -278,14 +278,15 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   @Override
   public void disconnect() {
     try {
+      if (executor != null) {
+        executor.shutdown();
+      }
+
       if (connection != null) {
         connection.close();
         connected = false;
       }
 
-      if (executor != null) {
-        executor.shutdown();
-      }
       executor = null;
       connection = null;
 
