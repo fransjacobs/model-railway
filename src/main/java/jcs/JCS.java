@@ -203,7 +203,7 @@ public class JCS extends Thread {
       logProgress("Connecting to existing Database...");
 
     } else {
-      //No Database file so maybe first start lets creat one
+      //No Database file so maybe first start lets create one
       logProgress("Create new Database...");
       H2DatabaseUtil.createDatabaseUsers(false);
       H2DatabaseUtil.createDatabase();

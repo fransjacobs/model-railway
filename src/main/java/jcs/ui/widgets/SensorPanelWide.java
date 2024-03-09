@@ -39,7 +39,7 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class SensorPanelWide extends JPanel {
-  
+
   private final List<FeedbackPanel> feedbackPanels;
 
   /**
@@ -50,7 +50,7 @@ public class SensorPanelWide extends JPanel {
     initComponents();
     postInit();
   }
-  
+
   private void postInit() {
     if (PersistenceFactory.getService() != null) {
       List<CommandStationBean> csl = PersistenceFactory.getService().getCommandStations();
@@ -60,12 +60,22 @@ public class SensorPanelWide extends JPanel {
       int bus3len = 0;
       int deviceId = 0;
       for (CommandStationBean fbc : csl) {
-        if (fbc.isFeedbackSupport()) {
-          bus0len = bus0len + fbc.getFeedbackBus0ModuleCount();
-          bus1len = bus1len + fbc.getFeedbackBus1ModuleCount();
-          bus2len = bus2len + fbc.getFeedbackBus2ModuleCount();
-          bus3len = bus3len + fbc.getFeedbackBus3ModuleCount();
-          deviceId = Integer.parseInt(fbc.getFeedbackModuleIdentifier());
+        if (fbc != null && fbc.isFeedbackSupport()) {
+          if (fbc.getFeedbackBus0ModuleCount() != null) {
+            bus0len = bus0len + fbc.getFeedbackBus0ModuleCount();
+          }
+          if (fbc.getFeedbackBus1ModuleCount() != null) {
+            bus1len = bus1len + fbc.getFeedbackBus1ModuleCount();
+          }
+          if (fbc.getFeedbackBus2ModuleCount() != null) {
+            bus2len = bus2len + fbc.getFeedbackBus2ModuleCount();
+          }
+          if (fbc.getFeedbackBus3ModuleCount() != null) {
+            bus3len = bus3len + fbc.getFeedbackBus3ModuleCount();
+          }
+          if (fbc.getFeedbackModuleIdentifier() != null) {
+            deviceId = Integer.parseInt(fbc.getFeedbackModuleIdentifier());
+          }
         }
       }
       Logger.trace("Device Id: " + deviceId + " bus 0: " + bus0len + " bus 1: " + bus1len + " bus 2: " + bus2len + " bus 3: " + bus3len);
@@ -276,7 +286,7 @@ public class SensorPanelWide extends JPanel {
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error("Can't set the LookAndFeel: " + ex);
     }
-    
+
     java.awt.EventQueue.invokeLater(() -> {
       SensorPanelWide testPanel = new SensorPanelWide();
       JFrame testFrame = new JFrame("ControllerPanel Tester");
@@ -285,10 +295,10 @@ public class SensorPanelWide extends JPanel {
       if (iconUrl != null) {
         testFrame.setIconImage(new ImageIcon(iconUrl).getImage());
       }
-      
+
       JFrame.setDefaultLookAndFeelDecorated(true);
       testFrame.add(testPanel);
-      
+
       testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {

@@ -38,7 +38,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import jcs.JcsException;
-import jcs.entities.LocomotiveBean;
 
 /**
  * Derive Bean info
@@ -325,57 +324,4 @@ public class EntityInfo<T> {
     this.displayColumnList = displayColumnList;
     applyDisplayColumnSettings();
   }
-
-  
-  //TODO: move this to a test class in test packsge
-  public static void main(String[] a) {
-
-    LocomotiveBean loco16389 = new LocomotiveBean(16389L, "193 304-3 DB AG", 16389L, 5, "DB BR 193 304-3", "mfx", 160, 5, 0, 0, false, true);
-
-    EntityInfo LocoInfo = new EntityInfo(LocomotiveBean.class);
-
-    List<String> pkColumns = LocoInfo.getPrimaryKeyNames();
-    for (int i = 0; i < pkColumns.size(); i++) {
-      System.out.println("PK: " + pkColumns.get(i));
-    }
-    System.out.println();
-
-    List<String> columns = LocoInfo.getAllColumnNames();
-    for (int i = 0; i < columns.size(); i++) {
-      
-      Class dt = LocoInfo.getColumnDataType(columns.get(i));
-      
-      System.out.println(columns.get(i)+" type: "+dt.getSimpleName());
-    }
-
-    System.out.println();
-
-    for (int i = 0; i < columns.size(); i++) {
-      System.out.println(columns.get(i) + " -> " + LocoInfo.getValue(loco16389, columns.get(i)));
-    }
-
-    System.out.println();
-
-    LocoInfo.putValue(loco16389, "name", "AAAAA");
-
-    System.out.println();
-    System.out.println(loco16389);
-
-    System.out.println();
-    for (int i = 0; i < columns.size(); i++) {
-      System.out.println(columns.get(i) + " -> " + LocoInfo.getValue(loco16389, columns.get(i)));
-    }
-
-    String[] showCols = new String[]{"decoder_type", "address", "name", "velocity", "richtung"};
-    LocoInfo.setDisplayColumns(showCols);
-
-    System.out.println();
-
-    columns = LocoInfo.getColumnNames();
-    for (int i = 0; i < columns.size(); i++) {
-      System.out.println(columns.get(i));
-    }
-
-  }
-
 }

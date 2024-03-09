@@ -280,10 +280,34 @@
                             <platform>auto</platform>
                             <createZipball>true</createZipball>
                             <createTarball>false</createTarball>
-                            <!--winConfig>
+                            <winConfig>
                                 <headerType>gui</headerType>
                                 <generateMsi>false</generateMsi>
-                            </winConfig-->
+                                <generateMsm>false</generateMsm>
+        
+                                <!--icoFile>path/to/icon.ico</icoFile-->
+                                <generateSetup>false</generateSetup>
+                        
+                                <!-- exe creation properties -->
+                                <wrapJar>false</wrapJar>
+                                <companyName>${organizationName}</companyName>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <!--txtFileVersion>${version}</txtFileVersion>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>${version}</txtProductVersion>
+                                <fileDescription>${description}</fileDescription-->
+                                <copyright>${organizationName}</copyright>
+                                <productName>${name}</productName>
+                                <internalName>${name}</internalName>
+                                <!--txtShortcutName>${name}</txtShortcutName-->
+                                <originalFilename>${name}.exe</originalFilename>
+
+                                <!-- choose EXE creation tool -->
+                                <exeCreationTool>launch4j</exeCreationTool>
+                                <!--vmLocation>relative/path/to/jvm.dll</vmLocation-->
+
+                                
+                            </winConfig>
                             <macConfig>
                                 <appId>${exec.mainClass}</appId>
                                 <icnsFile>target/classes/media/jcs.icns</icnsFile>
