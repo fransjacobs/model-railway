@@ -1531,7 +1531,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
           }
         }
       }
-      // } // catch (Exeption e) 
+      
       return null;
     }
 
