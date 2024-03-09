@@ -307,7 +307,7 @@
                                 <notarizeApp>false</notarizeApp>
                             </macConfig>
                             <linuxConfig>
-                                <generateAppImage>false</generateAppImage>
+                                <generateAppImage>true</generateAppImage>
                                 <generateDeb>false</generateDeb>
                                 <generateRpm>false</generateRpm>
                                 <wrapJar>true</wrapJar>

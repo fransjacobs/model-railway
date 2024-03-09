@@ -61,6 +61,7 @@ public class IconFileChooser extends javax.swing.JDialog {
     fileChooser = new javax.swing.JFileChooser();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    setAlwaysOnTop(true);
 
     fileChooser.setDialogTitle("Select Locomotive Icon");
     fileChooser.setDoubleBuffered(true);
