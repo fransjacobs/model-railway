@@ -212,7 +212,6 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <!--finalName>jcs</finalName-->
                             <archive>
                                 <manifest>
                                     <addClasspath>true</addClasspath>
@@ -265,18 +264,18 @@
                     <administratorRequired>false</administratorRequired>
                     <copyDependencies>true</copyDependencies>
                     <displayName>JCS</displayName>
-                    <organizationName>Frans's Home Projects</organizationName>
+                    <organizationName>Frans's Train Projects</organizationName>
                     <vmArgs>-Xms256m -Xmx512m</vmArgs> 
                 </configuration>
                 <executions>
                     <execution>
-                        <id>windows</id>
+                        <id>auto</id>
                         <phase>package</phase>
                         <goals>
                             <goal>package</goal>
                         </goals>
                         <configuration>
-                            <assetsDir>/Users/fransjacobs/GitHub/model-railway/assets</assetsDir>
+                            <assetsDir>${project.basedir}/assets</assetsDir>
                             <platform>auto</platform>
                             <createZipball>true</createZipball>
                             <createTarball>false</createTarball>
@@ -284,29 +283,16 @@
                                 <headerType>gui</headerType>
                                 <generateMsi>false</generateMsi>
                                 <generateMsm>false</generateMsm>
-        
-                                <!--icoFile>path/to/icon.ico</icoFile-->
                                 <generateSetup>false</generateSetup>
-                        
-                                <!-- exe creation properties -->
                                 <wrapJar>false</wrapJar>
                                 <companyName>${organizationName}</companyName>
-                                <fileVersion>1.0.0.0</fileVersion>
-                                <!--txtFileVersion>${version}</txtFileVersion>
                                 <productVersion>1.0.0.0</productVersion>
                                 <txtProductVersion>${version}</txtProductVersion>
-                                <fileDescription>${description}</fileDescription-->
                                 <copyright>${organizationName}</copyright>
                                 <productName>${name}</productName>
                                 <internalName>${name}</internalName>
-                                <!--txtShortcutName>${name}</txtShortcutName-->
                                 <originalFilename>${name}.exe</originalFilename>
-
-                                <!-- choose EXE creation tool -->
                                 <exeCreationTool>launch4j</exeCreationTool>
-                                <!--vmLocation>relative/path/to/jvm.dll</vmLocation-->
-
-                                
                             </winConfig>
                             <macConfig>
                                 <appId>${exec.mainClass}</appId>
@@ -320,6 +306,15 @@
                                 <hardenedCodesign>true</hardenedCodesign>
                                 <notarizeApp>false</notarizeApp>
                             </macConfig>
+                            <linuxConfig>
+                                <generateAppImage>false</generateAppImage>
+                                <generateDeb>false</generateDeb>
+                                <generateRpm>false</generateRpm>
+                                <wrapJar>true</wrapJar>
+                                <categories>
+                                    <category>Education</category>
+                                </categories>
+                            </linuxConfig>
                         </configuration>
                     </execution>
                 </executions>
@@ -329,44 +324,6 @@
                                                           </additionalResources>   
                 -->                           
             </plugin>         
-            <!--<plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>appassembler-maven-plugin</artifactId>
-                <version>2.1.0</version>
-                <configuration>
-                    <platforms>
-                        <platform>unix</platform>
-                        <platform>windows</platform>
-                    </platforms>
-                    <assembleDirectory>${project.build.directory}/${project.name}</assembleDirectory>
-                    <repositoryName>lib</repositoryName>
-                    <binFolder>bin</binFolder>
-                    <configurationDirectory>conf</configurationDirectory>
-                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
-                    <configurationSourceDirectory>src/main/resources</configurationSourceDirectory>
-                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
-                    <repositoryLayout>flat</repositoryLayout>
-                    <encoding>UTF-8</encoding>
-                    <logsDirectory>logs</logsDirectory>
-                    <tempDirectory>tmp</tempDirectory>
-                    <programs>
-                        <program>
-                            <mainClass>jcs.JCS</mainClass>
-                            <id>jcs</id>
-                            <jvmSettings>
-                                <extraArguments>
-                                    <extraArgument>-Xms256M</extraArgument>
-                                    <extraArgument>-Xmx1024M</extraArgument>
-                                    <extraArgument>-Dtinylog.writer.level=trace</extraArgument>
-                                    <extraArgument>-Xloggc:@BASEDIR@/logs/jcs_gc.log</extraArgument>
-                                    <extraArgument>-verbose:gc</extraArgument>
-                                    <extraArgument>-XX:+HeapDumpOnOutOfMemoryError</extraArgument>
-                                </extraArguments>
-                            </jvmSettings>
-                        </program>
-                    </programs>
-                </configuration>
-            </plugin>-->
         </plugins>
     </build>
 </project>
