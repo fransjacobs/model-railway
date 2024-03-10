@@ -2,10 +2,11 @@
 
 ![Static Badge](https://img.shields.io/badge/Model_Railroad-Automation-blue) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
 
-![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/fransjacobs/model-railway) [![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/fransjacobs/model-railway) 
+[![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
 
-![GitHub Gist last commit](https://img.shields.io/github/gist/last-commit/4bd85b6c158d39930994de82d0370a83332af31c)
- ![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
+![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)
+![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
 
 
 ## Model railway control with JCS
