@@ -287,11 +287,11 @@
                                 <wrapJar>false</wrapJar>
                                 <companyName>${organizationName}</companyName>
                                 <productVersion>1.0.0.0</productVersion>
-                                <txtProductVersion>${version}</txtProductVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
                                 <copyright>${organizationName}</copyright>
-                                <productName>${name}</productName>
-                                <internalName>${name}</internalName>
-                                <originalFilename>${name}.exe</originalFilename>
+                                <productName>${project.name}</productName>
+                                <internalName>${project.name}</internalName>
+                                <originalFilename>${project.name}.exe</originalFilename>
                                 <exeCreationTool>launch4j</exeCreationTool>
                             </winConfig>
                             <macConfig>
