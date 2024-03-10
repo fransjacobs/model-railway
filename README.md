@@ -7,6 +7,7 @@
 
 ![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)
 ![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
+![GitHub Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)
 
 
 ## Model railway control with JCS
