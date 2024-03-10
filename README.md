@@ -4,7 +4,7 @@
 
 ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/fransjacobs/model-railway) [![Java CI with Maven](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/fransjacobs/model-railway/actions/workflows/maven.yml)
 
-![GitHub Gist last commit](https://img.shields.io/github/gist/last-commit/55ccec54ddb4630852deaceb07f5c42a)
+![GitHub Gist last commit](https://img.shields.io/github/gist/last-commit/4bd85b6c158d39930994de82d0370a83332af31c)
  ![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
 
 
