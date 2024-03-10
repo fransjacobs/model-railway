@@ -15,20 +15,21 @@
  */
 package jcs.persistence;
 
+import java.awt.Image;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.DecoderType;
 
 /**
- * The Persistence Service takes care of all persistence functionality which is needed within the
- * JCS Application
+ * The Persistence Service takes care of all persistence functionality which is needed within the JCS Application
  *
  * @author frans
  */
@@ -53,10 +54,16 @@ public interface PersistenceService {
 
   void remove(SensorBean sensor);
 
+  List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len);
+
   // Locomotive
   List<LocomotiveBean> getLocomotives();
 
-  LocomotiveBean getLocomotive(Integer address, DecoderType decoderType);
+  List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId);
+
+  List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId, Boolean show);
+
+  LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId);
 
   LocomotiveBean getLocomotive(Long id);
 
@@ -71,9 +78,13 @@ public interface PersistenceService {
   void remove(LocomotiveBean locomotiveBean);
 
   // Accessories
+  List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
+
   List<AccessoryBean> getTurnouts();
 
   List<AccessoryBean> getSignals();
+
+  AccessoryBean getAccessoryByAddressAndCommandStationId(Integer address, String commandStationId);
 
   AccessoryBean getAccessory(String id);
 
@@ -102,6 +113,8 @@ public interface PersistenceService {
 
   RouteBean getRoute(String id);
 
+  List<RouteBean> getRoutes(String fromTileId, String fromSuffix);
+
   RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix);
 
   RouteBean persist(RouteBean routeBean);
@@ -119,4 +132,21 @@ public interface PersistenceService {
   void remove(BlockBean block);
 
   void removeAllBlocks();
+
+  List<CommandStationBean> getCommandStations();
+
+  CommandStationBean getCommandStation(String id);
+
+  CommandStationBean getDefaultCommandStation();
+
+  CommandStationBean persist(CommandStationBean commandStationBean);
+
+  CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean);
+
+  Image getLocomotiveImage(String imageName);
+
+  Image getFunctionImage(String imageName);
+
+  Image readImage(String imageName, boolean function);
+
 }

@@ -26,12 +26,12 @@ insert into sensors (id,name,device_id,contact_id,status,previous_status,millis,
 	
 commit;
 
-insert into locomotives (id,name,uid,mfx_uid,address,icon,decoder_type,mfx_sid,tacho_max,v_min,velocity,richtung,commuter,length,show) values 
-(2,'BR 81 002',2,0,2,'DB BR 81 008','mm_prg',null,120,1,0,0,false,null,true),
-(8,'NS  6505',8, null, 8,'NS DHG 6505','mm_prg',NULL,120,0,0,0,false,null,true),
-(12,'BR 141 015-08',12,null,12,'DB BR 141 136-2','mm_prg',null ,120,0,0,0,false,NULL,true),
-(16389,'193 304-3 DB AG',16389,1945312555,5,'DB BR 193 304-3','mfx','0x5',160,5,0,0,false,null,true),   
-(49156,'NS Plan Y',49156,null, 4,'NS Plan Y','dcc',null,120,1,0,0,false,null,true);
+insert into locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_min,velocity,richtung,commuter,show,command_station_id, synchronize) values 
+(2,'BR 81 002',2,2,'DB BR 81 008','mm_prg',120,1,0,0,false,true,'marklin.cs',true),
+(8,'NS  6505',8, 8,'NS DHG 6505','mm_prg',120,0,0,0,false,true,'marklin.cs', false),
+(12,'BR 141 015-08',12,12,'DB BR 141 136-2','mm_prg',120,0,0,0,false,true,'marklin.cs',true),
+(16389,'193 304-3 DB AG',16389,5,'DB BR 193 304-3','mfx',160,5,0,0,false,true,'marklin.cs',true),   
+(49156,'NS Plan Y',49156, 4,'NS Plan Y','dcc',120,1,0,0,false,true,'marklin.cs',false);
 
 insert into locomotive_functions (locomotive_id,f_number,f_type,f_value) values
 (16389,5,20,0),
@@ -59,15 +59,15 @@ insert into locomotive_functions (locomotive_id,f_number,f_type,f_value) values
 
 commit;	
 
-insert into accessories (id,address,name,type,position,states,switch_time,decoder_type,decoder,accessory_group,icon,icon_file) values
-	 ('1',1,'W 1R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg'),
-	 ('2',2,'W 2L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg'),
-	 ('6',6,'W 6R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg'),
-	 ('7',7,'W 7L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg'),
-	 ('15',15,'S 15','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg'),
-	 ('19',19,'S 19','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg'),
-	 ('25',25,'S 25/26','urc_lichtsignal_HP012_SH01',0,4,200,'mm','ein_alt','lichtsignale','027','magicon_a_027_00.svg'),
-	 ('41',41,'S 41','urc_lichtsignal_HP012',0,3,200,'mm','ein_alt','lichtsignale','026','magicon_a_026_00.svg');
+insert into accessories (id,address,name,type,state,states,switch_time,protocol,decoder,accessory_group,icon,icon_file,command_station_id,synchronize) values
+	 ('1',1,'W 1R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg','marklin.cs',true),
+	 ('2',2,'W 2L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg','marklin.cs',true),
+	 ('6',6,'W 6R','rechtsweiche',1,2,200,'mm','ein_alt','weichen','005','magicon_a_005_01.svg','marklin.cs',true),
+	 ('7',7,'W 7L','linksweiche',1,2,200,'mm','ein_alt','weichen','006','magicon_a_006_01.svg','marklin.cs',true),
+	 ('15',15,'S 15','lichtsignal_SH01',0,2,200,'mm','ein_alt','lichtsignale','019','magicon_a_019_00.svg','marklin.cs',true),
+	 ('19',19,'S 19','lichtsignal_HP01',0,2,200,'mm','ein_alt','lichtsignale','015','magicon_a_015_00.svg','marklin.cs',true),
+	 ('25',25,'S 25/26','urc_lichtsignal_HP012_SH01',0,4,200,'mm','ein_alt','lichtsignale','027','magicon_a_027_00.svg','marklin.cs',true),
+	 ('41',41,'S 41','urc_lichtsignal_HP012',0,3,200,'mm','ein_alt','lichtsignale','026','magicon_a_026_00.svg','marklin.cs',true);
 
 commit;
 

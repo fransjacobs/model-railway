@@ -23,9 +23,9 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.entities.AccessoryBean.SignalType;
+import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.TileBean.Orientation;
-import jcs.entities.enums.SignalType;
-import jcs.entities.enums.SignalValue;
 import org.tinylog.Logger;
 
 /**

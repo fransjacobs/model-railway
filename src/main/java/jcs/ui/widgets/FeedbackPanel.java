@@ -1,20 +1,17 @@
 /*
- * Copyright (C) 2019 Frans Jacobs.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.ui.widgets;
 
@@ -27,10 +24,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.SensorEvent;
-import jcs.controller.events.SensorEventListener;
+import jcs.JCS;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
+import org.tinylog.Logger;
 
 /**
  * Diagnostic panel for a feedback module
@@ -97,9 +95,11 @@ public class FeedbackPanel extends JPanel {
     if (this.contactIdOffset == null) {
       this.contactIdOffset = 0;
     }
-
+    
     int port = 1;
     p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
+
+    Logger.trace("Port "+(port-1)+", device: "+deviceId+" module: "+moduleNumber+" offset: "+contactIdOffset+" Contact Addres: "+p1.contactId);
     p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
@@ -118,46 +118,46 @@ public class FeedbackPanel extends JPanel {
   }
 
   public void registerSensorListeners() {
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       initSensorListeners();
 
-      CommandStationFactory.getCommandStation().addSensorEventListener(p1);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p2);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p3);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p4);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p5);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p6);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p7);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p8);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p9);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p10);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p11);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p12);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p13);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p14);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p15);
-      CommandStationFactory.getCommandStation().addSensorEventListener(p16);
+      JCS.getJcsCommandStation().addSensorEventListener(p1);
+      JCS.getJcsCommandStation().addSensorEventListener(p2);
+      JCS.getJcsCommandStation().addSensorEventListener(p3);
+      JCS.getJcsCommandStation().addSensorEventListener(p4);
+      JCS.getJcsCommandStation().addSensorEventListener(p5);
+      JCS.getJcsCommandStation().addSensorEventListener(p6);
+      JCS.getJcsCommandStation().addSensorEventListener(p7);
+      JCS.getJcsCommandStation().addSensorEventListener(p8);
+      JCS.getJcsCommandStation().addSensorEventListener(p9);
+      JCS.getJcsCommandStation().addSensorEventListener(p10);
+      JCS.getJcsCommandStation().addSensorEventListener(p11);
+      JCS.getJcsCommandStation().addSensorEventListener(p12);
+      JCS.getJcsCommandStation().addSensorEventListener(p13);
+      JCS.getJcsCommandStation().addSensorEventListener(p14);
+      JCS.getJcsCommandStation().addSensorEventListener(p15);
+      JCS.getJcsCommandStation().addSensorEventListener(p16);
     }
   }
 
   public void removeSensorListeners() {
-    if (CommandStationFactory.getCommandStation() != null) {
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p1);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p2);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p3);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p4);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p5);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p6);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p7);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p8);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p9);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p10);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p11);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p12);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p13);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p14);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p15);
-      CommandStationFactory.getCommandStation().removeSensorEventListener(p16);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().removeSensorEventListener(p1);
+      JCS.getJcsCommandStation().removeSensorEventListener(p2);
+      JCS.getJcsCommandStation().removeSensorEventListener(p3);
+      JCS.getJcsCommandStation().removeSensorEventListener(p4);
+      JCS.getJcsCommandStation().removeSensorEventListener(p5);
+      JCS.getJcsCommandStation().removeSensorEventListener(p6);
+      JCS.getJcsCommandStation().removeSensorEventListener(p7);
+      JCS.getJcsCommandStation().removeSensorEventListener(p8);
+      JCS.getJcsCommandStation().removeSensorEventListener(p9);
+      JCS.getJcsCommandStation().removeSensorEventListener(p10);
+      JCS.getJcsCommandStation().removeSensorEventListener(p11);
+      JCS.getJcsCommandStation().removeSensorEventListener(p12);
+      JCS.getJcsCommandStation().removeSensorEventListener(p13);
+      JCS.getJcsCommandStation().removeSensorEventListener(p14);
+      JCS.getJcsCommandStation().removeSensorEventListener(p15);
+      JCS.getJcsCommandStation().removeSensorEventListener(p16);
 
       this.p1 = null;
       this.p2 = null;
@@ -228,6 +228,7 @@ public class FeedbackPanel extends JPanel {
   @Override
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
+    
   }
 
   private class FeedbackPort implements SensorEventListener {
@@ -261,197 +262,197 @@ public class FeedbackPanel extends JPanel {
    * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
    */
   @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+  private void initComponents() {
 
-        lbl1 = new JLabel();
-        lbl2 = new JLabel();
-        lbl3 = new JLabel();
-        lbl4 = new JLabel();
-        lbl5 = new JLabel();
-        lbl6 = new JLabel();
-        lbl7 = new JLabel();
-        lbl8 = new JLabel();
-        lbl9 = new JLabel();
-        lbl10 = new JLabel();
-        lbl11 = new JLabel();
-        lbl12 = new JLabel();
-        lbl13 = new JLabel();
-        lbl14 = new JLabel();
-        lbl15 = new JLabel();
-        lbl16 = new JLabel();
+    lbl1 = new JLabel();
+    lbl2 = new JLabel();
+    lbl3 = new JLabel();
+    lbl4 = new JLabel();
+    lbl5 = new JLabel();
+    lbl6 = new JLabel();
+    lbl7 = new JLabel();
+    lbl8 = new JLabel();
+    lbl9 = new JLabel();
+    lbl10 = new JLabel();
+    lbl11 = new JLabel();
+    lbl12 = new JLabel();
+    lbl13 = new JLabel();
+    lbl14 = new JLabel();
+    lbl15 = new JLabel();
+    lbl16 = new JLabel();
 
-        setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)), "S88 - Bus 0 Module 1"));
-        setMaximumSize(new Dimension(250, 95));
-        setMinimumSize(new Dimension(250, 95));
-        setName("Form"); // NOI18N
-        setPreferredSize(new Dimension(250, 95));
-        setLayout(new GridLayout(2, 8));
+    setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)), "S88 - Bus 0 Module 1"));
+    setMaximumSize(new Dimension(250, 100));
+    setMinimumSize(new Dimension(250, 100));
+    setName("Form"); // NOI18N
+    setPreferredSize(new Dimension(250, 100));
+    setLayout(new GridLayout(2, 8, 1, 1));
 
-        lbl1.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl1.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl1.setText("1");
-        lbl1.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl1.setDoubleBuffered(true);
-        lbl1.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl1.setName("lbl1"); // NOI18N
-        add(lbl1);
+    lbl1.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl1.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl1.setText("1");
+    lbl1.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl1.setDoubleBuffered(true);
+    lbl1.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl1.setName("lbl1"); // NOI18N
+    add(lbl1);
 
-        lbl2.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl2.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl2.setText("2");
-        lbl2.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl2.setDoubleBuffered(true);
-        lbl2.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl2.setName("lbl2"); // NOI18N
-        add(lbl2);
+    lbl2.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl2.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl2.setText("2");
+    lbl2.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl2.setDoubleBuffered(true);
+    lbl2.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl2.setName("lbl2"); // NOI18N
+    add(lbl2);
 
-        lbl3.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl3.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl3.setText("3");
-        lbl3.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl3.setDoubleBuffered(true);
-        lbl3.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl3.setName("lbl3"); // NOI18N
-        add(lbl3);
+    lbl3.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl3.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl3.setText("3");
+    lbl3.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl3.setDoubleBuffered(true);
+    lbl3.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl3.setName("lbl3"); // NOI18N
+    add(lbl3);
 
-        lbl4.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl4.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl4.setText("4");
-        lbl4.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl4.setDoubleBuffered(true);
-        lbl4.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl4.setName("lbl4"); // NOI18N
-        add(lbl4);
+    lbl4.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl4.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl4.setText("4");
+    lbl4.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl4.setDoubleBuffered(true);
+    lbl4.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl4.setName("lbl4"); // NOI18N
+    add(lbl4);
 
-        lbl5.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl5.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl5.setText("5");
-        lbl5.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl5.setDoubleBuffered(true);
-        lbl5.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl5.setName("lbl5"); // NOI18N
-        add(lbl5);
+    lbl5.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl5.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl5.setText("5");
+    lbl5.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl5.setDoubleBuffered(true);
+    lbl5.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl5.setName("lbl5"); // NOI18N
+    add(lbl5);
 
-        lbl6.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl6.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl6.setText("6");
-        lbl6.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl6.setDoubleBuffered(true);
-        lbl6.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl6.setName("lbl6"); // NOI18N
-        add(lbl6);
+    lbl6.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl6.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl6.setText("6");
+    lbl6.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl6.setDoubleBuffered(true);
+    lbl6.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl6.setName("lbl6"); // NOI18N
+    add(lbl6);
 
-        lbl7.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl7.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl7.setText("7");
-        lbl7.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl7.setDoubleBuffered(true);
-        lbl7.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl7.setName("lbl7"); // NOI18N
-        add(lbl7);
+    lbl7.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl7.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl7.setText("7");
+    lbl7.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl7.setDoubleBuffered(true);
+    lbl7.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl7.setName("lbl7"); // NOI18N
+    add(lbl7);
 
-        lbl8.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl8.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl8.setText("8");
-        lbl8.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl8.setDoubleBuffered(true);
-        lbl8.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl8.setName("lbl8"); // NOI18N
-        add(lbl8);
+    lbl8.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl8.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl8.setText("8");
+    lbl8.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl8.setDoubleBuffered(true);
+    lbl8.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl8.setName("lbl8"); // NOI18N
+    add(lbl8);
 
-        lbl9.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl9.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl9.setText("9");
-        lbl9.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl9.setDoubleBuffered(true);
-        lbl9.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl9.setName("lbl9"); // NOI18N
-        lbl9.setVerifyInputWhenFocusTarget(false);
-        add(lbl9);
+    lbl9.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl9.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl9.setText("9");
+    lbl9.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl9.setDoubleBuffered(true);
+    lbl9.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl9.setName("lbl9"); // NOI18N
+    lbl9.setVerifyInputWhenFocusTarget(false);
+    add(lbl9);
 
-        lbl10.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl10.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl10.setText("10");
-        lbl10.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl10.setDoubleBuffered(true);
-        lbl10.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl10.setName("lbl10"); // NOI18N
-        add(lbl10);
+    lbl10.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl10.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl10.setText("10");
+    lbl10.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl10.setDoubleBuffered(true);
+    lbl10.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl10.setName("lbl10"); // NOI18N
+    add(lbl10);
 
-        lbl11.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl11.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl11.setText("11");
-        lbl11.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl11.setDoubleBuffered(true);
-        lbl11.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl11.setName("lbl11"); // NOI18N
-        add(lbl11);
+    lbl11.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl11.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl11.setText("11");
+    lbl11.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl11.setDoubleBuffered(true);
+    lbl11.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl11.setName("lbl11"); // NOI18N
+    add(lbl11);
 
-        lbl12.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl12.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl12.setText("12");
-        lbl12.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl12.setDoubleBuffered(true);
-        lbl12.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl12.setName("lbl12"); // NOI18N
-        add(lbl12);
+    lbl12.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl12.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl12.setText("12");
+    lbl12.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl12.setDoubleBuffered(true);
+    lbl12.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl12.setName("lbl12"); // NOI18N
+    add(lbl12);
 
-        lbl13.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl13.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl13.setText("13");
-        lbl13.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl13.setDoubleBuffered(true);
-        lbl13.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl13.setName("lbl13"); // NOI18N
-        add(lbl13);
+    lbl13.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl13.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl13.setText("13");
+    lbl13.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl13.setDoubleBuffered(true);
+    lbl13.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl13.setName("lbl13"); // NOI18N
+    add(lbl13);
 
-        lbl14.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl14.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl14.setText("14");
-        lbl14.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl14.setDoubleBuffered(true);
-        lbl14.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl14.setName("lbl14"); // NOI18N
-        add(lbl14);
+    lbl14.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl14.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl14.setText("14");
+    lbl14.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl14.setDoubleBuffered(true);
+    lbl14.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl14.setName("lbl14"); // NOI18N
+    add(lbl14);
 
-        lbl15.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl15.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl15.setText("15");
-        lbl15.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl15.setDoubleBuffered(true);
-        lbl15.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl15.setName("lbl15"); // NOI18N
-        add(lbl15);
+    lbl15.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl15.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl15.setText("15");
+    lbl15.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl15.setDoubleBuffered(true);
+    lbl15.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl15.setName("lbl15"); // NOI18N
+    add(lbl15);
 
-        lbl16.setHorizontalAlignment(SwingConstants.CENTER);
-        lbl16.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl16.setText("16");
-        lbl16.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
-        lbl16.setDoubleBuffered(true);
-        lbl16.setHorizontalTextPosition(SwingConstants.CENTER);
-        lbl16.setName("lbl16"); // NOI18N
-        add(lbl16);
-    }// </editor-fold>//GEN-END:initComponents
+    lbl16.setHorizontalAlignment(SwingConstants.CENTER);
+    lbl16.setIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl16.setText("16");
+    lbl16.setDisabledIcon(new ImageIcon(getClass().getResource("/media/Button-Grey-20px.png"))); // NOI18N
+    lbl16.setDoubleBuffered(true);
+    lbl16.setHorizontalTextPosition(SwingConstants.CENTER);
+    lbl16.setName("lbl16"); // NOI18N
+    add(lbl16);
+  }// </editor-fold>//GEN-END:initComponents
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JLabel lbl1;
-    private JLabel lbl10;
-    private JLabel lbl11;
-    private JLabel lbl12;
-    private JLabel lbl13;
-    private JLabel lbl14;
-    private JLabel lbl15;
-    private JLabel lbl16;
-    private JLabel lbl2;
-    private JLabel lbl3;
-    private JLabel lbl4;
-    private JLabel lbl5;
-    private JLabel lbl6;
-    private JLabel lbl7;
-    private JLabel lbl8;
-    private JLabel lbl9;
-    // End of variables declaration//GEN-END:variables
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  private JLabel lbl1;
+  private JLabel lbl10;
+  private JLabel lbl11;
+  private JLabel lbl12;
+  private JLabel lbl13;
+  private JLabel lbl14;
+  private JLabel lbl15;
+  private JLabel lbl16;
+  private JLabel lbl2;
+  private JLabel lbl3;
+  private JLabel lbl4;
+  private JLabel lbl5;
+  private JLabel lbl6;
+  private JLabel lbl7;
+  private JLabel lbl8;
+  private JLabel lbl9;
+  // End of variables declaration//GEN-END:variables
 
 }

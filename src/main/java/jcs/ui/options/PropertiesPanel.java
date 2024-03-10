@@ -15,7 +15,6 @@
  */
 package jcs.ui.options;
 
-import jcs.ui.options.table.PropertiesTableModel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -37,9 +36,10 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.JCS;
 import jcs.entities.JCSPropertyBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.controller.CommandStationFactory;
+import jcs.ui.options.table.PropertiesTableModel;
 import org.tinylog.Logger;
 
 /**
@@ -227,7 +227,7 @@ public class PropertiesPanel extends JPanel {
   private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
     int selectedRow = this.propertiesTable.getSelectedRow();
     JCSPropertyBean p = this.propertiesTableModel.getControllableDeviceAt(selectedRow);
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       Logger.trace("Delete the Property: " + p);
       PersistenceFactory.getService().remove(p);
     }

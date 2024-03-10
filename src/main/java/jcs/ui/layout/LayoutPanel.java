@@ -35,6 +35,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import jcs.JCS;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.TileType;
@@ -64,7 +65,7 @@ public class LayoutPanel extends JPanel {
     this.canvas.setTileType(TileType.STRAIGHT);
     this.setMode(readonly ? LayoutCanvas.Mode.CONTROL : LayoutCanvas.Mode.SELECT);
 
-    if (this.readonly) {
+    if (readonly) {
       this.canvas.setDrawGrid(!readonly);
 
       this.saveBtn.setEnabled(!readonly);
@@ -127,6 +128,9 @@ public class LayoutPanel extends JPanel {
       this.straightDirectionBtn.setEnabled(!readonly);
       this.straightDirectionBtn.setVisible(!readonly);
 
+      this.crossingBtn.setEnabled(!readonly);
+      this.crossingBtn.setVisible(!readonly);
+
       this.moveBtn.setEnabled(!readonly);
       this.moveBtn.setVisible(!readonly);
 
@@ -138,6 +142,12 @@ public class LayoutPanel extends JPanel {
 
       this.rotateBtn.setEnabled(!readonly);
       this.rotateBtn.setVisible(!readonly);
+
+      this.autoPilotBtn.setEnabled(readonly);
+      this.autoPilotBtn.setVisible(readonly);
+
+      this.startAutoPilotBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
+      this.startAutoPilotBtn.setVisible(readonly);
     } else {
 
       this.toolBar.remove(this.autoPilotBtn);
@@ -905,8 +915,8 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_gridBtnActionPerformed
 
     private void formComponentResized(ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
-       //TODO!       
-       //Logger.debug(evt.getComponent().getSize());// TODO add your handling code here:
+      //TODO!       
+      //Logger.debug(evt.getComponent().getSize());// TODO add your handling code here:
     }//GEN-LAST:event_formComponentResized
 
     private void crossLBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossLBtnActionPerformed
@@ -951,12 +961,19 @@ public class LayoutPanel extends JPanel {
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Enable Auto mode " + this.autoPilotBtn.isSelected());
-
+    //incase auto pilot was on and is switched of also stop driving
+    if (startAutoPilotBtn.isSelected() && !autoPilotBtn.isSelected()) {
+      startAutoPilotBtn.doClick();
+    }
+    startAutoPilotBtn.setEnabled(readonly && autoPilotBtn.isSelected());
+    if (autoPilotBtn.isSelected()) {
+      AutoPilot.getInstance().initialize();
+    }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + " Start Auto mode " + this.autoPilotBtn.isSelected());
-
+    Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAutoPilotBtn.isSelected());
+    AutoPilot.getInstance().startAllLocomotives(this.startAutoPilotBtn.isSelected());
   }//GEN-LAST:event_startAutoPilotBtnActionPerformed
 
   private void crossingBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossingBtnActionPerformed

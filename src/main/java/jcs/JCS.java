@@ -15,25 +15,26 @@
  */
 package jcs;
 
-import jcs.ui.util.ProcessFactory;
 import java.awt.GraphicsEnvironment;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.events.PowerEvent;
+import jcs.commandStation.JCSCommandStation;
+import jcs.commandStation.JCSCommandStationImpl;
+import jcs.commandStation.events.PowerEvent;
+import jcs.commandStation.events.PowerEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.H2DatabaseUtil;
-import jcs.controller.CommandStationFactory;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
+import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.MacOsAdapter;
+import jcs.ui.util.ProcessFactory;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
-import jcs.controller.events.PowerEventListener;
-import jcs.controller.CommandStation;
 
 /**
  *
@@ -45,7 +46,7 @@ public class JCS extends Thread {
   private static JCS instance = null;
   private static JCSSplash splashScreen;
   private static PersistenceService persistentStore;
-  private static CommandStation trackController;
+  private static JCSCommandStation jcsCommandStation;
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
@@ -77,6 +78,24 @@ public class JCS extends Thread {
     return jcsFrame;
   }
 
+  public static PersistenceService getPersistenceService() {
+    if (persistentStore == null) {
+      persistentStore = PersistenceFactory.getService();
+    }
+    return persistentStore;
+  }
+
+  public static JCSCommandStation getJcsCommandStation() {
+    if (jcsCommandStation == null) {
+      if (getPersistenceService() != null) {
+        jcsCommandStation = new JCSCommandStationImpl();
+      } else {
+        Logger.error("Can't obtain the persistent store!");
+      }
+    }
+    return jcsCommandStation;
+  }
+  
   private void startGui() {
     JCS.logProgress("Check OS...");
 
@@ -87,34 +106,27 @@ public class JCS extends Thread {
 
     java.awt.EventQueue.invokeLater(() -> {
       jcsFrame = new JCSFrame();
+      
       if (RunUtil.isMacOSX()) {
         osAdapter.setUiCallback(jcsFrame);
       }
 
-      URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
-      //URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
+      //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
+      URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
       if (iconUrl != null) {
         jcsFrame.setIconImage(new ImageIcon(iconUrl).getImage());
       }
 
-      jcsFrame.pack();
-      jcsFrame.setLocationRelativeTo(null);
+      FrameMonitor.registerFrame(jcsFrame, JCS.class.getName());
+
       jcsFrame.setVisible(true);
-
       jcsFrame.toFront();
-
       jcsFrame.showOverviewPanel();
       if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
         jcsFrame.connect(true);
       }
-
     });
 
-//    if (!CommandStationFactory.getCommandStation().isConnected()) {
-//      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect", "true"))) {
-//        jcsFrame.connect(true);
-//      }
-//    }
     JCS.logProgress("JCS started...");
 
     int mb = 1024 * 1024;
@@ -157,6 +169,8 @@ public class JCS extends Thread {
   }
 
   public static void main(String[] args) {
+    System.setProperty("fazecast.jSerialComm.appid", "JCS");
+
     if (GraphicsEnvironment.isHeadless()) {
       Logger.error("This JDK environment is headless, can't start a GUI!");
       //Quit....
@@ -183,35 +197,34 @@ public class JCS extends Thread {
 
     logProgress("JCS is Starting...");
 
-    //Check the persistent properties prepare environment
+    //Check the persistent properties, prepare environment
     if (H2DatabaseUtil.databaseFileExists(false)) {
       //Database files are there so try to create connection
       logProgress("Connecting to existing Database...");
 
     } else {
-      //No Database file so maybe first start lets creat one
+      //No Database file so maybe first start lets create one
       logProgress("Create new Database...");
       H2DatabaseUtil.createDatabaseUsers(false);
       H2DatabaseUtil.createDatabase();
     }
 
-    persistentStore = PersistenceFactory.getService();
-    if (persistentStore != null) {
-      logProgress("Aquire Track Controller...");
-      trackController = CommandStationFactory.getCommandStation();
-      if ("true".equalsIgnoreCase(System.getProperty("controller.autoconnect"))) {
-        if (trackController != null) {
-          boolean connected = trackController.connect();
-          if (connected) {
-            logProgress("Connected with Track Controller...");
+    logProgress("Starting JCS Command Station...");
+    persistentStore = getPersistenceService();
+    jcsCommandStation = getJcsCommandStation();
 
-            boolean power = trackController.isPowerOn();
-            logProgress("Track Power is " + (power ? "on" : "off"));
-            Logger.info("Track Power is " + (power ? "on" : "off"));
-            trackController.addPowerEventListener(new JCS.Powerlistener());
-          } else {
-            logProgress("Could NOT connect with Track Controller...");
-          }
+    if (persistentStore != null && jcsCommandStation != null) {
+      if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
+        boolean connected = jcsCommandStation.connect();
+        if (connected) {
+          logProgress("Connected with Command Station...");
+
+          boolean power = jcsCommandStation.isPowerOn();
+          logProgress("Track Power is " + (power ? "on" : "off"));
+          Logger.info("Track Power is " + (power ? "on" : "off"));
+          jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+        } else {
+          logProgress("Could NOT connect with Command Station...");
         }
       }
 

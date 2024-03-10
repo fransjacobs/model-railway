@@ -51,35 +51,20 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
   }
 
   public void insertTestData() {
-    URL url = PersistenceTestHelper.class.getClassLoader().getResource("jcs-test-data-h2.sql");
-    String f = url.getFile();
-
-    executeSQLScript(f);
-
+    executeSQLScript("jcs-test-data-h2.sql");
     H2DatabaseUtil.setProperties(true);
-
     Logger.debug("Inserted Test data...");
   }
 
   public void insertSimpleLayoutTestData() {
-    URL url = PersistenceTestHelper.class.getClassLoader().getResource("simple_layout_tiles.sql");
-    String f = url.getFile();
-
-    executeSQLScript(f);
-
+    executeSQLScript("simple_layout_tiles.sql");
     H2DatabaseUtil.setProperties(true);
-
     Logger.debug("Inserted Simple Layout Test data...");
   }
 
   public void insertSimpleLayoutDirectionTestData() {
-    URL url = PersistenceTestHelper.class.getClassLoader().getResource("simple_layout_tiles_with_direction.sql");
-    String f = url.getFile();
-
-    executeSQLScript(f);
-
+    executeSQLScript("simple_layout_tiles_with_direction.sql");
     H2DatabaseUtil.setProperties(true);
-
     Logger.debug("Inserted Simple Layout Direction Test data...");
   }
 

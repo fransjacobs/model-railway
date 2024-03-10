@@ -16,7 +16,11 @@
 package jcs.ui.monitor;
 
 import com.formdev.flatlaf.util.SystemInfo;
+import java.awt.Taskbar;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,8 +28,11 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableCellRenderer;
 import jcs.JCS;
-import jcs.controller.CommandStationFactory;
+import jcs.ui.DriverCabFrame;
 import jcs.ui.options.table.SensorTableModel;
+import jcs.ui.util.FrameMonitor;
+import jcs.ui.util.MacOsAdapter;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -82,8 +89,8 @@ public class FeedbackMonitor extends JFrame {
 
   public void showMonitor() {
     this.sensorTableModel.clear();
-    this.pack();
-    this.setLocationRelativeTo(null);
+    //this.pack();
+    //this.setLocationRelativeTo(null);
     this.setVisible(true);
 
   }
@@ -157,19 +164,27 @@ public class FeedbackMonitor extends JFrame {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-      if (CommandStationFactory.getCommandStation() != null) {
-        CommandStationFactory.getCommandStation().removeSensorEventListener(sensorTableModel);
+      if (JCS.getJcsCommandStation() != null) {
+        JCS.getJcsCommandStation().removeSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Removed sensor listener");
       }
       this.sensorTableModel.clear();
     }//GEN-LAST:event_formWindowClosed
 
     private void formWindowActivated(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowActivated
-      if (CommandStationFactory.getCommandStation() != null) {
-        CommandStationFactory.getCommandStation().addSensorEventListener(sensorTableModel);
+      if (JCS.getJcsCommandStation() != null) {
+        JCS.getJcsCommandStation().addSensorEventListener(sensorTableModel);
         Logger.trace(evt.getNewState() + " Added sensor listener");
       }
     }//GEN-LAST:event_formWindowActivated
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton clearButton;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JTable sensorTable;
+    private javax.swing.JScrollPane sensorTableSP;
+    private javax.swing.JPanel topPanel;
+    // End of variables declaration//GEN-END:variables
 
   public static void main(String args[]) {
     try {
@@ -181,6 +196,25 @@ public class FeedbackMonitor extends JFrame {
 
     java.awt.EventQueue.invokeLater(() -> {
       FeedbackMonitor monitorFrame = new FeedbackMonitor();
+      FrameMonitor.registerFrame(monitorFrame, FeedbackMonitor.class.getName());
+
+      //String frameImageUrl = "/media/jcs-train-64.png";
+      String frameImageUrl = "/media/jcs-train-2-512.png";
+
+      if (RunUtil.isMacOSX()) {
+        MacOsAdapter.setMacOsProperties();
+        Taskbar taskbar = Taskbar.getTaskbar();
+        try {
+          BufferedImage img = ImageIO.read(DriverCabFrame.class.getResource(frameImageUrl));
+          taskbar.setIconImage(img);
+        } catch (IOException | UnsupportedOperationException | SecurityException ex) {
+          Logger.warn("Error: " + ex.getMessage());
+        }
+      }
+      URL iconUrl = FeedbackMonitor.class.getResource(frameImageUrl);
+      if (iconUrl != null) {
+        monitorFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+      }
 
       monitorFrame.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
@@ -188,16 +222,8 @@ public class FeedbackMonitor extends JFrame {
           System.exit(0);
         }
       });
+
       monitorFrame.showMonitor();
     });
   }
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton clearButton;
-    private javax.swing.JPanel mainPanel;
-    private javax.swing.JTable sensorTable;
-    private javax.swing.JScrollPane sensorTableSP;
-    private javax.swing.JPanel topPanel;
-    // End of variables declaration//GEN-END:variables
 }

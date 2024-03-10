@@ -22,12 +22,16 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import jcs.JCS;
+import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.enums.AccessoryValue;
-import jcs.entities.enums.SignalValue;
-import jcs.controller.events.AccessoryEvent;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.AccessoryEventListener;
+import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.AccessoryBean.SignalValue;
+import static jcs.entities.AccessoryBean.SignalValue.Hp0;
+import static jcs.entities.AccessoryBean.SignalValue.Hp0Sh1;
+import static jcs.entities.AccessoryBean.SignalValue.Hp1;
+import static jcs.entities.AccessoryBean.SignalValue.Hp2;
 import org.tinylog.Logger;
 
 /**
@@ -264,9 +268,8 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
   }
 
   private void sendCommand(AccessoryValue value, AccessoryBean signal, boolean useValue2) {
-    if (CommandStationFactory.getCommandStation() != null) {
-      //TrackServiceFactory.getTrackService().switchAccessory(value, signal, useValue2);
-      CommandStationFactory.getCommandStation().switchAccessory(value, signal);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().switchAccessory(signal,value);
     }
   }
 
@@ -304,7 +307,7 @@ public class SignalRowPanel extends JPanel implements AccessoryEventListener {
       SignalRowPanel signalRowPanel = new SignalRowPanel(signal);
       f.add(signalRowPanel);
 
-      CommandStationFactory.getCommandStation().addAccessoryEventListener(signalRowPanel);
+      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
     }
 
     f.pack();

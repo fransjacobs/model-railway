@@ -20,9 +20,9 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.MeasurementEvent;
-import jcs.controller.events.MeasurementEventListener;
+import jcs.JCS;
+import jcs.commandStation.events.MeasurementEvent;
+import jcs.commandStation.events.MeasurementEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -40,8 +40,8 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   }
 
   private void postInit() {
-    if (CommandStationFactory.getCommandStation() != null) {
-      CommandStationFactory.getCommandStation().addMeasurementEventListener(this);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().addMeasurementEventListener(this);
     }
   }
 
@@ -80,16 +80,17 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
     setPreferredSize(new java.awt.Dimension(1200, 45));
     setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 0, 0));
 
-    voltageLbl.setText("0.00 V");
-    voltageLbl.setPreferredSize(new java.awt.Dimension(45, 20));
+    voltageLbl.setText("-");
+    voltageLbl.setToolTipText("");
+    voltageLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(voltageLbl);
 
-    currentLbl.setText("0.00 A");
-    currentLbl.setPreferredSize(new java.awt.Dimension(45, 20));
+    currentLbl.setText("-");
+    currentLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(currentLbl);
 
-    tempLbl.setText("0.0 C");
-    tempLbl.setPreferredSize(new java.awt.Dimension(45, 20));
+    tempLbl.setText("-");
+    tempLbl.setPreferredSize(new java.awt.Dimension(55, 20));
     measurePanel.add(tempLbl);
 
     add(measurePanel);
@@ -107,7 +108,6 @@ public class StatusPanel extends javax.swing.JPanel implements MeasurementEventL
   private javax.swing.JLabel voltageLbl;
   // End of variables declaration//GEN-END:variables
 
-  
   //For standalone testing only
   public static void main(String args[]) {
     try {

@@ -15,18 +15,27 @@
  */
 package jcs.ui;
 
+import java.awt.Taskbar;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.ComboBoxModel;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
+import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.util.MacOsAdapter;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -38,7 +47,8 @@ public class DriverCabFrame extends javax.swing.JFrame {
   private List<LocomotiveBean> filteredLocos;
   List<String> locoNames;
 
-  private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
+  private CommandStationBean commandStation;
+  private LocomotiveBeanComboBoxModel locomotiveComboBoxModel;
 
   public DriverCabFrame() {
     initComponents();
@@ -54,6 +64,9 @@ public class DriverCabFrame extends javax.swing.JFrame {
 
   private void postInit() {
     this.driverCabPanel.setLocomotiveBean(null);
+    if (PersistenceFactory.getService() != null) {
+      this.commandStation = PersistenceFactory.getService().getDefaultCommandStation();
+    }
     loadLocomotives();
   }
 
@@ -62,10 +75,14 @@ public class DriverCabFrame extends javax.swing.JFrame {
       List<LocomotiveBean> locos = new LinkedList<>();
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
+      if (PersistenceFactory.getService() != null) {
+        locos.addAll(PersistenceFactory.getService().getLocomotivesByCommandStationId(commandStation.getId(), true));
+      }
 
-      locos.addAll(PersistenceFactory.getService().getLocomotives());
+      locomotiveComboBoxModel = new LocomotiveBeanComboBoxModel();
+      locomotiveComboBoxModel.removeAllElements();
+      locomotiveComboBoxModel.addAll(locos);
 
-      locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
       this.locoCB.setModel(locomotiveComboBoxModel);
 
       locoNames = new ArrayList<>(locos.size());
@@ -131,7 +148,14 @@ public class DriverCabFrame extends javax.swing.JFrame {
   }// </editor-fold>//GEN-END:initComponents
 
   private void locoCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locoCBActionPerformed
-    Logger.trace(evt.getActionCommand() + " -> " + this.locomotiveComboBoxModel.getSelectedItem());
+    LocomotiveBean selLoc = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
+    if (selLoc != null) {
+      String name = selLoc.getName();
+      long id = selLoc.getId();
+      Logger.trace(evt.getActionCommand() + " -> " + name + " id: " + id);
+    } else {
+      Logger.trace(evt.getActionCommand() + " -> null");
+    }
 
     if (((LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem()).getName() != null) {
       LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
@@ -150,8 +174,107 @@ public class DriverCabFrame extends javax.swing.JFrame {
       this.locoLabel.setIcon(null);
       this.locoLabel.setText(null);
     }
-
   }//GEN-LAST:event_locoCBActionPerformed
+
+  class LocomotiveBeanByNameSorter implements Comparator<LocomotiveBean> {
+
+    @Override
+    public int compare(LocomotiveBean a, LocomotiveBean b) {
+      //Avoid null pointers
+      String aa = a.getName();
+      if (aa == null) {
+        aa = "000";
+      }
+      String bb = b.getName();
+      if (bb == null) {
+        bb = "000";
+      }
+
+      return aa.compareTo(bb);
+    }
+  }
+
+  class LocomotiveBeanComboBoxModel extends DefaultComboBoxModel<LocomotiveBean> {
+
+    private final List<LocomotiveBean> model;
+
+    public LocomotiveBeanComboBoxModel() {
+      model = new ArrayList<>();
+    }
+
+    @Override
+    public void addAll(int index, Collection<? extends LocomotiveBean> elements) {
+      model.addAll(index, elements);
+      Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void addAll(Collection<? extends LocomotiveBean> elements) {
+      model.addAll(elements);
+      Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void addElement(LocomotiveBean element) {
+      if (model.add(element)) {
+        Collections.sort(model, new LocomotiveBeanByNameSorter());
+
+        fireContentsChanged(this, 0, getSize());
+      }
+    }
+
+    @Override
+    public LocomotiveBean getElementAt(int index) {
+      return (LocomotiveBean) model.toArray()[index];
+    }
+
+    @Override
+    public int getIndexOf(Object object) {
+      return this.model.indexOf(object);
+    }
+
+    @Override
+    public int getSize() {
+      return model.size();
+    }
+
+    @Override
+    public void insertElementAt(LocomotiveBean locomotiveBean, int index) {
+      this.model.add(index, locomotiveBean);
+      this.fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void removeAllElements() {
+      model.clear();
+      fireContentsChanged(this, 0, getSize());
+    }
+
+    @Override
+    public void removeElement(Object anObject) {
+      int index = this.getIndexOf(anObject);
+      removeElementAt(index);
+    }
+
+    @Override
+    public void removeElementAt(int index) {
+      this.model.remove(index);
+      fireContentsChanged(this, 0, getSize());
+    }
+  }
+
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  private jcs.ui.DriverCabPanel driverCabPanel;
+  private javax.swing.Box.Filler filler1;
+  private javax.swing.Box.Filler filler2;
+  private javax.swing.JComboBox<LocomotiveBean> locoCB;
+  private javax.swing.JLabel locoLabel;
+  private javax.swing.JPanel northPanel;
+  // End of variables declaration//GEN-END:variables
 
   public static void main(String args[]) {
     try {
@@ -163,8 +286,26 @@ public class DriverCabFrame extends javax.swing.JFrame {
       Logger.error(ex);
     }
 
+    //String frameImageUrl = "/media/jcs-train-64.png";
+    String frameImageUrl = "/media/jcs-train-2-512.png";
+
     java.awt.EventQueue.invokeLater(() -> {
       DriverCabFrame driverFrame = new DriverCabFrame();
+
+      if (RunUtil.isMacOSX()) {
+        MacOsAdapter.setMacOsProperties();
+        Taskbar taskbar = Taskbar.getTaskbar();
+        try {
+          BufferedImage img = ImageIO.read(DriverCabFrame.class.getResource(frameImageUrl));
+          taskbar.setIconImage(img);
+        } catch (IOException | UnsupportedOperationException | SecurityException ex) {
+          Logger.warn("Error: " + ex.getMessage());
+        }
+      }
+      URL iconUrl = KeyboardSensorPanel.class.getResource(frameImageUrl);
+      if (iconUrl != null) {
+        driverFrame.setIconImage(new ImageIcon(iconUrl).getImage());
+      }
 
       driverFrame.pack();
       driverFrame.setLocationRelativeTo(null);
@@ -172,13 +313,4 @@ public class DriverCabFrame extends javax.swing.JFrame {
       driverFrame.setResizable(false);
     });
   }
-
-  // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.DriverCabPanel driverCabPanel;
-  private javax.swing.Box.Filler filler1;
-  private javax.swing.Box.Filler filler2;
-  private javax.swing.JComboBox<LocomotiveBean> locoCB;
-  private javax.swing.JLabel locoLabel;
-  private javax.swing.JPanel northPanel;
-  // End of variables declaration//GEN-END:variables
 }

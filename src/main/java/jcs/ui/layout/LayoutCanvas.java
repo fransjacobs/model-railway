@@ -44,19 +44,22 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.AccessoryEventListener;
-import jcs.controller.events.SensorEventListener;
+import jcs.JCS;
+import jcs.commandStation.FeedbackController;
+import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
-import jcs.entities.enums.AccessoryValue;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
@@ -394,11 +397,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       switch (tile.getTileType()) {
         case SENSOR ->
-          CommandStationFactory.getCommandStation().addSensorEventListener((SensorEventListener) tile);
+          JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
         case SWITCH ->
-          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+          JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
-          CommandStationFactory.getCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+          JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
 
         default -> {
           //Do nothing
@@ -582,7 +585,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
 
     if (MouseEvent.BUTTON1 == evt.getButton() || MouseEvent.BUTTON3 == evt.getButton()) {
-      if (tile != null) {
+      if (tile != null && this.mode != Mode.CONTROL) {
         Logger.trace("Selecting " + tile + " @ " + p);
         this.selectedTiles.addAll(tile.getAllPoints());
       }
@@ -628,19 +631,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       case CURVED -> {
       }
       case SENSOR -> {
+        this.executor.execute(() -> toggleSensor((Sensor) tile));
       }
       case BLOCK -> {
         Logger.trace("Show BlockDialog for " + tile.getId());
         //show the Block control dialog so tha a locomotive can be assigned to the block
-        BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), (Block) tile);
+        Block block = (Block) tile;
+        BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
         bcd.setVisible(true);
+
+        this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
       }
       case SIGNAL ->
         this.executor.execute(() -> toggleSignal((Signal) tile));
-      //toggleSignal((Signal) tile);
       case SWITCH ->
         this.executor.execute(() -> toggleSwitch((Switch) tile));
-      //toggleSwitch((Switch) tile);
       case CROSS -> {
       }
       default -> {
@@ -652,7 +657,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
-      CommandStationFactory.getCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
+      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
+      repaint(turnout.getX(), turnout.getY(), turnout.getWidth(), turnout.getHeight());
     } else {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
@@ -662,11 +668,27 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (signal.getAccessoryBean() != null) {
       AccessoryBean ab = signal.getAccessoryBean();
       ab.toggle();
-      Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getPosition());
+      Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getState());
 
-      CommandStationFactory.getCommandStation().switchAccessory(ab.getAccessoryValue(), ab);
+      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
+      repaint(signal.getX(), signal.getY(), signal.getWidth(), signal.getHeight());
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
+    }
+  }
+
+  private void toggleSensor(Sensor sensor) {
+    SensorBean sb = sensor.getSensorBean();
+    if (sb != null) {
+      sb.toggle();
+      Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
+
+      SensorEvent sensorEvent = new SensorEvent(sb);
+      List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+      for (FeedbackController fbc : acl) {
+        fbc.fireSensorEventListeners(sensorEvent);
+      }
+      repaint(sensor.getX(), sensor.getY(), sensor.getWidth(), sensor.getHeight());
     }
   }
 
@@ -682,9 +704,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       Point tcp = this.selectedTiles.iterator().next();
       Tile tile = findTile(tcp);
       TileBean.TileType tt = tile.getTileType();
-      
-      Logger.trace("Seleted tile "+tile.getId()+" TileType "+tt);
-            
+
+      Logger.trace("Seleted tile " + tile.getId() + " TileType " + tt);
+
       switch (tt) {
         case END -> {
           showRotate = true;
@@ -715,8 +737,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           td.setVisible(true);
         }
         case BLOCK -> {
-          Logger.trace("Show BlockDialog for "+tile.getId());
-          BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile);
+          Logger.trace("Show BlockDialog for " + tile.getId());
+          BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile, this);
           bd.setVisible(true);
         }
         default -> {
@@ -770,7 +792,16 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     this.xyMI.setVisible(true);
-    this.xyMI.setText(tile.getId() + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
+
+    String extra = "";
+    if (tile instanceof Sensor s) {
+      if (s.getSensorBean() != null) {
+        extra = " " + s.getSensorBean().getName();
+      }
+    }
+
+    this.xyMI.setText(tile.getId() + extra + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
+
     this.propertiesMI.setVisible(showProperties);
     this.flipHorizontalMI.setVisible(showFlip);
     this.flipVerticalMI.setVisible(showFlip);
@@ -883,7 +914,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
   }//GEN-LAST:event_leftMIActionPerformed
 
-  private Tile findTile(Point cp) {
+  public Tile findTile(Point cp) {
     Tile result = this.tiles.get(cp);
     if (result == null) {
       //Logger.trace("Using alternative points...");

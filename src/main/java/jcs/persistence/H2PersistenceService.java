@@ -25,18 +25,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.JCSPropertyBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
-import jcs.entities.enums.DecoderType;
 import jcs.persistence.sqlmakers.H2SqlMaker;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -56,11 +58,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   private void connect() {
-    Logger.debug(
-            "Connecting to: "
-            + System.getProperty("norm.jdbcUrl")
-            + " with db user: "
-            + System.getProperty("norm.user"));
+    Logger.debug("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
     database = new Database();
     database.setSqlMaker(new H2SqlMaker());
   }
@@ -122,7 +120,6 @@ public class H2PersistenceService implements PersistenceService {
     SensorBean prev = database.where("id=?", sensor.getId()).first(SensorBean.class);
 
     if (prev != null) {
-
       // sensor.setName(prev.getName());
       database.update(sensor);
     } else {
@@ -141,12 +138,82 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len) {
+    Map<String, SensorBean> sensorBeans = new HashMap<>();
+
+    if (bus0len != null) {
+      for (int i = 0; i < (bus0len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        //ensure a leading zero for sorting   
+        String cn = ((i + 1) > 9 ? "" : "0") + (i + 1);
+        if (cn.length() == 2) {
+          cn = "00" + cn;
+        } else if (cn.length() == 3) {
+          cn = "0" + cn;
+        }
+        String id = deviceId + "-" + cn;
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 1));
+        sb.setName("B0-S-" + (i + 1));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    if (bus1len != null) {
+      for (int i = 0; i < (bus1len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        String id = deviceId + "-" + (i + 1001);
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 1001));
+        sb.setName("B1-S-" + (i + 1001));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    if (bus2len != null) {
+      for (int i = 0; i < (bus2len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        String id = deviceId + "-" + (i + 2001);
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 2001));
+        sb.setName("B2-S-" + (i + 2001));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    if (bus3len != null) {
+      for (int i = 0; i < (bus3len * 16); i++) {
+        SensorBean sb = new SensorBean();
+        String id = deviceId + "-" + (i + 3001);
+        sb.setId(id);
+        sb.setDeviceId(deviceId);
+        sb.setContactId((i + 3001));
+        sb.setName("B3-S-" + (i + 3001));
+        sensorBeans.put(id, sb);
+      }
+    }
+
+    List<SensorBean> existing = this.getSensors();
+    for (SensorBean sb : existing) {
+      if (!sensorBeans.containsKey(sb.getId())) {
+        Logger.trace("Removing " + sb);
+        this.remove(sb);
+      }
+    }
+
+    for (SensorBean sb : sensorBeans.values()) {
+      this.persist(sb);
+    }
+
+    return this.getSensors();
+  }
+
+  @Override
   public List<FunctionBean> getLocomotiveFunctions(Long locomotiveId) {
-    List<FunctionBean> locFunctions
-            = database
-                    .where("locomotive_id=?", locomotiveId)
-                    .orderBy("f_number")
-                    .results(FunctionBean.class);
+    List<FunctionBean> locFunctions = database.where("locomotive_id=?", locomotiveId).orderBy("f_number").results(FunctionBean.class);
 
     for (FunctionBean fb : locFunctions) {
       fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
@@ -157,25 +224,25 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public FunctionBean getLocomotiveFunction(Long locomotiveId, Integer number) {
-    FunctionBean fb
-            = database
-                    .where("locomotive_id=? and f_number=?", locomotiveId, number)
-                    .first(FunctionBean.class);
+    FunctionBean fb = database.where("locomotive_id=? and f_number=?", locomotiveId, number).first(FunctionBean.class);
     if (fb != null) {
-      fb.setInActiveIconImage(this.getFunctionImage(fb.getInActiveIcon()));
-      fb.setActiveIconImage(this.getFunctionImage(fb.getActiveIcon()));
+      fb.setInActiveIconImage(getFunctionImage(fb.getInActiveIcon()));
+      fb.setActiveIconImage(getFunctionImage(fb.getActiveIcon()));
     }
     return fb;
   }
 
   @Override
-  public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType) {
-    Object[] args = new Object[]{address, decoderType.getDecoderType()};
+  public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId) {
+    Object[] args = new Object[]{address, decoderType.getDecoderType(), commandStionId};
 
-    LocomotiveBean loco
-            = database.where("address=? and decoder_type=?", args).first(LocomotiveBean.class);
-    loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
-    loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    LocomotiveBean loco = database.where("address=? and decoder_type=? and command_station_id=?", args).first(LocomotiveBean.class);
+    if (loco != null) {
+      if (loco.getIcon() != null) {
+        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      }
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
     return loco;
   }
 
@@ -202,22 +269,45 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId) {
+    List<LocomotiveBean> locos = database.where("command_station_id=?", commandStationId).orderBy("id").results(LocomotiveBean.class);
+
+    for (LocomotiveBean loco : locos) {
+      loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
+
+    return locos;
+  }
+
+  @Override
+  public List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId, Boolean show) {
+    Object[] args = new Object[]{commandStationId, (show ? 1 : 0)};
+
+    List<LocomotiveBean> locos = database.where("command_station_id=? and show=?", args).orderBy("id").results(LocomotiveBean.class);
+
+    for (LocomotiveBean loco : locos) {
+      loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
+
+    return locos;
+  }
+
+  @Override
   public FunctionBean persist(FunctionBean functionBean) {
     if (functionBean.getId() == null) {
       // Might be a new refresh of an existing function so let try to find it
-      FunctionBean dbFb
-              = this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
+      FunctionBean dbFb = this.getLocomotiveFunction(functionBean.getLocomotiveId(), functionBean.getNumber());
       if (dbFb != null) {
         functionBean.setId(dbFb.getId());
       }
     }
     try {
       if (database.where("id=?", functionBean.getId()).first(FunctionBean.class) != null) {
-        int rows = database.update(functionBean).getRowsAffected();
-        // Logger.trace(rows + " rows updated; " + functionBean);
+        database.update(functionBean);
       } else {
-        int rows = database.insert(functionBean).getRowsAffected();
-        // Logger.trace(rows + " rows inserted; " + functionBean);
+        database.insert(functionBean);
       }
     } catch (DbException dbe) {
       Logger.error("Error: " + dbe.getMessage());
@@ -238,18 +328,14 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public LocomotiveBean persist(LocomotiveBean locomotive) {
     if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
-      int rows = database.update(locomotive).getRowsAffected();
-      // Logger.trace(rows + " rows updated; " + locomotive);
+      database.update(locomotive);
     } else {
-      int rows = database.insert(locomotive).getRowsAffected();
-      // Logger.trace(rows + " rows inserted; " + locomotive);
+      database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
+      database.insert(locomotive);
     }
     List<FunctionBean> functions = new LinkedList<>();
     functions.addAll(locomotive.getFunctions().values());
 
-    // remove the current functions
-    // database.sql("delete from locomotive_functions where locomotive_id =?",
-    // locomotive.getId()).execute();
     persistFunctionBeans(functions);
     locomotive.setFunctions(functions);
 
@@ -259,14 +345,13 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public void remove(LocomotiveBean locomotive) {
     // First femove the functions
-    database
-            .sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId())
-            .execute();
+    database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
 
     int rows = database.delete(locomotive).getRowsAffected();
     Logger.trace(rows + " rows deleted");
   }
 
+  @Override
   public Image getLocomotiveImage(String imageName) {
     if (!imageCache.containsKey(imageName)) {
       // Try to load the image from the file cache
@@ -274,13 +359,13 @@ public class H2PersistenceService implements PersistenceService {
       if (image != null) {
         int size = 100;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-        this.imageCache.put(
-                imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+        this.imageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
     return this.imageCache.get(imageName);
   }
 
+  @Override
   public Image getFunctionImage(String imageName) {
     if (!functionImageCache.containsKey(imageName)) {
       // Try to load the image from the file cache
@@ -288,74 +373,99 @@ public class H2PersistenceService implements PersistenceService {
       if (image != null) {
         int size = 30;
         float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
-        this.functionImageCache.put(
-                imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
+        this.functionImageCache.put(imageName, image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH));
       }
     }
     return this.functionImageCache.get(imageName);
   }
 
-  private Image readImage(String imageName, boolean function) {
+  @Override
+  public Image readImage(String imageName, boolean function) {
     Image image = null;
-
-    String serial = System.getProperty("cs.serial", "");
-    String path
-            = System.getProperty("user.home")
-            + File.separator
-            + "jcs"
-            + File.separator
-            + "cache"
-            + File.separator
-            + serial
-            + File.separator;
-
-    if (function) {
-      path = path + "functions" + File.separator;
-    }
-
-    File imgFile = new File(path + imageName.toLowerCase() + ".png");
-    if (imgFile.exists()) {
-      try {
-        image = ImageIO.read(imgFile);
-      } catch (IOException e) {
-        Logger.trace("Image file " + imageName + ".png does not exists");
+    if (imageName != null) {
+      String path;
+      if (imageName.contains(File.separator)) {
+        //Contains path seperators so assume it is a manual selected image
+        path = imageName;
+      } else {
+        //no path seperators so assume it is a synchonized command station icon
+        String shortName = getDefaultCommandStation().getShortName().toLowerCase();
+        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
       }
-    } else {
-      // should we attempt to obatian it now and cache it when available, but also when it is not
-      // avaliable put a marker so tha we are not trying over and over again...
-      // who should be responsable for the cache.. the vendor controller this class or?
+
+      if (function) {
+        path = path + "zfunctions" + File.separator;
+      }
+
+      File imgFile;
+      if (path.contains(".")) {
+        imgFile = new File(path);
+      } else {
+        imgFile = new File(path + imageName.toLowerCase() + ".png");
+      }
+
+      if (imgFile.exists()) {
+        try {
+          image = ImageIO.read(imgFile);
+        } catch (IOException e) {
+          Logger.trace("Image file " + imageName + ".png does not exists");
+        }
+      } else {
+        //TODO:
+        // should we attempt to obtain it now and cache it when available, but also when it is not
+        // available put a marker so that we are not trying over and over again...
+        // who should be responsable for the cache... the command controller, this class, or?
+      }
     }
     return image;
   }
 
   @Override
+  public List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId) {
+    List<AccessoryBean> accessories = database.where("command_station_id = ?", commandStationId).results(AccessoryBean.class);
+    return accessories;
+  }
+
+  @Override
   public List<AccessoryBean> getTurnouts() {
     String typeClause = "%weiche";
-    List<AccessoryBean> turnouts
-            = database.where("type like ?", typeClause).results(AccessoryBean.class);
+    String csid = getDefaultCommandStation().getId();
+    Object[] args = new Object[]{typeClause, csid};
+    List<AccessoryBean> turnouts = database.where("type like ? and command_station_id = ?", args).results(AccessoryBean.class);
     return turnouts;
   }
 
   @Override
   public List<AccessoryBean> getSignals() {
     String typeClause = "%signal%";
-    List<AccessoryBean> signals
-            = database.where("type like ?", typeClause).results(AccessoryBean.class);
+    String csid = getDefaultCommandStation().getId();
+    Object[] args = new Object[]{typeClause, csid};
+
+    List<AccessoryBean> signals = database.where("type like ? and command_station_id = ?", args).results(AccessoryBean.class);
     return signals;
   }
 
   @Override
   public AccessoryBean getAccessory(String id) {
     AccessoryBean accessoryBean = database.where("id=?", id).first(AccessoryBean.class);
+    return accessoryBean;
+  }
 
+  @Override
+  public AccessoryBean getAccessoryByAddressAndCommandStationId(Integer address, String commandStationId) {
+    String cid = commandStationId;
+    if (cid == null) {
+      cid = getDefaultCommandStation().getId();
+    }
+
+    Object[] args = new Object[]{address, cid};
+    AccessoryBean accessoryBean = database.where("address=? and command_station_id=?", args).first(AccessoryBean.class);
     return accessoryBean;
   }
 
   @Override
   public AccessoryBean getAccessoryByAddress(Integer address) {
-    AccessoryBean accessoryBean = database.where("address=?", address).first(AccessoryBean.class);
-
-    return accessoryBean;
+    return getAccessoryByAddressAndCommandStationId(address, null);
   }
 
   @Override
@@ -387,7 +497,7 @@ public class H2PersistenceService implements PersistenceService {
       }
 
       if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
-        Logger.trace("Look for blok "+tileBean.getId());
+        Logger.trace("Look for blok " + tileBean.getId());
         tileBean.setBlockBean(this.getBlock(tileBean.getId()));
       }
     }
@@ -409,8 +519,7 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public List<TileBean> getTileBeansByTileType(TileBean.TileType tileType) {
-    List<TileBean> tileBeans
-            = database.where("tile_type = ?", tileType.getTileType()).results(TileBean.class);
+    List<TileBean> tileBeans = database.where("tile_type = ?", tileType.getTileType()).results(TileBean.class);
     return addReleatedObjects(tileBeans);
   }
 
@@ -531,18 +640,26 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public RouteBean getRoute(
-          String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
+  public RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
-    RouteBean route
-            = database
-                    .where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args)
-                    .first(RouteBean.class);
+    RouteBean route = database.where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args).first(RouteBean.class);
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
       route.setRouteElements(routeElements);
     }
     return route;
+  }
+
+  @Override
+  public List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
+    Object[] args = new Object[]{fromTileId, fromSuffix};
+    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ?", args).results(RouteBean.class);
+
+    for (RouteBean r : routes) {
+      List<RouteElementBean> routeElements = getRouteElements(r.getId());
+      r.setRouteElements(routeElements);
+    }
+    return routes;
   }
 
   @Override
@@ -590,10 +707,9 @@ public class H2PersistenceService implements PersistenceService {
 
   private void setJCSPropertiesAsSystemProperties() {
     List<JCSPropertyBean> props = getProperties();
-    props.forEach(
-            p -> {
-              System.setProperty(p.getKey(), p.getValue());
-            });
+    props.forEach(p -> {
+      System.setProperty(p.getKey(), p.getValue());
+    });
   }
 
   @Override
@@ -643,7 +759,6 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public BlockBean getBlock(String id) {
     BlockBean block = database.where("id = ?", id).first(BlockBean.class);
-
     return addReleatedObjects(block);
   }
 
@@ -683,4 +798,39 @@ public class H2PersistenceService implements PersistenceService {
     int rows = database.sql("delete from blocks").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " blocks");
   }
+
+  @Override
+  public List<CommandStationBean> getCommandStations() {
+    //List<CommandStationBean> commandStationBeans = database.where("enabled=true").results(CommandStationBean.class);
+    List<CommandStationBean> commandStationBeans = database.results(CommandStationBean.class);
+    return commandStationBeans;
+  }
+
+  @Override
+  public CommandStationBean getCommandStation(String id) {
+    return database.where("id=?", id).first(CommandStationBean.class);
+  }
+
+  @Override
+  public CommandStationBean getDefaultCommandStation() {
+    return database.where("default_cs=true").first(CommandStationBean.class);
+  }
+
+  @Override
+  public CommandStationBean persist(CommandStationBean commandStationBean) {
+    if (database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class) != null) {
+      database.update(commandStationBean);
+    } else {
+      Logger.warn("Can't Create CommandStation " + commandStationBean);
+    }
+    return commandStationBean;
+  }
+
+  @Override
+  public CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean) {
+    Object[] args = new Object[]{newDefaultCommandStationBean.getId(), newDefaultCommandStationBean.getId()};
+    database.sql("update command_stations set default_cs = case when id = ? then true else false end, enabled = case when id = ? then true else false end", args).execute();
+    return newDefaultCommandStationBean;
+  }
+
 }

@@ -42,41 +42,8 @@ public class BlockTileTester extends JFrame {
   public BlockTileTester(String title) {
     super(title);
 
-    LocomotiveBean lok1 =
-        new LocomotiveBean(
-            2L,
-            "BR 81 002",
-            2L,
-            0L,
-            2,
-            "DB BR 81 008",
-            "mm_prg",
-            null,
-            120,
-            1,
-            0,
-            0,
-            false,
-            null,
-            true);
-
-    LocomotiveBean lok2 =
-        new LocomotiveBean(
-            12L,
-            "BR 141 015-08",
-            12L,
-            null,
-            12,
-            "DB BR 141 136-2",
-            "mm_prg",
-            null,
-            120,
-            0,
-            0,
-            2,
-            false,
-            null,
-            true);
+    LocomotiveBean lok1 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true);
+    LocomotiveBean lok2 = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 2, false, true);
 
     tileEast = new Block(Orientation.EAST, 70, 190);
     tileEast.setId("bk-1");
@@ -85,6 +52,7 @@ public class BlockTileTester extends JFrame {
     bbe.setId(tileEast.getId());
     bbe.setTileId(tileEast.getId());
     bbe.setLocomotive(lok1);
+    bbe.setDescription(tileEast.getId());
     //bbe.setReverseArrival(true);
     ((Block) tileEast).setBlockBean(bbe);
 
@@ -95,8 +63,10 @@ public class BlockTileTester extends JFrame {
     bbs.setId(tileSouth.getId());
     bbs.setTileId(tileSouth.getId());
     lok2.setDirection(lok2.getDirection().toggle());
-    //bbs.setLocomotive(lok2);
-    bbs.setReverseArrival(true);
+    bbs.setDescription(tileSouth.getId());
+
+    bbs.setLocomotive(lok2);
+    //bbs.setReverseArrival(true);
     ((Block) tileSouth).setBlockBean(bbs);
 
     tileWest = new Block(Orientation.WEST, 250, 190);
@@ -105,7 +75,8 @@ public class BlockTileTester extends JFrame {
     bbw.setId(tileWest.getId());
     bbw.setTileId(tileWest.getId());
     bbw.setLocomotive(lok2);
-    // bbw.setReverseArrival(true);
+    bbw.setDescription(tileWest.getId());
+    //bbw.setReverseArrival(true);
     ((Block) tileWest).setBlockBean(bbw);
 
     tileNorth = new Block(Orientation.NORTH, 340, 190);
@@ -116,12 +87,20 @@ public class BlockTileTester extends JFrame {
     //bbn.setLocomotive(lok2);
     bbn.setReverseArrival(true);
     ((Block) tileNorth).setBlockBean(bbn);
+    
+    
+    Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());
+    Logger.trace("West: "+ ((Block)tileWest).getLocomotiveBlockSuffix());
+    Logger.trace("North: "+ ((Block)tileNorth).getLocomotiveBlockSuffix());
+    Logger.trace("South: "+ ((Block)tileSouth).getLocomotiveBlockSuffix());
+    
+    
   }
 
   @Override
   public void paint(Graphics g) {
     Graphics2D g2d = (Graphics2D) g;
-    
+
     tileEast.drawTile(g2d, true);
     tileEast.drawBounds(g2d);
     tileEast.drawCenterPoint(g2d, Color.red);
@@ -133,7 +112,7 @@ public class BlockTileTester extends JFrame {
     tileWest.drawTile(g2d, false);
     tileWest.drawBounds(g2d);
     tileWest.drawCenterPoint(g2d, Color.red);
-    
+
     tileNorth.drawTile(g2d, true);
     tileNorth.drawBounds(g2d);
     tileNorth.drawCenterPoint(g2d, Color.cyan);
@@ -143,9 +122,9 @@ public class BlockTileTester extends JFrame {
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException
-        | InstantiationException
-        | IllegalAccessException
-        | UnsupportedLookAndFeelException ex) {
+            | InstantiationException
+            | IllegalAccessException
+            | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
 
@@ -154,7 +133,7 @@ public class BlockTileTester extends JFrame {
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     app.setSize(370, 300);
     app.setLocation(
-        dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+            dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 

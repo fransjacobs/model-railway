@@ -16,11 +16,12 @@
 package jcs.persistence.util;
 
 import com.dieselpoint.norm.Database;
+import java.io.BufferedReader;
 import java.io.File;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,6 +48,8 @@ public class H2DatabaseUtil {
   protected static final String JCS_USER = "jcs";
   protected static final String JCS_PWD = "repo";
   protected static final String JDBC_PRE = "jdbc:h2:";
+
+  protected static final String DB_CREATE_DDL = "jcs-db.sql";
 
   protected Database db;
 
@@ -108,11 +111,49 @@ public class H2DatabaseUtil {
     createDatabase(null);
   }
 
+  protected static String readFromJARFile(String filename) throws IOException {
+    InputStream is = H2DatabaseUtil.class.getClassLoader().getResourceAsStream(filename);
+    InputStreamReader isr = new InputStreamReader(is);
+    BufferedReader br = new BufferedReader(isr);
+    StringBuilder sb = new StringBuilder();
+    String line;
+    while ((line = br.readLine()) != null) {
+      sb.append(line);
+    }
+    br.close();
+    isr.close();
+    is.close();
+    return sb.toString();
+  }
+
   protected static void createDatabase(Connection connection) {
-    URL url = H2DatabaseUtil.class.getClassLoader().getResource("jcs-db.sql");
-    String f = url.getFile();
-    executeSQLScript(connection, f);
-    Logger.info("Created JCS Database schema.");
+//    try {
+    executeSQLScript(DB_CREATE_DDL, connection);
+
+//      URL url = H2DatabaseUtil.class.getClassLoader().getResource(DB_CREATE_DDL);
+//      String f = url.getFile();
+//      File file = new File(f);
+//      String script;
+//      if (file.exists()) {
+//        Logger.trace("Reading from path...");
+//        script = Files.readString(file.toPath());
+//      } else {
+//        Logger.trace("Reading from jar file...");
+//        script = readFromJARFile(DB_CREATE_DDL);
+//      }
+//
+//      Logger.trace("Script length: " + script.length());
+//      if (script.length() > 10) {
+//        Logger.info("Loading ddl script: " + DB_CREATE_DDL);
+//
+//        executeSQLScript(script, connection, DB_CREATE_DDL);
+//        Logger.info("Created JCS Database schema.");
+//      } else {
+//        Logger.error("Could not create JCS Database schema!");
+//      }
+//    } catch (IOException ex) {
+//      Logger.error("Error: " + ex.getMessage());
+//    }
   }
 
   public static void createDatabaseUsers(boolean test) {
@@ -142,16 +183,28 @@ public class H2DatabaseUtil {
     }
   }
 
-  protected static void executeSQLScript(String script) {
-    executeSQLScript(null, script);
+  protected static void executeSQLScript(String filename) {
+    executeSQLScript(filename,null);
   }
 
-  protected static void executeSQLScript(Connection connection, String script) {
+  protected static void executeSQLScript(String filename, Connection connection) {
+    try {
+      File file = new File(filename);
+      String script;
+      if (file.exists()) {
+        script = Files.readString(file.toPath());
+      } else {
+        script = readFromJARFile(filename);
+      }
+      executeSQLScript(script, connection, filename);
+    } catch (IOException ex) {
+      Logger.error("Error: " + ex.getMessage());
+    }
+  }
+
+  protected static void executeSQLScript(String script, Connection connection, String scriptName) {
     Connection conn = connection;
     try {
-      File scriptFile = new File(script);
-      Logger.info("Loading ddl script: " + script);
-
       if (conn == null) {
         if (System.getProperty("norm.jdbcUrl") == null) {
           RunUtil.loadProperties();
@@ -171,31 +224,27 @@ public class H2DatabaseUtil {
         return;
       }
 
-      if (scriptFile.exists()) {
-        var buffer = new StringBuilder();
-        var scanner = new Scanner(scriptFile);
-        while (scanner.hasNextLine()) {
-          var line = scanner.nextLine();
-          buffer.append(line);
-          // When a semicolon is found, assume a complete statement, so execute it.
-          if (line.endsWith(";")) {
-            String command = buffer.toString();
+      var buffer = new StringBuilder();
+      var scanner = new Scanner(script);
+      while (scanner.hasNextLine()) {
+        var line = scanner.nextLine();
+        buffer.append(line);
+        // When a semicolon is found, assume a complete statement, so execute it.
+        if (line.endsWith(";")) {
+          String command = buffer.toString();
 
-            Logger.trace(command);
-            conn.createStatement().execute(command);
-            buffer = new StringBuilder();
-          } else {
-            buffer.append("\n");
-          }
+          //Logger.trace(command);
+          conn.createStatement().execute(command);
+          buffer = new StringBuilder();
+        } else {
+          buffer.append("\n");
         }
-        Logger.trace("Executed script: " + script);
 
-      } else {
-        Logger.warn("Script " + scriptFile.getName() + " does not exist!");
+        Logger.trace("Executed script: " + scriptName);
       }
-    } catch (FileNotFoundException | SQLException e) {
+    } catch (SQLException e) {
       Logger.error("Can't execute ddl script!");
-      Logger.error("Cause: "+e.getMessage(), e);
+      Logger.error("Cause: " + e.getMessage(), e);
     } finally {
       if (conn != null) {
         try {
@@ -270,4 +319,15 @@ public class H2DatabaseUtil {
     }
     return exist;
   }
+
+  public static void main(String[] a) {
+    if (H2DatabaseUtil.databaseFileExists(false)) {
+      Logger.info("Database files exists");
+    } else {
+      Logger.info("Creating a new Database...");
+      H2DatabaseUtil.createDatabaseUsers(false);
+      H2DatabaseUtil.createDatabase();
+    }
+  }
+
 }

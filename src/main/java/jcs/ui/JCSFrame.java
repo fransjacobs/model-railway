@@ -55,12 +55,17 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import jcs.JCS;
-import jcs.controller.events.PowerEvent;
+import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.events.PowerEvent;
+import jcs.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.controller.CommandStationFactory;
 import jcs.ui.layout.LayoutPanel;
 import jcs.ui.monitor.FeedbackMonitor;
+import jcs.ui.options.CommandStationDialog;
+import jcs.ui.options.CommandStationPanel;
 import jcs.ui.options.OptionDialog;
+import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.UICallback;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -69,7 +74,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class JCSFrame extends JFrame implements UICallback {
+public class JCSFrame extends JFrame implements UICallback, DisconnectionEventListener {
 
   private final Map<KeyStroke, Action> actionMap;
   private FeedbackMonitor feedbackMonitor;
@@ -114,8 +119,7 @@ public class JCSFrame extends JFrame implements UICallback {
         this.setTitle("");
       }
 
-      if (CommandStationFactory.getCommandStation().isConnected()) {
-        //this.locomotivesPanel.loadLocomotives();
+      if (JCS.getJcsCommandStation().isConnected()) {
         setControllerProperties();
       }
 
@@ -169,7 +173,6 @@ public class JCSFrame extends JFrame implements UICallback {
 
   public void showLocomotives() {
     Logger.debug("Show Locomotives");
-
     handlePreferences();
   }
 
@@ -183,10 +186,14 @@ public class JCSFrame extends JFrame implements UICallback {
     card.show(this.centerPanel, "signalsPanel");
   }
 
-  public void showDiagnostics() {
+  public void showKeyboards() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "diagnosticPanel");
+  }
 
+  public void showSettings() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "settingsPanel");
   }
 
   public void showDesignLayoutPanel() {
@@ -196,26 +203,26 @@ public class JCSFrame extends JFrame implements UICallback {
   }
 
   public void stop() {
-    if (CommandStationFactory.getCommandStation() != null) {
-      CommandStationFactory.getCommandStation().switchPower(false);
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().switchPower(false);
     }
   }
 
   private void setControllerProperties() {
-    if (CommandStationFactory.getCommandStation() != null) {
-      if (CommandStationFactory.getCommandStation().getControllerName() != null) {
+    if (JCS.getJcsCommandStation() != null) {
+      InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+      if (info != null) {
         this.connectButton.setSelected(true);
-        this.controllerDescriptionLbl.setText(CommandStationFactory.getCommandStation().getControllerName());
-        this.controllerCatalogNumberLbl.setText(CommandStationFactory.getCommandStation().getControllerArticleNumber());
-        this.controllerSerialNumberLbl.setText(CommandStationFactory.getCommandStation().getControllerSerialNumber());
-        this.controllerHostNameLbl.setText("CS-" + CommandStationFactory.getCommandStation().getControllerSerialNumber());
-        this.powerButton.setSelected(CommandStationFactory.getCommandStation().isPowerOn());
+        this.controllerDescriptionLbl.setText(info.getProductName());
+        this.controllerCatalogNumberLbl.setText(info.getArticleNumber());
+        this.controllerSerialNumberLbl.setText(info.getSerialNumber());
+        this.controllerHostNameLbl.setText(info.getHostname());
+        this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
       } else {
         this.connectButton.setSelected(false);
         this.controllerHostNameLbl.setText("Not Connected");
         this.powerButton.setSelected(false);
       }
-
     }
   }
 
@@ -223,6 +230,7 @@ public class JCSFrame extends JFrame implements UICallback {
     if (this.feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
       feedbackMonitor = new FeedbackMonitor();
+      FrameMonitor.registerFrame(feedbackMonitor, FeedbackMonitor.class.getName());
     }
     this.feedbackMonitor.showMonitor();
   }
@@ -234,7 +242,7 @@ public class JCSFrame extends JFrame implements UICallback {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    jPanel5 = new JPanel();
+    toolbarPanel = new JPanel();
     jcsToolBar = new JToolBar();
     connectButton = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
@@ -243,19 +251,21 @@ public class JCSFrame extends JFrame implements UICallback {
     showOverviewBtn = new JButton();
     showEditDesignBtn = new JButton();
     filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    showDiagnosticsBtn = new JButton();
+    showKeyboardBtn = new JButton();
     filler5 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    showSettingsBtn = new JButton();
+    filler9 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     showFeedbackMonitorBtn = new JButton();
     filler8 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     statusPanel = new StatusPanel();
     mainPanel = new JPanel();
     locoDisplaySP = new JSplitPane();
     centerPanel = new JPanel();
-    settingsPanel = new JPanel();
-    jLabel1 = new JLabel();
-    diagnosticPanel = new ControllerPanel();
+    keyboardSensorMessagePanel = new KeyboardSensorPanel();
     layoutPanel = new LayoutPanel();
     overviewPanel = new LayoutPanel(true);
+    settingsPanel = new JPanel();
+    commandStationPanel = new CommandStationPanel();
     leftPanel = new JPanel();
     jPanel6 = new JPanel();
     launchDriverCabBtn = new JButton();
@@ -286,6 +296,7 @@ public class JCSFrame extends JFrame implements UICallback {
     showSensorMonitor = new JMenuItem();
     toolsMenu = new JMenu();
     optionsMI = new JMenuItem();
+    commandStationsMI = new JMenuItem();
 
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     setBounds(new Rectangle(0, 0, 1400, 900));
@@ -298,10 +309,10 @@ public class JCSFrame extends JFrame implements UICallback {
       }
     });
 
-    jPanel5.setName("jPanel5"); // NOI18N
+    toolbarPanel.setName("toolbarPanel"); // NOI18N
     FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
     flowLayout8.setAlignOnBaseline(true);
-    jPanel5.setLayout(flowLayout8);
+    toolbarPanel.setLayout(flowLayout8);
 
     jcsToolBar.setBorderPainted(false);
     jcsToolBar.setDoubleBuffered(true);
@@ -400,28 +411,46 @@ public class JCSFrame extends JFrame implements UICallback {
     filler3.setName("filler3"); // NOI18N
     jcsToolBar.add(filler3);
 
-    showDiagnosticsBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
-    showDiagnosticsBtn.setToolTipText("Diagnostics");
-    showDiagnosticsBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
-    showDiagnosticsBtn.setDoubleBuffered(true);
-    showDiagnosticsBtn.setFocusable(false);
-    showDiagnosticsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    showDiagnosticsBtn.setMargin(new Insets(0, 0, 0, 0));
-    showDiagnosticsBtn.setMaximumSize(new Dimension(40, 40));
-    showDiagnosticsBtn.setMinimumSize(new Dimension(40, 40));
-    showDiagnosticsBtn.setName("showDiagnosticsBtn"); // NOI18N
-    showDiagnosticsBtn.setPreferredSize(new Dimension(40, 40));
-    showDiagnosticsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    showDiagnosticsBtn.addActionListener(new ActionListener() {
+    showKeyboardBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
+    showKeyboardBtn.setToolTipText("Diagnostics");
+    showKeyboardBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+    showKeyboardBtn.setDoubleBuffered(true);
+    showKeyboardBtn.setFocusable(false);
+    showKeyboardBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    showKeyboardBtn.setMargin(new Insets(0, 0, 0, 0));
+    showKeyboardBtn.setMaximumSize(new Dimension(40, 40));
+    showKeyboardBtn.setMinimumSize(new Dimension(40, 40));
+    showKeyboardBtn.setName("showKeyboardBtn"); // NOI18N
+    showKeyboardBtn.setPreferredSize(new Dimension(40, 40));
+    showKeyboardBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    showKeyboardBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        showDiagnosticsBtnActionPerformed(evt);
+        showKeyboardBtnActionPerformed(evt);
       }
     });
-    jcsToolBar.add(showDiagnosticsBtn);
-    showDiagnosticsBtn.getAccessibleContext().setAccessibleName("Switchboard");
+    jcsToolBar.add(showKeyboardBtn);
+    showKeyboardBtn.getAccessibleContext().setAccessibleName("Switchboard");
 
     filler5.setName("filler5"); // NOI18N
     jcsToolBar.add(filler5);
+
+    showSettingsBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
+    showSettingsBtn.setFocusable(false);
+    showSettingsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    showSettingsBtn.setMaximumSize(new Dimension(40, 40));
+    showSettingsBtn.setMinimumSize(new Dimension(40, 40));
+    showSettingsBtn.setName("showSettingsBtn"); // NOI18N
+    showSettingsBtn.setPreferredSize(new Dimension(40, 40));
+    showSettingsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    showSettingsBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showSettingsBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(showSettingsBtn);
+
+    filler9.setName("filler9"); // NOI18N
+    jcsToolBar.add(filler9);
 
     showFeedbackMonitorBtn.setIcon(new ImageIcon(getClass().getResource("/media/monitor-24.png"))); // NOI18N
     showFeedbackMonitorBtn.setFocusable(false);
@@ -441,9 +470,9 @@ public class JCSFrame extends JFrame implements UICallback {
     filler8.setName("filler8"); // NOI18N
     jcsToolBar.add(filler8);
 
-    jPanel5.add(jcsToolBar);
+    toolbarPanel.add(jcsToolBar);
 
-    getContentPane().add(jPanel5, BorderLayout.NORTH);
+    getContentPane().add(toolbarPanel, BorderLayout.NORTH);
 
     statusPanel.setName("statusPanel"); // NOI18N
     getContentPane().add(statusPanel, BorderLayout.SOUTH);
@@ -463,21 +492,9 @@ public class JCSFrame extends JFrame implements UICallback {
     centerPanel.setPreferredSize(new Dimension(1010, 900));
     centerPanel.setLayout(new CardLayout());
 
-    settingsPanel.setMinimumSize(new Dimension(1000, 750));
-    settingsPanel.setName("settingsPanel"); // NOI18N
-    settingsPanel.setOpaque(false);
-    settingsPanel.setPreferredSize(new Dimension(885, 750));
-
-    jLabel1.setText("Settings");
-    jLabel1.setName("jLabel1"); // NOI18N
-    settingsPanel.add(jLabel1);
-
-    centerPanel.add(settingsPanel, "settingsPanel");
-    settingsPanel.getAccessibleContext().setAccessibleName("settingPanel");
-
-    diagnosticPanel.setMinimumSize(new Dimension(885, 840));
-    diagnosticPanel.setName("diagnosticPanel"); // NOI18N
-    centerPanel.add(diagnosticPanel, "diagnosticPanel");
+    keyboardSensorMessagePanel.setMinimumSize(new Dimension(885, 840));
+    keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
+    centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
     layoutPanel.setMinimumSize(new Dimension(885, 160));
     layoutPanel.setName("layoutPanel"); // NOI18N
@@ -487,6 +504,16 @@ public class JCSFrame extends JFrame implements UICallback {
     overviewPanel.setName("overviewPanel"); // NOI18N
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
+
+    settingsPanel.setName("settingsPanel"); // NOI18N
+    FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout1.setAlignOnBaseline(true);
+    settingsPanel.setLayout(flowLayout1);
+
+    commandStationPanel.setName("commandStationPanel"); // NOI18N
+    settingsPanel.add(commandStationPanel);
+
+    centerPanel.add(settingsPanel, "settingsPanel");
 
     locoDisplaySP.setRightComponent(centerPanel);
 
@@ -692,6 +719,15 @@ public class JCSFrame extends JFrame implements UICallback {
     });
     toolsMenu.add(optionsMI);
 
+    commandStationsMI.setText("Command Stations");
+    commandStationsMI.setName("commandStationsMI"); // NOI18N
+    commandStationsMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        commandStationsMIActionPerformed(evt);
+      }
+    });
+    toolsMenu.add(commandStationsMI);
+
     jcsMenuBar.add(toolsMenu);
 
     setJMenuBar(jcsMenuBar);
@@ -703,9 +739,9 @@ public class JCSFrame extends JFrame implements UICallback {
       showLocomotives();
     }//GEN-LAST:event_showLocosMIActionPerformed
 
-    private void showDiagnosticsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showDiagnosticsBtnActionPerformed
-      showDiagnostics();
-    }//GEN-LAST:event_showDiagnosticsBtnActionPerformed
+    private void showKeyboardBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showKeyboardBtnActionPerformed
+      showKeyboards();
+    }//GEN-LAST:event_showKeyboardBtnActionPerformed
 
     private void quitMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_quitMIActionPerformed
       this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
@@ -735,8 +771,8 @@ public class JCSFrame extends JFrame implements UICallback {
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
       boolean on = ((JToggleButton) evt.getSource()).isSelected();
-      if (CommandStationFactory.getCommandStation() != null) {
-        CommandStationFactory.getCommandStation().switchPower(on);
+      if (JCS.getJcsCommandStation() != null) {
+        JCS.getJcsCommandStation().switchPower(on);
       }
     }//GEN-LAST:event_powerButtonActionPerformed
 
@@ -745,18 +781,23 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
 
   public void connect(boolean connect) {
-    if (CommandStationFactory.getCommandStation() != null) {
+    if (JCS.getJcsCommandStation() != null) {
       if (connect) {
-        CommandStationFactory.getCommandStation().connect();
-        this.controllerDescriptionLbl.setText(CommandStationFactory.getCommandStation().getControllerName());
-        this.controllerCatalogNumberLbl.setText(CommandStationFactory.getCommandStation().getControllerArticleNumber());
-        this.controllerSerialNumberLbl.setText(CommandStationFactory.getCommandStation().getControllerSerialNumber());
-        this.controllerHostNameLbl.setText("CS3-" + CommandStationFactory.getCommandStation().getControllerSerialNumber());
+        JCS.getJcsCommandStation().connect();
 
-        //TrackControllerFactory.getTrackController().addPowerEventListener(new Powerlistener(this));
-        this.connectMI.setText("Disconnect");
+        InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+        if (info != null) {
+          this.connectButton.setSelected(true);
+          this.controllerDescriptionLbl.setText(info.getProductName());
+          this.controllerCatalogNumberLbl.setText(info.getArticleNumber());
+          this.controllerSerialNumberLbl.setText(info.getSerialNumber());
+          this.controllerHostNameLbl.setText(info.getHostname());
+          this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
+          this.connectMI.setText("Disconnect");
+
+        }
       } else {
-        CommandStationFactory.getCommandStation().disconnect();
+        JCS.getJcsCommandStation().disconnect();
         this.controllerDescriptionLbl.setText("-");
         this.controllerCatalogNumberLbl.setText("-");
         this.controllerSerialNumberLbl.setText("-");
@@ -765,11 +806,12 @@ public class JCSFrame extends JFrame implements UICallback {
         this.connectMI.setText("Connect");
       }
     }
+    JCS.getJcsCommandStation().addDisconnectionEventListener(this);
+
     this.powerButton.setEnabled(connect);
     this.showFeedbackMonitorBtn.setEnabled(connect);
     this.setControllerProperties();
   }
-
 
     private void connectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
       boolean connect = ((JToggleButton) evt.getSource()).isSelected();
@@ -786,7 +828,7 @@ public class JCSFrame extends JFrame implements UICallback {
     }//GEN-LAST:event_editLayoutActionPerformed
 
     private void showKeyboardActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showKeyboardActionPerformed
-      showDiagnostics();
+      showKeyboards();
     }//GEN-LAST:event_showKeyboardActionPerformed
 
     private void showSensorMonitorActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSensorMonitorActionPerformed
@@ -811,10 +853,22 @@ public class JCSFrame extends JFrame implements UICallback {
     driverFrame.toFront();
   }//GEN-LAST:event_launchDriverCabBtnActionPerformed
 
+  private void commandStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationsMIActionPerformed
+    CommandStationDialog csd = new CommandStationDialog(this, true);
+    csd.setLocationRelativeTo(null);
+    csd.setVisible(true);
+  }//GEN-LAST:event_commandStationsMIActionPerformed
+
+  private void showSettingsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSettingsBtnActionPerformed
+    showSettings();
+  }//GEN-LAST:event_showSettingsBtnActionPerformed
+
   private String getTitleString() {
     String jcsVersion = JCS.getVersionInfo().getVersion();
-    if (CommandStationFactory.getCommandStation() != null && CommandStationFactory.getCommandStation().getControllerSerialNumber() != null) {
-      return "JCS " + "Connected to " + CommandStationFactory.getCommandStation().getControllerName();
+
+    if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null) {
+      InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+      return "JCS " + "Connected to " + info.getProductName();
     } else {
       return "JCS " + jcsVersion + " - NOT Connected!";
     }
@@ -826,6 +880,15 @@ public class JCSFrame extends JFrame implements UICallback {
   }
 
   @Override
+  public void onDisconnect(DisconnectionEvent event) {
+    JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is disconnected.", "Disconnection error", JOptionPane.ERROR_MESSAGE);
+
+    this.controllerHostNameLbl.setText("Disconnected");
+    this.connectMI.setText("Connect");
+    this.connectButton.setSelected(false);
+  }
+
+  @Override
   public boolean handleQuitRequest() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
     return result == JOptionPane.YES_OPTION;
@@ -833,8 +896,7 @@ public class JCSFrame extends JFrame implements UICallback {
 
   @Override
   public void handleAbout() {
-    ImageIcon jcsIcon = new ImageIcon(JCSFrame.class
-            .getResource("/media/jcs-train-64.png"));
+    ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
     JOptionPane.showMessageDialog(this, "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
   }
 
@@ -859,6 +921,8 @@ public class JCSFrame extends JFrame implements UICallback {
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPanel bottomLeftPanel;
   private JPanel centerPanel;
+  private CommandStationPanel commandStationPanel;
+  private JMenuItem commandStationsMI;
   private JToggleButton connectButton;
   private JMenuItem connectMI;
   private JLabel controllerCatalogLbl;
@@ -869,7 +933,6 @@ public class JCSFrame extends JFrame implements UICallback {
   private JLabel controllerLbl;
   private JLabel controllerSerialLbl;
   private JLabel controllerSerialNumberLbl;
-  private ControllerPanel diagnosticPanel;
   private JMenuItem editLayout;
   private JMenu fileMenu;
   private Box.Filler filler1;
@@ -879,15 +942,15 @@ public class JCSFrame extends JFrame implements UICallback {
   private Box.Filler filler6;
   private Box.Filler filler7;
   private Box.Filler filler8;
-  private JLabel jLabel1;
+  private Box.Filler filler9;
   private JPanel jPanel1;
   private JPanel jPanel2;
   private JPanel jPanel3;
   private JPanel jPanel4;
-  private JPanel jPanel5;
   private JPanel jPanel6;
   private JMenuBar jcsMenuBar;
   private JToolBar jcsToolBar;
+  private KeyboardSensorPanel keyboardSensorMessagePanel;
   private JButton launchDriverCabBtn;
   private LayoutPanel layoutPanel;
   private JPanel leftPanel;
@@ -898,15 +961,17 @@ public class JCSFrame extends JFrame implements UICallback {
   private JToggleButton powerButton;
   private JMenuItem quitMI;
   private JPanel settingsPanel;
-  private JButton showDiagnosticsBtn;
   private JButton showEditDesignBtn;
   private JButton showFeedbackMonitorBtn;
   private JMenuItem showHome;
   private JMenuItem showKeyboard;
+  private JButton showKeyboardBtn;
   private JMenuItem showLocosMI;
   private JButton showOverviewBtn;
   private JMenuItem showSensorMonitor;
+  private JButton showSettingsBtn;
   private StatusPanel statusPanel;
+  private JPanel toolbarPanel;
   private JMenu toolsMenu;
   private JMenu viewMenu;
   // End of variables declaration//GEN-END:variables

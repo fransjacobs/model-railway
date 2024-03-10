@@ -59,7 +59,7 @@ public class SignalTableModel extends BeanTableModel<AccessoryBean> {
       case 0 -> device.getId();
       case 1 -> device.getName();
       case 2 -> device.getType();
-      case 3 -> device.getPosition();
+      case 3 -> device.getState();
       default -> null;
     };
   }
@@ -81,7 +81,7 @@ public class SignalTableModel extends BeanTableModel<AccessoryBean> {
       case 0 -> device.setId((String) value);
       case 1 -> device.setName((String) value);
       case 2 -> device.setType((String) value);
-      case 3 -> device.setPosition((Integer) value);
+      case 3 -> device.setState((Integer) value);
       default -> {}
     }
   }

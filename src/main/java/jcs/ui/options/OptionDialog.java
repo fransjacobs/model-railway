@@ -66,11 +66,10 @@ public class OptionDialog extends javax.swing.JDialog {
     topPanel = new JPanel();
     centerPanel = new JPanel();
     prefsTP = new JTabbedPane();
+    commandStationPanel = new CommandStationPanel();
     locomotivePanel = new LocomotivePreferencesPanel();
+    accessoryPreferencesPanel = new AccessoryPreferencesPanel();
     propertiesPanel = new PropertiesPanel();
-    signalPanel = new SignalPreferencesPanel();
-    turnoutPanel = new TurnoutPreferencesPanel();
-    controllerInfoPanel1 = new ControllerInfoPanel();
     southPanel = new JPanel();
     closeBtn = new JButton();
 
@@ -97,20 +96,17 @@ public class OptionDialog extends javax.swing.JDialog {
       }
     });
 
+    commandStationPanel.setName("commandStationPanel"); // NOI18N
+    prefsTP.addTab("Command Station", commandStationPanel);
+
     locomotivePanel.setName("locomotivePanel"); // NOI18N
     prefsTP.addTab("Locomotives", locomotivePanel);
 
+    accessoryPreferencesPanel.setName("accessoryPreferencesPanel"); // NOI18N
+    prefsTP.addTab("Accessories", accessoryPreferencesPanel);
+
     propertiesPanel.setName("propertiesPanel"); // NOI18N
     prefsTP.addTab("Properties", propertiesPanel);
-
-    signalPanel.setName("signalPanel"); // NOI18N
-    prefsTP.addTab("Signals", signalPanel);
-
-    turnoutPanel.setName("turnoutPanel"); // NOI18N
-    prefsTP.addTab("Turnouts", turnoutPanel);
-
-    controllerInfoPanel1.setName("controllerInfoPanel1"); // NOI18N
-    prefsTP.addTab("Controller", controllerInfoPanel1);
 
     centerPanel.add(prefsTP, BorderLayout.CENTER);
     prefsTP.getAccessibleContext().setAccessibleName("Locomotives");
@@ -148,11 +144,9 @@ public class OptionDialog extends javax.swing.JDialog {
     Component c = this.prefsTP.getSelectedComponent();
 
     if (c instanceof LocomotivePreferencesPanel) {
-      this.locomotivePanel.refresh();
-    } else if (c instanceof TurnoutPreferencesPanel) {
+      //this.locomotivePanel.refresh();
+    } else if (c instanceof AccessoryPreferencesPanel) {
       //this.turnoutPanel.refresh();
-    } else if (c instanceof SignalPreferencesPanel) {
-      //this.signalPanel.refresh();
     } else if (c instanceof PropertiesPanel) {
       //this.propertiesPanel.refresh();
     }
@@ -184,15 +178,14 @@ public class OptionDialog extends javax.swing.JDialog {
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private AccessoryPreferencesPanel accessoryPreferencesPanel;
   private JPanel centerPanel;
   private JButton closeBtn;
-  private ControllerInfoPanel controllerInfoPanel1;
+  private CommandStationPanel commandStationPanel;
   private LocomotivePreferencesPanel locomotivePanel;
   private JTabbedPane prefsTP;
   private PropertiesPanel propertiesPanel;
-  private SignalPreferencesPanel signalPanel;
   private JPanel southPanel;
   private JPanel topPanel;
-  private TurnoutPreferencesPanel turnoutPanel;
   // End of variables declaration//GEN-END:variables
 }

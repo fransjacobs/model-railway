@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import jcs.JCS;
 import jcs.entities.AccessoryBean;
-import jcs.persistence.PersistenceFactory;
-import jcs.controller.CommandStationFactory;
 import jcs.entities.TileBean;
+import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
@@ -93,7 +93,7 @@ public class SignalDialog extends javax.swing.JDialog {
 
       this.accessoryComboBoxModel.setSelectedItem(ab);
       //Unregister is properties might change
-      CommandStationFactory.getCommandStation().removeAccessoryEventListener(signal);
+      JCS.getJcsCommandStation().removeAccessoryEventListener(signal);
     }
   }
 
@@ -184,7 +184,7 @@ public class SignalDialog extends javax.swing.JDialog {
       if (this.signal != null && this.signal.getAccessoryBean() != null) {
         if (this.signal.getAccessoryBean().getName() != null) {
           PersistenceFactory.getService().persist((signal));
-          CommandStationFactory.getCommandStation().addAccessoryEventListener(signal);
+          JCS.getJcsCommandStation().addAccessoryEventListener(signal);
         } else {
           this.signal.setAccessoryBean(null);
           PersistenceFactory.getService().persist((signal));

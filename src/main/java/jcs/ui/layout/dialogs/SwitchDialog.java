@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import jcs.persistence.PersistenceFactory;
-import jcs.controller.CommandStationFactory;
+import jcs.JCS;
 import jcs.entities.AccessoryBean;
 import jcs.entities.TileBean;
+import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Switch;
 import org.tinylog.Logger;
 
@@ -99,7 +99,7 @@ public class SwitchDialog extends javax.swing.JDialog {
       Logger.trace("Selected Turnout: " + ab);
 
       //Unregister as properties might change
-      CommandStationFactory.getCommandStation().removeAccessoryEventListener(turnout);
+      JCS.getJcsCommandStation().removeAccessoryEventListener(turnout);
     }
   }
 
@@ -191,7 +191,7 @@ public class SwitchDialog extends javax.swing.JDialog {
         if (this.turnout.getAccessoryBean().getName() != null) {
           PersistenceFactory.getService().persist((turnout));
 
-          CommandStationFactory.getCommandStation().addAccessoryEventListener(turnout);
+          JCS.getJcsCommandStation().addAccessoryEventListener(turnout);
         } else {
           this.turnout.setAccessoryBean(null);
           PersistenceFactory.getService().persist((turnout));

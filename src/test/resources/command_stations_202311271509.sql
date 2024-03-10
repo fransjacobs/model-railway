@@ -1,0 +1,5 @@
+INSERT INTO jcs.command_stations (id,description,short_name,class_name,connect_via,serial_port,ip_address,network_port,ip_auto_conf,supports_command_control,supports_feedback,supports_loco_synch,supports_accessory_synch,supports_loco_image_synch,supports_loco_function_synch,protocols,default_cs,enabled,last_used_serial) VALUES
+	 ('marklin.cs','Marklin Central Station 2/3','CS','jcs.commandStation.marklin.cs.MarklinCentralStationImpl','NETWORK',NULL,NULL,15731,true,true,true,true,true,true,true,'DCC,MFX,MM',true,true,NULL),
+	 ('dcc-ex.serial','DCC-EX Serial','dcc-ex','jcs.commandStation.dccex.DccExCommandStationImpl','SERIAL',NULL,NULL,NULL,false,true,true,false,false,false,false,'DCC',false,false,NULL),
+	 ('dcc-ex.network','DCC-EX Network','dcc-ex','jcs.commandStation.dccex.DccExCommandStationImpl','NETWORK',NULL,'192.168.178.73',2560,false,true,true,false,false,false,false,'DCC',false,false,NULL),
+	 ('marklin.6051','Marklin 6051','M6051','jcs.commandStation.marklin.m6051.M6051Impl','SERIAL',NULL,NULL,NULL,false,true,true,false,false,false,false,'MM',false,false,NULL);

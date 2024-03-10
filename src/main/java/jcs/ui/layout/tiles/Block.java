@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
@@ -57,9 +58,6 @@ public class Block extends AbstractTile implements Tile {
     this.blockBean = tileBean.getBlockBean();
   }
 
-  //  Block(int x, int y) {
-  //    this(Orientation.EAST, x, y);
-  //  }
   Block(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
@@ -305,7 +303,7 @@ public class Block extends AbstractTile implements Tile {
     g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
 
     // A block has a direction of travel. Hence it has a plus (+) and a Minus(-) side.
-    // The default the EAST direction, the blcok will look like: -[ - bk-nn + ]-
+    // The default the EAST direction, the block will look like: -[ - bk-nn + ]-
     g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
     g2.setPaint(Color.black);
 
@@ -338,7 +336,7 @@ public class Block extends AbstractTile implements Tile {
 
       String direction;
       if (locInBlock) {
-        direction = (jcs.entities.enums.Direction.FORWARDS == this.getBlockBean().getLocomotive().getDirection() ? ">" : "<");
+        direction = (LocomotiveBean.Direction.FORWARDS == this.getBlockBean().getLocomotive().getDirection() ? ">" : "<");
       } else {
         direction = "";
       }
@@ -383,7 +381,48 @@ public class Block extends AbstractTile implements Tile {
         blockText = getId();
       }
     }
+
     return blockText;
+  }
+
+  public String getLocomotiveBlockSuffix() {
+    String blockSuffix = "";
+    if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getDirection() != null) {
+      LocomotiveBean.Direction locDir = getBlockBean().getLocomotive().getDirection();
+      boolean reverseArrival = this.getBlockBean().isReverseArrival();
+
+      switch (getOrientation()) {
+        case EAST -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "-" : "+";
+          } else {
+            blockSuffix = reverseArrival ? "+" : "-";
+          }
+        }
+        case WEST -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "+" : "-";
+          } else {
+            blockSuffix = reverseArrival ? "-" : "+";
+          }
+        }
+        case SOUTH -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "+" : "-";
+          } else {
+            blockSuffix = reverseArrival ? "-" : "+";
+          }
+        }
+        case NORTH -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "-" : "+";
+          } else {
+            blockSuffix = reverseArrival ? "+" : "-";
+          }
+        }
+      }
+    }
+    return blockSuffix;
   }
 
   @Override
@@ -395,7 +434,6 @@ public class Block extends AbstractTile implements Tile {
     g2d.setFont(newFont);
 
     String blockText = getBlockText();
-
     // Scale the text if necessary
     int textWidth = g2d.getFontMetrics().stringWidth(blockText);
     double fontscale = 10.0;
@@ -410,12 +448,7 @@ public class Block extends AbstractTile implements Tile {
 
     switch (getOrientation()) {
       case EAST -> {
-        drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-                RENDER_GRID + textHeight / 3,
-                0,
-                blockText);
+        drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) - textWidth / 2, RENDER_GRID + textHeight / 3, 0, blockText);
       }
       case WEST -> {
         drawRotate(

@@ -47,119 +47,116 @@ import org.tinylog.Logger;
  */
 public class MacOsAdapter {
 
-    private UICallback uiCallback;
-    private JTouchBar touchBar;
+  private UICallback uiCallback;
+  private JTouchBar touchBar;
 
-    public MacOsAdapter() {
-        init();
+  public MacOsAdapter() {
+    init();
+  }
+
+  public static void setMacOsProperties() {
+    System.setProperty("apple.awt.application.name", "JCS");
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
+    System.setProperty("apple.awt.application.appearance", "system");
+  }
+
+  public void setUiCallback(UICallback uiCallback) {
+    this.uiCallback = uiCallback;
+  }
+
+  private void init() {
+    try {
+      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.warn("Can't set the LookAndFeel: " + ex);
     }
+    try {
+      Desktop desktop = Desktop.getDesktop();
+      desktop.setAboutHandler(new JCSAboutHandler());
+      desktop.setQuitHandler(new JCSQuitHandler());
+      desktop.setPreferencesHandler(new JCSPreferencesHandler());
 
-    public static void setMacOsProperties() {
-        System.setProperty("apple.awt.application.name", "JCS");
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
-        System.setProperty("apple.awt.application.appearance", "system");
+      Taskbar taskbar = Taskbar.getTaskbar();
+      try {
+        //BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-64.png"));
+        BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-2-512.png"));
+        taskbar.setIconImage(img);
+      } catch (final UnsupportedOperationException e) {
+        Logger.warn("The os does not support: 'taskbar.setIconImage'");
+      } catch (final SecurityException e) {
+        Logger.warn("There was a security exception for: 'taskbar.setIconImage'");
+      }
+
+      initTouchBar();
+    } catch (SecurityException | IllegalArgumentException | IOException ex) {
+      Logger.warn("Failed to register with MacOS: " + ex);
     }
+  }
 
-    public void setUiCallback(UICallback uiCallback) {
-        this.uiCallback = uiCallback;
-    }
-
-    private void init() {
-        try {
-            //UIManager.setLookAndFeel( new FlatLightLaf() );
-            UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-            //FlatLightLaf.setup();
-            
-            //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-            Logger.warn("Can't set the LookAndFeel: " + ex);
-        }
-        try {
-            Desktop desktop = Desktop.getDesktop();
-            desktop.setAboutHandler(new JCSAboutHandler());
-            desktop.setQuitHandler(new JCSQuitHandler());
-            desktop.setPreferencesHandler(new JCSPreferencesHandler());
-
-            Taskbar taskbar = Taskbar.getTaskbar();
-            try {
-                BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-64.png"));
-                taskbar.setIconImage(img);
-            } catch (final UnsupportedOperationException e) {
-                Logger.warn("The os does not support: 'taskbar.setIconImage'");
-            } catch (final SecurityException e) {
-                Logger.warn("There was a security exception for: 'taskbar.setIconImage'");
-            }
-
-            initTouchBar();
-        } catch (SecurityException | IllegalArgumentException | IOException ex) {
-            Logger.warn("Failed to register with MacOS: " + ex);
-        }
-    }
-
-    private void initTouchBar() {
+  private void initTouchBar() {
 //        try {
-        touchBar = new JTouchBar();
-        touchBar.setCustomizationIdentifier("JCSTouchBar");
+    touchBar = new JTouchBar();
+    touchBar.setCustomizationIdentifier("JCSTouchBar");
 
-        //Load the images
-        //Image powerImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/power-red-24.png")));
-        //Image displayLayoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/earth-yellow-24.png")));
-        //Image locomotiveImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/electric-loc-yellow-24.png")));
-        //Image turnoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/turnout-yellow-24.png")));
-        //Image signalImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/signal-yellow-24.png")));
-        //Image diagnosticsImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/stethoscope-yellow-24.png")));
-        //Image designImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/layout-yellow-24.png")));
-        //Show label
-        TouchBarTextField touchBarTextField = new TouchBarTextField();
-        touchBarTextField.setStringValue("JCS");
-        touchBar.addItem(new TouchBarItem("touchBarTextField", touchBarTextField, true));
+    //Load the images
+    //Image powerImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/power-red-24.png")));
+    //Image displayLayoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/earth-yellow-24.png")));
+    //Image locomotiveImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/electric-loc-yellow-24.png")));
+    //Image turnoutImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/turnout-yellow-24.png")));
+    //Image signalImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/signal-yellow-24.png")));
+    //Image diagnosticsImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/stethoscope-yellow-24.png")));
+    //Image designImage = new Image(new DataInputStream(MacOsAdapter.class.getResourceAsStream("/media/layout-yellow-24.png")));
+    //Show label
+    TouchBarTextField touchBarTextField = new TouchBarTextField();
+    touchBarTextField.setStringValue("JCS");
+    touchBar.addItem(new TouchBarItem("touchBarTextField", touchBarTextField, true));
 
-        //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFlexibleSpace));
-        //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFixedSpaceSmall));
-        //Buttons
-        //TouchBarButton stopButton = new TouchBarButton();
-        //stopButton.setImage(powerImage);
-        //stopButton.setAction((TouchBarView view) -> {
-        //    Logger.trace("Touchbar Stop button clicked...");
-        //    JCS.getJCSFrame().stop();
-        //});
-        //touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
-        //TouchBarButton overviewButton = new TouchBarButton();
-        //overviewButton.setImage(displayLayoutImage);
-        //overviewButton.setAction((TouchBarView view) -> {
-        //Logger.trace("Touchbar Overview button clicked...");
-        //JCSGUI.getJCSFrame().showDisplayLayoutPanel();
-        //});
-        //touchBar.addItem(new TouchBarItem("overviewButton", overviewButton, true));
-        //TouchBarButton locoButton = new TouchBarButton();
-        //locoButton.setImage(locomotiveImage);
-        //locoButton.setAction((TouchBarView view) -> {
-        //    Logger.trace("Touchbar Loco button clicked...");
-        //    JCS.getJCSFrame().showLocomotives();
-        //});
-        //touchBar.addItem(new TouchBarItem("locoButton", locoButton, true));
-        //TouchBarButton turnoutsButton = new TouchBarButton();
-        //turnoutsButton.setImage(turnoutImage);
-        //turnoutsButton.setAction((TouchBarView view) -> {
-        //    Logger.trace("Touchbar Turnouts button clicked...");
-        //    JCS.getJCSFrame().showTurnouts();
-        //});
-        //touchBar.addItem(new TouchBarItem("turnoutsButton", turnoutsButton, true));
-        //TouchBarButton signalsButton = new TouchBarButton();
-        //signalsButton.setImage(signalImage);
-        //signalsButton.setAction((TouchBarView view) -> {
-        //    Logger.trace("Touchbar Signals button clicked...");
-        //    JCS.getJCSFrame().showSignals();
-        //});
-        //touchBar.addItem(new TouchBarItem("signalsButton", signalsButton, true));
-        //TouchBarButton diagnosticsButton = new TouchBarButton();
-        //diagnosticsButton.setTitle("Diagnostics");
-        //diagnosticsButton.setImage(diagnosticsImage);
-        //diagnosticsButton.setAction((TouchBarView view) -> {
-        //    Logger.trace("Touchbar diagnostics button clicked...");
-        //    JCS.getJCSFrame().showDiagnostics();
-        //});
-        //touchBar.addItem(new TouchBarItem("diagnosticsButton", diagnosticsButton, true));
+    //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFlexibleSpace));
+    //jTouchBar.addItem(new TouchBarItem(TouchBarItem.NSTouchBarItemIdentifierFixedSpaceSmall));
+    //Buttons
+    //TouchBarButton stopButton = new TouchBarButton();
+    //stopButton.setImage(powerImage);
+    //stopButton.setAction((TouchBarView view) -> {
+    //    Logger.trace("Touchbar Stop button clicked...");
+    //    JCS.getJCSFrame().stop();
+    //});
+    //touchBar.addItem(new TouchBarItem("stopButton", stopButton, true));
+    //TouchBarButton overviewButton = new TouchBarButton();
+    //overviewButton.setImage(displayLayoutImage);
+    //overviewButton.setAction((TouchBarView view) -> {
+    //Logger.trace("Touchbar Overview button clicked...");
+    //JCSGUI.getJCSFrame().showDisplayLayoutPanel();
+    //});
+    //touchBar.addItem(new TouchBarItem("overviewButton", overviewButton, true));
+    //TouchBarButton locoButton = new TouchBarButton();
+    //locoButton.setImage(locomotiveImage);
+    //locoButton.setAction((TouchBarView view) -> {
+    //    Logger.trace("Touchbar Loco button clicked...");
+    //    JCS.getJCSFrame().showLocomotives();
+    //});
+    //touchBar.addItem(new TouchBarItem("locoButton", locoButton, true));
+    //TouchBarButton turnoutsButton = new TouchBarButton();
+    //turnoutsButton.setImage(turnoutImage);
+    //turnoutsButton.setAction((TouchBarView view) -> {
+    //    Logger.trace("Touchbar Turnouts button clicked...");
+    //    JCS.getJCSFrame().showTurnouts();
+    //});
+    //touchBar.addItem(new TouchBarItem("turnoutsButton", turnoutsButton, true));
+    //TouchBarButton signalsButton = new TouchBarButton();
+    //signalsButton.setImage(signalImage);
+    //signalsButton.setAction((TouchBarView view) -> {
+    //    Logger.trace("Touchbar Signals button clicked...");
+    //    JCS.getJCSFrame().showSignals();
+    //});
+    //touchBar.addItem(new TouchBarItem("signalsButton", signalsButton, true));
+    //TouchBarButton diagnosticsButton = new TouchBarButton();
+    //diagnosticsButton.setTitle("Diagnostics");
+    //diagnosticsButton.setImage(diagnosticsImage);
+    //diagnosticsButton.setAction((TouchBarView view) -> {
+    //    Logger.trace("Touchbar diagnostics button clicked...");
+    //    JCS.getJCSFrame().showDiagnostics();
+    //});
+    //touchBar.addItem(new TouchBarItem("diagnosticsButton", diagnosticsButton, true));
 //      TouchBarButton designButton = new TouchBarButton();
 //      //diagnosticsButton.setTitle("Design");
 //      designButton.setImage(designImage);
@@ -171,43 +168,43 @@ public class MacOsAdapter {
 //        } catch (IOException e) {
 //            Logger.error(e);
 //        }
+  }
+
+  public void showTouchbar(Component c) {
+    this.touchBar.show(c);
+  }
+
+  private class JCSQuitHandler implements QuitHandler {
+
+    @Override
+    public void handleQuitRequestWith(QuitEvent e, QuitResponse response) {
+      uiCallback.handleQuitRequest();
     }
+  }
 
-    public void showTouchbar(Component c) {
-        this.touchBar.show(c);
+  private class JCSAboutHandler implements AboutHandler {
+
+    @Override
+    public void handleAbout(AboutEvent e) {
+      uiCallback.handleAbout();
     }
+  }
 
-    private class JCSQuitHandler implements QuitHandler {
+  private class JCSPreferencesHandler implements PreferencesHandler {
 
-        @Override
-        public void handleQuitRequestWith(QuitEvent e, QuitResponse response) {
-            uiCallback.handleQuitRequest();
-        }
+    @Override
+    public void handlePreferences(PreferencesEvent e) {
+      uiCallback.handlePreferences();
     }
+  }
 
-    private class JCSAboutHandler implements AboutHandler {
+  private class JCSOpenFilesHandler implements OpenFilesHandler {
 
-        @Override
-        public void handleAbout(AboutEvent e) {
-            uiCallback.handleAbout();
-        }
+    @Override
+    public void openFiles(OpenFilesEvent e) {
+      //STUB
+      uiCallback.openFiles(null);
     }
-
-    private class JCSPreferencesHandler implements PreferencesHandler {
-
-        @Override
-        public void handlePreferences(PreferencesEvent e) {
-            uiCallback.handlePreferences();
-        }
-    }
-
-    private class JCSOpenFilesHandler implements OpenFilesHandler {
-
-        @Override
-        public void openFiles(OpenFilesEvent e) {
-            //STUB
-            uiCallback.openFiles(null);
-        }
-    }
+  }
 
 }

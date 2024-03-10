@@ -22,13 +22,13 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import jcs.JCS;
+import jcs.commandStation.events.AccessoryEvent;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.enums.AccessoryValue;
-import static jcs.entities.enums.AccessoryValue.GREEN;
-import static jcs.entities.enums.AccessoryValue.RED;
-import jcs.controller.events.AccessoryEvent;
-import jcs.controller.CommandStationFactory;
-import jcs.controller.events.AccessoryEventListener;
+import jcs.entities.AccessoryBean.AccessoryValue;
+import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
+import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import org.tinylog.Logger;
 
 /**
@@ -208,9 +208,9 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
     if (this.turnout != null) {
       switch (value) {
         case RED ->
-          CommandStationFactory.getCommandStation().switchAccessory(AccessoryValue.RED, turnout);
+          JCS.getJcsCommandStation().switchAccessory(turnout, AccessoryValue.RED);
         case GREEN ->
-          CommandStationFactory.getCommandStation().switchAccessory(AccessoryValue.GREEN, turnout);
+          JCS.getJcsCommandStation().switchAccessory(turnout, AccessoryValue.GREEN);
       }
     }
   }
@@ -227,7 +227,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
           this.btnStraight.setSelected(true);
         //Logger.trace("Button Straight: selected -> true.");
         default ->
-          Logger.trace("Default called; Value: " + turnout.getPosition());
+          Logger.trace("Default called; Value: " + turnout.getState());
       }
     }
   }
@@ -250,8 +250,7 @@ public class TurnoutRowPanel extends JPanel implements AccessoryEventListener {
       TurnoutRowPanel signalRowPanel = new TurnoutRowPanel(turnout);
       f.add(signalRowPanel);
 
-      CommandStationFactory.getCommandStation().addAccessoryEventListener(signalRowPanel);
-
+      JCS.getJcsCommandStation().addAccessoryEventListener(signalRowPanel);
     }
 
     f.pack();
