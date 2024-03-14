@@ -152,10 +152,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Graphics2D g2 = (Graphics2D) g.create();
 
     Set<Tile> snapshot = new HashSet<>(tiles.values());
-    //ensure ther is no tile which is null... 
+    //ensure there is no tile which is null... 
     Map<String, RouteElementBean> routeSnapshot;
-
-    //snapshot = new HashSet<>(tiles.values());
     routeSnapshot = new HashMap<>(this.selectedRouteElements);
 
     if (this.drawGrid) {
@@ -201,20 +199,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
 
       tile.drawTile(g2, drawGrid);
-
       //debug
       if (!this.readonly) {
         tile.drawCenterPoint(g2, Color.magenta, 3);
       }
     }
-
     g2.dispose();
   }
 
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("repaintTile".equals(evt.getPropertyName())) {
-
       Tile tile = (Tile) evt.getNewValue();
       this.repaint(tile.getBounds());
     }
@@ -224,7 +219,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.grid != null) {
       int pw = this.getWidth();
       int ph = this.getHeight();
-
       int gw = grid.getWidth();
       int gh = grid.getHeight();
 
@@ -620,7 +614,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     this.repaint();
-
   }//GEN-LAST:event_formMouseClicked
 
   private void executeControlActionForTile(Tile tile, Point p) {
@@ -834,7 +827,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Logger.trace("X: " + evt.getX() + " Y:" + evt.getY() + " button " + evt.getButton() + " " + evt.paramString());
 
     Point p = LayoutUtil.snapToGrid(evt.getPoint());
-    //Mode.
 
     if (!LayoutCanvas.Mode.CONTROL.equals(this.mode)) {
       if (this.movingTile != null) {
@@ -863,7 +855,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
               this.selectedTiles.clear();
               this.selectedTiles.add(p);
-
               this.movingTile = null;
             }
 
@@ -1042,9 +1033,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         Tile removed = this.tiles.remove(p);
 
         if (removed != null && removed.getAllPoints() != null) {
-          //Remove tile from persistent store
-          //PersistenceFactory.getService().remove(removed.getTileBean());
-
           Set<Point> rps = removed.getAltPoints();
           //Also remove alt points
           for (Point ap : rps) {
@@ -1158,7 +1146,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   void routeLayout() {
     //routeLayoutWithAStar();
     this.executor.execute(() -> routeLayoutWithAStar());
-
   }
 
   private void routeLayoutWithAStar() {
