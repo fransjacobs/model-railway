@@ -316,9 +316,9 @@
                                 <notarizeApp>false</notarizeApp>
                             </macConfig>
                             <linuxConfig>
-                                <generateAppImage>true</generateAppImage>
-                                <generateDeb>false</generateDeb>
-                                <generateRpm>false</generateRpm>
+                                <generateAppImage>false</generateAppImage>
+                                <generateDeb>true</generateDeb>
+                                <generateRpm>true</generateRpm>
                                 <wrapJar>true</wrapJar>
                                 <categories>
                                     <category>Education</category>

@@ -246,7 +246,6 @@ class DccExSerialConnection implements DccExConnection {
     ResponseCallback(final String tx) {
       this.tx = tx;
       this.rxOpcode = DccExMessageFactory.getResponseOpcodeFor(tx);
-      Logger.trace("Expected response opcode: " + this.rxOpcode);
     }
 
     boolean isSubscribedfor(final byte[] rx) {
