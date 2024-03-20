@@ -608,13 +608,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           Tile addedTile = addTile(snapPoint);
           selectedTiles.add(snapPoint);
           selectedTiles.addAll(addedTile.getAllPoints());
+          tile = addedTile;
         }
         if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
           showOperationsPopupMenu(tile, snapPoint);
         }
       }
       case DELETE -> {
+        selectedTiles.add(snapPoint);
+        selectedTiles.addAll(tile.getAllPoints());
         removeTiles(selectedTiles);
+        tile = null;
       }
       default -> {
         Logger.trace("Default " + mode);
@@ -630,20 +634,26 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
 
+    if (MouseEvent.BUTTON1 == evt.getButton() && tile != null) {
+      this.movingTiles.clear();
+      this.movingTiles.add(tile.getCenter());
+      this.movingTile = tile;
+    }
+
     //in theory only the surrouding of the snapPoint should be repainted...
     this.repaint();
   }
 
   private void mouseDragAction(MouseEvent evt) {
-    Logger.trace(evt.paramString());
-    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    Tile tile = findTile(snapPoint);
-    if (MouseEvent.BUTTON1 == evt.getButton() && tile != null) {
-      this.movingTiles.clear();
-      this.movingTiles.add(tile.getCenter());
-      this.movingTile = tile;
-      Logger.trace("Setting moving tile: " + movingTile);
-    }
+//    Logger.trace(evt.paramString());
+//    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
+//    Tile tile = findTile(snapPoint);
+//    if (MouseEvent.BUTTON1 == evt.getButton() && tile != null) {
+//      this.movingTiles.clear();
+//      this.movingTiles.add(tile.getCenter());
+//      this.movingTile = tile;
+//      Logger.trace("Setting moving tile: " + movingTile);
+//    }
   }
 
   private boolean checkTileOccupation(Tile tile) {
@@ -665,10 +675,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     Tile tile = findTile(snapPoint);
 
-    if (!LayoutCanvas.Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && movingTile != null) {
+    if (LayoutCanvas.Mode.CONTROL != mode && MouseEvent.BUTTON1 == evt.getButton() && movingTile != null) {
       Point tp = movingTile.getCenter();
       if (!tp.equals(snapPoint)) {
-        Logger.tag("Moving Tile from " + tp + " to " + snapPoint + " Tile to move: " + movingTile);
+        Logger.tag("Move Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint);
         //Check if new position is free
 
         if (tiles.containsKey(snapPoint)) {
@@ -1072,7 +1082,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void removeTiles(Set<Point> pointsToRemove) {
     for (Point p : pointsToRemove) {
-      Tile removed = this.tiles.remove(p);
+      Tile removed = tiles.remove(p);
 
       if (removed != null && removed.getAllPoints() != null) {
         Set<Point> rps = removed.getAltPoints();
