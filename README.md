@@ -9,7 +9,6 @@
 ![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
 ![GitHub Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)
 
-
 ## Model railway control with JCS
 Experiments wich should eventually lead to automated rail road control.
 
@@ -27,67 +26,56 @@ As I am trying to do this project beside my work, family and other hobbies it is
 
 The aim of the program is to automate the running of trains on my layout.
 
-### Supported Hardware
-As I own a [Maerklin CS 3](https://www.marklin.nl/producten/details/article/60216), the project started with support
-for only the Maerklin CS-3 and also the CS-2 (allthough there are some differences between the CS2 and 3).
-Recently I have aquired a DCC-EX so I have also added support fro DCC-EX now.
-
-#### Supported Command Stations
-* DCC-EX via Serial or Network
-* Marklin CS-2 (Using CAN bus to retrieve locomotive and accessory information)
-* Marklin CS-3 (Using JSON to retrieve locomotive and accessory information)
-** also supports the S88 link for sensors
+## Supported Hardware
+* [DCC-EX](https://dcc-ex.com) can be connected either via serial port or network
+* [Marklin CS-2](https://www.marklin.nl/producten/details/article/60215)
+* [Marklin CS-3](https://www.marklin.nl/producten/details/article/60216)
+* [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino) for feedback
  
 ## Current status
 Currently the following modules are build:
-
-* A HAL for command Stations such that other hardware then the Marklin CS 2/3 can be used.
-* Added support for DCC-EX JCS can function as a Throttle for DCC-EX.
-** DCC-EX can be connected either via serial port or network
-* Communication layer to "talk" to the Maerklin CS-3, (Included automatic discovery of the CS2/3 ip address).
-* A Screen to see Sensor / feedback events from the CS2/3
+* A Throttle for driving locomotives
+* Keyboard Screen for switching Turnouts or Signals
+* Sensor Monitor to see the status of feedback sensors
 * Locomotives overview (including automatic downloading of the Locomotive- and function button images) and control.
 * Turnout and Signals overview (Synchronized with the CS2/3) and control.
 * A Screen to edit/display de schematic Layout.
+* A HAL for command Stations such that other hardware then the Marklin CS 2/3 can be used.
+* [First Release V 0.0.1](https://github.com/fransjacobs/model-railway/releases/tag/V0.0.1)
 
 ## Screenshots
 So here are a few screenshots of the Project:
-Main screen in control mode turnout and signals can be controlled by clicking on the turnout or signal. 
-Sensor activation is shown.
-![UI screenshot: JCS Main Screen](assets/mainscreen.png?raw=true)
-
-Locomotives can be driven manually using the Diver Cab.
-![UI screenshot: JCS Main Screen](assets/driver_cab.png?raw=true)
-
+#### Thottle / Driver Cab
 The Locomotive- and function images are displayed. Images are automatically downloaded from the Central Station.
+Or can be manually added.
+
+![UI screenshot: JCS Throttle](assets/driver_cab.png?raw=true)
+
+#### Keyboard Panel for switching accessories and viewing feedback sensor status
+
+![UI screenshot: JCS keyboard Screen](assets/keyboard-panel.png?raw=true)
+
+#### Sensor Monitor
+
+![UI screenshot: JCS Sensor Monitor](assets/sensor_monitor.png?raw=true)
+
+#### Layout display
+![UI screenshot: JCS Main Screen](assets/mainscreen.png?raw=true)
 
 In Editmode you can draw a layout using pre defined Tiles.
 also the layout can be routed. (it the very first and early step for the preparation of automatic running).
 ![UI screenshot: JCS Edit Screen](assets/mainscreen_edit_route.png?raw=true)
 
-Import Locomotives from the CS-3
+#### Import Locomotives from a CS-2 or CS-3
 ![UI screenshot: JCS Preferences Locomotives](assets/prefs_locomotives.png?raw=true)
 
-Import Signals from the CS-3
-![UI screenshot: JCS Preferences Signals](assets/prefs_signals.png?raw=true)
-
-Import Turnout from the CS-3
-![UI screenshot: JCS Preferences Turnouts](assets/prefs_turnouts.png?raw=true)
-
-Sensor Monitor
-![UI screenshot: JCS Sensor Monitor](assets/sensor_monitor.png?raw=true)
-
 ## TODO's (and there are still a lots of todo's...):
-
 Currently the following features are under active development:
-* Improving communication with the CS-2/3 [more or less done :)]
+* Configuration screens to edit the Locomotives, Accessories and Sensors. [more or less done :)]
+* Add deployment configuration for MacOS, Windows and Linux an App [more or less done :)]
 * Automatically route the Layout. [more or less done :)]
-* React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. [more or less done :)]
+* React on relevant CS-3 events like start/stop, Sensor events, Loco, Accessory, power etc events. [work in progress :)]
 * Automatically run trains. [Work in progress]
-
-* Configuration screens to edit the Locomotives, Accessories and Sensors. [Todo]
-* Add deployment configuration for Windows and Linux and to an App
-  (first added is MacOS as that is my main development platform) [Postponed this a while, but basics where done]
 * Add more Unit tests
 * ...
 
@@ -97,7 +85,6 @@ Frans
 
 ## License
 [LICENSE](LICENSE.md)
-
 
 ## Build JCS from source
 [BUILDING](BUILDING.md)
@@ -117,7 +104,7 @@ Frans
 </table>
 
 
-** Copyright 2019 - 2023 Frans Jacobs **
+** Copyright 2019 - 2024 Frans Jacobs **
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
