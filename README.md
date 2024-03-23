@@ -45,34 +45,29 @@ Currently the following modules are build:
 
 ## Screenshots
 So here are a few screenshots of the Project:
+#### Thottle / Driver Cab
+The Locomotive- and function images are displayed. Images are automatically downloaded from the Central Station.
+Or can be manually added.
 
-Thottle for Locomotives.
 ![UI screenshot: JCS Throttle](assets/driver_cab.png?raw=true)
 
-The Locomotive- and function images are displayed. Images are automatically downloaded from the Central Station. Or can be manually added.
+#### Keyboard Panel for switching accessories and viewing feedback sensor status
 
-Keyboard panel for switching accessories
 ![UI screenshot: JCS keyboard Screen](assets/keyboard-panel.png?raw=true)
 
-Sensor Monitor
+#### Sensor Monitor
+
 ![UI screenshot: JCS Sensor Monitor](assets/sensor_monitor.png?raw=true)
 
-Layout display
+#### Layout display
 ![UI screenshot: JCS Main Screen](assets/mainscreen.png?raw=true)
 
 In Editmode you can draw a layout using pre defined Tiles.
 also the layout can be routed. (it the very first and early step for the preparation of automatic running).
 ![UI screenshot: JCS Edit Screen](assets/mainscreen_edit_route.png?raw=true)
 
-Import Locomotives from the CS-3
+#### Import Locomotives from a CS-2 or CS-3
 ![UI screenshot: JCS Preferences Locomotives](assets/prefs_locomotives.png?raw=true)
-
-Import Signals from the CS-3
-![UI screenshot: JCS Preferences Signals](assets/prefs_signals.png?raw=true)
-
-Import Turnout from the CS-3
-![UI screenshot: JCS Preferences Turnouts](assets/prefs_turnouts.png?raw=true)
-
 
 ## TODO's (and there are still a lots of todo's...):
 Currently the following features are under active development:
