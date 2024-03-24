@@ -109,9 +109,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private final Map<Point, Tile> tiles;
   private final Map<Point, Tile> altTiles;
   private final Set<Point> selectedTiles;
-  private final Set<Point> movingTiles;
-
-  private Tile movingTile;
 
   private RoutesDialog routesDialog;
   private final Map<String, RouteElementBean> selectedRouteElements;
@@ -126,8 +123,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.altTiles = new HashMap<>();
 
     this.selectedTiles = new HashSet<>();
-    this.movingTiles = new HashSet<>();
-
     this.selectedRouteElements = new HashMap<>();
 
     this.executor = Executors.newSingleThreadExecutor();
@@ -352,7 +347,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   void setTileType(TileBean.TileType tileType) {
     this.tileType = tileType;
-    Logger.trace("TileType: " + this.tileType + " Current mode: " + this.mode);
+    Logger.trace("TileType: " + tileType + " Current mode: " + mode);
   }
 
   Orientation getOrientation() {
@@ -376,7 +371,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   public void loadTiles() {
-    boolean showValues = Mode.CONTROL.equals(this.mode);
+    boolean showValues = Mode.CONTROL.equals(mode);
 
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
@@ -401,7 +396,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           //Do nothing
         }
       }
-      this.tiles.put(tile.getCenter(), tile);
+      tiles.put(tile.getCenter(), tile);
 
       //Alternative point(s) to be able to find all points
       if (!tile.getAltPoints().isEmpty()) {
@@ -576,35 +571,45 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
   }
 
+  private Tile getSelectedTile() {
+    if (!selectedTiles.isEmpty()) {
+      Set<Tile> sts = new HashSet<>();
+      for (Point p : this.selectedTiles) {
+        if (this.tiles.containsKey(p)) {
+          Tile t = this.tiles.get(p);
+          sts.add(t);
+        }
+      }
+      Logger.trace("There are " + sts.size() + " selected tiles.");
+      return sts.iterator().next();
+    }
+    return null;
+  }
+
   private void mousePressedAction(MouseEvent evt) {
-    Logger.trace(evt.paramString());
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     Tile tile = findTile(snapPoint);
+
+    //Clear any previous selection
+    selectedTiles.clear();
+    if (tile != null) {
+      selectedTiles.addAll(tile.getAllPoints());
+    }
 
     switch (mode) {
       case CONTROL -> {
         if (tile != null) {
-          //For control mode is selecting the tile really needed?
-          selectedTiles.clear();
-          Logger.trace("Selecting " + tile + " @ " + snapPoint);
-          selectedTiles.addAll(tile.getAllPoints());
           executeControlActionForTile(tile, snapPoint);
         }
       }
       case ADD -> {
-        //Clear any previous selection
-        selectedTiles.clear();
-        if (tile != null) {
-          Logger.trace("A tile exists @ snapPoint: " + tile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
-          selectedTiles.add(snapPoint);
-          selectedTiles.addAll(tile.getAllPoints());
-        }
         if (MouseEvent.BUTTON1 == evt.getButton() && tile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
-          Logger.trace("Adding new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
+          Logger.debug("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
           Tile addedTile = addTile(snapPoint);
-          selectedTiles.add(snapPoint);
           selectedTiles.addAll(addedTile.getAllPoints());
+        } else {
+          Logger.debug("A tile exists at the selected position: " + tile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
         }
         if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
           showOperationsPopupMenu(tile, snapPoint);
@@ -614,15 +619,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         removeTiles(selectedTiles);
       }
       default -> {
-        Logger.trace("Default " + mode);
-        selectedTiles.clear();
-        //Select mode
-        if (tile != null) {
-          selectedTiles.addAll(tile.getAllPoints());
-
-          if (MouseEvent.BUTTON3 == evt.getButton()) {
-            showOperationsPopupMenu(tile, snapPoint);
-          }
+        Logger.trace((tile != null ? "Selected tile: " + tile.getId() + ", " + tile.xyToString() : "No tile selected"));
+        if (MouseEvent.BUTTON3 == evt.getButton()) {
+          showOperationsPopupMenu(tile, snapPoint);
         }
       }
     }
@@ -632,15 +631,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   private void mouseDragAction(MouseEvent evt) {
-    Logger.trace(evt.paramString());
-    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    Tile tile = findTile(snapPoint);
-    if (MouseEvent.BUTTON1 == evt.getButton() && tile != null) {
-      this.movingTiles.clear();
-      this.movingTiles.add(tile.getCenter());
-      this.movingTile = tile;
-      Logger.trace("Setting moving tile: " + movingTile);
-    }
+    //Use this for showing the tile moving in the future
   }
 
   private boolean checkTileOccupation(Tile tile) {
@@ -650,7 +641,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private boolean checkTileOccupation(Set<Point> tilePoints) {
     for (Point p : tilePoints) {
-      if (tiles.containsKey(p)) {
+      if (tiles.containsKey(p) || altTiles.containsKey(p)) {
         return true;
       }
     }
@@ -658,52 +649,57 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   private void mouseReleasedAction(MouseEvent evt) {
-    Logger.trace(evt.paramString());
-    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    Tile tile = findTile(snapPoint);
+    Tile selTile = getSelectedTile();
+    if (selTile != null) {
+      Logger.trace("Selected tile: " + selTile.getId() + ", " + selTile.xyToString());
+    }
 
-    if (!LayoutCanvas.Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && movingTile != null) {
-      Point tp = movingTile.getCenter();
+    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
+
+    if (!LayoutCanvas.Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selTile != null) {
+      Point tp = selTile.getCenter();
       if (!tp.equals(snapPoint)) {
-        Logger.tag("Moving Tile from " + tp + " to " + snapPoint + " Tile to move: " + movingTile);
+        Logger.tag("Moving Tile from " + tp + " to " + snapPoint + " Tile to move: " + selTile);
         //Check if new position is free
 
-        if (tiles.containsKey(snapPoint)) {
-          Logger.debug("Point " + snapPoint + " is occupied by tile: " + findTile(snapPoint));
-          movingTile = null;
+        if (tiles.containsKey(snapPoint) || this.altTiles.containsKey(snapPoint)) {
+          Tile tile = findTile(snapPoint);
+          Logger.debug("Position " + snapPoint + " is occupied with tile: " + tile + ", can't move tile");
         } else {
-          Tile movedTile = tiles.remove(tp);
-          if (movedTile != null) {
-            Point oldCenter = movedTile.getCenter();
-            Set<Point> oldAltPoints = movedTile.getAltPoints();
+          //Remove the original tile center from the tiles
+          Tile movingTile = tiles.remove(tp);
+          if (movingTile != null) {
+            //Also remove from the alt points
+            Point oldCenter = movingTile.getCenter();
+            Set<Point> oldAltPoints = movingTile.getAltPoints();
+
+            //Set the new center position
+            movingTile.setCenter(snapPoint);
             //Check again
-            movedTile.setCenter(snapPoint);
-            if (!checkTileOccupation(movedTile)) {
+            if (!checkTileOccupation(movingTile)) {
               //Also remove previous alt points
               for (Point ap : oldAltPoints) {
-                tiles.remove(ap);
+                tiles.remove(tp);
+                altTiles.remove(tp);
               }
-              Logger.trace("Moved Tile " + movedTile.getId() + " from " + tp + " to " + snapPoint + "...");
-              tiles.put(snapPoint, movedTile);
-              for (Point ep : movedTile.getAltPoints()) {
-                altTiles.put(ep, tile);
+              Logger.trace("Moved Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint + "...");
+              tiles.put(snapPoint, movingTile);
+              for (Point ep : movingTile.getAltPoints()) {
+                altTiles.put(ep, movingTile);
               }
-              selectedTiles.clear();
 
-              selectedTiles.addAll(movedTile.getAllPoints());
-              movingTile = null;
+              selectedTiles.clear();
+              selectedTiles.addAll(movingTile.getAllPoints());
 
               repaint();
             } else {
               //Do not move Tile, put back where it was
-              movedTile.setCenter(oldCenter);
-              this.tiles.put(oldCenter, movedTile);
+              movingTile.setCenter(oldCenter);
+              tiles.put(oldCenter, movingTile);
             }
           }
         }
-      } else {
-        this.movingTile = null;
-      }
+      } 
     }
   }
 
