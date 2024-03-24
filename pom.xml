@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
     <name>JCS</name>
     <url>https://github.com/fransjacobs/model-railway</url>
-    <description>Java Central Station Interface for Marklin CS-2/3</description>
+    <description>Java Central Station</description>
     <inceptionYear>2018</inceptionYear>
     <developers>
         <developer>

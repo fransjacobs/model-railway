@@ -555,9 +555,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     });
     addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent evt) {
-        formMouseClicked(evt);
-      }
       public void mousePressed(MouseEvent evt) {
         formMousePressed(evt);
       }
@@ -709,12 +706,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
   }
-
-
-  private void formMouseClicked(MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
-    Logger.trace(evt.paramString());
-    //mouseClickAction(evt);
-  }//GEN-LAST:event_formMouseClicked
 
   private void executeControlActionForTile(Tile tile, Point p) {
     TileBean.TileType tt = tile.getTileType();
