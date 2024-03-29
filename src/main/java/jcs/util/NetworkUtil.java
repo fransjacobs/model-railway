@@ -56,27 +56,18 @@ public class NetworkUtil {
         }
       }
       if (eth != null) {
-        Logger.trace("Inteface eth: " + eth.getHostAddress());
+        Logger.trace("Interface eth: " + eth.getHostAddress());
         return eth;
       } else if (wlan != null) {
-        Logger.trace("Inteface wlan: " + wlan.getHostAddress());
+        Logger.trace("Interface wlan: " + wlan.getHostAddress());
         return wlan;
       } else {
-        Logger.trace("Inteface lo: " + (lo != null ? lo.getHostAddress() : ""));
+        Logger.trace("Interface lo: " + (lo != null ? lo.getHostAddress() : ""));
         return lo;
       }
     } catch (SocketException se) {
       Logger.error(se);
     }
     return null;
-  }
-
-  /**
-   * For testing.
-   *
-   * @param args
-   */
-  public static void main(String[] args) {
-    Logger.info("My IP Address: " + getIPv4HostAddress().getHostAddress());
   }
 }

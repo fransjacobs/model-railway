@@ -699,7 +699,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
             }
           }
         }
-      } 
+      }
     }
   }
 
@@ -712,6 +712,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
       case SENSOR -> {
         this.executor.execute(() -> toggleSensor((Sensor) tile));
+        //toggleSensor((Sensor) tile);
       }
       case BLOCK -> {
         Logger.trace("Show BlockDialog for " + tile.getId());
@@ -737,6 +738,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
+      turnout.setValue(ab.getAccessoryValue());
+      
       JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
       repaint(turnout.getX(), turnout.getY(), turnout.getWidth(), turnout.getHeight());
     } else {
@@ -761,14 +764,25 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     SensorBean sb = sensor.getSensorBean();
     if (sb != null) {
       sb.toggle();
+      sensor.setActive((sb.getStatus()==1));
       Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
 
+      sensor.repaintTile();
+      
       SensorEvent sensorEvent = new SensorEvent(sb);
+
       List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
       for (FeedbackController fbc : acl) {
         fbc.fireSensorEventListeners(sensorEvent);
       }
-      repaint(sensor.getX(), sensor.getY(), sensor.getWidth(), sensor.getHeight());
+    }
+  }
+
+  private void notifyFeedbackListeners(SensorEvent sensorEvent) {
+    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+
+    for (FeedbackController fbc : acl) {
+      fbc.fireSensorEventListeners(sensorEvent);
     }
   }
 

@@ -95,7 +95,7 @@ public class JCS extends Thread {
     }
     return jcsCommandStation;
   }
-  
+
   private void startGui() {
     JCS.logProgress("Check OS...");
 
@@ -106,7 +106,7 @@ public class JCS extends Thread {
 
     java.awt.EventQueue.invokeLater(() -> {
       jcsFrame = new JCSFrame();
-      
+
       if (RunUtil.isMacOSX()) {
         osAdapter.setUiCallback(jcsFrame);
       }
@@ -198,16 +198,21 @@ public class JCS extends Thread {
     logProgress("JCS is Starting...");
 
     //Check the persistent properties, prepare environment
-    if (H2DatabaseUtil.databaseFileExists(false)) {
-      //Database files are there so try to create connection
-      logProgress("Connecting to existing Database...");
-
-    } else {
+    if (!H2DatabaseUtil.databaseFileExists(false)) {
       //No Database file so maybe first start lets create one
       logProgress("Create new Database...");
       H2DatabaseUtil.createDatabaseUsers(false);
       H2DatabaseUtil.createDatabase();
     }
+
+    //Database file exist check whether an update is needed
+    String dbVersion = H2DatabaseUtil.getDataBaseVersion(false);
+    if (!H2DatabaseUtil.DB_VERSION.equals(dbVersion)) {
+      Logger.trace("Current DB Version " + dbVersion + " need to be updated to: " + H2DatabaseUtil.DB_VERSION + "...");
+      logProgress("Updating JCS Database to version " + H2DatabaseUtil.DB_VERSION + "...");
+      dbVersion = H2DatabaseUtil.updateDatabase(false);
+    }
+    logProgress("Connecting to existing Database version " + dbVersion + "...");
 
     logProgress("Starting JCS Command Station...");
     persistentStore = getPersistenceService();

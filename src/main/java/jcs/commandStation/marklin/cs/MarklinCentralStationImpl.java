@@ -489,6 +489,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   @Override
+  public boolean isSupportTrackMeasurements() {
+    return true;
+  }
+
+  @Override
   public synchronized Map<Integer, ChannelBean> getTrackMeasurements() {
     if (this.connected && this.mainDevice != null) {
       //main device

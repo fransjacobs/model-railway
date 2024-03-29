@@ -551,7 +551,7 @@ public class H2PersistenceService implements PersistenceService {
     if (tb != null && tb.getId() != null) {
       if (database.where("id=?", tb.getId()).first(TileBean.class) != null) {
         database.update(tb).getRowsAffected();
-        Logger.trace("Updated " + tileBean);
+        //Logger.trace("Updated " + tileBean);
       } else {
         database.insert(tb);
       }

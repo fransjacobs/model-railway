@@ -26,9 +26,9 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.dccex.connection.DccExConnectionFactory;
+import jcs.commandStation.dccex.connection.DccExMessageListener;
 import jcs.commandStation.dccex.events.CabEvent;
 import jcs.commandStation.dccex.events.DccExMeasurementEvent;
-import jcs.commandStation.dccex.connection.DccExMessageListener;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.DisconnectionEvent;
@@ -335,7 +335,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   @Override
   public void changeFunctionValue(int address, int functionNumber, boolean flag) {
-    if (this.power) {
+    if (this.power && connected) {
       String message = DccExMessageFactory.cabChangeFunctionsRequest(address, functionNumber, flag);
       this.connection.sendMessage(message);
     }
@@ -350,7 +350,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   @Override
   public void switchAccessory(Integer address, AccessoryValue value, Integer switchTime) {
-    if (this.power) {
+    if (this.power && this.connected) {
       String activate = AccessoryValue.GREEN == value ? "0" : "1";
       String message = DccExMessageFactory.activateAccessory(address, activate);
       this.connection.sendMessage(message);
@@ -410,10 +410,18 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   }
 
   @Override
+  public boolean isSupportTrackMeasurements() {
+    return true;
+  }
+
+  @Override
   public Map<Integer, ChannelBean> getTrackMeasurements() {
     //Measure the currents
-    this.connection.sendMessage(DccExMessageFactory.currentStatusRequest());
-    this.pause(50);
+    if (connected) {
+      this.connection.sendMessage(DccExMessageFactory.currentStatusRequest());
+      //TODO depends a bit on the connection SERIAL or NETWORK
+      this.pause(50);
+    }
     return this.measurementChannels;
   }
 

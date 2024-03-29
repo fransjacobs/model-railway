@@ -15,9 +15,11 @@
  */
 package jcs.entities;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -384,23 +386,26 @@ public class CommandStationBean {
   }
 
   public void addProtocol(Protocol protocol) {
-    Set<Protocol> ps = new HashSet<>();
-    if (protocols != null) {
-      String[] pts = this.protocols.split(",");
-      for (String pt : pts) {
-        ps.add(Protocol.get(pt.toLowerCase()));
+    List<Protocol> pl = new ArrayList<>();
+    if (protocols != null && protocols.length() > 1) {
+      String[] pa = this.protocols.split(",");
+      if (pa.length > 0) {
+        for (String p : pa) {
+          pl.add(Protocol.get(p.toLowerCase()));
+        }
       }
     }
-    ps.add(protocol);
+    pl.add(protocol);
 
     StringBuilder sb = new StringBuilder();
-    Iterator<Protocol> pi = ps.iterator();
-    while (pi.hasNext()) {
-      sb.append(pi.next().getProtocol());
-      if (pi.hasNext()) {
+    for (int i = 0; i < pl.size(); i++) {
+      Protocol p = pl.get(i);
+      sb.append(p.getProtocol());
+      if (i + 1 < pl.size()) {
         sb.append(",");
       }
     }
+
     protocols = sb.toString();
   }
 
