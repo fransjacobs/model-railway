@@ -33,8 +33,20 @@ public class LocomotiveDirectionEvent implements Serializable {
     this.locomotiveBean = locomotiveBean;
   }
 
+  public LocomotiveDirectionEvent(long locomotiveBeanId, LocomotiveBean.Direction direction, String commandStationId) {
+    createLocomotiveBean(locomotiveBeanId, direction, commandStationId);
+  }
+
   public LocomotiveDirectionEvent(CanMessage message) {
     parseMessage(message);
+  }
+
+  private void createLocomotiveBean(long locomotiveBeanId, LocomotiveBean.Direction direction, String commandStationId) {
+    locomotiveBean = new LocomotiveBean();
+    locomotiveBean.setId(locomotiveBeanId);
+    locomotiveBean.setCommandStationId(commandStationId);
+    locomotiveBean.setVelocity(0);
+    locomotiveBean.setDirection(direction);
   }
 
   private void parseMessage(CanMessage message) {

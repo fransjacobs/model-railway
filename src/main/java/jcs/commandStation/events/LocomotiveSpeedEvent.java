@@ -34,6 +34,10 @@ public class LocomotiveSpeedEvent implements Serializable {
     this.locomotiveBean = locomotiveBean;
   }
 
+  public LocomotiveSpeedEvent(long locomotiveBeanId, Integer speed, String commandStationId) {
+    createLocomotiveBean(locomotiveBeanId, speed, commandStationId);
+  }
+
   public LocomotiveSpeedEvent(CanMessage message) {
     parseMessage(message);
   }
@@ -42,6 +46,13 @@ public class LocomotiveSpeedEvent implements Serializable {
     locomotiveBean = new LocomotiveBean();
     locomotiveBean.setUid((long) address);
     locomotiveBean.setAddress(address);
+    locomotiveBean.setVelocity(speed);
+  }
+
+  private void createLocomotiveBean(long locomotiveBeanId, Integer speed, String commandStationId) {
+    locomotiveBean = new LocomotiveBean();
+    locomotiveBean.setId(locomotiveBeanId);
+    locomotiveBean.setCommandStationId(commandStationId);
     locomotiveBean.setVelocity(speed);
   }
 
