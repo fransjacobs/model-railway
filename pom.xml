@@ -170,7 +170,7 @@
             <version>RELEASE190</version>
         </dependency>
     </dependencies>
-    <build>
+    <build>        
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -200,21 +200,31 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--plugin>
+            <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
                 <configuration>
+                    <encoding>UTF-8</encoding>
+                    <!--outputDirectory>${project.build.directory}/classes</outputDirectory-->
                     <resources>
+            
                         <resource>
-                            <directory>resources</directory>
+                            <directory>src/main/resources</directory>
+                            <filtering>true</filtering>
                             <excludes>
                                 <exclude>tinylog-dev.properties</exclude>
                             </excludes>
-                            <filtering>true</filtering>
                         </resource>
-                    </resources>
+                        <resource>
+                            <directory>src/test/resources</directory>
+                            <filtering>false</filtering>
+                        </resource>
+                    </resources> 
+
+
+                    
                 </configuration>
-            </plugin-->
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
