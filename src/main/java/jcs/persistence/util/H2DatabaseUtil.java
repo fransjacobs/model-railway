@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -113,13 +114,11 @@ public class H2DatabaseUtil {
 
   public static void createDatabase() {
     createDatabase(null);
+    updateDatabase();
   }
 
   protected static String readFromJARFile(String filename) throws IOException {
     StringBuilder sb;
-    //InputStream is = H2DatabaseUtil.class.getClassLoader().getResourceAsStream(filename);
-    //InputStreamReader isr = new InputStreamReader(is);
-    //BufferedReader br = new BufferedReader(isr);
     try (BufferedReader br = new BufferedReader(new InputStreamReader(H2DatabaseUtil.class.getClassLoader().getResourceAsStream(filename)))) {
       sb = new StringBuilder();
       String line;
@@ -127,9 +126,6 @@ public class H2DatabaseUtil {
         sb.append(line);
       }
     }
-    //br.close()
-    //isr.close();
-    //is.close();
     return sb.toString();
   }
 
@@ -170,7 +166,17 @@ public class H2DatabaseUtil {
 
   protected static void executeSQLScript(String filename, Connection connection) {
     try {
-      File file = new File(filename);
+      URL url = H2DatabaseUtil.class.getClassLoader().getResource(filename);
+      File file;
+      if (url != null) {
+        String r = url.getFile();
+        file = new File(r);
+      } else {
+        file = new File(filename);
+      }
+      if (test) {
+        Logger.trace("Filename: " + filename + " Path: " + file.getAbsolutePath());
+      }
       String script;
       if (file.exists()) {
         script = Files.readString(file.toPath());
@@ -301,7 +307,7 @@ public class H2DatabaseUtil {
     return exist;
   }
 
-  public static String getDataBaseVersion(boolean test) {
+  public static String getDataBaseVersion() {
     String version = null;
     try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
       if (c != null) {
@@ -327,7 +333,7 @@ public class H2DatabaseUtil {
     return version;
   }
 
-  public static String getAppVersion(boolean test) {
+  public static String getAppVersion() {
     String version = null;
     try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
       if (c != null) {
@@ -365,8 +371,8 @@ public class H2DatabaseUtil {
     return sb.toString();
   }
 
-  public static String updateDatabase(boolean test) {
-    String curVersion = getDataBaseVersion(test);
+  public static String updateDatabase() {
+    String curVersion = getDataBaseVersion();
 
     int fromVersion = Integer.parseInt(curVersion.replace(".", ""));
     int toVersion = Integer.parseInt(DB_VERSION.replace(".", ""));
@@ -390,7 +396,7 @@ public class H2DatabaseUtil {
           Logger.error(ex);
         }
       }
-      Logger.info("Database updated to version: " + getDataBaseVersion(test));
+      Logger.info("Database updated to version: " + getDataBaseVersion());
     } else {
       Logger.info("Database update not needed. Version " + DB_VERSION);
     }
@@ -398,21 +404,27 @@ public class H2DatabaseUtil {
   }
 
   public static void main(String[] a) {
-    if (H2DatabaseUtil.databaseFileExists(false)) {
+    H2DatabaseUtil.test = true;
+    if (H2DatabaseUtil.test) {
+      H2DatabaseUtil.deleteDatebaseFile(test);
+    }
+    if (H2DatabaseUtil.databaseFileExists(H2DatabaseUtil.test)) {
       Logger.info("Database files exists");
     } else {
       Logger.info("Creating a new Database...");
-      H2DatabaseUtil.createDatabaseUsers(false);
+      H2DatabaseUtil.createDatabaseUsers(H2DatabaseUtil.test);
+
       H2DatabaseUtil.createDatabase();
     }
 
-    String dbv = H2DatabaseUtil.getDataBaseVersion(false);
+    String dbv = H2DatabaseUtil.getDataBaseVersion();
     Logger.info("Database version: " + dbv);
 
-    String appv = H2DatabaseUtil.getAppVersion(false);
+    String appv = H2DatabaseUtil.getAppVersion();
     Logger.info("App version: " + appv);
 
-    H2DatabaseUtil.updateDatabase(false);
+    H2DatabaseUtil.updateDatabase();
+
   }
 
 }

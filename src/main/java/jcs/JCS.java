@@ -206,11 +206,11 @@ public class JCS extends Thread {
     }
 
     //Database file exist check whether an update is needed
-    String dbVersion = H2DatabaseUtil.getDataBaseVersion(false);
+    String dbVersion = H2DatabaseUtil.getDataBaseVersion();
     if (!H2DatabaseUtil.DB_VERSION.equals(dbVersion)) {
       Logger.trace("Current DB Version " + dbVersion + " need to be updated to: " + H2DatabaseUtil.DB_VERSION + "...");
       logProgress("Updating JCS Database to version " + H2DatabaseUtil.DB_VERSION + "...");
-      dbVersion = H2DatabaseUtil.updateDatabase(false);
+      dbVersion = H2DatabaseUtil.updateDatabase();
     }
     logProgress("Connecting to existing Database version " + dbVersion + "...");
 

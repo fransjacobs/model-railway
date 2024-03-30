@@ -200,6 +200,21 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <resources>
+                        <resource>
+                            <directory>resources</directory>
+                            <excludes>
+                                <exclude>tinylog-dev.properties</exclude>
+                            </excludes>
+                            <filtering>true</filtering>
+                        </resource>
+                    </resources>
+                </configuration>
+            </plugin-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -316,9 +331,9 @@
                                 <notarizeApp>false</notarizeApp>
                             </macConfig>
                             <linuxConfig>
-                                <generateAppImage>true</generateAppImage>
-                                <generateDeb>false</generateDeb>
-                                <generateRpm>false</generateRpm>
+                                <generateAppImage>false</generateAppImage>
+                                <generateDeb>true</generateDeb>
+                                <generateRpm>true</generateRpm>
                                 <wrapJar>true</wrapJar>
                                 <categories>
                                     <category>Education</category>
