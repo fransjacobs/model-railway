@@ -22,9 +22,9 @@ import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.PowerEventListener;
+import jcs.entities.ChannelBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
-import jcs.entities.ChannelBean;
 
 public interface DecoderController extends GenericController {
 
@@ -59,6 +59,8 @@ public interface DecoderController extends GenericController {
   Image getLocomotiveImage(String icon);
 
   Image getLocomotiveFunctionImage(String icon);
+
+  boolean isSupportTrackMeasurements();
 
   Map<Integer, ChannelBean> getTrackMeasurements();
 }

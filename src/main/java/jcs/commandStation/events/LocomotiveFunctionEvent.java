@@ -32,8 +32,16 @@ public class LocomotiveFunctionEvent implements Serializable {
     this.function = changedFunction;
   }
 
+  public LocomotiveFunctionEvent(long locomotiveBeanId, int functionNumber, boolean flag, String commandStationId) {
+    createLocomotiveFunctionBean(locomotiveBeanId, functionNumber, flag, commandStationId);
+  }
+
   public LocomotiveFunctionEvent(CanMessage message) {
     parseMessage(message);
+  }
+
+  private void createLocomotiveFunctionBean(long locomotiveBeanId, int functionNumber, boolean flag, String commandStationId) {
+    function = new FunctionBean(locomotiveBeanId, functionNumber, flag ? 1 : 0);
   }
 
   private void parseMessage(CanMessage message) {

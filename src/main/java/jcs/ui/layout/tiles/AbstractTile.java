@@ -44,13 +44,18 @@ import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
 
 /**
- * Basic graphic element to display a track, turnout, etc on the screen. By default the drawing of a Tile is Horizontal from L to R or West to East. Default orientation is East
+ * Basic graphic element to display a track, turnout, etc on the screen.<br>
+ * By default the drawing of a Tile is Horizontal from L to R or West to East.<br>
+ * The default orientation is East.
  *
  * <p>
- * The default size of a Tile is 40 x 40 pixels. The center point of a Tile is stored and always snapped to the nearest grid point. The basic grid is 20x 20 pixels.
+ * The default size of a Tile is 40 x 40 pixels.<br>
+ * The center point of a Tile is stored and always snapped to the nearest grid point.<br>
+ * The basic grid is 20x 20 pixels.<br>
  *
  * <p>
- * A Tile can be rotated (always clockwise). Rotation will change the orientation from East -> South -> West -> North -> East.
+ * A Tile can be rotated (always clockwise).<br>
+ * Rotation will change the orientation from East -> South -> West -> North -> East.<br>
  *
  * <p>
  * A Tile is rendered to a Buffered Image to speed up the display
@@ -379,8 +384,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   public static BufferedImage flipHorizontally(BufferedImage source) {
-    BufferedImage output
-            = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
+    BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
 
     AffineTransform flip = AffineTransform.getScaleInstance(1, -1);
     flip.translate(0, -source.getHeight());
@@ -614,10 +618,9 @@ abstract class AbstractTile extends TileBean implements Tile {
     this.propertyChangeListener = propertyChangeListener;
   }
 
-  protected void repaintTile() {
+  public void repaintTile() {
     if (this.propertyChangeListener != null) {
-      this.propertyChangeListener.propertyChange(
-              new PropertyChangeEvent(this, "repaintTile", this, this));
+      this.propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "repaintTile", this, this));
     }
   }
 

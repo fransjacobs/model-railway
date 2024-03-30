@@ -18,15 +18,14 @@ package jcs.persistence.util;
 import com.dieselpoint.norm.Database;
 import java.io.BufferedReader;
 import java.io.File;
-
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -50,6 +49,11 @@ public class H2DatabaseUtil {
   protected static final String JDBC_PRE = "jdbc:h2:";
 
   protected static final String DB_CREATE_DDL = "jcs-db.sql";
+
+  /**
+   * This is the latest database version
+   */
+  public static String DB_VERSION = "0.0.2";
 
   protected Database db;
 
@@ -112,48 +116,25 @@ public class H2DatabaseUtil {
   }
 
   protected static String readFromJARFile(String filename) throws IOException {
-    InputStream is = H2DatabaseUtil.class.getClassLoader().getResourceAsStream(filename);
-    InputStreamReader isr = new InputStreamReader(is);
-    BufferedReader br = new BufferedReader(isr);
-    StringBuilder sb = new StringBuilder();
-    String line;
-    while ((line = br.readLine()) != null) {
-      sb.append(line);
+    StringBuilder sb;
+    //InputStream is = H2DatabaseUtil.class.getClassLoader().getResourceAsStream(filename);
+    //InputStreamReader isr = new InputStreamReader(is);
+    //BufferedReader br = new BufferedReader(isr);
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(H2DatabaseUtil.class.getClassLoader().getResourceAsStream(filename)))) {
+      sb = new StringBuilder();
+      String line;
+      while ((line = br.readLine()) != null) {
+        sb.append(line);
+      }
     }
-    br.close();
-    isr.close();
-    is.close();
+    //br.close()
+    //isr.close();
+    //is.close();
     return sb.toString();
   }
 
   protected static void createDatabase(Connection connection) {
-//    try {
     executeSQLScript(DB_CREATE_DDL, connection);
-
-//      URL url = H2DatabaseUtil.class.getClassLoader().getResource(DB_CREATE_DDL);
-//      String f = url.getFile();
-//      File file = new File(f);
-//      String script;
-//      if (file.exists()) {
-//        Logger.trace("Reading from path...");
-//        script = Files.readString(file.toPath());
-//      } else {
-//        Logger.trace("Reading from jar file...");
-//        script = readFromJARFile(DB_CREATE_DDL);
-//      }
-//
-//      Logger.trace("Script length: " + script.length());
-//      if (script.length() > 10) {
-//        Logger.info("Loading ddl script: " + DB_CREATE_DDL);
-//
-//        executeSQLScript(script, connection, DB_CREATE_DDL);
-//        Logger.info("Created JCS Database schema.");
-//      } else {
-//        Logger.error("Could not create JCS Database schema!");
-//      }
-//    } catch (IOException ex) {
-//      Logger.error("Error: " + ex.getMessage());
-//    }
   }
 
   public static void createDatabaseUsers(boolean test) {
@@ -184,7 +165,7 @@ public class H2DatabaseUtil {
   }
 
   protected static void executeSQLScript(String filename) {
-    executeSQLScript(filename,null);
+    executeSQLScript(filename, null);
   }
 
   protected static void executeSQLScript(String filename, Connection connection) {
@@ -320,6 +301,102 @@ public class H2DatabaseUtil {
     return exist;
   }
 
+  public static String getDataBaseVersion(boolean test) {
+    String version = null;
+    try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
+      if (c != null) {
+        Statement stmt = c.createStatement();
+        ResultSet rs = stmt.executeQuery("select count(*) as cnt from information_schema.tables where table_schema = 'jcs' and table_name = 'jcs_version'");
+        rs.first();
+        int cnt = rs.getInt("cnt");
+        if (cnt == 0) {
+          //no version table so is the first version released
+          version = "0.0.1";
+        } else {
+          rs = stmt.executeQuery("select db_version from jcs_version");
+          rs.first();
+          version = rs.getString("db_version");
+        }
+        rs.close();
+      } else {
+        Logger.error("Could not obtain a connection!");
+      }
+    } catch (SQLException ex) {
+      Logger.error(ex);
+    }
+    return version;
+  }
+
+  public static String getAppVersion(boolean test) {
+    String version = null;
+    try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
+      if (c != null) {
+        Statement stmt = c.createStatement();
+        ResultSet rs = stmt.executeQuery("select count(*) as cnt from information_schema.tables where table_schema = 'jcs' and table_name = 'jcs_version'");
+        rs.first();
+        int cnt = rs.getInt("cnt");
+        if (cnt == 0) {
+          //no version table so is the first version released
+          version = "0.0.1";
+        } else {
+          rs = stmt.executeQuery("select app_version from jcs_version");
+          rs.first();
+          version = rs.getString("app_version");
+        }
+        rs.close();
+      } else {
+        Logger.error("Could not obtain a connection!");
+      }
+    } catch (SQLException ex) {
+      Logger.error(ex);
+    }
+    return version;
+  }
+
+  private static String getVersionNumber(int v) {
+    String formatted = String.format("%03d", v);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < formatted.length(); i++) {
+      sb.append(formatted.charAt(i));
+      if (i + 1 < formatted.length()) {
+        sb.append(".");
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String updateDatabase(boolean test) {
+    String curVersion = getDataBaseVersion(test);
+
+    int fromVersion = Integer.parseInt(curVersion.replace(".", ""));
+    int toVersion = Integer.parseInt(DB_VERSION.replace(".", ""));
+
+    if (fromVersion != toVersion) {
+      for (int i = fromVersion; i < toVersion; i++) {
+        String updateFile = "update-jcs-db-" + String.format("%03d", i) + ".sql";
+        Logger.trace("updateFile: " + updateFile);
+        try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
+          if (c != null) {
+            try {
+              executeSQLScript(updateFile, c);
+            } catch (Exception ex) {
+              Logger.error("Can't update to version " + getVersionNumber(i) + "Script file " + updateFile + " not found!");
+            }
+          } else {
+            Logger.error("Can't update to version " + getVersionNumber(i) + " Connection to DB is not available!");
+            break;
+          }
+        } catch (Exception ex) {
+          Logger.error(ex);
+        }
+      }
+      Logger.info("Database updated to version: " + getDataBaseVersion(test));
+    } else {
+      Logger.info("Database update not needed. Version " + DB_VERSION);
+    }
+    return DB_VERSION;
+  }
+
   public static void main(String[] a) {
     if (H2DatabaseUtil.databaseFileExists(false)) {
       Logger.info("Database files exists");
@@ -328,6 +405,14 @@ public class H2DatabaseUtil {
       H2DatabaseUtil.createDatabaseUsers(false);
       H2DatabaseUtil.createDatabase();
     }
+
+    String dbv = H2DatabaseUtil.getDataBaseVersion(false);
+    Logger.info("Database version: " + dbv);
+
+    String appv = H2DatabaseUtil.getAppVersion(false);
+    Logger.info("App version: " + appv);
+
+    H2DatabaseUtil.updateDatabase(false);
   }
 
 }

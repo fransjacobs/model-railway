@@ -204,10 +204,10 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
       this.iconTF.setText(iconFile);
 
       String source = selectedAccessory.getSource();
-      if(source == null) {
+      if (source == null) {
         selectedAccessory.setSource("Manual Inserted");
       }
-      
+
       //String commandStationId = selectedAccessory.getCommandStationId();
       boolean synch = selectedAccessory.isSynchronize();
       synchronizeCB.setSelected(synch);
@@ -254,9 +254,9 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     this.decoderTF.setEnabled(enableFields);
 
     boolean acsup = this.commandStationBean.isAccessorySynchronizationSupport();
-    this.iconTF.setEnabled(enableFields && acsup);    
+    this.iconTF.setEnabled(enableFields && acsup);
     this.iconFileDialogBtn.setEnabled(enableFields && acsup);
-    
+
     this.switchTimeSpinner.setEnabled(enableFields);
     this.statesSpinner.setEnabled(enableFields);
 
@@ -756,7 +756,9 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
     newAccessory.setCommandStationId(commandStationBean.getId());
     List<AccessoryBean> accessories = PersistenceFactory.getService().getAccessoriesByCommandStationId(commandStationBean.getId());
     int last = accessories.size();
-    newAccessory.setId((last+1)+"");
+    String id = String.format("%03d", (last + 1));
+    newAccessory.setId(id);
+
     newAccessory.setSource("Manual Inserted");
 
     newAccessory.setProtocol(Protocol.DCC);
@@ -772,13 +774,7 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     if (selectedAccessory != null) {
       if (!selectedAccessory.isSynchronize() && selectedAccessory.getId() == null) {
-        //a new manual created accessory, derive the id from the address
-        String id = selectedAccessory.getAddress().toString();
-        if (id.length() == 1) {
-          id = "00" + id;
-        } else if (id.length() == 2) {
-          id = "0" + id;
-        }
+        String id = String.format("%03d", selectedAccessory.getAddress());
         selectedAccessory.setId(id);
       }
       Logger.trace("Saving: " + selectedAccessory.toLogString());
