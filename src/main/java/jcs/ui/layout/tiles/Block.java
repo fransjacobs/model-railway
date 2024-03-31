@@ -451,28 +451,13 @@ public class Block extends AbstractTile implements Tile {
         drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) - textWidth / 2, RENDER_GRID + textHeight / 3, 0, blockText);
       }
       case WEST -> {
-        drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-                RENDER_GRID - textHeight / 3,
-                180,
-                blockText);
+        drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) + textWidth / 2, RENDER_GRID - textHeight / 3, 180, blockText);
       }
       case NORTH -> {
-        drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) - textWidth / 2,
-                RENDER_GRID + textHeight / 3,
-                0,
-                blockText);
+        drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) - textWidth / 2, RENDER_GRID + textHeight / 3, 0, blockText);
       }
       case SOUTH -> {
-        drawRotate(
-                g2d,
-                ((RENDER_WIDTH * 3) / 2) + textWidth / 2,
-                RENDER_GRID - textHeight / 3,
-                180,
-                blockText);
+        drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) + textWidth / 2, RENDER_GRID - textHeight / 3, 180, blockText);
       }
     }
 

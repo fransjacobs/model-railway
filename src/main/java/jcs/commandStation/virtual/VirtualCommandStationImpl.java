@@ -61,6 +61,14 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   public VirtualCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
+
+    if (autoConnect) {
+      autoConnect();
+    }
+  }
+
+  private void autoConnect() {
+    connect();
   }
 
   @Override

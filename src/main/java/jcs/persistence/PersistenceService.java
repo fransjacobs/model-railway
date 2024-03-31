@@ -57,6 +57,8 @@ public interface PersistenceService {
   List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len);
 
   // Locomotive
+  List<LocomotiveBean> getAllLocomotives();
+
   List<LocomotiveBean> getLocomotives();
 
   List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId);

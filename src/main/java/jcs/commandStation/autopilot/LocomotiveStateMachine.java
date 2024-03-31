@@ -15,11 +15,20 @@
  */
 package jcs.commandStation.autopilot;
 
+import jcs.entities.LocomotiveBean;
+import org.tinylog.Logger;
+
 /**
  * @author fransjacobs
  */
 public class LocomotiveStateMachine extends Thread { 
 
+  private final LocomotiveBean locomotiveBean;
+  
+  LocomotiveStateMachine(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
+    this.setName("STM->"+locomotiveBean.getName());
+  }
 
 //what are the states
   
@@ -44,7 +53,7 @@ public class LocomotiveStateMachine extends Thread {
 
   @Override
   public void run() {
-    super.run();
+    super.start();
   }
 
   @Override
@@ -52,5 +61,14 @@ public class LocomotiveStateMachine extends Thread {
     super.start();
   }
 
+  
+  public void startLocomotive() {
+    Logger.trace("Starting "+this.locomotiveBean.getName());
+  }
+
+  
+  public void stopLocomotive() {
+    Logger.trace("Stopping "+this.locomotiveBean.getName());
+  }
 
 }

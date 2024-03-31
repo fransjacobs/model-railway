@@ -257,7 +257,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<LocomotiveBean> getLocomotives() {
+  public List<LocomotiveBean> getAllLocomotives() {
     List<LocomotiveBean> locos = database.orderBy("id").results(LocomotiveBean.class);
 
     for (LocomotiveBean loco : locos) {
@@ -266,6 +266,12 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     return locos;
+  }
+
+  @Override
+  public List<LocomotiveBean> getLocomotives() {
+    String commandStationId = getDefaultCommandStation().getId();
+    return getLocomotivesByCommandStationId(commandStationId);
   }
 
   @Override

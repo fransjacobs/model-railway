@@ -218,7 +218,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
+        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       } else {
       }
@@ -228,7 +228,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int width = getSize().width;
       int height = getSize().height;
 
-      Logger.trace("Width: " + width + " Height: " + height);
+      //Logger.trace("Width: " + width + " Height: " + height);
 
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
@@ -254,7 +254,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
+        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       } else {
       }
@@ -264,7 +264,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int width = getSize().width;
       int height = getSize().height;
 
-      Logger.trace("Width: " + width + " Height: " + height);
+      //Logger.trace("Width: " + width + " Height: " + height);
 
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
@@ -295,7 +295,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
+        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       }
     }
@@ -303,7 +303,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-      Logger.trace("Width: " + width + " Height: " + height);
+      //Logger.trace("Width: " + width + " Height: " + height);
 
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();

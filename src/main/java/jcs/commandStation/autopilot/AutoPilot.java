@@ -37,7 +37,7 @@ public class AutoPilot {
 
   private static AutoPilot instance = null;
 
-  Map<Integer, LocomotiveBean> syncMap = Collections.synchronizedMap(new HashMap<>());
+  Map<String, LocomotiveStateMachine> locomotives = Collections.synchronizedMap(new HashMap<>());
 
   private AutoPilot() {
 
@@ -54,14 +54,37 @@ public class AutoPilot {
     getOnTrackLocomotives();
   }
 
-  public void startAllLocomotives(boolean start) {
-    Logger.trace((start ? "Starting" : "Stopping") + " auto drive for All locomotives on the track");
+  public void startAllLocomotives() {
+    List<LocomotiveBean> locs = getOnTrackLocomotives();
+    for (LocomotiveBean loc : locs) {
+      LocomotiveStateMachine lsm = new LocomotiveStateMachine(loc);
+      locomotives.put(lsm.getName(), lsm);
+      Logger.debug("Added " + lsm.getName());
+      lsm.startLocomotive();
+    }
 
-    getOnTrackLocomotives();
   }
 
-  public void startLocomotive(LocomotiveBean locomotiveBean, boolean start) {
+  public void stopAllLocomotives() {
+    for (LocomotiveStateMachine lsm : this.locomotives.values()) {
+      lsm.stopLocomotive();
+    }
+
+  }
+
+  public void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
+
+    if (start) {
+      LocomotiveStateMachine lsm = new LocomotiveStateMachine(locomotiveBean);
+      locomotives.put(lsm.getName(), lsm);
+      Logger.debug("Added " + lsm.getName());
+      lsm.startLocomotive();
+    } else {
+      LocomotiveStateMachine lsm = this.locomotives.get("STM->" + locomotiveBean.getName());
+      lsm.stopLocomotive();
+    }
+
   }
 
   private List<LocomotiveBean> getOnTrackLocomotives() {
@@ -107,7 +130,8 @@ public class AutoPilot {
   public static void main(String[] a) {
     AutoPilot ap = new AutoPilot();
 
-    ap.getOnTrackLocomotives();
+    ap.startAllLocomotives();
+
   }
 
 }

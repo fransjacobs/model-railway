@@ -973,7 +973,11 @@ public class LayoutPanel extends JPanel {
 
   private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAutoPilotBtn.isSelected());
-    AutoPilot.getInstance().startAllLocomotives(this.startAutoPilotBtn.isSelected());
+    if (this.startAutoPilotBtn.isSelected()) {
+      AutoPilot.getInstance().startAllLocomotives();
+    } else {
+      AutoPilot.getInstance().stopAllLocomotives();
+    }
   }//GEN-LAST:event_startAutoPilotBtnActionPerformed
 
   private void crossingBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossingBtnActionPerformed
