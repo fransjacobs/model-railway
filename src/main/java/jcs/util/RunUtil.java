@@ -25,23 +25,23 @@ import java.util.Properties;
 import org.tinylog.Logger;
 
 public class RunUtil {
-
+  
   public static final String DEFAULT_PATH = "~/jcs/";
-
+  
   public static boolean isMacOSX() {
     return System.getProperty("os.name").contains("Mac OS X");
   }
-
+  
   public static boolean isLinux() {
     String os = System.getProperty("os.name").toLowerCase();
     return os.contains("nix") || os.contains("nux");
   }
-
+  
   public static boolean isWindows() {
     String os = System.getProperty("os.name").toLowerCase();
     return os.contains("windows");
   }
-
+  
   public static void loadProperties() {
     Properties prop = new Properties();
     InputStream inputStream = RunUtil.class.getClassLoader().getResourceAsStream("jcs.properties");
@@ -52,7 +52,7 @@ public class RunUtil {
         Logger.error("Can't read jcs.properties");
       }
     }
-
+    
     for (Object pk : prop.keySet()) {
       String key = (String) pk;
       String value = (String) prop.get(pk);
@@ -61,32 +61,37 @@ public class RunUtil {
       }
     }
   }
-
+  
   public static void loadExternalProperties() {
     Properties prop = new Properties();
     String p = DEFAULT_PATH + "jcs.properties";
     p = p.replace("~", System.getProperty("user.home"));
-
-    try {
-      prop.load(new FileInputStream(p));
-      for (Object pk : prop.keySet()) {
-        String key = (String) pk;
-        String value = (String) prop.get(pk);
-        if (System.getProperty(key) == null) {
-          System.setProperty(key, value);
-          Logger.trace(key + "=" + value);
+    
+    File ep = new File(p);
+    if (ep.exists()) {      
+      try {
+        prop.load(new FileInputStream(p));
+        for (Object pk : prop.keySet()) {
+          String key = (String) pk;
+          String value = (String) prop.get(pk);
+          if (System.getProperty(key) == null) {
+            System.setProperty(key, value);
+            Logger.trace(key + "=" + value);
+          }
         }
+      } catch (IOException ex) {
+        Logger.trace("Can't read external properties from " + p);
       }
-    } catch (IOException ex) {
-      Logger.trace("Can't read external properties from " + p);
+    } else {
+      Logger.trace("Optional external properties not available.");
     }
   }
-
+  
   public static void writeProperty(String filePath, String key, String value) {
     Properties properties = new Properties();
     String p = filePath;
     p = p.replace("~", System.getProperty("user.home"));
-
+    
     File f = new File(p);
     if (!f.exists()) {
       try {
@@ -95,7 +100,7 @@ public class RunUtil {
         Logger.trace("Can't create new file: " + p);
       }
     }
-
+    
     try (OutputStream outputStream = new FileOutputStream(p)) {
       properties.setProperty(key, value);
       properties.store(outputStream, null);
@@ -103,7 +108,7 @@ public class RunUtil {
       Logger.warn("Can't write property " + key + ", " + value + " to " + p);
     }
   }
-
+  
   public static String readProperty(String filePath, String key) {
     String p = filePath;
     p = p.replace("~", System.getProperty("user.home"));
@@ -117,5 +122,5 @@ public class RunUtil {
     }
     return null;
   }
-
+  
 }
