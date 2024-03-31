@@ -50,10 +50,9 @@ public class JCS extends Thread {
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
-  private static VersionInfo versionInfo;
+  private static String version;
 
   private JCS() {
-    versionInfo = new VersionInfo(JCS.class, "jcs", "ui");
   }
 
   public static void logProgress(String message) {
@@ -68,10 +67,6 @@ public class JCS extends Thread {
     if (RunUtil.isMacOSX()) {
       osAdapter.showTouchbar(frame);
     }
-  }
-
-  public static VersionInfo getVersionInfo() {
-    return versionInfo;
   }
 
   public static JCSFrame getParentFrame() {
@@ -154,9 +149,10 @@ public class JCS extends Thread {
   @Override
   public void run() {
     // Perform shutdown methods.
+    Thread.currentThread().setName("JCS finalize thread");
     Logger.trace("Shutting Down...");
     ProcessFactory.getInstance().shutdown();
-    Logger.info("Finished...");
+    Logger.info("JCS "+VersionInfo.getVersion()+" session finished");
   }
 
   public static JCS getInstance() {
@@ -170,6 +166,8 @@ public class JCS extends Thread {
 
   public static void main(String[] args) {
     System.setProperty("fazecast.jSerialComm.appid", "JCS");
+    version = VersionInfo.getVersion();
+    Logger.info("Starting JCS Version "+version+"...");
 
     if (GraphicsEnvironment.isHeadless()) {
       Logger.error("This JDK environment is headless, can't start a GUI!");

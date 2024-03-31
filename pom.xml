@@ -204,6 +204,8 @@
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>db:encryptable</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>db</nonFilteredFileExtension>
                         <nonFilteredFileExtension>png</nonFilteredFileExtension>
                         <nonFilteredFileExtension>icns</nonFilteredFileExtension>
                     </nonFilteredFileExtensions>
@@ -213,6 +215,8 @@
                             <filtering>true</filtering>
                             <excludes>
                                 <exclude>tinylog-dev.properties</exclude>
+                                <exclude>*.db</exclude>
+                                <exclude>*.db:encryptable</exclude>
                             </excludes>
                         </resource>
                         <resource>

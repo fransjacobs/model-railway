@@ -1,71 +1,78 @@
 /*
- * Copyright (C) 2019 frans.
+ * Copyright 2023 Frans Jacobs.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package jcs.util;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
+import java.io.InputStreamReader;
 import java.util.Properties;
-import org.tinylog.Logger;
 
 /**
  * Obtain Version information from the project generated pom.properties file
  */
-public class VersionInfo implements Serializable {
+public class VersionInfo {
 
-  private static final long serialVersionUID = 6990130099411688007L;
+  private static String artifactId = "NOT SET";
+  private static String groupId = "NOT SET";
+  private static String version = "NOT SET";
 
-  private String artifactId = "NOT SET";
-  private String groupId = "NOT SET";
-  private String version = "NOT SET";
-
-  public VersionInfo(Class c, String groupId, String artifactId) {
-    try {
-      InputStream inputStream = c.getResourceAsStream(String.format("/META-INF/maven/%s/%s/pom.properties", groupId, artifactId));
-
-      if (inputStream == null) {
-        File f = new File("./target/maven-archiver/pom.properties");
-        inputStream = new FileInputStream(f);
-      }
-
-      Properties prop = new Properties();
-
-      prop.load(inputStream);
-      this.artifactId = prop.getProperty("artifactId");
-      this.groupId = prop.getProperty("groupId");
-      this.version = prop.getProperty("version");
-    } catch (IOException | NullPointerException ex) {
-      Logger.trace(ex.getMessage());
+  static {
+    Properties prop = readFromJARFile("META-INF/maven/jcs/jcs/pom.properties");
+    if (prop.isEmpty()) {
+      prop = readFromSourceFile("target/maven-archiver/pom.properties");
     }
+    artifactId = prop.getProperty("artifactId", "NOT SET");
+    groupId = prop.getProperty("groupId", "NOT SET");
+    version = prop.getProperty("version", "NOT SET");
   }
 
-  public String getArtifactId() {
+  private static Properties readFromJARFile(String filename) {
+    Properties prop = new Properties();
+    try {
+      prop.load(new InputStreamReader(VersionInfo.class.getClassLoader().getResourceAsStream(filename)));
+    } catch (NullPointerException | IOException ex) {
+      //ignore
+    }
+    return prop;
+  }
+
+  private static Properties readFromSourceFile(String filename) {
+    Properties prop = new Properties();
+    try {
+      File p = new File(filename);
+      if (p.exists()) {
+        FileInputStream inputStream = new FileInputStream(p);
+        prop.load(inputStream);
+      }
+    } catch (NullPointerException | IOException ex) {
+      //ignore
+    }
+    return prop;
+  }
+
+  public static String getVersion() {
+    return version;
+  }
+
+  public static String getArtifactId() {
     return artifactId;
   }
 
-  public String getGroupId() {
+  public static String getGroupId() {
     return groupId;
-  }
-
-  public String getVersion() {
-    return version;
   }
 }
