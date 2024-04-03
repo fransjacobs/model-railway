@@ -123,6 +123,8 @@ public interface PersistenceService {
 
   void remove(RouteBean routeBean);
 
+  BlockBean getBlockByLocomotiveId(Long locomotiveId);
+  
   List<BlockBean> getBlocks();
 
   BlockBean getBlock(String id);

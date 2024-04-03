@@ -210,9 +210,9 @@ public class Block extends AbstractTile implements Tile {
 
   public Orientation getTravelDirection(String suffix) {
     if ("+".equals(suffix)) {
-      return this.getOrientation();
+      return getOrientation();
     } else {
-      return switch (this.getOrientation()) {
+      return switch (getOrientation()) {
         case EAST ->
           Orientation.WEST;
         case SOUTH ->
@@ -251,28 +251,28 @@ public class Block extends AbstractTile implements Tile {
     }
 
     if (match != null) {
-      if (Orientation.EAST == this.getOrientation() && Orientation.EAST == match) {
+      if (Orientation.EAST == getOrientation() && Orientation.EAST == match) {
         suffix = "+";
       }
-      if (Orientation.WEST == this.getOrientation() && Orientation.WEST == match) {
+      if (Orientation.WEST == getOrientation() && Orientation.WEST == match) {
         suffix = "+";
       }
-      if (Orientation.EAST == this.getOrientation() && Orientation.WEST == match) {
+      if (Orientation.EAST == getOrientation() && Orientation.WEST == match) {
         suffix = "-";
       }
-      if (Orientation.WEST == this.getOrientation() && Orientation.EAST == match) {
+      if (Orientation.WEST == getOrientation() && Orientation.EAST == match) {
         suffix = "-";
       }
-      if (Orientation.NORTH == this.getOrientation() && Orientation.NORTH == match) {
+      if (Orientation.NORTH == getOrientation() && Orientation.NORTH == match) {
         suffix = "+";
       }
-      if (Orientation.NORTH == this.getOrientation() && Orientation.SOUTH == match) {
+      if (Orientation.NORTH == getOrientation() && Orientation.SOUTH == match) {
         suffix = "-";
       }
-      if (Orientation.SOUTH == this.getOrientation() && Orientation.SOUTH == match) {
+      if (Orientation.SOUTH == getOrientation() && Orientation.SOUTH == match) {
         suffix = "+";
       }
-      if (Orientation.SOUTH == this.getOrientation() && Orientation.NORTH == match) {
+      if (Orientation.SOUTH == getOrientation() && Orientation.NORTH == match) {
         suffix = "-";
       }
     }
@@ -332,11 +332,11 @@ public class Block extends AbstractTile implements Tile {
         }
       }
 
-      boolean reverseArrival = this.getBlockBean().isReverseArrival();
+      boolean reverseArrival = getBlockBean().isReverseArrival();
 
       String direction;
       if (locInBlock) {
-        direction = (LocomotiveBean.Direction.FORWARDS == this.getBlockBean().getLocomotive().getDirection() ? ">" : "<");
+        direction = (LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection() ? ">" : "<");
       } else {
         direction = "";
       }

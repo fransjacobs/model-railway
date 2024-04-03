@@ -114,6 +114,10 @@ public class TileFactory {
     }
   }
 
+  public static Tile createTile(TileBean tileBean) {
+    return createTile(tileBean, false, false);
+  }
+
   public static Tile createTile(TileBean tileBean, boolean drawOutline, boolean showValues) {
     if (tileBean == null) {
       return null;
@@ -149,8 +153,7 @@ public class TileFactory {
         tile = new Signal(tileBean);
         signalIdSeq = maxIdSeq(signalIdSeq, nextIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
-          ((Signal) tile)
-                  .setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
+          ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
       }
       case SENSOR -> {
@@ -166,8 +169,7 @@ public class TileFactory {
       }
       case STRAIGHT_DIR -> {
         tile = new StraightDirection(tileBean);
-        straightDirectionIdSeq
-                = maxIdSeq(straightDirectionIdSeq, nextIdSeq(tileBean.getId()));
+        straightDirectionIdSeq = maxIdSeq(straightDirectionIdSeq, nextIdSeq(tileBean.getId()));
       }
       case END -> {
         tile = new End(tileBean);
