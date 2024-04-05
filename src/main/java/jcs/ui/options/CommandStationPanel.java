@@ -1339,7 +1339,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }//GEN-LAST:event_recreateSensorsBtnActionPerformed
 
   private void recreateSensors() {
-    Integer deviceId = Integer.parseInt(this.selectedCommandStation.getFeedbackModuleIdentifier());
+    int deviceId = Integer.parseInt(this.selectedCommandStation.getFeedbackModuleIdentifier());
     Integer bus0 = this.selectedCommandStation.getFeedbackBus0ModuleCount();
     Integer bus1 = this.selectedCommandStation.getFeedbackBus1ModuleCount();
     Integer bus2 = this.selectedCommandStation.getFeedbackBus2ModuleCount();

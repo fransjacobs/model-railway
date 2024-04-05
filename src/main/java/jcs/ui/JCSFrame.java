@@ -298,8 +298,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     toolsMenu = new JMenu();
     optionsMI = new JMenuItem();
     commandStationsMI = new JMenuItem();
+    helpMenu = new JMenu();
+    aboutMI = new JMenuItem();
 
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+    setTitle("Java Central Station");
     setBounds(new Rectangle(0, 0, 1400, 900));
     setMinimumSize(new Dimension(1250, 900));
     setName("JCSFrame"); // NOI18N
@@ -731,6 +734,20 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     jcsMenuBar.add(toolsMenu);
 
+    helpMenu.setText("Help");
+    helpMenu.setName("helpMenu"); // NOI18N
+
+    aboutMI.setText("About");
+    aboutMI.setName("aboutMI"); // NOI18N
+    aboutMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        aboutMIActionPerformed(evt);
+      }
+    });
+    helpMenu.add(aboutMI);
+
+    jcsMenuBar.add(helpMenu);
+
     setJMenuBar(jcsMenuBar);
 
     pack();
@@ -865,6 +882,15 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     showSettings();
   }//GEN-LAST:event_showSettingsBtnActionPerformed
 
+  private void aboutMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_aboutMIActionPerformed
+     Logger.trace(evt.getActionCommand());
+    AboutDialog dialog = new AboutDialog(this, true);
+    dialog.pack();
+    dialog.setLocationRelativeTo(null);
+
+    dialog.setVisible(true);
+  }//GEN-LAST:event_aboutMIActionPerformed
+
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
 
@@ -921,6 +947,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private JMenuItem aboutMI;
   private JPanel bottomLeftPanel;
   private JPanel centerPanel;
   private CommandStationPanel commandStationPanel;
@@ -945,6 +972,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private Box.Filler filler7;
   private Box.Filler filler8;
   private Box.Filler filler9;
+  private JMenu helpMenu;
   private JPanel jPanel1;
   private JPanel jPanel2;
   private JPanel jPanel3;
