@@ -100,6 +100,8 @@ Frans
             <sub><b>Frans Jacobs</b></sub>
         </a>
     </td>
+    <td><a href="https://www.buymeacoffee.com/fransjacobs" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+    </td>
 </tr>
 </table>
 
