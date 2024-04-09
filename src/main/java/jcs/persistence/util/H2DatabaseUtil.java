@@ -69,7 +69,8 @@ public class H2DatabaseUtil {
   }
 
   public static void setProperties(boolean test) {
-    String jdbcUrl = JDBC_PRE + RunUtil.DEFAULT_PATH + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + SCHEMA;
+    //String jdbcUrl = JDBC_PRE + RunUtil.DEFAULT_PATH + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + SCHEMA;
+    String jdbcUrl = JDBC_PRE + System.getProperty("user.home") + File.separator + "jcs" + File.separator + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + SCHEMA;
     System.setProperty("norm.jdbcUrl", jdbcUrl);
     System.setProperty("norm.user", JCS_USER);
     System.setProperty("norm.password", JCS_PWD);
@@ -97,8 +98,8 @@ public class H2DatabaseUtil {
   }
 
   protected static Connection jdbcConnect(String user, String password, boolean defaultSchema, boolean test) {
-    String jdbcUrl = JDBC_PRE + RunUtil.DEFAULT_PATH + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + (defaultSchema ? SCHEMA : "");
-
+    //String jdbcUrl = JDBC_PRE + RunUtil.DEFAULT_PATH + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + (defaultSchema ? SCHEMA : "");
+    String jdbcUrl = JDBC_PRE + System.getProperty("user.home") + File.separator + "jcs" + File.separator + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + (defaultSchema ? SCHEMA : "");
     Connection conn = null;
     Logger.trace("URL: " + jdbcUrl);
     try {
