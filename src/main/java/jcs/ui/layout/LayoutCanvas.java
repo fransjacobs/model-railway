@@ -422,12 +422,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   public void saveLayout() {
+    //Create a snap shot as persisting is done in worker thread
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     this.selectedTiles.clear();
     this.executor.execute(() -> saveTiles(snapshot));
   }
 
-  private void saveTiles(Set<Tile> snapshot) {
+  private synchronized void saveTiles(Set<Tile> snapshot) {
     Logger.debug("Saving " + snapshot.size() + " tiles...");
     List<TileBean> beans = new LinkedList<>();
 
@@ -574,25 +575,22 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Tile tile = findTile(sp);
     if (tile != null) {
       setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-      //mouseDragAction(evt);
     } else {
       setCursor(Cursor.getDefaultCursor());
     }
   }
 
   private Tile getSelectedTile() {
+    Tile t = null;
     if (!selectedTiles.isEmpty()) {
-      Set<Tile> sts = new HashSet<>();
       for (Point p : this.selectedTiles) {
-        if (this.tiles.containsKey(p)) {
-          Tile t = this.tiles.get(p);
-          sts.add(t);
+        t = tiles.get(p);
+        if (t != null) {
+          return t;
         }
       }
-      //Logger.trace("There are " + sts.size() + " selected tiles.");
-      return sts.iterator().next();
     }
-    return null;
+    return t;
   }
 
   private void mousePressedAction(MouseEvent evt) {
@@ -690,7 +688,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       if (!tp.equals(snapPoint)) {
         Logger.tag("Moving Tile from " + tp + " to " + snapPoint + " Tile to move: " + selTile);
         //Check if new position is free
-
         boolean canMove = true;
         if (tiles.containsKey(snapPoint) || altTiles.containsKey(snapPoint)) {
           Tile tile = findTile(snapPoint);
@@ -710,7 +707,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
             //Also remove from the alt points
             Point oldCenter = movingTile.getCenter();
             Set<Point> oldAltPoints = movingTile.getAltPoints();
-            Logger.trace("Removing " + oldAltPoints.size() + " alt tile points");
+            //Logger.trace("Removing " + oldAltPoints.size() + " alt tile points");
             for (Point ep : oldAltPoints) {
               altTiles.remove(ep);
               tiles.remove(ep);
@@ -718,7 +715,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
             //Set the new center position
             movingTile.setCenter(snapPoint);
-            //Check again
+            //Check again, needed for tiles which are longer then 1 square, like a block
             if (!checkTileOccupation(movingTile)) {
               Logger.trace("Moved Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint + "...");
               tiles.put(snapPoint, movingTile);
@@ -731,6 +728,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
               //Do not move Tile, put back where it was
               movingTile.setCenter(oldCenter);
               tiles.put(oldCenter, movingTile);
+              for (Point ep : movingTile.getAltPoints()) {
+                altTiles.put(ep, movingTile);
+              }
             }
           }
         }
@@ -880,7 +880,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
     //this.executor.execute(() -> repaint());
     repaint();
-    Logger.trace("Edit done");
   }
 
   private void showOperationsPopupMenu(Tile tile, Point p) {

@@ -52,13 +52,18 @@ public class AboutDialog extends javax.swing.JDialog {
 
   private static String getLibrariesFromLicenses() {
     try {
-      URL url = AboutDialog.class.getClassLoader().getResource("licenses.xml");
-      File xmlFile = new File(url.getFile());
-
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
 
-      Document document = builder.parse(xmlFile);
+      URL url = AboutDialog.class.getClassLoader().getResource("licenses.xml");
+      File xmlFile = new File(url.getFile());
+      Document document;
+      if (xmlFile.exists()) {
+        document = builder.parse(xmlFile);
+      } else {
+        document = builder.parse(AboutDialog.class.getClassLoader().getResource("licenses.xml").openStream());
+      }
+
       NodeList nodeList = document.getElementsByTagName("dependency");
       StringBuilder sb = new StringBuilder();
       sb.append("JCS makes use of the following libraries:\n\n");
