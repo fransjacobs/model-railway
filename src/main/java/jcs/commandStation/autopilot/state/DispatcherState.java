@@ -25,6 +25,6 @@ public interface DispatcherState {
 
   void prev(TrainDispatcher locRunner);
 
-  void printStatus();
+  void logState();
 
 }

@@ -15,6 +15,8 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
 import org.tinylog.Logger;
 
 /**
@@ -23,18 +25,26 @@ import org.tinylog.Logger;
  */
 public class ReserveRouteState implements DispatcherState {
 
+  private final LocomotiveBean locomotive;
+  private final RouteBean route;
+
+  ReserveRouteState(LocomotiveBean locomotive, RouteBean route) {
+    this.locomotive = locomotive;
+    this.route = route;
+  }
+
   @Override
   public void next(TrainDispatcher locRunner) {
-    locRunner.setState(new RunState());
+    locRunner.setState(new RunState(locomotive, route));
   }
 
   @Override
   public void prev(TrainDispatcher locRunner) {
-    locRunner.setState(new RouteSearchState());
+    locRunner.setState(new RouteSearchState(locomotive));
   }
 
   @Override
-  public void printStatus() {
+  public void logState() {
     Logger.debug("Reserve the Route and set Accessory states");
   }
 

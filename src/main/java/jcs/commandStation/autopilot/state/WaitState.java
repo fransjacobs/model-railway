@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
@@ -23,18 +24,24 @@ import org.tinylog.Logger;
  */
 public class WaitState implements DispatcherState {
 
+  private final LocomotiveBean locomotive;
+  
+  WaitState(LocomotiveBean locomotive) {
+    this.locomotive = locomotive;
+  }
+  
   @Override
   public void next(TrainDispatcher locRunner) {
-    locRunner.setState(new RouteSearchState());
+    locRunner.setState(new RouteSearchState(locomotive));
   }
 
   @Override
   public void prev(TrainDispatcher locRunner) {
-    locRunner.setState(new EnterState());
+    locRunner.setState(this);
   }
 
   @Override
-  public void printStatus() {
+  public void logState() {
     Logger.debug("Waiting");
   }
 

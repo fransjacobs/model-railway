@@ -15,6 +15,8 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
 import org.tinylog.Logger;
 
 /**
@@ -23,18 +25,27 @@ import org.tinylog.Logger;
  */
 public class RunState implements DispatcherState {
 
+  private final LocomotiveBean locomotive;
+  private final RouteBean route;
+  
+  RunState(LocomotiveBean locomotive, RouteBean route) {
+    this.locomotive = locomotive;
+    this.route = route;
+  }
+
+  
   @Override
   public void next(TrainDispatcher locRunner) {
-    locRunner.setState(new EnterState());
+    locRunner.setState(new EnterState(locomotive, route));
   }
 
   @Override
   public void prev(TrainDispatcher locRunner) {
-    locRunner.setState(new ReserveRouteState());
+    locRunner.setState(new ReserveRouteState(locomotive, route));
   }
 
   @Override
-  public void printStatus() {
+  public void logState() {
     Logger.debug("The Locomotive is running");
   }
 

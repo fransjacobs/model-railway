@@ -24,8 +24,8 @@ import jcs.entities.LocomotiveBean;
 public class DispatcherTester {
  
   public static void main(String[] a) {
-    LocomotiveBean loc = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true, true);
-    loc.setCommandStationId("marklin.cs");
+    LocomotiveBean loc = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "/Users/fransjacobs/jcs/cache/dcc-ex/ns dhg 6505.png", "dcc", 100, 1, 0, 0, false, true, true);
+    loc.setCommandStationId("virtual");
     
     TrainDispatcher dispatcher = new TrainDispatcher(loc);
     

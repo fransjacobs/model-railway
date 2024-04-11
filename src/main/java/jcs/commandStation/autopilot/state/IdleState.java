@@ -15,16 +15,35 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
  * Entry State when a Locomotive is enabled in a block
  */
 public class IdleState implements DispatcherState {
+  
+  private final LocomotiveBean locomotive;
+  
+  IdleState(LocomotiveBean locomotive) {
+    this.locomotive = locomotive;
+  }
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    locRunner.setState(new RouteSearchState());
+    //Next state is only possibe when this locomotive is on the track and in a block
+    if(isInBlock()) {
+      Logger.debug("Locomotive "+this.locomotive.getName()+" ["+this.locomotive.getId()+"] is in a block");
+      locRunner.setState(new RouteSearchState(locomotive));
+    } else {
+      Logger.debug("Locomotive "+this.locomotive.getName()+" ["+this.locomotive.getId()+"] is not in a block");
+      locRunner.setState(this);
+    }  
   }
 
   @Override
@@ -33,13 +52,20 @@ public class IdleState implements DispatcherState {
   }
 
   @Override
-  public void printStatus() {
-    Logger.trace("Idle, waiting to do something...");
+  public void logState() {
+    Logger.trace(this.getClass().getSimpleName()+" waiting to do something...");
   }
 
   @Override
   public String toString() {
-    return "IdleState{}";
+    return this.getClass().getSimpleName();
   }
 
+  private boolean isInBlock() {
+    BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(this.locomotive.getId());
+    
+    return block != null;
+  }
+  
+  
 }

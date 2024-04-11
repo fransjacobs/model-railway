@@ -29,7 +29,7 @@ public class TrainDispatcher {
 
   public TrainDispatcher(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
-    this.state = new IdleState();
+    this.state = new IdleState(locomotiveBean);
   }
 
   public LocomotiveBean getLocomotiveBean() {
@@ -57,7 +57,7 @@ public class TrainDispatcher {
   }
 
   public void showStatus() {
-    state.printStatus();
+    state.logState();
   }
 
 }
