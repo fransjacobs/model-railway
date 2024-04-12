@@ -495,11 +495,11 @@ public class H2PersistenceService implements PersistenceService {
   private TileBean addReleatedObjects(TileBean tileBean, BlockBean blockBean) {
     if (tileBean != null) {
       if (tileBean.getAccessoryId() != null) {
-        tileBean.setAccessoryBean(this.getAccessory(tileBean.getAccessoryId()));
+        tileBean.setAccessoryBean(getAccessory(tileBean.getAccessoryId()));
       }
 
       if (tileBean.getSensorId() != null) {
-        tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
+        tileBean.setSensorBean(getSensor(tileBean.getSensorId()));
       }
 
       if (blockBean != null) {
@@ -618,9 +618,21 @@ public class H2PersistenceService implements PersistenceService {
     }
   }
 
+  private RouteElementBean addRelatedObjects(RouteElementBean routeElementBean) {
+    if (routeElementBean.getTileId() != null) {
+      routeElementBean.setTileBean(getTileBean(routeElementBean.getTileId()));
+    }
+
+    return routeElementBean;
+  }
+
   private List<RouteElementBean> getRouteElements(String routeId) {
     List<RouteElementBean> routeElements = database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
     //is the tile needed inside the route element?
+    for (RouteElementBean reb : routeElements) {
+      addRelatedObjects(reb);
+    }
+
     return routeElements;
   }
 

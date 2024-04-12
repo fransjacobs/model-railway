@@ -30,31 +30,26 @@ public class DispatcherTester {
     TrainDispatcher dispatcher = new TrainDispatcher(loc);
     
     //idle
-    dispatcher.showStatus();
+    dispatcher.performAction();
+    dispatcher.performAction();
     
     dispatcher.nextState();
-    //prpare
-    dispatcher.showStatus();
+    dispatcher.performAction();
 
     dispatcher.nextState();
-    //departure
-    dispatcher.showStatus();
+    dispatcher.performAction();
 
     dispatcher.nextState();
-    //Running
-    dispatcher.showStatus();
+    dispatcher.performAction();
 
     dispatcher.nextState();
-    //Arriving
-    dispatcher.showStatus();
+    dispatcher.performAction();
 
     dispatcher.nextState();
-    //Waiting
-    dispatcher.showStatus();
+    dispatcher.performAction();
 
     dispatcher.nextState();
-    //prpare
-    dispatcher.showStatus();
+    dispatcher.performAction();
     
   }
   

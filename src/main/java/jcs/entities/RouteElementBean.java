@@ -155,6 +155,29 @@ public class RouteElementBean implements Serializable {
     this.tileBean = tileBean;
   }
 
+  @Transient
+  public boolean isTurnout() {
+    if (this.tileBean != null && this.tileBean.getAccessoryBean() != null) {
+      return this.tileBean != null && this.tileBean.getAccessoryBean().isTurnout();
+    } else {
+      return false;
+    }
+  }
+
+  @Transient
+  public boolean isSignal() {
+    if (this.tileBean != null && this.tileBean.getAccessoryBean() != null) {
+      return this.tileBean != null && this.tileBean.getAccessoryBean().isSignal();
+    } else {
+      return false;
+    }
+  }
+
+  @Transient
+  public boolean isSensor() {
+    return this.tileBean != null && this.tileBean.getSensorBean() != null;
+  }
+
   @Override
   public int hashCode() {
     int hash = 3;

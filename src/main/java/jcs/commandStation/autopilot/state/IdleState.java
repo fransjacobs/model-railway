@@ -15,9 +15,6 @@
  */
 package jcs.commandStation.autopilot.state;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -26,46 +23,41 @@ import org.tinylog.Logger;
 /**
  * Entry State when a Locomotive is enabled in a block
  */
-public class IdleState implements DispatcherState {
-  
-  private final LocomotiveBean locomotive;
-  
+public class IdleState extends DispatcherState {
+
+  boolean inBlock = false;
+
   IdleState(LocomotiveBean locomotive) {
-    this.locomotive = locomotive;
+    super(locomotive);
   }
 
   @Override
-  public void next(TrainDispatcher locRunner) {
+  public void next(TrainDispatcher dispatcher) {
     //Next state is only possibe when this locomotive is on the track and in a block
-    if(isInBlock()) {
-      Logger.debug("Locomotive "+this.locomotive.getName()+" ["+this.locomotive.getId()+"] is in a block");
-      locRunner.setState(new RouteSearchState(locomotive));
+    if (inBlock) {
+      Logger.debug("Locomotive " + this.locomotive.getName() + " [" + this.locomotive.getId() + "] is in a block");
+      dispatcher.setState(new SearchRouteState(locomotive));
     } else {
-      Logger.debug("Locomotive "+this.locomotive.getName()+" ["+this.locomotive.getId()+"] is not in a block");
-      locRunner.setState(this);
-    }  
+      Logger.debug("Locomotive " + this.locomotive.getName() + " [" + this.locomotive.getId() + "] is not in a block");
+      dispatcher.setState(this);
+    }
   }
 
   @Override
-  public void prev(TrainDispatcher locRunner) {
+  public void prev(TrainDispatcher dispatcher) {
     Logger.debug("This is the root state");
   }
 
   @Override
-  public void logState() {
-    Logger.trace(this.getClass().getSimpleName()+" waiting to do something...");
+  void onHalt(TrainDispatcher dispatcher) {
+    Logger.debug("HALT!");
   }
 
   @Override
-  public String toString() {
-    return this.getClass().getSimpleName();
+  public boolean performAction() {
+    BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(this.locomotive.getId());
+    inBlock = block != null;
+    return inBlock;
   }
 
-  private boolean isInBlock() {
-    BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(this.locomotive.getId());
-    
-    return block != null;
-  }
-  
-  
 }

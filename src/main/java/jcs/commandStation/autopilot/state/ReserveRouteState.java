@@ -15,42 +15,60 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.util.ArrayList;
+import java.util.List;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import org.tinylog.Logger;
 
 /**
  *
  * @author frans
  */
-public class ReserveRouteState implements DispatcherState {
-
-  private final LocomotiveBean locomotive;
-  private final RouteBean route;
+public class ReserveRouteState extends DispatcherState {
 
   ReserveRouteState(LocomotiveBean locomotive, RouteBean route) {
-    this.locomotive = locomotive;
-    this.route = route;
+    super(locomotive, route);
   }
 
   @Override
-  public void next(TrainDispatcher locRunner) {
-    locRunner.setState(new RunState(locomotive, route));
+  public void next(TrainDispatcher dispatcher) {
+    dispatcher.setState(new RunState(locomotive, route));
   }
 
   @Override
-  public void prev(TrainDispatcher locRunner) {
-    locRunner.setState(new RouteSearchState(locomotive));
+  public void prev(TrainDispatcher dispatcher) {
+    dispatcher.setState(new SearchRouteState(locomotive));
   }
 
   @Override
-  public void logState() {
-    Logger.debug("Reserve the Route and set Accessory states");
+  void onHalt(TrainDispatcher dispatcher) {
+    Logger.debug("HALT!");
   }
 
   @Override
-  public String toString() {
-    return "ReserveRouteState{}";
+  public boolean performAction() {
+    Logger.debug("Reserving route " + route);
+    this.route.setLocked(true);
+    // need the turnouts
+    List<RouteElementBean> turnouts = getTurnouts(route);
+    Logger.trace("There are "+turnouts.size()+" turnouts in this route");
+
+    return false;
+  }
+
+  List<RouteElementBean> getTurnouts(RouteBean routeBean) {
+    List<RouteElementBean> rel = routeBean.getRouteElements();
+    List<RouteElementBean> turnouts = new ArrayList<>();
+    for (RouteElementBean reb : rel) {
+      Logger.trace("reb: "+reb.getTileId()+"; "+reb.getTileBean().getAccessoryBean()+" "+" turnout: "+reb.isTurnout());
+      if (reb.isTurnout()) {
+        turnouts.add(reb);
+      }
+    }
+    return turnouts;
+
   }
 
 }

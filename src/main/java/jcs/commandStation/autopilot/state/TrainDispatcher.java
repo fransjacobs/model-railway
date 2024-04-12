@@ -56,8 +56,8 @@ public class TrainDispatcher {
     state.next(this);
   }
 
-  public void showStatus() {
-    state.logState();
+  public void performAction() {
+    state.performAction();
   }
 
 }

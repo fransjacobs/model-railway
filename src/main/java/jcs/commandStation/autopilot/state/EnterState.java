@@ -22,14 +22,10 @@ import org.tinylog.Logger;
 /**
  * The Train is entering a block
  */
-public class EnterState implements DispatcherState {
-
-  private final LocomotiveBean locomotive;
-  private final RouteBean route;
+public class EnterState extends DispatcherState {
 
   EnterState(LocomotiveBean locomotive, RouteBean route) {
-    this.locomotive = locomotive;
-    this.route = route;
+    super(locomotive, route);
   }
 
   @Override
@@ -43,13 +39,14 @@ public class EnterState implements DispatcherState {
   }
 
   @Override
-  public void logState() {
-    Logger.debug("The locomotive has entered a block and will slow down");
+  void onHalt(TrainDispatcher dispatcher) {
+    Logger.debug("HALT!");
   }
 
   @Override
-  public String toString() {
-    return "EnterState{}";
+  public boolean performAction() {
+    Logger.debug("The locomotive has entered a block and will slow down");
+    return false;
   }
 
 }

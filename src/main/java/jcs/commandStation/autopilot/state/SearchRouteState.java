@@ -15,10 +15,8 @@
  */
 package jcs.commandStation.autopilot.state;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -31,43 +29,35 @@ import org.tinylog.Logger;
 /**
  * Search a (free) Route and choose one
  */
-public class RouteSearchState implements DispatcherState {
+public class SearchRouteState extends DispatcherState {
 
-  private final LocomotiveBean locomotive;
-
-  RouteSearchState(LocomotiveBean locomotive) {
-    this.locomotive = locomotive;
-
+  SearchRouteState(LocomotiveBean locomotive) {
+    super(locomotive);
   }
 
   @Override
-  public void next(TrainDispatcher locRunner) {
+  public void next(TrainDispatcher dispatcher) {
     //Only advance when there is a route
-    RouteBean route = searchRoute();
     if (route != null) {
-      locRunner.setState(new ReserveRouteState(locomotive, route));
+      dispatcher.setState(new ReserveRouteState(locomotive, route));
     } else {
       Logger.debug("Can't find a route for " + this.locomotive.getName() + " ...");
-      locRunner.setState(this);
+      dispatcher.setState(this);
     }
   }
 
   @Override
-  public void prev(TrainDispatcher locRunner) {
-    locRunner.setState(new IdleState(locomotive));
+  public void prev(TrainDispatcher dispatcher) {
+    dispatcher.setState(new IdleState(locomotive));
   }
 
   @Override
-  public void logState() {
-    Logger.trace(this.getClass().getSimpleName() + "Searching for a Destination block and route");
+  void onHalt(TrainDispatcher dispatcher) {
+    Logger.debug("HALT!");
   }
 
   @Override
-  public String toString() {
-    return this.getClass().getSimpleName();
-  }
-
-  RouteBean searchRoute() {
+  public boolean performAction() {
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
     BlockBean blockBean = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
     //We need to have the "Real" BlockTile to be able to sortout the direction...
@@ -86,10 +76,10 @@ public class RouteSearchState implements DispatcherState {
       getRandomNumber(0, routes.size());
     }
     int rIdx = getRandomNumber(0, routes.size());
-    RouteBean route = routes.get(rIdx);
+    route = routes.get(rIdx);
     Logger.trace("Choosen route " + route.toLogString());
-    return route;
 
+    return route != null;
   }
 
   public int getRandomNumber(int min, int max) {

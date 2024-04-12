@@ -23,17 +23,12 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class RunState implements DispatcherState {
+public class RunState extends DispatcherState {
 
-  private final LocomotiveBean locomotive;
-  private final RouteBean route;
-  
   RunState(LocomotiveBean locomotive, RouteBean route) {
-    this.locomotive = locomotive;
-    this.route = route;
+    super(locomotive, route);
   }
 
-  
   @Override
   public void next(TrainDispatcher locRunner) {
     locRunner.setState(new EnterState(locomotive, route));
@@ -45,13 +40,14 @@ public class RunState implements DispatcherState {
   }
 
   @Override
-  public void logState() {
-    Logger.debug("The Locomotive is running");
+  void onHalt(TrainDispatcher dispatcher) {
+    Logger.debug("HALT!");
   }
 
   @Override
-  public String toString() {
-    return "RunState{}";
+  public boolean performAction() {
+    Logger.debug("The Locomotive is running");
+    return false;
   }
 
 }

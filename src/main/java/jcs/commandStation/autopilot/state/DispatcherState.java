@@ -15,16 +15,44 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
+
 /**
  *
  * @author frans
  */
-public interface DispatcherState {
+public abstract class DispatcherState {
 
-  void next(TrainDispatcher locRunner);
+  protected LocomotiveBean locomotive;
 
-  void prev(TrainDispatcher locRunner);
+  protected RouteBean route;
 
-  void logState();
+  protected DispatcherState(LocomotiveBean locomotive) {
+    this(locomotive, null);
+  }
+
+  protected DispatcherState(LocomotiveBean locomotive, RouteBean route) {
+    this.locomotive = locomotive;
+    this.route = route;
+  }
+
+  /**
+   * React on a Halt event
+   *
+   * @param dispatcher
+   */
+  abstract void onHalt(TrainDispatcher dispatcher);
+
+  abstract void next(TrainDispatcher dispatcher);
+
+  abstract void prev(TrainDispatcher dispatcher);
+
+  abstract boolean performAction();
+
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName();
+  }
 
 }

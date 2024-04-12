@@ -22,17 +22,15 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class WaitState implements DispatcherState {
+public class WaitState extends DispatcherState {
 
-  private final LocomotiveBean locomotive;
-  
   WaitState(LocomotiveBean locomotive) {
-    this.locomotive = locomotive;
+    super(locomotive);
   }
-  
+
   @Override
   public void next(TrainDispatcher locRunner) {
-    locRunner.setState(new RouteSearchState(locomotive));
+    locRunner.setState(new SearchRouteState(locomotive));
   }
 
   @Override
@@ -41,13 +39,14 @@ public class WaitState implements DispatcherState {
   }
 
   @Override
-  public void logState() {
-    Logger.debug("Waiting");
+  void onHalt(TrainDispatcher dispatcher) {
+    Logger.debug("HALT!");
   }
 
   @Override
-  public String toString() {
-    return "WaitState{}";
+  public boolean performAction() {
+    Logger.debug("Waiting");
+    return false;
   }
 
 }
