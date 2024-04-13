@@ -27,6 +27,8 @@ public abstract class DispatcherState {
   protected LocomotiveBean locomotive;
 
   protected RouteBean route;
+  
+  protected boolean canAdvanceState;
 
   protected DispatcherState(LocomotiveBean locomotive) {
     this(locomotive, null);
@@ -50,6 +52,8 @@ public abstract class DispatcherState {
 
   abstract boolean performAction();
 
+  
+  
   @Override
   public String toString() {
     return this.getClass().getSimpleName();

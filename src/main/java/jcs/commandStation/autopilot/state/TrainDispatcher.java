@@ -16,6 +16,8 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.entities.LocomotiveBean;
+import jcs.ui.layout.RouteDisplayCallBack;
+import org.tinylog.Logger;
 
 /**
  *
@@ -26,10 +28,17 @@ public class TrainDispatcher {
   private LocomotiveBean locomotiveBean;
 
   private DispatcherState state;
+  private DispatcherState previousState;
+  private final RouteDisplayCallBack callback;
 
-  public TrainDispatcher(LocomotiveBean locomotiveBean) {
+  private String name;
+
+  public TrainDispatcher(LocomotiveBean locomotiveBean, RouteDisplayCallBack callback) {
     this.locomotiveBean = locomotiveBean;
     this.state = new IdleState(locomotiveBean);
+    this.callback = callback;
+
+    this.name = "DP->" + locomotiveBean.getName();
   }
 
   public LocomotiveBean getLocomotiveBean() {
@@ -45,7 +54,13 @@ public class TrainDispatcher {
   }
 
   public void setState(DispatcherState state) {
+    this.previousState = this.state;
     this.state = state;
+    if (previousState == state) {
+      Logger.debug("State has not changed. Current state " + state.toString());
+    } else {
+      Logger.debug("State changed to " + state.toString());
+    }
   }
 
   public void previousState() {
@@ -56,8 +71,32 @@ public class TrainDispatcher {
     state.next(this);
   }
 
-  public void performAction() {
-    state.performAction();
+  public boolean performAction() {
+    boolean action = state.performAction();
+
+    if (state instanceof ReserveRouteState && action) {
+      if (callback != null) {
+        callback.setSelectRoute(state.route);
+      }
+    }
+
+    if (state instanceof RunState && action) {
+      if (callback != null) {
+        callback.setSelectRoute(state.route);
+        
+        callback.refresh();
+      }
+    }
+
+    return action;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
 }

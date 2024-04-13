@@ -17,9 +17,13 @@ package jcs.commandStation.autopilot.state;
 
 import java.util.ArrayList;
 import java.util.List;
+import jcs.JCS;
+import jcs.entities.AccessoryBean;
+import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -34,7 +38,12 @@ public class ReserveRouteState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher dispatcher) {
-    dispatcher.setState(new RunState(locomotive, route));
+    if (this.canAdvanceState) {
+      dispatcher.setState(new RunState(locomotive, route));
+    } else {
+      Logger.debug("Can't reserve a route for " + locomotive.getName() + " ...");
+      dispatcher.setState(this);
+    }
   }
 
   @Override
@@ -49,26 +58,46 @@ public class ReserveRouteState extends DispatcherState {
 
   @Override
   public boolean performAction() {
+    if (JCS.getJcsCommandStation() == null) {
+      Logger.error("Can't obtain a Command Station");
+      canAdvanceState = false;
+      return false;
+    }
+
     Logger.debug("Reserving route " + route);
     this.route.setLocked(true);
+    PersistenceFactory.getService().persist(route);
+
     // need the turnouts
     List<RouteElementBean> turnouts = getTurnouts(route);
-    Logger.trace("There are "+turnouts.size()+" turnouts in this route");
+    Logger.trace("There are " + turnouts.size() + " turnouts in this route");
 
-    return false;
+    //Set the turnout in the right direction
+    for (RouteElementBean reb : turnouts) {
+      AccessoryValue av = reb.getAccessoryValue();
+      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
+
+      Logger.debug("Setting turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
+      JCS.getJcsCommandStation().switchAccessory(turnout, av);
+    }
+    Logger.debug("Locked route " + route);
+    canAdvanceState = true;
+    
+    
+    
+    
+    return canAdvanceState;
   }
 
   List<RouteElementBean> getTurnouts(RouteBean routeBean) {
     List<RouteElementBean> rel = routeBean.getRouteElements();
     List<RouteElementBean> turnouts = new ArrayList<>();
     for (RouteElementBean reb : rel) {
-      Logger.trace("reb: "+reb.getTileId()+"; "+reb.getTileBean().getAccessoryBean()+" "+" turnout: "+reb.isTurnout());
       if (reb.isTurnout()) {
         turnouts.add(reb);
       }
     }
     return turnouts;
-
   }
 
 }

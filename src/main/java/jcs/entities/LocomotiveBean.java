@@ -69,7 +69,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   public LocomotiveBean(Long id, String name, Long uid, Integer address, String icon, String decoderTypeString, Integer tachoMax,
-           Integer vMin, Integer velocity, Integer direction, boolean commuter, boolean show, boolean synchronize) {
+          Integer vMin, Integer velocity, Integer direction, boolean commuter, boolean show, boolean synchronize) {
 
     this.id = id;
     this.name = name;
@@ -209,6 +209,16 @@ public class LocomotiveBean implements Serializable {
   public Direction getDirection() {
     if (this.richtung != null) {
       return Direction.getDirectionMarkin(this.richtung);
+    } else {
+      return Direction.FORWARDS;
+    }
+  }
+
+  @Transient
+  public Direction toggleDirection() {
+    Direction d = getDirection();
+    if (Direction.FORWARDS == d) {
+      return Direction.BACKWARDS;
     } else {
       return Direction.FORWARDS;
     }

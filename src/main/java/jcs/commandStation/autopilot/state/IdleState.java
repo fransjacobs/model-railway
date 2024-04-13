@@ -25,8 +25,6 @@ import org.tinylog.Logger;
  */
 public class IdleState extends DispatcherState {
 
-  boolean inBlock = false;
-
   IdleState(LocomotiveBean locomotive) {
     super(locomotive);
   }
@@ -34,11 +32,11 @@ public class IdleState extends DispatcherState {
   @Override
   public void next(TrainDispatcher dispatcher) {
     //Next state is only possibe when this locomotive is on the track and in a block
-    if (inBlock) {
-      Logger.debug("Locomotive " + this.locomotive.getName() + " [" + this.locomotive.getId() + "] is in a block");
+    if (canAdvanceState) {
+      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in a block");
       dispatcher.setState(new SearchRouteState(locomotive));
     } else {
-      Logger.debug("Locomotive " + this.locomotive.getName() + " [" + this.locomotive.getId() + "] is not in a block");
+      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block");
       dispatcher.setState(this);
     }
   }
@@ -56,8 +54,8 @@ public class IdleState extends DispatcherState {
   @Override
   public boolean performAction() {
     BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(this.locomotive.getId());
-    inBlock = block != null;
-    return inBlock;
+    canAdvanceState = block != null;
+    return canAdvanceState;
   }
 
 }

@@ -16,6 +16,7 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.entities.LocomotiveBean;
+import org.tinylog.Logger;
 
 /**
  *
@@ -27,29 +28,32 @@ public class DispatcherTester {
     LocomotiveBean loc = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "/Users/fransjacobs/jcs/cache/dcc-ex/ns dhg 6505.png", "dcc", 100, 1, 0, 0, false, true, true);
     loc.setCommandStationId("virtual");
     
-    TrainDispatcher dispatcher = new TrainDispatcher(loc);
+    TrainDispatcher dispatcher = new TrainDispatcher(loc, null);
     
     //idle
     dispatcher.performAction();
+
+    //SearchRoute
+    dispatcher.nextState();
     dispatcher.performAction();
     
+    //ReserveRoute  
+    dispatcher.nextState();
+    dispatcher.performAction();
+
+    //Run
+    dispatcher.nextState();
+    dispatcher.performAction();
+
+    //Wait
     dispatcher.nextState();
     dispatcher.performAction();
 
     dispatcher.nextState();
     dispatcher.performAction();
 
-    dispatcher.nextState();
-    dispatcher.performAction();
-
-    dispatcher.nextState();
-    dispatcher.performAction();
-
-    dispatcher.nextState();
-    dispatcher.performAction();
-
-    dispatcher.nextState();
-    dispatcher.performAction();
+    //dispatcher.nextState();
+    //dispatcher.performAction();
     
   }
   

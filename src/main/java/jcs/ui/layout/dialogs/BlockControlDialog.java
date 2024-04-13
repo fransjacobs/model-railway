@@ -310,7 +310,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
   private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed
     LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
     if(loc != null) {
-      AutoPilot.getInstance().startStopLocomotive(loc, this.startLocButton.isSelected());
+      AutoPilot.getInstance(null).startStopLocomotive(loc, this.startLocButton.isSelected());
     }
   }//GEN-LAST:event_startLocButtonActionPerformed
 

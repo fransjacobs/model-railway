@@ -961,22 +961,22 @@ public class LayoutPanel extends JPanel {
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Enable Auto mode " + this.autoPilotBtn.isSelected());
-    //incase auto pilot was on and is switched of also stop driving
+    //in case auto pilot was on and is switched of also stop driving
     if (startAutoPilotBtn.isSelected() && !autoPilotBtn.isSelected()) {
       startAutoPilotBtn.doClick();
     }
     startAutoPilotBtn.setEnabled(readonly && autoPilotBtn.isSelected());
     if (autoPilotBtn.isSelected()) {
-      AutoPilot.getInstance().initialize();
+      AutoPilot.getInstance(canvas).initialize();
     }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAutoPilotBtn.isSelected());
     if (this.startAutoPilotBtn.isSelected()) {
-      AutoPilot.getInstance().startAllLocomotives();
+      AutoPilot.getInstance(canvas).startAllLocomotives();
     } else {
-      AutoPilot.getInstance().stopAllLocomotives();
+      AutoPilot.getInstance(canvas).stopAllLocomotives();
     }
   }//GEN-LAST:event_startAutoPilotBtnActionPerformed
 

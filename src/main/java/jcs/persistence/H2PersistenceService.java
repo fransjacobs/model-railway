@@ -506,8 +506,8 @@ public class H2PersistenceService implements PersistenceService {
         tileBean.setBlockBean(blockBean);
       } else {
         if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
-          Logger.trace("Look for blok " + tileBean.getId());
-          tileBean.setBlockBean(this.getBlock(tileBean.getId()));
+          //Logger.trace("Look for blok " + tileBean.getId());
+          tileBean.setBlockBean(getBlock(tileBean.getId()));
         }
       }
     }
@@ -680,7 +680,7 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix};
-    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ?", args).results(RouteBean.class);
+    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ? and locked = false", args).results(RouteBean.class);
 
     for (RouteBean r : routes) {
       List<RouteElementBean> routeElements = getRouteElements(r.getId());
@@ -765,11 +765,11 @@ public class H2PersistenceService implements PersistenceService {
         blockBean.setLocomotive(getLocomotive(blockBean.getLocomotiveId()));
       }
 
-      if (blockBean.getPlusSensorBean() != null) {
+      if (blockBean.getPlusSensorId() != null) {
         blockBean.setPlusSensorBean(getSensor(blockBean.getPlusSensorId()));
       }
 
-      if (blockBean.getMinSensorBean() != null) {
+      if (blockBean.getMinSensorId() != null) {
         blockBean.setMinSensorBean(getSensor(blockBean.getMinSensorId()));
       }
 

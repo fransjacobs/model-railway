@@ -21,9 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import jcs.commandStation.autopilot.state.TrainDispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.RouteDisplayCallBack;
 import org.tinylog.Logger;
 
 /**
@@ -34,15 +36,17 @@ public class AutoPilot {
 
   private static AutoPilot instance = null;
 
-  Map<String, LocomotiveStateMachine> locomotives = Collections.synchronizedMap(new HashMap<>());
+  private RouteDisplayCallBack callback;
 
-  private AutoPilot() {
+  Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
 
+  private AutoPilot(RouteDisplayCallBack callback) {
+    this.callback = callback;
   }
 
-  public static AutoPilot getInstance() {
+  public static AutoPilot getInstance(RouteDisplayCallBack callback) {
     if (instance == null) {
-      instance = new AutoPilot();
+      instance = new AutoPilot(callback);
     }
     return instance;
   }
@@ -54,17 +58,19 @@ public class AutoPilot {
   public void startAllLocomotives() {
     List<LocomotiveBean> locs = getOnTrackLocomotives();
     for (LocomotiveBean loc : locs) {
-      LocomotiveStateMachine lsm = new LocomotiveStateMachine(loc);
-      locomotives.put(lsm.getName(), lsm);
-      Logger.debug("Added " + lsm.getName());
-      lsm.startLocomotive();
+      TrainDispatcher dispatcher = new TrainDispatcher(loc, callback);
+      locomotives.put(dispatcher.getName(), dispatcher);
+      Logger.debug("Added " + dispatcher.getName());
+
+      DispatcherTestDialog.showDialog(dispatcher);
+      //lsm.startLocomotive();
     }
 
   }
 
   public void stopAllLocomotives() {
-    for (LocomotiveStateMachine lsm : this.locomotives.values()) {
-      lsm.stopLocomotive();
+    for (TrainDispatcher lsm : this.locomotives.values()) {
+      //lsm.stopLocomotive();
     }
 
   }
@@ -73,13 +79,18 @@ public class AutoPilot {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
 
     if (start) {
-      LocomotiveStateMachine lsm = new LocomotiveStateMachine(locomotiveBean);
-      locomotives.put(lsm.getName(), lsm);
-      Logger.debug("Added " + lsm.getName());
-      lsm.startLocomotive();
+      TrainDispatcher dispatcher = new TrainDispatcher(locomotiveBean, callback);
+
+      //LocomotiveStateMachine lsm = new LocomotiveStateMachine(locomotiveBean);
+      locomotives.put(dispatcher.getName(), dispatcher);
+      Logger.debug("Added " + dispatcher.getName());
+
+      DispatcherTestDialog.showDialog(dispatcher);
+
+      //lsm.startLocomotive();
     } else {
-      LocomotiveStateMachine lsm = this.locomotives.get("STM->" + locomotiveBean.getName());
-      lsm.stopLocomotive();
+      TrainDispatcher lsm = this.locomotives.get("DP->" + locomotiveBean.getName());
+      //lsm.stopLocomotive();
     }
 
   }
@@ -108,35 +119,12 @@ public class AutoPilot {
     return activeLocomotives;
   }
 
-//  public BlockBean getOccupiedBlock(LocomotiveBean locomotiveBean) {
-//    return PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
-//  }
-
-//  public RouteBean findRoute(BlockBean from, LocomotiveBean locomotive) {
-//    Block block = (Block) TileFactory.createTile(PersistenceFactory.getService().getTileBean(from.getTileId()), true, true);
-//    String suffix = block.getLocomotiveBlockSuffix();
-//    Logger.trace("Trying to find routes for: " + block.getId() + " suffix " + suffix + " Loc: " + locomotive.getName() + " Direction: " + locomotive.getDirection());
-//    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(from.getTileId(), suffix);
-//
-//    Logger.trace("Found " + routes.size() + " routes");
-//
-//    if (routes.isEmpty()) {
-//      return null;
-//    } else {
-//      //Lets use the first; may be later randomize
-//      return routes.get(0);
-//    }
-//  }
-
   public static void main(String[] a) {
-    AutoPilot ap = new AutoPilot();
+    AutoPilot ap = new AutoPilot(null);
 
     ap.startAllLocomotives();
-    
-    
-    //ap.startAllLocomotives();
-    
 
+    //ap.startAllLocomotives();
   }
 
 }

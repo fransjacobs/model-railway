@@ -81,7 +81,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LayoutCanvas extends JPanel implements PropertyChangeListener {
+public class LayoutCanvas extends JPanel implements PropertyChangeListener, RouteDisplayCallBack {
 
   public enum Mode {
     SELECT,
@@ -169,11 +169,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       tile.setDrawOutline(drawGrid);
       tile.setTrackRouteColor(null, null);
 
-      if (selectedTiles.contains(tile.getCenter())) {
-        //tile.setBackgroundColor(Color.yellow);
-        tile.setBackgroundColor(Color.orange);
-      } else {
-        tile.setBackgroundColor(Color.white);
+      if (Mode.CONTROL != mode) {
+        if (selectedTiles.contains(tile.getCenter())) {
+          //tile.setBackgroundColor(Color.yellow);
+          tile.setBackgroundColor(Color.orange);
+        } else {
+          tile.setBackgroundColor(Color.white);
+        }
       }
 
       if (routeSnapshot.containsKey(tile.getId())) {
@@ -750,8 +752,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       case CURVED -> {
       }
       case SENSOR -> {
-        this.executor.execute(() -> toggleSensor((Sensor) tile));
-        //toggleSensor((Sensor) tile);
+        //this.executor.execute(() -> toggleSensor((Sensor) tile));
+        toggleSensor((Sensor) tile);
       }
       case BLOCK -> {
         Logger.trace("Show BlockDialog for " + tile.getId());
@@ -810,21 +812,30 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       SensorEvent sensorEvent = new SensorEvent(sb);
 
-      List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-      for (FeedbackController fbc : acl) {
-        fbc.fireSensorEventListeners(sensorEvent);
-      }
+      this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
+
+      //List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+      //for (FeedbackController fbc : acl) {
+      //  fbc.fireSensorEventListeners(sensorEvent);
+      //}
     }
   }
 
-  private void notifyFeedbackListeners(SensorEvent sensorEvent) {
+  private void fireFeedbackEvent(SensorEvent sensorEvent) {
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
     }
+
   }
 
+//  private void notifyFeedbackListeners(final SensorEvent sensorEvent) {
+//    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+//
+//    for (FeedbackController fbc : acl) {
+//      fbc.fireSensorEventListeners(sensorEvent);
+//    }
+//  }
   private void editSelectedTileProperties() {
     //the first tile should be the selected one
     boolean showProperties = false;
@@ -1246,7 +1257,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.routesDialog.setVisible(true);
   }
 
-  void setSelectRoute(RouteBean route) {
+  @Override
+  public void setSelectRoute(RouteBean route) {
     selectedRouteElements.clear();
     if (route != null) {
       List<RouteElementBean> rel = route.getRouteElements();
@@ -1269,6 +1281,16 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
     this.executor.execute(() -> repaint());
   }
+
+  
+  
+  
+  @Override
+  public void refresh() {
+    loadLayoutInBackground();
+    //this.executor.execute(() -> loadLayoutInBackground();());
+  }
+
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPopupMenu curvedPopupMenu;

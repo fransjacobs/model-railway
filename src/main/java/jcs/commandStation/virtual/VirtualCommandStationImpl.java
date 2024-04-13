@@ -86,6 +86,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     infoBean.setProductName(commandStationBean.getDescription());
     infoBean.setArticleNumber(commandStationBean.getShortName());
     infoBean.setHostname(this.getIp());
+    
+    power(true);
 
     return connected;
   }
