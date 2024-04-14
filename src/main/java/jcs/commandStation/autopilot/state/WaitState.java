@@ -30,13 +30,13 @@ public class WaitState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    locRunner.setState(new SearchRouteState(locomotive));
+    locRunner.setDispatcherState(new SearchRouteState(locomotive));
   }
 
-  @Override
-  public void prev(TrainDispatcher locRunner) {
-    locRunner.setState(this);
-  }
+//  @Override
+//  public void prev(TrainDispatcher locRunner) {
+//    locRunner.setDispatcherState(this);
+//  }
 
   @Override
   void onHalt(TrainDispatcher dispatcher) {
@@ -46,7 +46,9 @@ public class WaitState extends DispatcherState {
   @Override
   public boolean performAction() {
     Logger.debug("Waiting");
-    return false;
+    this.pause(5000);
+    this.canAdvanceState = true;
+    return this.canAdvanceState;
   }
 
 }

@@ -23,22 +23,22 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class TrainDispatcher {
+public class TrainDispatcher extends Thread {
 
   private LocomotiveBean locomotiveBean;
 
-  private DispatcherState state;
+  private DispatcherState dispatcherState;
   private DispatcherState previousState;
   private final RouteDisplayCallBack callback;
 
-  private String name;
+  private boolean running;
 
   public TrainDispatcher(LocomotiveBean locomotiveBean, RouteDisplayCallBack callback) {
     this.locomotiveBean = locomotiveBean;
-    this.state = new IdleState(locomotiveBean);
+    this.dispatcherState = new IdleState(locomotiveBean);
     this.callback = callback;
 
-    this.name = "DP->" + locomotiveBean.getName();
+    setName("LDT->" + locomotiveBean.getName());
   }
 
   public LocomotiveBean getLocomotiveBean() {
@@ -49,41 +49,42 @@ public class TrainDispatcher {
     this.locomotiveBean = locomotiveBean;
   }
 
-  public DispatcherState getState() {
-    return state;
+  public DispatcherState getDispatcherState() {
+    return dispatcherState;
   }
 
-  public void setState(DispatcherState state) {
-    this.previousState = this.state;
-    this.state = state;
-    if (previousState == state) {
-      Logger.debug("State has not changed. Current state " + state.toString());
+  public void setDispatcherState(DispatcherState dispatcherState) {
+    this.previousState = this.dispatcherState;
+    this.dispatcherState = dispatcherState;
+    if (previousState == dispatcherState) {
+      Logger.debug("State has not changed. Current state " + dispatcherState.toString());
     } else {
-      Logger.debug("State changed to " + state.toString());
+      Logger.debug("State changed to " + dispatcherState.toString());
     }
   }
 
-  public void previousState() {
-    state.prev(this);
-  }
+//  public void previousState() {
+//    dispatcherState.prev(this);
+//  }
 
   public void nextState() {
-    state.next(this);
+
+    dispatcherState.next(this);
   }
 
   public boolean performAction() {
-    boolean action = state.performAction();
+    boolean action = dispatcherState.performAction();
 
-    if (state instanceof ReserveRouteState && action) {
+    if (dispatcherState instanceof ReserveRouteState && action) {
       if (callback != null) {
-        callback.setSelectRoute(state.route);
+        callback.setSelectRoute(dispatcherState.route);
       }
     }
 
-    if (state instanceof RunState && action) {
+    if (dispatcherState instanceof RunState && action) {
       if (callback != null) {
-        callback.setSelectRoute(state.route);
-        
+        callback.setSelectRoute(dispatcherState.route);
+
         callback.refresh();
       }
     }
@@ -91,12 +92,31 @@ public class TrainDispatcher {
     return action;
   }
 
-  public String getName() {
-    return name;
+  @Override
+  public void run() {
+    this.running = true;
+
+    while (running) {
+      Logger.trace(getName() + " " + getDispatcherState());
+      //Perform the action for the current state
+      dispatcherState.pause(100);
+     
+      performAction();
+
+      Logger.trace("dispatcherState.canAdvanceState: "+dispatcherState.canAdvanceState);
+      if (dispatcherState.canAdvanceState) {
+        nextState();
+      } else {
+        //Lets wait for 1 s and try again
+        dispatcherState.pause(2000);
+      }
+    }
+
+    Logger.debug(this.getName() + " Finished");
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void stopRunning() {
+    this.running = false;
   }
 
 }

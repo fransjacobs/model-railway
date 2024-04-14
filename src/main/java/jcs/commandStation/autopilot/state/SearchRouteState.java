@@ -41,17 +41,17 @@ public class SearchRouteState extends DispatcherState {
   public void next(TrainDispatcher dispatcher) {
     //Only advance when there is a route
     if (canAdvanceState) {
-      dispatcher.setState(new ReserveRouteState(locomotive, route));
+      dispatcher.setDispatcherState(new ReserveRouteState(locomotive, route));
     } else {
       Logger.debug("No route available for " + locomotive.getName() + " ...");
-      dispatcher.setState(this);
+      dispatcher.setDispatcherState(this);
     }
   }
 
-  @Override
-  public void prev(TrainDispatcher dispatcher) {
-    dispatcher.setState(new IdleState(locomotive));
-  }
+//  @Override
+//  public void prev(TrainDispatcher dispatcher) {
+//    dispatcher.setDispatcherState(new IdleState(locomotive));
+//  }
 
   @Override
   void onHalt(TrainDispatcher dispatcher) {

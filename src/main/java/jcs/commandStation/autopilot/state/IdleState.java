@@ -34,17 +34,17 @@ public class IdleState extends DispatcherState {
     //Next state is only possibe when this locomotive is on the track and in a block
     if (canAdvanceState) {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in a block");
-      dispatcher.setState(new SearchRouteState(locomotive));
+      dispatcher.setDispatcherState(new SearchRouteState(locomotive));
     } else {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block");
-      dispatcher.setState(this);
+      dispatcher.setDispatcherState(this);
     }
   }
 
-  @Override
-  public void prev(TrainDispatcher dispatcher) {
-    Logger.debug("This is the root state");
-  }
+//  @Override
+//  public void prev(TrainDispatcher dispatcher) {
+//    Logger.debug("This is the root state");
+//  }
 
   @Override
   void onHalt(TrainDispatcher dispatcher) {

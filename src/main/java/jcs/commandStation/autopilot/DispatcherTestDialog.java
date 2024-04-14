@@ -16,8 +16,14 @@
 package jcs.commandStation.autopilot;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import jcs.JCS;
+import jcs.commandStation.FeedbackController;
 import jcs.commandStation.autopilot.state.TrainDispatcher;
+import jcs.commandStation.events.SensorEvent;
 import jcs.entities.RouteBean;
+import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -26,11 +32,14 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class DispatcherTestDialog extends javax.swing.JDialog {
-  
+
   private final TrainDispatcher dispatcher;
+
+  private final ExecutorService executor;
 
   /**
    * Creates new form DispatcherTestDialog
+   *
    * @param parent
    * @param modal
    * @param dispatcher
@@ -38,14 +47,31 @@ public class DispatcherTestDialog extends javax.swing.JDialog {
   public DispatcherTestDialog(java.awt.Frame parent, boolean modal, TrainDispatcher dispatcher) {
     super(parent, modal);
     this.dispatcher = dispatcher;
+    this.executor = Executors.newSingleThreadExecutor();
+
     initComponents();
     if (this.dispatcher != null) {
       this.setTitle(dispatcher.getName());
-      this.stateLabel.setText(dispatcher.getState().toString());
+      this.stateLabel.setText(dispatcher.getDispatcherState().toString());
     } else {
       this.setTitle("No TrainDispatcher set");
       this.stateLabel.setText("No TrainDispatcher set");
     }
+  }
+
+  private void toggleSensor(SensorBean sb) {
+    sb.toggle();
+    //Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
+    SensorEvent sensorEvent = new SensorEvent(sb);
+    this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
+  }
+
+  private void fireFeedbackEvent(SensorEvent sensorEvent) {
+    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+    for (FeedbackController fbc : acl) {
+      fbc.fireSensorEventListeners(sensorEvent);
+    }
+
   }
 
   /**
@@ -57,33 +83,59 @@ public class DispatcherTestDialog extends javax.swing.JDialog {
 
     northPanel = new javax.swing.JPanel();
     statePanel = new javax.swing.JPanel();
+    startButton = new javax.swing.JButton();
+    stopButton = new javax.swing.JButton();
     stateLabel = new javax.swing.JLabel();
     buttenPanel = new javax.swing.JPanel();
-    previousButton = new javax.swing.JButton();
     actionButton = new javax.swing.JButton();
     nextButton = new javax.swing.JButton();
     unlockButton = new javax.swing.JButton();
+    southPanel = new javax.swing.JPanel();
+    sensorTB1 = new javax.swing.JToggleButton();
+    sensorTB2 = new javax.swing.JToggleButton();
+    sensorTB3 = new javax.swing.JToggleButton();
+    sensorTB4 = new javax.swing.JToggleButton();
+    sensorTB5 = new javax.swing.JToggleButton();
+    sensorTB6 = new javax.swing.JToggleButton();
+    sensorTB7 = new javax.swing.JToggleButton();
+    sensorTB8 = new javax.swing.JToggleButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-    northPanel.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    jcs.ui.swing.layout.VerticalFlowLayout verticalFlowLayout1 = new jcs.ui.swing.layout.VerticalFlowLayout();
+    verticalFlowLayout1.setvAlignment(1);
+    northPanel.setLayout(verticalFlowLayout1);
 
+    statePanel.setPreferredSize(new java.awt.Dimension(436, 35));
     java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     statePanel.setLayout(flowLayout1);
+
+    startButton.setText("Start");
+    startButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        startButtonActionPerformed(evt);
+      }
+    });
+    statePanel.add(startButton);
+
+    stopButton.setText("Stop");
+    stopButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        stopButtonActionPerformed(evt);
+      }
+    });
+    statePanel.add(stopButton);
 
     stateLabel.setText("State");
     statePanel.add(stateLabel);
 
     northPanel.add(statePanel);
 
-    previousButton.setLabel("Previous State");
-    previousButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        previousButtonActionPerformed(evt);
-      }
-    });
-    buttenPanel.add(previousButton);
+    buttenPanel.setPreferredSize(new java.awt.Dimension(436, 33));
+    java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout2.setAlignOnBaseline(true);
+    buttenPanel.setLayout(flowLayout2);
 
     actionButton.setLabel("Perform Action");
     actionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -113,20 +165,79 @@ public class DispatcherTestDialog extends javax.swing.JDialog {
 
     getContentPane().add(northPanel, java.awt.BorderLayout.NORTH);
 
+    sensorTB1.setText("M1");
+    sensorTB1.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB1ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB1);
+
+    sensorTB2.setText("M2");
+    sensorTB2.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB2ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB2);
+
+    sensorTB3.setText("M3");
+    sensorTB3.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB3ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB3);
+
+    sensorTB4.setText("M4");
+    sensorTB4.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB4ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB4);
+
+    sensorTB5.setText("M5");
+    sensorTB5.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB5ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB5);
+
+    sensorTB6.setText("M6");
+    sensorTB6.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB6ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB6);
+
+    sensorTB7.setText("M7");
+    sensorTB7.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB7ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB7);
+
+    sensorTB8.setText("M8");
+    sensorTB8.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        sensorTB8ActionPerformed(evt);
+      }
+    });
+    southPanel.add(sensorTB8);
+
+    getContentPane().add(southPanel, java.awt.BorderLayout.SOUTH);
+
     pack();
   }// </editor-fold>//GEN-END:initComponents
-
-  private void previousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
-    if (this.dispatcher != null) {
-      dispatcher.previousState();
-      this.stateLabel.setText(dispatcher.getState().toString());
-    }
-  }//GEN-LAST:event_previousButtonActionPerformed
 
   private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
     if (this.dispatcher != null) {
       dispatcher.nextState();
-      this.stateLabel.setText(dispatcher.getState().toString());
+      this.stateLabel.setText(dispatcher.getDispatcherState().toString());
     }
   }//GEN-LAST:event_nextButtonActionPerformed
 
@@ -148,9 +259,61 @@ public class DispatcherTestDialog extends javax.swing.JDialog {
     }
     Logger.debug("Unlocked " + lockedCounter + " routes out of " + routes.size());
   }//GEN-LAST:event_unlockButtonActionPerformed
-  
+
+  private void sensorTB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB1ActionPerformed
+    SensorBean sb = new SensorBean(0, 1, this.sensorTB1.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB1ActionPerformed
+
+  private void sensorTB2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB2ActionPerformed
+    SensorBean sb = new SensorBean(0, 2, this.sensorTB2.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB2ActionPerformed
+
+  private void sensorTB3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB3ActionPerformed
+    SensorBean sb = new SensorBean(0, 3, this.sensorTB3.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB3ActionPerformed
+
+  private void sensorTB4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB4ActionPerformed
+    SensorBean sb = new SensorBean(0, 4, this.sensorTB4.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB4ActionPerformed
+
+  private void sensorTB5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB5ActionPerformed
+    SensorBean sb = new SensorBean(0, 5, this.sensorTB5.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB5ActionPerformed
+
+  private void sensorTB6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB6ActionPerformed
+    SensorBean sb = new SensorBean(0, 6, this.sensorTB6.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB6ActionPerformed
+
+  private void sensorTB7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB7ActionPerformed
+    SensorBean sb = new SensorBean(0, 7, this.sensorTB7.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB7ActionPerformed
+
+  private void sensorTB8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB8ActionPerformed
+    SensorBean sb = new SensorBean(0, 8, this.sensorTB8.isSelected() ? 0 : 1);
+    toggleSensor(sb);
+  }//GEN-LAST:event_sensorTB8ActionPerformed
+
+  private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
+    if (this.dispatcher != null) {
+      this.dispatcher.start();
+    }
+  }//GEN-LAST:event_startButtonActionPerformed
+
+  private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+    if (this.dispatcher != null) {
+      this.dispatcher.stopRunning();
+    }
+  }//GEN-LAST:event_stopButtonActionPerformed
+
   public static void showDialog(TrainDispatcher dispatcher) {
-    
+
     java.awt.EventQueue.invokeLater(() -> {
       DispatcherTestDialog dialog = new DispatcherTestDialog(new javax.swing.JFrame(), false, dispatcher);
       dialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -164,7 +327,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog {
       dialog.pack();
       dialog.setVisible(true);
     });
-    
+
   }
 
   /**
@@ -199,9 +362,19 @@ public class DispatcherTestDialog extends javax.swing.JDialog {
   private javax.swing.JPanel buttenPanel;
   private javax.swing.JButton nextButton;
   private javax.swing.JPanel northPanel;
-  private javax.swing.JButton previousButton;
+  private javax.swing.JToggleButton sensorTB1;
+  private javax.swing.JToggleButton sensorTB2;
+  private javax.swing.JToggleButton sensorTB3;
+  private javax.swing.JToggleButton sensorTB4;
+  private javax.swing.JToggleButton sensorTB5;
+  private javax.swing.JToggleButton sensorTB6;
+  private javax.swing.JToggleButton sensorTB7;
+  private javax.swing.JToggleButton sensorTB8;
+  private javax.swing.JPanel southPanel;
+  private javax.swing.JButton startButton;
   private javax.swing.JLabel stateLabel;
   private javax.swing.JPanel statePanel;
+  private javax.swing.JButton stopButton;
   private javax.swing.JButton unlockButton;
   // End of variables declaration//GEN-END:variables
 }

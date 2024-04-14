@@ -39,17 +39,17 @@ public class ReserveRouteState extends DispatcherState {
   @Override
   public void next(TrainDispatcher dispatcher) {
     if (this.canAdvanceState) {
-      dispatcher.setState(new RunState(locomotive, route));
+      dispatcher.setDispatcherState(new RunState(locomotive, route));
     } else {
       Logger.debug("Can't reserve a route for " + locomotive.getName() + " ...");
-      dispatcher.setState(this);
+      dispatcher.setDispatcherState(this);
     }
   }
 
-  @Override
-  public void prev(TrainDispatcher dispatcher) {
-    dispatcher.setState(new SearchRouteState(locomotive));
-  }
+//  @Override
+//  public void prev(TrainDispatcher dispatcher) {
+//    dispatcher.setDispatcherState(new SearchRouteState(locomotive));
+//  }
 
   @Override
   void onHalt(TrainDispatcher dispatcher) {

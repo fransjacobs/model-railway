@@ -31,7 +31,28 @@
       </Constraints>
       <SubComponents>
         <Container class="javax.swing.JPanel" name="statePanel">
+          <Properties>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[436, 35]"/>
+            </Property>
+          </Properties>
           <SubComponents>
+            <Component class="javax.swing.JButton" name="startButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Start"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="stopButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Stop"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stopButtonActionPerformed"/>
+              </Events>
+            </Component>
             <Component class="javax.swing.JLabel" name="stateLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="State"/>
@@ -97,7 +118,39 @@
                 <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
               </StatementProvider>
               <Parameters>
-                <CodeExpression id="5_stateLabel">
+                <CodeExpression id="5_startButton">
+                  <CodeVariable name="startButton" type="8194" declaredType="javax.swing.JButton"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="startButton"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="4_statePanel"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="6_stopButton">
+                  <CodeVariable name="stopButton" type="8194" declaredType="javax.swing.JButton"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="stopButton"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="4_statePanel"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="7_stateLabel">
                   <CodeVariable name="stateLabel" type="8194" declaredType="javax.swing.JLabel"/>
                   <ExpressionOrigin>
                     <ExpressionProvider type="ComponentRef">
@@ -110,17 +163,12 @@
           </LayoutCode>
         </Container>
         <Container class="javax.swing.JPanel" name="buttenPanel">
-
-          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+          <Properties>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[436, 33]"/>
+            </Property>
+          </Properties>
           <SubComponents>
-            <Component class="javax.swing.JButton" name="previousButton">
-              <Properties>
-                <Property name="label" type="java.lang.String" value="Previous State"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="previousButtonActionPerformed"/>
-              </Events>
-            </Component>
             <Component class="javax.swing.JButton" name="actionButton">
               <Properties>
                 <Property name="label" type="java.lang.String" value="Perform Action"/>
@@ -146,11 +194,139 @@
               </Events>
             </Component>
           </SubComponents>
+          <LayoutCode>
+            <CodeStatement>
+              <CodeExpression id="8_flowLayout2">
+                <CodeVariable name="flowLayout2" type="4096" declaredType="java.awt.FlowLayout"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="CodeConstructor">
+                    <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
+                  </ExpressionProvider>
+                  <Parameters>
+                    <CodeExpression id="9">
+                      <ExpressionOrigin>
+                        <Value type="int" value="0"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeExpression">
+                <CodeExpression id="8_flowLayout2"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="9"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="8_flowLayout2"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="10">
+                  <ExpressionOrigin>
+                    <Value type="boolean" value="true"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="11_buttenPanel">
+                <CodeVariable name="buttenPanel" type="8194" declaredType="javax.swing.JPanel"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="ComponentRef">
+                    <ComponentRef name="buttenPanel"/>
+                  </ExpressionProvider>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="8_flowLayout2"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="11_buttenPanel"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="12_actionButton">
+                  <CodeVariable name="actionButton" type="8194" declaredType="javax.swing.JButton"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="actionButton"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="11_buttenPanel"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="13_nextButton">
+                  <CodeVariable name="nextButton" type="8194" declaredType="javax.swing.JButton"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="nextButton"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="11_buttenPanel"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="14_unlockButton">
+                  <CodeVariable name="unlockButton" type="8194" declaredType="javax.swing.JButton"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="unlockButton"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+          </LayoutCode>
         </Container>
       </SubComponents>
       <LayoutCode>
         <CodeStatement>
-          <CodeExpression id="6_northPanel">
+          <CodeExpression id="15_verticalFlowLayout1">
+            <CodeVariable name="verticalFlowLayout1" type="4096" declaredType="jcs.ui.swing.layout.VerticalFlowLayout"/>
+            <ExpressionOrigin>
+              <ExpressionProvider type="CodeConstructor">
+                <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
+              </ExpressionProvider>
+            </ExpressionOrigin>
+          </CodeExpression>
+          <StatementProvider type="CodeExpression">
+            <CodeExpression id="15_verticalFlowLayout1"/>
+          </StatementProvider>
+        </CodeStatement>
+        <CodeStatement>
+          <CodeExpression id="15_verticalFlowLayout1"/>
+          <StatementProvider type="CodeMethod">
+            <CodeMethod name="setvAlignment" class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes="int"/>
+          </StatementProvider>
+          <Parameters>
+            <CodeExpression id="16">
+              <ExpressionOrigin>
+                <Value type="int" value="1"/>
+              </ExpressionOrigin>
+            </CodeExpression>
+          </Parameters>
+        </CodeStatement>
+        <CodeStatement>
+          <CodeExpression id="17_northPanel">
             <CodeVariable name="northPanel" type="8194" declaredType="javax.swing.JPanel"/>
             <ExpressionOrigin>
               <ExpressionProvider type="ComponentRef">
@@ -162,17 +338,11 @@
             <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="7">
-              <ExpressionOrigin>
-                <ExpressionProvider type="CodeConstructor">
-                  <CodeConstructor class="jcs.ui.swing.layout.VerticalFlowLayout" parameterTypes=""/>
-                </ExpressionProvider>
-              </ExpressionOrigin>
-            </CodeExpression>
+            <CodeExpression id="15_verticalFlowLayout1"/>
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="6_northPanel"/>
+          <CodeExpression id="17_northPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
@@ -181,22 +351,90 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="6_northPanel"/>
+          <CodeExpression id="17_northPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="8_buttenPanel">
-              <CodeVariable name="buttenPanel" type="8194" declaredType="javax.swing.JPanel"/>
-              <ExpressionOrigin>
-                <ExpressionProvider type="ComponentRef">
-                  <ComponentRef name="buttenPanel"/>
-                </ExpressionProvider>
-              </ExpressionOrigin>
-            </CodeExpression>
+            <CodeExpression id="11_buttenPanel"/>
           </Parameters>
         </CodeStatement>
       </LayoutCode>
+    </Container>
+    <Container class="javax.swing.JPanel" name="southPanel">
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="South"/>
+        </Constraint>
+      </Constraints>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JToggleButton" name="sensorTB1">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M1"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB1ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="sensorTB2">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M2"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB2ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="sensorTB3">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M3"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB3ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="sensorTB4">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M4"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB4ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="sensorTB5">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M5"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB5ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="sensorTB6">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M6"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB6ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="sensorTB7">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M7"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB7ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JToggleButton" name="sensorTB8">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="M8"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sensorTB8ActionPerformed"/>
+          </Events>
+        </Component>
+      </SubComponents>
     </Container>
   </SubComponents>
 </Form>
