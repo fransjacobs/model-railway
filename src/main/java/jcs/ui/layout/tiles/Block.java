@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import jcs.commandStation.events.BlockEvent;
+import jcs.commandStation.events.BlockEventListener;
+import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.EAST;
@@ -37,7 +40,7 @@ import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 
-public class Block extends AbstractTile implements Tile {
+public class Block extends AbstractTile implements Tile, BlockEventListener {
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
@@ -181,10 +184,10 @@ public class Block extends AbstractTile implements Tile {
   }
 
   public Point getNeighborPoint(String suffix) {
-    int cx = this.getCenterX();
-    int cy = this.getCenterY();
+    int cx = getCenterX();
+    int cy = getCenterY();
     if ("+".equals(suffix)) {
-      return switch (this.getOrientation()) {
+      return switch (getOrientation()) {
         case WEST ->
           new Point(cx - Tile.GRID * 4, cy);
         case NORTH ->
@@ -195,7 +198,7 @@ public class Block extends AbstractTile implements Tile {
           new Point(cx + Tile.GRID * 4, cy);
       };
     } else {
-      return switch (this.getOrientation()) {
+      return switch (getOrientation()) {
         case EAST ->
           new Point(cx - Tile.GRID * 4, cy);
         case SOUTH ->
@@ -314,6 +317,16 @@ public class Block extends AbstractTile implements Tile {
     g2.drawLine(rw - 50, yy + 70, rw - 50, yy + 130);
 
     drawName(g2);
+  }
+
+  @Override
+  public void onBlockChange(BlockEvent blockEvent) {
+    BlockBean bb = blockEvent.getBlockBean();
+
+    if (blockBean.getId().equals(bb.getId())) {
+      blockBean = bb;
+      repaintTile();
+    }
   }
 
   public String getBlockText() {

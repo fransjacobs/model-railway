@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout;
+package jcs.commandStation.events;
 
-import java.util.Set;
-import jcs.entities.RouteBean;
-import jcs.ui.layout.tiles.Tile;
+import jcs.entities.BlockBean;
 
 /**
  *
- * @author fransjacobs
+ * @author Frans Jacobs
  */
-public interface RouteDisplayCallBack {
+public class BlockEvent {
 
-  void refresh();
+  private final BlockBean blockBean;
 
-  void setSelectRoute(RouteBean route);
-  
-  Set<Tile> getTiles(); 
+  public BlockEvent(BlockBean blockBean) {
+    this.blockBean = blockBean;
+  }
+
+  public BlockBean getBlockBean() {
+    return blockBean;
+  }
 
 }

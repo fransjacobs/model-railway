@@ -18,6 +18,8 @@ package jcs.commandStation;
 import java.awt.Image;
 import java.util.List;
 import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.BlockEvent;
+import jcs.commandStation.events.BlockEventListener;
 import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
@@ -65,6 +67,12 @@ public interface JCSCommandStation {
   void addAccessoryEventListener(AccessoryEventListener listener);
 
   void removeAccessoryEventListener(AccessoryEventListener listener);
+
+  void fireBlockEventListeners(BlockEvent blockEvent);
+
+  void addBlockEventListener(BlockEventListener listener);
+
+  void removeBlockEventListener(BlockEventListener listener);
 
   void addSensorEventListener(SensorEventListener listener);
 

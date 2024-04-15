@@ -16,6 +16,7 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
+import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
@@ -59,7 +60,7 @@ public class RunState extends DispatcherState {
 //    locRunner.setDispatcherState(new ReserveRouteState(locomotive, route));
 //  }
   @Override
-  void onHalt(TrainDispatcher dispatcher) {
+  public void onHalt(TrainDispatcher dispatcher) {
     Logger.debug("HALT!");
 
   }

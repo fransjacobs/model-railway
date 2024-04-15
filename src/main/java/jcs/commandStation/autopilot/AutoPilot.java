@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import jcs.commandStation.autopilot.state.TrainDispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;

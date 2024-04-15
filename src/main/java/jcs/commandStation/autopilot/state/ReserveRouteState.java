@@ -18,6 +18,7 @@ package jcs.commandStation.autopilot.state;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.JCS;
+import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.LocomotiveBean;
@@ -52,7 +53,7 @@ public class ReserveRouteState extends DispatcherState {
 //  }
 
   @Override
-  void onHalt(TrainDispatcher dispatcher) {
+  public void onHalt(TrainDispatcher dispatcher) {
     Logger.debug("HALT!");
   }
 

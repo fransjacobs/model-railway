@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
@@ -25,7 +26,7 @@ import org.tinylog.Logger;
  */
 public class IdleState extends DispatcherState {
 
-  IdleState(LocomotiveBean locomotive) {
+  public IdleState(LocomotiveBean locomotive) {
     super(locomotive);
   }
 
@@ -47,7 +48,7 @@ public class IdleState extends DispatcherState {
 //  }
 
   @Override
-  void onHalt(TrainDispatcher dispatcher) {
+  public void onHalt(TrainDispatcher dispatcher) {
     Logger.debug("HALT!");
   }
 

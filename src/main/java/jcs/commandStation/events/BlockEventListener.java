@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.ui.layout;
+package jcs.commandStation.events;
 
-import java.util.Set;
-import jcs.entities.RouteBean;
-import jcs.ui.layout.tiles.Tile;
+public interface BlockEventListener {
 
-/**
- *
- * @author fransjacobs
- */
-public interface RouteDisplayCallBack {
-
-  void refresh();
-
-  void setSelectRoute(RouteBean route);
-  
-  Set<Tile> getTiles(); 
+  void onBlockChange(BlockEvent blockEvent);
 
 }

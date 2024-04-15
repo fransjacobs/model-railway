@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import org.tinylog.Logger;
@@ -47,20 +48,38 @@ public abstract class DispatcherState {
    *
    * @param dispatcher
    */
-  abstract void onHalt(TrainDispatcher dispatcher);
+  public abstract void onHalt(TrainDispatcher dispatcher);
 
-  abstract void next(TrainDispatcher dispatcher);
+  public abstract void next(TrainDispatcher dispatcher);
 
   //abstract void prev(TrainDispatcher dispatcher);
 
-  abstract boolean performAction();
+  public abstract boolean performAction();
 
+  public LocomotiveBean getLocomotive() {
+    return locomotive;
+  }
+
+  public RouteBean getRoute() {
+    return route;
+  }
+
+  public int getWaitTime() {
+    return waitTime;
+  }
+
+  public boolean isCanAdvanceState() {
+    return canAdvanceState;
+  }
+
+  
+  
   @Override
   public String toString() {
     return this.getClass().getSimpleName();
   }
 
-  protected void pause(int millis) {
+  public void pause(int millis) {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {

@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
@@ -39,7 +40,7 @@ public class WaitState extends DispatcherState {
 //  }
 
   @Override
-  void onHalt(TrainDispatcher dispatcher) {
+  public void onHalt(TrainDispatcher dispatcher) {
     Logger.debug("HALT!");
   }
 

@@ -18,6 +18,7 @@ package jcs.commandStation.autopilot.state;
 import java.util.List;
 import java.util.Random;
 import jcs.JCS;
+import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
@@ -54,7 +55,7 @@ public class SearchRouteState extends DispatcherState {
 //  }
 
   @Override
-  void onHalt(TrainDispatcher dispatcher) {
+  public void onHalt(TrainDispatcher dispatcher) {
     Logger.debug("HALT!");
   }
 

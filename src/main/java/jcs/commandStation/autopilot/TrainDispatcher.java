@@ -13,13 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.autopilot.state;
+package jcs.commandStation.autopilot;
 
+import java.util.LinkedList;
+import java.util.List;
+import jcs.commandStation.autopilot.state.DispatcherState;
+import jcs.commandStation.autopilot.state.IdleState;
+import jcs.commandStation.autopilot.state.ReserveRouteState;
+import jcs.commandStation.autopilot.state.RunState;
+import jcs.commandStation.autopilot.state.StateEventListener;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.layout.RouteDisplayCallBack;
 import org.tinylog.Logger;
 
 /**
+ * The context
  *
  * @author frans
  */
@@ -31,12 +39,16 @@ public class TrainDispatcher extends Thread {
   private DispatcherState previousState;
   private final RouteDisplayCallBack callback;
 
+  private final List<StateEventListener> stateEventListeners;
+
   private boolean running;
 
   public TrainDispatcher(LocomotiveBean locomotiveBean, RouteDisplayCallBack callback) {
     this.locomotiveBean = locomotiveBean;
     this.dispatcherState = new IdleState(locomotiveBean);
     this.callback = callback;
+
+    this.stateEventListeners = new LinkedList<>();
 
     setName("LDT->" + locomotiveBean.getName());
   }
@@ -63,12 +75,7 @@ public class TrainDispatcher extends Thread {
     }
   }
 
-//  public void previousState() {
-//    dispatcherState.prev(this);
-//  }
-
   public void nextState() {
-
     dispatcherState.next(this);
   }
 
@@ -77,13 +84,13 @@ public class TrainDispatcher extends Thread {
 
     if (dispatcherState instanceof ReserveRouteState && action) {
       if (callback != null) {
-        callback.setSelectRoute(dispatcherState.route);
+        callback.setSelectRoute(dispatcherState.getRoute());
       }
     }
 
     if (dispatcherState instanceof RunState && action) {
       if (callback != null) {
-        callback.setSelectRoute(dispatcherState.route);
+        callback.setSelectRoute(dispatcherState.getRoute());
 
         callback.refresh();
       }
@@ -100,11 +107,11 @@ public class TrainDispatcher extends Thread {
       Logger.trace(getName() + " " + getDispatcherState());
       //Perform the action for the current state
       dispatcherState.pause(100);
-     
+
       performAction();
 
-      Logger.trace("dispatcherState.canAdvanceState: "+dispatcherState.canAdvanceState);
-      if (dispatcherState.canAdvanceState) {
+      Logger.trace("dispatcherState.canAdvanceState: " + dispatcherState.isCanAdvanceState());
+      if (dispatcherState.isCanAdvanceState()) {
         nextState();
       } else {
         //Lets wait for 1 s and try again
