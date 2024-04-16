@@ -47,30 +47,22 @@ public class RunState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    Logger.trace("canAdvanceState: " + canAdvanceState);
-    if (canAdvanceState) {
-      locRunner.setDispatcherState(new WaitState(locomotive));
+    Logger.trace("canAdvanceState: " + canAdvanceToNextState);
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new WaitState(locomotive);
+      newState.setRunning(running);
+      locRunner.setDispatcherState(newState);
     } else {
       locRunner.setDispatcherState(this);
     }
   }
 
-//  @Override
-//  public void prev(TrainDispatcher locRunner) {
-//    locRunner.setDispatcherState(new ReserveRouteState(locomotive, route));
-//  }
   @Override
-  public void onHalt(TrainDispatcher dispatcher) {
-    Logger.debug("HALT!");
-
-  }
-
-  @Override
-  public boolean performAction() {
+  public boolean execute() {
     if (this.arrived) {
       //TODO rethink this
-      this.canAdvanceState = true;
-      return this.canAdvanceState;
+      this.canAdvanceToNextState = true;
+      return this.canAdvanceToNextState;
     }
     //Which sensors do we need to watch
     String departureTileId = route.getFromTileId();
@@ -111,8 +103,8 @@ public class RunState extends DispatcherState {
 
     long startTime = System.currentTimeMillis();
     //boolean logged = false;
-    
-    Logger.debug("Waiting for enter event..."+enterSensor.getContactId());
+
+    Logger.debug("Waiting for enter event..." + enterSensor.getContactId());
     while (!entered) {
       Thread.yield();
       //Wait for enter
@@ -128,7 +120,7 @@ public class RunState extends DispatcherState {
     Logger.debug(locomotive.getName() + " has entered destination " + route.getToTileId() + " travel time: " + (enterTime - startTime / 1000) + "s.");
 
     //logged = false;
-    Logger.debug("Waiting for arrival event..."+inSensor.getContactId());
+    Logger.debug("Waiting for arrival event..." + inSensor.getContactId());
     while (!arrived) {
       Thread.yield();
 
@@ -143,9 +135,9 @@ public class RunState extends DispatcherState {
 
     Logger.debug(locomotive.getName() + " has arrived destination " + route.getToTileId() + " total travel time: " + (arrivalTime - startTime / 1000) + "s.");
 
-    canAdvanceState = arrived;
+    canAdvanceToNextState = arrived;
     route = null;
-    return canAdvanceState;
+    return canAdvanceToNextState;
   }
 
   private synchronized void onEnter() {
@@ -177,6 +169,9 @@ public class RunState extends DispatcherState {
 
     route.setLocked(false);
     PersistenceFactory.getService().persist(route);
+
+    refreshBlockTiles();
+
   }
 
   private class SensorListener implements SensorEventListener {

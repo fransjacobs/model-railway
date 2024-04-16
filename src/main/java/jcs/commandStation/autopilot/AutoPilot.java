@@ -59,17 +59,16 @@ public class AutoPilot {
     for (LocomotiveBean loc : locs) {
       TrainDispatcher dispatcher = new TrainDispatcher(loc, callback);
       locomotives.put(dispatcher.getName(), dispatcher);
-      Logger.debug("Added " + dispatcher.getName());
-
+      Logger.debug("Added " + dispatcher.getName());      
+      dispatcher.start();
+      
       DispatcherTestDialog.showDialog(dispatcher);
-      //lsm.startLocomotive();
     }
-
   }
 
   public void stopAllLocomotives() {
     for (TrainDispatcher lsm : this.locomotives.values()) {
-      //lsm.stopLocomotive();
+      lsm.stopRunning();
     }
 
   }

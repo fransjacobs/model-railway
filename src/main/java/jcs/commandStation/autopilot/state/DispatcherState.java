@@ -15,9 +15,14 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.util.List;
+import jcs.JCS;
 import jcs.commandStation.autopilot.TrainDispatcher;
+import jcs.commandStation.events.BlockEvent;
+import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -28,11 +33,13 @@ public abstract class DispatcherState {
 
   protected LocomotiveBean locomotive;
 
+  protected boolean running;
+
   protected RouteBean route;
 
   protected int waitTime;
 
-  protected boolean canAdvanceState;
+  protected boolean canAdvanceToNextState;
 
   protected DispatcherState(LocomotiveBean locomotive) {
     this(locomotive, null);
@@ -48,13 +55,10 @@ public abstract class DispatcherState {
    *
    * @param dispatcher
    */
-  public abstract void onHalt(TrainDispatcher dispatcher);
-
+  //public abstract void onHalt(TrainDispatcher dispatcher);
   public abstract void next(TrainDispatcher dispatcher);
 
-  //abstract void prev(TrainDispatcher dispatcher);
-
-  public abstract boolean performAction();
+  public abstract boolean execute();
 
   public LocomotiveBean getLocomotive() {
     return locomotive;
@@ -68,12 +72,10 @@ public abstract class DispatcherState {
     return waitTime;
   }
 
-  public boolean isCanAdvanceState() {
-    return canAdvanceState;
+  public boolean canAdvanceToNextState() {
+    return canAdvanceToNextState;
   }
 
-  
-  
   @Override
   public String toString() {
     return this.getClass().getSimpleName();
@@ -84,6 +86,24 @@ public abstract class DispatcherState {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
       Logger.error(e);
+    }
+  }
+
+  public boolean isRunning() {
+    return running;
+  }
+
+  public void setRunning(boolean running) {
+    this.running = running;
+  }
+
+  protected void refreshBlockTiles() {
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+
+    Logger.trace("Refreshing " + blocks.size() + " block tiles...");
+    for (BlockBean b : blocks) {
+      BlockEvent be = new BlockEvent(b);
+      JCS.getJcsCommandStation().fireBlockEventListeners(be);
     }
   }
 

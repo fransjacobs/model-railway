@@ -39,30 +39,23 @@ public class ReserveRouteState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher dispatcher) {
-    if (this.canAdvanceState) {
-      dispatcher.setDispatcherState(new RunState(locomotive, route));
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new RunState(locomotive, route);
+      newState.setRunning(running);
+      dispatcher.setDispatcherState(newState);
     } else {
       Logger.debug("Can't reserve a route for " + locomotive.getName() + " ...");
       dispatcher.setDispatcherState(this);
     }
   }
 
-//  @Override
-//  public void prev(TrainDispatcher dispatcher) {
-//    dispatcher.setDispatcherState(new SearchRouteState(locomotive));
-//  }
-
   @Override
-  public void onHalt(TrainDispatcher dispatcher) {
-    Logger.debug("HALT!");
-  }
-
-  @Override
-  public boolean performAction() {
+  public boolean execute() {
     if (JCS.getJcsCommandStation() == null) {
       Logger.error("Can't obtain a Command Station");
-      canAdvanceState = false;
-      return false;
+      canAdvanceToNextState = false;
+      running = false;
+      return canAdvanceToNextState;
     }
 
     Logger.debug("Reserving route " + route);
@@ -82,12 +75,9 @@ public class ReserveRouteState extends DispatcherState {
       JCS.getJcsCommandStation().switchAccessory(turnout, av);
     }
     Logger.debug("Locked route " + route);
-    canAdvanceState = true;
-    
-    
-    
-    
-    return canAdvanceState;
+    canAdvanceToNextState = true;
+
+    return canAdvanceToNextState;
   }
 
   List<RouteElementBean> getTurnouts(RouteBean routeBean) {

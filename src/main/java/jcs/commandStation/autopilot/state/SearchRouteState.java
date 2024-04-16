@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Random;
 import jcs.JCS;
 import jcs.commandStation.autopilot.TrainDispatcher;
+import jcs.commandStation.events.BlockEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
@@ -41,80 +42,76 @@ public class SearchRouteState extends DispatcherState {
   @Override
   public void next(TrainDispatcher dispatcher) {
     //Only advance when there is a route
-    if (canAdvanceState) {
-      dispatcher.setDispatcherState(new ReserveRouteState(locomotive, route));
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new ReserveRouteState(locomotive, route);
+      newState.setRunning(running);
+      dispatcher.setDispatcherState(newState);
     } else {
       Logger.debug("No route available for " + locomotive.getName() + " ...");
       dispatcher.setDispatcherState(this);
     }
   }
 
-//  @Override
-//  public void prev(TrainDispatcher dispatcher) {
-//    dispatcher.setDispatcherState(new IdleState(locomotive));
-//  }
-
   @Override
-  public void onHalt(TrainDispatcher dispatcher) {
-    Logger.debug("HALT!");
-  }
-
-  @Override
-  public boolean performAction() {
+  public boolean execute() {
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
+    refreshBlockTiles();
+
     BlockBean blockBean = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
     //We need to have the "Real" BlockTile to be able to sortout the direction...
     TileBean tileBean = blockBean.getTileBean();
     Block blockTile = (Block) TileFactory.createTile(tileBean);
     String suffix = blockTile.getLocomotiveBlockSuffix();
     Logger.trace("Loc " + locomotive.getName() + " is in block " + blockBean.getId() + ". Going " + locomotive.getDirection() + " towards the " + suffix + " side of the block...");
+
     //Search for the possible routes
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), suffix);
     Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
 
-    if(routes.isEmpty() && this.locomotive.isCommuter()) {
+    if (routes.isEmpty() && locomotive.isCommuter()) {
       Logger.debug("Reversing locomotive");
       Direction newDirection = locomotive.toggleDirection();
-      
+
       JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
       // should be refreshed from persistent store...
       locomotive.setDirection(newDirection);
-      
+
+      refreshBlockTiles();
 
       blockTile = (Block) TileFactory.createTile(tileBean);
       suffix = blockTile.getLocomotiveBlockSuffix();
       Logger.trace("Loc " + locomotive.getName() + " is in block " + blockBean.getId() + ". Going " + locomotive.getDirection() + " towards the " + suffix + " side of the block...");
-      
+
       routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), suffix);
       Logger.trace("2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
     }
 
-    
     int rIdx = 0;
-    if(routes.size() > 1) { 
+    if (routes.size() > 1) {
       //Choose randomly the route
       for (int i = 0; i < 10; i++) {
         //Seed a bit....
         getRandomNumber(0, routes.size());
       }
       rIdx = getRandomNumber(0, routes.size());
-    }  
-    
-    if(!routes.isEmpty()) {
+    }
+
+    if (!routes.isEmpty()) {
       route = routes.get(rIdx);
       Logger.trace("Choosen route " + route.toLogString());
     } else {
       Logger.debug("No routes available");
-    }  
+    }
 
-    this.canAdvanceState =route != null;
-    return canAdvanceState;
+    canAdvanceToNextState = running && route != null;
+    return canAdvanceToNextState;
   }
 
   public int getRandomNumber(int min, int max) {
     Random random = new Random();
     return random.ints(min, max).findFirst().getAsInt();
   }
-  
+
+ 
 
 }

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -643,7 +644,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         PersistenceFactory.getService().persist(sb);
       }
 
-      for (SensorEventListener sl : trackController.sensorEventListeners) {
+      //Avoid concurrent modification exceptions
+      List<SensorEventListener> snapshot = new ArrayList<>(trackController.sensorEventListeners); 
+      
+      for (SensorEventListener sl : snapshot) {
         sl.onSensorChange(event);
       }
     }

@@ -31,25 +31,20 @@ public class WaitState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    locRunner.setDispatcherState(new SearchRouteState(locomotive));
-  }
-
-//  @Override
-//  public void prev(TrainDispatcher locRunner) {
-//    locRunner.setDispatcherState(this);
-//  }
-
-  @Override
-  public void onHalt(TrainDispatcher dispatcher) {
-    Logger.debug("HALT!");
+    DispatcherState newState = new SearchRouteState(locomotive);
+    newState.setRunning(running);
+    locRunner.setDispatcherState(newState);
   }
 
   @Override
-  public boolean performAction() {
+  public boolean execute() {
     Logger.debug("Waiting");
-    this.pause(5000);
-    this.canAdvanceState = true;
-    return this.canAdvanceState;
+    if (running) {
+      pause(5000);
+    }
+
+    canAdvanceToNextState = running;
+    return canAdvanceToNextState;
   }
 
 }

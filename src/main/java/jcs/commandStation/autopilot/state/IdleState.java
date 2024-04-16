@@ -32,31 +32,23 @@ public class IdleState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher dispatcher) {
-    //Next state is only possibe when this locomotive is on the track and in a block
-    if (canAdvanceState) {
+    //Next state is only possible when this locomotive is on the track and in a block
+    if (running && canAdvanceToNextState) {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in a block");
-      dispatcher.setDispatcherState(new SearchRouteState(locomotive));
+      DispatcherState newState = new SearchRouteState(locomotive);
+      newState.setRunning(running);
+      dispatcher.setDispatcherState(newState);
     } else {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block");
       dispatcher.setDispatcherState(this);
     }
   }
 
-//  @Override
-//  public void prev(TrainDispatcher dispatcher) {
-//    Logger.debug("This is the root state");
-//  }
-
   @Override
-  public void onHalt(TrainDispatcher dispatcher) {
-    Logger.debug("HALT!");
-  }
-
-  @Override
-  public boolean performAction() {
-    BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(this.locomotive.getId());
-    canAdvanceState = block != null;
-    return canAdvanceState;
+  public boolean execute() {
+    BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
+    canAdvanceToNextState = running && block != null;
+    return canAdvanceToNextState;
   }
 
 }

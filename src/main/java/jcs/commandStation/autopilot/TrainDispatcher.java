@@ -47,7 +47,6 @@ public class TrainDispatcher extends Thread {
     this.locomotiveBean = locomotiveBean;
     this.dispatcherState = new IdleState(locomotiveBean);
     this.callback = callback;
-
     this.stateEventListeners = new LinkedList<>();
 
     setName("LDT->" + locomotiveBean.getName());
@@ -68,19 +67,23 @@ public class TrainDispatcher extends Thread {
   public void setDispatcherState(DispatcherState dispatcherState) {
     this.previousState = this.dispatcherState;
     this.dispatcherState = dispatcherState;
+
     if (previousState == dispatcherState) {
       Logger.debug("State has not changed. Current state " + dispatcherState.toString());
     } else {
       Logger.debug("State changed to " + dispatcherState.toString());
     }
+    String s = dispatcherState.toString();
+    fireStateListeners(s);
+
   }
 
   public void nextState() {
     dispatcherState.next(this);
   }
 
-  public boolean performAction() {
-    boolean action = dispatcherState.performAction();
+  public boolean execute() {
+    boolean action = dispatcherState.execute();
 
     if (dispatcherState instanceof ReserveRouteState && action) {
       if (callback != null) {
@@ -101,17 +104,22 @@ public class TrainDispatcher extends Thread {
 
   @Override
   public void run() {
-    this.running = true;
+    running = true;
+    dispatcherState.setRunning(running);
 
     while (running) {
       Logger.trace(getName() + " " + getDispatcherState());
       //Perform the action for the current state
       dispatcherState.pause(100);
+      execute();
 
-      performAction();
+      if (!dispatcherState.isRunning()) {
+        Logger.debug("Dispatcher State Maching encountered an error hense stopping");
+        this.running = false;
+      }
 
-      Logger.trace("dispatcherState.canAdvanceState: " + dispatcherState.isCanAdvanceState());
-      if (dispatcherState.isCanAdvanceState()) {
+      Logger.trace("dispatcherState.canAdvanceState: " + dispatcherState.canAdvanceToNextState());
+      if (dispatcherState.canAdvanceToNextState()) {
         nextState();
       } else {
         //Lets wait for 1 s and try again
@@ -119,11 +127,31 @@ public class TrainDispatcher extends Thread {
       }
     }
 
+    fireStateListeners(this.getName() + " Finished");
     Logger.debug(this.getName() + " Finished");
   }
 
-  public void stopRunning() {
-    this.running = false;
+  private void fireStateListeners(String s) {
+    for (StateEventListener sel : stateEventListeners) {
+      sel.onStateChange(s);
+    }
+  }
+
+  public synchronized void stopRunning() {
+    running = false;
+    dispatcherState.setRunning(running);
+  }
+
+  public boolean isRunning() {
+    return running;
+  }
+
+  public void addStateEventListener(StateEventListener listener) {
+    stateEventListeners.add(listener);
+  }
+
+  public void removeStateEventListener(StateEventListener listener) {
+    stateEventListeners.remove(listener);
   }
 
 }
