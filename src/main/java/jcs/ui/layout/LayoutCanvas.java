@@ -61,6 +61,7 @@ import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
@@ -777,6 +778,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       case SWITCH ->
         this.executor.execute(() -> toggleSwitch((Switch) tile));
       case CROSS -> {
+        this.executor.execute(() -> toggleSwitch((Switch) tile));
       }
       default -> {
       }
@@ -818,14 +820,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       
       sensor.repaintTile();
       
-      SensorEvent sensorEvent = new SensorEvent(sb);
-      
+      SensorEvent sensorEvent = new SensorEvent(sb);      
       this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
-
-      //List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-      //for (FeedbackController fbc : acl) {
-      //  fbc.fireSensorEventListeners(sensorEvent);
-      //}
     }
   }
   
@@ -834,16 +830,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
     }
-    
   }
 
-//  private void notifyFeedbackListeners(final SensorEvent sensorEvent) {
-//    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-//
-//    for (FeedbackController fbc : acl) {
-//      fbc.fireSensorEventListeners(sensorEvent);
-//    }
-//  }
   private void editSelectedTileProperties() {
     //the first tile should be the selected one
     boolean showProperties = false;
@@ -885,6 +873,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
           sd.setVisible(true);
         }
         case SWITCH -> {
+          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
+          td.setVisible(true);
+        }
+        case CROSS -> {
           SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
           td.setVisible(true);
         }

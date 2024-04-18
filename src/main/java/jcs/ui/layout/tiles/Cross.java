@@ -348,25 +348,25 @@ public class Cross extends Switch implements Tile {
           renderStraight(g2, this.trackRouteColor, backgroundColor);
           renderStraight2(g2, this.trackRouteColor, backgroundColor);
         } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
-          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight2(g2, this.trackRouteColor, backgroundColor);
-          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, trackRouteColor, backgroundColor);
+          renderStraight(g2, trackRouteColor, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
         } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
-          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight(g2, this.trackRouteColor, backgroundColor);
-          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
-        } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
-          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight(g2, this.trackRouteColor, backgroundColor);
-          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
-        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
+          renderDiagonal(g2, trackRouteColor, backgroundColor);
+          renderStraight2(g2, trackRouteColor, backgroundColor);
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {          
           renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderStraight2(g2, this.trackRouteColor, backgroundColor);
           renderDiagonal(g2, this.trackRouteColor, backgroundColor);
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
+          renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
         }
       } else {
         //Vertical
@@ -375,21 +375,21 @@ public class Cross extends Switch implements Tile {
           renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderStraight(g2, this.trackRouteColor, backgroundColor);
           renderStraight2(g2, this.trackRouteColor, backgroundColor);
-        } else if (AccessoryValue.GREEN == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide)) {
+        } else if (AccessoryValue.GREEN == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide)) {          
           renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderDiagonal(g2, this.trackRouteColor, backgroundColor);
           renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
         } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
-          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderStraight2(g2, this.trackRouteColor, backgroundColor);
-          renderDiagonal(g2, this.trackRouteColor, backgroundColor);
-        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
           renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderStraight(g2, this.trackRouteColor, backgroundColor);
-          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal2(g2, this.trackRouteColor, backgroundColor);    
+        } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
+          renderDiagonal2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
+          renderStraight2(g2, this.trackRouteColor, backgroundColor);
+          renderDiagonal(g2, this.trackRouteColor, backgroundColor);       
         } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
           renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
           renderStraight2(g2, DEFAULT_TRACK_COLOR, backgroundColor);
