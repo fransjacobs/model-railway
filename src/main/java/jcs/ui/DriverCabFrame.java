@@ -15,6 +15,7 @@
  */
 package jcs.ui;
 
+import java.awt.Image;
 import java.awt.Taskbar;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -31,9 +32,13 @@ import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.JCS;
+import jcs.commandStation.events.LocomotiveDirectionEvent;
+import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.util.ImageUtil;
 import jcs.ui.util.MacOsAdapter;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -42,7 +47,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class DriverCabFrame extends javax.swing.JFrame {
+public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDirectionEventListener {
 
   private List<LocomotiveBean> filteredLocos;
   List<String> locoNames;
@@ -64,6 +69,7 @@ public class DriverCabFrame extends javax.swing.JFrame {
 
   private void postInit() {
     this.driverCabPanel.setLocomotiveBean(null);
+    this.driverCabPanel.setDirectionListener(this);
     if (PersistenceFactory.getService() != null) {
       this.commandStation = PersistenceFactory.getService().getDefaultCommandStation();
     }
@@ -162,7 +168,12 @@ public class DriverCabFrame extends javax.swing.JFrame {
       this.setTitle(locomotive.getName());
 
       if (locomotive.getLocIcon() != null) {
-        this.locoLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
+        if (Direction.BACKWARDS == locomotive.getDirection()) {
+          Image img = ImageUtil.flipVertically(locomotive.getLocIcon());
+          this.locoLabel.setIcon(new ImageIcon(img));
+        } else {
+          this.locoLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
+        }
         this.locoLabel.setText(null);
       } else {
         this.locoLabel.setText(locomotive.getName());
@@ -175,6 +186,19 @@ public class DriverCabFrame extends javax.swing.JFrame {
       this.locoLabel.setText(null);
     }
   }//GEN-LAST:event_locoCBActionPerformed
+
+  @Override
+  public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
+    LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
+
+    if (Direction.BACKWARDS == directionEvent.getNewDirection()) {
+      Image img = ImageUtil.flipVertically(locomotive.getLocIcon());
+      this.locoLabel.setIcon(new ImageIcon(img));
+    } else {
+      this.locoLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
+    }
+
+  }
 
   class LocomotiveBeanByNameSorter implements Comparator<LocomotiveBean> {
 

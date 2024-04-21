@@ -15,7 +15,10 @@
  */
 package jcs.entities;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -33,6 +36,7 @@ public class BlockBean {
   private String minSignalId;
   private Long locomotiveId;
   private boolean reverseArrival;
+  private String status;
 
   private TileBean tileBean;
 
@@ -42,7 +46,8 @@ public class BlockBean {
   private AccessoryBean minSignal;
   private LocomotiveBean locomotive;
 
-  public BlockBean() {}
+  public BlockBean() {
+  }
 
   public BlockBean(TileBean tileBean) {
     this.tileBean = tileBean;
@@ -196,15 +201,37 @@ public class BlockBean {
   }
 
   @Column(
-      name = "reverse_arrival_side",
-      nullable = false,
-      columnDefinition = "reverse_arrival_side bool default '1'")
+          name = "reverse_arrival_side",
+          nullable = false,
+          columnDefinition = "reverse_arrival_side bool default '1'")
   public boolean isReverseArrival() {
     return reverseArrival;
   }
 
   public void setReverseArrival(boolean reverseArrival) {
     this.reverseArrival = reverseArrival;
+  }
+
+  @Column(name = "status", length = 255)
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  @Transient
+  public BlockState getBlockState() {
+    if (this.status != null) {
+      return BlockState.get(status);
+    } else {
+      return BlockState.FREE;
+    }
+  }
+
+  public void setBlockState(BlockState blockState) {
+    this.status = blockState.getState();
   }
 
   @Transient
@@ -274,22 +301,54 @@ public class BlockBean {
   @Override
   public String toString() {
     return "BlockBean{"
-        + "id="
-        + id
-        + ", tileId="
-        + tileId
-        + ", description="
-        + description
-        + ", plusSensorId="
-        + plusSensorId
-        + ", minSensorId="
-        + minSensorId
-        + ", plusSignalId="
-        + plusSignalId
-        + ", minSignalId="
-        + minSignalId
-        + ", locomotiveId="
-        + locomotiveId
-        + "}";
+            + "id="
+            + id
+            + ", tileId="
+            + tileId
+            + ", description="
+            + description
+            + ", plusSensorId="
+            + plusSensorId
+            + ", minSensorId="
+            + minSensorId
+            + ", plusSignalId="
+            + plusSignalId
+            + ", minSignalId="
+            + minSignalId
+            + ", locomotiveId="
+            + locomotiveId
+            + "}";
   }
+
+  public enum BlockState {
+    FREE("Free"), LOCKED("Locked"), ARRIVING("Arriving"), DEPARTING("Departing"), OCCUPIED("Occupied");
+
+    private final String state;
+
+    private static final Map<String, BlockState> ENUM_MAP;
+
+    BlockState(String state) {
+      this.state = state;
+    }
+
+    public String getState() {
+      return this.state;
+    }
+
+    static {
+      Map<String, BlockState> map = new ConcurrentHashMap<>();
+      for (BlockState instance : BlockState.values()) {
+        map.put(instance.getState(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static BlockState get(String state) {
+      if (state == null) {
+        return null;
+      }
+      return ENUM_MAP.get(state);
+    }
+  }
+
 }

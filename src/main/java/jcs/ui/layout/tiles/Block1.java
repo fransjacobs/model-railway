@@ -22,21 +22,15 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import jcs.commandStation.events.BlockEvent;
 import jcs.commandStation.events.BlockEventListener;
 import jcs.entities.BlockBean;
-import jcs.entities.BlockBean.BlockState;
-import static jcs.entities.BlockBean.BlockState.ARRIVING;
-import static jcs.entities.BlockBean.BlockState.DEPARTING;
-import static jcs.entities.BlockBean.BlockState.LOCKED;
-import static jcs.entities.BlockBean.BlockState.OCCUPIED;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.EAST;
@@ -54,12 +48,12 @@ import jcs.ui.util.ImageUtil;
 import org.imgscalr.Scalr;
 import org.tinylog.Logger;
 
-public class Block extends AbstractTile implements Tile, BlockEventListener {
+public class Block1 extends AbstractTile implements Tile, BlockEventListener {
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 
-  Block(TileBean tileBean) {
+  Block1(TileBean tileBean) {
     super(tileBean);
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
       this.width = BLOCK_WIDTH;
@@ -75,11 +69,11 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     this.blockBean = tileBean.getBlockBean();
   }
 
-  Block(Orientation orientation, Point center) {
+  Block1(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
 
-  Block(Orientation orientation, int x, int y) {
+  Block1(Orientation orientation, int x, int y) {
     super(orientation, Direction.CENTER, x, y);
 
     if (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) {
@@ -308,145 +302,43 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     }
   }
 
-  /**
-   * Depending on the block status change the background color<br>
-   * - Red: Occupied<br>
-   * - Green: Departure<br>
-   * - Magenta: Arrival / entering<br>
-   * - Yellow: reserved<br>
-   * - White: all clear / default<br>
-   *
-   * @return the Color which belong with the current Block State
-   */
-  public Color getBlockStateColor() {
-    if (blockBean != null) {
-      BlockState blockState = blockBean.getBlockState();
-      return switch (blockState) {
-        case LOCKED ->
-          new Color(250, 250, 210);
-        case OCCUPIED ->
-          new Color(250, 210, 210);
-        case DEPARTING ->
-          new Color(210, 250, 210);
-        case ARRIVING ->
-          new Color(250, 210, 250);
-        default ->
-          new Color(255, 255, 255);
-      };
-
-    } else {
-      return Color.white;
-    }
-  }
-
-  private String getBlockState() {
-    if (blockBean != null) {
-      return blockBean.getBlockState().getState();
-    } else {
-      return BlockState.FREE.getState();
-    }
-  }
-
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
     int xx = 20;
-    int yy = 50;
+    int yy = 100;
     int rw = RENDER_WIDTH * 3 - 40;
-    int rh = 300;
+    int rh = 200;
 
     g2.setStroke(new BasicStroke(3, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
 
-    g2.setPaint(Color.darkGray);
-    g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
+    Color r = new Color(250, 210, 210);
+    Color g = new Color(210, 250, 210);
+    Color m = new Color(250, 210, 250);
+    Color y = new Color(250, 250, 210);
 
-    Color blockStateColor = getBlockStateColor();
-    g2.setPaint(blockStateColor);
+    g2.setPaint(y);
+
     g2.fillRoundRect(xx, yy, rw, rh, 15, 15);
 
-    // A block has a direction of travel. At first a plus (+) and a Minus(-) at the side
-    // was used, but to give more room the - is ommitted and the plus is replaced by a thicker line
-    // The default the EAST direction, the block will was like: -[ - bk-nn + ]-
-    // The new default the EAST direction, the block will look like: -[ bk-nn  ]]-
-    g2.setStroke(new BasicStroke(20, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
-    g2.setPaint(Color.darkGray);
-    g2.drawLine(rw + 20, yy - 0, rw + 20, yy + 300);
+    g2.setPaint(Color.black);
+    g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
 
-    //When there is a train in the block mark the direction of travel, ie whethe the train goes
-    //forwards or backwards by drawing a little triangle in the the block 
-    if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
-      boolean reverseArrival = getBlockBean().isReverseArrival();
+    // A block has a direction of travel. Hence it has a plus (+) and a Minus(-) side.
+    // The default the EAST direction, the block will look like: -[ - bk-nn + ]-
+    g2.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+    g2.setPaint(Color.black);
 
-      if (LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection()) {
-        //right or east side aka forwards
-        if (reverseArrival) {
-          //left or west side aka backwards
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-        } else {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        }
-      } else {
-        if (reverseArrival) {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        } else {
-          //left or west side aka backwards
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-        }
-      }
-    }
+    // a - at the start and end of the block
+    g2.drawLine(xx + 40, yy + 100, xx + 100, yy + 100);
+    g2.drawLine(rw - 80, yy + 100, rw - 20, yy + 100);
+    // a | at the end of the block
+    g2.drawLine(rw - 50, yy + 70, rw - 50, yy + 130);
 
     drawName(g2);
   }
 
-  protected static BufferedImage rotateClockwise901(BufferedImage src) {
-
-    int srcWidth = src.getWidth();
-    int srcHeight = src.getHeight();
-    boolean hasAlphaChannel = src.getAlphaRaster() != null;
-    int pixelLength = hasAlphaChannel ? 4 : 3;
-    byte[] srcPixels = ((DataBufferByte) src.getRaster().getDataBuffer()).getData();
-
-    // Create the destination buffered image
-    BufferedImage dest = new BufferedImage(srcHeight, srcWidth, src.getType());
-    byte[] destPixels = ((DataBufferByte) dest.getRaster().getDataBuffer()).getData();
-    int destWidth = dest.getWidth();
-
-    int srcPos = 0; // We can just increment this since the data pack order matches our loop traversal: left to right, top to bottom. (Just like reading a book.)   
-    for (int srcY = 0; srcY < srcHeight; srcY++) {
-      for (int srcX = 0; srcX < srcWidth; srcX++) {
-
-        int destX = ((srcHeight - 1) - srcY);
-        int destY = srcX;
-
-        int destPos = (((destY * destWidth) + destX) * pixelLength);
-
-        if (hasAlphaChannel) {
-          destPixels[destPos++] = srcPixels[srcPos++];    // alpha
-        }
-        destPixels[destPos++] = srcPixels[srcPos++];        // blue
-        destPixels[destPos++] = srcPixels[srcPos++];        // green
-        destPixels[destPos++] = srcPixels[srcPos++];        // red
-      }
-    }
-
-    return dest;
-  }
-
-  protected static BufferedImage rotateClockwise90(BufferedImage src) {
-    int width = src.getWidth();
-    int height = src.getHeight();
-
-    BufferedImage dest = new BufferedImage(height, width, src.getType());
-
-    Graphics2D graphics2D = dest.createGraphics();
-    graphics2D.translate((height - width) / 2, (height - width) / 2);
-    graphics2D.rotate(Math.PI / 2, height / 2, width / 2);
-    graphics2D.drawRenderedImage(src, null);
-
-    return dest;
-  }
-
   /**
-   * Overridden to add a loc Icon
+   * Draw the AbstractTile
    *
    * @param g2d The graphics handle
    * @param drawOutline
@@ -533,9 +425,6 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       oy = this.renderOffsetY;
     }
 
-    //Overlay a scaled loc image incase a loc is in the block
-    //Overlay is on the scaled image as a loc image is rather small
-    //so the lock image only nee a bit more scaling
     g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + ox, (y - cbi.getHeight() / 2) + oy, null);
 
     //if there is a lock image 
@@ -543,38 +432,18 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     if (locImage != null) {
       // real size 
       //scale it to max h of 20
-      int size = 45;
+      int size = 35;
       float aspect = (float) locImage.getHeight(null) / (float) locImage.getWidth(null);
-      //Use Scalr?
       locImage = locImage.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
+
       int w = locImage.getWidth(null);
       int h = locImage.getHeight(null);
       Logger.trace("LocImage w: " + w + " h: " + h);
 
-      //Depending on the block orientation the image need to be rotated
-      if (Orientation.EAST == getOrientation() || Orientation.EAST == getOrientation()) {
-        //Horizontal just keep as is...
-        int xx = x - w / 2;
-        int yy = y - h / 2;
-        g2d.drawImage(locImage, xx, yy, null);
-      } else {
-        //Vertical rotate 90 deg
-//
-//        AffineTransform transform = new AffineTransform();
-//        transform.rotate(Math.toRadians(90), locImage.getWidth(null) / 2, locImage.getHeight(null) / 2);
-//        AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
-//        img = op.filter(img, null);
-//
-        locImage = ImageUtil.rotate1(locImage, 90);
+      int xx = x - w / 2;
+      int yy = y - h / 2;
 
-
-        int xx = x - w / 2;
-        int yy = y - h / 2;
-        //g2d.rotate(Math.toRadians(90),xx,yy);
-        
-        g2d.drawImage(locImage, xx, yy, null);
-
-      }
+      g2d.drawImage(locImage, xx, yy, null);
     }
   }
 
@@ -585,14 +454,6 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     if (blockBean.getId().equals(bb.getId())) {
       blockBean = bb;
       repaintTile();
-    }
-  }
-
-  private String getLocImageName() {
-    if (this.blockBean != null && this.blockBean.getLocomotive() != null && this.blockBean.getLocomotive().getLocIcon() != null) {
-      return blockBean.getLocomotive().getIcon();
-    } else {
-      return null;
     }
   }
 
@@ -610,14 +471,66 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
   public String getBlockText() {
     String blockText;
+
     if (!drawOutline && getBlockBean() != null && getBlockBean().getDescription() != null) {
+      boolean locInBlock = false;
       if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
         blockText = getBlockBean().getLocomotive().getName();
+        locInBlock = true;
       } else {
         if (getBlockBean().getDescription().length() > 0) {
           blockText = getBlockBean().getDescription();
         } else {
           blockText = getId();
+        }
+      }
+
+      boolean reverseArrival = getBlockBean().isReverseArrival();
+      if (getLocImage() != null) {
+        //when there is an image only show the direction arrow
+        blockText = "";
+      }
+
+      String f = String.valueOf((char) 0x25b8);
+      String r = String.valueOf((char) 0x25c2);
+
+      String direction;
+      if (locInBlock) {
+        direction = (LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection() ? f : r);
+      } else {
+        direction = "";
+      }
+
+      // Depending on the arrival direction the direction is to the - or +
+      // The default is always the + direction
+      switch (getOrientation()) {
+        case EAST -> {
+          if (reverseArrival) {
+            blockText = direction + blockText;
+          } else {
+            blockText = blockText + direction;
+          }
+        }
+        case WEST -> {
+          if (reverseArrival) {
+            blockText = blockText + direction;
+          } else {
+            blockText = direction + blockText;
+          }
+        }
+        case SOUTH -> {
+          if (reverseArrival) {
+            blockText = blockText + direction;
+          } else {
+            blockText = direction + blockText;
+          }
+        }
+        case NORTH -> {
+          if (reverseArrival) {
+            blockText = "<" + blockText;
+          } else {
+            blockText = blockText + ">";
+          }
         }
       }
     } else {
@@ -628,6 +541,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
         blockText = getId();
       }
     }
+
     return blockText;
   }
 
@@ -674,17 +588,16 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
   @Override
   public void drawName(Graphics2D g2d) {
+    g2d.setPaint(Color.darkGray);
+
+    Font currentFont = g2d.getFont();
+    Font newFont = currentFont.deriveFont(currentFont.getSize() * 10.0F);
+    g2d.setFont(newFont);
+
+    String blockText = getBlockText();
     Image locImage = getLocImage();
 
     if (locImage == null) {
-      g2d.setPaint(Color.black);
-
-      Font currentFont = g2d.getFont();
-      Font newFont = currentFont.deriveFont(currentFont.getSize() * 10.0F);
-      g2d.setFont(newFont);
-
-      String blockText = getBlockText();
-
       // Scale the text if necessary
       int textWidth = g2d.getFontMetrics().stringWidth(blockText);
       double fontscale = 10.0;
@@ -711,25 +624,53 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
           drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) + textWidth / 2, RENDER_GRID - textHeight / 3, 180, blockText);
         }
       }
-      // reset to the original font
-      newFont = currentFont.deriveFont(currentFont.getSize() * 1.0F);
-      g2d.setFont(newFont);
+    } else {
+      //Draw an arrow in the drive direction
+      g2d.setPaint(Color.black);
+
+      //char d = LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection() ? (char) 0x25ba : (char) 0x25c4;
+      char d = LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection() ? (char) 0x25b6 : (char) 0x25c0;
+      //String direction = String.valueOf(d);
+      String direction = String.valueOf((char) 0x25c0)+" "+String.valueOf((char) 0x25b8);
+      int textWidth = g2d.getFontMetrics().stringWidth(direction);
+//      double fontscale = 10.0;
+//      if (textWidth > 845) {
+//        fontscale = fontscale * 847.0 / textWidth;
+//        newFont = currentFont.deriveFont(currentFont.getSize() * (float) fontscale);
+//        g2d.setFont(newFont);
+//        textWidth = g2d.getFontMetrics().stringWidth(blockText);
+//      }
+      int textHeight = g2d.getFontMetrics().getHeight();
+
+      //TODO place the arrow near the + or -
+      switch (getOrientation()) {
+        case EAST -> {
+          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) - textWidth / 2 + 400, RENDER_GRID + textHeight / 3, 0, direction);
+        }
+        case WEST -> {
+          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) + textWidth / 2, RENDER_GRID - textHeight / 3, 180, direction);
+        }
+        case NORTH -> {
+          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) - textWidth / 2, RENDER_GRID + textHeight / 3, 0, direction);
+        }
+        case SOUTH -> {
+          drawRotate(g2d, ((RENDER_WIDTH * 3) / 2) + textWidth / 2, RENDER_GRID - textHeight / 3, 180, direction);
+        }
+      }
+
     }
+
+    // reset to the original font
+    newFont = currentFont.deriveFont(currentFont.getSize() * 1.0F);
+    g2d.setFont(newFont);
   }
 
   @Override
   public String getImageKey() {
     StringBuilder sb = getImageKeyBuilder();
     sb.append(getBlockText());
-    sb.append("~");
-    sb.append(getLocomotiveBlockSuffix());
-    sb.append("~");
-    sb.append(getBlockState());
 
-    if (getLocImage() != null) {
-      sb.append("~");
-      sb.append(getLocImageName());
-    }
+    //TODO also append something for the loc image when avalaible
     return sb.toString();
   }
 }

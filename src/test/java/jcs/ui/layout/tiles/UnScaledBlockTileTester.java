@@ -30,109 +30,65 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
-import static jcs.ui.layout.tiles.UnScaledBlockTileTester.readImage;
 import org.tinylog.Logger;
 
 /**
  * @author Frans Jacobs
  */
-public class BlockTileTester extends JFrame {
+public class UnScaledBlockTileTester extends JFrame {
 
-  private final Tile tileEast;
-  private final Tile tileSouth;
-  private final Tile tileWest;
-  private final Tile tileNorth;
+  private final Tile tile;
 
   @SuppressWarnings("OverridableMethodCallInConstructor")
-  public BlockTileTester(String title) {
+  public UnScaledBlockTileTester(String title) {
     super(title);
 
-    //LocomotiveBean lok1 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true);
-    LocomotiveBean lok2 = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 2, false, true);
-    
-    LocomotiveBean lok1 = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
+    // tile = new Straight(Orientation.EAST, 250, 250);
+    //tile = new StraightDirection(Orientation.EAST, 250, 250);
+    // tile = new Signal(Orientation.EAST, 250, 250, SignalType.HP0SH1);
+    // ((Signal) tile).setSignalValue(SignalValue.Hp0);
+    // tile = new Curved(Orientation.EAST, 250, 250);
+    // tile = new Sensor(Orientation.EAST, 250, 250);
+    // tile = new Switch(Orientation.EAST, TileBean.Direction.LEFT, 250, 250);
+    // tile = new End(Orientation.EAST, 250, 250);
+    // tile = new Crossing(Orientation.NORTH, 250, 250);
+    //tile = new Cross(Orientation.NORTH, Direction.LEFT, 250, 750);
+    tile = new Block(Orientation.EAST, 750, 250);
+    tile.setId("bk-1");
+
+    LocomotiveBean lok = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
 
     String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "dcc-ex" + File.separator + "ns dhg 6505.png";
-    lok1.setIcon(imgPath);
+    lok.setIcon(imgPath);
 
     Image locImage = readImage(imgPath);
-    lok1.setLocIcon(locImage);
-
-    
-
-    tileEast = new Block(Orientation.EAST, 70, 190);
-    tileEast.setId("bk-1");
+    lok.setLocIcon(locImage);
 
     BlockBean bbe = new BlockBean();
-    bbe.setId(tileEast.getId());
-    bbe.setTileId(tileEast.getId());
-    bbe.setLocomotive(lok1);
-    bbe.setDescription(tileEast.getId());
+    bbe.setId(tile.getId());
+    bbe.setTileId(tile.getId());
+    bbe.setDescription("Blok");
+    bbe.setLocomotive(lok);
+    bbe.setBlockState(BlockBean.BlockState.OCCUPIED);
     //bbe.setReverseArrival(true);
-    ((Block) tileEast).setBlockBean(bbe);
+    ((Block) tile).setBlockBean(bbe);
 
-    //
-    tileSouth = new Block(Orientation.SOUTH, 160, 190);
-    tileSouth.setId("bk-2");
-    
-    BlockBean bbs = new BlockBean();
-    bbs.setId(tileSouth.getId());
-    bbs.setTileId(tileSouth.getId());
-    lok2.setDirection(lok2.getDirection().toggle());
-    bbs.setDescription(tileSouth.getId());
-
-    bbs.setLocomotive(lok1);
-    //bbs.setReverseArrival(true);
-    ((Block) tileSouth).setBlockBean(bbs);
-
-    tileWest = new Block(Orientation.WEST, 250, 190);
-    tileWest.setId("bk-3");
-    BlockBean bbw = new BlockBean();
-    bbw.setId(tileWest.getId());
-    bbw.setTileId(tileWest.getId());
-    bbw.setLocomotive(lok2);
-    bbw.setDescription(tileWest.getId());
-    //bbw.setReverseArrival(true);
-    ((Block) tileWest).setBlockBean(bbw);
-
-    tileNorth = new Block(Orientation.NORTH, 340, 190);
-    tileNorth.setId("bk-4");
-    BlockBean bbn = new BlockBean();
-    bbn.setId(tileNorth.getId());
-    bbn.setTileId(tileNorth.getId());
-    //bbn.setLocomotive(lok2);
-    bbn.setReverseArrival(true);
-    ((Block) tileNorth).setBlockBean(bbn);
-    
-    Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());
-    Logger.trace("West: "+ ((Block)tileWest).getLocomotiveBlockSuffix());
-    Logger.trace("North: "+ ((Block)tileNorth).getLocomotiveBlockSuffix());
-    Logger.trace("South: "+ ((Block)tileSouth).getLocomotiveBlockSuffix());
-    
-    
+    ((AbstractTile) tile).setScaleImage(false);
   }
 
   @Override
   public void paint(Graphics g) {
     Graphics2D g2d = (Graphics2D) g;
+    //
+    //tile.setTrackRouteColor(Color.black, Orientation.WEST);
+    //((Cross) tile).setRouteValue(AccessoryValue.RED, Color.black);
 
-    tileEast.drawTile(g2d, true);
-    tileEast.drawBounds(g2d);
-    tileEast.drawCenterPoint(g2d, Color.red);
+    tile.drawTile(g2d, true);
+    tile.drawBounds(g2d);
+    tile.drawCenterPoint(g2d, Color.red);
 
-    tileSouth.drawTile(g2d, false);
-    tileSouth.drawBounds(g2d);
-    tileSouth.drawCenterPoint(g2d, Color.blue);
-
-    tileWest.drawTile(g2d, false);
-    tileWest.drawBounds(g2d);
-    tileWest.drawCenterPoint(g2d, Color.red);
-
-    tileNorth.drawTile(g2d, true);
-    tileNorth.drawBounds(g2d);
-    tileNorth.drawCenterPoint(g2d, Color.cyan);
   }
-  
+
   public static Image readImage(String path) {
     Image image = null;
     //path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
@@ -161,10 +117,9 @@ public class BlockTileTester extends JFrame {
     }
     return image;
   }
-  
-  
 
   public static void main(String args[]) {
+
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
     } catch (ClassNotFoundException
@@ -174,10 +129,14 @@ public class BlockTileTester extends JFrame {
       Logger.error(ex);
     }
 
-    BlockTileTester app = new BlockTileTester("Block Tile Tester");
+    UnScaledBlockTileTester app = new UnScaledBlockTileTester("UNSCALED Tile Tester");
 
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    app.setSize(370, 300);
+    // app.pack();
+    //app.setSize(500, 500);
+    app.setSize(1500, 500);
+    //app.setSize(500, 1000);
+
     app.setLocation(
             dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
@@ -185,4 +144,5 @@ public class BlockTileTester extends JFrame {
 
     app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
+
 }

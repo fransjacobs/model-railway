@@ -116,7 +116,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
       //Initialize the Touchbar for MacOS
       if (RunUtil.isMacOSX()) {
-        JCS.showTouchbar(this);
+        //JCS.showTouchbar(this);
         this.setTitle("");
       }
 
@@ -883,7 +883,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }//GEN-LAST:event_showSettingsBtnActionPerformed
 
   private void aboutMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_aboutMIActionPerformed
-     Logger.trace(evt.getActionCommand());
+    Logger.trace(evt.getActionCommand());
     AboutDialog dialog = new AboutDialog(this, true);
     dialog.pack();
     dialog.setLocationRelativeTo(null);
@@ -924,8 +924,13 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
   @Override
   public void handleAbout() {
-    ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
-    JOptionPane.showMessageDialog(this, "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
+    //ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
+    //JOptionPane.showMessageDialog(this, "Java Command Station By Frans Jacobs", "About JCS", JOptionPane.PLAIN_MESSAGE, jcsIcon);
+    //TODO make it more generic
+    AboutDialog dialog = new AboutDialog(this, true);
+    dialog.pack();
+    dialog.setLocationRelativeTo(null);
+    dialog.setVisible(true);
   }
 
   @Override
