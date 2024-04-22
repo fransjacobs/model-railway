@@ -73,6 +73,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
           bb.setId(block.getId());
           bb.setTile(block);
           bb.setTileId(block.getId());
+          bb.setBlockState(BlockBean.BlockState.FREE);
         }
         this.block.setBlockBean(bb);
       }
@@ -90,6 +91,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
       if (bb.getLocomotive() != null) {
         this.locomotiveCB.setSelectedItem(bb.getLocomotive());
+        if (bb.getBlockState() == null) {
+          bb.setBlockState(BlockBean.BlockState.OCCUPIED);
+        }
 
         if (bb.getLocomotive().getLocIcon() != null) {
           this.locomotiveIconLbl.setIcon(new ImageIcon(bb.getLocomotive().getLocIcon()));
@@ -98,10 +102,13 @@ public class BlockControlDialog extends javax.swing.JDialog {
           this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
         this.startLocButton.setEnabled(true);
-
       } else {
         this.locomotiveCB.setSelectedItem(emptyBean);
         this.startLocButton.setEnabled(false);
+
+        if (bb.getBlockState() == null) {
+          bb.setBlockState(BlockBean.BlockState.FREE);
+        }
       }
     }
   }
@@ -286,6 +293,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
     LocomotiveBean selected = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
 
     this.block.getBlockBean().setLocomotive(selected);
+    if (this.block.getBlockBean().getLocomotiveId() != null) {
+      this.block.getBlockBean().setBlockState(BlockBean.BlockState.OCCUPIED);
+    } else {
+      this.block.getBlockBean().setBlockState(BlockBean.BlockState.FREE);
+    }
 
     if (selected.getLocIcon() != null) {
       this.locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
@@ -309,7 +321,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
   private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed
     LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
-    if(loc != null) {
+    if (loc != null) {
       AutoPilot.getInstance(null).startStopLocomotive(loc, this.startLocButton.isSelected());
     }
   }//GEN-LAST:event_startLocButtonActionPerformed

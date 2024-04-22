@@ -30,7 +30,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
-import static jcs.ui.layout.tiles.UnScaledBlockTileTester.readImage;
 import org.tinylog.Logger;
 
 /**
@@ -58,14 +57,13 @@ public class BlockTileTester extends JFrame {
     Image locImage = readImage(imgPath);
     lok1.setLocIcon(locImage);
 
-    
-
     tileEast = new Block(Orientation.EAST, 70, 190);
     tileEast.setId("bk-1");
 
     BlockBean bbe = new BlockBean();
     bbe.setId(tileEast.getId());
     bbe.setTileId(tileEast.getId());
+    //lok1.setDirection(LocomotiveBean.Direction.FORWARDS);
     bbe.setLocomotive(lok1);
     bbe.setDescription(tileEast.getId());
     //bbe.setReverseArrival(true);
@@ -78,9 +76,8 @@ public class BlockTileTester extends JFrame {
     BlockBean bbs = new BlockBean();
     bbs.setId(tileSouth.getId());
     bbs.setTileId(tileSouth.getId());
-    lok2.setDirection(lok2.getDirection().toggle());
     bbs.setDescription(tileSouth.getId());
-
+    //lok1.setDirection(LocomotiveBean.Direction.BACKWARDS);
     bbs.setLocomotive(lok1);
     //bbs.setReverseArrival(true);
     ((Block) tileSouth).setBlockBean(bbs);
@@ -90,7 +87,8 @@ public class BlockTileTester extends JFrame {
     BlockBean bbw = new BlockBean();
     bbw.setId(tileWest.getId());
     bbw.setTileId(tileWest.getId());
-    bbw.setLocomotive(lok2);
+    //lok1.setDirection(LocomotiveBean.Direction.FORWARDS);
+    bbw.setLocomotive(lok1);
     bbw.setDescription(tileWest.getId());
     //bbw.setReverseArrival(true);
     ((Block) tileWest).setBlockBean(bbw);
@@ -100,8 +98,9 @@ public class BlockTileTester extends JFrame {
     BlockBean bbn = new BlockBean();
     bbn.setId(tileNorth.getId());
     bbn.setTileId(tileNorth.getId());
-    //bbn.setLocomotive(lok2);
-    bbn.setReverseArrival(true);
+    lok1.setDirection(LocomotiveBean.Direction.BACKWARDS);
+    bbn.setLocomotive(lok1);
+    //bbn.setReverseArrival(true);
     ((Block) tileNorth).setBlockBean(bbn);
     
     Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());

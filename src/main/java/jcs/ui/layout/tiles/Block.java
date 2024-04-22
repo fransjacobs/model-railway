@@ -22,9 +22,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -73,6 +71,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       this.renderHeight = RENDER_HEIGHT * 3;
     }
     this.blockBean = tileBean.getBlockBean();
+    this.type = tileBean.getType();
   }
 
   Block(Orientation orientation, Point center) {
@@ -375,74 +374,14 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     //forwards or backwards by drawing a little triangle in the the block 
     if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
       boolean reverseArrival = getBlockBean().isReverseArrival();
-
-      if (LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection()) {
-        //right or east side aka forwards
-        if (reverseArrival) {
-          //left or west side aka backwards
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-        } else {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        }
+      if (reverseArrival) {
+        g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
       } else {
-        if (reverseArrival) {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        } else {
-          //left or west side aka backwards
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-        }
+        g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
       }
     }
 
     drawName(g2);
-  }
-
-  protected static BufferedImage rotateClockwise901(BufferedImage src) {
-
-    int srcWidth = src.getWidth();
-    int srcHeight = src.getHeight();
-    boolean hasAlphaChannel = src.getAlphaRaster() != null;
-    int pixelLength = hasAlphaChannel ? 4 : 3;
-    byte[] srcPixels = ((DataBufferByte) src.getRaster().getDataBuffer()).getData();
-
-    // Create the destination buffered image
-    BufferedImage dest = new BufferedImage(srcHeight, srcWidth, src.getType());
-    byte[] destPixels = ((DataBufferByte) dest.getRaster().getDataBuffer()).getData();
-    int destWidth = dest.getWidth();
-
-    int srcPos = 0; // We can just increment this since the data pack order matches our loop traversal: left to right, top to bottom. (Just like reading a book.)   
-    for (int srcY = 0; srcY < srcHeight; srcY++) {
-      for (int srcX = 0; srcX < srcWidth; srcX++) {
-
-        int destX = ((srcHeight - 1) - srcY);
-        int destY = srcX;
-
-        int destPos = (((destY * destWidth) + destX) * pixelLength);
-
-        if (hasAlphaChannel) {
-          destPixels[destPos++] = srcPixels[srcPos++];    // alpha
-        }
-        destPixels[destPos++] = srcPixels[srcPos++];        // blue
-        destPixels[destPos++] = srcPixels[srcPos++];        // green
-        destPixels[destPos++] = srcPixels[srcPos++];        // red
-      }
-    }
-
-    return dest;
-  }
-
-  protected static BufferedImage rotateClockwise90(BufferedImage src) {
-    int width = src.getWidth();
-    int height = src.getHeight();
-
-    BufferedImage dest = new BufferedImage(height, width, src.getType());
-
-    Graphics2D graphics2D = dest.createGraphics();
-    graphics2D.translate((height - width) / 2, (height - width) / 2);
-    graphics2D.rotate(Math.PI / 2, height / 2, width / 2);
-    graphics2D.drawRenderedImage(src, null);
-
-    return dest;
   }
 
   /**
@@ -547,33 +486,44 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       float aspect = (float) locImage.getHeight(null) / (float) locImage.getWidth(null);
       //Use Scalr?
       locImage = locImage.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
+
       int w = locImage.getWidth(null);
       int h = locImage.getHeight(null);
       Logger.trace("LocImage w: " + w + " h: " + h);
 
-      //Depending on the block orientation the image need to be rotated
-      if (Orientation.EAST == getOrientation() || Orientation.EAST == getOrientation()) {
-        //Horizontal just keep as is...
-        int xx = x - w / 2;
-        int yy = y - h / 2;
-        g2d.drawImage(locImage, xx, yy, null);
-      } else {
-        //Vertical rotate 90 deg
-//
-//        AffineTransform transform = new AffineTransform();
-//        transform.rotate(Math.toRadians(90), locImage.getWidth(null) / 2, locImage.getHeight(null) / 2);
-//        AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
-//        img = op.filter(img, null);
-//
-        locImage = ImageUtil.rotate1(locImage, 90);
-
-
-        int xx = x - w / 2;
-        int yy = y - h / 2;
-        //g2d.rotate(Math.toRadians(90),xx,yy);
-        
-        g2d.drawImage(locImage, xx, yy, null);
-
+      //Depending on the block orientation the image need to be rotated and flipped
+      switch (getOrientation()) {
+        case WEST:
+          //Image need to be flipped
+          locImage = ImageUtil.flipVertically(locImage);
+          int xx = x - w / 2;
+          int yy = y - h / 2;
+          g2d.drawImage(locImage, xx, yy, null);
+          break;
+        case SOUTH:
+          locImage = ImageUtil.rotate(locImage, 270);
+          //loc image has changed direction now so the image need to be flipped horizontally
+          locImage = ImageUtil.flipHorizontally(locImage);
+          w = locImage.getWidth(null);
+          h = locImage.getHeight(null);
+          xx = x - w / 2;
+          yy = y - h / 2;
+          g2d.drawImage(locImage, xx, yy, null);
+          break;
+        case NORTH:
+          locImage = ImageUtil.rotate(locImage, 270);
+          w = locImage.getWidth(null);
+          h = locImage.getHeight(null);
+          xx = x - w / 2;
+          yy = y - h / 2;
+          g2d.drawImage(locImage, xx, yy, null);
+          break;
+        default:
+          //EAST
+          xx = x - w / 2;
+          yy = y - h / 2;
+          g2d.drawImage(locImage, xx, yy, null);
+          break;
       }
     }
   }
