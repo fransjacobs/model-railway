@@ -216,18 +216,19 @@ public class H2DatabaseUtil {
         var line = scanner.nextLine();
         buffer.append(line);
         // When a semicolon is found, assume a complete statement, so execute it.
-        if (line.endsWith(";")) {
+        buffer = new StringBuilder();
+        if (line.startsWith("--") || line.startsWith("#")) {
+          //A comment so skip this line
+        } else if (line.endsWith(";")) {
           String command = buffer.toString();
-
           //Logger.trace(command);
           conn.createStatement().execute(command);
           buffer = new StringBuilder();
         } else {
           buffer.append("\n");
         }
-
-        Logger.trace("Executed script: " + scriptName);
       }
+      Logger.trace("Executed script: " + scriptName);
     } catch (SQLException e) {
       Logger.error("Can't execute ddl script!");
       Logger.error("Cause: " + e.getMessage(), e);
@@ -403,7 +404,7 @@ public class H2DatabaseUtil {
   }
 
   public static void main(String[] a) {
-    H2DatabaseUtil.test = true;
+    H2DatabaseUtil.test = false;
     if (H2DatabaseUtil.test) {
       H2DatabaseUtil.deleteDatebaseFile(test);
     }
