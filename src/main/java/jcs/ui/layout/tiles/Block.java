@@ -301,9 +301,15 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
       this.width = DEFAULT_WIDTH * 3;
       this.height = DEFAULT_HEIGHT;
+
+      this.renderWidth = RENDER_WIDTH * 3;
+      this.renderHeight = RENDER_HEIGHT;
     } else {
       this.width = DEFAULT_WIDTH;
       this.height = DEFAULT_HEIGHT * 3;
+
+      this.renderWidth = RENDER_WIDTH;
+      this.renderHeight = RENDER_HEIGHT * 3;
     }
   }
 
@@ -474,10 +480,12 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       oy = this.renderOffsetY;
     }
 
+    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + ox, (y - cbi.getHeight() / 2) + oy, null);
+
+
     //Overlay a scaled loc image incase a loc is in the block
     //Overlay is on the scaled image as a loc image is rather small
     //so the lock image only nee a bit more scaling
-    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + ox, (y - cbi.getHeight() / 2) + oy, null);
 
     //if there is a lock image 
     Image locImage = getLocImage();

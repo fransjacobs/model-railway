@@ -177,6 +177,7 @@
                 <configuration>
                     <compilerArgs>--enable-preview</compilerArgs>
                     <release>21</release>
+                    <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>

@@ -452,7 +452,16 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   protected BufferedImage createImage() {
+     //should this depend on the width and height
+
+
     return new BufferedImage(this.renderWidth, this.renderHeight, BufferedImage.TYPE_4BYTE_ABGR);
+    
+    
+
+
+    
+    
   }
 
   @Override
