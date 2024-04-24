@@ -22,55 +22,55 @@ import org.tinylog.Logger;
 
 public class PersistenceFactory {
 
-    private PersistenceService persistenceService;
-    private static PersistenceFactory instance;
-    
-    public static boolean testMode;
+  private PersistenceService persistenceService;
+  private static PersistenceFactory instance;
 
-    private PersistenceFactory() {
+  //public static boolean testMode;
+
+  private PersistenceFactory() {
+  }
+
+  private static PersistenceFactory getInstance() {
+    if (instance == null) {
+      instance = new PersistenceFactory();
+      instance.createPersistenceService();
+    }
+    return instance;
+  }
+
+  public static PersistenceService getService() {
+    return PersistenceFactory.getInstance().getPersistenceServiceImpl();
+  }
+
+  private PersistenceService getPersistenceServiceImpl() {
+    return persistenceService;
+  }
+
+  protected boolean createPersistenceService() {
+    String persistenceServiceImpl = System.getProperty("persistenceService");
+
+    if (persistenceServiceImpl == null) {
+      RunUtil.loadProperties();
+      persistenceServiceImpl = System.getProperty("persistenceService");
     }
 
-    private static PersistenceFactory getInstance() {
-        if (instance == null) {
-            instance = new PersistenceFactory();
-            instance.createPersistenceService(testMode);
-        }
-        return instance;
+    H2DatabaseUtil.setProperties();
+
+    if (persistenceServiceImpl != null) {
+      try {
+        this.persistenceService = (PersistenceService) Class.forName(persistenceServiceImpl).getDeclaredConstructor().newInstance();
+      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+        Logger.error("Can't instantiate a '" + persistenceServiceImpl + "' " + ex.getMessage());
+        Logger.trace(ex);
+      }
+    } else {
+      Logger.error("Can't find implementation class for property: 'persistenceService'!");
     }
 
-    public static PersistenceService getService() {
-        return PersistenceFactory.getInstance().getPersistenceServiceImpl();
+    if (persistenceService != null) {
+      Logger.trace("Using " + persistenceService.getClass().getSimpleName() + " as PersistenceService...");
     }
-
-    private PersistenceService getPersistenceServiceImpl() {
-        return persistenceService;
-    }
-
-    protected boolean createPersistenceService(boolean test) {
-        String persistenceServiceImpl = System.getProperty("persistenceService");
-
-        if (persistenceServiceImpl == null) {
-            RunUtil.loadProperties();
-            persistenceServiceImpl = System.getProperty("persistenceService");
-        }
-
-        H2DatabaseUtil.setProperties(test);
-
-        if (persistenceServiceImpl != null) {
-            try {
-                this.persistenceService = (PersistenceService) Class.forName(persistenceServiceImpl).getDeclaredConstructor().newInstance();
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-                Logger.error("Can't instantiate a '" + persistenceServiceImpl + "' " + ex.getMessage());
-                Logger.trace(ex);
-            }
-        } else {
-            Logger.error("Can't find implementation class for property: 'persistenceService'!");
-        }
-
-        if (persistenceService != null) {
-            Logger.trace("Using " + persistenceService.getClass().getSimpleName() + " as PersistenceService...");
-        }
-        return persistenceService != null;
-    }
+    return persistenceService != null;
+  }
 
 }

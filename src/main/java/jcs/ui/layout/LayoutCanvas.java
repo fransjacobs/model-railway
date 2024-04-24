@@ -1173,7 +1173,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         this.selectedTiles.addAll(t.getAllPoints());
       }
     }
-    this.executor.execute(() -> repaint());
+    //this.executor.execute(() -> repaint());
+    repaint();
   }
   
   public void flipSelectedTileHorizontal() {

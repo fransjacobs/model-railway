@@ -196,10 +196,10 @@ public class JCS extends Thread {
     logProgress("JCS is Starting...");
 
     //Check the persistent properties, prepare environment
-    if (!H2DatabaseUtil.databaseFileExists(false)) {
+    if (!H2DatabaseUtil.databaseFileExists()) {
       //No Database file so maybe first start lets create one
       logProgress("Create new Database...");
-      H2DatabaseUtil.createDatabaseUsers(false);
+      H2DatabaseUtil.createDatabaseUsers();
       H2DatabaseUtil.createDatabase();
     }
 

@@ -137,8 +137,7 @@ public class UnScaledBlockTileTester extends JFrame {
     app.setSize(1500, 500);
     //app.setSize(500, 1000);
 
-    app.setLocation(
-            dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
+    app.setLocation( dim.width / 2 - app.getSize().width / 2, dim.height / 2 - app.getSize().height / 2);
 
     app.setVisible(true);
 

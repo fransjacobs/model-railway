@@ -17,7 +17,6 @@ package jcs.persistence.util;
 
 import com.dieselpoint.norm.Database;
 import java.net.URL;
-import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -35,11 +34,9 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
   public static PersistenceTestHelper getInstance() {
     if (instance == null) {
       PersistenceTestHelper.test = true;
-      H2DatabaseUtil.test = true;
-      H2DatabaseUtil.setProperties(true);
-      PersistenceFactory.testMode = true;
+      setProperties();
 
-      createDatabaseUsers(true);
+      createDatabaseUsers();
       createDatabase();
       instance = new PersistenceTestHelper();
     }
@@ -52,19 +49,16 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
 
   public void insertTestData() {
     executeSQLScript("jcs-test-data-h2.sql");
-    H2DatabaseUtil.setProperties(true);
     Logger.debug("Inserted Test data...");
   }
 
   public void insertSimpleLayoutTestData() {
     executeSQLScript("simple_layout_tiles.sql");
-    H2DatabaseUtil.setProperties(true);
     Logger.debug("Inserted Simple Layout Test data...");
   }
 
   public void insertSimpleLayoutDirectionTestData() {
     executeSQLScript("simple_layout_tiles_with_direction.sql");
-    H2DatabaseUtil.setProperties(true);
     Logger.debug("Inserted Simple Layout Direction Test data...");
   }
 
@@ -72,13 +66,10 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
     URL url = PersistenceTestHelper.class.getClassLoader().getResource(scriptName);
     String f = url.getFile();
     executeSQLScript(f);
-    H2DatabaseUtil.setProperties(true);
     Logger.debug("Executed script: " + scriptName);
   }
 
   public static void main(String[] a) {
-    //createDatabaseUsers(true);
-    //createDatabase();
     PersistenceTestHelper pth = getInstance();
 
     pth.insertTestData();
@@ -86,6 +77,5 @@ public class PersistenceTestHelper extends H2DatabaseUtil {
     pth.insertSimpleLayoutTestData();
 
     pth.insertSimpleLayoutDirectionTestData();
-    //recreateTest();
   }
 }

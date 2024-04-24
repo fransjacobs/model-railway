@@ -68,7 +68,11 @@ public class H2DatabaseUtil {
     H2DatabaseUtil.test = test;
   }
 
-  public static void setProperties(boolean test) {
+  public static boolean isTestMode() {
+    return test;
+  }
+
+  public static void setProperties() {
     String jdbcUrl = JDBC_PRE + System.getProperty("user.home") + File.separator + "jcs" + File.separator + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + SCHEMA;
     System.setProperty("norm.jdbcUrl", jdbcUrl);
     System.setProperty("norm.user", JCS_USER);
@@ -78,13 +82,13 @@ public class H2DatabaseUtil {
   protected void connect() {
     if (System.getProperty("norm.jdbcUrl") == null) {
       RunUtil.loadProperties();
-      setProperties(H2DatabaseUtil.test);
+      setProperties();
     }
-    Logger.trace("Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
+    Logger.trace((test ? "TESTMODE " : "") + "Connecting to: " + System.getProperty("norm.jdbcUrl") + " with db user: " + System.getProperty("norm.user"));
 
     this.db = new Database();
     this.db.setSqlMaker(new H2SqlMaker());
-    Logger.trace("Connected to: " + System.getProperty("norm.jdbcUrl"));
+    Logger.debug((test ? "TESTMODE " : "") + "Connected to: " + System.getProperty("norm.jdbcUrl"));
   }
 
   protected static Connection obtainJdbcConnection(String jdbcUrl, String user, String password) throws SQLException {
@@ -92,19 +96,15 @@ public class H2DatabaseUtil {
     Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
     String cat = conn.getCatalog();
 
-    Logger.trace("User: " + user + " Connected to database: " + cat);
+    Logger.trace((test ? "TESTMODE " : "") + "User: " + user + " Connected to database: " + cat);
     return conn;
   }
 
-  protected static Connection jdbcConnect(String user, String password, boolean defaultSchema, boolean test) {
+  protected static Connection jdbcConnect(String user, String password, boolean defaultSchema) {
     String jdbcUrl = JDBC_PRE + System.getProperty("user.home") + File.separator + "jcs" + File.separator + (test ? "test-" : "") + JCS_DB_NAME + DB_MODE + (defaultSchema ? SCHEMA : "");
     Connection conn = null;
-    Logger.trace("URL: " + jdbcUrl);
     try {
       conn = DriverManager.getConnection(jdbcUrl, user, password);
-      String cat = conn.getCatalog();
-
-      Logger.trace("User: " + user + " Connected to " + cat);
     } catch (SQLException sqle) {
       Logger.error("Can't connect to: " + jdbcUrl + " as " + user + "...", sqle);
     }
@@ -132,13 +132,14 @@ public class H2DatabaseUtil {
     executeSQLScript(DB_CREATE_DDL, connection);
   }
 
-  public static void createDatabaseUsers(boolean test) {
-    Logger.info("Creating new " + (test ? "TEST " : "") + "JCS Database...");
-    H2DatabaseUtil.test = test;
-    deleteDatebaseFile(test);
+  public static void createDatabaseUsers() {
+    Logger.info((test ? "TESTMODE " : "") + "Creating new " + (test ? "TEST " : "") + "JCS Database...");
+    if (test) {
+      deleteDatebaseFile();
+    }
 
     try {
-      try (Connection c = jdbcConnect(ADMIN_USER, ADMIN_PWD, false, test)) {
+      try (Connection c = jdbcConnect(ADMIN_USER, ADMIN_PWD, false)) {
         if (c != null) {
           Statement stmt = c.createStatement();
 
@@ -149,7 +150,7 @@ public class H2DatabaseUtil {
           stmt.executeUpdate("CREATE USER JCS PASSWORD 'repo' ADMIN");
           stmt.executeUpdate("CREATE SCHEMA JCS AUTHORIZATION JCS");
 
-          Logger.debug("Created JCS User.");
+          Logger.debug((test ? "TESTMODE " : "") + "Created JCS User.");
         } else {
           Logger.error("Could not obtain a connection!");
         }
@@ -174,7 +175,7 @@ public class H2DatabaseUtil {
         file = new File(filename);
       }
       if (test) {
-        Logger.trace("Filename: " + filename + " Path: " + file.getAbsolutePath());
+        Logger.trace((test ? "TESTMODE " : "") + "Filename: " + filename + " Path: " + file.getAbsolutePath());
       }
       String script;
       if (file.exists()) {
@@ -197,7 +198,7 @@ public class H2DatabaseUtil {
         }
         if (System.getProperty("norm.jdbcUrl") == null) {
           Logger.warn("Using DatabaseUtil defaults!");
-          setProperties(H2DatabaseUtil.test);
+          setProperties();
         }
 
         String jdbcUrl = System.getProperty("norm.jdbcUrl");
@@ -216,10 +217,7 @@ public class H2DatabaseUtil {
         var line = scanner.nextLine();
         buffer.append(line);
         // When a semicolon is found, assume a complete statement, so execute it.
-        buffer = new StringBuilder();
-        if (line.startsWith("--") || line.startsWith("#")) {
-          //A comment so skip this line
-        } else if (line.endsWith(";")) {
+        if (line.endsWith(";")) {
           String command = buffer.toString();
           //Logger.trace(command);
           conn.createStatement().execute(command);
@@ -228,7 +226,7 @@ public class H2DatabaseUtil {
           buffer.append("\n");
         }
       }
-      Logger.trace("Executed script: " + scriptName);
+      Logger.trace((test ? "TESTMODE " : "") + "Executed script: " + scriptName);
     } catch (SQLException e) {
       Logger.error("Can't execute ddl script!");
       Logger.error("Cause: " + e.getMessage(), e);
@@ -243,7 +241,7 @@ public class H2DatabaseUtil {
     }
   }
 
-  private static void deleteDatebaseFile(boolean test) {
+  private static void deleteDatebaseFile() {
     String pathString = System.getProperty("user.home") + File.separator + "jcs";
     String fileName = (test ? "test-" : "") + JCS_DB_NAME;
 
@@ -279,7 +277,7 @@ public class H2DatabaseUtil {
     }
   }
 
-  public static boolean databaseFileExists(boolean test) {
+  public static boolean databaseFileExists() {
     String pathString = System.getProperty("user.home") + File.separator + "jcs";
     String fileName = (test ? "test-" : "") + JCS_DB_NAME;
     boolean exist = false;
@@ -309,7 +307,7 @@ public class H2DatabaseUtil {
 
   public static String getDataBaseVersion() {
     String version = null;
-    try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
+    try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true)) {
       if (c != null) {
         Statement stmt = c.createStatement();
         ResultSet rs = stmt.executeQuery("select count(*) as cnt from information_schema.tables where table_schema = 'jcs' and table_name = 'jcs_version'");
@@ -335,7 +333,7 @@ public class H2DatabaseUtil {
 
   public static String getAppVersion() {
     String version = null;
-    try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
+    try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true)) {
       if (c != null) {
         Statement stmt = c.createStatement();
         ResultSet rs = stmt.executeQuery("select count(*) as cnt from information_schema.tables where table_schema = 'jcs' and table_name = 'jcs_version'");
@@ -380,8 +378,8 @@ public class H2DatabaseUtil {
     if (fromVersion != toVersion) {
       for (int i = fromVersion; i < toVersion; i++) {
         String updateFile = "update-jcs-db-" + String.format("%03d", i) + ".sql";
-        Logger.trace("updateFile: " + updateFile);
-        try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true, test)) {
+        Logger.trace((test ? "TESTMODE " : "") + "updateFile: " + updateFile);
+        try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true)) {
           if (c != null) {
             try {
               executeSQLScript(updateFile, c);
@@ -395,10 +393,10 @@ public class H2DatabaseUtil {
         } catch (Exception ex) {
           Logger.error(ex);
         }
+        Logger.info((test ? "TESTMODE " : "") + "Database updated to version: " + getDataBaseVersion());
       }
-      Logger.info("Database updated to version: " + getDataBaseVersion());
     } else {
-      Logger.info("Database update not needed. Version " + DB_VERSION);
+      Logger.info((test ? "TESTMODE " : "") + "Database update not needed. Version " + DB_VERSION);
     }
     return DB_VERSION;
   }
@@ -406,14 +404,12 @@ public class H2DatabaseUtil {
   public static void main(String[] a) {
     H2DatabaseUtil.test = false;
     if (H2DatabaseUtil.test) {
-      H2DatabaseUtil.deleteDatebaseFile(test);
+      H2DatabaseUtil.deleteDatebaseFile();
     }
-    if (H2DatabaseUtil.databaseFileExists(H2DatabaseUtil.test)) {
+    if (H2DatabaseUtil.databaseFileExists()) {
       Logger.info("Database files exists");
     } else {
-      Logger.info("Creating a new Database...");
-      H2DatabaseUtil.createDatabaseUsers(H2DatabaseUtil.test);
-
+      H2DatabaseUtil.createDatabaseUsers();
       H2DatabaseUtil.createDatabase();
     }
 

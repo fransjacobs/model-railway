@@ -33,6 +33,7 @@ public final class TileImageCache {
   }
 
   public static void put(String key, BufferedImage image) {
+    Logger.trace("Adding: " + key);
     tileImageCache.put(key, image);
   }
 
@@ -43,7 +44,9 @@ public final class TileImageCache {
 
   public static boolean contains(String key) {
     boolean exist = tileImageCache.containsKey(key);
-    //Logger.trace(key + " " + (exist ? "exist" : "unknown"));
+    if (!exist) {
+      Logger.trace("Key: " + key + (exist ? " exists" : " does not exist"));
+    }
     return exist;
   }
 

@@ -114,7 +114,7 @@ public class Curved extends AbstractTile implements Tile {
     aps.add(getCenter());
     return aps;
   }
-  
+
   @Override
   public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
     Graphics2D g2d = (Graphics2D) g2.create();

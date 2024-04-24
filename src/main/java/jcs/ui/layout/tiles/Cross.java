@@ -522,12 +522,13 @@ public class Cross extends Switch implements Tile {
     }
   }
 
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    sb.append(getAccessoryValue());
-    sb.append("~");
-    sb.append(getRouteValue());
-    return sb.toString();
-  }
+//  @Override
+//  public String getImageKey() {
+//    StringBuilder sb = getImageKeyBuilder();
+//    sb.append("~");
+//    sb.append(getAccessoryValue());
+//    sb.append("~");
+//    sb.append(getRouteValue());
+//    return sb.toString();
+//  }
 }

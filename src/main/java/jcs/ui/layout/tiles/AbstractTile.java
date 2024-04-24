@@ -42,6 +42,7 @@ import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
+import org.tinylog.Logger;
 
 /**
  * Basic graphic element to display a track, turnout, etc on the screen.<br>
@@ -140,8 +141,8 @@ abstract class AbstractTile extends TileBean implements Tile {
     this.y = other.getY();
 
     if (other instanceof AbstractTile abstractTile) {
-      this.renderWidth = abstractTile.getRenderWidth();
-      this.renderHeight = abstractTile.getRenderHeight();
+      abstractTile.renderWidth = this.renderWidth;
+      abstractTile.renderHeight = this.renderHeight;
     }
 
     this.setSignalType(other.getSignalType());
@@ -231,7 +232,7 @@ abstract class AbstractTile extends TileBean implements Tile {
       AffineTransform trans = new AffineTransform();
 
       g2di.setBackground(backgroundColor);
-      g2di.clearRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
+      g2di.clearRect(0, 0, this.renderWidth, this.renderHeight);
 
       int ox = 0, oy = 0;
 
@@ -276,6 +277,7 @@ abstract class AbstractTile extends TileBean implements Tile {
       }
 
       g2di.dispose();
+      Logger.trace("ImageKey of " + this.id + ": " + this.getImageKey());
       TileImageCache.put(this, nbi);
     }
 
@@ -450,7 +452,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   protected BufferedImage createImage() {
-    return new BufferedImage(this.renderWidth, this.renderHeight, BufferedImage.TYPE_INT_RGB);
+    return new BufferedImage(this.renderWidth, this.renderHeight, BufferedImage.TYPE_4BYTE_ABGR);
   }
 
   @Override
@@ -629,19 +631,17 @@ abstract class AbstractTile extends TileBean implements Tile {
     return this.width;
   }
 
-  int getRenderWidth() {
-    return this.renderWidth;
-  }
-
+//  int getRenderWidth() {
+//    return this.renderWidth;
+//  }
   @Override
   public int getHeight() {
     return this.height;
   }
 
-  int getRenderHeight() {
-    return this.renderHeight;
-  }
-
+//  int getRenderHeight() {
+//    return this.renderHeight;
+//  }
   @Override
   public int getGridX() {
     return (getCenterX() - Tile.GRID) / (Tile.GRID * 2);
@@ -778,7 +778,8 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   protected StringBuilder getImageKeyBuilder() {
     StringBuilder sb = new StringBuilder();
-    sb.append(id);
+    //sb.append(id);
+    sb.append(this.type);
     sb.append("~");
     sb.append(this.getOrientation().getOrientation());
     sb.append("~");
@@ -808,8 +809,7 @@ abstract class AbstractTile extends TileBean implements Tile {
       sb.append(this.trackRouteColor.toString());
     }
 
-    sb.append("~");
-
+    //sb.append("~");
     //Tile specific properties
     //AccessoryValue
     //SignalType

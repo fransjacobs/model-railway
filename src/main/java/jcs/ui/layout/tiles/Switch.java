@@ -332,6 +332,7 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
   @Override
   public String getImageKey() {
     StringBuilder sb = getImageKeyBuilder();
+    sb.append("~");
     sb.append(getAccessoryValue());
     sb.append("~");
     sb.append(getRouteValue());

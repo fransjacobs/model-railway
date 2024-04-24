@@ -372,7 +372,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
     //When there is a train in the block mark the direction of travel, ie whethe the train goes
     //forwards or backwards by drawing a little triangle in the the block 
-    if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
+    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
       boolean reverseArrival = getBlockBean().isReverseArrival();
       if (reverseArrival) {
         g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
@@ -397,7 +397,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     if (o == null) {
       o = Orientation.EAST;
     }
-
+  
     if (!TileImageCache.contains(this)) {
       BufferedImage nbi = createImage();
 
@@ -413,7 +413,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       AffineTransform trans = new AffineTransform();
 
       g2di.setBackground(backgroundColor);
-      g2di.clearRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
+      g2di.clearRect(0, 0, renderWidth, renderHeight);
 
       int ox = 0, oy = 0;
 
@@ -429,7 +429,8 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
           trans.translate(ox, oy);
         }
         case NORTH -> {
-          trans.rotate(-Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
+          //trans.rotate(-Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
+          trans.rotate((Math.PI / 2) * 3, this.renderWidth / 2, this.renderHeight / 2);
           ox = (this.renderHeight - this.renderWidth) / 2;
           oy = (this.renderWidth - this.renderHeight) / 2;
           trans.translate(-ox, -oy);
@@ -458,6 +459,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       }
 
       g2di.dispose();
+      Logger.trace("ImageKey of " + this.id + ": " + this.getImageKey());
       TileImageCache.put(this, nbi);
     }
 
@@ -584,7 +586,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   public String getLocomotiveBlockSuffix() {
     String blockSuffix = "";
 
-    if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getDirection() != null) {
+    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getDirection() != null) {
       LocomotiveBean.Direction locDir = getBlockBean().getLocomotive().getDirection();
       boolean reverseArrival = this.getBlockBean().isReverseArrival();
 
@@ -670,16 +672,19 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   @Override
   public String getImageKey() {
     StringBuilder sb = getImageKeyBuilder();
-    sb.append(getBlockText());
-    sb.append("~");
-    sb.append(getLocomotiveBlockSuffix());
-    sb.append("~");
-    sb.append(getBlockState());
-
-    if (getLocImage() != null) {
+    if (getBlockText() != null) {
       sb.append("~");
-      sb.append(getLocImageName());
+      sb.append(getBlockText());
     }
+//    if (!"".equals(getLocomotiveBlockSuffix())) {
+//      sb.append(getLocomotiveBlockSuffix());
+//      sb.append("~");
+//      sb.append(getBlockState());
+//    }
+//    if (getLocImage() != null) {
+//      sb.append("~");
+//      sb.append(getLocImageName());
+//    }
     return sb.toString();
   }
 }
