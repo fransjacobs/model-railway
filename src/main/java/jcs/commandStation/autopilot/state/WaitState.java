@@ -16,7 +16,6 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.commandStation.autopilot.TrainDispatcher;
-import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
 /**
@@ -25,13 +24,13 @@ import org.tinylog.Logger;
  */
 public class WaitState extends DispatcherState {
 
-  WaitState(LocomotiveBean locomotive) {
-    super(locomotive);
+  public WaitState(TrainDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    DispatcherState newState = new SearchRouteState(locomotive);
+    DispatcherState newState = new SearchRouteState(this.dispatcher);
     newState.setRunning(running);
     locRunner.setDispatcherState(newState);
   }

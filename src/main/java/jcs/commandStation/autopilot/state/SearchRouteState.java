@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Random;
 import jcs.JCS;
 import jcs.commandStation.autopilot.TrainDispatcher;
-import jcs.commandStation.events.BlockEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
@@ -35,26 +34,27 @@ import org.tinylog.Logger;
  */
 public class SearchRouteState extends DispatcherState {
 
-  SearchRouteState(LocomotiveBean locomotive) {
-    super(locomotive);
+  public SearchRouteState(TrainDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
   public void next(TrainDispatcher dispatcher) {
     //Only advance when there is a route
     if (canAdvanceToNextState) {
-      DispatcherState newState = new ReserveRouteState(locomotive, route);
+      DispatcherState newState = new ReserveRouteState(dispatcher);
       newState.setRunning(running);
       dispatcher.setDispatcherState(newState);
     } else {
-      Logger.debug("No route available for " + locomotive.getName() + " ...");
       dispatcher.setDispatcherState(this);
     }
   }
 
   @Override
   public boolean execute() {
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
+
     refreshBlockTiles();
 
     BlockBean blockBean = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
@@ -96,12 +96,14 @@ public class SearchRouteState extends DispatcherState {
       rIdx = getRandomNumber(0, routes.size());
     }
 
+    RouteBean route = null;
     if (!routes.isEmpty()) {
       route = routes.get(rIdx);
       Logger.trace("Choosen route " + route.toLogString());
     } else {
-      Logger.debug("No routes available");
+      Logger.debug("No route available for " + locomotive.getName() + " ...");
     }
+    this.dispatcher.setRouteBean(route);
 
     canAdvanceToNextState = running && route != null;
     return canAdvanceToNextState;
@@ -111,7 +113,5 @@ public class SearchRouteState extends DispatcherState {
     Random random = new Random();
     return random.ints(min, max).findFirst().getAsInt();
   }
-
- 
 
 }

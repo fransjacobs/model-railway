@@ -22,7 +22,9 @@ import jcs.commandStation.autopilot.state.IdleState;
 import jcs.commandStation.autopilot.state.ReserveRouteState;
 import jcs.commandStation.autopilot.state.RunState;
 import jcs.commandStation.autopilot.state.StateEventListener;
+import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
 import jcs.ui.layout.RouteDisplayCallBack;
 import org.tinylog.Logger;
 
@@ -33,7 +35,11 @@ import org.tinylog.Logger;
  */
 public class TrainDispatcher extends Thread {
 
-  private LocomotiveBean locomotiveBean;
+  private final LocomotiveBean locomotiveBean;
+  private RouteBean routeBean;
+
+  private BlockBean departureBlock;
+  private BlockBean destinationBlock;
 
   private DispatcherState dispatcherState;
   private DispatcherState previousState;
@@ -45,7 +51,7 @@ public class TrainDispatcher extends Thread {
 
   public TrainDispatcher(LocomotiveBean locomotiveBean, RouteDisplayCallBack callback) {
     this.locomotiveBean = locomotiveBean;
-    this.dispatcherState = new IdleState(locomotiveBean);
+    this.dispatcherState = new IdleState(this);
     this.callback = callback;
     this.stateEventListeners = new LinkedList<>();
 
@@ -56,9 +62,35 @@ public class TrainDispatcher extends Thread {
     return locomotiveBean;
   }
 
-  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-    this.locomotiveBean = locomotiveBean;
+//  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+//    this.locomotiveBean = locomotiveBean;
+//  }
+  public RouteBean getRouteBean() {
+    return routeBean;
   }
+
+  public void setRouteBean(RouteBean routeBean) {
+    this.routeBean = routeBean;
+  }
+
+  public BlockBean getDepartureBlock() {
+    return departureBlock;
+  }
+
+  public void setDepartureBlock(BlockBean departureBlock) {
+    this.departureBlock = departureBlock;
+  }
+
+  public BlockBean getDestinationBlock() {
+    return destinationBlock;
+  }
+
+  public void setDestinationBlock(BlockBean destinationBlock) {
+    this.destinationBlock = destinationBlock;
+  }
+  
+  
+  
 
   public DispatcherState getDispatcherState() {
     return dispatcherState;
@@ -87,13 +119,13 @@ public class TrainDispatcher extends Thread {
 
     if (dispatcherState instanceof ReserveRouteState && action) {
       if (callback != null) {
-        callback.setSelectRoute(dispatcherState.getRoute());
+        //callback.setSelectRoute(dispatcherState.getRoute());
       }
     }
 
     if (dispatcherState instanceof RunState && action) {
       if (callback != null) {
-        callback.setSelectRoute(dispatcherState.getRoute());
+        // callback.setSelectRoute(dispatcherState.getRoute());
 
         callback.refresh();
       }

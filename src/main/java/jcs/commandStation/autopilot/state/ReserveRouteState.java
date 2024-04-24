@@ -21,7 +21,7 @@ import jcs.JCS;
 import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
-import jcs.entities.LocomotiveBean;
+import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.PersistenceFactory;
@@ -33,18 +33,17 @@ import org.tinylog.Logger;
  */
 public class ReserveRouteState extends DispatcherState {
 
-  ReserveRouteState(LocomotiveBean locomotive, RouteBean route) {
-    super(locomotive, route);
+  public ReserveRouteState(TrainDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
   public void next(TrainDispatcher dispatcher) {
     if (canAdvanceToNextState) {
-      DispatcherState newState = new RunState(locomotive, route);
+      DispatcherState newState = new RunState(this.dispatcher);
       newState.setRunning(running);
       dispatcher.setDispatcherState(newState);
     } else {
-      Logger.debug("Can't reserve a route for " + locomotive.getName() + " ...");
       dispatcher.setDispatcherState(this);
     }
   }
@@ -58,9 +57,15 @@ public class ReserveRouteState extends DispatcherState {
       return canAdvanceToNextState;
     }
 
+    RouteBean route = this.dispatcher.getRouteBean();
+
+    if (route == null) {
+      Logger.debug("Can't reserve a route for " + this.dispatcher.getLocomotiveBean().getName() + " ...");
+      return false;
+    }
+
     Logger.debug("Reserving route " + route);
-    this.route.setLocked(true);
-    PersistenceFactory.getService().persist(route);
+    route.setLocked(true);
 
     // need the turnouts
     List<RouteElementBean> turnouts = getTurnouts(route);
@@ -75,6 +80,26 @@ public class ReserveRouteState extends DispatcherState {
       JCS.getJcsCommandStation().switchAccessory(turnout, av);
     }
     Logger.debug("Locked route " + route);
+
+    //Lock the destination
+    String departureTileId = route.getFromTileId();
+    String destinationTileId = route.getToTileId();
+    //From which side on the block is the train expected to arrive?
+    String arrivalSuffix = route.getToSuffix();
+
+    Logger.trace("Destination tile: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block");
+
+    BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
+    departureBlock.setBlockState(BlockBean.BlockState.DEPARTING);
+    this.dispatcher.setDepartureBlock(departureBlock);
+    BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
+    destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
+    this.dispatcher.setDestinationBlock(destinationBlock);
+
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+    // Fire listeners
+
     canAdvanceToNextState = true;
 
     return canAdvanceToNextState;

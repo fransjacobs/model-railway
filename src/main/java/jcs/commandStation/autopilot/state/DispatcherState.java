@@ -20,8 +20,6 @@ import jcs.JCS;
 import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.commandStation.events.BlockEvent;
 import jcs.entities.BlockBean;
-import jcs.entities.LocomotiveBean;
-import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -31,23 +29,17 @@ import org.tinylog.Logger;
  */
 public abstract class DispatcherState {
 
-  protected LocomotiveBean locomotive;
+  protected final TrainDispatcher dispatcher;
 
   protected boolean running;
 
-  protected RouteBean route;
 
   protected int waitTime;
 
   protected boolean canAdvanceToNextState;
 
-  protected DispatcherState(LocomotiveBean locomotive) {
-    this(locomotive, null);
-  }
-
-  protected DispatcherState(LocomotiveBean locomotive, RouteBean route) {
-    this.locomotive = locomotive;
-    this.route = route;
+  protected DispatcherState(TrainDispatcher trainDispatcher) {
+    this.dispatcher = trainDispatcher;
   }
 
   /**
@@ -59,14 +51,6 @@ public abstract class DispatcherState {
   public abstract void next(TrainDispatcher dispatcher);
 
   public abstract boolean execute();
-
-  public LocomotiveBean getLocomotive() {
-    return locomotive;
-  }
-
-  public RouteBean getRoute() {
-    return route;
-  }
 
   public int getWaitTime() {
     return waitTime;

@@ -78,7 +78,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
 
     //Logger.trace("Screen: W: " + dim.width + " H: " + dim.height + " Panel w: " + w + " h: " + h + " Size W: " + this.getSize().width + " H: " + this.getSize().height);
     int x = w / 2;
-    int y = h / 2;
+    int y = h / 2 + 50;
     Point center = new Point(x, y);
 
     tile.setCenter(center);

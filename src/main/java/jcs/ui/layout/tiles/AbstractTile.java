@@ -452,16 +452,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   protected BufferedImage createImage() {
-     //should this depend on the width and height
-
-
     return new BufferedImage(this.renderWidth, this.renderHeight, BufferedImage.TYPE_4BYTE_ABGR);
-    
-    
-
-
-    
-    
   }
 
   @Override
@@ -640,17 +631,11 @@ abstract class AbstractTile extends TileBean implements Tile {
     return this.width;
   }
 
-//  int getRenderWidth() {
-//    return this.renderWidth;
-//  }
   @Override
   public int getHeight() {
     return this.height;
   }
 
-//  int getRenderHeight() {
-//    return this.renderHeight;
-//  }
   @Override
   public int getGridX() {
     return (getCenterX() - Tile.GRID) / (Tile.GRID * 2);

@@ -26,27 +26,34 @@ import org.tinylog.Logger;
  */
 public class IdleState extends DispatcherState {
 
-  public IdleState(LocomotiveBean locomotive) {
-    super(locomotive);
+  public IdleState(TrainDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
   public void next(TrainDispatcher dispatcher) {
     //Next state is only possible when this locomotive is on the track and in a block
     if (running && canAdvanceToNextState) {
-      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in a block");
-      DispatcherState newState = new SearchRouteState(locomotive);
+      DispatcherState newState = new SearchRouteState(this.dispatcher);
       newState.setRunning(running);
       dispatcher.setDispatcherState(newState);
     } else {
-      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block");
       dispatcher.setDispatcherState(this);
     }
   }
 
   @Override
   public boolean execute() {
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
+    dispatcher.setDepartureBlock(block);
+
+    if (block != null) {
+      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in block " + block.getDescription() + " [" + block.getId() + "]");
+    } else {
+      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block");
+    }
+
     canAdvanceToNextState = running && block != null;
     return canAdvanceToNextState;
   }

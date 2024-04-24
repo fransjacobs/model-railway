@@ -213,7 +213,7 @@ public class RoutesDialog extends javax.swing.JDialog {
 
   private void removeAllRoutes() {
     if (PersistenceFactory.getService() != null) {
-      PersistenceFactory.getService().removeAllBlocks();
+      //PersistenceFactory.getService().removeAllBlocks();
 
       List<RouteBean> rl = PersistenceFactory.getService().getRoutes();
       for (RouteBean r : rl) {

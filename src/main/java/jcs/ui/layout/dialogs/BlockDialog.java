@@ -102,6 +102,7 @@ public class BlockDialog extends javax.swing.JDialog {
         bb = new BlockBean();
         bb.setTile(block);
         bb.setTileId(this.block.getId());
+        bb.setBlockState(BlockBean.BlockState.FREE);
         this.block.setBlockBean(bb);
       }
 
@@ -362,9 +363,14 @@ public class BlockDialog extends javax.swing.JDialog {
         BlockBean bb = this.block.getBlockBean();
         //TODO, depends on future changes but for now
         if (bb.getId() == null) {
-          //Can't be nulll and should be the same as the block
+          //Can't be null and should be the same as the block
           bb.setId(this.block.getId());
         }
+        
+        if(bb.getStatus() == null) {
+          bb.setBlockState(BlockBean.BlockState.FREE);
+        }
+        
 
         PersistenceFactory.getService().persist(bb);
       }

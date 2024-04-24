@@ -390,111 +390,17 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     drawName(g2);
   }
 
-  /**
-   * Overridden to add a loc Icon
-   *
-   * @param g2d The graphics handle
-   * @param drawOutline
-   */
-  @Override
-  public void drawTile(Graphics2D g2d, boolean drawOutline) {
-    // by default and image is rendered in the EAST orientation
-    Orientation o = getOrientation();
-    if (o == null) {
-      o = Orientation.EAST;
-    }
-  
-    if (!TileImageCache.contains(this)) {
-      BufferedImage nbi = createImage();
-
-      Graphics2D g2di = nbi.createGraphics();
-      if (trackColor == null) {
-        trackColor = DEFAULT_TRACK_COLOR;
-      }
-
-      if (backgroundColor == null) {
-        backgroundColor = Color.white;
-      }
-
-      AffineTransform trans = new AffineTransform();
-
-      g2di.setBackground(backgroundColor);
-      g2di.clearRect(0, 0, renderWidth, renderHeight);
-
-      int ox = 0, oy = 0;
-
-      switch (o) {
-        case SOUTH -> {
-          trans.rotate(Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
-          ox = (this.renderHeight - this.renderWidth) / 2;
-          oy = (this.renderWidth - this.renderHeight) / 2;
-          trans.translate(-ox, -oy);
-        }
-        case WEST -> {
-          trans.rotate(Math.PI, this.renderWidth / 2, this.renderHeight / 2);
-          trans.translate(ox, oy);
-        }
-        case NORTH -> {
-          //trans.rotate(-Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
-          trans.rotate((Math.PI / 2) * 3, this.renderWidth / 2, this.renderHeight / 2);
-          ox = (this.renderHeight - this.renderWidth) / 2;
-          oy = (this.renderWidth - this.renderHeight) / 2;
-          trans.translate(-ox, -oy);
-        }
-        default -> {
-          trans.rotate(0.0, this.renderWidth / 2, this.renderHeight / 2);
-          trans.translate(ox, oy);
-        }
-      }
-
-      g2di.setTransform(trans);
-      renderTile(g2di, trackColor, backgroundColor);
-
-      //When the line grid is one the scale tile must be a little smaller
-      int sw, sh;
-      if (drawOutline) {
-        sw = this.getWidth() - 2;
-        sh = this.getHeight() - 2;
-      } else {
-        sw = this.getWidth();
-        sh = this.getHeight();
-      }
-      // Scale the image back...
-      if (scaleImage) {
-        nbi = Scalr.resize(nbi, Scalr.Method.QUALITY, Scalr.Mode.FIT_EXACT, sw, sh, Scalr.OP_ANTIALIAS);
-      }
-
-      g2di.dispose();
-      Logger.trace("ImageKey of " + this.id + ": " + this.getImageKey());
-      TileImageCache.put(this, nbi);
-    }
-
-    BufferedImage cbi = TileImageCache.get(this);
-
-    int ox, oy;
-    if (scaleImage) {
-      ox = this.offsetX;
-      oy = this.offsetY;
-    } else {
-      ox = this.renderOffsetX;
-      oy = this.renderOffsetY;
-    }
-
-    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + ox, (y - cbi.getHeight() / 2) + oy, null);
-
-
+  protected void overlayLocImage(Graphics2D g2d) {
     //Overlay a scaled loc image incase a loc is in the block
     //Overlay is on the scaled image as a loc image is rather small
     //so the lock image only nee a bit more scaling
-
     //if there is a lock image 
     Image locImage = getLocImage();
     if (locImage != null) {
-      // real size 
-      //scale it to max h of 20
+      // scale it to max h of 45
       int size = 45;
       float aspect = (float) locImage.getHeight(null) / (float) locImage.getWidth(null);
-      //Use Scalr?
+      //TODO: Use Scalr?
       locImage = locImage.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
 
       int w = locImage.getWidth(null);
@@ -503,39 +409,51 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
       //Depending on the block orientation the image need to be rotated and flipped
       switch (getOrientation()) {
-        case WEST:
+        case WEST -> {
           //Image need to be flipped
           locImage = ImageUtil.flipVertically(locImage);
           int xx = x - w / 2;
           int yy = y - h / 2;
           g2d.drawImage(locImage, xx, yy, null);
-          break;
-        case SOUTH:
+        }
+        case SOUTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
           //loc image has changed direction now so the image need to be flipped horizontally
           locImage = ImageUtil.flipHorizontally(locImage);
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
-          xx = x - w / 2;
-          yy = y - h / 2;
+          int xx = x - w / 2;
+          int yy = y - h / 2;
           g2d.drawImage(locImage, xx, yy, null);
-          break;
-        case NORTH:
+        }
+        case NORTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
-          xx = x - w / 2;
-          yy = y - h / 2;
+          int xx = x - w / 2;
+          int yy = y - h / 2;
           g2d.drawImage(locImage, xx, yy, null);
-          break;
-        default:
+        }
+        default -> {
           //EAST
-          xx = x - w / 2;
-          yy = y - h / 2;
+          int xx = x - w / 2;
+          int yy = y - h / 2;
           g2d.drawImage(locImage, xx, yy, null);
-          break;
+        }
       }
     }
+  }
+
+  /**
+   * Overridden to overlay a loc Icon
+   *
+   * @param g2d The graphics handle
+   * @param drawOutline
+   */
+  @Override
+  public void drawTile(Graphics2D g2d, boolean drawOutline) {
+    super.drawTile(g2d, drawOutline);
+    overlayLocImage(g2d);
   }
 
   @Override
@@ -680,10 +598,14 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   @Override
   public String getImageKey() {
     StringBuilder sb = getImageKeyBuilder();
+    sb.append("~");
+    sb.append(getBlockState());
+
     if (getBlockText() != null) {
       sb.append("~");
       sb.append(getBlockText());
     }
+
 //    if (!"".equals(getLocomotiveBlockSuffix())) {
 //      sb.append(getLocomotiveBlockSuffix());
 //      sb.append("~");

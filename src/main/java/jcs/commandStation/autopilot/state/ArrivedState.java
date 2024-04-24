@@ -30,7 +30,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class RunState extends DispatcherState {
+public class ArrivedState extends DispatcherState {
 
   private SensorListener enterListener;
   private SensorListener arrivalListener;
@@ -41,7 +41,7 @@ public class RunState extends DispatcherState {
   boolean entered = false;
   boolean arrived = false;
 
-  public RunState(TrainDispatcher dispatcher) {
+  public ArrivedState(TrainDispatcher dispatcher) {
     super(dispatcher);
   }
 
@@ -49,7 +49,7 @@ public class RunState extends DispatcherState {
   public void next(TrainDispatcher locRunner) {
     Logger.trace("canAdvanceState: " + canAdvanceToNextState);
     if (canAdvanceToNextState) {
-      DispatcherState newState = new ArrivalState(this.dispatcher);
+      DispatcherState newState = new WaitState(this.dispatcher);
       newState.setRunning(running);
       locRunner.setDispatcherState(newState);
     } else {
@@ -183,9 +183,9 @@ public class RunState extends DispatcherState {
     private final Integer deviceId;
     private final Integer contactId;
     private final boolean enter;
-    private final RunState runState;
+    private final ArrivedState runState;
 
-    SensorListener(SensorBean sensor, boolean enter, RunState runState) {
+    SensorListener(SensorBean sensor, boolean enter, ArrivedState runState) {
       this.deviceId = sensor.getDeviceId();
       this.contactId = sensor.getContactId();
       this.enter = enter;
