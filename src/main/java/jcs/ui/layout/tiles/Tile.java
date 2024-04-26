@@ -41,13 +41,17 @@ public interface Tile extends Shape {
   static final int RENDER_WIDTH = RENDER_GRID * 2;
   static final int RENDER_HEIGHT = RENDER_GRID * 2;
 
+  public static final Color DEFAULT_BACKGROUND_COLOR = Color.white;
   public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
   Color getTrackColor();
 
   void setTrackColor(Color trackColor);
 
-  //Color getTrackRouteColor();
+  Color getTrackRouteColor();
+
+  Orientation getIncomingSide();
+
   void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
 
   Color getBackgroundColor();

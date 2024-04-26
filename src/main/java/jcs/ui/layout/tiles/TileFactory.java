@@ -16,8 +16,10 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
@@ -27,6 +29,8 @@ import static jcs.entities.TileBean.TileType.SENSOR;
 import static jcs.entities.TileBean.TileType.SIGNAL;
 import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.SWITCH;
+import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.events.TileEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -47,6 +51,8 @@ public class TileFactory {
   private static int blockIdSeq;
   private static int straightDirectionIdSeq;
   private static int endIdSeq;
+
+  private static final Map<String, TileEventListener> tileEventListeners = new HashMap<>();
 
   private TileFactory() {
   }
@@ -182,6 +188,9 @@ public class TileFactory {
     if (tile != null) {
       tile.setDrawOutline(drawOutline);
     }
+
+    addTileEventListener((TileEventListener) tile);
+
     return (Tile) tile;
   }
 
@@ -244,11 +253,12 @@ public class TileFactory {
       tile.setId(nextTileId(tileType));
     }
 
+    addTileEventListener((TileEventListener) tile);
+
     return (Tile) tile;
   }
 
-  public static List<Tile> toTiles(
-          List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
+  public static List<Tile> toTiles(List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
     List<Tile> tiles = new LinkedList<>();
 
     for (TileBean tileBean : tileBeans) {
@@ -256,6 +266,34 @@ public class TileFactory {
       tiles.add(tile);
     }
     return tiles;
+  }
+
+  public static void addTileEventListener(TileEventListener listener) {
+    String key = listener.getId();
+    tileEventListeners.put(key, listener);
+  }
+
+  public static void removeTileEventListener(Tile tile) {
+    if (tile instanceof TileEventListener) {
+      removeTileEventListener((TileEventListener) tile);
+    }
+  }
+
+  public static void removeTileEventListener(TileEventListener listener) {
+    String key = listener.getId();
+    tileEventListeners.remove(key, listener);
+  }
+
+  public static void fireTileEventListener(TileEvent tileEvent) {
+    String key = tileEvent.getTileId();
+    TileEventListener listener = tileEventListeners.get(key);
+    listener.onTileChange(tileEvent);
+  }
+
+  public static void fireAllTileEventListeners(TileEvent tileEvent) {
+    for (TileEventListener listener : tileEventListeners.values()) {
+      listener.onTileChange(tileEvent);
+    }
   }
 
 }

@@ -31,6 +31,7 @@ import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Direction.LEFT;
 import static jcs.entities.TileBean.Direction.RIGHT;
+import org.tinylog.Logger;
 
 public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
 
@@ -237,6 +238,7 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
         renderStraight(g2, Color.green, backgroundColor);
       }
       default -> {
+        Logger.trace(getId()+" "+routeValue+" "+routeColor);
         switch (this.routeValue) {
           case RED -> {
             renderStraight(g2, trackColor, backgroundColor);

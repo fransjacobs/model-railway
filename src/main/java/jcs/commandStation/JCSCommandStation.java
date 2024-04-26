@@ -68,11 +68,11 @@ public interface JCSCommandStation {
 
   void removeAccessoryEventListener(AccessoryEventListener listener);
 
-  void fireBlockEventListeners(BlockEvent blockEvent);
+  //void fireBlockEventListeners(BlockEvent blockEvent);
 
-  void addBlockEventListener(BlockEventListener listener);
+  //void addBlockEventListener(BlockEventListener listener);
 
-  void removeBlockEventListener(BlockEventListener listener);
+  //void removeBlockEventListener(BlockEventListener listener);
 
   void addSensorEventListener(SensorEventListener listener);
 

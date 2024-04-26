@@ -21,8 +21,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -43,13 +41,11 @@ import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import static jcs.ui.layout.tiles.AbstractTile.drawRotate;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
-import org.imgscalr.Scalr;
 import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile, BlockEventListener {

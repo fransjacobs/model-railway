@@ -133,8 +133,8 @@ public class H2PersistenceService implements PersistenceService {
     // First ensure the linked tile records are decoupled
     database.sql("update tiles set sensor_id = null where sensor_id = ?", sensor.getId()).execute();
     // Also update the blocks
-    database.sql("update blocks set min_sensor_id = null where sensor_id = ?", sensor.getId()).execute();
-    database.sql("update blocks set plus_sensor_id = null where sensor_id = ?", sensor.getId()).execute();
+    database.sql("update blocks set min_sensor_id = null where min_sensor_id = ?", sensor.getId()).execute();
+    database.sql("update blocks set plus_sensor_id = null where plus_sensor_id = ?", sensor.getId()).execute();
     
     int rows = database.delete(sensor).getRowsAffected();
     Logger.trace(sensor + " rows + " + rows + " deleted");

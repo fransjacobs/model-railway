@@ -87,7 +87,7 @@ public abstract class DispatcherState {
     Logger.trace("Refreshing " + blocks.size() + " block tiles...");
     for (BlockBean b : blocks) {
       BlockEvent be = new BlockEvent(b);
-      JCS.getJcsCommandStation().fireBlockEventListeners(be);
+      //JCS.getJcsCommandStation().fireBlockEventListeners(be);
     }
   }
 

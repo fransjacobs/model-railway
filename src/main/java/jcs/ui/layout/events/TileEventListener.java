@@ -17,13 +17,8 @@ package jcs.ui.layout.events;
 
 public interface TileEventListener {
 
-  //Which tile events are there?
-  //Setting a route ie the color of a "normal" tile will change
-  //Block status change , the bacjgroud color of a block changes, but also 
-  //Lock in to block change
-  //Switch change
-  
-  
+  String getId();
+
   void onTileChange(TileEvent tileEvent);
 
 }

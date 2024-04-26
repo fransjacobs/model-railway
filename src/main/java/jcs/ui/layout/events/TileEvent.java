@@ -15,6 +15,11 @@
  */
 package jcs.ui.layout.events;
 
+import java.awt.Color;
+import jcs.entities.AccessoryBean;
+import jcs.entities.BlockBean;
+import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
 import jcs.ui.layout.tiles.Tile;
 
 /**
@@ -23,14 +28,94 @@ import jcs.ui.layout.tiles.Tile;
  */
 public class TileEvent {
 
-  private final Tile tile;
+  private final String tileId;
 
-  public TileEvent(Tile tile) {
-    this.tile = tile;
+  private Color backgroundColor;
+  private Color trackColor;
+  private Color trackRouteColor;
+  private Orientation incomingSide;
+
+  private AccessoryBean.AccessoryValue routeState;
+  private Color routeStateColor;
+
+  private BlockBean blockBean;
+  private TileBean tileBean;
+
+  public TileEvent(TileBean tileBean, Color backgroundColor, Color trackColor) {
+    this.tileId = tileBean.getId();
+    this.tileBean = tileBean;
+    this.backgroundColor = backgroundColor;
+    this.trackColor = trackColor;
   }
 
-  public Tile getTile() {
-    return tile;
+//  public TileEvent(String tileId, Color trackRouteColor, Orientation incomingSide) {
+//    this(tileId, trackRouteColor, incomingSide, null, null);
+//  }
+
+  public TileEvent(String tileId, Color trackRouteColor, Orientation incomingSide, AccessoryBean.AccessoryValue routeState, Color routeStateColor) {
+    this.tileId = tileId;
+    this.trackRouteColor = trackRouteColor;
+    this.incomingSide = incomingSide;
+    this.routeState = routeState;
+    this.routeStateColor = routeStateColor;
+  }
+
+  public TileEvent(BlockBean blockBean) {
+    this.tileId = blockBean.getTileId();
+    this.blockBean = blockBean;
+  }
+
+  public TileEvent(TileBean tileBean) {
+    this.tileId = tileBean.getId();
+    this.tileBean = tileBean;
+  }
+
+  public boolean isEventFor(Tile tile) {
+    return this.tileId.equals(tile.getId());
+  }
+
+  public String getTileId() {
+    return tileId;
+  }
+
+  public Color getBackgroundColor() {
+    if (backgroundColor != null) {
+      return backgroundColor;
+    } else {
+      return Tile.DEFAULT_BACKGROUND_COLOR;
+    }
+  }
+
+  public Color getTrackColor() {
+    if (trackColor != null) {
+      return trackColor;
+    } else {
+      return Tile.DEFAULT_TRACK_COLOR;
+    }
+  }
+
+  public Color getTrackRouteColor() {
+    return trackRouteColor;
+  }
+
+  public Orientation getIncomingSide() {
+    return incomingSide;
+  }
+
+  public AccessoryBean.AccessoryValue getRouteState() {
+    return routeState;
+  }
+
+  public Color getRouteStateColor() {
+    return routeStateColor;
+  }
+
+  public BlockBean getBlockBean() {
+    return blockBean;
+  }
+
+  public TileBean getTileBean() {
+    return tileBean;
   }
 
 }

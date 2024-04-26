@@ -36,8 +36,6 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.commandStation.events.BlockEvent;
-import jcs.commandStation.events.BlockEventListener;
 import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
@@ -75,7 +73,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private Map<String, FeedbackController> feedbackControllers;
 
   private final List<SensorEventListener> sensorEventListeners;
-  private final List<BlockEventListener> blockEventListeners;
+  //private final List<BlockEventListener> blockEventListeners;
   private final List<AccessoryEventListener> accessoryEventListeners;
   private final List<LocomotiveFunctionEventListener> LocomotiveFunctionEventListeners;
 
@@ -96,7 +94,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     feedbackControllers = new HashMap<>();
 
     sensorEventListeners = new LinkedList<>();
-    blockEventListeners = new LinkedList<>();
+    //blockEventListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
     LocomotiveFunctionEventListeners = new LinkedList<>();
     locomotiveDirectionEventListeners = new LinkedList<>();
@@ -474,22 +472,22 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
   }
 
-  @Override
-  public void fireBlockEventListeners(BlockEvent blockEvent) {
-    for (BlockEventListener blockEventListener : blockEventListeners) {
-      blockEventListener.onBlockChange(blockEvent);
-    }
-  }
+//  @Override
+//  public void fireBlockEventListeners(BlockEvent blockEvent) {
+//    for (BlockEventListener blockEventListener : blockEventListeners) {
+//      blockEventListener.onBlockChange(blockEvent);
+//    }
+//  }
 
-  @Override
-  public void addBlockEventListener(BlockEventListener listener) {
-    blockEventListeners.add(listener);
-  }
+//  @Override
+//  public void addBlockEventListener(BlockEventListener listener) {
+//    blockEventListeners.add(listener);
+//  }
 
-  @Override
-  public void removeBlockEventListener(BlockEventListener listener) {
-    blockEventListeners.remove(listener);
-  }
+//  @Override
+//  public void removeBlockEventListener(BlockEventListener listener) {
+//    blockEventListeners.remove(listener);
+//  }
 
   @Override
   public void addSensorEventListener(SensorEventListener listener) {

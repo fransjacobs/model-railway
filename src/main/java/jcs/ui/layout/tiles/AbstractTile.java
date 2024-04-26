@@ -38,6 +38,8 @@ import java.util.Set;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.TileBean;
 import jcs.ui.layout.LayoutUtil;
+import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.events.TileEventListener;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
@@ -61,7 +63,7 @@ import org.tinylog.Logger;
  * <p>
  * A Tile is rendered to a Buffered Image to speed up the display
  */
-abstract class AbstractTile extends TileBean implements Tile {
+abstract class AbstractTile extends TileBean implements Tile, TileEventListener {
 
   protected int width;
   protected int height;
@@ -120,7 +122,7 @@ abstract class AbstractTile extends TileBean implements Tile {
 
     this.backgroundColor = backgroundColor;
     if (this.backgroundColor == null) {
-      this.backgroundColor = Color.white;
+      this.backgroundColor = Tile.DEFAULT_BACKGROUND_COLOR;
     }
   }
 
@@ -183,8 +185,14 @@ abstract class AbstractTile extends TileBean implements Tile {
     this.trackColor = trackColor;
   }
 
+  @Override
   public Color getTrackRouteColor() {
     return trackRouteColor;
+  }
+
+  @Override
+  public Orientation getIncomingSide() {
+    return incomingSide;
   }
 
   @Override
@@ -398,8 +406,7 @@ abstract class AbstractTile extends TileBean implements Tile {
   }
 
   public static BufferedImage flipVertically(BufferedImage source) {
-    BufferedImage output
-            = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
+    BufferedImage output = new BufferedImage(source.getHeight(), source.getWidth(), source.getType());
 
     AffineTransform flip = AffineTransform.getScaleInstance(-1, 1);
     flip.translate(-source.getWidth(), 0);
@@ -622,7 +629,22 @@ abstract class AbstractTile extends TileBean implements Tile {
 
   public void repaintTile() {
     if (this.propertyChangeListener != null) {
+      //Logger.trace(this);
       this.propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "repaintTile", this, this));
+    }
+  }
+
+  @Override
+  public void onTileChange(TileEvent tileEvent) {
+    if (tileEvent.isEventFor(this)) {
+      Logger.trace(tileEvent.getTileId()+" trackRouteColor: "+tileEvent.getTrackRouteColor());
+      setBackgroundColor(tileEvent.getBackgroundColor());
+      setTrackColor(tileEvent.getTrackColor());
+      setTrackRouteColor(tileEvent.getTrackRouteColor(), tileEvent.getIncomingSide());
+      if (tileEvent.getBlockBean() != null) {
+        setBlockBean(tileEvent.getBlockBean());
+      }
+      this.repaintTile();
     }
   }
 
