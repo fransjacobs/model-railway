@@ -50,7 +50,6 @@ import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
@@ -82,7 +81,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LayoutCanvas extends JPanel implements PropertyChangeListener, RouteDisplayCallBack {
+public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   public enum Mode {
     SELECT,
@@ -168,7 +167,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
 
     for (Tile tile : snapshot) {
       tile.setDrawOutline(drawGrid);
-      //tile.setTrackRouteColor(null, null);
 
       if (Mode.CONTROL != mode) {
         if (selectedTiles.contains(tile.getCenter())) {
@@ -178,27 +176,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
           tile.setBackgroundColor(Color.white);
         }
       }
-
-//      if (routeSnapshot.containsKey(tile.getId())) {
-//        RouteElementBean re = routeSnapshot.get(tile.getId());
-//        tile.setTrackRouteColor(Color.black, re.getIncomingOrientation());
-//
-//        if (tile.isJunction()) {
-//          AccessoryValue av = re.getAccessoryValue();
-//          ((Switch) tile).setRouteValue(av, Color.darkGray);
-//          Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
-//        } else {
-//          tile.setTrackColor(Color.darkGray);
-//        }
-//      } else {
-//        tile.setTrackRouteColor(null, null);
-//
-//        if (tile.isJunction()) {
-//          ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
-//        } else {
-//          tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
-//        }
-//      }
 
       tile.drawTile(g2, drawGrid);
       //debug
@@ -398,8 +375,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
       tile.setPropertyChangeListener(this);
       
-      TileFactory.addTileEventListener(tile);
-
+      //TODO move this to tile factory?:
       switch (tile.getTileType()) {
         case SENSOR ->
           JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
@@ -427,8 +403,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     repaint();
   }
 
-  @Override
-  public Set<Tile> getTiles() {
+  Set<Tile> getTiles() {
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     return snapshot;
   }
@@ -1237,7 +1212,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
   }
 
   void routeLayout() {
-    //routeLayoutWithAStar();
     this.executor.execute(() -> routeLayoutWithAStar());
   }
 
@@ -1259,25 +1233,24 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     this.routesDialog.setVisible(true);
   }
 
-  @Override
-  public void setSelectRoute(RouteBean route) {
-    selectedRouteElements.clear();
-    if (route != null) {
-      List<RouteElementBean> rel = route.getRouteElements();
-      for (RouteElementBean re : rel) {
-        String id = re.getTileId();
-        selectedRouteElements.put(id, re);
-      }
-    }
+//  @Override
+//  public void setSelectRoute(RouteBean route) {
+//    selectedRouteElements.clear();
+//    if (route != null) {
+//      List<RouteElementBean> rel = route.getRouteElements();
+//      for (RouteElementBean re : rel) {
+//        String id = re.getTileId();
+//        selectedRouteElements.put(id, re);
+//      }
+//    }
+//
+//    this.executor.execute(() -> repaint());
+//  }
 
-    this.executor.execute(() -> repaint());
-  }
-
-  @Override
-  public void refresh() {
-    loadLayoutInBackground();
-    //this.executor.execute(() -> loadLayoutInBackground();());
-  }
+//  public void refresh() {
+//    loadLayoutInBackground();
+//    //this.executor.execute(() -> loadLayoutInBackground();());
+//  }
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

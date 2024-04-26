@@ -76,6 +76,8 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   protected int renderOffsetX = 0;
   protected int renderOffsetY = 0;
 
+  protected Color drawTrackColor;
+
   protected Color trackColor;
 
   protected Color trackRouteColor;
@@ -118,7 +120,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
 
-    this.trackColor = DEFAULT_TRACK_COLOR;
+    this.drawTrackColor = DEFAULT_TRACK_COLOR;
 
     this.backgroundColor = backgroundColor;
     if (this.backgroundColor == null) {
@@ -128,7 +130,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
 
   protected AbstractTile(TileBean tileBean) {
     copyInto(tileBean);
-    this.trackColor = DEFAULT_TRACK_COLOR;
+    this.drawTrackColor = DEFAULT_TRACK_COLOR;
     this.backgroundColor = Color.white;
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
@@ -176,8 +178,8 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   }
 
   @Override
-  public Color getTrackColor() {
-    return trackColor;
+  public Color getDrawTrackColor() {
+    return drawTrackColor;
   }
 
   @Override
@@ -199,7 +201,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   public final void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide) {
     this.trackRouteColor = trackRouteColor;
     this.incomingSide = incomingSide;
-    Logger.trace(getId()+" trc: "+trackRouteColor+" is: "+incomingSide);
+    Logger.trace(getId() + " trc: " + trackRouteColor + " is: " + incomingSide);
   }
 
   @Override
@@ -226,13 +228,17 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       o = Orientation.EAST;
     }
 
-    if (!TileImageCache.contains(this) ) {
-    //if (!false ) {
+    if (!TileImageCache.contains(this)) {
       BufferedImage nbi = createImage();
 
       Graphics2D g2di = nbi.createGraphics();
-      if (trackColor == null) {
-        trackColor = DEFAULT_TRACK_COLOR;
+
+      if (trackRouteColor != null && incomingSide != null) {
+        this.drawTrackColor = trackRouteColor;
+      } else if (trackColor != null) {
+        this.drawTrackColor = trackColor;
+      } else {
+        drawTrackColor = DEFAULT_TRACK_COLOR;
       }
 
       if (backgroundColor == null) {
@@ -270,7 +276,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       }
 
       g2di.setTransform(trans);
-      renderTile(g2di, trackColor, backgroundColor);
+      renderTile(g2di, drawTrackColor, backgroundColor);
 
       //When the line grid is one the scale tile must be a little smaller
       int sw, sh;
@@ -631,7 +637,6 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
 
   public void repaintTile() {
     if (this.propertyChangeListener != null) {
-      //Logger.trace(this);
       this.propertyChangeListener.propertyChange(new PropertyChangeEvent(this, "repaintTile", this, this));
     }
   }
@@ -639,10 +644,14 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   @Override
   public void onTileChange(TileEvent tileEvent) {
     if (tileEvent.isEventFor(this)) {
-      Logger.trace(tileEvent.getTileId()+" trackRouteColor: "+tileEvent.getTrackRouteColor());
-      //setBackgroundColor(tileEvent.getBackgroundColor());
-      //setTrackColor(tileEvent.getTrackColor());
+      setBackgroundColor(tileEvent.getBackgroundColor());
+      setTrackColor(tileEvent.getTrackColor());
+
       setTrackRouteColor(tileEvent.getTrackRouteColor(), tileEvent.getIncomingSide());
+      if (isJunction()) {
+        ((Switch) this).setRouteValue(tileEvent.getRouteState(), Color.darkGray);
+      }
+
       if (tileEvent.getBlockBean() != null) {
         setBlockBean(tileEvent.getBlockBean());
       }
@@ -677,8 +686,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
    */
   @Override
   public boolean isHorizontal() {
-    return (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation())
-            && TileType.CURVED != getTileType();
+    return (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) && TileType.CURVED != getTileType();
   }
 
   /**
@@ -688,8 +696,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
    */
   @Override
   public boolean isVertical() {
-    return (Orientation.NORTH == getOrientation() || Orientation.SOUTH == getOrientation())
-            && TileType.CURVED != getTileType();
+    return (Orientation.NORTH == getOrientation() || Orientation.SOUTH == getOrientation()) && TileType.CURVED != getTileType();
   }
 
   @Override
@@ -796,35 +803,35 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
 
   protected StringBuilder getImageKeyBuilder() {
     StringBuilder sb = new StringBuilder();
-    sb.append(id);
-    sb.append(this.type);
+    //sb.append(id);
+    sb.append(type);
     sb.append("~");
-    sb.append(this.getOrientation().getOrientation());
+    sb.append(getOrientation().getOrientation());
     sb.append("~");
-    sb.append(this.getDirection().getDirection());
+    sb.append(getDirection().getDirection());
     sb.append("~");
-    sb.append(this.getBackgroundColor().toString());
+    sb.append(getBackgroundColor().toString());
     sb.append("~");
-    sb.append(this.getTrackColor().toString());
+    sb.append(getDrawTrackColor().toString());
     sb.append("~");
     sb.append(isDrawOutline() ? "y" : "n");
     sb.append("~");
-    int r = this.backgroundColor.getRed();
-    int g = this.backgroundColor.getGreen();
-    int b = this.backgroundColor.getBlue();
+    int r = backgroundColor.getRed();
+    int g = backgroundColor.getGreen();
+    int b = backgroundColor.getBlue();
     sb.append("#");
     sb.append(r);
     sb.append("#");
     sb.append(g);
     sb.append("#");
     sb.append(b);
-    if (this.incomingSide != null) {
+    if (incomingSide != null) {
       sb.append("~");
-      sb.append(this.incomingSide.getOrientation());
+      sb.append(incomingSide.getOrientation());
     }
-    if (this.trackRouteColor != null) {
+    if (trackRouteColor != null) {
       sb.append("~");
-      sb.append(this.trackRouteColor.toString());
+      sb.append(trackRouteColor.toString());
     }
 
     //sb.append("~");

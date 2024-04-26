@@ -189,7 +189,7 @@ public class TileFactory {
       tile.setDrawOutline(drawOutline);
     }
 
-    //addTileEventListener((TileEventListener) tile);
+    addTileEventListener((TileEventListener) tile);
     return (Tile) tile;
   }
 
@@ -252,7 +252,7 @@ public class TileFactory {
       tile.setId(nextTileId(tileType));
     }
 
-    //addTileEventListener((TileEventListener) tile);
+    addTileEventListener((TileEventListener) tile);
     return (Tile) tile;
   }
 
@@ -266,13 +266,13 @@ public class TileFactory {
     return tiles;
   }
 
-  public static void addTileEventListener(Tile tile) {
-    if (tile instanceof TileEventListener tileEventListener) {
-      addTileEventListener(tileEventListener);
-    }
-  }
+//  private static void addTileEventListener(Tile tile) {
+//    if (tile instanceof TileEventListener tileEventListener) {
+//      addTileEventListener(tileEventListener);
+//    }
+//  }
 
-  public static void addTileEventListener(TileEventListener listener) {
+  private static void addTileEventListener(TileEventListener listener) {
     String key = listener.getId();
     tileEventListeners.put(key, listener);
   }

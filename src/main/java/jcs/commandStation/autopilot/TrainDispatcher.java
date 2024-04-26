@@ -25,7 +25,6 @@ import jcs.commandStation.autopilot.state.StateEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
-import jcs.ui.layout.RouteDisplayCallBack;
 import org.tinylog.Logger;
 
 /**
@@ -43,16 +42,16 @@ public class TrainDispatcher extends Thread {
 
   private DispatcherState dispatcherState;
   private DispatcherState previousState;
-  private final RouteDisplayCallBack callback;
+  //private final RouteDisplayCallBack callback;
 
   private final List<StateEventListener> stateEventListeners;
 
   private boolean running;
 
-  public TrainDispatcher(LocomotiveBean locomotiveBean, RouteDisplayCallBack callback) {
+  public TrainDispatcher(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
     this.dispatcherState = new IdleState(this);
-    this.callback = callback;
+    //this.callback = callback;
     this.stateEventListeners = new LinkedList<>();
 
     setName("LDT->" + locomotiveBean.getName());
@@ -118,17 +117,17 @@ public class TrainDispatcher extends Thread {
     boolean action = dispatcherState.execute();
 
     if (dispatcherState instanceof ReserveRouteState && action) {
-      if (callback != null) {
+      //if (callback != null) {
         //callback.setSelectRoute(dispatcherState.getRoute());
-      }
+      //}
     }
 
     if (dispatcherState instanceof RunState && action) {
-      if (callback != null) {
+      //if (callback != null) {
         // callback.setSelectRoute(dispatcherState.getRoute());
 
-        callback.refresh();
-      }
+        //callback.refresh();
+      //}
     }
 
     return action;

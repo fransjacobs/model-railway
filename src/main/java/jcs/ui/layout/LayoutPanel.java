@@ -967,16 +967,16 @@ public class LayoutPanel extends JPanel {
     }
     startAutoPilotBtn.setEnabled(readonly && autoPilotBtn.isSelected());
     if (autoPilotBtn.isSelected()) {
-      AutoPilot.getInstance(canvas).initialize();
+      AutoPilot.getInstance().initialize();
     }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAutoPilotBtn.isSelected());
     if (this.startAutoPilotBtn.isSelected()) {
-      AutoPilot.getInstance(canvas).startAllLocomotives();
+      AutoPilot.getInstance().startAllLocomotives();
     } else {
-      AutoPilot.getInstance(canvas).stopAllLocomotives();
+      AutoPilot.getInstance().stopAllLocomotives();
     }
   }//GEN-LAST:event_startAutoPilotBtnActionPerformed
 

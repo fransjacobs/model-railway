@@ -44,7 +44,7 @@ public interface Tile extends Shape {
   public static final Color DEFAULT_BACKGROUND_COLOR = Color.white;
   public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
-  Color getTrackColor();
+  Color getDrawTrackColor();
 
   void setTrackColor(Color trackColor);
 

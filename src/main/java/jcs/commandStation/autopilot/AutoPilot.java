@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.RouteDisplayCallBack;
 import org.tinylog.Logger;
 
 /**
@@ -35,17 +34,16 @@ public class AutoPilot {
 
   private static AutoPilot instance = null;
 
-  private RouteDisplayCallBack callback;
+//  private RouteDisplayCallBack callback;
 
   Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
 
-  private AutoPilot(RouteDisplayCallBack callback) {
-    this.callback = callback;
+  private AutoPilot() {
   }
 
-  public static AutoPilot getInstance(RouteDisplayCallBack callback) {
+  public static AutoPilot getInstance() {
     if (instance == null) {
-      instance = new AutoPilot(callback);
+      instance = new AutoPilot();
     }
     return instance;
   }
@@ -57,7 +55,7 @@ public class AutoPilot {
   public void startAllLocomotives() {
     List<LocomotiveBean> locs = getOnTrackLocomotives();
     for (LocomotiveBean loc : locs) {
-      TrainDispatcher dispatcher = new TrainDispatcher(loc, callback);
+      TrainDispatcher dispatcher = new TrainDispatcher(loc);
       locomotives.put(dispatcher.getName(), dispatcher);
       Logger.debug("Added " + dispatcher.getName());      
       dispatcher.start();
@@ -77,7 +75,7 @@ public class AutoPilot {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
 
     if (start) {
-      TrainDispatcher dispatcher = new TrainDispatcher(locomotiveBean, callback);
+      TrainDispatcher dispatcher = new TrainDispatcher(locomotiveBean);
 
       //LocomotiveStateMachine lsm = new LocomotiveStateMachine(locomotiveBean);
       locomotives.put(dispatcher.getName(), dispatcher);
@@ -90,7 +88,6 @@ public class AutoPilot {
       TrainDispatcher lsm = this.locomotives.get("DP->" + locomotiveBean.getName());
       //lsm.stopLocomotive();
     }
-
   }
 
   private List<LocomotiveBean> getOnTrackLocomotives() {
@@ -118,7 +115,7 @@ public class AutoPilot {
   }
 
   public static void main(String[] a) {
-    AutoPilot ap = new AutoPilot(null);
+    AutoPilot ap = new AutoPilot();
 
     ap.startAllLocomotives();
 

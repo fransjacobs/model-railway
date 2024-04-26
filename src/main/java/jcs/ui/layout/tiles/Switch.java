@@ -224,10 +224,6 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
       this.routeValue = AccessoryValue.OFF;
     }
 
-    if (this.routeColor == null) {
-      this.routeColor = trackColor;
-    }
-
     switch (this.accessoryValue) {
       case RED -> {
         renderStraight(g2, trackColor, backgroundColor);
@@ -238,19 +234,19 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
         renderStraight(g2, Color.green, backgroundColor);
       }
       default -> {
-        Logger.trace(getId()+" "+routeValue+" "+routeColor);
+        Logger.trace(getId() + " " + routeValue + " " + routeColor);
         switch (this.routeValue) {
           case RED -> {
-            renderStraight(g2, trackColor, backgroundColor);
+            renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
             renderDiagonal(g2, this.routeColor, backgroundColor);
           }
           case GREEN -> {
-            renderDiagonal(g2, trackColor, backgroundColor);
+            renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
             renderStraight(g2, this.routeColor, backgroundColor);
           }
           default -> {
-            renderStraight(g2, trackColor, backgroundColor);
-            renderDiagonal(g2, trackColor, backgroundColor);
+            renderStraight(g2, drawTrackColor, backgroundColor);
+            renderDiagonal(g2, drawTrackColor, backgroundColor);
           }
         }
       }
