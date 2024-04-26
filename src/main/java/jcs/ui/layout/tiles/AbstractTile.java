@@ -199,6 +199,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   public final void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide) {
     this.trackRouteColor = trackRouteColor;
     this.incomingSide = incomingSide;
+    Logger.trace(getId()+" trc: "+trackRouteColor+" is: "+incomingSide);
   }
 
   @Override
@@ -225,7 +226,8 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       o = Orientation.EAST;
     }
 
-    if (!TileImageCache.contains(this)) {
+    if (!TileImageCache.contains(this) ) {
+    //if (!false ) {
       BufferedImage nbi = createImage();
 
       Graphics2D g2di = nbi.createGraphics();
@@ -638,13 +640,13 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   public void onTileChange(TileEvent tileEvent) {
     if (tileEvent.isEventFor(this)) {
       Logger.trace(tileEvent.getTileId()+" trackRouteColor: "+tileEvent.getTrackRouteColor());
-      setBackgroundColor(tileEvent.getBackgroundColor());
-      setTrackColor(tileEvent.getTrackColor());
+      //setBackgroundColor(tileEvent.getBackgroundColor());
+      //setTrackColor(tileEvent.getTrackColor());
       setTrackRouteColor(tileEvent.getTrackRouteColor(), tileEvent.getIncomingSide());
       if (tileEvent.getBlockBean() != null) {
         setBlockBean(tileEvent.getBlockBean());
       }
-      this.repaintTile();
+      repaintTile();
     }
   }
 
@@ -794,7 +796,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
 
   protected StringBuilder getImageKeyBuilder() {
     StringBuilder sb = new StringBuilder();
-    //sb.append(id);
+    sb.append(id);
     sb.append(this.type);
     sb.append("~");
     sb.append(this.getOrientation().getOrientation());
@@ -831,6 +833,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     //SignalType
     //SignalValue
     //active;
+    //Logger.trace(sb);
     return sb;
   }
 

@@ -48,9 +48,9 @@ public class TileEvent {
     this.trackColor = trackColor;
   }
 
-//  public TileEvent(String tileId, Color trackRouteColor, Orientation incomingSide) {
-//    this(tileId, trackRouteColor, incomingSide, null, null);
-//  }
+  public TileEvent(String tileId, Color trackRouteColor, Orientation incomingSide) {
+    this(tileId, trackRouteColor, incomingSide, null, null);
+  }
 
   public TileEvent(String tileId, Color trackRouteColor, Orientation incomingSide, AccessoryBean.AccessoryValue routeState, Color routeStateColor) {
     this.tileId = tileId;

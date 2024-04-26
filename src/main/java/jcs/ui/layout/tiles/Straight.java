@@ -97,7 +97,13 @@ public class Straight extends AbstractTile implements Tile {
     h = 50;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
+
+    if (this.trackRouteColor != null && this.incomingSide != null) {
+      g2.setPaint(trackRouteColor);
+    } else {
+      g2.setPaint(trackColor);
+    }
+
     g2.fillRect(xx, yy, w, h);
   }
 

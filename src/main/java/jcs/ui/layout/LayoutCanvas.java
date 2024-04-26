@@ -47,7 +47,6 @@ import javax.swing.SwingUtilities;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.commandStation.events.BlockEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
@@ -84,7 +83,7 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class LayoutCanvas extends JPanel implements PropertyChangeListener, RouteDisplayCallBack {
-  
+
   public enum Mode {
     SELECT,
     ADD,
@@ -93,70 +92,70 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     DELETE,
     CONTROL
   }
-  
+
   private boolean readonly;
   private Mode mode;
   private boolean drawGrid = true;
   private boolean lineGrid = true;
-  
+
   private Orientation orientation;
   private Direction direction;
   private TileBean.TileType tileType;
-  
+
   private Point mouseLocation = new Point(0, 0);
-  
+
   private BufferedImage grid;
-  
+
   private final ExecutorService executor;
-  
+
   private final Map<Point, Tile> tiles;
   private final Map<Point, Tile> altTiles;
   private final Set<Point> selectedTiles;
-  
+
   private RoutesDialog routesDialog;
   private final Map<String, RouteElementBean> selectedRouteElements;
-  
+
   private Point movingTileCenterPoint;
   private BufferedImage movingTileImage;
-  
+
   public LayoutCanvas() {
     this(false);
   }
-  
+
   public LayoutCanvas(boolean readonly) {
     this.readonly = readonly;
     this.tiles = new HashMap<>();
     this.altTiles = new HashMap<>();
-    
+
     this.selectedTiles = new HashSet<>();
     this.selectedRouteElements = new HashMap<>();
-    
+
     this.executor = Executors.newSingleThreadExecutor();
     //this.executor = Executors.newCachedThreadPool();
 
     this.mode = Mode.SELECT;
     this.orientation = Orientation.EAST;
     this.direction = Direction.CENTER;
-    
+
     initComponents();
     postInit();
   }
-  
+
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, this.readonly);
     lineGrid = "true".equals(System.getProperty("draw.linegrid", "true"));
   }
-  
+
   @Override
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g.create();
-    
+
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     //ensure there is no tile which is null... 
     Map<String, RouteElementBean> routeSnapshot;
     routeSnapshot = new HashMap<>(this.selectedRouteElements);
-    
+
     if (this.drawGrid) {
       if (lineGrid) {
         paintLineGrid(g);
@@ -166,11 +165,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     } else {
       paintNullGrid(g);
     }
-    
+
     for (Tile tile : snapshot) {
       tile.setDrawOutline(drawGrid);
-      tile.setTrackRouteColor(null, null);
-      
+      //tile.setTrackRouteColor(null, null);
+
       if (Mode.CONTROL != mode) {
         if (selectedTiles.contains(tile.getCenter())) {
           //tile.setBackgroundColor(Color.yellow);
@@ -179,35 +178,35 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
           tile.setBackgroundColor(Color.white);
         }
       }
-      
-      if (routeSnapshot.containsKey(tile.getId())) {
-        RouteElementBean re = routeSnapshot.get(tile.getId());
-        tile.setTrackRouteColor(Color.black, re.getIncomingOrientation());
-        
-        if (tile.isJunction()) {
-          AccessoryValue av = re.getAccessoryValue();
-          ((Switch) tile).setRouteValue(av, Color.darkGray);
-          Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
-        } else {
-          tile.setTrackColor(Color.darkGray);
-        }
-      } else {
-        tile.setTrackRouteColor(null, null);
-        
-        if (tile.isJunction()) {
-          ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
-        } else {
-          tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
-        }
-      }
-      
+
+//      if (routeSnapshot.containsKey(tile.getId())) {
+//        RouteElementBean re = routeSnapshot.get(tile.getId());
+//        tile.setTrackRouteColor(Color.black, re.getIncomingOrientation());
+//
+//        if (tile.isJunction()) {
+//          AccessoryValue av = re.getAccessoryValue();
+//          ((Switch) tile).setRouteValue(av, Color.darkGray);
+//          Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
+//        } else {
+//          tile.setTrackColor(Color.darkGray);
+//        }
+//      } else {
+//        tile.setTrackRouteColor(null, null);
+//
+//        if (tile.isJunction()) {
+//          ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
+//        } else {
+//          tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
+//        }
+//      }
+
       tile.drawTile(g2, drawGrid);
       //debug
       if (!this.readonly) {
         tile.drawCenterPoint(g2, Color.magenta, 3);
       }
     }
-    
+
     if (this.movingTileCenterPoint != null && this.movingTileImage != null) {
       int x = movingTileCenterPoint.x;
       int y = movingTileCenterPoint.y;
@@ -215,10 +214,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       int h = movingTileImage.getHeight();
       g2.drawImage(movingTileImage, (x - w / 2), (y - h / 2), null);
     }
-    
+
     g2.dispose();
   }
-  
+
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("repaintTile".equals(evt.getPropertyName())) {
@@ -226,21 +225,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       this.repaint(tile.getBounds());
     }
   }
-  
+
   private void paintNullGrid(Graphics g) {
     if (this.grid != null) {
       int pw = this.getWidth();
       int ph = this.getHeight();
       int gw = grid.getWidth();
       int gh = grid.getHeight();
-      
+
       if (pw != gw || ph != gh) {
         //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       } else {
       }
     }
-    
+
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
@@ -248,34 +247,34 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       //Logger.trace("Width: " + width + " Height: " + height);
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
-      
+
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-      
+
       gc.setPaint(Color.black);
-      
+
       gc.dispose();
     }
     Graphics2D g2 = (Graphics2D) g;
     //Draw grid from pre computed image
     g2.drawImage(grid, null, 0, 0);
   }
-  
+
   private void paintDotGrid(Graphics g) {
     if (this.grid != null) {
       int pw = this.getWidth();
       int ph = this.getHeight();
-      
+
       int gw = grid.getWidth();
       int gh = grid.getHeight();
-      
+
       if (pw != gw || ph != gh) {
         //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       } else {
       }
     }
-    
+
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
@@ -283,12 +282,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       //Logger.trace("Width: " + width + " Height: " + height);
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
-      
+
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-      
+
       gc.setPaint(Color.black);
-      
+
       for (int r = 0; r < width; r++) {
         for (int c = 0; c < height; c++) {
           gc.drawOval(r * Tile.GRID * 2, c * Tile.GRID * 2, 1, 1);
@@ -300,21 +299,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     //Draw grid from pre computed image
     g2.drawImage(grid, null, 0, 0);
   }
-  
+
   private void paintLineGrid(Graphics g) {
     if (this.grid != null) {
       int pw = this.getWidth();
       int ph = this.getHeight();
-      
+
       int gw = grid.getWidth();
       int gh = grid.getHeight();
-      
+
       if (pw != gw || ph != gh) {
         //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       }
     }
-    
+
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
@@ -322,12 +321,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
 
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
-      
+
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-      
+
       gc.setPaint(Color.lightGray);
-      
+
       gc.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
       for (int x = 0; x < width; x += 40) {
         gc.drawLine(x, 0, x, height);
@@ -340,65 +339,67 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     Graphics2D g2 = (Graphics2D) g;
     g2.drawImage(grid, null, 0, 0);
   }
-  
+
   void resetDotGrid() {
     Logger.debug("reset dot grid");
     this.grid = null;
   }
-  
+
   void setMode(LayoutCanvas.Mode mode) {
     this.mode = mode;
     Logger.trace("Mode: " + mode);
   }
-  
+
   LayoutCanvas.Mode getMode() {
     return this.mode;
   }
-  
+
   void setDrawGrid(boolean flag) {
     this.drawGrid = flag;
     this.repaint();
   }
-  
+
   void setTileType(TileBean.TileType tileType) {
     this.tileType = tileType;
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
   }
-  
+
   Orientation getOrientation() {
     return orientation;
   }
-  
+
   void setOrientation(Orientation orientation) {
     this.orientation = orientation;
   }
-  
+
   void setDirection(Direction direction) {
     this.direction = direction;
   }
-  
+
   Direction getDirection() {
     return direction;
   }
-  
+
   public void loadLayoutInBackground() {
     this.executor.execute(() -> loadTiles());
   }
-  
+
   public void loadTiles() {
     boolean showValues = Mode.CONTROL.equals(mode);
-    
+
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
-    
+
     selectedTiles.clear();
     altTiles.clear();
     tiles.clear();
     selectedRouteElements.clear();
-    
+
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
       tile.setPropertyChangeListener(this);
       
+      TileFactory.addTileEventListener(tile);
+
       switch (tile.getTileType()) {
         case SENSOR ->
           JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
@@ -406,8 +407,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
           JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
           JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
-        case BLOCK ->
-          JCS.getJcsCommandStation().addBlockEventListener((BlockEventListener) tile);        
+        //case BLOCK ->
+        //  JCS.getJcsCommandStation().addBlockEventListener((BlockEventListener) tile);        
         default -> {
           //Do nothing
         }
@@ -425,24 +426,24 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     Logger.debug("Loaded " + tiles.size() + " Tiles...");
     repaint();
   }
-  
+
   @Override
   public Set<Tile> getTiles() {
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     return snapshot;
   }
-  
+
   public void saveLayout() {
     //Create a snap shot as persisting is done in worker thread
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     this.selectedTiles.clear();
     this.executor.execute(() -> saveTiles(snapshot));
   }
-  
+
   private synchronized void saveTiles(Set<Tile> snapshot) {
     Logger.debug("Saving " + snapshot.size() + " tiles...");
     List<TileBean> beans = new LinkedList<>();
-    
+
     for (Tile tile : snapshot) {
       if (tile != null) {
         TileBean tb = tile.getTileBean();
@@ -590,7 +591,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       setCursor(Cursor.getDefaultCursor());
     }
   }
-  
+
   private Tile getSelectedTile() {
     Tile t = null;
     if (!selectedTiles.isEmpty()) {
@@ -603,7 +604,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     }
     return t;
   }
-  
+
   private void mousePressedAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     Tile tile = findTile(snapPoint);
@@ -613,7 +614,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     if (tile != null) {
       selectedTiles.addAll(tile.getAllPoints());
     }
-    
+
     switch (mode) {
       case CONTROL -> {
         if (tile != null) {
@@ -645,7 +646,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         if (tile == null) {
           this.selectedTiles.clear();
         }
-        
+
         if (MouseEvent.BUTTON3 == evt.getButton()) {
           showOperationsPopupMenu(tile, snapPoint);
         }
@@ -653,7 +654,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     }
     repaint();
   }
-  
+
   private void mouseDragAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     Tile selTile = getSelectedTile();
@@ -668,7 +669,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     }
     repaint();
   }
-  
+
   private boolean checkTileOccupation(Tile tile) {
     Set<Point> tilePoints = tile.getAllPoints();
     for (Point p : tilePoints) {
@@ -685,15 +686,15 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     }
     return false;
   }
-  
+
   private void mouseReleasedAction(MouseEvent evt) {
     Tile selTile = getSelectedTile();
     if (selTile != null) {
       Logger.trace("Selected tile: " + selTile.getId() + ", " + selTile.xyToString());
     }
-    
+
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    
+
     if (!LayoutCanvas.Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selTile != null) {
       Point tp = selTile.getCenter();
       if (!tp.equals(snapPoint)) {
@@ -710,7 +711,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
             canMove = false;
           }
         }
-        
+
         if (canMove) {
           //Remove the original tile center from the tiles
           Tile movingTile = tiles.remove(tp);
@@ -749,10 +750,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     }
     movingTileImage = null;
     movingTileCenterPoint = null;
-    
+
     repaint();
   }
-  
+
   private void executeControlActionForTile(Tile tile, Point p) {
     TileBean.TileType tt = tile.getTileType();
     switch (tt) {
@@ -770,7 +771,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         Block block = (Block) tile;
         BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
         bcd.setVisible(true);
-        
+
         this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
       }
       case SIGNAL ->
@@ -784,47 +785,47 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       }
     }
   }
-  
+
   private void toggleSwitch(Switch turnout) {
     if (turnout.getAccessoryBean() != null) {
       AccessoryBean ab = turnout.getAccessoryBean();
       ab.toggle();
       turnout.setValue(ab.getAccessoryValue());
-      
+
       JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
       repaint(turnout.getX(), turnout.getY(), turnout.getWidth(), turnout.getHeight());
     } else {
       Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
     }
   }
-  
+
   private void toggleSignal(Signal signal) {
     if (signal.getAccessoryBean() != null) {
       AccessoryBean ab = signal.getAccessoryBean();
       ab.toggle();
       Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getState());
-      
+
       JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
       repaint(signal.getX(), signal.getY(), signal.getWidth(), signal.getHeight());
     } else {
       Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }
   }
-  
+
   private void toggleSensor(Sensor sensor) {
     SensorBean sb = sensor.getSensorBean();
     if (sb != null) {
       sb.toggle();
       sensor.setActive((sb.getStatus() == 1));
       Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
-      
+
       sensor.repaintTile();
-      
-      SensorEvent sensorEvent = new SensorEvent(sb);      
+
+      SensorEvent sensorEvent = new SensorEvent(sb);
       this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
     }
   }
-  
+
   private void fireFeedbackEvent(SensorEvent sensorEvent) {
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
     for (FeedbackController fbc : acl) {
@@ -839,14 +840,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     boolean showRotate = false;
     boolean showMove = false;
     boolean showDelete = false;
-    
+
     if (!this.selectedTiles.isEmpty()) {
       Point tcp = this.selectedTiles.iterator().next();
       Tile tile = findTile(tcp);
       TileBean.TileType tt = tile.getTileType();
-      
+
       Logger.trace("Seleted tile " + tile.getId() + " TileType " + tt);
-      
+
       switch (tt) {
         case END -> {
           showRotate = true;
@@ -892,7 +893,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     //this.executor.execute(() -> repaint());
     repaint();
   }
-  
+
   private void showOperationsPopupMenu(Tile tile, Point p) {
     //which items should be shown
     boolean showProperties = false;
@@ -900,7 +901,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     boolean showRotate = false;
     boolean showMove = false;
     boolean showDelete = false;
-    
+
     TileBean.TileType tt = tile.getTileType();
     switch (tt) {
       case SENSOR -> {
@@ -936,16 +937,16 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       }
     }
     this.xyMI.setVisible(true);
-    
+
     String extra = "";
     if (tile instanceof Sensor s) {
       if (s.getSensorBean() != null) {
         extra = " " + s.getSensorBean().getName();
       }
     }
-    
+
     this.xyMI.setText(tile.getId() + extra + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
-    
+
     this.propertiesMI.setVisible(showProperties);
     this.flipHorizontalMI.setVisible(showFlip);
     this.flipVerticalMI.setVisible(showFlip);
@@ -965,7 +966,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
 
   private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
       this.mouseLocation = null;
@@ -974,7 +975,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
 
   private void verticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_verticalMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
       this.mouseLocation = null;
@@ -983,7 +984,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
 
   private void rightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
       this.mouseLocation = null;
@@ -992,7 +993,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
 
   private void leftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftMIActionPerformed
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-    
+
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
 
@@ -1000,7 +1001,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       this.mouseLocation = null;
     }
   }//GEN-LAST:event_leftMIActionPerformed
-  
+
   public Tile findTile(Point cp) {
     Tile result = this.tiles.get(cp);
     if (result == null) {
@@ -1010,7 +1011,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         //Logger.trace("Found " + result + " in alt tiles");
       }
     }
-    
+
     return result;
   }
 
@@ -1045,21 +1046,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
   private void formMouseDragged(MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
     mouseDragAction(evt);
   }//GEN-LAST:event_formMouseDragged
-  
+
   private Point getCheckAvailable(Point newPoint) {
     if (this.tiles.containsKey(newPoint)) {
       Tile et = this.tiles.get(newPoint);
-      
+
       Logger.debug("@ " + newPoint + " is allready occcupied by: " + et + "...");
       //Search for the nearest avalaible free point 
       //first get the Center point of the tile which is occuping this slot
 
       // show warning!
       Point ecp = et.getCenter();
-      
+
       int w = et.getWidth();
       int h = et.getHeight();
-      
+
       Point np;
       np = switch (this.orientation) {
         case EAST ->
@@ -1071,34 +1072,34 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         default ->
           new Point(ecp.x, newPoint.y - h);
       };
-      
+
       Logger.trace("Alternative CP: " + np);
       // recursive check
       return getCheckAvailable(np);
     } else {
       Logger.debug("@ " + newPoint + " is not yet used...");
-      
+
       return newPoint;
     }
   }
-  
+
   private Tile addTile(Point p) {
     if (this.orientation == null) {
       this.orientation = Orientation.EAST;
     }
-    
+
     if (this.direction == null) {
       this.direction = Direction.RIGHT;
     }
-    
+
     Logger.trace("Adding: " + tileType + " @ " + p);
-    
+
     Point chkp = getCheckAvailable(p);
-    
+
     boolean fullRepaint = !chkp.equals(p);
-    
+
     Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
-    
+
     tiles.put(chkp, tile);
     //Alternative point(s) to be able to find all points
     if (!tile.getAltPoints().isEmpty()) {
@@ -1109,41 +1110,41 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     }
     Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
     Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
-    
+
     if (fullRepaint) {
       this.repaint();
     }
     return tile;
   }
-  
+
   void removeTiles() {
-    
+
     removeTiles(selectedTiles);
   }
-  
+
   private void removeTiles(Set<Point> pointsToRemove) {
     for (Point p : pointsToRemove) {
       Tile removed = this.tiles.remove(p);
-      
+
       if (removed != null && removed.getAllPoints() != null) {
         Set<Point> rps = removed.getAltPoints();
         //Also remove alt points
         for (Point ap : rps) {
           tiles.remove(ap);
         }
-        
+
         Logger.trace("Removed: " + removed);
       }
     }
     selectedTiles.clear();
     repaint();
   }
-  
+
   private java.awt.Frame getParentFrame() {
     JFrame frame = (JFrame) SwingUtilities.getRoot(this);
     return frame;
   }
-  
+
   public void rotateSelectedTile() {
     Logger.trace("Selected Tiles " + selectedTiles.size());
 
@@ -1157,7 +1158,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         for (Point ep : t.getAltPoints()) {
           this.altTiles.remove(ep);
         }
-        
+
         t.rotate();
         Logger.trace("Rotated " + t);
         this.orientation = t.getOrientation();
@@ -1168,7 +1169,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
         }
-        
+
         this.selectedTiles.clear();
         this.selectedTiles.addAll(t.getAllPoints());
       }
@@ -1176,7 +1177,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
     //this.executor.execute(() -> repaint());
     repaint();
   }
-  
+
   public void flipSelectedTileHorizontal() {
     Set<Point> snapshot = new HashSet<>(selectedTiles);
     for (Point p : snapshot) {
@@ -1187,7 +1188,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         for (Point ep : t.getAltPoints()) {
           this.altTiles.remove(ep);
         }
-        
+
         t.flipHorizontal();
         Logger.trace("Flipped " + t);
         this.orientation = t.getOrientation();
@@ -1198,14 +1199,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
         }
-        
+
         this.selectedTiles.clear();
         this.selectedTiles.addAll(t.getAllPoints());
       }
     }
     this.executor.execute(() -> repaint());
   }
-  
+
   public void flipSelectedTileVertical() {
     Set<Point> snapshot = new HashSet<>(selectedTiles);
     for (Point p : snapshot) {
@@ -1216,7 +1217,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         for (Point ep : t.getAltPoints()) {
           this.altTiles.remove(ep);
         }
-        
+
         t.flipVertical();
         Logger.trace("Flipped " + t);
         this.orientation = t.getOrientation();
@@ -1227,24 +1228,24 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
         }
-        
+
         this.selectedTiles.clear();
         this.selectedTiles.addAll(t.getAllPoints());
       }
     }
     this.executor.execute(() -> repaint());
   }
-  
+
   void routeLayout() {
     //routeLayoutWithAStar();
     this.executor.execute(() -> routeLayoutWithAStar());
   }
-  
+
   private void routeLayoutWithAStar() {
     //Make sure the layout is saved
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     this.saveTiles(snapshot);
-    
+
     AStar astar = new AStar();
     astar.buildGraph(this.tiles.values().stream().collect(Collectors.toList()));
     astar.routeAll();
@@ -1253,11 +1254,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       this.routesDialog.loadRoutes();
     }
   }
-  
+
   void showRoutesDialog() {
     this.routesDialog.setVisible(true);
   }
-  
+
   @Override
   public void setSelectRoute(RouteBean route) {
     selectedRouteElements.clear();
@@ -1265,24 +1266,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener, Rout
       List<RouteElementBean> rel = route.getRouteElements();
       for (RouteElementBean re : rel) {
         String id = re.getTileId();
-        Orientation incomingSide = re.getIncomingOrientation();
-        
-        String nodeId = re.getNodeId();
-
-        //if (id.startsWith("sw-") || id.startsWith("cs-")) {
-        //Switches are 2 times in there, only the one with a value is needed
-        //if (!id.equals(nodeId)) {
-        //  selectedRouteElements.put(id, re);
-        //}
-        //} else {
         selectedRouteElements.put(id, re);
-        //}
       }
     }
-    
+
     this.executor.execute(() -> repaint());
   }
-  
+
   @Override
   public void refresh() {
     loadLayoutInBackground();
