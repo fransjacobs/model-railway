@@ -16,7 +16,6 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
@@ -89,12 +88,12 @@ public class Straight extends AbstractTile implements Tile {
     return aps;
   }
 
-  protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  protected void renderStraight(Graphics2D g2) {
     int xx, yy, w, h;
     xx = 0;
-    yy = 175;
+    yy = 170;
     w = RENDER_WIDTH;
-    h = 50;
+    h = 60;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackColor);
@@ -102,9 +101,27 @@ public class Straight extends AbstractTile implements Tile {
     g2.fillRect(xx, yy, w, h);
   }
 
+  protected void renderRouteStraight(Graphics2D g2) {
+    int xx, yy, w, h;
+    xx = 0;
+    yy = 190;
+    w = RENDER_WIDTH;
+    h = 20;
+
+    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+    g2.setPaint(trackRouteColor);
+
+    g2.fillRect(xx, yy, w, h);
+  }
+
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    renderStraight(g2, trackColor, backgroundColor);
+  public void renderTileRoute(Graphics2D g2) {
+    renderRouteStraight(g2);
+  }
+
+  @Override
+  public void renderTile(Graphics2D g2) {
+    renderStraight(g2);
   }
 
   @Override

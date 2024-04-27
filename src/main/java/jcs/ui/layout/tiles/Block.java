@@ -349,7 +349,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   }
 
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  public void renderTile(Graphics2D g2) {
     int xx = 20;
     int yy = 50;
     int rw = RENDER_WIDTH * 3 - 40;
@@ -384,6 +384,11 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     }
 
     drawName(g2);
+  }
+
+  @Override
+  public void renderTileRoute(Graphics2D g2d) {
+    
   }
 
   protected void overlayLocImage(Graphics2D g2d) {

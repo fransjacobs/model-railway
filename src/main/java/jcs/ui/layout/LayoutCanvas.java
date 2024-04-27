@@ -870,6 +870,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   private void showOperationsPopupMenu(Tile tile, Point p) {
+    if(tile == null || p == null) {
+      return;
+    }
+
     //which items should be shown
     boolean showProperties = false;
     boolean showFlip = false;

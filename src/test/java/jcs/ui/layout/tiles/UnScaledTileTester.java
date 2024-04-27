@@ -20,12 +20,15 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
 import org.tinylog.Logger;
 
 /**
@@ -64,6 +67,8 @@ public class UnScaledTileTester extends JFrame {
     ((AbstractTile) tile).setScaleImage(false);
   }
 
+
+  
   @Override
   public void paint(Graphics g) {
     Graphics2D g2d = (Graphics2D) g;
@@ -103,4 +108,9 @@ public class UnScaledTileTester extends JFrame {
 
     app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
+  
+  
+  
+  
+  
 }

@@ -33,7 +33,7 @@ public final class TileImageCache {
   }
 
   public static void put(String key, BufferedImage image) {
-    Logger.trace("Adding: " + key);
+    //Logger.trace("Adding: " + key);
     tileImageCache.put(key, image);
   }
 

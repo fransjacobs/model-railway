@@ -76,12 +76,11 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   protected int renderOffsetX = 0;
   protected int renderOffsetY = 0;
 
-  protected Color drawTrackColor;
-
+  //protected Color drawTrackColor;
   protected Color trackColor;
-
   protected Color trackRouteColor;
   protected Orientation incomingSide;
+  protected boolean drawRoute = false;
 
   protected Color backgroundColor;
   protected boolean drawName = true;
@@ -120,18 +119,17 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
 
-    this.drawTrackColor = DEFAULT_TRACK_COLOR;
-
+    this.trackColor = DEFAULT_TRACK_COLOR;
     this.backgroundColor = backgroundColor;
     if (this.backgroundColor == null) {
-      this.backgroundColor = Tile.DEFAULT_BACKGROUND_COLOR;
+      this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
     }
   }
 
   protected AbstractTile(TileBean tileBean) {
     copyInto(tileBean);
-    this.drawTrackColor = DEFAULT_TRACK_COLOR;
-    this.backgroundColor = Color.white;
+    this.trackColor = DEFAULT_TRACK_COLOR;
+    this.backgroundColor = DEFAULT_BACKGROUND_COLOR;
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
   }
@@ -145,17 +143,17 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     this.y = other.getY();
 
     if (other instanceof AbstractTile abstractTile) {
-      abstractTile.renderWidth = this.renderWidth;
-      abstractTile.renderHeight = this.renderHeight;
+      this.renderWidth = abstractTile.renderWidth;
+      this.renderHeight = abstractTile.renderHeight;
     }
 
     this.setSignalType(other.getSignalType());
     this.accessoryId = other.getAccessoryId();
     this.signalAccessoryType = other.getSignalAccessoryType();
     this.sensorId = other.getSensorId();
-
     this.accessoryBean = other.getAccessoryBean();
     this.sensorBean = other.getSensorBean();
+    this.blockBean = other.getBlockBean();
   }
 
   @Override
@@ -173,13 +171,14 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     tb.setSensorId(this.sensorId);
     tb.setAccessoryBean(this.accessoryBean);
     tb.setSensorBean(this.sensorBean);
+    tb.setBlockBean(this.blockBean);
 
     return tb;
   }
 
   @Override
-  public Color getDrawTrackColor() {
-    return drawTrackColor;
+  public Color getTrackColor() {
+    return trackColor;
   }
 
   @Override
@@ -193,15 +192,18 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   }
 
   @Override
+  public void setTrackRouteColor(Color trackRouteColor) {
+    this.trackRouteColor = trackRouteColor;
+  }
+
+  @Override
   public Orientation getIncomingSide() {
     return incomingSide;
   }
 
   @Override
-  public final void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide) {
-    this.trackRouteColor = trackRouteColor;
+  public void setIncomingSide(Orientation incomingSide) {
     this.incomingSide = incomingSide;
-    Logger.trace(getId() + " trc: " + trackRouteColor + " is: " + incomingSide);
   }
 
   @Override
@@ -212,6 +214,16 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   @Override
   public void setBackgroundColor(Color backgroundColor) {
     this.backgroundColor = backgroundColor;
+  }
+
+  @Override
+  public boolean isDrawRoute() {
+    return drawRoute;
+  }
+
+  @Override
+  public void setDrawRoute(boolean drawRoute) {
+    this.drawRoute = drawRoute;
   }
 
   /**
@@ -230,19 +242,10 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
 
     if (!TileImageCache.contains(this)) {
       BufferedImage nbi = createImage();
-
       Graphics2D g2di = nbi.createGraphics();
 
-      if (trackRouteColor != null && incomingSide != null) {
-        this.drawTrackColor = trackRouteColor;
-      } else if (trackColor != null) {
-        this.drawTrackColor = trackColor;
-      } else {
-        drawTrackColor = DEFAULT_TRACK_COLOR;
-      }
-
-      if (backgroundColor == null) {
-        backgroundColor = Color.white;
+      if (this.drawRoute && this.incomingSide == null) {
+        this.incomingSide = this.getOrientation();
       }
 
       AffineTransform trans = new AffineTransform();
@@ -276,7 +279,11 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       }
 
       g2di.setTransform(trans);
-      renderTile(g2di, drawTrackColor, backgroundColor);
+      renderTile(g2di);
+
+      if (drawRoute) {
+        renderTileRoute(g2di);
+      }
 
       //When the line grid is one the scale tile must be a little smaller
       int sw, sh;
@@ -647,9 +654,11 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       setBackgroundColor(tileEvent.getBackgroundColor());
       setTrackColor(tileEvent.getTrackColor());
 
-      setTrackRouteColor(tileEvent.getTrackRouteColor(), tileEvent.getIncomingSide());
+      setTrackRouteColor(tileEvent.getTrackRouteColor());
+      setIncomingSide(tileEvent.getIncomingSide());
+
       if (isJunction()) {
-        ((Switch) this).setRouteValue(tileEvent.getRouteState(), Color.darkGray);
+        ((Switch) this).setRouteValue(tileEvent.getRouteState());
       }
 
       if (tileEvent.getBlockBean() != null) {
@@ -812,9 +821,11 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     sb.append("~");
     sb.append(getBackgroundColor().toString());
     sb.append("~");
-    sb.append(getDrawTrackColor().toString());
+    sb.append(getTrackColor().toString());
     sb.append("~");
     sb.append(isDrawOutline() ? "y" : "n");
+    sb.append("~");
+    sb.append(this.isDrawRoute() ? "y" : "n");
     sb.append("~");
     int r = backgroundColor.getRed();
     int g = backgroundColor.getGreen();

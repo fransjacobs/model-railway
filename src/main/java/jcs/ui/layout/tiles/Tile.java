@@ -44,16 +44,23 @@ public interface Tile extends Shape {
   public static final Color DEFAULT_BACKGROUND_COLOR = Color.white;
   public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
 
-  Color getDrawTrackColor();
+  boolean isDrawRoute();
+
+  void setDrawRoute(boolean drawRoute);
+
+  Color getTrackColor();
 
   void setTrackColor(Color trackColor);
 
   Color getTrackRouteColor();
 
+  void setTrackRouteColor(Color trackRouteColor);
+
   Orientation getIncomingSide();
 
-  void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
+  void setIncomingSide(Orientation incomingSide);
 
+  //void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
   Color getBackgroundColor();
 
   void setBackgroundColor(Color backgroundColor);
@@ -66,7 +73,9 @@ public interface Tile extends Shape {
 
   void drawTile(Graphics2D g2d, boolean drawOutline);
 
-  void renderTile(Graphics2D g2d, Color trackColor, Color backgroundColor);
+  void renderTile(Graphics2D g2d);
+
+  void renderTileRoute(Graphics2D g2d);
 
   void drawName(Graphics2D g2);
 

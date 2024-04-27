@@ -22,7 +22,6 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.entities.TileBean;
-import org.tinylog.Logger;
 
 public class Crossing extends Straight implements Tile {
 
@@ -73,7 +72,7 @@ public class Crossing extends Straight implements Tile {
     return edgeConnections;
   }
 
-  protected void renderVerticalAndDividers(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  protected void renderVerticalAndDividers(Graphics2D g2) {
     int xxn, yyn, xxs, yys, w, h;
     xxn = 175;
     yyn = 0;
@@ -105,30 +104,43 @@ public class Crossing extends Straight implements Tile {
   }
 
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    if (this.trackRouteColor != null) {
-      Logger.trace("routeSide: " + this.incomingSide + " Orientation: " + this.getOrientation());
+  public void renderTile(Graphics2D g2) {
+    renderStraight(g2);
+    renderVerticalAndDividers(g2);
+  }
 
-      if (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide) {
-        if (this.isHorizontal()) {
-          renderStraight(g2, this.trackRouteColor, backgroundColor);
-          renderVerticalAndDividers(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-        } else {
-          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderVerticalAndDividers(g2, this.trackRouteColor, backgroundColor);
-        }
+  protected void renderRouteVertical(Graphics2D g2) {
+    int xxn, yyn, xxs, yys, w, h;
+    xxn = 190;
+    yyn = 0;
+    xxs = 190;
+    yys = 325;
+    w = 20;
+    h = 75;
+
+    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+    g2.setPaint(this.trackRouteColor);
+
+    //North
+    g2.fillRect(xxn, yyn, w, h);
+    //South
+    g2.fillRect(xxs, yys, w, h);
+  }
+
+  @Override
+  public void renderTileRoute(Graphics2D g2) {
+    if (isHorizontal()) {
+      if (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide) {
+        renderRouteStraight(g2);
       } else {
-        if (this.isHorizontal()) {
-          renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-          renderVerticalAndDividers(g2, this.trackRouteColor, backgroundColor);
-        } else {
-          renderStraight(g2, this.trackRouteColor, backgroundColor);
-          renderVerticalAndDividers(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-        }
+        renderRouteVertical(g2);
       }
     } else {
-      renderStraight(g2, trackColor, backgroundColor);
-      renderVerticalAndDividers(g2, trackColor, backgroundColor);
+      if (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide) {
+        renderRouteStraight(g2);
+      } else {
+        renderRouteVertical(g2);
+      }
     }
   }
 

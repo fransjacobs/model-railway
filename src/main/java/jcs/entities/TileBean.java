@@ -138,7 +138,11 @@ public class TileBean implements Serializable, Comparable {
 
   @Transient
   public Orientation getOrientation() {
+    if(tileOrientation == null) {
+      return Orientation.EAST;
+    } else {
     return Orientation.get(this.tileOrientation);
+    }
   }
 
   public void setOrientation(Orientation orientation) {

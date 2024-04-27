@@ -31,7 +31,6 @@ import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Direction.LEFT;
 import static jcs.entities.TileBean.Direction.RIGHT;
-import org.tinylog.Logger;
 
 public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
 
@@ -171,6 +170,10 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     }
   }
 
+  public void setValue(AccessoryValue value) {
+    this.accessoryValue = value;
+  }
+
   public AccessoryValue getRouteValue() {
     if (this.routeValue == null) {
       return AccessoryValue.OFF;
@@ -179,28 +182,24 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     }
   }
 
-  public void setValue(AccessoryValue value) {
-    this.accessoryValue = value;
-  }
-
-  public void setRouteValue(AccessoryValue value, Color routeColor) {
+  public void setRouteValue(AccessoryValue value) {
     this.routeValue = value;
-    this.routeColor = routeColor;
   }
 
-  protected void renderStraight(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  protected void renderStraight(Graphics2D g2, Color color) {
     int xx, yy, w, h;
     xx = 0;
-    yy = 175;
+    yy = 170;
     w = RENDER_WIDTH;
-    h = 50;
+    h = 60;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
+    g2.setPaint(color);
+
     g2.fillRect(xx, yy, w, h);
   }
 
-  protected void renderDiagonal(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  protected void renderDiagonal(Graphics2D g2, Color color) {
     int[] xPoints, yPoints;
     if (Direction.RIGHT.equals(getDirection())) {
       xPoints = new int[]{400, 400, 170, 230};
@@ -211,44 +210,74 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     }
 
     g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-    g2.setPaint(trackColor);
+    g2.setPaint(color);
+    g2.fillPolygon(xPoints, yPoints, xPoints.length);
+  }
+
+  protected void renderRouteStraight(Graphics2D g2, Color color) {
+    int xx, yy, w, h;
+    xx = 0;
+    yy = 190;
+    w = RENDER_WIDTH;
+    h = 20;
+
+    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
+    g2.setPaint(color);
+
+    g2.fillRect(xx, yy, w, h);
+  }
+
+  protected void renderRouteDiagonal(Graphics2D g2, Color color) {
+    int[] xPoints, yPoints;
+    if (Direction.RIGHT.equals(getDirection())) {
+      xPoints = new int[]{400, 400, 190, 210};
+      yPoints = new int[]{190, 210, 0, 0};
+    } else {
+      xPoints = new int[]{400, 400, 190, 210};
+      yPoints = new int[]{210, 190, 400, 400};
+    }
+
+    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+    g2.setPaint(color);
+
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  public void renderTile(Graphics2D g2) {
     if (accessoryValue == null) {
       this.accessoryValue = AccessoryValue.OFF;
     }
-    if (routeValue == null) {
-      this.routeValue = AccessoryValue.OFF;
-    }
 
-    switch (this.accessoryValue) {
+    switch (accessoryValue) {
       case RED -> {
-        renderStraight(g2, trackColor, backgroundColor);
-        renderDiagonal(g2, Color.red, backgroundColor);
+        renderStraight(g2, trackColor);
+        renderDiagonal(g2, Color.red);
       }
       case GREEN -> {
-        renderDiagonal(g2, trackColor, backgroundColor);
-        renderStraight(g2, Color.green, backgroundColor);
+        renderDiagonal(g2, trackColor);
+        renderStraight(g2, Color.green);
       }
       default -> {
-        Logger.trace(getId() + " " + routeValue + " " + routeColor);
-        switch (this.routeValue) {
-          case RED -> {
-            renderStraight(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-            renderDiagonal(g2, this.routeColor, backgroundColor);
-          }
-          case GREEN -> {
-            renderDiagonal(g2, DEFAULT_TRACK_COLOR, backgroundColor);
-            renderStraight(g2, this.routeColor, backgroundColor);
-          }
-          default -> {
-            renderStraight(g2, drawTrackColor, backgroundColor);
-            renderDiagonal(g2, drawTrackColor, backgroundColor);
-          }
-        }
+        renderStraight(g2, trackColor);
+        renderDiagonal(g2, trackColor);
+      }
+    }
+  }
+
+  @Override
+  public void renderTileRoute(Graphics2D g2) {
+    if (routeValue == null) {
+      routeValue = AccessoryValue.OFF;
+    }
+    switch (routeValue) {
+      case RED -> {
+        renderRouteDiagonal(g2, trackRouteColor);
+      }
+      case GREEN -> {
+        renderRouteStraight(g2, trackRouteColor);
+      }
+      default -> {
       }
     }
   }

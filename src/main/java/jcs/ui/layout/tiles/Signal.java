@@ -48,9 +48,6 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
     }
   }
 
-//  Signal(Orientation orientation, int x, int y) {
-//    this(orientation, new Point(x, y), SignalType.HP01);
-//  }
   Signal(Orientation orientation, int x, int y, SignalType signalType) {
     this(orientation, new Point(x, y), signalType);
   }
@@ -274,7 +271,7 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
    * @param g2d the Graphics context
    */
   protected void renderSignal2m(Graphics2D g2d) {
-     int[] xps
+    int[] xps
             = new int[]{
               RENDER_GRID + 80,
               +RENDER_GRID + 150,
@@ -348,9 +345,9 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
   }
 
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  public void renderTile(Graphics2D g2) {
     Graphics2D g2d = (Graphics2D) g2.create();
-    renderStraight(g2d, trackColor, backgroundColor);
+    renderStraight(g2d);
 
     if (signalType == null) {
       signalType = SignalType.NONE;
@@ -365,6 +362,10 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         renderSignal2m(g2d);
       default ->
         renderSignal2(g2d);
+    }
+
+    if (drawRoute) {
+      renderTileRoute(g2);
     }
 
     g2d.dispose();
