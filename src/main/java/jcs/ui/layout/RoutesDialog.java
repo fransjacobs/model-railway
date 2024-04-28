@@ -27,12 +27,12 @@ import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
 import jcs.JCS;
 import jcs.entities.AccessoryBean;
+import jcs.entities.BlockBean.BlockState;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.events.TileEvent;
-import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
@@ -112,41 +112,38 @@ public class RoutesDialog extends javax.swing.JDialog {
     if (selectedRoute != null) {
 
       Logger.trace("Setting Selected " + selectedRoute.toLogString());
-      showRoute(selectedRoute.getRouteElements());
+      showRoute(selectedRoute);
     }
   }
 
   private void resetRoute(List<RouteElementBean> routeElements) {
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
-      Orientation incomingSide = null;
-      Color trackRouteColor = Tile.DEFAULT_TRACK_COLOR;
-
-      TileEvent tileEvent;
-      if (re.isTurnout()) {
-        AccessoryBean.AccessoryValue routeState = AccessoryBean.AccessoryValue.OFF;
-        tileEvent = new TileEvent(tileId, trackRouteColor, incomingSide, routeState, Tile.DEFAULT_TRACK_COLOR);
-        Logger.trace("Tile: " + tileId + " Value: " + routeState + "; " + re);
-      } else {
-        tileEvent = new TileEvent(tileId, trackRouteColor, incomingSide);
-      }
+      TileEvent tileEvent = new TileEvent(tileId, false);
       TileFactory.fireTileEventListener(tileEvent);
     }
   }
 
-  private void showRoute(List<RouteElementBean> routeElements) {
+  private void showRoute(RouteBean routeBean) {
+
+    List<RouteElementBean> routeElements = routeBean.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
       Orientation incomingSide = re.getIncomingOrientation();
-      Color trackRouteColor = Color.black;
 
       TileEvent tileEvent;
       if (re.isTurnout()) {
         AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
-        tileEvent = new TileEvent(tileId, trackRouteColor, incomingSide, routeState, Color.black);
-        Logger.trace("Tile: " + tileId + " Value: " + routeState + "; " + re);
+        tileEvent = new TileEvent(tileId, true, incomingSide, routeState);
+      } else if (re.isBlock()) {
+        if (re.getTileId().equals(routeBean.getFromTileId())) {
+          //departure block
+          tileEvent = new TileEvent(tileId, true, BlockState.DEPARTING);
+        } else {
+          tileEvent = new TileEvent(tileId, true, BlockState.ARRIVING);
+        }
       } else {
-        tileEvent = new TileEvent(tileId, trackRouteColor, incomingSide);
+        tileEvent = new TileEvent(tileId, true, incomingSide);
       }
       TileFactory.fireTileEventListener(tileEvent);
     }

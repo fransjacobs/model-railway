@@ -39,6 +39,7 @@ import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.ui.layout.events.TileEvent;
 import static jcs.ui.layout.tiles.AbstractTile.drawRotate;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
@@ -52,6 +53,8 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
+
+  protected BlockState routeBlockState;
 
   Block(TileBean tileBean) {
     super(tileBean);
@@ -322,25 +325,36 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   public Color getBlockStateColor() {
     if (blockBean != null) {
       BlockState blockState = blockBean.getBlockState();
-      return switch (blockState) {
-        case LOCKED ->
-          new Color(250, 250, 210);
-        case OCCUPIED ->
-          new Color(250, 210, 210);
-        case DEPARTING ->
-          new Color(210, 250, 210);
-        case ARRIVING ->
-          new Color(250, 210, 250);
-        default ->
-          new Color(255, 255, 255);
-      };
-
+      return getBlockStateColor(blockState);
     } else {
       return Color.white;
     }
   }
 
-  private String getBlockState() {
+  public Color getBlockStateColor(BlockState blockState) {
+    return switch (blockState) {
+      case LOCKED ->
+        new Color(250, 250, 210);
+      case OCCUPIED ->
+        new Color(250, 210, 210);
+      case DEPARTING ->
+        new Color(210, 250, 210);
+      case ARRIVING ->
+        new Color(250, 210, 250);
+      default ->
+        new Color(255, 255, 255);
+    };
+  }
+
+  public void setRouteBlockState(BlockState routeBlockState) {
+    this.routeBlockState = routeBlockState;
+  }
+
+  public BlockState getRouteBlockState() {
+    return routeBlockState;
+  }
+
+  public String getBlockState() {
     if (blockBean != null) {
       return blockBean.getBlockState().getState();
     } else {
@@ -388,7 +402,9 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
   @Override
   public void renderTileRoute(Graphics2D g2d) {
-    
+    if (routeBlockState != null) {
+      backgroundColor = getBlockStateColor(routeBlockState);
+    }
   }
 
   protected void overlayLocImage(Graphics2D g2d) {
@@ -454,11 +470,24 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   @Override
   public void drawTile(Graphics2D g2d, boolean drawOutline) {
     super.drawTile(g2d, drawOutline);
-    overlayLocImage(g2d);
+    if (getLocImage() != null) {
+      overlayLocImage(g2d);
+    }
+  }
+
+  @Override
+  public void onTileChange(TileEvent tileEvent) {
+    //TODO: Does not yet work for route block status change
+    Color pb = this.backgroundColor;
+    super.onTileChange(tileEvent);
+    if (!pb.equals(backgroundColor)) {
+      repaintTile();
+    }
   }
 
   @Override
   public void onBlockChange(BlockEvent blockEvent) {
+    //TOD is this still needed?
     BlockBean bb = blockEvent.getBlockBean();
 
     if (blockBean.getId().equals(bb.getId())) {
@@ -594,28 +623,5 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       newFont = currentFont.deriveFont(currentFont.getSize() * 1.0F);
       g2d.setFont(newFont);
     }
-  }
-
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    sb.append("~");
-    sb.append(getBlockState());
-
-    if (getBlockText() != null) {
-      sb.append("~");
-      sb.append(getBlockText());
-    }
-
-//    if (!"".equals(getLocomotiveBlockSuffix())) {
-//      sb.append(getLocomotiveBlockSuffix());
-//      sb.append("~");
-//      sb.append(getBlockState());
-//    }
-//    if (getLocImage() != null) {
-//      sb.append("~");
-//      sb.append(getLocImageName());
-//    }
-    return sb.toString();
   }
 }

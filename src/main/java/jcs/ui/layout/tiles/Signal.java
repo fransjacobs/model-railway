@@ -378,15 +378,4 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
       repaintTile();
     }
   }
-
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    sb.append(getSignalType());
-    sb.append("~");
-    sb.append(getSignalValue());
-    sb.append("~");
-
-    return sb.toString();
-  }
 }

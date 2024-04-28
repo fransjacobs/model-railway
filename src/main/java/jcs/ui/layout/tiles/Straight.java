@@ -124,10 +124,4 @@ public class Straight extends AbstractTile implements Tile {
     renderStraight(g2);
   }
 
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    return sb.toString();
-  }
-
 }

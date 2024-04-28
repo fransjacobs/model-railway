@@ -136,10 +136,4 @@ public class Curved extends AbstractTile implements Tile {
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    return sb.toString();
-  }
-
 }

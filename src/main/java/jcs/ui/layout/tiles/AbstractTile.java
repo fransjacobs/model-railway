@@ -89,6 +89,8 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
 
   protected boolean scaleImage = true;
 
+  protected BufferedImage tileImage;
+
   protected PropertyChangeListener propertyChangeListener;
 
   protected AbstractTile(Point center) {
@@ -240,82 +242,80 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       o = Orientation.EAST;
     }
 
-    if (!TileImageCache.contains(this)) {
-      BufferedImage nbi = createImage();
-      Graphics2D g2di = nbi.createGraphics();
+    tileImage = createImage();
+    Graphics2D g2di = tileImage.createGraphics();
 
-      if (this.drawRoute && this.incomingSide == null) {
-        this.incomingSide = this.getOrientation();
-      }
-
-      AffineTransform trans = new AffineTransform();
-
-      g2di.setBackground(backgroundColor);
-      g2di.clearRect(0, 0, this.renderWidth, this.renderHeight);
-
-      int ox = 0, oy = 0;
-
-      switch (o) {
-        case SOUTH -> {
-          trans.rotate(Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
-          ox = (this.renderHeight - this.renderWidth) / 2;
-          oy = (this.renderWidth - this.renderHeight) / 2;
-          trans.translate(-ox, -oy);
-        }
-        case WEST -> {
-          trans.rotate(Math.PI, this.renderWidth / 2, this.renderHeight / 2);
-          trans.translate(ox, oy);
-        }
-        case NORTH -> {
-          trans.rotate(-Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
-          ox = (this.renderHeight - this.renderWidth) / 2;
-          oy = (this.renderWidth - this.renderHeight) / 2;
-          trans.translate(-ox, -oy);
-        }
-        default -> {
-          trans.rotate(0.0, this.renderWidth / 2, this.renderHeight / 2);
-          trans.translate(ox, oy);
-        }
-      }
-
-      g2di.setTransform(trans);
-      renderTile(g2di);
-
-      if (drawRoute) {
-        renderTileRoute(g2di);
-      }
-
-      //When the line grid is one the scale tile must be a little smaller
-      int sw, sh;
-      if (drawOutline) {
-        sw = this.getWidth() - 2;
-        sh = this.getHeight() - 2;
-      } else {
-        sw = this.getWidth();
-        sh = this.getHeight();
-      }
-      // Scale the image back...
-      if (scaleImage) {
-        nbi = Scalr.resize(nbi, Method.QUALITY, Mode.FIT_EXACT, sw, sh, Scalr.OP_ANTIALIAS);
-      }
-
-      g2di.dispose();
-      Logger.trace("ImageKey of " + this.id + ": " + this.getImageKey());
-      TileImageCache.put(this, nbi);
+    //Avoid errors
+    if (drawRoute && incomingSide == null) {
+      incomingSide = getOrientation();
     }
 
-    BufferedImage cbi = TileImageCache.get(this);
 
-    int ox, oy;
-    if (scaleImage) {
-      ox = this.offsetX;
-      oy = this.offsetY;
+    g2di.setBackground(backgroundColor);
+    g2di.clearRect(0, 0, this.renderWidth, this.renderHeight);
+    int ox = 0, oy = 0;
+
+    AffineTransform trans = new AffineTransform();
+    switch (o) {
+      case SOUTH -> {
+        trans.rotate(Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
+        ox = (this.renderHeight - this.renderWidth) / 2;
+        oy = (this.renderWidth - this.renderHeight) / 2;
+        trans.translate(-ox, -oy);
+      }
+      case WEST -> {
+        trans.rotate(Math.PI, this.renderWidth / 2, this.renderHeight / 2);
+        trans.translate(ox, oy);
+      }
+      case NORTH -> {
+        trans.rotate(-Math.PI / 2, this.renderWidth / 2, this.renderHeight / 2);
+        ox = (this.renderHeight - this.renderWidth) / 2;
+        oy = (this.renderWidth - this.renderHeight) / 2;
+        trans.translate(-ox, -oy);
+      }
+      default -> {
+        trans.rotate(0.0, this.renderWidth / 2, this.renderHeight / 2);
+        trans.translate(ox, oy);
+      }
+    }
+
+    g2di.setTransform(trans);
+    renderTile(g2di);
+
+    if (drawRoute) {
+      renderTileRoute(g2di);
+    }
+
+    //When the line grid is one the scale tile must be a little smaller
+    int sw, sh;
+    if (drawOutline) {
+      sw = this.getWidth() - 2;
+      sh = this.getHeight() - 2;
     } else {
-      ox = this.renderOffsetX;
-      oy = this.renderOffsetY;
+      sw = this.getWidth();
+      sh = this.getHeight();
+    }
+    // Scale the image back...
+    if (scaleImage) {
+      tileImage = Scalr.resize(tileImage, Method.QUALITY, Mode.FIT_EXACT, sw, sh, Scalr.OP_ANTIALIAS);
     }
 
-    g2d.drawImage(cbi, (x - cbi.getWidth() / 2) + ox, (y - cbi.getHeight() / 2) + oy, null);
+    g2di.dispose();
+    int oxx, oyy;
+    if (scaleImage) {
+      oxx = offsetX;
+      oyy = offsetY;
+    } else {
+      oxx = renderOffsetX;
+      oyy = renderOffsetY;
+    }
+
+    g2d.drawImage(tileImage, (x - tileImage.getWidth() / 2) + oxx, (y - tileImage.getHeight() / 2) + oyy, null);
+  }
+
+  @Override
+  public BufferedImage getTileImage() {
+    return tileImage;
   }
 
   /**
@@ -651,15 +651,32 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   @Override
   public void onTileChange(TileEvent tileEvent) {
     if (tileEvent.isEventFor(this)) {
-      setBackgroundColor(tileEvent.getBackgroundColor());
-      setTrackColor(tileEvent.getTrackColor());
-
-      setTrackRouteColor(tileEvent.getTrackRouteColor());
+      drawRoute = tileEvent.isShowRoute();
       setIncomingSide(tileEvent.getIncomingSide());
 
       if (isJunction()) {
         ((Switch) this).setRouteValue(tileEvent.getRouteState());
       }
+
+      if (tileEvent.getBlockBean() != null) {
+        setBlockBean(tileEvent.getBlockBean());
+      }
+
+      if (tileEvent.getTileBean() != null) {
+        TileBean other = tileEvent.getTileBean();
+        this.copyInto(other);
+      }
+      
+      if(isBlock()) {
+        ((Block)this).setRouteBlockState(tileEvent.getBlockState());
+        if(!drawRoute) {
+          ((Block)this).setRouteBlockState(null);
+        }
+      }
+
+      setBackgroundColor(tileEvent.getBackgroundColor());
+      setTrackColor(tileEvent.getTrackColor());
+      setTrackRouteColor(tileEvent.getTrackRouteColor());
 
       if (tileEvent.getBlockBean() != null) {
         setBlockBean(tileEvent.getBlockBean());
@@ -819,13 +836,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     sb.append("~");
     sb.append(getDirection().getDirection());
     sb.append("~");
-    sb.append(getBackgroundColor().toString());
-    sb.append("~");
-    sb.append(getTrackColor().toString());
-    sb.append("~");
     sb.append(isDrawOutline() ? "y" : "n");
-    sb.append("~");
-    sb.append(this.isDrawRoute() ? "y" : "n");
     sb.append("~");
     int r = backgroundColor.getRed();
     int g = backgroundColor.getGreen();
@@ -836,13 +847,33 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     sb.append(g);
     sb.append("#");
     sb.append(b);
-    if (incomingSide != null) {
+    sb.append("~");
+    r = trackColor.getRed();
+    g = trackColor.getGreen();
+    b = trackColor.getBlue();
+    sb.append("#");
+    sb.append(r);
+    sb.append("#");
+    sb.append(g);
+    sb.append("#");
+    sb.append(b);
+    sb.append("~");
+    sb.append(isDrawRoute() ? "y" : "n");
+    if (isDrawRoute()) {
+      if (incomingSide != null) {
+        sb.append("~");
+        sb.append(incomingSide.getOrientation());
+      }
       sb.append("~");
-      sb.append(incomingSide.getOrientation());
-    }
-    if (trackRouteColor != null) {
-      sb.append("~");
-      sb.append(trackRouteColor.toString());
+      r = trackRouteColor.getRed();
+      g = trackRouteColor.getGreen();
+      b = trackRouteColor.getBlue();
+      sb.append("#");
+      sb.append(r);
+      sb.append("#");
+      sb.append(g);
+      sb.append("#");
+      sb.append(b);
     }
 
     //sb.append("~");

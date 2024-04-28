@@ -123,9 +123,4 @@ public class End extends AbstractTile implements Tile {
   public void renderTileRoute(Graphics2D g2d) {
   }
 
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    return sb.toString();
-  }
 }

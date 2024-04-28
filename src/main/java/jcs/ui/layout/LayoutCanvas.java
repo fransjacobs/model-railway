@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -50,7 +51,6 @@ import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
@@ -73,7 +73,6 @@ import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileFactory;
-import jcs.ui.layout.tiles.TileImageCache;
 import org.tinylog.Logger;
 
 /**
@@ -145,6 +144,20 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     lineGrid = "true".equals(System.getProperty("draw.linegrid", "true"));
   }
 
+//  @Override
+//  public void repaint() {
+//    long start = System.nanoTime();
+//    super.repaint();
+//    long end = System.nanoTime();
+//    Logger.trace("Duration: "+(end-start)+" ns");
+//  }
+//  @Override
+//  public void repaint(Rectangle r) {
+//    long start = System.nanoTime();
+//    super.repaint(r);
+//    long end = System.nanoTime();
+//    Logger.trace("Duration: "+(end-start)+" n (r)");
+//  }
   @Override
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
@@ -374,7 +387,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
       tile.setPropertyChangeListener(this);
-      
+
       //TODO move this to tile factory?:
       switch (tile.getTileType()) {
         case SENSOR ->
@@ -634,9 +647,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     Tile selTile = getSelectedTile();
     if (selTile != null) {
-      //Logger.trace("Selected tile: " + selTile.getId() + ", " + selTile.xyToString());
-      String key = selTile.getImageKey();
-      movingTileImage = TileImageCache.get(key);
+      movingTileImage = selTile.getTileImage();
       movingTileCenterPoint = snapPoint;
     } else {
       movingTileImage = null;
@@ -870,7 +881,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   private void showOperationsPopupMenu(Tile tile, Point p) {
-    if(tile == null || p == null) {
+    if (tile == null || p == null) {
       return;
     }
 
@@ -1250,12 +1261,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 //
 //    this.executor.execute(() -> repaint());
 //  }
-
 //  public void refresh() {
 //    loadLayoutInBackground();
 //    //this.executor.execute(() -> loadLayoutInBackground();());
 //  }
-
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPopupMenu curvedPopupMenu;

@@ -101,11 +101,4 @@ public class Sensor extends Straight implements SensorEventListener {
   public String toString() {
     return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", active: " + active + ", center: (" + x + "," + y + ")}";
   }
-
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    sb.append(isActive() ? "y" : "n");
-    return sb.toString();
-  }
 }

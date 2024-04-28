@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,7 @@ public interface Tile extends Shape {
 
   public static final Color DEFAULT_BACKGROUND_COLOR = Color.white;
   public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
+  public static final Color DEFAULT_ROUTE_TRACK_COLOR = Color.blue;
 
   boolean isDrawRoute();
 
@@ -60,7 +62,6 @@ public interface Tile extends Shape {
 
   void setIncomingSide(Orientation incomingSide);
 
-  //void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
   Color getBackgroundColor();
 
   void setBackgroundColor(Color backgroundColor);
@@ -69,7 +70,9 @@ public interface Tile extends Shape {
 
   void setId(String id);
 
-  String getImageKey();
+  //String getImageKey();
+  
+  BufferedImage getTileImage();
 
   void drawTile(Graphics2D g2d, boolean drawOutline);
 

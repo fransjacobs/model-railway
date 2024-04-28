@@ -144,10 +144,4 @@ public class Crossing extends Straight implements Tile {
     }
   }
 
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    return sb.toString();
-  }
-
 }

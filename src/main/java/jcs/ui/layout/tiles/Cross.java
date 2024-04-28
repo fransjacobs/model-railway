@@ -38,7 +38,6 @@ public class Cross extends Switch implements Tile {
 
   public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
   public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
-  //public static final int CROSS_OFFSET = GRID;
 
   public static final Color VERY_LIGHT_RED = new Color(255, 102, 102);
   public static final Color LIGHT_RED = new Color(255, 51, 51);
@@ -226,7 +225,7 @@ public class Cross extends Switch implements Tile {
     setWidthHeightAndOffsets();
   }
 
-  private void setWidthHeightAndOffsets() {
+  void setWidthHeightAndOffsets() {
     //Reset offsets
     this.offsetY = 0;
     this.renderOffsetY = 0;
@@ -353,7 +352,6 @@ public class Cross extends Switch implements Tile {
 
     g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2.setPaint(color);
-    //g2.setPaint(Color.magenta);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
@@ -378,13 +376,13 @@ public class Cross extends Switch implements Tile {
       xPoints = new int[]{400, 380, 590, 610};
       yPoints = new int[]{190, 190, 400, 400};
     } else {
-      xPoints = new int[]{400, 400, 580, 610};
-      yPoints = new int[]{210, 190, 0, 0};
+      xPoints = new int[]{400, 380, 590, 610};
+      yPoints = new int[]{210, 210, 0, 0};
     }
 
     g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
     g2.setPaint(color);
-    //g2.setPaint(Color.cyan);
+    g2.setPaint(Color.cyan);
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
@@ -427,87 +425,77 @@ public class Cross extends Switch implements Tile {
 
     if (isHorizontal()) {
       if (AccessoryValue.GREEN == routeValue && (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide)) {
-        //renderRouteStraight(g2, trackColor);
-        //renderRouteStraight2(g2, trackColor);
         renderRouteDiagonal(g2, trackRouteColor);
         renderRouteDiagonal2(g2, trackRouteColor);
       } else if (AccessoryValue.GREEN == routeValue && (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide)) {
-        //renderRouteDiagonal(g2, trackColor);
-        //renderRouteDiagonal2(g2, trackColor);
         renderRouteStraight(g2, trackRouteColor);
         renderRouteStraight2(g2, trackRouteColor);
-      } else if (AccessoryValue.RED == routeValue && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide) && Direction.RIGHT == getDirection()) {
-        renderRouteStraight2(g2, trackRouteColor);
-        //renderRouteDiagonal(g2, trackColor);
-        renderRouteDiagonal(g2, trackRouteColor);
-        //renderRouteStraight(g2, trackRouteColor);
-      } else if (AccessoryValue.RED == routeValue && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide) && Direction.RIGHT == getDirection()) {
-        //renderRouteStraight(g2, trackColor);
-        //renderRouteDiagonal2(g2, trackColor);
-        renderRouteDiagonal2(g2, trackRouteColor);
-        renderRouteStraight(g2, trackRouteColor);
-      } else if (AccessoryValue.RED == routeValue && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide) && Direction.LEFT == getDirection()) {
-        //renderRouteDiagonal2(g2, trackColor);
-        //renderRouteStraight(g2, trackColor);
-        renderRouteStraight2(g2, trackRouteColor);
-        renderRouteDiagonal(g2, trackRouteColor);
-      } else if (AccessoryValue.RED == routeValue && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide) && Direction.LEFT == getDirection()) {
-        //renderRouteDiagonal(g2, trackColor);
-        //renderRouteStraight2(g2, trackColor);
-        renderRouteStraight(g2, trackRouteColor);
-        renderRouteDiagonal2(g2, trackRouteColor);
+      } else if (AccessoryValue.RED == routeValue && Orientation.EAST == getOrientation()) {
+        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor);
+        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteDiagonal2(g2, trackRouteColor);
+          renderRouteStraight(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteStraight(g2, trackColor);
+          renderRouteDiagonal2(g2, trackColor);
+        }
+      } else if (AccessoryValue.RED == routeValue && Orientation.WEST == getOrientation()) {
+        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor);
+        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteDiagonal(g2, trackRouteColor);
+          renderRouteStraight2(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteStraight2(g2, trackColor);
+          renderRouteDiagonal(g2, trackColor);
+        }
       }
-    } //else {
-//      //Vertical
-//      if (AccessoryValue.GREEN == this.routeValue && (Orientation.NORTH == this.incomingSide || Orientation.SOUTH == this.incomingSide)) {
-//        renderDiagonal(g2, DEFAULT_TRACK_COLOR);
-//        renderDiagonal2(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight(g2, this.trackRouteColor);
-//        renderStraight2(g2, this.trackRouteColor);
-//      } else if (AccessoryValue.GREEN == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.WEST == this.incomingSide)) {
-//        renderStraight(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight2(g2, DEFAULT_TRACK_COLOR);
-//        renderDiagonal(g2, this.trackRouteColor);
-//        renderDiagonal2(g2, this.trackRouteColor);
-//      } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
-//        renderDiagonal(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight2(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight(g2, this.trackRouteColor);
-//        renderDiagonal2(g2, this.trackRouteColor);
-//      } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.RIGHT == this.getDirection()) {
-//        renderDiagonal2(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight2(g2, this.trackRouteColor);
-//        renderDiagonal(g2, this.trackRouteColor);
-//      } else if (AccessoryValue.RED == this.routeValue && (Orientation.EAST == this.incomingSide || Orientation.NORTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
-//        renderDiagonal(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight2(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight(g2, this.trackRouteColor);
-//        renderDiagonal2(g2, this.trackRouteColor);
-//      } else if (AccessoryValue.RED == this.routeValue && (Orientation.WEST == this.incomingSide || Orientation.SOUTH == this.incomingSide) && Direction.LEFT == this.getDirection()) {
-//        renderDiagonal2(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight(g2, DEFAULT_TRACK_COLOR);
-//        renderStraight2(g2, this.trackRouteColor);
-//        renderDiagonal(g2, this.trackRouteColor);
-//      }
-//
-//    }
-
-    //else {
-    //          switch (this.routeValue) {
-//            case RED -> {
-//              renderStraight2(g2, this.routeColor);
-//              renderDiagonal(g2, this.routeColor);
-//              renderStraight(g2, this.routeColor);
-//              renderDiagonal2(g2, this.routeColor);
-//            }
-//            case GREEN -> {
-//              renderDiagonal(g2, this.routeColor);
-//              renderDiagonal2(g2, this.routeColor);
-//              renderStraight(g2, this.routeColor);
-//              renderStraight2(g2, this.routeColor);
-//            }
-//            default -> {
+    } else {
+      if (AccessoryValue.GREEN == routeValue && (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide)) {
+        renderRouteStraight(g2, trackRouteColor);
+        renderRouteStraight2(g2, trackRouteColor);
+      } else if (AccessoryValue.GREEN == routeValue && (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide)) {
+        renderRouteDiagonal(g2, trackRouteColor);
+        renderRouteDiagonal2(g2, trackRouteColor);
+      } else if (AccessoryValue.RED == routeValue && Orientation.SOUTH == getOrientation()) {
+        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor);
+        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteDiagonal2(g2, trackRouteColor);
+          renderRouteStraight(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight2(g2, trackColor);
+          renderRouteDiagonal(g2, trackColor);
+        }
+      } else if (AccessoryValue.RED == routeValue && Orientation.NORTH == getOrientation()) {
+        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight(g2, trackRouteColor);
+          renderRouteDiagonal2(g2, trackRouteColor);
+        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteDiagonal(g2, trackRouteColor);
+          renderRouteStraight2(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
+          renderRouteStraight2(g2, trackRouteColor);
+          renderRouteDiagonal(g2, trackRouteColor);
+        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
+          renderRouteStraight(g2, trackColor);
+          renderRouteDiagonal2(g2, trackColor);
+        }
+      }
+    }
   }
 
   @Override
@@ -578,14 +566,4 @@ public class Cross extends Switch implements Tile {
       return AccessoryValue.OFF;
     }
   }
-
-//  @Override
-//  public String getImageKey() {
-//    StringBuilder sb = getImageKeyBuilder();
-//    sb.append("~");
-//    sb.append(getAccessoryValue());
-//    sb.append("~");
-//    sb.append(getRouteValue());
-//    return sb.toString();
-//  }
 }
