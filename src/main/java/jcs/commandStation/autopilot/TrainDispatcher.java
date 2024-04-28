@@ -22,9 +22,15 @@ import jcs.commandStation.autopilot.state.IdleState;
 import jcs.commandStation.autopilot.state.ReserveRouteState;
 import jcs.commandStation.autopilot.state.RunState;
 import jcs.commandStation.autopilot.state.StateEventListener;
+import jcs.commandStation.events.SensorEventListener;
+import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
+import jcs.entities.TileBean;
+import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -46,6 +52,14 @@ public class TrainDispatcher extends Thread {
 
   private final List<StateEventListener> stateEventListeners;
 
+  private SensorEventListener enterEventListener;
+  private SensorEventListener inEventListener;
+  
+  
+  private boolean enterDestinationBlock = false;
+  private boolean inDestinationBlock = false;
+
+
   private boolean running;
 
   public TrainDispatcher(LocomotiveBean locomotiveBean) {
@@ -61,9 +75,6 @@ public class TrainDispatcher extends Thread {
     return locomotiveBean;
   }
 
-//  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
-//    this.locomotiveBean = locomotiveBean;
-//  }
   public RouteBean getRouteBean() {
     return routeBean;
   }
@@ -87,9 +98,6 @@ public class TrainDispatcher extends Thread {
   public void setDestinationBlock(BlockBean destinationBlock) {
     this.destinationBlock = destinationBlock;
   }
-  
-  
-  
 
   public DispatcherState getDispatcherState() {
     return dispatcherState;
@@ -106,7 +114,36 @@ public class TrainDispatcher extends Thread {
     }
     String s = dispatcherState.toString();
     fireStateListeners(s);
+  }
 
+  public SensorEventListener getEnterEventListener() {
+    return enterEventListener;
+  }
+
+  public void setEnterEventListener(SensorEventListener enterEventListener) {
+    this.enterEventListener = enterEventListener;
+  }
+
+  public SensorEventListener getInEventListener() {
+    return inEventListener;
+  }
+
+  public void setInEventListener(SensorEventListener inEventListener) {
+    this.inEventListener = inEventListener;
+  }
+
+  public synchronized void onEnter() {
+    Logger.debug("got an enter event");
+    enterDestinationBlock = true;
+    //wakeup
+    notify();
+  }
+
+  public synchronized void onArrival() {
+    Logger.debug("got an Arrival event..");
+    inDestinationBlock = true;
+    //wakeup
+    notify();
   }
 
   public void nextState() {
@@ -118,15 +155,15 @@ public class TrainDispatcher extends Thread {
 
     if (dispatcherState instanceof ReserveRouteState && action) {
       //if (callback != null) {
-        //callback.setSelectRoute(dispatcherState.getRoute());
+      //callback.setSelectRoute(dispatcherState.getRoute());
       //}
     }
 
     if (dispatcherState instanceof RunState && action) {
       //if (callback != null) {
-        // callback.setSelectRoute(dispatcherState.getRoute());
+      // callback.setSelectRoute(dispatcherState.getRoute());
 
-        //callback.refresh();
+      //callback.refresh();
       //}
     }
 
@@ -141,7 +178,7 @@ public class TrainDispatcher extends Thread {
     while (running) {
       Logger.trace(getName() + " " + getDispatcherState());
       //Perform the action for the current state
-      dispatcherState.pause(100);
+      //dispatcherState.pause(100);
       execute();
 
       if (!dispatcherState.isRunning()) {
@@ -153,7 +190,7 @@ public class TrainDispatcher extends Thread {
       if (dispatcherState.canAdvanceToNextState()) {
         nextState();
       } else {
-        //Lets wait for 1 s and try again
+        //STUB: Lets wait for 2 s and try again
         dispatcherState.pause(2000);
       }
     }
@@ -177,12 +214,49 @@ public class TrainDispatcher extends Thread {
     return running;
   }
 
+  public boolean isEnterDestinationBlock() {
+    return enterDestinationBlock;
+  }
+
+  public boolean isInDestinationBlock() {
+    return inDestinationBlock;
+  }
+  
+  
+  
+
   public void addStateEventListener(StateEventListener listener) {
     stateEventListeners.add(listener);
   }
 
   public void removeStateEventListener(StateEventListener listener) {
     stateEventListeners.remove(listener);
+  }
+
+  public void resetRoute(RouteBean route) {
+    List<RouteElementBean> routeElements = route.getRouteElements();
+    for (RouteElementBean re : routeElements) {
+      String tileId = re.getTileId();
+      TileEvent tileEvent = new TileEvent(tileId, false);
+      TileFactory.fireTileEventListener(tileEvent);
+    }
+  }
+
+  public void showRoute(RouteBean routeBean) {
+    List<RouteElementBean> routeElements = routeBean.getRouteElements();
+    for (RouteElementBean re : routeElements) {
+      String tileId = re.getTileId();
+      TileBean.Orientation incomingSide = re.getIncomingOrientation();
+
+      TileEvent tileEvent;
+      if (re.isTurnout()) {
+        AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
+        tileEvent = new TileEvent(tileId, true, incomingSide, routeState);
+      } else {
+        tileEvent = new TileEvent(tileId, true, incomingSide);
+      }
+      TileFactory.fireTileEventListener(tileEvent);
+    }
   }
 
 }

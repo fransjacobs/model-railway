@@ -59,7 +59,37 @@ public class ArrivedState extends DispatcherState {
 
   @Override
   public boolean execute() {
-    if (this.arrived) {
+    //Executed on enter
+    if (this.dispatcher.isInDestinationBlock()) {
+
+    LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
+
+    Logger.debug("Train has arrived in the destination block");
+
+    JCS.getJcsCommandStation().changeLocomotiveSpeed(0, locomotive);
+    //set the loco in the destination block
+    //remove the loco from the source block
+    departureBlock.setLocomotive(null);
+    destinationBlock.setLocomotive(locomotive);
+
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+
+    JCS.getJcsCommandStation().removeSensorEventListener(enterListener);
+    JCS.getJcsCommandStation().removeSensorEventListener(arrivalListener);
+
+    RouteBean route = this.dispatcher.getRouteBean();
+    route.setLocked(false);
+    PersistenceFactory.getService().persist(route);
+
+    refreshBlockTiles();
+      
+      
+      
+    
+    }
+      
+      if (this.arrived) {
       //TODO rethink this
       this.canAdvanceToNextState = true;
       return this.canAdvanceToNextState;
