@@ -21,8 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import jcs.JCS;
+import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -34,9 +37,9 @@ public class AutoPilot {
 
   private static AutoPilot instance = null;
 
-//  private RouteDisplayCallBack callback;
+  private Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
 
-  Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
+  private Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
 
   private AutoPilot() {
   }
@@ -49,7 +52,8 @@ public class AutoPilot {
   }
 
   public void initialize() {
-    getOnTrackLocomotives();
+    //getOnTrackLocomotives();
+    registerAllSensors();
   }
 
   public void startAllLocomotives() {
@@ -57,9 +61,9 @@ public class AutoPilot {
     for (LocomotiveBean loc : locs) {
       TrainDispatcher dispatcher = new TrainDispatcher(loc);
       locomotives.put(dispatcher.getName(), dispatcher);
-      Logger.debug("Added " + dispatcher.getName());      
+      Logger.debug("Added " + dispatcher.getName());
       dispatcher.start();
-      
+
       DispatcherTestDialog.showDialog(dispatcher);
     }
   }
@@ -68,7 +72,6 @@ public class AutoPilot {
     for (TrainDispatcher lsm : this.locomotives.values()) {
       lsm.stopRunning();
     }
-
   }
 
   public void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
@@ -112,6 +115,50 @@ public class AutoPilot {
       }
     }
     return activeLocomotives;
+  }
+
+  private void ghostDetected(SensorEvent event) {
+    Logger.debug("Sensor " + event.getSensorBean().getId() + " active: " + event.getSensorBean().isActive());
+  }
+
+  public SensorEventHandler getSensorEventHandler(String sensorId) {
+    return this.sensorHandlers.get(sensorId);
+  }
+
+  private void registerAllSensors() {
+    List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+
+    for (SensorBean sb : sensors) {
+      String key = sb.getId();
+      GostHandler gh = new GostHandler(this, key);
+
+      SensorEventHandlerImpl sensorListener = new SensorEventHandlerImpl(gh, key);
+      JCS.getJcsCommandStation().addSensorEventListener(sensorListener);
+      sensorHandlers.put(key, gh);
+    }
+    Logger.trace("Registered " + sensors.size() + " sensor event handlers");
+  }
+
+  private class GostHandler implements SensorEventHandler {
+
+    private final AutoPilot autoPilot;
+    private final String sensorId;
+
+    GostHandler(AutoPilot autoPilot, String sensorId) {
+      this.autoPilot = autoPilot;
+      this.sensorId = sensorId;
+    }
+
+    @Override
+    public void handleSensorEvent(SensorEvent event) {
+      autoPilot.ghostDetected(event);
+    }
+
+    @Override
+    public String getSensorId() {
+      return sensorId;
+    }
+
   }
 
   public static void main(String[] a) {

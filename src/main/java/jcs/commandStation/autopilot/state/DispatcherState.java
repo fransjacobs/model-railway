@@ -16,7 +16,6 @@
 package jcs.commandStation.autopilot.state;
 
 import java.util.List;
-import jcs.JCS;
 import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.commandStation.events.BlockEvent;
 import jcs.entities.BlockBean;
