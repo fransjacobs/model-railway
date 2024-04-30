@@ -180,7 +180,7 @@
         <Container class="javax.swing.JPanel" name="buttenPanel">
           <Properties>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[440, 50]"/>
+              <Dimension value="[450, 50]"/>
             </Property>
           </Properties>
           <SubComponents>

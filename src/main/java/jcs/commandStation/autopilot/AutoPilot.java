@@ -37,9 +37,9 @@ public class AutoPilot {
 
   private static AutoPilot instance = null;
 
-  private Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
+  private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
 
-  private Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
+  private final Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
 
   private AutoPilot() {
   }
@@ -53,7 +53,7 @@ public class AutoPilot {
 
   public void initialize() {
     //getOnTrackLocomotives();
-    registerAllSensors();
+    //registerAllSensors();
   }
 
   public void startAllLocomotives() {
@@ -62,7 +62,7 @@ public class AutoPilot {
       TrainDispatcher dispatcher = new TrainDispatcher(loc);
       locomotives.put(dispatcher.getName(), dispatcher);
       Logger.debug("Added " + dispatcher.getName());
-      dispatcher.start();
+      //dispatcher.start();
 
       DispatcherTestDialog.showDialog(dispatcher);
     }
@@ -128,13 +128,16 @@ public class AutoPilot {
   private void registerAllSensors() {
     List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
 
+    int cnt =0;
     for (SensorBean sb : sensors) {
       String key = sb.getId();
       GostHandler gh = new GostHandler(this, key);
+      cnt++;
 
       SensorEventHandlerImpl sensorListener = new SensorEventHandlerImpl(gh, key);
       JCS.getJcsCommandStation().addSensorEventListener(sensorListener);
       sensorHandlers.put(key, gh);
+      Logger.trace("Added handler "+cnt+" for sensor "+key);
     }
     Logger.trace("Registered " + sensors.size() + " sensor event handlers");
   }
@@ -151,7 +154,9 @@ public class AutoPilot {
 
     @Override
     public void handleSensorEvent(SensorEvent event) {
-      autoPilot.ghostDetected(event);
+      if (sensorId.equals(event.getSensorBean().getId())) {
+        autoPilot.ghostDetected(event);
+      }
     }
 
     @Override
@@ -163,6 +168,9 @@ public class AutoPilot {
 
   public static void main(String[] a) {
     AutoPilot ap = new AutoPilot();
+    JCS.getJcsCommandStation().connect();
+
+    ap.registerAllSensors();
 
     ap.startAllLocomotives();
 

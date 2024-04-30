@@ -243,6 +243,7 @@ public class TrainDispatcher extends Thread {
   }
 
   public void showRoute(RouteBean routeBean) {
+    Logger.trace("Show route "+routeBean.toLogString());
     List<RouteElementBean> routeElements = routeBean.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();

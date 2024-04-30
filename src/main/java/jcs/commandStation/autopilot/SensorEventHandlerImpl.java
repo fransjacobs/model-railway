@@ -17,6 +17,7 @@ package jcs.commandStation.autopilot;
 
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
+import org.tinylog.Logger;
 
 /**
  *
@@ -32,13 +33,19 @@ public class SensorEventHandlerImpl implements SensorEventListener {
     this.defaultHandler = defaultHandler;
     this.sensorId = sensorId;
   }
-  
+
   @Override
   public void onSensorChange(SensorEvent event) {
     if (preferredHandler != null) {
       preferredHandler.handleSensorEvent(event);
     } else {
-      defaultHandler.handleSensorEvent(event);
+      String id = event.getSensorBean().getId();
+      boolean active = event.getSensorBean().isActive();
+      boolean prevActive = event.getSensorBean().isPreviousActive();
+      if (active != prevActive) {
+        Logger.trace("Calling default handler for "+id+" active: "+active);
+        defaultHandler.handleSensorEvent(event);
+      }
     }
   }
 

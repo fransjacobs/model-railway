@@ -24,10 +24,7 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
-import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.events.TileEvent;
-import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**

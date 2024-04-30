@@ -271,7 +271,6 @@ public class TileFactory {
 //      addTileEventListener(tileEventListener);
 //    }
 //  }
-
   private static void addTileEventListener(TileEventListener listener) {
     String key = listener.getId();
     tileEventListeners.put(key, listener);
@@ -291,7 +290,11 @@ public class TileFactory {
   public static void fireTileEventListener(TileEvent tileEvent) {
     String key = tileEvent.getTileId();
     TileEventListener listener = tileEventListeners.get(key);
-    listener.onTileChange(tileEvent);
+    if (listener != null) {
+      listener.onTileChange(tileEvent);
+    } else {
+      //Logger.trace("Tile " + key + " not available");
+    }
   }
 
   public static void fireAllTileEventListeners(TileEvent tileEvent) {

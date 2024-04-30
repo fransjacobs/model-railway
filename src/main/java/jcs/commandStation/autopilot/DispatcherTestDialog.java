@@ -139,7 +139,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
     northPanel.add(statePanel);
 
-    buttenPanel.setPreferredSize(new java.awt.Dimension(440, 50));
+    buttenPanel.setPreferredSize(new java.awt.Dimension(450, 50));
     java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout2.setAlignOnBaseline(true);
     buttenPanel.setLayout(flowLayout2);
