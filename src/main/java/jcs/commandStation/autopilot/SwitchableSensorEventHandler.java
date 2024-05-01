@@ -23,28 +23,29 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class SensorEventHandlerImpl implements SensorEventListener {
+public class SwitchableSensorEventHandler implements SensorEventListener {
 
   private final SensorEventHandler defaultHandler;
   private final String sensorId;
   private SensorEventHandler preferredHandler;
 
-  public SensorEventHandlerImpl(SensorEventHandler defaultHandler, String sensorId) {
+  public SwitchableSensorEventHandler(SensorEventHandler defaultHandler, String sensorId) {
     this.defaultHandler = defaultHandler;
     this.sensorId = sensorId;
   }
 
   @Override
   public void onSensorChange(SensorEvent event) {
-    if (preferredHandler != null) {
-      preferredHandler.handleSensorEvent(event);
-    } else {
-      String id = event.getSensorBean().getId();
-      boolean active = event.getSensorBean().isActive();
-      boolean prevActive = event.getSensorBean().isPreviousActive();
-      if (active != prevActive) {
-        Logger.trace("Calling default handler for "+id+" active: "+active);
-        defaultHandler.handleSensorEvent(event);
+    if (event.isChanged()) {
+      String id = event.getId();
+      if (preferredHandler != null) {
+        if (preferredHandler.getSensorId().equals(id)) {
+          preferredHandler.handleSensorEvent(event);
+        }
+      } else {
+        if (defaultHandler.getSensorId().equals(id)) {
+          defaultHandler.handleSensorEvent(event);
+        }
       }
     }
   }

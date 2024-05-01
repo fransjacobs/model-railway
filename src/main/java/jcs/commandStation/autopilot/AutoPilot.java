@@ -23,10 +23,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
+import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
+import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -53,10 +59,11 @@ public class AutoPilot {
 
   public void initialize() {
     //getOnTrackLocomotives();
-    //registerAllSensors();
+    registerAllSensors();
   }
 
   public void startAllLocomotives() {
+    Logger.trace("Starting automode for all locomotives...");
     List<LocomotiveBean> locs = getOnTrackLocomotives();
     for (LocomotiveBean loc : locs) {
       TrainDispatcher dispatcher = new TrainDispatcher(loc);
@@ -69,6 +76,7 @@ public class AutoPilot {
   }
 
   public void stopAllLocomotives() {
+    Logger.trace("Stopping automode for all locomotives...");
     for (TrainDispatcher lsm : this.locomotives.values()) {
       lsm.stopRunning();
     }
@@ -119,6 +127,32 @@ public class AutoPilot {
 
   private void ghostDetected(SensorEvent event) {
     Logger.debug("Sensor " + event.getSensorBean().getId() + " active: " + event.getSensorBean().isActive());
+    //Switch power OFF!
+    JCS.getJcsCommandStation().switchPower(false);
+
+    //Show the Ghost block
+    String gostSensorId = event.getId();
+    //to which block does the sensor belong?
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    for (BlockBean block : blocks) {
+      if (block.getMinSensorId().equals(gostSensorId) || block.getPlusSensorId().equals(gostSensorId)) {
+        if (event.getSensorBean().isActive()) {
+          block.setBlockState(BlockBean.BlockState.GHOST);
+        } else {
+          block.setBlockState(BlockBean.BlockState.FREE);
+        }
+        showBlockStatus(block);
+        break;
+      }
+    }
+
+    //show the blok
+  }
+
+  public void showBlockStatus(BlockBean blockBean) {
+    Logger.trace("Show Block " + blockBean.toString());
+    TileEvent tileEvent = new TileEvent(blockBean);
+    TileFactory.fireTileEventListener(tileEvent);
   }
 
   public SensorEventHandler getSensorEventHandler(String sensorId) {
@@ -128,16 +162,18 @@ public class AutoPilot {
   private void registerAllSensors() {
     List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
 
-    int cnt =0;
+    int cnt = 0;
     for (SensorBean sb : sensors) {
       String key = sb.getId();
-      GostHandler gh = new GostHandler(this, key);
-      cnt++;
+      if (!sensorHandlers.containsKey(key)) {
+        GostHandler gh = new GostHandler(this, key);
+        cnt++;
 
-      SensorEventHandlerImpl sensorListener = new SensorEventHandlerImpl(gh, key);
-      JCS.getJcsCommandStation().addSensorEventListener(sensorListener);
-      sensorHandlers.put(key, gh);
-      Logger.trace("Added handler "+cnt+" for sensor "+key);
+        SwitchableSensorEventHandler sensorListener = new SwitchableSensorEventHandler(gh, key);
+        JCS.getJcsCommandStation().addSensorEventListener(sensorListener);
+        sensorHandlers.put(key, gh);
+        Logger.trace("Added handler " + cnt + " for sensor " + key);
+      }
     }
     Logger.trace("Registered " + sensors.size() + " sensor event handlers");
   }

@@ -112,11 +112,21 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public final boolean connect() {
-    boolean decoderConnected = false;
+    //TODO revice the connect, to nices code and preventing duplicat instantiations...
+    boolean decoderControllerConnected = false;
+    boolean allreadyConnected = false;
+
+    //Check if already connected to avoid duplication....
+    if (commandStation != null && decoderController != null) {
+      decoderControllerConnected = decoderController.isConnected();
+      allreadyConnected = true;
+      Logger.trace(decoderController.getClass().getName() + " allready connected...");
+    } else {
+      commandStation = PersistenceFactory.getService().getDefaultCommandStation();
+    }
+
     int accessoryCntrConnected = 0;
     int feedbackCntrConnected = 0;
-
-    commandStation = PersistenceFactory.getService().getDefaultCommandStation();
 
     if (commandStation == null) {
       Logger.error("No Default Command Station found!");
@@ -156,15 +166,15 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       Logger.warn("No Feedback Controllers configured!");
     }
 
-    if (decoderController != null) {
-      decoderConnected = decoderController.isConnected();
-      if (!decoderConnected) {
-        decoderConnected = decoderController.connect();
+    if (decoderController != null && !decoderControllerConnected) {
+      decoderControllerConnected = decoderController.isConnected();
+      if (!decoderControllerConnected) {
+        decoderControllerConnected = decoderController.connect();
       }
     }
 
     //Connect the Accessories controllers if needed
-    if (!accessoryControllers.isEmpty()) {
+    if (!accessoryControllers.isEmpty() && !allreadyConnected) {
       for (AccessoryController ac : accessoryControllers.values()) {
         if (ac.isConnected()) {
           accessoryCntrConnected++;
@@ -181,7 +191,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
 
     //Connect the Feedback Controllers controllers if needed
-    if (!feedbackControllers.isEmpty()) {
+    if (!feedbackControllers.isEmpty() && !allreadyConnected) {
       for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
           feedbackCntrConnected++;
@@ -197,9 +207,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
     }
 
-    Logger.trace("Connected Controllers:  Decoder: " + (decoderConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback:" + feedbackCntrConnected);
+    Logger.trace("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
-    if (decoderConnected) {
+    if (decoderControllerConnected && !allreadyConnected) {
       decoderController.addDisconnectionEventListener(new DisconnectionListener(this));
 
       decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
@@ -226,7 +236,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
     }
 
-    if (accessoryCntrConnected > 0) {
+    if (accessoryCntrConnected > 0 && !allreadyConnected) {
       for (AccessoryController ac : accessoryControllers.values()) {
         if (ac.isConnected()) {
           ac.addAccessoryEventListener(new AccessoryChangeEventListener(this));
@@ -235,7 +245,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
     }
 
-    if (feedbackCntrConnected > 0) {
+    if (feedbackCntrConnected > 0 && !allreadyConnected) {
       for (FeedbackController fc : feedbackControllers.values()) {
         if (fc.isConnected()) {
           fc.addSensorEventListener(new SensorChangeEventListener(this));
@@ -245,7 +255,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     }
 
     //TODO implement get the day end i.e. the current state of all Objects on track
-    return decoderConnected;
+    return decoderControllerConnected;
   }
 
   @Override
@@ -333,8 +343,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         Logger.trace("Created new directory " + path);
       }
       ImageIO.write((BufferedImage) image, "png", imageFile);
-
-      //    ImageIO.write((BufferedImage) imgg, "PNG", new File(test + File.separator + "FktIcon_a_ge_116" + ".png"));
     } catch (IOException ex) {
       Logger.error("Can't store image " + imageFile + "! ", ex.getMessage());
     }
@@ -471,23 +479,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       ac.switchAccessory(address, val, switchTime);
     }
   }
-
-//  @Override
-//  public void fireBlockEventListeners(BlockEvent blockEvent) {
-//    for (BlockEventListener blockEventListener : blockEventListeners) {
-//      blockEventListener.onBlockChange(blockEvent);
-//    }
-//  }
-
-//  @Override
-//  public void addBlockEventListener(BlockEventListener listener) {
-//    blockEventListeners.add(listener);
-//  }
-
-//  @Override
-//  public void removeBlockEventListener(BlockEventListener listener) {
-//    blockEventListeners.remove(listener);
-//  }
 
   @Override
   public void addSensorEventListener(SensorEventListener listener) {
@@ -643,8 +634,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
 
       //Avoid concurrent modification exceptions
-      List<SensorEventListener> snapshot = new ArrayList<>(trackController.sensorEventListeners); 
-      
+      List<SensorEventListener> snapshot = new ArrayList<>(trackController.sensorEventListeners);
+
       for (SensorEventListener sl : snapshot) {
         sl.onSensorChange(event);
       }

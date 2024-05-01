@@ -43,6 +43,7 @@ import jcs.entities.FeedbackModuleBean;
 import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.util.NetworkUtil;
+import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 
 /**
@@ -77,7 +78,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
     mainDevice = new DeviceBean();
     mainDevice.setArticleNumber("JCS Virtual CS");
-    mainDevice.setVersion("0.0.1");
+    mainDevice.setVersion(VersionInfo.getVersion());
+
     mainDevice.setSerial("1");
     mainDevice.setIdentifier(this.commandStationBean.getId());
     mainDevice.setName(this.commandStationBean.getDescription());
@@ -86,7 +88,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     infoBean.setProductName(commandStationBean.getDescription());
     infoBean.setArticleNumber(commandStationBean.getShortName());
     infoBean.setHostname(this.getIp());
-    
+
     power(true);
 
     return connected;
@@ -201,7 +203,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       id = "0" + id;
     }
     ab.setId(id);
-    ab.setCommandStationId(this.commandStationBean.getId());
+    ab.setCommandStationId(commandStationBean.getId());
 
     AccessoryEvent ae = new AccessoryEvent(ab);
     notifyAccessoryEventListeners(ae);
@@ -241,17 +243,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     }
   }
 
-  //TODO a sensor listener should be addressable, but how?
-  //Need to register als to which id we are interested....
-  public void fireSensorEventListeners(final SensorEvent sensorEvent, final String sensorId) {
-    for (SensorEventListener listener : sensorEventListeners) {
-      //listener.
-      listener.onSensorChange(sensorEvent);
-    }
-  }
-  
-  
-  
+  //TODO: is a threaded varian needed?
   private void notifySensorEventListeners(final SensorEvent sensorEvent) {
     executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }

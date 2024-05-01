@@ -321,7 +321,7 @@ public class BlockBean {
   }
 
   public enum BlockState {
-    FREE("Free"), LOCKED("Locked"), ARRIVING("Arriving"), DEPARTING("Departing"), OCCUPIED("Occupied");
+    FREE("Free"), LOCKED("Locked"), ARRIVING("Arriving"), DEPARTING("Departing"), OCCUPIED("Occupied"), GHOST("Ghost");
 
     private final String state;
 

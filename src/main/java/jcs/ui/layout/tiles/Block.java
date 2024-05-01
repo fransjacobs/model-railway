@@ -47,7 +47,6 @@ import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
-import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile, BlockEventListener {
 
@@ -333,6 +332,8 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
   public Color getBlockStateColor(BlockState blockState) {
     return switch (blockState) {
+      case GHOST ->
+        new Color(250, 0, 0);
       case LOCKED ->
         new Color(250, 250, 210);
       case OCCUPIED ->
@@ -422,7 +423,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
 
       int w = locImage.getWidth(null);
       int h = locImage.getHeight(null);
-      Logger.trace("LocImage w: " + w + " h: " + h);
+      //Logger.trace("LocImage w: " + w + " h: " + h);
 
       //Depending on the block orientation the image need to be rotated and flipped
       switch (getOrientation()) {
