@@ -241,6 +241,17 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     }
   }
 
+  //TODO a sensor listener should be addressable, but how?
+  //Need to register als to which id we are interested....
+  public void fireSensorEventListeners(final SensorEvent sensorEvent, final String sensorId) {
+    for (SensorEventListener listener : sensorEventListeners) {
+      //listener.
+      listener.onSensorChange(sensorEvent);
+    }
+  }
+  
+  
+  
   private void notifySensorEventListeners(final SensorEvent sensorEvent) {
     executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }
