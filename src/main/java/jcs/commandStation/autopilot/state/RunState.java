@@ -56,7 +56,7 @@ public class RunState extends DispatcherState {
   }
 
   @Override
-  public boolean execute() {
+  public void execute() {
     //Which sensors do we need to watch
     RouteBean route = this.dispatcher.getRouteBean();
     String departureTileId = route.getFromTileId();
@@ -97,10 +97,10 @@ public class RunState extends DispatcherState {
 
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     JCS.getJcsCommandStation().changeLocomotiveSpeed(750, locomotive);
-    
+
     //Loc has started advance to the next state
     canAdvanceToNextState = true;
-    return canAdvanceToNextState;
+    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
   private class SensorListener implements SensorEventListener {

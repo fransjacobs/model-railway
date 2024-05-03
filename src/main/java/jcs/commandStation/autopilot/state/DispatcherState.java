@@ -32,7 +32,6 @@ public abstract class DispatcherState {
 
   protected boolean running;
 
-
   protected int waitTime;
 
   protected boolean canAdvanceToNextState;
@@ -41,15 +40,9 @@ public abstract class DispatcherState {
     this.dispatcher = trainDispatcher;
   }
 
-  /**
-   * React on a Halt event
-   *
-   * @param dispatcher
-   */
-  //public abstract void onHalt(TrainDispatcher dispatcher);
   public abstract void next(TrainDispatcher dispatcher);
 
-  public abstract boolean execute();
+  public abstract void execute();
 
   public int getWaitTime() {
     return waitTime;

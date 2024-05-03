@@ -22,6 +22,8 @@ import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.PersistenceFactory;
@@ -31,9 +33,9 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class ReserveRouteState extends DispatcherState {
+public class LockRouteState extends DispatcherState {
 
-  public ReserveRouteState(TrainDispatcher dispatcher) {
+  public LockRouteState(TrainDispatcher dispatcher) {
     super(dispatcher);
   }
 
@@ -49,23 +51,29 @@ public class ReserveRouteState extends DispatcherState {
   }
 
   @Override
-  public boolean execute() {
+  public void execute() {
     if (JCS.getJcsCommandStation() == null) {
       Logger.error("Can't obtain a Command Station");
       canAdvanceToNextState = false;
       running = false;
-      return canAdvanceToNextState;
     }
-
-    RouteBean route = this.dispatcher.getRouteBean();
+    RouteBean route = dispatcher.getRouteBean();
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     if (route == null) {
       Logger.debug("Can't reserve a route for " + this.dispatcher.getLocomotiveBean().getName() + " ...");
-      return false;
+      return;
     }
 
     Logger.debug("Reserving route " + route);
     route.setLocked(true);
+
+    if (dispatcher.isSwapLocomotiveDirection()) {
+      //During testing the locomotive direction is swapped   
+      Direction newDirection = locomotive.getDirection();
+      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
+      dispatcher.setSwapLocomotiveDirection(false);
+    }
 
     // need the turnouts
     List<RouteElementBean> turnouts = getTurnouts(route);
@@ -98,12 +106,11 @@ public class ReserveRouteState extends DispatcherState {
 
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
-    
+
     this.dispatcher.showRoute(route);
 
     canAdvanceToNextState = true;
-
-    return canAdvanceToNextState;
+    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
   List<RouteElementBean> getTurnouts(RouteBean routeBean) {
@@ -116,6 +123,5 @@ public class ReserveRouteState extends DispatcherState {
     }
     return turnouts;
   }
-
 
 }

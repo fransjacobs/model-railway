@@ -541,44 +541,45 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   }
 
   public String getLocomotiveBlockSuffix() {
-    String blockSuffix = "";
-
-    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getDirection() != null) {
-      LocomotiveBean.Direction locDir = getBlockBean().getLocomotive().getDirection();
-      boolean reverseArrival = this.getBlockBean().isReverseArrival();
-
-      switch (getOrientation()) {
-        case EAST -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "-" : "+";
-          } else {
-            blockSuffix = reverseArrival ? "+" : "-";
-          }
-        }
-        case WEST -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "+" : "-";
-          } else {
-            blockSuffix = reverseArrival ? "-" : "+";
-          }
-        }
-        case SOUTH -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "+" : "-";
-          } else {
-            blockSuffix = reverseArrival ? "-" : "+";
-          }
-        }
-        case NORTH -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "-" : "+";
-          } else {
-            blockSuffix = reverseArrival ? "+" : "-";
-          }
-        }
-      }
-    }
-    return blockSuffix;
+//    String blockSuffix = "";
+//
+//    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getDirection() != null) {
+//      LocomotiveBean.Direction locDir = getBlockBean().getLocomotive().getDirection();
+//      boolean reverseArrival = this.getBlockBean().isReverseArrival();
+//
+//      switch (getOrientation()) {
+//        case EAST -> {
+//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+//            blockSuffix = reverseArrival ? "-" : "+";
+//          } else {
+//            blockSuffix = reverseArrival ? "+" : "-";
+//          }
+//        }
+//        case WEST -> {
+//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+//            blockSuffix = reverseArrival ? "+" : "-";
+//          } else {
+//            blockSuffix = reverseArrival ? "-" : "+";
+//          }
+//        }
+//        case SOUTH -> {
+//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+//            blockSuffix = reverseArrival ? "+" : "-";
+//          } else {
+//            blockSuffix = reverseArrival ? "-" : "+";
+//          }
+//        }
+//        case NORTH -> {
+//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+//            blockSuffix = reverseArrival ? "-" : "+";
+//          } else {
+//            blockSuffix = reverseArrival ? "+" : "-";
+//          }
+//        }
+//      }
+//    }
+//    //return blockSuffix;
+    return this.blockBean.getLocomotiveBlockSuffix();
   }
 
   @Override

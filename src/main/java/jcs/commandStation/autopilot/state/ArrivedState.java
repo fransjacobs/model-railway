@@ -58,42 +58,40 @@ public class ArrivedState extends DispatcherState {
   }
 
   @Override
-  public boolean execute() {
+  public void execute() {
     //Executed on enter
     if (this.dispatcher.isInDestinationBlock()) {
 
-    LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
+      LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
 
-    Logger.debug("Train has arrived in the destination block");
+      Logger.debug("Train has arrived in the destination block");
 
-    JCS.getJcsCommandStation().changeLocomotiveSpeed(0, locomotive);
-    //set the loco in the destination block
-    //remove the loco from the source block
-    departureBlock.setLocomotive(null);
-    destinationBlock.setLocomotive(locomotive);
+      JCS.getJcsCommandStation().changeLocomotiveSpeed(0, locomotive);
+      //set the loco in the destination block
+      //remove the loco from the source block
+      departureBlock.setLocomotive(null);
+      destinationBlock.setLocomotive(locomotive);
 
-    PersistenceFactory.getService().persist(departureBlock);
-    PersistenceFactory.getService().persist(destinationBlock);
+      PersistenceFactory.getService().persist(departureBlock);
+      PersistenceFactory.getService().persist(destinationBlock);
 
-    JCS.getJcsCommandStation().removeSensorEventListener(enterListener);
-    JCS.getJcsCommandStation().removeSensorEventListener(arrivalListener);
+      JCS.getJcsCommandStation().removeSensorEventListener(enterListener);
+      JCS.getJcsCommandStation().removeSensorEventListener(arrivalListener);
 
-    RouteBean route = this.dispatcher.getRouteBean();
-    route.setLocked(false);
-    PersistenceFactory.getService().persist(route);
+      RouteBean route = this.dispatcher.getRouteBean();
+      route.setLocked(false);
+      PersistenceFactory.getService().persist(route);
 
-    refreshBlockTiles();
-      
-      
-      
-    
+      refreshBlockTiles();
+
     }
-      
-      if (this.arrived) {
+
+    if (this.arrived) {
       //TODO rethink this
       this.canAdvanceToNextState = true;
-      return this.canAdvanceToNextState;
+      Logger.trace("Can advance to next state: " + canAdvanceToNextState);
     }
+
     //Which sensors do we need to watch
     RouteBean route = this.dispatcher.getRouteBean();
     String departureTileId = route.getFromTileId();
@@ -169,7 +167,7 @@ public class ArrivedState extends DispatcherState {
 
     canAdvanceToNextState = arrived;
     route = null;
-    return canAdvanceToNextState;
+    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
   private synchronized void onEnter() {

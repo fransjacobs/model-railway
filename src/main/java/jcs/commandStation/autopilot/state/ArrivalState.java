@@ -44,7 +44,7 @@ public class ArrivalState extends DispatcherState {
   }
 
   @Override
-  public boolean execute() {
+  public void execute() {
     //When the arrival event goes of this is executed
     if (this.dispatcher.isEnterDestinationBlock()) {
       Logger.debug("Train has entered the destination block. Slow down");
@@ -55,7 +55,7 @@ public class ArrivalState extends DispatcherState {
       Logger.debug(locomotive.getName() + " has entered destination " + route.getToTileId() + "...");
       this.canAdvanceToNextState = true;
     }
-    return canAdvanceToNextState;
+    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
 }

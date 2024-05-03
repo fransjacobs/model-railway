@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import jcs.commandStation.autopilot.state.DispatcherState;
 import jcs.commandStation.autopilot.state.IdleState;
-import jcs.commandStation.autopilot.state.ReserveRouteState;
+import jcs.commandStation.autopilot.state.LockRouteState;
 import jcs.commandStation.autopilot.state.RunState;
 import jcs.commandStation.autopilot.state.StateEventListener;
 import jcs.commandStation.events.SensorEventListener;
@@ -48,24 +48,21 @@ public class TrainDispatcher extends Thread {
 
   private DispatcherState dispatcherState;
   private DispatcherState previousState;
-  //private final RouteDisplayCallBack callback;
 
   private final List<StateEventListener> stateEventListeners;
 
   private SensorEventListener enterEventListener;
   private SensorEventListener inEventListener;
-  
-  
+
   private boolean enterDestinationBlock = false;
   private boolean inDestinationBlock = false;
-
+  private boolean swapLocomotiveDirection = false;
 
   private boolean running;
 
   public TrainDispatcher(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
     this.dispatcherState = new IdleState(this);
-    //this.callback = callback;
     this.stateEventListeners = new LinkedList<>();
 
     setName("LDT->" + locomotiveBean.getName());
@@ -97,6 +94,14 @@ public class TrainDispatcher extends Thread {
 
   public void setDestinationBlock(BlockBean destinationBlock) {
     this.destinationBlock = destinationBlock;
+  }
+
+  public boolean isSwapLocomotiveDirection() {
+    return swapLocomotiveDirection;
+  }
+
+  public void setSwapLocomotiveDirection(boolean swapLocomotiveDirection) {
+    this.swapLocomotiveDirection = swapLocomotiveDirection;
   }
 
   public DispatcherState getDispatcherState() {
@@ -151,23 +156,8 @@ public class TrainDispatcher extends Thread {
   }
 
   public boolean execute() {
-    boolean action = dispatcherState.execute();
-
-    if (dispatcherState instanceof ReserveRouteState && action) {
-      //if (callback != null) {
-      //callback.setSelectRoute(dispatcherState.getRoute());
-      //}
-    }
-
-    if (dispatcherState instanceof RunState && action) {
-      //if (callback != null) {
-      // callback.setSelectRoute(dispatcherState.getRoute());
-
-      //callback.refresh();
-      //}
-    }
-
-    return action;
+    dispatcherState.execute();
+    return dispatcherState.canAdvanceToNextState();
   }
 
   @Override
@@ -195,8 +185,8 @@ public class TrainDispatcher extends Thread {
       }
     }
 
-    fireStateListeners(this.getName() + " Finished");
-    Logger.debug(this.getName() + " Finished");
+    fireStateListeners(getName() + " Finished");
+    Logger.debug(getName() + " Finished");
   }
 
   private void fireStateListeners(String s) {
@@ -221,9 +211,6 @@ public class TrainDispatcher extends Thread {
   public boolean isInDestinationBlock() {
     return inDestinationBlock;
   }
-  
-  
-  
 
   public void addStateEventListener(StateEventListener listener) {
     stateEventListeners.add(listener);
@@ -243,7 +230,7 @@ public class TrainDispatcher extends Thread {
   }
 
   public void showRoute(RouteBean routeBean) {
-    Logger.trace("Show route "+routeBean.toLogString());
+    Logger.trace("Show route " + routeBean.toLogString());
     List<RouteElementBean> routeElements = routeBean.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();

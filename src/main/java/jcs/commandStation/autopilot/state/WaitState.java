@@ -36,14 +36,14 @@ public class WaitState extends DispatcherState {
   }
 
   @Override
-  public boolean execute() {
+  public void execute() {
     Logger.debug("Waiting");
     if (running) {
       pause(5000);
     }
 
     canAdvanceToNextState = running;
-    return canAdvanceToNextState;
+    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
 }

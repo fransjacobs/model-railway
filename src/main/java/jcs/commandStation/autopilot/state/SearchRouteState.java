@@ -23,10 +23,7 @@ import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
-import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.tiles.Block;
-import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -40,10 +37,8 @@ public class SearchRouteState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher dispatcher) {
-    //Only advance when there is a route
     if (canAdvanceToNextState) {
-      DispatcherState newState = new ReserveRouteState(dispatcher);
-      newState.setRunning(running);
+      DispatcherState newState = new LockRouteState(dispatcher);
       dispatcher.setDispatcherState(newState);
     } else {
       dispatcher.setDispatcherState(this);
@@ -51,17 +46,15 @@ public class SearchRouteState extends DispatcherState {
   }
 
   @Override
-  public boolean execute() {
+  public void execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
     refreshBlockTiles();
 
     BlockBean blockBean = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
-    //We need to have the "Real" BlockTile to be able to sortout the direction...
-    TileBean tileBean = blockBean.getTileBean();
-    Block blockTile = (Block) TileFactory.createTile(tileBean);
-    String suffix = blockTile.getLocomotiveBlockSuffix();
+
+    String suffix = blockBean.getLocomotiveBlockSuffix();
     Logger.trace("Loc " + locomotive.getName() + " is in block " + blockBean.getId() + ". Going " + locomotive.getDirection() + " towards the " + suffix + " side of the block...");
 
     //Search for the possible routes
@@ -71,19 +64,21 @@ public class SearchRouteState extends DispatcherState {
     if (routes.isEmpty() && locomotive.isCommuter()) {
       Logger.debug("Reversing locomotive");
       Direction newDirection = locomotive.toggleDirection();
-
-      JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
-      // should be refreshed from persistent store...
+      //Do NOT set the final direction just just test....
       locomotive.setDirection(newDirection);
+      blockBean.setLocomotive(locomotive);
 
-      refreshBlockTiles();
-
-      blockTile = (Block) TileFactory.createTile(tileBean);
-      suffix = blockTile.getLocomotiveBlockSuffix();
+      suffix = blockBean.getLocomotiveBlockSuffix();
+   
       Logger.trace("Loc " + locomotive.getName() + " is in block " + blockBean.getId() + ". Going " + locomotive.getDirection() + " towards the " + suffix + " side of the block...");
 
       routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), suffix);
-      Logger.trace("2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
+
+      Logger.trace("2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s). " + (!routes.isEmpty() ? "Direction of " + locomotive.getName() + " must be swapped!" : ""));
+      if (!routes.isEmpty()) {
+        dispatcher.setSwapLocomotiveDirection(true);
+      }
+
     }
 
     int rIdx = 0;
@@ -105,8 +100,8 @@ public class SearchRouteState extends DispatcherState {
     }
     this.dispatcher.setRouteBean(route);
 
-    canAdvanceToNextState = running && route != null;
-    return canAdvanceToNextState;
+    canAdvanceToNextState = route != null;
+    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
   public int getRandomNumber(int min, int max) {

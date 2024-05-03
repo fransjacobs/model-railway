@@ -33,7 +33,7 @@ public class IdleState extends DispatcherState {
   @Override
   public void next(TrainDispatcher dispatcher) {
     //Next state is only possible when this locomotive is on the track and in a block
-    if (running && canAdvanceToNextState) {
+    if (canAdvanceToNextState) {
       DispatcherState newState = new SearchRouteState(this.dispatcher);
       newState.setRunning(running);
       dispatcher.setDispatcherState(newState);
@@ -43,7 +43,7 @@ public class IdleState extends DispatcherState {
   }
 
   @Override
-  public boolean execute() {
+  public void execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
     dispatcher.setDepartureBlock(block);
@@ -54,8 +54,8 @@ public class IdleState extends DispatcherState {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block");
     }
 
-    canAdvanceToNextState = running && block != null;
-    return canAdvanceToNextState;
+    canAdvanceToNextState = block != null;
+    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
 }

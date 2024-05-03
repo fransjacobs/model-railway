@@ -22,9 +22,12 @@ import jcs.JCS;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.autopilot.state.StateEventListener;
 import jcs.commandStation.events.SensorEvent;
+import jcs.entities.BlockBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -91,7 +94,6 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     stopButton = new javax.swing.JButton();
     stateLabel = new javax.swing.JLabel();
     buttenPanel = new javax.swing.JPanel();
-    actionButton = new javax.swing.JButton();
     nextButton = new javax.swing.JButton();
     unlockButton = new javax.swing.JButton();
     southPanel = new javax.swing.JPanel();
@@ -143,18 +145,6 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout2.setAlignOnBaseline(true);
     buttenPanel.setLayout(flowLayout2);
-
-    actionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/director-green.png"))); // NOI18N
-    actionButton.setText("Execute");
-    actionButton.setIconTextGap(2);
-    actionButton.setMargin(new java.awt.Insets(2, 2, 3, 2));
-    actionButton.setPreferredSize(new java.awt.Dimension(100, 40));
-    actionButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        actionButtonActionPerformed(evt);
-      }
-    });
-    buttenPanel.add(actionButton);
 
     nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-right-24.png"))); // NOI18N
     nextButton.setText("Next");
@@ -261,16 +251,11 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
   private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
     if (trainDispatcher != null) {
+      trainDispatcher.execute();
       trainDispatcher.nextState();
       this.stateLabel.setText(trainDispatcher.getDispatcherState().toString());
     }
   }//GEN-LAST:event_nextButtonActionPerformed
-
-  private void actionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionButtonActionPerformed
-    if (trainDispatcher != null) {
-      trainDispatcher.execute();
-    }
-  }//GEN-LAST:event_actionButtonActionPerformed
 
   private void unlockButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unlockButtonActionPerformed
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
@@ -283,7 +268,31 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
       }
     }
     Logger.debug("Unlocked " + lockedCounter + " routes out of " + routes.size());
+
+    int occupiedBlockCounter = 0;
+    int freeBlockCounter = 0;
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    for (BlockBean block : blocks) {
+      if (block.getLocomotiveId() != null) {
+        block.setBlockState(BlockBean.BlockState.OCCUPIED);
+        occupiedBlockCounter++;
+      } else {
+        block.setBlockState(BlockBean.BlockState.FREE);
+        freeBlockCounter++;
+      }
+      PersistenceFactory.getService().persist(block);
+      showBlockStatus(block);
+    }
+
+    Logger.debug("Occupied blocks: " + occupiedBlockCounter + " Free blocks " + freeBlockCounter + " of total " + blocks.size() + " blocks");
   }//GEN-LAST:event_unlockButtonActionPerformed
+
+  private void showBlockStatus(BlockBean blockBean) {
+    Logger.trace("Show Block " + blockBean.toString());
+    TileEvent tileEvent = new TileEvent(blockBean);
+    TileFactory.fireTileEventListener(tileEvent);
+  }
+
 
   private void sensorTB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB1ActionPerformed
     SensorBean sb = new SensorBean(0, 1, this.sensorTB1.isSelected() ? 0 : 1);
@@ -341,9 +350,9 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
     java.awt.EventQueue.invokeLater(() -> {
       DispatcherTestDialog dialog = new DispatcherTestDialog(new javax.swing.JFrame(), false, dispatcher);
-      
+
       dispatcher.addStateEventListener(dialog);
-      
+
       dialog.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
@@ -386,7 +395,6 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 //  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JButton actionButton;
   private javax.swing.JPanel buttenPanel;
   private javax.swing.JButton nextButton;
   private javax.swing.JPanel northPanel;

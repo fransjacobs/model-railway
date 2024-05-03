@@ -23,6 +23,11 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.EAST;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 
 @Table(name = "blocks")
 public class BlockBean {
@@ -246,6 +251,49 @@ public class BlockBean {
     } else {
       this.locomotiveId = null;
     }
+  }
+
+  @Transient
+  public String getLocomotiveBlockSuffix() {
+    String blockSuffix = "";
+
+    if (tileBean != null && locomotive != null && locomotive.getDirection() != null) {
+      LocomotiveBean.Direction locDir = locomotive.getDirection();
+
+      Orientation blockOrientation = this.tileBean.getOrientation();
+
+      switch (blockOrientation) {
+        case EAST -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "-" : "+";
+          } else {
+            blockSuffix = reverseArrival ? "+" : "-";
+          }
+        }
+        case WEST -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "-" : "+";
+          } else {
+            blockSuffix = reverseArrival ? "+" : "-";
+          }
+        }
+        case SOUTH -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "+" : "-";
+          } else {
+            blockSuffix = reverseArrival ? "-" : "+";
+          }
+        }
+        case NORTH -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "+" : "-";
+          } else {
+            blockSuffix = reverseArrival ? "-" : "+";
+          }
+        }
+      }
+    }
+    return blockSuffix;
   }
 
   @Override
