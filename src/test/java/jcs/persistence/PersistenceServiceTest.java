@@ -403,7 +403,7 @@ public class PersistenceServiceTest {
     result = instance.persist(sensor);
     assertEquals(sensor, result);
 
-    s3 = instance.getSensor("65-3");
+    s3 = instance.getSensor("65-0003");
     assertEquals(sensor, s3);
   }
 

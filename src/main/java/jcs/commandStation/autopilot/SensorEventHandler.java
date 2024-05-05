@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 FJA.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@ import jcs.commandStation.events.SensorEvent;
 
 /**
  *
- * @author FJA
+ * @author Frans Jacobs
  */
 public interface SensorEventHandler {
 
-  void handleSensorEvent(SensorEvent event);
-
-  String getSensorId();
+  void handleEvent(SensorEvent event);
 }

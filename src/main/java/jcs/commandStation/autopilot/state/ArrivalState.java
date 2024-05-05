@@ -15,10 +15,13 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.awt.Color;
+import java.util.logging.Level;
 import jcs.JCS;
-import jcs.commandStation.autopilot.TrainDispatcher;
+import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -45,14 +48,47 @@ public class ArrivalState extends DispatcherState {
 
   @Override
   public void execute() {
+
+    //what to do
+    while (!dispatcher.isEnterDestinationBlock()) {
+      try {
+        //wait
+        //this.wait();
+        Thread.sleep(1000L);
+      } catch (InterruptedException ex) {
+        Logger.trace(ex);
+      }
+    }
+
     //When the arrival event goes of this is executed
-    if (this.dispatcher.isEnterDestinationBlock()) {
+    if (dispatcher.isEnterDestinationBlock()) {
       Logger.debug("Train has entered the destination block. Slow down");
-      LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
-      RouteBean route = this.dispatcher.getRouteBean();
+      LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+      RouteBean route = dispatcher.getRouteBean();
       //Slowdown....
       JCS.getJcsCommandStation().changeLocomotiveSpeed(100, locomotive);
       Logger.debug(locomotive.getName() + " has entered destination " + route.getToTileId() + "...");
+
+      //Change block status
+      //Lock the destination
+      //String departureTileId = route.getFromTileId();
+      //String destinationTileId = route.getToTileId();
+      //BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
+      BlockBean departureBlock = this.dispatcher.getDepartureBlock();
+      departureBlock.setBlockState(BlockBean.BlockState.LEAVING);
+
+      //BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
+      BlockBean destinationBlock = this.dispatcher.getDestinationBlock();
+      destinationBlock.setBlockState(BlockBean.BlockState.ARRIVING);
+
+      PersistenceFactory.getService().persist(departureBlock);
+      PersistenceFactory.getService().persist(destinationBlock);
+
+      dispatcher.showBlockState(departureBlock);
+      dispatcher.showBlockState(destinationBlock);
+
+      dispatcher.showRoute(route, Color.magenta);
+
       this.canAdvanceToNextState = true;
     }
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);

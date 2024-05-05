@@ -16,7 +16,6 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
-import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
@@ -25,19 +24,13 @@ import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
+import jcs.commandStation.autopilot.SensorEventHandler;
 
 /**
  *
  * @author frans
  */
 public class RunState extends DispatcherState {
-
-  //private SensorListener enterListener;
-  //private SensorListener arrivalListener;
-  //private BlockBean departureBlock;
-  //private BlockBean destinationBlock;
-  boolean entered = false;
-  boolean arrived = false;
 
   public RunState(TrainDispatcher dispatcher) {
     super(dispatcher);
@@ -58,7 +51,7 @@ public class RunState extends DispatcherState {
   @Override
   public void execute() {
     //Which sensors do we need to watch
-    RouteBean route = this.dispatcher.getRouteBean();
+    RouteBean route = dispatcher.getRouteBean();
     String departureTileId = route.getFromTileId();
     String destinationTileId = route.getToTileId();
     //From which side on the block is the train expected to arrive?
@@ -66,73 +59,41 @@ public class RunState extends DispatcherState {
 
     Logger.trace("Destination tile: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block");
     BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
+
+    //The sensors on the departure block do not yet play a role, but they can switch on so they have to be removed
+    //from the ghost list
+    String exitMinId = departureBlock.getMinSensorId();
+    String exitPlusId = departureBlock.getPlusSensorId();
+
     BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
 
-    SensorBean enterSensor;
+    String enterSensorId;
     if ("+".equals(arrivalSuffix)) {
-      enterSensor = destinationBlock.getPlusSensorBean();
+      enterSensorId = destinationBlock.getPlusSensorId();
     } else {
-      enterSensor = destinationBlock.getMinSensorBean();
+      enterSensorId = destinationBlock.getMinSensorId();
     }
 
-    SensorListener enterListener = new SensorListener(enterSensor, true, this.dispatcher);
-
-    SensorBean inSensor;
+    String inSensorId;
     if ("-".equals(arrivalSuffix)) {
-      inSensor = destinationBlock.getPlusSensorBean();
+      inSensorId = destinationBlock.getPlusSensorId();
     } else {
-      inSensor = destinationBlock.getMinSensorBean();
+      inSensorId = destinationBlock.getMinSensorId();
     }
 
-    SensorListener arrivalListener = new SensorListener(inSensor, false, this.dispatcher);
+    //Register handlers
+    this.dispatcher.registerNullEventHandler(exitMinId);
+    this.dispatcher.registerNullEventHandler(exitPlusId);
+    this.dispatcher.registerEnterHandler(enterSensorId);
+    this.dispatcher.registerArrivalHandler(inSensorId);
 
-    Logger.trace("Register the sensor listeners at the commandstation ");
-    JCS.getJcsCommandStation().addSensorEventListener(enterListener);
-    JCS.getJcsCommandStation().addSensorEventListener(arrivalListener);
-
-    dispatcher.setEnterEventListener(enterListener);
-    dispatcher.setInEventListener(arrivalListener);
-
-    Logger.debug("Enter Sensor: " + enterSensor.getName() + " [" + enterSensor.getId() + "] In Sensor: " + inSensor.getName() + " [" + inSensor.getId() + "]");
+    Logger.debug("Enter SensorId: " + enterSensorId + " In SensorId: " + inSensorId + " Ignore exitMinId: " + exitMinId + ", exitPlusId: " + exitPlusId);
 
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     JCS.getJcsCommandStation().changeLocomotiveSpeed(750, locomotive);
 
-    //Loc has started advance to the next state
     canAdvanceToNextState = true;
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);
-  }
-
-  private class SensorListener implements SensorEventListener {
-
-    private final Integer deviceId;
-    private final Integer contactId;
-    private final boolean enter;
-    private final TrainDispatcher dispatcher;
-
-    SensorListener(SensorBean sensor, boolean enter, TrainDispatcher dispatcher) {
-      this.deviceId = sensor.getDeviceId();
-      this.contactId = sensor.getContactId();
-      this.enter = enter;
-      this.dispatcher = dispatcher;
-      Logger.trace("deviceId: " + deviceId + " contactId: " + contactId + " enter: " + enter);
-    }
-
-    @Override
-    public void onSensorChange(SensorEvent event) {
-      SensorBean sensor = event.getSensorBean();
-
-      if (deviceId.equals(sensor.getDeviceId()) && contactId.equals(sensor.getContactId())) {
-        Logger.trace("-> deviceId: " + deviceId + " contactId: " + contactId + " enter: " + enter);
-        if (sensor.isActive()) {
-          if (enter) {
-            dispatcher.onEnter();
-          } else {
-            dispatcher.onArrival();
-          }
-        }
-      }
-    }
   }
 
 }

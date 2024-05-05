@@ -17,8 +17,6 @@ package jcs.commandStation.autopilot.state;
 
 import java.util.List;
 import java.util.Random;
-import jcs.JCS;
-import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
@@ -50,8 +48,7 @@ public class SearchRouteState extends DispatcherState {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
-    refreshBlockTiles();
-
+    //refreshBlockTiles();
     BlockBean blockBean = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
 
     String suffix = blockBean.getLocomotiveBlockSuffix();
@@ -69,7 +66,7 @@ public class SearchRouteState extends DispatcherState {
       blockBean.setLocomotive(locomotive);
 
       suffix = blockBean.getLocomotiveBlockSuffix();
-   
+
       Logger.trace("Loc " + locomotive.getName() + " is in block " + blockBean.getId() + ". Going " + locomotive.getDirection() + " towards the " + suffix + " side of the block...");
 
       routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), suffix);

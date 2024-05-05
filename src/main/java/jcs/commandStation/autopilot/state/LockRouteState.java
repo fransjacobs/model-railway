@@ -15,10 +15,10 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.JCS;
-import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.BlockBean;
@@ -87,7 +87,7 @@ public class LockRouteState extends DispatcherState {
       Logger.debug("Setting turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
       JCS.getJcsCommandStation().switchAccessory(turnout, av);
     }
-    Logger.debug("Locked route " + route);
+    Logger.trace("Turnouts set for" + route);
 
     //Lock the destination
     String departureTileId = route.getFromTileId();
@@ -99,21 +99,28 @@ public class LockRouteState extends DispatcherState {
 
     BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
     departureBlock.setBlockState(BlockBean.BlockState.DEPARTING);
-    this.dispatcher.setDepartureBlock(departureBlock);
+    
     BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-    this.dispatcher.setDestinationBlock(destinationBlock);
+    destinationBlock.setLocomotive(locomotive);
 
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
 
-    this.dispatcher.showRoute(route);
+    dispatcher.setDepartureBlock(departureBlock);
+    dispatcher.setDestinationBlock(destinationBlock);
+        
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.showBlockState(destinationBlock);
+    
+    dispatcher.showRoute(route, Color.green);
+    Logger.trace(route+" Locked");
 
     canAdvanceToNextState = true;
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
-  List<RouteElementBean> getTurnouts(RouteBean routeBean) {
+  private List<RouteElementBean> getTurnouts(RouteBean routeBean) {
     List<RouteElementBean> rel = routeBean.getRouteElements();
     List<RouteElementBean> turnouts = new ArrayList<>();
     for (RouteElementBean reb : rel) {

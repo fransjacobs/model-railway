@@ -16,8 +16,6 @@
 package jcs.commandStation.autopilot.state;
 
 import java.util.List;
-import jcs.commandStation.autopilot.TrainDispatcher;
-import jcs.commandStation.events.BlockEvent;
 import jcs.entities.BlockBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
@@ -73,14 +71,14 @@ public abstract class DispatcherState {
     this.running = running;
   }
 
-  protected void refreshBlockTiles() {
-    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-
-    Logger.trace("Refreshing " + blocks.size() + " block tiles...");
-    for (BlockBean b : blocks) {
-      BlockEvent be = new BlockEvent(b);
-      //JCS.getJcsCommandStation().fireBlockEventListeners(be);
-    }
-  }
+//  protected void refreshBlockTiles() {
+//    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+//
+//    Logger.trace("Refreshing " + blocks.size() + " block tiles...");
+//    for (BlockBean b : blocks) {
+//      BlockEvent be = new BlockEvent(b);
+//      //JCS.getJcsCommandStation().fireBlockEventListeners(be);
+//    }
+//  }
 
 }

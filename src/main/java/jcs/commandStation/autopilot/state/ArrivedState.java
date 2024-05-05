@@ -16,7 +16,6 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
-import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
@@ -82,7 +81,7 @@ public class ArrivedState extends DispatcherState {
       route.setLocked(false);
       PersistenceFactory.getService().persist(route);
 
-      refreshBlockTiles();
+      //refreshBlockTiles();
 
     }
 
@@ -203,7 +202,7 @@ public class ArrivedState extends DispatcherState {
     route.setLocked(false);
     PersistenceFactory.getService().persist(route);
 
-    refreshBlockTiles();
+    //refreshBlockTiles();
   }
 
   private class SensorListener implements SensorEventListener {
@@ -220,7 +219,7 @@ public class ArrivedState extends DispatcherState {
       this.runState = runState;
       Logger.trace("deviceId: " + deviceId + " contactId: " + contactId + " enter: " + enter);
     }
-
+    
     @Override
     public void onSensorChange(SensorEvent event) {
       SensorBean sensor = event.getSensorBean();

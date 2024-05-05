@@ -266,11 +266,6 @@ public class TileFactory {
     return tiles;
   }
 
-//  private static void addTileEventListener(Tile tile) {
-//    if (tile instanceof TileEventListener tileEventListener) {
-//      addTileEventListener(tileEventListener);
-//    }
-//  }
   private static void addTileEventListener(TileEventListener listener) {
     String key = listener.getId();
     tileEventListeners.put(key, listener);

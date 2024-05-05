@@ -103,10 +103,10 @@ public class BlockTileTester extends JFrame {
     //bbn.setReverseArrival(true);
     ((Block) tileNorth).setBlockBean(bbn);
     
-    Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());
-    Logger.trace("West: "+ ((Block)tileWest).getLocomotiveBlockSuffix());
-    Logger.trace("North: "+ ((Block)tileNorth).getLocomotiveBlockSuffix());
-    Logger.trace("South: "+ ((Block)tileSouth).getLocomotiveBlockSuffix());
+//    Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());
+//    Logger.trace("West: "+ ((Block)tileWest).getLocomotiveBlockSuffix());
+//    Logger.trace("North: "+ ((Block)tileNorth).getLocomotiveBlockSuffix());
+//    Logger.trace("South: "+ ((Block)tileSouth).getLocomotiveBlockSuffix());
     
     
   }

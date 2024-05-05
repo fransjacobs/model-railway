@@ -22,7 +22,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -396,8 +395,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
           JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
-        //case BLOCK ->
-        //  JCS.getJcsCommandStation().addBlockEventListener((BlockEventListener) tile);        
         default -> {
           //Do nothing
         }

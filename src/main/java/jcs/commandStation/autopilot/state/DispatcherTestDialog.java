@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.autopilot;
+package jcs.commandStation.autopilot.state;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.state.StateEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
+import jcs.entities.BlockBean.BlockState;
 import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.events.TileEvent;
@@ -107,13 +108,15 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     sensorTB8 = new javax.swing.JToggleButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    setMinimumSize(new java.awt.Dimension(650, 200));
 
     northPanel.setMinimumSize(new java.awt.Dimension(450, 120));
+    northPanel.setPreferredSize(new java.awt.Dimension(600, 115));
     jcs.ui.swing.layout.VerticalFlowLayout verticalFlowLayout1 = new jcs.ui.swing.layout.VerticalFlowLayout();
     verticalFlowLayout1.setvAlignment(1);
     northPanel.setLayout(verticalFlowLayout1);
 
-    statePanel.setPreferredSize(new java.awt.Dimension(440, 50));
+    statePanel.setPreferredSize(new java.awt.Dimension(550, 50));
     java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     statePanel.setLayout(flowLayout1);
@@ -141,7 +144,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
     northPanel.add(statePanel);
 
-    buttenPanel.setPreferredSize(new java.awt.Dimension(450, 50));
+    buttenPanel.setPreferredSize(new java.awt.Dimension(550, 50));
     java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout2.setAlignOnBaseline(true);
     buttenPanel.setLayout(flowLayout2);
@@ -174,9 +177,9 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
     getContentPane().add(northPanel, java.awt.BorderLayout.NORTH);
 
-    southPanel.setMinimumSize(new java.awt.Dimension(460, 50));
-    southPanel.setPreferredSize(new java.awt.Dimension(450, 50));
-    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    southPanel.setMinimumSize(new java.awt.Dimension(600, 50));
+    southPanel.setPreferredSize(new java.awt.Dimension(50, 50));
+    java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 3, 3);
     flowLayout3.setAlignOnBaseline(true);
     southPanel.setLayout(flowLayout3);
 
@@ -266,16 +269,29 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
         PersistenceFactory.getService().persist(route);
         lockedCounter++;
       }
+      resetRoute(route);
     }
     Logger.debug("Unlocked " + lockedCounter + " routes out of " + routes.size());
 
+    // Reset route
     int occupiedBlockCounter = 0;
     int freeBlockCounter = 0;
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     for (BlockBean block : blocks) {
       if (block.getLocomotiveId() != null) {
-        block.setBlockState(BlockBean.BlockState.OCCUPIED);
-        occupiedBlockCounter++;
+        if (BlockState.LOCKED == block.getBlockState() || BlockState.ARRIVING == block.getBlockState()) {
+          //destinations block, reset!
+          block.setLocomotive(null);
+          block.setBlockState(BlockBean.BlockState.FREE);
+          freeBlockCounter++;
+        } else if (BlockState.DEPARTING == block.getBlockState() || BlockState.LEAVING == block.getBlockState()) {
+          block.setBlockState(BlockBean.BlockState.OCCUPIED);
+          occupiedBlockCounter++;
+        } else {
+          if (BlockState.OCCUPIED == block.getBlockState()) {
+            occupiedBlockCounter++;
+          }
+        }
       } else {
         block.setBlockState(BlockBean.BlockState.FREE);
         freeBlockCounter++;
@@ -286,6 +302,15 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
     Logger.debug("Occupied blocks: " + occupiedBlockCounter + " Free blocks " + freeBlockCounter + " of total " + blocks.size() + " blocks");
   }//GEN-LAST:event_unlockButtonActionPerformed
+
+  private void resetRoute(RouteBean route) {
+    List<RouteElementBean> routeElements = route.getRouteElements();
+    for (RouteElementBean re : routeElements) {
+      String tileId = re.getTileId();
+      TileEvent tileEvent = new TileEvent(tileId, false);
+      TileFactory.fireTileEventListener(tileEvent);
+    }
+  }
 
   private void showBlockStatus(BlockBean blockBean) {
     Logger.trace("Show Block " + blockBean.toString());

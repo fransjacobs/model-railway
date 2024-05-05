@@ -239,6 +239,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   @Override
   public void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
+      
       listener.onSensorChange(sensorEvent);
     }
   }

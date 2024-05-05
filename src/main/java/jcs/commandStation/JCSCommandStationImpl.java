@@ -72,8 +72,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private Map<String, AccessoryController> accessoryControllers;
   private Map<String, FeedbackController> feedbackControllers;
 
-  private final List<SensorEventListener> sensorEventListeners;
-  //private final List<BlockEventListener> blockEventListeners;
+  private final List<SensorEventListener> anonymousSensorListeners;
+  private final Map<String, SensorEventListener> sensorEventListeners;
+
   private final List<AccessoryEventListener> accessoryEventListeners;
   private final List<LocomotiveFunctionEventListener> LocomotiveFunctionEventListeners;
 
@@ -93,8 +94,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     accessoryControllers = new HashMap<>();
     feedbackControllers = new HashMap<>();
 
-    sensorEventListeners = new LinkedList<>();
-    //blockEventListeners = new LinkedList<>();
+    anonymousSensorListeners = new LinkedList<>();
+    sensorEventListeners = new HashMap<>();
     accessoryEventListeners = new LinkedList<>();
     LocomotiveFunctionEventListeners = new LinkedList<>();
     locomotiveDirectionEventListeners = new LinkedList<>();
@@ -482,14 +483,22 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void addSensorEventListener(SensorEventListener listener) {
-    this.sensorEventListeners.add(listener);
+    this.anonymousSensorListeners.add(listener);
   }
 
+//  @Override
+//  public void addSensorEventListener(SensorEventListener listener, String sensorId) {
+//    this.sensorEventListeners.put(sensorId, listener);
+//  }
   @Override
   public void removeSensorEventListener(SensorEventListener listener) {
-    this.sensorEventListeners.remove(listener);
+    this.anonymousSensorListeners.remove(listener);
   }
 
+//  @Override
+//  public void removeSensorEventListener(String sensorId) {
+//    this.sensorEventListeners.remove(sensorId);
+//  }
   @Override
   public void addAccessoryEventListener(AccessoryEventListener listener) {
     this.accessoryEventListeners.add(listener);
@@ -616,10 +625,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   private class SensorChangeEventListener implements SensorEventListener {
 
-    private final JCSCommandStationImpl trackController;
+    private final JCSCommandStationImpl commandStation;
 
-    SensorChangeEventListener(JCSCommandStationImpl trackController) {
-      this.trackController = trackController;
+    SensorChangeEventListener(JCSCommandStationImpl commandStation) {
+      this.commandStation = commandStation;
     }
 
     @Override
@@ -634,7 +643,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       }
 
       //Avoid concurrent modification exceptions
-      List<SensorEventListener> snapshot = new ArrayList<>(trackController.sensorEventListeners);
+      List<SensorEventListener> snapshot = new ArrayList<>(commandStation.anonymousSensorListeners);
 
       for (SensorEventListener sl : snapshot) {
         sl.onSensorChange(event);

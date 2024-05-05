@@ -25,9 +25,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import jcs.commandStation.events.BlockEvent;
-import jcs.commandStation.events.BlockEventListener;
-import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import static jcs.entities.BlockBean.BlockState.ARRIVING;
 import static jcs.entities.BlockBean.BlockState.DEPARTING;
@@ -48,7 +45,7 @@ import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
 
-public class Block extends AbstractTile implements Tile, BlockEventListener {
+public class Block extends AbstractTile implements Tile {
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
@@ -338,6 +335,8 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
         new Color(250, 250, 210);
       case OCCUPIED ->
         new Color(250, 210, 210);
+      case LEAVING ->
+        new Color(190, 190, 190);
       case DEPARTING ->
         new Color(210, 250, 210);
       case ARRIVING ->
@@ -387,14 +386,14 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     g2.setPaint(Color.darkGray);
     g2.drawLine(rw + 20, yy - 0, rw + 20, yy + 300);
 
-    //When there is a train in the block mark the direction of travel, ie whethe the train goes
+    //When there is a train in the block mark the direction of travel, ie whether the train goes
     //forwards or backwards by drawing a little triangle in the the block 
     if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
       boolean reverseArrival = getBlockBean().isReverseArrival();
       if (reverseArrival) {
-        g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-      } else {
         g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+      } else {
+        g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
       }
     }
 
@@ -486,31 +485,19 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
     }
   }
 
-  @Override
-  public void onBlockChange(BlockEvent blockEvent) {
-    //TOD is this still needed?
-    BlockBean bb = blockEvent.getBlockBean();
-
-    if (blockBean.getId().equals(bb.getId())) {
-      blockBean = bb;
-      repaintTile();
-    }
-  }
-
-  private String getLocImageName() {
-    if (this.blockBean != null && this.blockBean.getLocomotive() != null && this.blockBean.getLocomotive().getLocIcon() != null) {
-      return blockBean.getLocomotive().getIcon();
-    } else {
-      return null;
-    }
-  }
-
   private Image getLocImage() {
-    if (this.blockBean != null && this.blockBean.getLocomotive() != null && this.blockBean.getLocomotive().getLocIcon() != null) {
-      if (LocomotiveBean.Direction.BACKWARDS == blockBean.getLocomotive().getDirection()) {
-        return ImageUtil.flipVertically(blockBean.getLocomotive().getLocIcon());
+    if (blockBean != null && blockBean.getLocomotive() != null && blockBean.getLocomotive().getLocIcon() != null) {
+      //Do not show the image in block state FREE, LEAVING and LOCKED
+      BlockState blockState = blockBean.getBlockState();
+      boolean showImage = !(BlockState.FREE == blockState || BlockState.LOCKED == blockState || BlockState.LEAVING == blockState || BlockState.GHOST == blockState);
+      if (showImage) {
+        if (LocomotiveBean.Direction.BACKWARDS == blockBean.getLocomotive().getDirection()) {
+          return ImageUtil.flipVertically(blockBean.getLocomotive().getLocIcon());
+        } else {
+          return blockBean.getLocomotive().getLocIcon();
+        }
       } else {
-        return blockBean.getLocomotive().getLocIcon();
+        return null;
       }
     } else {
       return null;
@@ -520,7 +507,7 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
   public String getBlockText() {
     String blockText;
     if (!drawOutline && getBlockBean() != null && getBlockBean().getDescription() != null) {
-      if (getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
+      if (blockBean.getLocomotive() != null && blockBean.getLocomotive().getName() != null && BlockState.GHOST != blockBean.getBlockState()) {
         blockText = getBlockBean().getLocomotive().getName();
       } else {
         if (getBlockBean().getDescription().length() > 0) {
@@ -538,48 +525,6 @@ public class Block extends AbstractTile implements Tile, BlockEventListener {
       }
     }
     return blockText;
-  }
-
-  public String getLocomotiveBlockSuffix() {
-//    String blockSuffix = "";
-//
-//    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getDirection() != null) {
-//      LocomotiveBean.Direction locDir = getBlockBean().getLocomotive().getDirection();
-//      boolean reverseArrival = this.getBlockBean().isReverseArrival();
-//
-//      switch (getOrientation()) {
-//        case EAST -> {
-//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-//            blockSuffix = reverseArrival ? "-" : "+";
-//          } else {
-//            blockSuffix = reverseArrival ? "+" : "-";
-//          }
-//        }
-//        case WEST -> {
-//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-//            blockSuffix = reverseArrival ? "+" : "-";
-//          } else {
-//            blockSuffix = reverseArrival ? "-" : "+";
-//          }
-//        }
-//        case SOUTH -> {
-//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-//            blockSuffix = reverseArrival ? "+" : "-";
-//          } else {
-//            blockSuffix = reverseArrival ? "-" : "+";
-//          }
-//        }
-//        case NORTH -> {
-//          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-//            blockSuffix = reverseArrival ? "-" : "+";
-//          } else {
-//            blockSuffix = reverseArrival ? "+" : "-";
-//          }
-//        }
-//      }
-//    }
-//    //return blockSuffix;
-    return this.blockBean.getLocomotiveBlockSuffix();
   }
 
   @Override

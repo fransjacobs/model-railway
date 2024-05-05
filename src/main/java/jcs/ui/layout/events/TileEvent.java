@@ -53,6 +53,10 @@ public class TileEvent {
     this(tileId, showRoute, incomingSide, AccessoryValue.OFF);
   }
 
+  public TileEvent(String tileId, boolean showRoute, Orientation incomingSide, Color trackRouteColor) {
+    this(tileId, showRoute, incomingSide, AccessoryValue.OFF, trackRouteColor);
+  }
+
   public TileEvent(String tileId, boolean showRoute, Orientation incomingSide, AccessoryValue routeState) {
     this(tileId, showRoute, incomingSide, routeState, Tile.DEFAULT_ROUTE_TRACK_COLOR);
   }

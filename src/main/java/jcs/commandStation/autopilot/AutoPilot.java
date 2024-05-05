@@ -15,6 +15,8 @@
  */
 package jcs.commandStation.autopilot;
 
+import jcs.commandStation.autopilot.state.DispatcherTestDialog;
+import jcs.commandStation.autopilot.state.TrainDispatcher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.SensorBean;
@@ -41,6 +44,7 @@ public class AutoPilot {
 
   private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
 
+  //private final Map<String,SwitchableSensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
 
   private AutoPilot() {
@@ -62,7 +66,7 @@ public class AutoPilot {
     Logger.trace("Starting automode for all locomotives...");
     List<LocomotiveBean> locs = getOnTrackLocomotives();
     for (LocomotiveBean loc : locs) {
-      TrainDispatcher dispatcher = new TrainDispatcher(loc);
+      TrainDispatcher dispatcher = new TrainDispatcher(loc, this);
       locomotives.put(dispatcher.getName(), dispatcher);
       Logger.debug("Added " + dispatcher.getName());
       //dispatcher.start();
@@ -82,12 +86,9 @@ public class AutoPilot {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
 
     if (start) {
-      TrainDispatcher dispatcher = new TrainDispatcher(locomotiveBean);
-
-      //LocomotiveStateMachine lsm = new LocomotiveStateMachine(locomotiveBean);
+      TrainDispatcher dispatcher = new TrainDispatcher(locomotiveBean, this);
       locomotives.put(dispatcher.getName(), dispatcher);
       Logger.debug("Added " + dispatcher.getName());
-
       DispatcherTestDialog.showDialog(dispatcher);
 
       //lsm.startLocomotive();
@@ -121,8 +122,8 @@ public class AutoPilot {
     return activeLocomotives;
   }
 
-  private void ghostDetected(SensorEvent event) {
-    Logger.debug("Sensor " + event.getSensorBean().getId() + " active: " + event.getSensorBean().isActive());
+  private void handleGhost(SensorEvent event) {
+    Logger.warn("Ghost Detected! @ Sensor " + event.getId());
     //Switch power OFF!
     JCS.getJcsCommandStation().switchPower(false);
 
@@ -141,8 +142,6 @@ public class AutoPilot {
         break;
       }
     }
-
-    //show the blok
   }
 
   public void showBlockStatus(BlockBean blockBean) {
@@ -151,51 +150,61 @@ public class AutoPilot {
     TileFactory.fireTileEventListener(tileEvent);
   }
 
-  public SensorEventHandler getSensorEventHandler(String sensorId) {
-    return this.sensorHandlers.get(sensorId);
+  private void handleSensorEvent(SensorEvent event) {
+    if (event.isChanged()) {
+      Logger.trace(event.getId() + " has changed " + event.isChanged());
+
+      if (this.sensorHandlers.containsKey(event.getId())) {
+        //there is a handler registered for this id, pass the event through
+        SensorEventHandler sh = this.sensorHandlers.get(event.getId());
+        sh.handleEvent(event);
+      } else {
+        //sensor is not registered and thus not expected!
+        handleGhost(event);
+      }
+    }
   }
 
   private void registerAllSensors() {
     List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
-
     int cnt = 0;
     for (SensorBean sb : sensors) {
       String key = sb.getId();
       if (!sensorHandlers.containsKey(key)) {
-        GostHandler gh = new GostHandler(this, key);
+        SensorListener seh = new SensorListener(key, this);
         cnt++;
-
-        SwitchableSensorEventHandler sensorListener = new SwitchableSensorEventHandler(gh, key);
-        JCS.getJcsCommandStation().addSensorEventListener(sensorListener);
-        sensorHandlers.put(key, gh);
+        //Register with a command station
+        JCS.getJcsCommandStation().addSensorEventListener(seh);
         Logger.trace("Added handler " + cnt + " for sensor " + key);
       }
     }
     Logger.trace("Registered " + sensors.size() + " sensor event handlers");
   }
 
-  private class GostHandler implements SensorEventHandler {
+  public synchronized void addHandler(SensorEventHandler handler, String sensoreId) {
+    sensorHandlers.put(sensoreId, handler);
+  }
 
-    private final AutoPilot autoPilot;
+  public synchronized void removeHandler(String sensorId) {
+    sensorHandlers.remove(sensorId);
+  }
+
+  private class SensorListener implements SensorEventListener {
+
     private final String sensorId;
+    private final AutoPilot delegate;
 
-    GostHandler(AutoPilot autoPilot, String sensorId) {
-      this.autoPilot = autoPilot;
+    SensorListener(String sensorId, AutoPilot delegate) {
       this.sensorId = sensorId;
+      this.delegate = delegate;
     }
 
     @Override
-    public void handleSensorEvent(SensorEvent event) {
-      if (sensorId.equals(event.getSensorBean().getId())) {
-        autoPilot.ghostDetected(event);
+    public void onSensorChange(SensorEvent event) {
+      if (sensorId.equals(event.getId())) {
+        delegate.handleSensorEvent(event);
       }
     }
-
-    @Override
-    public String getSensorId() {
-      return sensorId;
-    }
-
   }
 
   public static void main(String[] a) {

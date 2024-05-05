@@ -3,6 +3,9 @@
 <Form version="1.8" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
+    <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+      <Dimension value="[650, 200]"/>
+    </Property>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -18,7 +21,7 @@
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-56,0,0,1,-52"/>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-56,0,0,2,108"/>
   </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
@@ -27,6 +30,9 @@
       <Properties>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[450, 120]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[600, 115]"/>
         </Property>
       </Properties>
       <Constraints>
@@ -38,7 +44,7 @@
         <Container class="javax.swing.JPanel" name="statePanel">
           <Properties>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[440, 50]"/>
+              <Dimension value="[550, 50]"/>
             </Property>
           </Properties>
           <SubComponents>
@@ -180,7 +186,7 @@
         <Container class="javax.swing.JPanel" name="buttenPanel">
           <Properties>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[450, 50]"/>
+              <Dimension value="[550, 50]"/>
             </Property>
           </Properties>
           <SubComponents>
@@ -375,10 +381,10 @@
     <Container class="javax.swing.JPanel" name="southPanel">
       <Properties>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[460, 50]"/>
+          <Dimension value="[600, 50]"/>
         </Property>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[450, 50]"/>
+          <Dimension value="[50, 50]"/>
         </Property>
       </Properties>
       <Constraints>
@@ -458,12 +464,22 @@
             <CodeVariable name="flowLayout3" type="4096" declaredType="java.awt.FlowLayout"/>
             <ExpressionOrigin>
               <ExpressionProvider type="CodeConstructor">
-                <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int"/>
+                <CodeConstructor class="java.awt.FlowLayout" parameterTypes="int, int, int"/>
               </ExpressionProvider>
               <Parameters>
                 <CodeExpression id="18">
                   <ExpressionOrigin>
                     <Value type="int" value="0"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+                <CodeExpression id="19">
+                  <ExpressionOrigin>
+                    <Value type="int" value="3"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+                <CodeExpression id="20">
+                  <ExpressionOrigin>
+                    <Value type="int" value="3"/>
                   </ExpressionOrigin>
                 </CodeExpression>
               </Parameters>
@@ -474,6 +490,8 @@
           </StatementProvider>
           <Parameters>
             <CodeExpression id="18"/>
+            <CodeExpression id="19"/>
+            <CodeExpression id="20"/>
           </Parameters>
         </CodeStatement>
         <CodeStatement>
@@ -482,7 +500,7 @@
             <CodeMethod name="setAlignOnBaseline" class="java.awt.FlowLayout" parameterTypes="boolean"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="19">
+            <CodeExpression id="21">
               <ExpressionOrigin>
                 <Value type="boolean" value="true"/>
               </ExpressionOrigin>
@@ -490,7 +508,7 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel">
+          <CodeExpression id="22_southPanel">
             <CodeVariable name="southPanel" type="8194" declaredType="javax.swing.JPanel"/>
             <ExpressionOrigin>
               <ExpressionProvider type="ComponentRef">
@@ -506,12 +524,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="21_sensorTB1">
+            <CodeExpression id="23_sensorTB1">
               <CodeVariable name="sensorTB1" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -522,12 +540,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="22_sensorTB2">
+            <CodeExpression id="24_sensorTB2">
               <CodeVariable name="sensorTB2" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -538,12 +556,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="23_sensorTB3">
+            <CodeExpression id="25_sensorTB3">
               <CodeVariable name="sensorTB3" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -554,12 +572,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="24_sensorTB4">
+            <CodeExpression id="26_sensorTB4">
               <CodeVariable name="sensorTB4" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -570,12 +588,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="25_sensorTB5">
+            <CodeExpression id="27_sensorTB5">
               <CodeVariable name="sensorTB5" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -586,12 +604,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="26_sensorTB6">
+            <CodeExpression id="28_sensorTB6">
               <CodeVariable name="sensorTB6" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -602,12 +620,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="27_sensorTB7">
+            <CodeExpression id="29_sensorTB7">
               <CodeVariable name="sensorTB7" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">
@@ -618,12 +636,12 @@
           </Parameters>
         </CodeStatement>
         <CodeStatement>
-          <CodeExpression id="20_southPanel"/>
+          <CodeExpression id="22_southPanel"/>
           <StatementProvider type="CodeMethod">
             <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
           </StatementProvider>
           <Parameters>
-            <CodeExpression id="28_sensorTB8">
+            <CodeExpression id="30_sensorTB8">
               <CodeVariable name="sensorTB8" type="8194" declaredType="javax.swing.JToggleButton"/>
               <ExpressionOrigin>
                 <ExpressionProvider type="ComponentRef">

@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.autopilot.state;
 
-import jcs.commandStation.autopilot.TrainDispatcher;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;

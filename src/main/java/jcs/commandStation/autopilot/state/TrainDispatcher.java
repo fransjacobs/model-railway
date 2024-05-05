@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.autopilot;
+package jcs.commandStation.autopilot.state;
 
+import java.awt.Color;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import jcs.commandStation.autopilot.state.DispatcherState;
-import jcs.commandStation.autopilot.state.IdleState;
-import jcs.commandStation.autopilot.state.LockRouteState;
-import jcs.commandStation.autopilot.state.RunState;
-import jcs.commandStation.autopilot.state.StateEventListener;
-import jcs.commandStation.events.SensorEventListener;
+import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.autopilot.SensorEventHandler;
+import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -41,6 +40,7 @@ import org.tinylog.Logger;
 public class TrainDispatcher extends Thread {
 
   private final LocomotiveBean locomotiveBean;
+  private final AutoPilot autoPilot;
   private RouteBean routeBean;
 
   private BlockBean departureBlock;
@@ -51,8 +51,9 @@ public class TrainDispatcher extends Thread {
 
   private final List<StateEventListener> stateEventListeners;
 
-  private SensorEventListener enterEventListener;
-  private SensorEventListener inEventListener;
+  private final List<NullSensorHandler> nullSensorEventHandlers;
+  private EnterSensorHandler enterHandler;
+  private ArrivalSensorHandler arrivalHandler;
 
   private boolean enterDestinationBlock = false;
   private boolean inDestinationBlock = false;
@@ -60,8 +61,11 @@ public class TrainDispatcher extends Thread {
 
   private boolean running;
 
-  public TrainDispatcher(LocomotiveBean locomotiveBean) {
+  public TrainDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
+    this.autoPilot = autoPilot;
+    nullSensorEventHandlers = new ArrayList<>();
+
     this.dispatcherState = new IdleState(this);
     this.stateEventListeners = new LinkedList<>();
 
@@ -84,7 +88,7 @@ public class TrainDispatcher extends Thread {
     return departureBlock;
   }
 
-  public void setDepartureBlock(BlockBean departureBlock) {
+  void setDepartureBlock(BlockBean departureBlock) {
     this.departureBlock = departureBlock;
   }
 
@@ -92,7 +96,7 @@ public class TrainDispatcher extends Thread {
     return destinationBlock;
   }
 
-  public void setDestinationBlock(BlockBean destinationBlock) {
+  void setDestinationBlock(BlockBean destinationBlock) {
     this.destinationBlock = destinationBlock;
   }
 
@@ -100,7 +104,7 @@ public class TrainDispatcher extends Thread {
     return swapLocomotiveDirection;
   }
 
-  public void setSwapLocomotiveDirection(boolean swapLocomotiveDirection) {
+  void setSwapLocomotiveDirection(boolean swapLocomotiveDirection) {
     this.swapLocomotiveDirection = swapLocomotiveDirection;
   }
 
@@ -108,7 +112,7 @@ public class TrainDispatcher extends Thread {
     return dispatcherState;
   }
 
-  public void setDispatcherState(DispatcherState dispatcherState) {
+  void setDispatcherState(DispatcherState dispatcherState) {
     this.previousState = this.dispatcherState;
     this.dispatcherState = dispatcherState;
 
@@ -121,43 +125,52 @@ public class TrainDispatcher extends Thread {
     fireStateListeners(s);
   }
 
-  public SensorEventListener getEnterEventListener() {
-    return enterEventListener;
+  void registerArrivalHandler(String sensorId) {
+    ArrivalSensorHandler ash = new ArrivalSensorHandler(sensorId, this);
+    this.arrivalHandler = ash;
+    this.autoPilot.addHandler(ash, sensorId);
   }
 
-  public void setEnterEventListener(SensorEventListener enterEventListener) {
-    this.enterEventListener = enterEventListener;
+  void registerEnterHandler(String sensorId) {
+    EnterSensorHandler esh = new EnterSensorHandler(sensorId, this);
+    this.enterHandler = esh;
+    this.autoPilot.addHandler(esh, sensorId);
   }
 
-  public SensorEventListener getInEventListener() {
-    return inEventListener;
+  void registerNullEventHandler(String sensorId) {
+    NullSensorHandler nsh = new NullSensorHandler(sensorId, this);
+    this.nullSensorEventHandlers.add(nsh);
+    this.autoPilot.addHandler(nsh, sensorId);
   }
 
-  public void setInEventListener(SensorEventListener inEventListener) {
-    this.inEventListener = inEventListener;
+  void resetAllRouteEventHandlers() {
+    for (NullSensorHandler nseh : nullSensorEventHandlers) {
+      autoPilot.removeHandler(nseh.sensorId);
+    }
+    autoPilot.removeHandler(this.arrivalHandler.sensorId);
+    autoPilot.removeHandler(this.enterHandler.sensorId);
   }
 
-  public synchronized void onEnter() {
+  public synchronized void onEnter(SensorEvent event) {
     Logger.debug("got an enter event");
     enterDestinationBlock = true;
     //wakeup
     notify();
   }
 
-  public synchronized void onArrival() {
+  public synchronized void onArrival(SensorEvent event) {
     Logger.debug("got an Arrival event..");
     inDestinationBlock = true;
     //wakeup
     notify();
   }
 
-  public void nextState() {
+  void nextState() {
     dispatcherState.next(this);
   }
 
-  public boolean execute() {
+  void execute() {
     dispatcherState.execute();
-    return dispatcherState.canAdvanceToNextState();
   }
 
   @Override
@@ -212,15 +225,15 @@ public class TrainDispatcher extends Thread {
     return inDestinationBlock;
   }
 
-  public void addStateEventListener(StateEventListener listener) {
+  void addStateEventListener(StateEventListener listener) {
     stateEventListeners.add(listener);
   }
 
-  public void removeStateEventListener(StateEventListener listener) {
+  void removeStateEventListener(StateEventListener listener) {
     stateEventListeners.remove(listener);
   }
 
-  public void resetRoute(RouteBean route) {
+  void resetRoute(RouteBean route) {
     List<RouteElementBean> routeElements = route.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
@@ -229,7 +242,13 @@ public class TrainDispatcher extends Thread {
     }
   }
 
-  public void showRoute(RouteBean routeBean) {
+  void showBlockState(BlockBean blockBean) {
+    Logger.trace("Show block " + blockBean);
+    TileEvent tileEvent = new TileEvent(blockBean);
+    TileFactory.fireTileEventListener(tileEvent);
+  }
+
+  void showRoute(RouteBean routeBean, Color routeColor) {
     Logger.trace("Show route " + routeBean.toLogString());
     List<RouteElementBean> routeElements = routeBean.getRouteElements();
     for (RouteElementBean re : routeElements) {
@@ -239,11 +258,59 @@ public class TrainDispatcher extends Thread {
       TileEvent tileEvent;
       if (re.isTurnout()) {
         AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
-        tileEvent = new TileEvent(tileId, true, incomingSide, routeState);
+        tileEvent = new TileEvent(tileId, true, incomingSide, routeState, routeColor);
       } else {
-        tileEvent = new TileEvent(tileId, true, incomingSide);
+        tileEvent = new TileEvent(tileId, true, incomingSide, routeColor);
       }
       TileFactory.fireTileEventListener(tileEvent);
+    }
+  }
+
+  private class NullSensorHandler implements SensorEventHandler {
+
+    private final String sensorId;
+    private final TrainDispatcher trainDispatcher;
+
+    NullSensorHandler(String sensorId, TrainDispatcher trainDispatcher) {
+      this.sensorId = sensorId;
+      this.trainDispatcher = trainDispatcher;
+    }
+
+    @Override
+    public void handleEvent(SensorEvent event) {
+      Logger.trace(event);
+    }
+  }
+
+  private class EnterSensorHandler implements SensorEventHandler {
+
+    private final String sensorId;
+    private final TrainDispatcher trainDispatcher;
+
+    EnterSensorHandler(String sensorId, TrainDispatcher trainDispatcher) {
+      this.sensorId = sensorId;
+      this.trainDispatcher = trainDispatcher;
+    }
+
+    @Override
+    public void handleEvent(SensorEvent event) {
+      trainDispatcher.onEnter(event);
+    }
+  }
+
+  private class ArrivalSensorHandler implements SensorEventHandler {
+
+    private final String sensorId;
+    private final TrainDispatcher trainDispatcher;
+
+    ArrivalSensorHandler(String sensorId, TrainDispatcher trainDispatcher) {
+      this.sensorId = sensorId;
+      this.trainDispatcher = trainDispatcher;
+    }
+
+    @Override
+    public void handleEvent(SensorEvent event) {
+      trainDispatcher.onArrival(event);
     }
   }
 

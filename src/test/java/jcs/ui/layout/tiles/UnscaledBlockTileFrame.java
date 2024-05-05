@@ -21,6 +21,8 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.io.File;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
@@ -45,6 +47,34 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
     initTile();
   }
 
+    private ComboBoxModel<TileBean.TileType> createTileTypeComboBoxModel() {
+    DefaultComboBoxModel<TileBean.TileType> tileTypeModel = new DefaultComboBoxModel();
+
+    tileTypeModel.addElement(TileBean.TileType.STRAIGHT);
+    tileTypeModel.addElement(TileBean.TileType.STRAIGHT_DIR);
+    tileTypeModel.addElement(TileBean.TileType.SENSOR);
+    tileTypeModel.addElement(TileBean.TileType.SIGNAL);
+    tileTypeModel.addElement(TileBean.TileType.END);
+    tileTypeModel.addElement(TileBean.TileType.CROSSING);
+    tileTypeModel.addElement(TileBean.TileType.CURVED);
+    tileTypeModel.addElement(TileBean.TileType.SWITCH);
+    tileTypeModel.addElement(TileBean.TileType.CROSS);
+
+    return tileTypeModel;
+  }
+
+  private ComboBoxModel<TileBean.Orientation> createOrientationComboBoxModel() {
+    DefaultComboBoxModel<TileBean.Orientation> orientationModel = new DefaultComboBoxModel();
+
+    orientationModel.addElement(TileBean.Orientation.EAST);
+    orientationModel.addElement(TileBean.Orientation.SOUTH);
+    orientationModel.addElement(TileBean.Orientation.WEST);
+    orientationModel.addElement(TileBean.Orientation.NORTH);
+
+    return orientationModel;
+  }
+
+  
   private void initTile() {
     tile = new Block(TileBean.Orientation.EAST, 750, 250);
     tile.setId("bk-1");
@@ -100,10 +130,23 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
   private void initComponents() {
 
     nPanel = new javax.swing.JPanel();
+    orientationCB = new javax.swing.JComboBox<>();
+    incomingSideCB = new javax.swing.JComboBox<>();
+    stateCB = new javax.swing.JComboBox<>();
     rotateButton = new javax.swing.JButton();
+    showLocCB = new javax.swing.JCheckBox();
     cPanel = new javax.swing.JPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+    orientationCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    nPanel.add(orientationCB);
+
+    incomingSideCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    nPanel.add(incomingSideCB);
+
+    stateCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    nPanel.add(stateCB);
 
     rotateButton.setText("Rotate");
     rotateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -112,6 +155,9 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
       }
     });
     nPanel.add(rotateButton);
+
+    showLocCB.setText("jCheckBox1");
+    nPanel.add(showLocCB);
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
@@ -148,7 +194,11 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel cPanel;
+  private javax.swing.JComboBox<String> incomingSideCB;
   private javax.swing.JPanel nPanel;
+  private javax.swing.JComboBox<String> orientationCB;
   private javax.swing.JButton rotateButton;
+  private javax.swing.JCheckBox showLocCB;
+  private javax.swing.JComboBox<String> stateCB;
   // End of variables declaration//GEN-END:variables
 }

@@ -135,7 +135,7 @@ public class H2PersistenceService implements PersistenceService {
     // Also update the blocks
     database.sql("update blocks set min_sensor_id = null where min_sensor_id = ?", sensor.getId()).execute();
     database.sql("update blocks set plus_sensor_id = null where plus_sensor_id = ?", sensor.getId()).execute();
-    
+
     int rows = database.delete(sensor).getRowsAffected();
     Logger.trace(sensor + " rows + " + rows + " deleted");
   }
@@ -147,18 +147,10 @@ public class H2PersistenceService implements PersistenceService {
     if (bus0len != null) {
       for (int i = 0; i < (bus0len * 16); i++) {
         SensorBean sb = new SensorBean();
-        //ensure a leading zero for sorting   
-        String cn = ((i + 1) > 9 ? "" : "0") + (i + 1);
-        if (cn.length() == 2) {
-          cn = "00" + cn;
-        } else if (cn.length() == 3) {
-          cn = "0" + cn;
-        }
-        String id = deviceId + "-" + cn;
-        sb.setId(id);
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 1));
         sb.setName("B0-S-" + (i + 1));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -166,11 +158,10 @@ public class H2PersistenceService implements PersistenceService {
     if (bus1len != null) {
       for (int i = 0; i < (bus1len * 16); i++) {
         SensorBean sb = new SensorBean();
-        String id = deviceId + "-" + (i + 1001);
-        sb.setId(id);
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 1001));
         sb.setName("B1-S-" + (i + 1001));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -178,11 +169,10 @@ public class H2PersistenceService implements PersistenceService {
     if (bus2len != null) {
       for (int i = 0; i < (bus2len * 16); i++) {
         SensorBean sb = new SensorBean();
-        String id = deviceId + "-" + (i + 2001);
-        sb.setId(id);
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 2001));
         sb.setName("B2-S-" + (i + 2001));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -190,28 +180,26 @@ public class H2PersistenceService implements PersistenceService {
     if (bus3len != null) {
       for (int i = 0; i < (bus3len * 16); i++) {
         SensorBean sb = new SensorBean();
-        String id = deviceId + "-" + (i + 3001);
-        sb.setId(id);
-        sb.setDeviceId(deviceId);
         sb.setContactId((i + 3001));
         sb.setName("B3-S-" + (i + 3001));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
 
-    List<SensorBean> existing = this.getSensors();
+    List<SensorBean> existing = getSensors();
     for (SensorBean sb : existing) {
       if (!sensorBeans.containsKey(sb.getId())) {
         Logger.trace("Removing " + sb);
-        this.remove(sb);
+        remove(sb);
       }
     }
 
     for (SensorBean sb : sensorBeans.values()) {
-      this.persist(sb);
+      persist(sb);
     }
 
-    return this.getSensors();
+    return getSensors();
   }
 
   @Override
@@ -673,7 +661,7 @@ public class H2PersistenceService implements PersistenceService {
   public RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
     RouteBean route = database.where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args).first(RouteBean.class);
-    
+
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
       route.setRouteElements(routeElements);
@@ -687,16 +675,16 @@ public class H2PersistenceService implements PersistenceService {
     List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ? and locked = false", args).results(RouteBean.class);
 
     List<RouteBean> filtered = new ArrayList<>();
-    
+
     for (RouteBean r : routes) {
       BlockBean dest = this.getBlockByTileId(r.getToTileId());
-      if(BlockBean.BlockState.FREE == dest.getBlockState()) {
+      if (BlockBean.BlockState.FREE == dest.getBlockState()) {
         List<RouteElementBean> routeElements = getRouteElements(r.getId());
         r.setRouteElements(routeElements);
         filtered.add(r);
       } else {
-        Logger.trace("Skip "+r.getId()+" dest status: "+dest.getStatus());
-      }  
+        Logger.trace("Skip " + r.getId() + " dest status: " + dest.getStatus());
+      }
     }
     return filtered;
   }
