@@ -42,6 +42,7 @@ public class BlockBean {
   private Long locomotiveId;
   private boolean reverseArrival;
   private String status;
+  private String incomingSide;
 
   private TileBean tileBean;
 
@@ -224,6 +225,32 @@ public class BlockBean {
 
   public void setStatus(String status) {
     this.status = status;
+  }
+
+  @Column(name = "incoming_side", length = 255)
+  public String getIncomingSide() {
+    return incomingSide;
+  }
+
+  public void setIncomingSide(String incomingSide) {
+    this.incomingSide = incomingSide;
+  }
+
+  @Transient
+  public TileBean.Orientation getIncomingOrientation() {
+    if (incomingSide != null) {
+      return TileBean.Orientation.get(this.incomingSide);
+    } else {
+      return null;
+    }
+  }
+
+  public void setIncomingOrientation(TileBean.Orientation orientation) {
+    if (orientation != null) {
+      this.incomingSide = orientation.getOrientation();
+    } else {
+      this.incomingSide = null;
+    }
   }
 
   @Transient

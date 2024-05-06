@@ -26,9 +26,10 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
+import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.TileBean;
-import static jcs.ui.layout.tiles.UnScaledBlockTileTester.readImage;
+import jcs.entities.TileBean.Orientation;
+import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
 /**
@@ -44,57 +45,74 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
    */
   public UnscaledBlockTileFrame() {
     initComponents();
+    this.orientationCB.setModel(createOrientationComboBoxModel());
+    this.incomingSideCB.setModel(createOrientationComboBoxModel());
+    this.stateCB.setModel(createStateComboBoxModel());
     initTile();
   }
 
-    private ComboBoxModel<TileBean.TileType> createTileTypeComboBoxModel() {
-    DefaultComboBoxModel<TileBean.TileType> tileTypeModel = new DefaultComboBoxModel();
+  private ComboBoxModel<Orientation> createOrientationComboBoxModel() {
+    DefaultComboBoxModel<Orientation> orientationModel = new DefaultComboBoxModel();
 
-    tileTypeModel.addElement(TileBean.TileType.STRAIGHT);
-    tileTypeModel.addElement(TileBean.TileType.STRAIGHT_DIR);
-    tileTypeModel.addElement(TileBean.TileType.SENSOR);
-    tileTypeModel.addElement(TileBean.TileType.SIGNAL);
-    tileTypeModel.addElement(TileBean.TileType.END);
-    tileTypeModel.addElement(TileBean.TileType.CROSSING);
-    tileTypeModel.addElement(TileBean.TileType.CURVED);
-    tileTypeModel.addElement(TileBean.TileType.SWITCH);
-    tileTypeModel.addElement(TileBean.TileType.CROSS);
-
-    return tileTypeModel;
-  }
-
-  private ComboBoxModel<TileBean.Orientation> createOrientationComboBoxModel() {
-    DefaultComboBoxModel<TileBean.Orientation> orientationModel = new DefaultComboBoxModel();
-
-    orientationModel.addElement(TileBean.Orientation.EAST);
-    orientationModel.addElement(TileBean.Orientation.SOUTH);
-    orientationModel.addElement(TileBean.Orientation.WEST);
-    orientationModel.addElement(TileBean.Orientation.NORTH);
+    orientationModel.addElement(Orientation.EAST);
+    orientationModel.addElement(Orientation.SOUTH);
+    orientationModel.addElement(Orientation.WEST);
+    orientationModel.addElement(Orientation.NORTH);
 
     return orientationModel;
   }
 
-  
-  private void initTile() {
-    tile = new Block(TileBean.Orientation.EAST, 750, 250);
-    tile.setId("bk-1");
+  private ComboBoxModel<BlockState> createStateComboBoxModel() {
+    DefaultComboBoxModel<BlockState> blockStateModel = new DefaultComboBoxModel();
 
-    LocomotiveBean lok = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
+    blockStateModel.addElement(BlockState.FREE);
+    blockStateModel.addElement(BlockState.OCCUPIED);
+    blockStateModel.addElement(BlockState.LEAVING);
+    blockStateModel.addElement(BlockState.DEPARTING);
+    blockStateModel.addElement(BlockState.ARRIVING);
+    blockStateModel.addElement(BlockState.LOCKED);
+    blockStateModel.addElement(BlockState.FREE);
+
+    return blockStateModel;
+  }
+
+  private LocomotiveBean createLocomotiveBean() {
+    LocomotiveBean lb = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
     String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "dcc-ex" + File.separator + "ns dhg 6505.png";
-    lok.setIcon(imgPath);
-    Image locImage = readImage(imgPath);
-    lok.setLocIcon(locImage);
+    lb.setIcon(imgPath);
+    Image locImage = ImageUtil.readImage(imgPath);
+    //Image is sized by default so
+    locImage = ImageUtil.scaleImage(locImage, 100);
+    lb.setLocIcon(locImage);
+
+    if (this.backwardsRB.isSelected()) {
+      lb.setDirection(LocomotiveBean.Direction.BACKWARDS);
+    } else {
+      lb.setDirection(LocomotiveBean.Direction.FORWARDS);
+    }
+
+    return lb;
+  }
+
+  private void initTile() {
+    tile = new Block(Orientation.EAST, 750, 250);
+    tile.setId("bk-1");
 
     BlockBean bbe = new BlockBean();
     bbe.setId(tile.getId());
     bbe.setTileId(tile.getId());
     bbe.setDescription("Blok");
-    //bbe.setLocomotive(lok);
-    //bbe.setBlockState(BlockBean.BlockState.OCCUPIED);
-    bbe.setBlockState(BlockBean.BlockState.FREE);
-    //bbe.setReverseArrival(true);
-    ((Block) tile).setBlockBean(bbe);
+    bbe.setIncomingOrientation((Orientation) this.incomingSideCB.getSelectedItem());
+    bbe.setBlockState((BlockState) this.stateCB.getSelectedItem());
+    bbe.setReverseArrival(this.reverseArrivalCB.isSelected());
 
+    if (this.showLocCB.isSelected()) {
+      bbe.setLocomotive(createLocomotiveBean());
+    } else {
+      bbe.setLocomotive(null);
+    }
+
+    ((Block) tile).setBlockBean(bbe);
     ((AbstractTile) tile).setScaleImage(false);
   }
 
@@ -117,9 +135,11 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
 
     Graphics2D g2d = (Graphics2D) g;
     tile.drawTile(g2d, true);
-    tile.drawBounds(g2d);
-    tile.drawCenterPoint(g2d, Color.red);
 
+    if (this.showCenterCB.isSelected()) {
+      tile.drawBounds(g2d);
+      tile.drawCenterPoint(g2d, Color.red);
+    }
   }
 
   /**
@@ -129,24 +149,52 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    locDirectionBG = new javax.swing.ButtonGroup();
     nPanel = new javax.swing.JPanel();
     orientationCB = new javax.swing.JComboBox<>();
     incomingSideCB = new javax.swing.JComboBox<>();
     stateCB = new javax.swing.JComboBox<>();
+    reverseArrivalCB = new javax.swing.JCheckBox();
     rotateButton = new javax.swing.JButton();
     showLocCB = new javax.swing.JCheckBox();
+    backwardsRB = new javax.swing.JRadioButton();
+    forwardsRB = new javax.swing.JRadioButton();
+    showCenterCB = new javax.swing.JCheckBox();
     cPanel = new javax.swing.JPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-    orientationCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    orientationCB.setPreferredSize(new java.awt.Dimension(150, 22));
+    orientationCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        orientationCBActionPerformed(evt);
+      }
+    });
     nPanel.add(orientationCB);
 
-    incomingSideCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    incomingSideCB.setPreferredSize(new java.awt.Dimension(150, 22));
+    incomingSideCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        incomingSideCBActionPerformed(evt);
+      }
+    });
     nPanel.add(incomingSideCB);
 
-    stateCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    stateCB.setPreferredSize(new java.awt.Dimension(150, 22));
+    stateCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        stateCBActionPerformed(evt);
+      }
+    });
     nPanel.add(stateCB);
+
+    reverseArrivalCB.setText("Reverse Arrival Side");
+    reverseArrivalCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        reverseArrivalCBActionPerformed(evt);
+      }
+    });
+    nPanel.add(reverseArrivalCB);
 
     rotateButton.setText("Rotate");
     rotateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -156,8 +204,40 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
     });
     nPanel.add(rotateButton);
 
-    showLocCB.setText("jCheckBox1");
+    showLocCB.setLabel("Show Locomotive");
+    showLocCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        showLocCBActionPerformed(evt);
+      }
+    });
     nPanel.add(showLocCB);
+
+    locDirectionBG.add(backwardsRB);
+    backwardsRB.setText("Backwards");
+    backwardsRB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        backwardsRBActionPerformed(evt);
+      }
+    });
+    nPanel.add(backwardsRB);
+
+    locDirectionBG.add(forwardsRB);
+    forwardsRB.setSelected(true);
+    forwardsRB.setText("Forwards");
+    forwardsRB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        forwardsRBActionPerformed(evt);
+      }
+    });
+    nPanel.add(forwardsRB);
+
+    showCenterCB.setText("Show Center");
+    showCenterCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        showCenterCBActionPerformed(evt);
+      }
+    });
+    nPanel.add(showCenterCB);
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
@@ -169,8 +249,58 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
 
   private void rotateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateButtonActionPerformed
     this.tile.rotate();
+
+    Orientation orientation = tile.getOrientation();
+    this.orientationCB.setSelectedItem(orientation);
     this.repaint();
   }//GEN-LAST:event_rotateButtonActionPerformed
+
+  private void showLocCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLocCBActionPerformed
+    if (this.showLocCB.isSelected()) {
+      ((Block) tile).getBlockBean().setLocomotive(this.createLocomotiveBean());
+    } else {
+      ((Block) tile).getBlockBean().setLocomotive(null);
+    }
+    repaint();
+  }//GEN-LAST:event_showLocCBActionPerformed
+
+  private void orientationCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orientationCBActionPerformed
+    this.tile.setOrientation((Orientation) this.orientationCB.getSelectedItem());
+    repaint();
+  }//GEN-LAST:event_orientationCBActionPerformed
+
+  private void incomingSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_incomingSideCBActionPerformed
+    ((Block) tile).getBlockBean().setIncomingOrientation((Orientation) this.incomingSideCB.getSelectedItem());
+    repaint();
+  }//GEN-LAST:event_incomingSideCBActionPerformed
+
+  private void stateCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stateCBActionPerformed
+    ((Block) tile).getBlockBean().setBlockState((BlockState) this.stateCB.getSelectedItem());
+    repaint();
+  }//GEN-LAST:event_stateCBActionPerformed
+
+  private void showCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCenterCBActionPerformed
+    repaint();
+  }//GEN-LAST:event_showCenterCBActionPerformed
+
+  private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
+    ((Block) tile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
+    repaint();
+  }//GEN-LAST:event_reverseArrivalCBActionPerformed
+
+  private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
+    if (((Block) tile).getBlockBean().getLocomotive() != null) {
+      ((Block) tile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.BACKWARDS);
+      repaint();
+    }
+  }//GEN-LAST:event_backwardsRBActionPerformed
+
+  private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
+    if (((Block) tile).getBlockBean().getLocomotive() != null) {
+      ((Block) tile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.FORWARDS);
+      repaint();
+    }
+  }//GEN-LAST:event_forwardsRBActionPerformed
 
   /**
    * @param args the command line arguments
@@ -193,12 +323,17 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JRadioButton backwardsRB;
   private javax.swing.JPanel cPanel;
-  private javax.swing.JComboBox<String> incomingSideCB;
+  private javax.swing.JRadioButton forwardsRB;
+  private javax.swing.JComboBox<Orientation> incomingSideCB;
+  private javax.swing.ButtonGroup locDirectionBG;
   private javax.swing.JPanel nPanel;
-  private javax.swing.JComboBox<String> orientationCB;
+  private javax.swing.JComboBox<Orientation> orientationCB;
+  private javax.swing.JCheckBox reverseArrivalCB;
   private javax.swing.JButton rotateButton;
+  private javax.swing.JCheckBox showCenterCB;
   private javax.swing.JCheckBox showLocCB;
-  private javax.swing.JComboBox<String> stateCB;
+  private javax.swing.JComboBox<BlockState> stateCB;
   // End of variables declaration//GEN-END:variables
 }

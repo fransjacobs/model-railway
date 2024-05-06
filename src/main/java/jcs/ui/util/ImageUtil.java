@@ -25,6 +25,10 @@ import java.awt.Transparency;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
+import org.tinylog.Logger;
 
 /**
  *
@@ -32,21 +36,23 @@ import java.awt.image.BufferedImage;
  */
 public class ImageUtil {
 
-  public static BufferedImage toBufferedImage1(Image image) {
-    GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-    GraphicsDevice graphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
-    GraphicsConfiguration graphicsConfiguration = graphicsDevice.getDefaultConfiguration();
-
-    BufferedImage bufferedImage = graphicsConfiguration.createCompatibleImage(image.getWidth(null), image.getHeight(null), Transparency.BITMASK);
-    Graphics graphics = bufferedImage.createGraphics();
-    graphics.drawImage(image, 0, 0, null);
-    graphics.dispose();
-    return bufferedImage;
-  }
-
+//  public static BufferedImage toBufferedImage1(Image image) {
+//    GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//    GraphicsDevice graphicsDevice = graphicsEnvironment.getDefaultScreenDevice();
+//    GraphicsConfiguration graphicsConfiguration = graphicsDevice.getDefaultConfiguration();
+//
+//    BufferedImage bufferedImage = graphicsConfiguration.createCompatibleImage(image.getWidth(null), image.getHeight(null), Transparency.BITMASK);
+//    Graphics graphics = bufferedImage.createGraphics();
+//    graphics.drawImage(image, 0, 0, null);
+//    graphics.dispose();
+//    return bufferedImage;
+//  }
   public static BufferedImage toBufferedImage(Image image) {
-    if (image instanceof BufferedImage) {
-      return (BufferedImage) image;
+    if (image == null) {
+      return null;
+    }
+    if (image instanceof BufferedImage bufferedImage) {
+      return bufferedImage;
     }
 
     BufferedImage buff = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
@@ -96,6 +102,28 @@ public class ImageUtil {
     g.drawRenderedImage(bufImg, null);
     g.dispose();
     return result;
+  }
+
+  public static Image readImage(String path) {
+    Image image = null;
+    File imgFile = new File(path);
+    if (imgFile.exists()) {
+      try {
+        image = ImageIO.read(imgFile);
+      } catch (IOException e) {
+        Logger.trace("Image file " + path + " does not exists");
+      }
+    }
+    return image;
+  }
+
+  public static Image scaleImage(Image image, int size) {
+    Image img = image;
+    if (img != null) {
+      float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
+      img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
+    }
+    return img;
   }
 
 }
