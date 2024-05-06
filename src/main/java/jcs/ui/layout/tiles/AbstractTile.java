@@ -44,7 +44,6 @@ import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
-import org.tinylog.Logger;
 
 /**
  * Basic graphic element to display a track, turnout, etc on the screen.<br>

@@ -20,15 +20,21 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
@@ -36,7 +42,7 @@ import org.tinylog.Logger;
  *
  * @author FJA
  */
-public class UnscaledBlockTileFrame extends javax.swing.JFrame {
+public class UnscaledBlockTileFrame extends javax.swing.JFrame implements PropertyChangeListener {
 
   private Tile tile;
 
@@ -45,6 +51,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
    */
   public UnscaledBlockTileFrame() {
     initComponents();
+    addViewportListener();
     this.orientationCB.setModel(createOrientationComboBoxModel());
     this.incomingSideCB.setModel(createOrientationComboBoxModel());
     this.stateCB.setModel(createStateComboBoxModel());
@@ -94,6 +101,15 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
     return lb;
   }
 
+  private void addViewportListener() {
+    this.centerSP.getViewport().addChangeListener((ChangeEvent e) -> {
+      centerSP.revalidate();
+      //offsets....
+      //https://stackoverflow.com/questions/6561246/scroll-event-of-a-jscrollpane
+      repaint();
+    });
+  }
+
   private void initTile() {
     tile = new Block(Orientation.EAST, 750, 250);
     tile.setId("bk-1");
@@ -113,7 +129,59 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
     }
 
     ((Block) tile).setBlockBean(bbe);
-    ((AbstractTile) tile).setScaleImage(false);
+    if (this.scaleCB.isSelected()) {
+      ((AbstractTile) tile).setScaleImage(false);
+    } else {
+      ((AbstractTile) tile).setScaleImage(true);
+    }
+  }
+
+  private void changeOrientation() {
+    Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
+    tile.setOrientation(orientation);
+    //((Block)tile).setWidthHeightAndOffsets();
+
+    int x = tile.getCenterX();
+    int y = tile.getCenterY();
+    int w = tile.getWidth() * 10;
+    int h = tile.getHeight() * 10;
+
+    //calculate a new centerpoint for cross
+    switch (tile.getOrientation()) {
+      case SOUTH -> {
+        x = x + w / 2;
+        y = y - h / 4;
+      }
+      case WEST -> {
+        x = x + w / 4;
+        y = y + h / 2;
+      }
+      case NORTH -> {
+        x = x - w / 2;
+        y = y + h / 4;
+      }
+      default -> {
+        x = x - w / 4;
+        y = y - h / 2;
+      }
+    }
+    tile.setCenter(new Point(x, y));
+
+    if (Orientation.EAST.equals(tile.getOrientation()) || Orientation.WEST.equals(tile.getOrientation())) {
+      ((Block) tile).setWidth(Tile.DEFAULT_WIDTH * 3);
+      ((Block) tile).setHeight(Tile.DEFAULT_HEIGHT);
+
+      ((Block) tile).setRenderWidth(Tile.RENDER_WIDTH * 3);
+      ((Block) tile).setRenderHeight(Tile.RENDER_HEIGHT);
+    } else {
+      ((Block) tile).setWidth(Tile.DEFAULT_WIDTH);
+      ((Block) tile).setHeight(Tile.DEFAULT_HEIGHT * 3);
+
+      ((Block) tile).setRenderWidth(Tile.RENDER_WIDTH);
+      ((Block) tile).setRenderHeight(Tile.RENDER_HEIGHT * 3);
+    }
+
+    this.repaint();
   }
 
   @Override
@@ -151,6 +219,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
 
     locDirectionBG = new javax.swing.ButtonGroup();
     nPanel = new javax.swing.JPanel();
+    scaleCB = new javax.swing.JCheckBox();
     orientationCB = new javax.swing.JComboBox<>();
     incomingSideCB = new javax.swing.JComboBox<>();
     stateCB = new javax.swing.JComboBox<>();
@@ -160,9 +229,19 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
     backwardsRB = new javax.swing.JRadioButton();
     forwardsRB = new javax.swing.JRadioButton();
     showCenterCB = new javax.swing.JCheckBox();
+    centerSP = new javax.swing.JScrollPane();
     cPanel = new javax.swing.JPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+    scaleCB.setSelected(true);
+    scaleCB.setText("Expand");
+    scaleCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        scaleCBActionPerformed(evt);
+      }
+    });
+    nPanel.add(scaleCB);
 
     orientationCB.setPreferredSize(new java.awt.Dimension(150, 22));
     orientationCB.addActionListener(new java.awt.event.ActionListener() {
@@ -241,8 +320,13 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
+    centerSP.setViewportView(cPanel);
+
     cPanel.setPreferredSize(new java.awt.Dimension(1500, 1500));
-    getContentPane().add(cPanel, java.awt.BorderLayout.CENTER);
+    cPanel.setLayout(null);
+    centerSP.setViewportView(cPanel);
+
+    getContentPane().add(centerSP, java.awt.BorderLayout.CENTER);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -265,8 +349,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
   }//GEN-LAST:event_showLocCBActionPerformed
 
   private void orientationCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orientationCBActionPerformed
-    this.tile.setOrientation((Orientation) this.orientationCB.getSelectedItem());
-    repaint();
+    changeOrientation();
   }//GEN-LAST:event_orientationCBActionPerformed
 
   private void incomingSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_incomingSideCBActionPerformed
@@ -302,6 +385,15 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
     }
   }//GEN-LAST:event_forwardsRBActionPerformed
 
+  private void scaleCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleCBActionPerformed
+    if (this.scaleCB.isSelected()) {
+      ((AbstractTile) tile).setScaleImage(false);
+    } else {
+      ((AbstractTile) tile).setScaleImage(true);
+    }
+    repaint();
+  }//GEN-LAST:event_scaleCBActionPerformed
+
   /**
    * @param args the command line arguments
    */
@@ -322,9 +414,20 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
     });
   }
 
+  @Override
+  public void propertyChange(PropertyChangeEvent evt) {
+    if ("repaintTile".equals(evt.getPropertyName())) {
+      Tile t = (Tile) evt.getNewValue();
+      Logger.trace("Tile: " + t);
+      this.repaint();
+    }
+  }
+
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JRadioButton backwardsRB;
   private javax.swing.JPanel cPanel;
+  private javax.swing.JScrollPane centerSP;
   private javax.swing.JRadioButton forwardsRB;
   private javax.swing.JComboBox<Orientation> incomingSideCB;
   private javax.swing.ButtonGroup locDirectionBG;
@@ -332,6 +435,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame {
   private javax.swing.JComboBox<Orientation> orientationCB;
   private javax.swing.JCheckBox reverseArrivalCB;
   private javax.swing.JButton rotateButton;
+  private javax.swing.JCheckBox scaleCB;
   private javax.swing.JCheckBox showCenterCB;
   private javax.swing.JCheckBox showLocCB;
   private javax.swing.JComboBox<BlockState> stateCB;

@@ -308,6 +308,30 @@ public class Block extends AbstractTile implements Tile {
     }
   }
 
+  public void setWidth(int width) {
+    this.width = width;
+  }
+
+  public void setHeight(int height) {
+    this.height = height;
+  }
+
+  public void setRenderWidth(int renderWidth) {
+    this.renderWidth = renderWidth;
+  }
+
+  public void setRenderHeight(int renderHeight) {
+    this.renderHeight = renderHeight;
+  }
+
+  public void setRenderOffsetX(int renderOffsetX) {
+    this.renderOffsetX = renderOffsetX;
+  }
+
+  public void setRenderOffsetY(int renderOffsetY) {
+    this.renderOffsetY = renderOffsetY;
+  }
+
   /**
    * Depending on the block status change the background color<br>
    * - Red: Occupied<br>

@@ -323,6 +323,53 @@ public class BlockBean {
     return blockSuffix;
   }
 
+  
+  @Transient
+  public String getLocomotiveBlockSuffix1() {
+    String blockSuffix = "";
+
+    if (tileBean != null && locomotive != null && locomotive.getDirection() != null) {
+      LocomotiveBean.Direction locDir = locomotive.getDirection();
+
+      Orientation blockOrientation = this.tileBean.getOrientation();
+
+      switch (blockOrientation) {
+        case EAST -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "-" : "+";
+          } else {
+            blockSuffix = reverseArrival ? "+" : "-";
+          }
+        }
+        case WEST -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "-" : "+";
+          } else {
+            blockSuffix = reverseArrival ? "+" : "-";
+          }
+        }
+        case SOUTH -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "+" : "-";
+          } else {
+            blockSuffix = reverseArrival ? "-" : "+";
+          }
+        }
+        case NORTH -> {
+          if (LocomotiveBean.Direction.FORWARDS == locDir) {
+            blockSuffix = reverseArrival ? "+" : "-";
+          } else {
+            blockSuffix = reverseArrival ? "-" : "+";
+          }
+        }
+      }
+    }
+    return blockSuffix;
+  }
+  
+  
+  
+  
   @Override
   public int hashCode() {
     int hash = 7;
