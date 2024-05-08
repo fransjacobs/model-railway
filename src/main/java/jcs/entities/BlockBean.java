@@ -42,7 +42,7 @@ public class BlockBean {
   private Long locomotiveId;
   private boolean reverseArrival;
   private String status;
-  private String incomingSide;
+  private String incomingSuffix;
 
   private TileBean tileBean;
 
@@ -227,30 +227,13 @@ public class BlockBean {
     this.status = status;
   }
 
-  @Column(name = "incoming_side", length = 255)
-  public String getIncomingSide() {
-    return incomingSide;
+  @Column(name = "incoming_suffix", length = 255)
+  public String getIncomingSuffix() {
+    return incomingSuffix;
   }
 
-  public void setIncomingSide(String incomingSide) {
-    this.incomingSide = incomingSide;
-  }
-
-  @Transient
-  public TileBean.Orientation getIncomingOrientation() {
-    if (incomingSide != null) {
-      return TileBean.Orientation.get(this.incomingSide);
-    } else {
-      return null;
-    }
-  }
-
-  public void setIncomingOrientation(TileBean.Orientation orientation) {
-    if (orientation != null) {
-      this.incomingSide = orientation.getOrientation();
-    } else {
-      this.incomingSide = null;
-    }
+  public void setIncomingSuffix(String incomingSuffix) {
+    this.incomingSuffix = incomingSuffix;
   }
 
   @Transient
@@ -323,7 +306,6 @@ public class BlockBean {
     return blockSuffix;
   }
 
-  
   @Transient
   public String getLocomotiveBlockSuffix1() {
     String blockSuffix = "";
@@ -366,10 +348,7 @@ public class BlockBean {
     }
     return blockSuffix;
   }
-  
-  
-  
-  
+
   @Override
   public int hashCode() {
     int hash = 7;

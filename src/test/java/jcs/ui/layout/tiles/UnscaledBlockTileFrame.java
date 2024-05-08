@@ -15,9 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
@@ -44,23 +41,22 @@ import org.tinylog.Logger;
  */
 public class UnscaledBlockTileFrame extends javax.swing.JFrame implements PropertyChangeListener {
 
-  private Tile tile;
+  private Tile blockTile;
 
   /**
    * Creates new form UnscaledBlockTileFrame
    */
   public UnscaledBlockTileFrame() {
     initComponents();
-    addViewportListener();
+    //addViewportListener();
     this.orientationCB.setModel(createOrientationComboBoxModel());
-    this.incomingSideCB.setModel(createOrientationComboBoxModel());
+    this.incomingSideCB.setSelectedItem("");
     this.stateCB.setModel(createStateComboBoxModel());
     initTile();
   }
 
   private ComboBoxModel<Orientation> createOrientationComboBoxModel() {
     DefaultComboBoxModel<Orientation> orientationModel = new DefaultComboBoxModel();
-
     orientationModel.addElement(Orientation.EAST);
     orientationModel.addElement(Orientation.SOUTH);
     orientationModel.addElement(Orientation.WEST);
@@ -71,7 +67,6 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private ComboBoxModel<BlockState> createStateComboBoxModel() {
     DefaultComboBoxModel<BlockState> blockStateModel = new DefaultComboBoxModel();
-
     blockStateModel.addElement(BlockState.FREE);
     blockStateModel.addElement(BlockState.OCCUPIED);
     blockStateModel.addElement(BlockState.LEAVING);
@@ -111,14 +106,14 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   }
 
   private void initTile() {
-    tile = new Block(Orientation.EAST, 750, 250);
-    tile.setId("bk-1");
+    blockTile = new Block(Orientation.EAST, 750, 250);
+    blockTile.setId("bk-1");
 
     BlockBean bbe = new BlockBean();
-    bbe.setId(tile.getId());
-    bbe.setTileId(tile.getId());
+    bbe.setId(blockTile.getId());
+    bbe.setTileId(blockTile.getId());
     bbe.setDescription("Blok");
-    bbe.setIncomingOrientation((Orientation) this.incomingSideCB.getSelectedItem());
+    //bbe.setIncomingOrientation((Orientation) this.incomingSideCB.getSelectedItem());
     bbe.setBlockState((BlockState) this.stateCB.getSelectedItem());
     bbe.setReverseArrival(this.reverseArrivalCB.isSelected());
 
@@ -128,26 +123,29 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
       bbe.setLocomotive(null);
     }
 
-    ((Block) tile).setBlockBean(bbe);
+    ((Block) blockTile).setBlockBean(bbe);
     if (this.scaleCB.isSelected()) {
-      ((AbstractTile) tile).setScaleImage(false);
+      ((AbstractTile) blockTile).setScaleImage(false);
     } else {
-      ((AbstractTile) tile).setScaleImage(true);
+      ((AbstractTile) blockTile).setScaleImage(true);
     }
+    
+    this.blockTileCanvas.setBlock(blockTile);
   }
 
   private void changeOrientation() {
     Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
-    tile.setOrientation(orientation);
+    blockTile.setOrientation(orientation);
     //((Block)tile).setWidthHeightAndOffsets();
 
-    int x = tile.getCenterX();
-    int y = tile.getCenterY();
-    int w = tile.getWidth() * 10;
-    int h = tile.getHeight() * 10;
+    int x = blockTile.getCenterX();
+    int y = blockTile.getCenterY();
+    int w = blockTile.getWidth() * 10;
+    int h = blockTile.getHeight() * 10;
 
     //calculate a new centerpoint for cross
-    switch (tile.getOrientation()) {
+    switch (blockTile.getOrientation()) {
+
       case SOUTH -> {
         x = x + w / 2;
         y = y - h / 4;
@@ -165,25 +163,25 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
         y = y - h / 2;
       }
     }
-    tile.setCenter(new Point(x, y));
+    blockTile.setCenter(new Point(x, y));
 
-    if (Orientation.EAST.equals(tile.getOrientation()) || Orientation.WEST.equals(tile.getOrientation())) {
-      ((Block) tile).setWidth(Tile.DEFAULT_WIDTH * 3);
-      ((Block) tile).setHeight(Tile.DEFAULT_HEIGHT);
+    if (Orientation.EAST.equals(blockTile.getOrientation()) || Orientation.WEST.equals(blockTile.getOrientation())) {
+      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH * 3);
+      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT);
 
-      ((Block) tile).setRenderWidth(Tile.RENDER_WIDTH * 3);
-      ((Block) tile).setRenderHeight(Tile.RENDER_HEIGHT);
+      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH * 3);
+      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT);
     } else {
-      ((Block) tile).setWidth(Tile.DEFAULT_WIDTH);
-      ((Block) tile).setHeight(Tile.DEFAULT_HEIGHT * 3);
+      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH);
+      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT * 3);
 
-      ((Block) tile).setRenderWidth(Tile.RENDER_WIDTH);
-      ((Block) tile).setRenderHeight(Tile.RENDER_HEIGHT * 3);
+      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH);
+      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT * 3);
     }
 
     this.repaint();
   }
-
+/*
   @Override
   public void paint(Graphics g) {
     super.paint(g);
@@ -209,7 +207,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
       tile.drawCenterPoint(g2d, Color.red);
     }
   }
-
+*/
   /**
    * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
    */
@@ -220,7 +218,9 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     locDirectionBG = new javax.swing.ButtonGroup();
     nPanel = new javax.swing.JPanel();
     scaleCB = new javax.swing.JCheckBox();
+    orientationLabel = new javax.swing.JLabel();
     orientationCB = new javax.swing.JComboBox<>();
+    incomingSuffix = new javax.swing.JLabel();
     incomingSideCB = new javax.swing.JComboBox<>();
     stateCB = new javax.swing.JComboBox<>();
     reverseArrivalCB = new javax.swing.JCheckBox();
@@ -230,7 +230,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     forwardsRB = new javax.swing.JRadioButton();
     showCenterCB = new javax.swing.JCheckBox();
     centerSP = new javax.swing.JScrollPane();
-    cPanel = new javax.swing.JPanel();
+    blockTileCanvas = new jcs.ui.layout.tiles.UnscaledBlockCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -243,6 +243,9 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     });
     nPanel.add(scaleCB);
 
+    orientationLabel.setText("Orientation");
+    nPanel.add(orientationLabel);
+
     orientationCB.setPreferredSize(new java.awt.Dimension(150, 22));
     orientationCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -251,7 +254,11 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     });
     nPanel.add(orientationCB);
 
-    incomingSideCB.setPreferredSize(new java.awt.Dimension(150, 22));
+    incomingSuffix.setText("Incoming Suffix");
+    nPanel.add(incomingSuffix);
+
+    incomingSideCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "+", "-", "" }));
+    incomingSideCB.setPreferredSize(new java.awt.Dimension(50, 22));
     incomingSideCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         incomingSideCBActionPerformed(evt);
@@ -320,11 +327,18 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
-    centerSP.setViewportView(cPanel);
+    javax.swing.GroupLayout blockTileCanvasLayout = new javax.swing.GroupLayout(blockTileCanvas);
+    blockTileCanvas.setLayout(blockTileCanvasLayout);
+    blockTileCanvasLayout.setHorizontalGroup(
+      blockTileCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 1300, Short.MAX_VALUE)
+    );
+    blockTileCanvasLayout.setVerticalGroup(
+      blockTileCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGap(0, 1355, Short.MAX_VALUE)
+    );
 
-    cPanel.setPreferredSize(new java.awt.Dimension(1500, 1500));
-    cPanel.setLayout(null);
-    centerSP.setViewportView(cPanel);
+    centerSP.setViewportView(blockTileCanvas);
 
     getContentPane().add(centerSP, java.awt.BorderLayout.CENTER);
 
@@ -332,18 +346,18 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   }// </editor-fold>//GEN-END:initComponents
 
   private void rotateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateButtonActionPerformed
-    this.tile.rotate();
+    this.blockTile.rotate();
 
-    Orientation orientation = tile.getOrientation();
+    Orientation orientation = blockTile.getOrientation();
     this.orientationCB.setSelectedItem(orientation);
     this.repaint();
   }//GEN-LAST:event_rotateButtonActionPerformed
 
   private void showLocCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLocCBActionPerformed
     if (this.showLocCB.isSelected()) {
-      ((Block) tile).getBlockBean().setLocomotive(this.createLocomotiveBean());
+      ((Block) blockTile).getBlockBean().setLocomotive(this.createLocomotiveBean());
     } else {
-      ((Block) tile).getBlockBean().setLocomotive(null);
+      ((Block) blockTile).getBlockBean().setLocomotive(null);
     }
     repaint();
   }//GEN-LAST:event_showLocCBActionPerformed
@@ -353,12 +367,12 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   }//GEN-LAST:event_orientationCBActionPerformed
 
   private void incomingSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_incomingSideCBActionPerformed
-    ((Block) tile).getBlockBean().setIncomingOrientation((Orientation) this.incomingSideCB.getSelectedItem());
+    //((Block) tile).getBlockBean().setIncomingOrientation((Orientation) this.incomingSideCB.getSelectedItem());
     repaint();
   }//GEN-LAST:event_incomingSideCBActionPerformed
 
   private void stateCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stateCBActionPerformed
-    ((Block) tile).getBlockBean().setBlockState((BlockState) this.stateCB.getSelectedItem());
+    ((Block) blockTile).getBlockBean().setBlockState((BlockState) this.stateCB.getSelectedItem());
     repaint();
   }//GEN-LAST:event_stateCBActionPerformed
 
@@ -367,29 +381,29 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   }//GEN-LAST:event_showCenterCBActionPerformed
 
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
-    ((Block) tile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
+    ((Block) blockTile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
     repaint();
   }//GEN-LAST:event_reverseArrivalCBActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
-    if (((Block) tile).getBlockBean().getLocomotive() != null) {
-      ((Block) tile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.BACKWARDS);
+    if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
+      ((Block) blockTile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.BACKWARDS);
       repaint();
     }
   }//GEN-LAST:event_backwardsRBActionPerformed
 
   private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
-    if (((Block) tile).getBlockBean().getLocomotive() != null) {
-      ((Block) tile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.FORWARDS);
+    if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
+      ((Block) blockTile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.FORWARDS);
       repaint();
     }
   }//GEN-LAST:event_forwardsRBActionPerformed
 
   private void scaleCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleCBActionPerformed
     if (this.scaleCB.isSelected()) {
-      ((AbstractTile) tile).setScaleImage(false);
+      ((AbstractTile) blockTile).setScaleImage(false);
     } else {
-      ((AbstractTile) tile).setScaleImage(true);
+      ((AbstractTile) blockTile).setScaleImage(true);
     }
     repaint();
   }//GEN-LAST:event_scaleCBActionPerformed
@@ -426,13 +440,15 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JRadioButton backwardsRB;
-  private javax.swing.JPanel cPanel;
+  private jcs.ui.layout.tiles.UnscaledBlockCanvas blockTileCanvas;
   private javax.swing.JScrollPane centerSP;
   private javax.swing.JRadioButton forwardsRB;
-  private javax.swing.JComboBox<Orientation> incomingSideCB;
+  private javax.swing.JComboBox<String> incomingSideCB;
+  private javax.swing.JLabel incomingSuffix;
   private javax.swing.ButtonGroup locDirectionBG;
   private javax.swing.JPanel nPanel;
   private javax.swing.JComboBox<Orientation> orientationCB;
+  private javax.swing.JLabel orientationLabel;
   private javax.swing.JCheckBox reverseArrivalCB;
   private javax.swing.JButton rotateButton;
   private javax.swing.JCheckBox scaleCB;

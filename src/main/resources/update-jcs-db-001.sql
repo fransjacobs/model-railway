@@ -17,5 +17,5 @@ alter table routes add status varchar(255);
 
 alter table blocks add status varchar(255);
 alter table blocks add incoming_side varchar(255);
-
+alter table blocks rename column incoming_side to incoming_suffix;
 commit;
