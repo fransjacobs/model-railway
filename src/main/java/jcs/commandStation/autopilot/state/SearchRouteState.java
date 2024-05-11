@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,34 +48,38 @@ public class SearchRouteState extends DispatcherState {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
-    //refreshBlockTiles();
     BlockBean blockBean = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
 
-    String suffix = blockBean.getLocomotiveBlockSuffix();
-    Logger.trace("Loc " + locomotive.getName() + " is in block " + blockBean.getId() + ". Going " + locomotive.getDirection() + " towards the " + suffix + " side of the block...");
+    String departureSuffix = blockBean.getDepartureSuffix();
+    LocomotiveBean.Direction locDir = locomotive.getDirection();
+
+    Logger.trace("Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 
     //Search for the possible routes
-    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), suffix);
+    List<RouteBean> routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), departureSuffix);
     Logger.trace("There " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s)...");
 
     if (routes.isEmpty() && locomotive.isCommuter()) {
-      Logger.debug("Reversing locomotive");
+      //No routes possible. When the Locomotive is a commuter train it can reverse direction, so
+      Logger.debug("Reversing Arrival side...");
+      blockBean.setReverseArrival(!blockBean.isReverseArrival());
+
       Direction newDirection = locomotive.toggleDirection();
-      //Do NOT set the final direction just just test....
+      //Do NOT set the final direction yet just test....
       locomotive.setDirection(newDirection);
       blockBean.setLocomotive(locomotive);
 
-      suffix = blockBean.getLocomotiveBlockSuffix();
+      locDir = locomotive.getDirection();
+      departureSuffix = blockBean.getDepartureSuffix();
 
-      Logger.trace("Loc " + locomotive.getName() + " is in block " + blockBean.getId() + ". Going " + locomotive.getDirection() + " towards the " + suffix + " side of the block...");
-
-      routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), suffix);
+      Logger.trace("2nd; Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
+      routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), departureSuffix);
 
       Logger.trace("2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s). " + (!routes.isEmpty() ? "Direction of " + locomotive.getName() + " must be swapped!" : ""));
       if (!routes.isEmpty()) {
+        Logger.trace("Locomotive Direction Swap is needed!");
         dispatcher.setSwapLocomotiveDirection(true);
       }
-
     }
 
     int rIdx = 0;

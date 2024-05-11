@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,19 +29,29 @@ public class WaitState extends DispatcherState {
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    DispatcherState newState = new SearchRouteState(this.dispatcher);
-    newState.setRunning(running);
-    locRunner.setDispatcherState(newState);
+    Logger.trace("canAdvanceState: " + canAdvanceToNextState);
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new SearchRouteState(this.dispatcher);
+      newState.setRunning(running);
+      locRunner.setDispatcherState(newState);
+    } else {
+      locRunner.setDispatcherState(this);
+    }
   }
 
   @Override
   public void execute() {
-    Logger.debug("Waiting");
-    if (running) {
-      pause(5000);
-    }
+    //TODO STUB
 
-    canAdvanceToNextState = running;
+    //TODO make this configurable
+    Logger.debug("Waiting");
+    //if (running) {
+    //  pause(5000);
+    //}
+
+    
+    
+    canAdvanceToNextState = true; //running;
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 

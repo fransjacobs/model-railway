@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,14 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
-import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
-import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
-import jcs.commandStation.autopilot.SensorEventHandler;
 
 /**
- *
- * @author frans
+ * Reserve the exit and entry sensors
  */
 public class RunState extends DispatcherState {
 
@@ -90,7 +85,9 @@ public class RunState extends DispatcherState {
     Logger.debug("Enter SensorId: " + enterSensorId + " In SensorId: " + inSensorId + " Ignore exitMinId: " + exitMinId + ", exitPlusId: " + exitPlusId);
 
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    //TODO rely on the acceleration delay of the loco decoder or do somthing our selves..
     JCS.getJcsCommandStation().changeLocomotiveSpeed(750, locomotive);
+    Logger.debug("Started " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " Speed: " + locomotive.getVelocity());
 
     canAdvanceToNextState = true;
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);

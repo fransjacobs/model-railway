@@ -283,9 +283,11 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
           //destinations block, reset!
           block.setLocomotive(null);
           block.setBlockState(BlockBean.BlockState.FREE);
+          block.setArrivalSuffix(null);
           freeBlockCounter++;
         } else if (BlockState.DEPARTING == block.getBlockState() || BlockState.LEAVING == block.getBlockState()) {
           block.setBlockState(BlockBean.BlockState.OCCUPIED);
+          block.setArrivalSuffix(null);
           occupiedBlockCounter++;
         } else {
           if (BlockState.OCCUPIED == block.getBlockState()) {

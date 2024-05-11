@@ -16,7 +16,6 @@
 package jcs.commandStation.autopilot.state;
 
 import java.awt.Color;
-import java.util.logging.Level;
 import jcs.JCS;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -48,8 +47,6 @@ public class ArrivalState extends DispatcherState {
 
   @Override
   public void execute() {
-
-    //what to do
     while (!dispatcher.isEnterDestinationBlock()) {
       try {
         //wait
@@ -62,23 +59,14 @@ public class ArrivalState extends DispatcherState {
 
     //When the arrival event goes of this is executed
     if (dispatcher.isEnterDestinationBlock()) {
-      Logger.debug("Train has entered the destination block. Slow down");
       LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-      RouteBean route = dispatcher.getRouteBean();
-      //Slowdown....
-      JCS.getJcsCommandStation().changeLocomotiveSpeed(100, locomotive);
-      Logger.debug(locomotive.getName() + " has entered destination " + route.getToTileId() + "...");
+      BlockBean destinationBlock = dispatcher.getDestinationBlock();
+      Logger.debug("Locomotive " + locomotive.getName() + " has entered the destination " + destinationBlock.getDescription() + ". Slowing down....");
 
-      //Change block status
-      //Lock the destination
-      //String departureTileId = route.getFromTileId();
-      //String destinationTileId = route.getToTileId();
-      //BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
+      JCS.getJcsCommandStation().changeLocomotiveSpeed(100, locomotive);
+
       BlockBean departureBlock = this.dispatcher.getDepartureBlock();
       departureBlock.setBlockState(BlockBean.BlockState.LEAVING);
-
-      //BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
-      BlockBean destinationBlock = this.dispatcher.getDestinationBlock();
       destinationBlock.setBlockState(BlockBean.BlockState.ARRIVING);
 
       PersistenceFactory.getService().persist(departureBlock);
@@ -87,8 +75,8 @@ public class ArrivalState extends DispatcherState {
       dispatcher.showBlockState(departureBlock);
       dispatcher.showBlockState(destinationBlock);
 
+      RouteBean route = dispatcher.getRouteBean();
       dispatcher.showRoute(route, Color.magenta);
-
       this.canAdvanceToNextState = true;
     }
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);

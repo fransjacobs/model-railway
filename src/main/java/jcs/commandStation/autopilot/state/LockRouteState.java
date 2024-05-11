@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,7 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * Lock the route, set the block states and turnout directions
  */
 public class LockRouteState extends DispatcherState {
 
@@ -61,10 +60,11 @@ public class LockRouteState extends DispatcherState {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
 
     if (route == null) {
-      Logger.debug("Can't reserve a route for " + this.dispatcher.getLocomotiveBean().getName() + " ...");
+      Logger.debug("Can't reserve a route for " + dispatcher.getLocomotiveBean().getName() + " ...");
       return;
     }
 
+    //TODO Semaphore in autopilot!
     Logger.debug("Reserving route " + route);
     route.setLocked(true);
 
@@ -75,46 +75,57 @@ public class LockRouteState extends DispatcherState {
       dispatcher.setSwapLocomotiveDirection(false);
     }
 
-    // need the turnouts
+    //Reserve the destination
+    String departureTileId = route.getFromTileId();
+    String destinationTileId = route.getToTileId();
+
+    //From which side do we depart
+    String departureSuffix = route.getFromSuffix();
+    //From which side on the block is the train expected to arrive?
+    String arrivalSuffix = route.getToSuffix();
+    Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDirection());
+
+    //Flip the departure side
+    String departureArrivalSuffix;
+    if ("+".equals(departureSuffix)) {
+      departureArrivalSuffix = "-";
+    } else {
+      departureArrivalSuffix = "+";
+    }
+
+    BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
+    departureBlock.setBlockState(BlockBean.BlockState.DEPARTING);
+    departureBlock.setArrivalSuffix(departureArrivalSuffix);
+
+    BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
+    destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
+    destinationBlock.setLocomotive(locomotive);
+    destinationBlock.setArrivalSuffix(arrivalSuffix);
+
+    // Set Turnouts in the right state
     List<RouteElementBean> turnouts = getTurnouts(route);
     Logger.trace("There are " + turnouts.size() + " turnouts in this route");
 
-    //Set the turnout in the right direction
     for (RouteElementBean reb : turnouts) {
       AccessoryValue av = reb.getAccessoryValue();
       AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
 
-      Logger.debug("Setting turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
+      Logger.debug("Switching Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
       JCS.getJcsCommandStation().switchAccessory(turnout, av);
     }
     Logger.trace("Turnouts set for" + route);
-
-    //Lock the destination
-    String departureTileId = route.getFromTileId();
-    String destinationTileId = route.getToTileId();
-    //From which side on the block is the train expected to arrive?
-    String arrivalSuffix = route.getToSuffix();
-
-    Logger.trace("Destination tile: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block");
-
-    BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
-    departureBlock.setBlockState(BlockBean.BlockState.DEPARTING);
-    
-    BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
-    destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
-    destinationBlock.setLocomotive(locomotive);
 
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
 
     dispatcher.setDepartureBlock(departureBlock);
     dispatcher.setDestinationBlock(destinationBlock);
-        
+
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
-    
+
     dispatcher.showRoute(route, Color.green);
-    Logger.trace(route+" Locked");
+    Logger.trace(route + " Locked");
 
     canAdvanceToNextState = true;
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);
@@ -130,5 +141,4 @@ public class LockRouteState extends DispatcherState {
     }
     return turnouts;
   }
-
 }

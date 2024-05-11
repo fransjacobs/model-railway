@@ -44,6 +44,7 @@ import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
+import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -386,6 +387,14 @@ public class Block extends AbstractTile implements Tile {
     }
   }
 
+  private LocomotiveBean.Direction getLocomotiveDirection() {
+    if (getBlockBean() != null && getBlockBean().getLocomotive() != null) {
+      return getBlockBean().getLocomotive().getDirection();
+    } else {
+      return LocomotiveBean.Direction.FORWARDS;
+    }
+  }
+
   @Override
   public void renderTile(Graphics2D g2) {
     int xx = 20;
@@ -412,13 +421,30 @@ public class Block extends AbstractTile implements Tile {
 
     //When there is a train in the block mark the direction of travel, ie whether the train goes
     //forwards or backwards by drawing a little triangle in the the block 
-    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
-      boolean reverseArrival = getBlockBean().isReverseArrival();
-      if (reverseArrival) {
-        g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-      } else {
-        g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-      }
+    //if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
+    //boolean reverseArrival = getBlockBean().isReverseArrival();
+    //private String getDepartureSuffix() {
+    String departureSuffix;
+    if (getBlockBean() != null) {
+      departureSuffix = getBlockBean().getDepartureSuffix();
+    } else {
+      departureSuffix = "+";
+    }
+
+    Logger.trace("departureSuffix: " + departureSuffix);
+
+    if ("+".equals(departureSuffix)) {
+      //if (reverseArrival) {
+      //  g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+      //} else {
+      g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+      //}
+    } else {
+      //if (reverseArrival) {
+      //  g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+      //} else {
+      g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+      //}
     }
 
     drawName(g2);
@@ -432,11 +458,14 @@ public class Block extends AbstractTile implements Tile {
   }
 
   protected void overlayLocImage(Graphics2D g2d) {
-    //Overlay a scaled loc image incase a loc is in the block
-    //Overlay is on the scaled image as a loc image is rather small
-    //so the lock image only nee a bit more scaling
-    //if there is a lock image 
     Image locImage = getLocImage();
+    String departureSuffix;
+    if (getBlockBean() != null) {
+      departureSuffix = getBlockBean().getDepartureSuffix();
+    } else {
+      departureSuffix = "+";
+    }
+
     if (locImage != null) {
       // scale it to max h of 45
       int size = 45;
@@ -448,36 +477,68 @@ public class Block extends AbstractTile implements Tile {
       int h = locImage.getHeight(null);
       //Logger.trace("LocImage w: " + w + " h: " + h);
 
-      //Depending on the block orientation the image need to be rotated and flipped
+      //Depending on the block orientation the image needs to be rotated and flipped
       switch (getOrientation()) {
         case WEST -> {
-          //Image need to be flipped
-          locImage = ImageUtil.flipVertically(locImage);
-          int xx = x - w / 2;
+          int xx;
+          if ("+".equals(departureSuffix)) {
+            int minX = x - width / 2 + 10;
+            xx = minX;
+          } else {
+            int maxX = x + width / 2 - 10;
+            xx = maxX - w;
+          }
           int yy = y - h / 2;
+
+          locImage = ImageUtil.flipVertically(locImage);
+
           g2d.drawImage(locImage, xx, yy, null);
         }
         case SOUTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
-          //loc image has changed direction now so the image need to be flipped horizontally
           locImage = ImageUtil.flipHorizontally(locImage);
+
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
+
           int xx = x - w / 2;
-          int yy = y - h / 2;
+          int yy;
+          if ("+".equals(departureSuffix)) {
+            int maxY = y + height / 2 - 10;
+            yy = maxY - h;
+          } else {
+            int minY = y - height / 2 + 10;
+            yy = minY;
+          }
           g2d.drawImage(locImage, xx, yy, null);
         }
         case NORTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
+
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
+
           int xx = x - w / 2;
-          int yy = y - h / 2;
+          int yy;
+          if ("+".equals(departureSuffix)) {
+            int minY = y - height / 2 + 10;
+            yy = minY;
+          } else {
+            int maxY = y + height / 2 - 10;
+            yy = maxY - h;
+          }
           g2d.drawImage(locImage, xx, yy, null);
         }
         default -> {
           //EAST
-          int xx = x - w / 2;
+          int xx;
+          if ("+".equals(departureSuffix)) {
+            int maxX = x + width / 2 - 10;
+            xx = maxX - w;
+          } else {
+            int minX = x - width / 2 + 10;
+            xx = minX;
+          }
           int yy = y - h / 2;
           g2d.drawImage(locImage, xx, yy, null);
         }
@@ -486,7 +547,7 @@ public class Block extends AbstractTile implements Tile {
   }
 
   /**
-   * Overridden to overlay a loc Icon
+   * Overridden to overlay a locomotive Icon
    *
    * @param g2d The graphics handle
    * @param drawOutline

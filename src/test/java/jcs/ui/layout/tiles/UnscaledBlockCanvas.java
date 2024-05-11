@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 FJA.
+ * Copyright 2024 Frans Jacobs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,20 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.tinylog.Logger;
+import javax.swing.Scrollable;
 
 /**
- *
- * @author FJA
+ * Inspired from https://stackoverflow.com/questions/6561246/scroll-event-of-a-jscrollpane
  */
-public class UnscaledBlockCanvas extends javax.swing.JPanel implements PropertyChangeListener {
+public class UnscaledBlockCanvas extends javax.swing.JPanel implements PropertyChangeListener, Scrollable {
 
   private Tile block;
 
@@ -57,23 +59,65 @@ public class UnscaledBlockCanvas extends javax.swing.JPanel implements PropertyC
   }
 
   @Override
+  public Dimension getPreferredScrollableViewportSize() {
+    Dimension pdim = this.getPreferredSize();
+    return pdim;
+  }
+
+  @Override
+  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+    return 10;
+  }
+
+  @Override
+  public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+    return 10;
+  }
+
+  @Override
+  public boolean getScrollableTracksViewportWidth() {
+    return false;
+  }
+
+  @Override
+  public boolean getScrollableTracksViewportHeight() {
+    return false;
+  }
+
+  @Override
   protected void paintComponent(Graphics g) {
     //super.paint(g);
 
+    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+    int sw = (int) dim.getWidth();
+    int sh = (int) dim.getHeight();
+
+    Dimension pdim = this.getSize();
+    int w = this.getWidth();
+    int h = this.getHeight();
+
+    //Logger.trace("Canvas w: " + w + " h: " + h + " Block w: " + bw + " h: " + bh + "," + expand);
+    //Logger.trace("Screen: W: " + sw + " H: " + sh + " Panel w: " + w + " h: " + h + " Size W: " + pdim.width + " H: " + pdim.height);
     if (this.block != null) {
-      //Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-      int w = this.getWidth();
-      int h = this.getHeight();
+      boolean expand = !((AbstractTile) block).isScaleImage();
 
-      //Logger.trace("Screen: W: " + dim.width + " H: " + dim.height + " Panel w: " + w + " h: " + h + " Size W: " + this.getSize().width + " H: " + this.getSize().height);
+      int bw = block.getWidth() * (expand ? 10 : 1);
+      int bh = block.getHeight() * (expand ? 10 : 1);
+
+      if (w >= bw && h >= bh) {
+        Dimension d = new Dimension(1240, 450);
+        this.setPreferredSize(d);
+      } else {
+        Dimension d = new Dimension((bw + 200), (bh + 200));
+        this.setPreferredSize(d);
+      }
+
       int x = w / 2;
-      int y = h / 2 + 50;
+      int y = h / 2;
       Point center = new Point(x, y);
-
       block.setCenter(center);
 
-      Logger.trace("Center: (" + x + "," + y + ")");
-
+      //Logger.trace("Center: (" + x + "," + y + ")");
       Graphics2D g2d = (Graphics2D) g;
       block.drawTile(g2d, true);
 
@@ -100,8 +144,8 @@ public class UnscaledBlockCanvas extends javax.swing.JPanel implements PropertyC
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    setMinimumSize(new java.awt.Dimension(1000, 1000));
-    setPreferredSize(new java.awt.Dimension(1300, 1300));
+    setMinimumSize(new java.awt.Dimension(1240, 450));
+    setPreferredSize(new java.awt.Dimension(1240, 450));
     setLayout(null);
   }// </editor-fold>//GEN-END:initComponents
 

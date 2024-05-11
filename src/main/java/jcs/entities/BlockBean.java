@@ -23,11 +23,6 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import jcs.entities.TileBean.Orientation;
-import static jcs.entities.TileBean.Orientation.EAST;
-import static jcs.entities.TileBean.Orientation.NORTH;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
 
 @Table(name = "blocks")
 public class BlockBean {
@@ -42,7 +37,7 @@ public class BlockBean {
   private Long locomotiveId;
   private boolean reverseArrival;
   private String status;
-  private String incomingSuffix;
+  private String arrivalSuffix;
 
   private TileBean tileBean;
 
@@ -228,12 +223,12 @@ public class BlockBean {
   }
 
   @Column(name = "incoming_suffix", length = 255)
-  public String getIncomingSuffix() {
-    return incomingSuffix;
+  public String getArrivalSuffix() {
+    return arrivalSuffix;
   }
 
-  public void setIncomingSuffix(String incomingSuffix) {
-    this.incomingSuffix = incomingSuffix;
+  public void setArrivalSuffix(String arrivalSuffix) {
+    this.arrivalSuffix = arrivalSuffix;
   }
 
   @Transient
@@ -264,89 +259,27 @@ public class BlockBean {
   }
 
   @Transient
-  public String getLocomotiveBlockSuffix() {
-    String blockSuffix = "";
+  public String getDepartureSuffix() {
+    String inSuffix = arrivalSuffix;
+    if (inSuffix == null) {
+      //use a default
+      inSuffix = "-";
+    }
 
-    if (tileBean != null && locomotive != null && locomotive.getDirection() != null) {
-      LocomotiveBean.Direction locDir = locomotive.getDirection();
-
-      Orientation blockOrientation = this.tileBean.getOrientation();
-
-      switch (blockOrientation) {
-        case EAST -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "-" : "+";
-          } else {
-            blockSuffix = reverseArrival ? "+" : "-";
-          }
-        }
-        case WEST -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "-" : "+";
-          } else {
-            blockSuffix = reverseArrival ? "+" : "-";
-          }
-        }
-        case SOUTH -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "+" : "-";
-          } else {
-            blockSuffix = reverseArrival ? "-" : "+";
-          }
-        }
-        case NORTH -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "+" : "-";
-          } else {
-            blockSuffix = reverseArrival ? "-" : "+";
-          }
-        }
+    String departureSuffix = "+";
+    if (reverseArrival) {
+      if ("-".equals(inSuffix)) {
+        inSuffix = "+";
+      } else {
+        inSuffix = "-";
       }
     }
-    return blockSuffix;
-  }
-
-  @Transient
-  public String getLocomotiveBlockSuffix1() {
-    String blockSuffix = "";
-
-    if (tileBean != null && locomotive != null && locomotive.getDirection() != null) {
-      LocomotiveBean.Direction locDir = locomotive.getDirection();
-
-      Orientation blockOrientation = this.tileBean.getOrientation();
-
-      switch (blockOrientation) {
-        case EAST -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "-" : "+";
-          } else {
-            blockSuffix = reverseArrival ? "+" : "-";
-          }
-        }
-        case WEST -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "-" : "+";
-          } else {
-            blockSuffix = reverseArrival ? "+" : "-";
-          }
-        }
-        case SOUTH -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "+" : "-";
-          } else {
-            blockSuffix = reverseArrival ? "-" : "+";
-          }
-        }
-        case NORTH -> {
-          if (LocomotiveBean.Direction.FORWARDS == locDir) {
-            blockSuffix = reverseArrival ? "+" : "-";
-          } else {
-            blockSuffix = reverseArrival ? "-" : "+";
-          }
-        }
-      }
+    if ("+".equals(inSuffix)) {
+      departureSuffix = "-";
+    } else {
+      departureSuffix = "+";
     }
-    return blockSuffix;
+    return departureSuffix;
   }
 
   @Override
@@ -364,7 +297,8 @@ public class BlockBean {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(Object obj
+  ) {
     if (this == obj) {
       return true;
     }
