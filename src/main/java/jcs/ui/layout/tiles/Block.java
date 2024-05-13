@@ -44,7 +44,6 @@ import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
-import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -341,7 +340,7 @@ public class Block extends AbstractTile implements Tile {
    * - Yellow: reserved<br>
    * - White: all clear / default<br>
    *
-   * @return the Color which belong with the current Block State
+   * @return the Colour which belong with the current Block State
    */
   public Color getBlockStateColor() {
     if (blockBean != null) {
@@ -387,14 +386,13 @@ public class Block extends AbstractTile implements Tile {
     }
   }
 
-  private LocomotiveBean.Direction getLocomotiveDirection() {
-    if (getBlockBean() != null && getBlockBean().getLocomotive() != null) {
-      return getBlockBean().getLocomotive().getDirection();
-    } else {
-      return LocomotiveBean.Direction.FORWARDS;
-    }
-  }
-
+//  private LocomotiveBean.Direction getLocomotiveDirection() {
+//    if (getBlockBean() != null && getBlockBean().getLocomotive() != null) {
+//      return getBlockBean().getLocomotive().getDirection();
+//    } else {
+//      return LocomotiveBean.Direction.FORWARDS;
+//    }
+//  }
   @Override
   public void renderTile(Graphics2D g2) {
     int xx = 20;
@@ -431,8 +429,7 @@ public class Block extends AbstractTile implements Tile {
       departureSuffix = "+";
     }
 
-    Logger.trace("departureSuffix: " + departureSuffix);
-
+    //Logger.trace("departureSuffix: " + departureSuffix);
     if ("+".equals(departureSuffix)) {
       //if (reverseArrival) {
       //  g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);

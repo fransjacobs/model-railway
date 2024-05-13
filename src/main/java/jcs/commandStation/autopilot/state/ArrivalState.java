@@ -29,6 +29,8 @@ import org.tinylog.Logger;
  */
 public class ArrivalState extends DispatcherState {
 
+  private boolean locomotiveBraking = false;
+
   public ArrivalState(TrainDispatcher dispatcher) {
     super(dispatcher);
   }
@@ -47,18 +49,18 @@ public class ArrivalState extends DispatcherState {
 
   @Override
   public void execute() {
-    while (!dispatcher.isEnterDestinationBlock()) {
-      try {
-        //wait
-        //this.wait();
-        Thread.sleep(1000L);
-      } catch (InterruptedException ex) {
-        Logger.trace(ex);
-      }
-    }
+//    while (!dispatcher.isEnterDestinationBlock()) {
+//      try {
+//        //wait
+//        //this.wait();
+//        Thread.sleep(1000L);
+//      } catch (InterruptedException ex) {
+//        Logger.trace(ex);
+//      }
+//    }
 
     //When the arrival event goes of this is executed
-    if (dispatcher.isEnterDestinationBlock()) {
+    if (!locomotiveBraking) {
       LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
       Logger.debug("Locomotive " + locomotive.getName() + " has entered the destination " + destinationBlock.getDescription() + ". Slowing down....");
@@ -77,8 +79,12 @@ public class ArrivalState extends DispatcherState {
 
       RouteBean route = dispatcher.getRouteBean();
       dispatcher.showRoute(route, Color.magenta);
-      this.canAdvanceToNextState = true;
+
+      locomotiveBraking = true;
+    } else {
+      Logger.trace("Waiting for the arrived(in) event from SensorId: " + dispatcher.getInSensorId() + " Is In Sensor triggered: " + dispatcher.isInDestinationBlock());
     }
+    this.canAdvanceToNextState = this.dispatcher.isInDestinationBlock();
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 

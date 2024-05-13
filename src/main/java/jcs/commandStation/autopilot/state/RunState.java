@@ -27,6 +27,8 @@ import org.tinylog.Logger;
  */
 public class RunState extends DispatcherState {
 
+  private boolean locomotiveRunning = false;
+
   public RunState(TrainDispatcher dispatcher) {
     super(dispatcher);
   }
@@ -45,51 +47,57 @@ public class RunState extends DispatcherState {
 
   @Override
   public void execute() {
-    //Which sensors do we need to watch
-    RouteBean route = dispatcher.getRouteBean();
-    String departureTileId = route.getFromTileId();
-    String destinationTileId = route.getToTileId();
-    //From which side on the block is the train expected to arrive?
-    String arrivalSuffix = route.getToSuffix();
+    if (!locomotiveRunning) {
+      //Which sensors do we need to watch
+      RouteBean route = dispatcher.getRouteBean();
+      String departureTileId = route.getFromTileId();
+      String destinationTileId = route.getToTileId();
+      //From which side on the block is the train expected to arrive?
+      String arrivalSuffix = route.getToSuffix();
 
-    Logger.trace("Destination tile: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block");
-    BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
+      Logger.trace("Destination tile: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block");
+      BlockBean departureBlock = PersistenceFactory.getService().getBlockByTileId(departureTileId);
 
-    //The sensors on the departure block do not yet play a role, but they can switch on so they have to be removed
-    //from the ghost list
-    String exitMinId = departureBlock.getMinSensorId();
-    String exitPlusId = departureBlock.getPlusSensorId();
+      //The sensors on the departure block do not yet play a role, but they can switch on so they have to be removed
+      //from the ghost list
+      String exitMinId = departureBlock.getMinSensorId();
+      String exitPlusId = departureBlock.getPlusSensorId();
 
-    BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
+      BlockBean destinationBlock = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
 
-    String enterSensorId;
-    if ("+".equals(arrivalSuffix)) {
-      enterSensorId = destinationBlock.getPlusSensorId();
+      String enterSensorId;
+      if ("+".equals(arrivalSuffix)) {
+        enterSensorId = destinationBlock.getPlusSensorId();
+      } else {
+        enterSensorId = destinationBlock.getMinSensorId();
+      }
+
+      String inSensorId;
+      if ("-".equals(arrivalSuffix)) {
+        inSensorId = destinationBlock.getPlusSensorId();
+      } else {
+        inSensorId = destinationBlock.getMinSensorId();
+      }
+
+      //Register handlers
+      this.dispatcher.registerNullEventHandler(exitMinId);
+      this.dispatcher.registerNullEventHandler(exitPlusId);
+      this.dispatcher.registerEnterHandler(enterSensorId);
+      this.dispatcher.registerArrivalHandler(inSensorId);
+
+      Logger.debug("Enter SensorId: " + enterSensorId + " In SensorId: " + inSensorId + " Ignore exitMinId: " + exitMinId + ", exitPlusId: " + exitPlusId);
+
+      LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+      //TODO rely on the acceleration delay of the loco decoder or do somthing our selves..
+      JCS.getJcsCommandStation().changeLocomotiveSpeed(750, locomotive);
+      locomotiveRunning = true;
+      Logger.debug("Started " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " Speed: " + locomotive.getVelocity());
     } else {
-      enterSensorId = destinationBlock.getMinSensorId();
+      Logger.trace("Waiting for the arrival(enter) event from SensorId: " + dispatcher.getEnterSensorId() + " Is Enter Sensor triggered: " + dispatcher.isEnterDestinationBlock());
     }
-
-    String inSensorId;
-    if ("-".equals(arrivalSuffix)) {
-      inSensorId = destinationBlock.getPlusSensorId();
-    } else {
-      inSensorId = destinationBlock.getMinSensorId();
-    }
-
-    //Register handlers
-    this.dispatcher.registerNullEventHandler(exitMinId);
-    this.dispatcher.registerNullEventHandler(exitPlusId);
-    this.dispatcher.registerEnterHandler(enterSensorId);
-    this.dispatcher.registerArrivalHandler(inSensorId);
-
-    Logger.debug("Enter SensorId: " + enterSensorId + " In SensorId: " + inSensorId + " Ignore exitMinId: " + exitMinId + ", exitPlusId: " + exitPlusId);
-
-    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    //TODO rely on the acceleration delay of the loco decoder or do somthing our selves..
-    JCS.getJcsCommandStation().changeLocomotiveSpeed(750, locomotive);
-    Logger.debug("Started " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " Speed: " + locomotive.getVelocity());
-
-    canAdvanceToNextState = true;
+    //Advance to the next stae only possible when arrival(enter) event has occurred
+    canAdvanceToNextState = dispatcher.isEnterDestinationBlock();
+    //canAdvanceToNextState = true;
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 

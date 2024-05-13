@@ -64,7 +64,7 @@ public class TrainDispatcher extends Thread {
   public TrainDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
     this.autoPilot = autoPilot;
-    nullSensorEventHandlers = new ArrayList<>();
+    this.nullSensorEventHandlers = new ArrayList<>();
 
     this.dispatcherState = new IdleState(this);
     this.stateEventListeners = new LinkedList<>();
@@ -149,6 +149,9 @@ public class TrainDispatcher extends Thread {
     }
     autoPilot.removeHandler(this.arrivalHandler.sensorId);
     autoPilot.removeHandler(this.enterHandler.sensorId);
+
+    enterDestinationBlock = false;
+    inDestinationBlock = false;
   }
 
   public synchronized void onEnter(SensorEvent event) {
@@ -165,7 +168,31 @@ public class TrainDispatcher extends Thread {
     notify();
   }
 
+  String getEnterSensorId() {
+    if (this.enterHandler != null) {
+      return this.enterHandler.sensorId;
+    } else {
+      return null;
+    }
+  }
+
+  String getInSensorId() {
+    if (this.arrivalHandler.sensorId != null) {
+      return this.arrivalHandler.sensorId;
+    } else {
+      return null;
+    }
+  }
+
+  public synchronized void onNullEvent(SensorEvent event) {
+    Logger.debug("got an event from a inhibited listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
+  }
+
   void nextState() {
+//    if(dispatcherState instanceof RunState) {
+//      //Run state can only be advanced when the arrival (enter) event has occurred
+//    }
+
     dispatcherState.next(this);
   }
 
@@ -278,7 +305,7 @@ public class TrainDispatcher extends Thread {
 
     @Override
     public void handleEvent(SensorEvent event) {
-      Logger.trace(event);
+      this.trainDispatcher.onNullEvent(event);
     }
   }
 

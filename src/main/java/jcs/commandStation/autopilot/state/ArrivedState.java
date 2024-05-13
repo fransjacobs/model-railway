@@ -46,48 +46,45 @@ public class ArrivedState extends DispatcherState {
 
   @Override
   public void execute() {
-    while (!dispatcher.isInDestinationBlock()) {
-      try {
-        //wait
-        //this.wait();
-        Thread.sleep(1000L);
-      } catch (InterruptedException ex) {
-        Logger.trace(ex);
-      }
-    }
+//    while (!dispatcher.isInDestinationBlock()) {
+//      try {
+//        //wait
+//        //this.wait();
+//        Thread.sleep(1000L);
+//      } catch (InterruptedException ex) {
+//        Logger.trace(ex);
+//      }
+//    }
 
-    if (this.dispatcher.isInDestinationBlock()) {
-      LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
-      BlockBean destinationBlock = dispatcher.getDestinationBlock();
-      Logger.debug("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + ". Stopping....");
-      JCS.getJcsCommandStation().changeLocomotiveSpeed(0, locomotive);
+    //if (this.dispatcher.isInDestinationBlock()) {
+    LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    Logger.debug("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + ". Stopping....");
+    JCS.getJcsCommandStation().changeLocomotiveSpeed(0, locomotive);
 
-      BlockBean departureBlock = this.dispatcher.getDepartureBlock();
-      departureBlock.setBlockState(BlockBean.BlockState.FREE);
-      departureBlock.setLocomotive(null);
+    BlockBean departureBlock = this.dispatcher.getDepartureBlock();
+    departureBlock.setBlockState(BlockBean.BlockState.FREE);
+    departureBlock.setLocomotive(null);
 
-      destinationBlock.setLocomotive(locomotive);
-      destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
+    destinationBlock.setLocomotive(locomotive);
+    destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
 
-      PersistenceFactory.getService().persist(departureBlock);
-      PersistenceFactory.getService().persist(destinationBlock);
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
 
-      dispatcher.resetAllRouteEventHandlers();
+    dispatcher.resetAllRouteEventHandlers();
 
-      RouteBean route = dispatcher.getRouteBean();
-      route.setLocked(false);
-      PersistenceFactory.getService().persist(route);
+    RouteBean route = dispatcher.getRouteBean();
+    route.setLocked(false);
+    PersistenceFactory.getService().persist(route);
 
-      dispatcher.showBlockState(departureBlock);
-      dispatcher.showBlockState(destinationBlock);
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.showBlockState(destinationBlock);
 
-      this.dispatcher.resetRoute(route);
-
-      this.dispatcher.setRouteBean(null);
-
-      //refreshBlockTiles();
-      this.canAdvanceToNextState = true;
-    }
+    this.dispatcher.resetRoute(route);
+    this.dispatcher.setRouteBean(null);
+    this.canAdvanceToNextState = true;
+    //}
 
     Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
