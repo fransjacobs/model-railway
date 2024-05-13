@@ -46,6 +46,8 @@ public class AutoPilot {
 
   //private final Map<String,SwitchableSensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
+  
+  private DispatcherTestDialog dispatcherDialog;
 
   private AutoPilot() {
   }
@@ -71,7 +73,7 @@ public class AutoPilot {
       Logger.debug("Added " + dispatcher.getName());
       //dispatcher.start();
 
-      DispatcherTestDialog.showDialog(dispatcher);
+      dispatcherDialog = DispatcherTestDialog.showDialog(dispatcher);
     }
   }
 
@@ -80,6 +82,9 @@ public class AutoPilot {
     for (TrainDispatcher lsm : this.locomotives.values()) {
       lsm.stopRunning();
     }
+    
+    dispatcherDialog.setVisible(false);
+    dispatcherDialog.dispose();
   }
 
   public void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {

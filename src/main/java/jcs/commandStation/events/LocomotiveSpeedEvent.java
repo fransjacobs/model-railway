@@ -106,6 +106,14 @@ public class LocomotiveSpeedEvent implements Serializable {
     return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
   }
 
+  public Integer getVelocity() {
+    if (this.locomotiveBean != null) {
+      return this.locomotiveBean.getVelocity();
+    } else {
+      return 0;
+    }
+  }
+
   public boolean isEventFor(LocomotiveBean locomotive) {
     if (locomotive != null) {
       Long id = locomotiveBean.getId();

@@ -486,19 +486,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     this.anonymousSensorListeners.add(listener);
   }
 
-//  @Override
-//  public void addSensorEventListener(SensorEventListener listener, String sensorId) {
-//    this.sensorEventListeners.put(sensorId, listener);
-//  }
   @Override
   public void removeSensorEventListener(SensorEventListener listener) {
     this.anonymousSensorListeners.remove(listener);
   }
 
-//  @Override
-//  public void removeSensorEventListener(String sensorId) {
-//    this.sensorEventListeners.remove(sensorId);
-//  }
   @Override
   public void addAccessoryEventListener(AccessoryEventListener listener) {
     this.accessoryEventListeners.add(listener);
@@ -532,11 +524,17 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   @Override
   public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.add(listener);
+    //this.decoderController.addLocomotiveSpeedEventListener(listener);
+
   }
 
+//  private void getLocomotiveSpeedEventListeners() {
+//    this.decoderController.
+//  }
   @Override
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.remove(listener);
+    //this.decoderController.addLocomotiveSpeedEventListener(listener);
   }
 
   @Override
@@ -800,16 +798,16 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         }
 
         if (dblb != null) {
-          if (!Objects.equals(dblb.getVelocity(), lb.getVelocity())) {
-            Integer velocity = lb.getVelocity();
-            dblb.setVelocity(velocity);
-            PersistenceFactory.getService().persist(dblb);
+          //if (!Objects.equals(dblb.getVelocity(), lb.getVelocity())) {
+          Integer velocity = lb.getVelocity();
+          dblb.setVelocity(velocity);
+          PersistenceFactory.getService().persist(dblb);
 
-            speedEvent.setLocomotiveBean(dblb);
-            for (LocomotiveSpeedEventListener dl : trackService.locomotiveSpeedEventListeners) {
-              dl.onSpeedChange(speedEvent);
-            }
+          speedEvent.setLocomotiveBean(dblb);
+          for (LocomotiveSpeedEventListener dl : trackService.locomotiveSpeedEventListeners) {
+            dl.onSpeedChange(speedEvent);
           }
+          //}
         } else {
           Logger.trace("No loc found for " + lb.toLogString());
         }

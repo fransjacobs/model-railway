@@ -37,7 +37,7 @@ import org.tinylog.Logger;
  */
 public class DispatcherTestDialog extends javax.swing.JDialog implements StateEventListener {
 
-  private final TrainDispatcher trainDispatcher;
+  final TrainDispatcher trainDispatcher;
 
   private final ExecutorService executor;
 
@@ -254,8 +254,8 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
   private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
     if (trainDispatcher != null) {
-      trainDispatcher.execute();
       trainDispatcher.nextState();
+      trainDispatcher.execute();
       this.stateLabel.setText(trainDispatcher.getDispatcherState().toString());
     }
   }//GEN-LAST:event_nextButtonActionPerformed
@@ -279,19 +279,29 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     for (BlockBean block : blocks) {
       if (block.getLocomotiveId() != null) {
-        if (BlockState.LOCKED == block.getBlockState() || BlockState.ARRIVING == block.getBlockState()) {
-          //destinations block, reset!
-          block.setLocomotive(null);
-          block.setBlockState(BlockBean.BlockState.FREE);
-          block.setArrivalSuffix(null);
-          freeBlockCounter++;
-        } else if (BlockState.DEPARTING == block.getBlockState() || BlockState.LEAVING == block.getBlockState()) {
-          block.setBlockState(BlockBean.BlockState.OCCUPIED);
-          block.setArrivalSuffix(null);
-          occupiedBlockCounter++;
-        } else {
+        if (null == block.getBlockState()) {
           if (BlockState.OCCUPIED == block.getBlockState()) {
             occupiedBlockCounter++;
+          }
+        } else {
+          switch (block.getBlockState()) {
+            case LOCKED, ARRIVING -> {
+              //destinations block, reset!
+              block.setLocomotive(null);
+              block.setBlockState(BlockBean.BlockState.FREE);
+              block.setArrivalSuffix(null);
+              freeBlockCounter++;
+            }
+            case DEPARTING, LEAVING -> {
+              block.setBlockState(BlockBean.BlockState.OCCUPIED);
+              block.setArrivalSuffix(null);
+              occupiedBlockCounter++;
+            }
+            default -> {
+              if (BlockState.OCCUPIED == block.getBlockState()) {
+                occupiedBlockCounter++;
+              }
+            }
           }
         }
       } else {
@@ -319,7 +329,6 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     TileEvent tileEvent = new TileEvent(blockBean);
     TileFactory.fireTileEventListener(tileEvent);
   }
-
 
   private void sensorTB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sensorTB1ActionPerformed
     SensorBean sb = new SensorBean(0, 1, this.sensorTB1.isSelected() ? 0 : 1);
@@ -373,53 +382,25 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     }
   }//GEN-LAST:event_stopButtonActionPerformed
 
-  public static void showDialog(TrainDispatcher dispatcher) {
+  public static DispatcherTestDialog showDialog(TrainDispatcher dispatcher) {
+    DispatcherTestDialog dialog = new DispatcherTestDialog(new javax.swing.JFrame(), false, dispatcher);
 
-    java.awt.EventQueue.invokeLater(() -> {
-      DispatcherTestDialog dialog = new DispatcherTestDialog(new javax.swing.JFrame(), false, dispatcher);
+    dispatcher.addStateEventListener(dialog);
 
-      dispatcher.addStateEventListener(dialog);
-
-      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          //System.exit(0);
-          dialog.dispose();
-        }
-      });
-      dialog.setLocationRelativeTo(null);
-      dialog.pack();
-      dialog.setVisible(true);
+    dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+      @Override
+      public void windowClosing(java.awt.event.WindowEvent e) {
+        dialog.trainDispatcher.autoPilot.startStopLocomotive(dialog.trainDispatcher.getLocomotiveBean(), false);
+        dialog.dispose();
+      }
     });
+    dialog.setLocationRelativeTo(null);
+    dialog.pack();
+    dialog.setVisible(true);
+
+    return dialog;
 
   }
-
-  /**
-   * @param args the command line arguments
-   */
-//  public static void main(String args[]) {
-//    try {
-//      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-//    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-//      Logger.warn("Can't set the LookAndFeel: " + ex);
-//    }
-//
-//    /* Create and display the dialog */
-//    java.awt.EventQueue.invokeLater(new Runnable() {
-//      public void run() {
-//        DispatcherTestDialog dialog = new DispatcherTestDialog(new javax.swing.JFrame(), true, null);
-//        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-//          @Override
-//          public void windowClosing(java.awt.event.WindowEvent e) {
-//            System.exit(0);
-//          }
-//        });
-//        dialog.setLocationRelativeTo(null);
-//        dialog.pack();
-//        dialog.setVisible(true);
-//      }
-//    });
-//  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel buttenPanel;

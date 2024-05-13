@@ -16,11 +16,15 @@
 package jcs.commandStation.autopilot.state;
 
 import java.awt.Color;
+import static java.lang.Thread.MIN_PRIORITY;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.SensorEventHandler;
+import jcs.commandStation.events.LocomotiveSpeedEvent;
+import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
@@ -40,7 +44,7 @@ import org.tinylog.Logger;
 public class TrainDispatcher extends Thread {
 
   private final LocomotiveBean locomotiveBean;
-  private final AutoPilot autoPilot;
+  final AutoPilot autoPilot;
   private RouteBean routeBean;
 
   private BlockBean departureBlock;
@@ -61,6 +65,8 @@ public class TrainDispatcher extends Thread {
 
   private boolean running;
 
+  private LocomotiveVelocityListener locomotiveVelocityListener;
+
   public TrainDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
     this.autoPilot = autoPilot;
@@ -70,6 +76,12 @@ public class TrainDispatcher extends Thread {
     this.stateEventListeners = new LinkedList<>();
 
     setName("LDT->" + locomotiveBean.getName());
+    initializeListeners();
+  }
+
+  private void initializeListeners() {
+    locomotiveVelocityListener = new LocomotiveVelocityListener(this);
+    JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(locomotiveVelocityListener);
   }
 
   public LocomotiveBean getLocomotiveBean() {
@@ -341,4 +353,23 @@ public class TrainDispatcher extends Thread {
     }
   }
 
+  private class LocomotiveVelocityListener implements LocomotiveSpeedEventListener {
+
+    private final TrainDispatcher trainDispatcher;
+
+    LocomotiveVelocityListener(TrainDispatcher trainDispatcher) {
+      this.trainDispatcher = trainDispatcher;
+    }
+
+    @Override
+    public void onSpeedChange(LocomotiveSpeedEvent velocityEvent) {
+      if (velocityEvent.isEventFor(this.trainDispatcher.getLocomotiveBean())) {
+        this.trainDispatcher.getLocomotiveBean().setVelocity(velocityEvent.getVelocity());
+        Logger.trace("Updated velocity to " + velocityEvent.getVelocity() + " of " + this.trainDispatcher.getLocomotiveBean().getName());
+      }
+    }
+  }
+
+  //, LocomotiveSpeedEventListener
+  //LocomotiveDirectionEventListener
 }

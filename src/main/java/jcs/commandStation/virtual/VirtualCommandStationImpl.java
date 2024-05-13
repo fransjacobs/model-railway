@@ -147,6 +147,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void changeVelocity(int locUid, int speed, LocomotiveBean.Direction direction) {
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " speed " + speed);
+      
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, speed, commandStationBean.getId());
       notifyLocomotiveSpeedEventListeners(lse);
     }

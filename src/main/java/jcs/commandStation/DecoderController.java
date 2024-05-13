@@ -54,6 +54,8 @@ public interface DecoderController extends GenericController {
 
   void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener);
 
+  //List<LocomotiveSpeedEventListener> getLocomotiveSpeedEventListeners();
+
   List<LocomotiveBean> getLocomotives();
 
   Image getLocomotiveImage(String icon);
