@@ -146,17 +146,17 @@ public class LayoutPanel extends JPanel {
       this.autoPilotBtn.setEnabled(readonly);
       this.autoPilotBtn.setVisible(readonly);
 
-      this.startAutoPilotBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
-      this.startAutoPilotBtn.setVisible(readonly);
+      this.startAllLocomotivesBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
+      this.startAllLocomotivesBtn.setVisible(readonly);
     } else {
 
       this.toolBar.remove(this.autoPilotBtn);
       this.autoPilotBtn.setEnabled(readonly);
       this.autoPilotBtn.setVisible(readonly);
 
-      this.toolBar.remove(this.startAutoPilotBtn);
-      this.startAutoPilotBtn.setEnabled(readonly);
-      this.startAutoPilotBtn.setVisible(readonly);
+      this.toolBar.remove(this.startAllLocomotivesBtn);
+      this.startAllLocomotivesBtn.setEnabled(readonly);
+      this.startAllLocomotivesBtn.setVisible(readonly);
     }
 
     if (readonly) {
@@ -205,7 +205,7 @@ public class LayoutPanel extends JPanel {
     repaintBtn = new JButton();
     routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
-    startAutoPilotBtn = new JToggleButton();
+    startAllLocomotivesBtn = new JToggleButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     selectBtn = new JButton();
     addBtn = new JButton();
@@ -408,6 +408,7 @@ public class LayoutPanel extends JPanel {
 
     autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
     autoPilotBtn.setToolTipText("Auto mode");
+    autoPilotBtn.setDoubleBuffered(true);
     autoPilotBtn.setFocusable(false);
     autoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
     autoPilotBtn.setMaximumSize(new Dimension(38, 38));
@@ -422,21 +423,23 @@ public class LayoutPanel extends JPanel {
     });
     toolBar.add(autoPilotBtn);
 
-    startAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
-    startAutoPilotBtn.setToolTipText("Auto mode");
-    startAutoPilotBtn.setFocusable(false);
-    startAutoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    startAutoPilotBtn.setMaximumSize(new Dimension(38, 38));
-    startAutoPilotBtn.setMinimumSize(new Dimension(38, 38));
-    startAutoPilotBtn.setPreferredSize(new Dimension(38, 38));
-    startAutoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
-    startAutoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    startAutoPilotBtn.addActionListener(new ActionListener() {
+    startAllLocomotivesBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
+    startAllLocomotivesBtn.setToolTipText("Start all Locomotives");
+    startAllLocomotivesBtn.setDoubleBuffered(true);
+    startAllLocomotivesBtn.setEnabled(false);
+    startAllLocomotivesBtn.setFocusable(false);
+    startAllLocomotivesBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    startAllLocomotivesBtn.setMaximumSize(new Dimension(38, 38));
+    startAllLocomotivesBtn.setMinimumSize(new Dimension(38, 38));
+    startAllLocomotivesBtn.setPreferredSize(new Dimension(38, 38));
+    startAllLocomotivesBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
+    startAllLocomotivesBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    startAllLocomotivesBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        startAutoPilotBtnActionPerformed(evt);
+        startAllLocomotivesBtnActionPerformed(evt);
       }
     });
-    toolBar.add(startAutoPilotBtn);
+    toolBar.add(startAllLocomotivesBtn);
     toolBar.add(filler1);
 
     selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png"))); // NOI18N
@@ -960,25 +963,30 @@ public class LayoutPanel extends JPanel {
   }//GEN-LAST:event_endTrackBtnActionPerformed
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + " Enable Auto mode " + this.autoPilotBtn.isSelected());
-    //in case auto pilot was on and is switched of also stop driving
-    if (startAutoPilotBtn.isSelected() && !autoPilotBtn.isSelected()) {
-      startAutoPilotBtn.doClick();
-    }
-    startAutoPilotBtn.setEnabled(readonly && autoPilotBtn.isSelected());
-    if (autoPilotBtn.isSelected()) {
-      AutoPilot.getInstance().initialize();
+    Logger.trace(evt.getActionCommand() + (this.autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
+
+    if (this.autoPilotBtn.isSelected()) {
+      this.startAllLocomotivesBtn.setEnabled(true);
+
+      AutoPilot.getInstance().startAutoPilot();
+    } else {
+      if (this.startAllLocomotivesBtn.isSelected()) {
+        startAllLocomotivesBtn.doClick();
+      }
+      this.startAllLocomotivesBtn.setEnabled(false);
+
+      AutoPilot.getInstance().stopAutoPilot();
     }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
-  private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAutoPilotBtn.isSelected());
-    if (this.startAutoPilotBtn.isSelected()) {
+  private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
+    Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
+    if (this.startAllLocomotivesBtn.isSelected()) {
       AutoPilot.getInstance().startAllLocomotives();
     } else {
       AutoPilot.getInstance().stopAllLocomotives();
     }
-  }//GEN-LAST:event_startAutoPilotBtnActionPerformed
+  }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
 
   private void crossingBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossingBtnActionPerformed
     setTileType(TileBean.TileType.CROSSING);
@@ -1062,7 +1070,7 @@ public class LayoutPanel extends JPanel {
   private JButton selectBtn;
   private JToggleButton sensorBtn;
   private JToggleButton signalBtn;
-  private JToggleButton startAutoPilotBtn;
+  private JToggleButton startAllLocomotivesBtn;
   private JToggleButton straightBtn;
   private JToggleButton straightDirectionBtn;
   private JPopupMenu straightPopupMenu;

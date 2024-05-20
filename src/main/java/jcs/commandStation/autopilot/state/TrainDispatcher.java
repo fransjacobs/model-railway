@@ -55,7 +55,6 @@ public class TrainDispatcher extends Thread {
   private BlockBean destinationBlock;
   
   private DispatcherState dispatcherState;
-  //private DispatcherState previousState;
   
   private final List<StateEventListener> stateEventListeners;
   
@@ -65,9 +64,11 @@ public class TrainDispatcher extends Thread {
   
   private boolean enterDestinationBlock = false;
   private boolean inDestinationBlock = false;
-
+  
   private LocomotiveVelocityListener locomotiveVelocityListener;
   private LocomotiveDirectionChangeListener locomotiveDirectionChangeListener;
+  
+  private boolean destroyed;
   
   public TrainDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
@@ -87,6 +88,14 @@ public class TrainDispatcher extends Thread {
     
     locomotiveDirectionChangeListener = new LocomotiveDirectionChangeListener(this);
     JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
+  }
+  
+  private void unRegisterListeners() {
+    JCS.getJcsCommandStation().removeLocomotiveSpeedEventListener(locomotiveVelocityListener);
+    JCS.getJcsCommandStation().removeLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
+    
+    locomotiveVelocityListener = null;
+    locomotiveDirectionChangeListener = null;
   }
   
   LocomotiveBean getLocomotiveBean() {
@@ -182,9 +191,10 @@ public class TrainDispatcher extends Thread {
   }
   
   void registerIgnoreEventHandler(String sensorId) {
-    IgnoreSensorHandler nsh = new IgnoreSensorHandler(sensorId, this);
-    this.ignoreSensorEventHandlers.add(nsh);
-    this.autoPilot.addHandler(nsh, sensorId);
+    IgnoreSensorHandler ish = new IgnoreSensorHandler(sensorId, this);
+    this.ignoreSensorEventHandlers.add(ish);
+    this.autoPilot.addHandler(ish, sensorId);
+    Logger.trace("Added sensor " + sensorId + " to the ignore handlers");
   }
   
   void clearIgnoreEventHandlers() {
@@ -198,22 +208,28 @@ public class TrainDispatcher extends Thread {
     for (IgnoreSensorHandler nseh : ignoreSensorEventHandlers) {
       autoPilot.removeHandler(nseh.sensorId);
     }
-    autoPilot.removeHandler(this.inHandler.sensorId);
-    autoPilot.removeHandler(this.enterHandler.sensorId);
+    if (inHandler != null) {
+      autoPilot.removeHandler(this.inHandler.sensorId);
+    }
+    if (enterHandler != null) {
+      autoPilot.removeHandler(this.enterHandler.sensorId);
+    }
+    
+    ignoreSensorEventHandlers.clear();
     
     enterDestinationBlock = false;
     inDestinationBlock = false;
   }
   
   synchronized void onEnter(SensorEvent event) {
-    Logger.debug("got an enter event");
+    Logger.debug(getName() + " got an enter event " + event.getId());
     enterDestinationBlock = true;
     //wakeup
     notify();
   }
   
   synchronized void onArrival(SensorEvent event) {
-    Logger.debug("got an Arrival event..");
+    Logger.debug(getName() + " got an In event " + event.getId());
     inDestinationBlock = true;
     //wakeup
     notify();
@@ -287,6 +303,10 @@ public class TrainDispatcher extends Thread {
     }
     
     fireStateListeners(getName() + " Finished");
+    clearRouteEventHandlers();
+    unRegisterListeners();
+    stateEventListeners.clear();
+    this.destroyed = true;
     Logger.trace(getName() + " " + getDispatcherState() + " Finished");
   }
   
@@ -297,7 +317,12 @@ public class TrainDispatcher extends Thread {
   }
   
   public void stopRunning() {
+    this.changeLocomotiveVelocity(locomotiveBean, 0);
     dispatcherState.setRunning(false);
+  }
+  
+  public boolean isDestroyed() {
+    return destroyed;
   }
   
   public boolean isRunning() {

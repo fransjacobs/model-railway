@@ -279,6 +279,7 @@
                   <Image iconType="3" name="/media/pilot.png"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="Auto mode"/>
+                <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="focusable" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -299,12 +300,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoPilotBtnActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JToggleButton" name="startAutoPilotBtn">
+            <Component class="javax.swing.JToggleButton" name="startAllLocomotivesBtn">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/media/cruise-control-on-black.png"/>
                 </Property>
-                <Property name="toolTipText" type="java.lang.String" value="Auto mode"/>
+                <Property name="toolTipText" type="java.lang.String" value="Start all Locomotives"/>
+                <Property name="doubleBuffered" type="boolean" value="true"/>
+                <Property name="enabled" type="boolean" value="false"/>
                 <Property name="focusable" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -322,7 +325,7 @@
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAutoPilotBtnActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAllLocomotivesBtnActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.Box$Filler" name="filler1">

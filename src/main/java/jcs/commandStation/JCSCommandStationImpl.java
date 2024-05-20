@@ -644,7 +644,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       List<SensorEventListener> snapshot = new ArrayList<>(commandStation.anonymousSensorListeners);
 
       for (SensorEventListener sl : snapshot) {
-        sl.onSensorChange(event);
+        if (sl != null) {
+          sl.onSensorChange(event);
+        }
       }
     }
   }

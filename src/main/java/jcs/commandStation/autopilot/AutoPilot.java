@@ -38,13 +38,17 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class AutoPilot {
+public class AutoPilot extends Thread {
 
   private static AutoPilot instance = null;
+  private boolean running;
 
   //private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, SensorEventHandler> sensorHandlers = new HashMap<>();
-  private final Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
+  private final Map<String, TrainDispatcher> dispatchers = Collections.synchronizedMap(new HashMap<>());
+  
+  //Need a list to be able to unregister
+  private final List<SensorListener> sensorListeners = new ArrayList<>();
 
   private DispatcherTestDialog dispatcherDialog;
 
@@ -58,45 +62,78 @@ public class AutoPilot {
     return instance;
   }
 
-  public void initialize() {
+  @Override
+  public void run() {
+    this.running = true;
+    setName("AutoPilot");
+    //setDaemon(running);
+
     registerAllSensors();
+
+    Logger.trace("Autopilot Started");
+
+    while (running) {
+
+      try {
+        synchronized (this) {
+          wait(1000);
+        }
+      } catch (InterruptedException ex) {
+        Logger.trace("Interrupted");
+      }
+    }
+
+    unRegisterAllSensors();
+    sensorHandlers.clear();
+    Logger.trace("Autopilot Finished");
   }
 
   public void startAllLocomotives() {
     Logger.trace("Starting automode for all locomotives...");
+    dispatchers.clear();
     List<LocomotiveBean> locs = getOnTrackLocomotives();
     for (LocomotiveBean loc : locs) {
       TrainDispatcher dispatcher = new TrainDispatcher(loc, this);
-      locomotives.put(dispatcher.getName(), dispatcher);
+      dispatchers.put(dispatcher.getName(), dispatcher);
       Logger.debug("Added " + dispatcher.getName());
       //dispatcher.start();
-
       dispatcherDialog = DispatcherTestDialog.showDialog(dispatcher);
     }
   }
 
   public void stopAllLocomotives() {
     Logger.trace("Stopping automode for all locomotives...");
-    for (TrainDispatcher lsm : this.locomotives.values()) {
+    for (TrainDispatcher lsm : this.dispatchers.values()) {
       lsm.stopRunning();
     }
-
     dispatcherDialog.setVisible(false);
     dispatcherDialog.dispose();
   }
 
+  TrainDispatcher getTrainDispatcher(LocomotiveBean locomotiveBean) {
+    String key = "LDT->" + locomotiveBean.getName();
+    return dispatchers.get(key);
+  }
+
   public void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
-
     if (start) {
+      String key = "LDT->" + locomotiveBean.getName();
+      if (this.dispatchers.containsKey(key)) {
+        TrainDispatcher td = dispatchers.remove(key);
+        td.stopRunning();
+      }
+
       TrainDispatcher dispatcher = new TrainDispatcher(locomotiveBean, this);
-      locomotives.put(dispatcher.getName(), dispatcher);
+      dispatchers.put(dispatcher.getName(), dispatcher);
       Logger.debug("Added " + dispatcher.getName());
       DispatcherTestDialog.showDialog(dispatcher);
       //lsm.startLocomotive();
     } else {
-      TrainDispatcher lsm = this.locomotives.get("DP->" + locomotiveBean.getName());
-      //lsm.stopLocomotive();
+      TrainDispatcher lsm = this.dispatchers.get("LDT->" + locomotiveBean.getName());
+      if (lsm != null) {
+        lsm.stopRunning();
+      }
     }
   }
 
@@ -154,12 +191,13 @@ public class AutoPilot {
 
   private void handleSensorEvent(SensorEvent event) {
     if (event.isChanged()) {
-      Boolean registered = sensorHandlers.containsKey(event.getId());
+      SensorEventHandler sh = sensorHandlers.get(event.getId());
+      Boolean registered = sh!=null;  //sensorHandlers.containsKey(event.getId());
       Logger.trace((registered ? "Registered " : "") + event.getId() + " has changed " + event.isChanged());
 
-      if (registered) {
+      if (sh!=null) {
         //there is a handler registered for this id, pass the event through
-        SensorEventHandler sh = sensorHandlers.get(event.getId());
+        //SensorEventHandler sh = sensorHandlers.get(event.getId());
         sh.handleEvent(event);
       } else {
         //sensor is not registered and thus not expected!
@@ -175,6 +213,7 @@ public class AutoPilot {
       String key = sb.getId();
       if (!sensorHandlers.containsKey(key)) {
         SensorListener seh = new SensorListener(key, this);
+        sensorListeners.add(seh);
         cnt++;
         //Register with a command station
         JCS.getJcsCommandStation().addSensorEventListener(seh);
@@ -184,6 +223,16 @@ public class AutoPilot {
     Logger.trace("Registered " + sensors.size() + " sensor event handlers");
   }
 
+  private void unRegisterAllSensors() {
+    for(SensorListener seh : this.sensorListeners) {
+        JCS.getJcsCommandStation().removeSensorEventListener(seh);
+    }
+    Logger.trace("Registered " + sensorListeners.size() + " sensor event handlers");
+    this.sensorListeners.clear();
+  }
+  
+  
+  
   public synchronized void addHandler(SensorEventHandler handler, String sensoreId) {
     sensorHandlers.put(sensoreId, handler);
   }
@@ -210,12 +259,30 @@ public class AutoPilot {
     }
   }
 
+  public boolean isRunning() {
+    return running;
+  }
+
+  public void startAutoPilot() {
+    if (!running) {
+      dispatchers.clear();
+      sensorHandlers.clear();
+      instance = null;
+      instance = new AutoPilot();
+      instance.start();
+    }
+  }
+
+  public synchronized void stopAutoPilot() {
+    this.running = false;
+    notifyAll();
+  }
+
   public static void main(String[] a) {
     AutoPilot ap = new AutoPilot();
     JCS.getJcsCommandStation().connect();
 
     ap.registerAllSensors();
-
     ap.startAllLocomotives();
 
     //ap.startAllLocomotives();
