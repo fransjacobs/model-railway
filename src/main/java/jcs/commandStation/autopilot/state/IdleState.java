@@ -17,24 +17,22 @@ package jcs.commandStation.autopilot.state;
 
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
-import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
  * Entry State when a Locomotive is enabled in a block
  */
-public class IdleState extends DispatcherState {
+class IdleState extends DispatcherState {
 
-  public IdleState(TrainDispatcher dispatcher) {
-    super(dispatcher);
+  IdleState(TrainDispatcher dispatcher, boolean running) {
+    super(dispatcher, running);
   }
 
   @Override
-  public void next(TrainDispatcher dispatcher) {
+  void next(TrainDispatcher dispatcher) {
     //Next state is only possible when this locomotive is on the track and in a block
     if (canAdvanceToNextState) {
-      DispatcherState newState = new SearchRouteState(this.dispatcher);
-      newState.setRunning(running);
+      DispatcherState newState = new ReserveRouteState(this.dispatcher, isRunning());
       dispatcher.setDispatcherState(newState);
     } else {
       dispatcher.setDispatcherState(this);
@@ -42,19 +40,17 @@ public class IdleState extends DispatcherState {
   }
 
   @Override
-  public void execute() {
+  void execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    BlockBean block = PersistenceFactory.getService().getBlockByLocomotiveId(locomotive.getId());
-    dispatcher.setDepartureBlock(block);
+    BlockBean block = this.dispatcher.getDepartureBlock();
 
     if (block != null) {
-      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in block " + block.getDescription() + " [" + block.getId() + "] dir: "+locomotive.getDirection().getDirection());
+      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in block " + block.getDescription() + " [" + block.getId() + "] dir: " + locomotive.getDirection().getDirection());
     } else {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block");
     }
 
     canAdvanceToNextState = block != null;
-    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
 }

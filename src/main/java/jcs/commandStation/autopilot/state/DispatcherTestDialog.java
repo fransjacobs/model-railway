@@ -36,9 +36,9 @@ import org.tinylog.Logger;
  * @author fransjacobs
  */
 public class DispatcherTestDialog extends javax.swing.JDialog implements StateEventListener {
-
+  
   final TrainDispatcher trainDispatcher;
-
+  
   private final ExecutorService executor;
 
   /**
@@ -52,7 +52,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     super(parent, modal);
     this.trainDispatcher = dispatcher;
     this.executor = Executors.newSingleThreadExecutor();
-
+    
     initComponents();
     if (this.trainDispatcher != null) {
       this.setTitle(dispatcher.getName());
@@ -62,21 +62,21 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
       this.stateLabel.setText("No TrainDispatcher set");
     }
   }
-
+  
   private void toggleSensor(SensorBean sb) {
     sb.toggle();
     //Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
     SensorEvent sensorEvent = new SensorEvent(sb);
     this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
   }
-
+  
   private void fireFeedbackEvent(SensorEvent sensorEvent) {
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
     }
   }
-
+  
   @Override
   public void onStateChange(String state) {
     this.stateLabel.setText(state);
@@ -261,6 +261,12 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
   }//GEN-LAST:event_nextButtonActionPerformed
 
   private void unlockButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unlockButtonActionPerformed
+    if (trainDispatcher.isRunning()) {
+      trainDispatcher.stopRunning();
+    }
+    
+    trainDispatcher.setDispatcherState(new IdleState(trainDispatcher, false));
+    
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
     int lockedCounter = 0;
     for (RouteBean route : routes) {
@@ -311,10 +317,12 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
       PersistenceFactory.getService().persist(block);
       showBlockStatus(block);
     }
-
+    
+    JCS.getJcsCommandStation().switchPower(true);
+    
     Logger.debug("Occupied blocks: " + occupiedBlockCounter + " Free blocks " + freeBlockCounter + " of total " + blocks.size() + " blocks");
   }//GEN-LAST:event_unlockButtonActionPerformed
-
+  
   private void resetRoute(RouteBean route) {
     List<RouteElementBean> routeElements = route.getRouteElements();
     for (RouteElementBean re : routeElements) {
@@ -323,7 +331,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
       TileFactory.fireTileEventListener(tileEvent);
     }
   }
-
+  
   private void showBlockStatus(BlockBean blockBean) {
     Logger.trace("Show Block " + blockBean.toString());
     TileEvent tileEvent = new TileEvent(blockBean);
@@ -372,7 +380,13 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
   private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
     if (this.trainDispatcher != null) {
-      this.trainDispatcher.start();
+      if (!this.trainDispatcher.isRunning()) {
+        try {
+        this.trainDispatcher.start();
+        } catch(IllegalThreadStateException e) {
+          Logger.trace(e.getMessage());
+        }
+      }
     }
   }//GEN-LAST:event_startButtonActionPerformed
 
@@ -381,12 +395,12 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
       this.trainDispatcher.stopRunning();
     }
   }//GEN-LAST:event_stopButtonActionPerformed
-
+  
   public static DispatcherTestDialog showDialog(TrainDispatcher dispatcher) {
     DispatcherTestDialog dialog = new DispatcherTestDialog(new javax.swing.JFrame(), false, dispatcher);
-
+    
     dispatcher.addStateEventListener(dialog);
-
+    
     dialog.addWindowListener(new java.awt.event.WindowAdapter() {
       @Override
       public void windowClosing(java.awt.event.WindowEvent e) {
@@ -397,9 +411,9 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     dialog.setLocationRelativeTo(null);
     dialog.pack();
     dialog.setVisible(true);
-
+    
     return dialog;
-
+    
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

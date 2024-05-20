@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.autopilot.state;
 
-import jcs.JCS;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -26,18 +25,16 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class ArrivedState extends DispatcherState {
+class InBlockState extends DispatcherState {
 
-  public ArrivedState(TrainDispatcher dispatcher) {
-    super(dispatcher);
+  InBlockState(TrainDispatcher dispatcher, boolean running) {
+    super(dispatcher, running);
   }
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    Logger.trace("canAdvanceState: " + canAdvanceToNextState);
     if (canAdvanceToNextState) {
-      DispatcherState newState = new WaitState(this.dispatcher);
-      newState.setRunning(running);
+      DispatcherState newState = new WaitState(this.dispatcher, isRunning());
       locRunner.setDispatcherState(newState);
     } else {
       locRunner.setDispatcherState(this);
@@ -46,21 +43,11 @@ public class ArrivedState extends DispatcherState {
 
   @Override
   public void execute() {
-//    while (!dispatcher.isInDestinationBlock()) {
-//      try {
-//        //wait
-//        //this.wait();
-//        Thread.sleep(1000L);
-//      } catch (InterruptedException ex) {
-//        Logger.trace(ex);
-//      }
-//    }
-
-    //if (this.dispatcher.isInDestinationBlock()) {
     LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
+    this.dispatcher.changeLocomotiveVelocity(locomotive, 0);
+
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
-    Logger.debug("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + ". Stopping....");
-    JCS.getJcsCommandStation().changeLocomotiveSpeed(0, locomotive);
+    Logger.trace("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + ". Stopping....");
 
     BlockBean departureBlock = this.dispatcher.getDepartureBlock();
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
@@ -72,7 +59,7 @@ public class ArrivedState extends DispatcherState {
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
 
-    dispatcher.resetAllRouteEventHandlers();
+    dispatcher.clearRouteEventHandlers();
 
     RouteBean route = dispatcher.getRouteBean();
     route.setLocked(false);
@@ -84,9 +71,6 @@ public class ArrivedState extends DispatcherState {
     this.dispatcher.resetRoute(route);
     this.dispatcher.setRouteBean(null);
     this.canAdvanceToNextState = true;
-    //}
-
-    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
 }

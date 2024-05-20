@@ -21,18 +21,16 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class WaitState extends DispatcherState {
+class WaitState extends DispatcherState {
 
-  public WaitState(TrainDispatcher dispatcher) {
-    super(dispatcher);
+  WaitState(TrainDispatcher dispatcher, boolean running) {
+    super(dispatcher, running);
   }
 
   @Override
   public void next(TrainDispatcher locRunner) {
-    Logger.trace("canAdvanceState: " + canAdvanceToNextState);
     if (canAdvanceToNextState) {
-      DispatcherState newState = new SearchRouteState(this.dispatcher);
-      newState.setRunning(running);
+      DispatcherState newState = new ReserveRouteState(this.dispatcher, isRunning());
       locRunner.setDispatcherState(newState);
     } else {
       locRunner.setDispatcherState(this);
@@ -41,18 +39,25 @@ public class WaitState extends DispatcherState {
 
   @Override
   public void execute() {
-    //TODO STUB
+    //Stub 
+    int waitTime = 5;
+
+    for (; waitTime >= 0; waitTime--) {
+      if (isRunning()) {
+        String s = this.dispatcher.getDispatcherState() + " (" + waitTime + ")";
+        this.dispatcher.fireStateListeners(s);
+        pause(1000);
+       }
+
+    }
 
     //TODO make this configurable
     Logger.debug("Waiting");
-    //if (running) {
-    //  pause(5000);
-    //}
+    if (isRunning()) {
+      pause(5000);
+    }
 
-    
-    
     canAdvanceToNextState = true; //running;
-    Logger.trace("Can advance to next state: " + canAdvanceToNextState);
   }
 
 }

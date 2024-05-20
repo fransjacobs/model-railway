@@ -42,11 +42,10 @@ public class AutoPilot {
 
   private static AutoPilot instance = null;
 
-  private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
-
-  //private final Map<String,SwitchableSensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
+  //private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
+  private final Map<String, SensorEventHandler> sensorHandlers = new HashMap<>();
   private final Map<String, TrainDispatcher> locomotives = Collections.synchronizedMap(new HashMap<>());
-  
+
   private DispatcherTestDialog dispatcherDialog;
 
   private AutoPilot() {
@@ -60,7 +59,6 @@ public class AutoPilot {
   }
 
   public void initialize() {
-    //getOnTrackLocomotives();
     registerAllSensors();
   }
 
@@ -82,7 +80,7 @@ public class AutoPilot {
     for (TrainDispatcher lsm : this.locomotives.values()) {
       lsm.stopRunning();
     }
-    
+
     dispatcherDialog.setVisible(false);
     dispatcherDialog.dispose();
   }
@@ -95,7 +93,6 @@ public class AutoPilot {
       locomotives.put(dispatcher.getName(), dispatcher);
       Logger.debug("Added " + dispatcher.getName());
       DispatcherTestDialog.showDialog(dispatcher);
-
       //lsm.startLocomotive();
     } else {
       TrainDispatcher lsm = this.locomotives.get("DP->" + locomotiveBean.getName());
@@ -157,11 +154,12 @@ public class AutoPilot {
 
   private void handleSensorEvent(SensorEvent event) {
     if (event.isChanged()) {
-      Logger.trace(event.getId() + " has changed " + event.isChanged());
+      Boolean registered = sensorHandlers.containsKey(event.getId());
+      Logger.trace((registered ? "Registered " : "") + event.getId() + " has changed " + event.isChanged());
 
-      if (this.sensorHandlers.containsKey(event.getId())) {
+      if (registered) {
         //there is a handler registered for this id, pass the event through
-        SensorEventHandler sh = this.sensorHandlers.get(event.getId());
+        SensorEventHandler sh = sensorHandlers.get(event.getId());
         sh.handleEvent(event);
       } else {
         //sensor is not registered and thus not expected!

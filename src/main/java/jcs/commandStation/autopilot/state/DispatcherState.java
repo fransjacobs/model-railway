@@ -15,38 +15,35 @@
  */
 package jcs.commandStation.autopilot.state;
 
-import java.util.List;
-import jcs.entities.BlockBean;
-import jcs.persistence.PersistenceFactory;
+import jcs.JCS;
 import org.tinylog.Logger;
 
 /**
  *
  * @author frans
  */
-public abstract class DispatcherState {
+abstract class DispatcherState {
 
   protected final TrainDispatcher dispatcher;
 
-  protected boolean running;
+  private boolean running;
 
-  protected int waitTime;
-
+  //protected int waitTime;
   protected boolean canAdvanceToNextState;
 
-  protected DispatcherState(TrainDispatcher trainDispatcher) {
+  protected DispatcherState(TrainDispatcher trainDispatcher, boolean running) {
     this.dispatcher = trainDispatcher;
+    this.running = running;
   }
 
-  public abstract void next(TrainDispatcher dispatcher);
+  abstract void next(TrainDispatcher dispatcher);
 
-  public abstract void execute();
+  abstract void execute();
 
-  public int getWaitTime() {
-    return waitTime;
-  }
-
-  public boolean canAdvanceToNextState() {
+  //int getWaitTime() {
+  //  return waitTime;
+  //}
+  boolean canAdvanceToNextState() {
     return canAdvanceToNextState;
   }
 
@@ -55,7 +52,7 @@ public abstract class DispatcherState {
     return this.getClass().getSimpleName();
   }
 
-  public void pause(int millis) {
+  void pause(int millis) {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
@@ -63,22 +60,17 @@ public abstract class DispatcherState {
     }
   }
 
-  public boolean isRunning() {
+  synchronized boolean isRunning() {
     return running;
   }
 
-  public void setRunning(boolean running) {
-    this.running = running;
+  synchronized void setRunning(boolean running) {
+    if (running && JCS.getJcsCommandStation() == null) {
+      Logger.error("Can't obtain a Command Station");
+      this.running = false;
+    } else {
+      this.running = running;
+    }
   }
-
-//  protected void refreshBlockTiles() {
-//    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-//
-//    Logger.trace("Refreshing " + blocks.size() + " block tiles...");
-//    for (BlockBean b : blocks) {
-//      BlockEvent be = new BlockEvent(b);
-//      //JCS.getJcsCommandStation().fireBlockEventListeners(be);
-//    }
-//  }
 
 }
