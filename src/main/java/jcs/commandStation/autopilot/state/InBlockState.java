@@ -55,6 +55,7 @@ class InBlockState extends DispatcherState {
 
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
+    destinationBlock.setArrivalSuffix(this.dispatcher.getRouteBean().getToSuffix());
 
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
@@ -70,6 +71,9 @@ class InBlockState extends DispatcherState {
 
     this.dispatcher.resetRoute(route);
     this.dispatcher.setRouteBean(null);
+    
+    
+    
     this.canAdvanceToNextState = true;
   }
 

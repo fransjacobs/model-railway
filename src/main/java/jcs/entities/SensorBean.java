@@ -80,6 +80,9 @@ public class SensorBean implements Serializable {
   private String generateId() {
     //Format the id start with the device then "-"
     //than a 4 char contact id
+    if(contactId == null) {
+      return null;
+    }
     String cn = contactId.toString();
     int cnl = cn.length();
     for (int x = 0; x < 4 - cnl; x++) {

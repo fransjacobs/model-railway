@@ -69,6 +69,7 @@ class StartState extends DispatcherState {
       }
 
       //Register handlers
+      //Should already in the ignore list add method to check?
       this.dispatcher.registerIgnoreEventHandler(exitMinId);
       this.dispatcher.registerIgnoreEventHandler(exitPlusId);
 

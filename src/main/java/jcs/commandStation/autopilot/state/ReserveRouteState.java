@@ -103,6 +103,8 @@ class ReserveRouteState extends DispatcherState {
         Logger.trace("Locomotive Direction Swap is needed!");
         swapLocomotiveDirection = true;
       }
+      
+      //TODO: Check if destination sensors are off!
     }
 
     int rIdx = 0;

@@ -182,7 +182,8 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
                 Logger.trace("Main Device found in " + (now - start) + " ms");
               }
             } else {
-              if (conType == ConnectionType.NETWORK) {
+              //TODO: Fix this!
+              if (conType == ConnectionType.NETWORK || conType == ConnectionType.SERIAL) {
                 //When using the net work the DCC-EX does not braodcast all kind of setting so ask them
                 JCS.logProgress("Obtaining Device information...");
                 String response = connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
@@ -210,7 +211,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
                   this.mainDevice = d;
                   Logger.trace("Main Device set to: " + d);
                 }
-
               }
               if (debug && mainDevice == null) {
                 Logger.trace("No Main Device found in " + (now - start) + " ms");
@@ -689,8 +689,8 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       //csb.setIpAddress("192.168.178.73");
       csb.setNetworkPort(2560);
       csb.setConnectVia("SERIAL");
-      csb.setSerialPort("cu.usbmodem14101");
-      //csb.setSerialPort("cu.usbmodem14201");
+      //csb.setSerialPort("cu.usbmodem14101");
+      csb.setSerialPort("ttyACM0");
 
       csb.setDefault(true);
       csb.setIpAutoConfiguration(false);

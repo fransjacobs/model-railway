@@ -198,6 +198,8 @@ public class TrainDispatcher extends Thread {
   }
   
   void clearIgnoreEventHandlers() {
+    //TODo need to be named!
+    
     for (IgnoreSensorHandler nseh : ignoreSensorEventHandlers) {
       autoPilot.removeHandler(nseh.sensorId);
     }
@@ -208,15 +210,22 @@ public class TrainDispatcher extends Thread {
     for (IgnoreSensorHandler nseh : ignoreSensorEventHandlers) {
       autoPilot.removeHandler(nseh.sensorId);
     }
+    ignoreSensorEventHandlers.clear();
+    
+    String inSensorId = this.inHandler.sensorId;
+    String enterSensorId = this.enterHandler.sensorId;
+
+    this.registerIgnoreEventHandler(inSensorId);
+    this.registerIgnoreEventHandler(enterSensorId);
+
+    //Remove the enter and in handlers
     if (inHandler != null) {
       autoPilot.removeHandler(this.inHandler.sensorId);
     }
     if (enterHandler != null) {
       autoPilot.removeHandler(this.enterHandler.sensorId);
     }
-    
-    ignoreSensorEventHandlers.clear();
-    
+            
     enterDestinationBlock = false;
     inDestinationBlock = false;
   }
