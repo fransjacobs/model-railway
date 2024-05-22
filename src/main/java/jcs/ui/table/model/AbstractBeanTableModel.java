@@ -37,7 +37,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
   }
 
   public AbstractBeanTableModel(Class T, String[] displayColumnNames) {
-    beanInfo = new EntityInfo(T, displayColumnNames);
+    beanInfo = new EntityInfo(T, displayColumnNames, true);
   }
 
   public List<T> getBeans() {

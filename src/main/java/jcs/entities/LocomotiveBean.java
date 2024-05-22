@@ -52,10 +52,6 @@ public class LocomotiveBean implements Serializable {
   private Image locIcon;
   private CommandStationBean commandStationBean;
 
-//  ALTER TABLE jcs.locomotives DROP COLUMN mfx_uid;
-//ALTER TABLE jcs.locomotives DROP COLUMN mfx_sid;
-//ALTER TABLE jcs.locomotives DROP COLUMN "length";
-//alter table locomotives add synchronize bool not null default false;  
   private final Map<Integer, FunctionBean> functions;
 
   public LocomotiveBean() {
@@ -73,25 +69,15 @@ public class LocomotiveBean implements Serializable {
 
     this.id = id;
     this.name = name;
-    //this.previousName = previousName;
     this.uid = uid;
-    //this.mfxUid = mfxUid;
     this.address = address;
     this.icon = icon;
     this.decoderTypeString = decoderTypeString;
-    //this.mfxSid = mfxSid;
     this.tachoMax = tachoMax;
     this.vMin = vMin;
-    //this.accelerationDelay = accelerationDelay;
-    //this.brakeDelay = brakeDelay;
-    //this.volume = volume;
-    //this.spm = spm;
     this.velocity = velocity;
     this.richtung = direction;
-    //this.mfxType = mfxType;
-    //this.block = block;
     this.commuter = commuter;
-    //this.length = length;
     this.show = show;
     this.synchronize = synchronize;
 
@@ -110,7 +96,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "name", length = 255, nullable = false)
-  @ColumnPosition(position = 1)
+  @ColumnPosition(position = 2)
   public String getName() {
     return name;
   }
@@ -120,7 +106,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "uid")
-  @ColumnPosition(position = 2)
+  @ColumnPosition(position = 20)
   public Long getUid() {
     return uid;
   }
@@ -130,7 +116,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "address", nullable = false)
-  @ColumnPosition(position = 4)
+  @ColumnPosition(position = 3)
   public Integer getAddress() {
     return address;
   }
@@ -150,7 +136,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "decoder_type", length = 255, nullable = false)
-  @ColumnPosition(position = 3)
+  @ColumnPosition(position = 24)
   public String getDecoderTypeString() {
     return decoderTypeString;
   }
@@ -160,6 +146,8 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Transient
+  @Column(name = "decoder")
+  @ColumnPosition(position = 4)
   public DecoderType getDecoderType() {
     DecoderType dt = DecoderType.get(this.decoderTypeString);
     return dt;
@@ -196,7 +184,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "richtung")
-  @ColumnPosition(position = 8)
+  @ColumnPosition(position = 21)
   public Integer getRichtung() {
     return richtung;
   }
@@ -206,6 +194,8 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Transient
+  @Column(name = "direction")
+  @ColumnPosition(position = 8)
   public Direction getDirection() {
     if (this.richtung != null) {
       return Direction.getDirectionMarkin(this.richtung);
@@ -249,6 +239,8 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Transient
+  @Column(name = "image")
+  @ColumnPosition(position = 1)
   public Image getLocIcon() {
     return locIcon;
   }
@@ -258,6 +250,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "imported", length = 255)
+  @ColumnPosition(position = 12)
   public String getImported() {
     return source;
   }
@@ -267,6 +260,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "command_station_id", length = 255, nullable = false)
+  @ColumnPosition(position = 13)
   public String getCommandStationId() {
     return commandStationId;
   }
@@ -276,6 +270,7 @@ public class LocomotiveBean implements Serializable {
   }
 
   @Column(name = "synchronize", nullable = false, columnDefinition = "synchronize bool default '0'")
+  @ColumnPosition(position = 14)
   public boolean isSynchronize() {
     return synchronize;
   }

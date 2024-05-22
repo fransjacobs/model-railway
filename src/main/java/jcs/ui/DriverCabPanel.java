@@ -45,6 +45,11 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   private LocomotiveDirectionEventListener directionListener;
 
   public DriverCabPanel() {
+    this(null);
+  }
+
+  public DriverCabPanel(LocomotiveBean locomotiveBean) {
+    this.locomotiveBean = locomotiveBean;
     executor = Executors.newCachedThreadPool();
     initComponents();
     postInit();
@@ -72,10 +77,9 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     super.setVisible(aFlag);
   }
 
-  LocomotiveDirectionEventListener getDirectionListener() {
-    return directionListener;
-  }
-
+//  LocomotiveDirectionEventListener getDirectionListener() {
+//    return directionListener;
+//  }
   void setDirectionListener(LocomotiveDirectionEventListener directionListener) {
     this.directionListener = directionListener;
   }
@@ -259,6 +263,9 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
 
   private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
     this.speedSlider.setValue(0);
+    if (this.locomotiveBean == null) {
+      Logger.trace(evt.getActionCommand());
+    }
   }//GEN-LAST:event_stopButtonActionPerformed
 
   private void speed4ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed4ButtonActionPerformed
@@ -266,6 +273,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 4; // 80 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed4ButtonActionPerformed
 
@@ -274,6 +283,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 3; // 60 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed3ButtonActionPerformed
 
@@ -282,6 +293,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 2; // 40 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed2ButtonActionPerformed
 
@@ -290,6 +303,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = tachoMax / 5; // 20 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed1ButtonActionPerformed
 
@@ -389,11 +404,9 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   @Override
   public void onDirectionChange(LocomotiveDirectionEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
-
     Logger.trace("Evt: id: " + lb.getId() + " Addr: " + lb.getAddress() + " cid: " + lb.getCommandStationId() + " dir: " + lb.getDirection());
 
     if (event.isEventFor(locomotiveBean)) {
-      //if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
       Logger.trace(lb.getName() + " direction changed from " + this.locomotiveBean.getDirection() + " to " + lb.getDirection());
 
       locomotiveBean.setRichtung(lb.getRichtung());
@@ -411,7 +424,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     LocomotiveBean lb = event.getLocomotiveBean();
 
     if (event.isEventFor(locomotiveBean)) {
-      //if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
       Logger.trace(lb.getName() + " Speed changed from " + this.locomotiveBean.getVelocity() + " to " + lb.getVelocity());
 
       locomotiveBean.setVelocity(lb.getVelocity());
@@ -451,7 +463,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       Logger.trace("Power is " + this.power);
     }
   }
-
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel centerPanel;

@@ -268,8 +268,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     settingsPanel = new JPanel();
     commandStationPanel = new CommandStationPanel();
     leftPanel = new JPanel();
-    jPanel6 = new JPanel();
-    launchDriverCabBtn = new JButton();
+    dispatcherStatusPanel1 = new DispatcherStatusPanel();
     bottomLeftPanel = new JPanel();
     filler7 = new Box.Filler(new Dimension(0, 10), new Dimension(0, 10), new Dimension(32767, 35));
     jPanel1 = new JPanel();
@@ -526,18 +525,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     leftPanel.setPreferredSize(new Dimension(225, 845));
     leftPanel.setLayout(new BorderLayout(1, 1));
 
-    jPanel6.setName("jPanel6"); // NOI18N
-
-    launchDriverCabBtn.setText("Launch Driver Cab");
-    launchDriverCabBtn.setName("launchDriverCabBtn"); // NOI18N
-    launchDriverCabBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        launchDriverCabBtnActionPerformed(evt);
-      }
-    });
-    jPanel6.add(launchDriverCabBtn);
-
-    leftPanel.add(jPanel6, BorderLayout.CENTER);
+    dispatcherStatusPanel1.setName("dispatcherStatusPanel1"); // NOI18N
+    leftPanel.add(dispatcherStatusPanel1, BorderLayout.CENTER);
 
     bottomLeftPanel.setBorder(BorderFactory.createTitledBorder("Controller Properties"));
     bottomLeftPanel.setMinimumSize(new Dimension(220, 200));
@@ -628,7 +617,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     filler6.setName("filler6"); // NOI18N
     bottomLeftPanel.add(filler6);
 
-    leftPanel.add(bottomLeftPanel, BorderLayout.PAGE_END);
+    leftPanel.add(bottomLeftPanel, BorderLayout.SOUTH);
 
     locoDisplaySP.setLeftComponent(leftPanel);
 
@@ -860,18 +849,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       this.connectButton.setSelected(connect);
     }//GEN-LAST:event_connectMIActionPerformed
 
-  private void launchDriverCabBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_launchDriverCabBtnActionPerformed
-    DriverCabFrame driverFrame = new DriverCabFrame();
-
-    driverFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
-    driverFrame.pack();
-    driverFrame.setLocationRelativeTo(null);
-    driverFrame.setVisible(true);
-    driverFrame.setResizable(false);
-    driverFrame.toFront();
-  }//GEN-LAST:event_launchDriverCabBtnActionPerformed
-
   private void commandStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationsMIActionPerformed
     CommandStationDialog csd = new CommandStationDialog(this, true);
     csd.setLocationRelativeTo(null);
@@ -967,6 +944,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JLabel controllerLbl;
   private JLabel controllerSerialLbl;
   private JLabel controllerSerialNumberLbl;
+  private DispatcherStatusPanel dispatcherStatusPanel1;
   private JMenuItem editLayout;
   private JMenu fileMenu;
   private Box.Filler filler1;
@@ -982,11 +960,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JPanel jPanel2;
   private JPanel jPanel3;
   private JPanel jPanel4;
-  private JPanel jPanel6;
   private JMenuBar jcsMenuBar;
   private JToolBar jcsToolBar;
   private KeyboardSensorPanel keyboardSensorMessagePanel;
-  private JButton launchDriverCabBtn;
   private LayoutPanel layoutPanel;
   private JPanel leftPanel;
   private JSplitPane locoDisplaySP;

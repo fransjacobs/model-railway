@@ -47,20 +47,30 @@ import jcs.JcsException;
  */
 public class EntityInfo<T> {
 
+  private boolean ignoreTransient;
   private Map<String, EntityAttribute> attributeMap = new HashMap<>();
 
   List<String> displayColumnList;
 
   public EntityInfo(Class<?> clazz) {
-    this(clazz, Collections.EMPTY_LIST);
+    this(clazz, Collections.EMPTY_LIST, false);
+  }
+
+  public EntityInfo(Class<?> clazz, boolean ignoreTransient) {
+    this(clazz, Collections.EMPTY_LIST, ignoreTransient);
   }
 
   public EntityInfo(Class<?> clazz, String[] displayColumns) {
-    this(clazz, Arrays.asList(displayColumns));
+    this(clazz, Arrays.asList(displayColumns), false);
   }
 
-  public EntityInfo(Class<?> clazz, List<String> displayColumnList) {
+  public EntityInfo(Class<?> clazz, String[] displayColumns, boolean ignoreTransient) {
+    this(clazz, Arrays.asList(displayColumns), ignoreTransient);
+  }
+
+  public EntityInfo(Class<?> clazz, List<String> displayColumnList, boolean ignoreTransient) {
     this.displayColumnList = displayColumnList;
+    this.ignoreTransient = ignoreTransient;
     try {
       if (!Map.class.isAssignableFrom(clazz)) {
         List<EntityAttribute> attributes = populateAttributes(clazz);
@@ -121,7 +131,7 @@ public class EntityInfo<T> {
           continue;
         }
 
-        if (field.getAnnotation(Transient.class) != null) {
+        if (!ignoreTransient && field.getAnnotation(Transient.class) != null) {
           continue;
         }
 
@@ -144,7 +154,8 @@ public class EntityInfo<T> {
       if (readMethod == null) {
         continue;
       }
-      if (readMethod.getAnnotation(Transient.class) != null) {
+
+      if (!ignoreTransient && readMethod.getAnnotation(Transient.class) != null) {
         continue;
       }
 
@@ -324,4 +335,9 @@ public class EntityInfo<T> {
     this.displayColumnList = displayColumnList;
     applyDisplayColumnSettings();
   }
+
+  public boolean isIgnoreTransient() {
+    return ignoreTransient;
+  }
+
 }
