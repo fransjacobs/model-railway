@@ -745,8 +745,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       case CURVED -> {
       }
       case SENSOR -> {
-        //this.executor.execute(() -> toggleSensor((Sensor) tile));
-        toggleSensor((Sensor) tile);
+        this.executor.execute(() -> toggleSensor((Sensor) tile));
+        //toggleSensor((Sensor) tile);
       }
       case BLOCK -> {
         Logger.trace("Show BlockDialog for " + tile.getId());
@@ -805,7 +805,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       sensor.repaintTile();
 
       SensorEvent sensorEvent = new SensorEvent(sb);
-      this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
+      //this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
+      fireFeedbackEvent(sensorEvent);
     }
   }
 

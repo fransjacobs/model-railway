@@ -15,6 +15,9 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.JCS;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -23,66 +26,85 @@ import org.tinylog.Logger;
 /**
  * Reserve the exit and entry sensors
  */
-class StartState extends DispatcherState {
+class StartState extends DispatcherState implements SensorEventListener {
 
   private boolean locomotiveStarted = false;
+  private String enterSensorId;
 
-  StartState(TrainDispatcher dispatcher, boolean running) {
-    super(dispatcher, running);
+  StartState(LocomotiveDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
-  public void next(TrainDispatcher locRunner) {
-    if (dispatcher.isEnterDestinationBlock()) {
-      DispatcherState newState = new EnterBlockState(this.dispatcher, isRunning());
-      locRunner.setDispatcherState(newState);
+  DispatcherState next(LocomotiveDispatcher locRunner) {
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new EnterBlockState(dispatcher);
+      //Remove handler as the state will now change
+      JCS.getJcsCommandStation().removeSensorEventListener(this);
+      //For the remaining states ignore events from the enter sensor
+      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
+      
+      return newState;
     } else {
-      locRunner.setDispatcherState(this);
+      return this;
     }
   }
 
   @Override
   public void execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-
     if (!locomotiveStarted) {
-      //Which sensors do we need to watch
+      //Which sensors do we need to watch?
       RouteBean route = dispatcher.getRouteBean();
-      String destinationTileId = route.getToTileId();
+      BlockBean departureBlock = dispatcher.getDepartureBlock();
+
       //From which side on the block is the train expected to arrive?
       String arrivalSuffix = route.getToSuffix();
-      Logger.trace("Destination tile: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block");
+      Logger.trace("Destination tile: " + departureBlock.getId() + " Arrival on the " + arrivalSuffix + " side of the block");
 
-      BlockBean departureBlock = dispatcher.getDepartureBlock();
       //The sensors on the departure block do not yet play a role,
       //but they can switch on so they have to be removed from the ghost list
       String exitMinId = departureBlock.getMinSensorId();
       String exitPlusId = departureBlock.getPlusSensorId();
 
+      //Should already be in the ignore list... just to sure...
+      this.dispatcher.registerIgnoreEventHandler(exitMinId);
+      this.dispatcher.registerIgnoreEventHandler(exitPlusId);
+
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
-      String enterSensorId;
       if ("+".equals(arrivalSuffix)) {
         enterSensorId = destinationBlock.getPlusSensorId();
       } else {
         enterSensorId = destinationBlock.getMinSensorId();
       }
 
-      //Register handlers
-      //Should already in the ignore list add method to check?
-      this.dispatcher.registerIgnoreEventHandler(exitMinId);
-      this.dispatcher.registerIgnoreEventHandler(exitPlusId);
+      //Register this state as a SensorEventListener
+      JCS.getJcsCommandStation().addSensorEventListener(this);
+      //Remove the enter sensor from the ghost detection
+      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
 
-      this.dispatcher.registerEnterHandler(enterSensorId);
-      Logger.debug("Enter SensorId: " + enterSensorId + " Ignore Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
+      Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
 
       //TODO rely on the acceleration delay of the loco decoder or do something our selves..
-      this.dispatcher.changeLocomotiveVelocity(locomotive, 750);
-      locomotiveStarted = true;
+      dispatcher.changeLocomotiveVelocity(locomotive, 750);
 
-      Logger.trace("Waiting for the enter event from SensorId: " + dispatcher.getEnterSensorId() + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
+      locomotiveStarted = true;
+      Logger.trace("Waiting for the enter event from SensorId: " + this.enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
-    canAdvanceToNextState = dispatcher.isEnterDestinationBlock();
+  }
+
+  @Override
+  public void onSensorChange(SensorEvent sensorEvent) {
+    if (this.enterSensorId.equals(sensorEvent.getId())) {
+      if (sensorEvent.isActive()) {
+        this.canAdvanceToNextState = true;
+        Logger.trace("Enter Event from Sensor " + sensorEvent.getId());
+        synchronized (this) {
+          notify();
+        }
+      }
+    }
   }
 
 }

@@ -36,18 +36,19 @@ class ReserveRouteState extends DispatcherState {
 
   private boolean swapLocomotiveDirection = false;
 
-  ReserveRouteState(TrainDispatcher dispatcher, boolean running) {
-    super(dispatcher, running);
+  ReserveRouteState(LocomotiveDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
-  public void next(TrainDispatcher dispatcher) {
+  DispatcherState next(LocomotiveDispatcher dispatcher) {
     if (canAdvanceToNextState) {
-      DispatcherState newState = new StartState(this.dispatcher, isRunning());
-      dispatcher.setDispatcherState(newState);
+      DispatcherState newState = new StartState(dispatcher);
+      return newState;
     } else {
       //Go back to waiting and try again
-      dispatcher.setDispatcherState(new WaitState(this.dispatcher, isRunning()));
+      DispatcherState newWaitState = new WaitState(dispatcher);
+      return newWaitState;
     }
   }
 
@@ -103,7 +104,7 @@ class ReserveRouteState extends DispatcherState {
         Logger.trace("Locomotive Direction Swap is needed!");
         swapLocomotiveDirection = true;
       }
-      
+
       //TODO: Check if destination sensors are off!
     }
 

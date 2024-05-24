@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package jcs.commandStation.autopilot.state;
 
 import java.awt.Color;
+import jcs.JCS;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -26,48 +29,55 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-class EnterBlockState extends DispatcherState {
+class EnterBlockState extends DispatcherState implements SensorEventListener {
 
   private boolean locomotiveBraking = false;
+  private String inSensorId;
 
-  EnterBlockState(TrainDispatcher dispatcher, boolean running) {
-    super(dispatcher, running);
+  EnterBlockState(LocomotiveDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
-  public synchronized void next(TrainDispatcher locRunner) {
-    if (dispatcher.isInDestinationBlock()) {
-      DispatcherState newState = new InBlockState(dispatcher, isRunning());
-      locRunner.setDispatcherState(newState);
+  synchronized DispatcherState next(LocomotiveDispatcher locRunner) {
+    if (this.canAdvanceToNextState) {
+      DispatcherState newState = new InBlockState(dispatcher);
+      //Remove handler as the state will now change
+      JCS.getJcsCommandStation().removeSensorEventListener(this);
+      //For the remaining states ignore events from the in sensor
+      this.dispatcher.registerIgnoreEventHandler(inSensorId);
+      return newState;
     } else {
-      locRunner.setDispatcherState(this);
+      return this;
     }
   }
 
   @Override
-  public void execute() {
+  void execute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    if (!locomotiveBraking && dispatcher.isEnterDestinationBlock()) {
-
-      BlockBean destinationBlock = dispatcher.getDestinationBlock();
-      Logger.debug("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + ". Slowing down....");
+    if (!locomotiveBraking) {
       //Slowdown
       this.dispatcher.changeLocomotiveVelocity(locomotive, 100);
+
+      BlockBean destinationBlock = dispatcher.getDestinationBlock();
+      RouteBean route = dispatcher.getRouteBean();
+      Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + ". Slowing down....");
+
+      String arrivalSuffix = route.getToSuffix();
       locomotiveBraking = true;
 
       //Register for the In event
-      RouteBean route = dispatcher.getRouteBean();
-      String arrivalSuffix = route.getToSuffix();
-
-      String inSensorId;
       if ("-".equals(arrivalSuffix)) {
         inSensorId = destinationBlock.getPlusSensorId();
       } else {
         inSensorId = destinationBlock.getMinSensorId();
       }
-      
-      dispatcher.registerInHandler(inSensorId);
-      Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId+" Enter sensorId: "+dispatcher.getEnterSensorId());
+
+      //Register this state as a SensorEventListener
+      JCS.getJcsCommandStation().addSensorEventListener(this);
+      Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
+      //Remove the in sensor from the ghost detection
+      this.dispatcher.registerIgnoreEventHandler(inSensorId);
 
       //Change Block statuses 
       BlockBean departureBlock = this.dispatcher.getDepartureBlock();
@@ -78,16 +88,28 @@ class EnterBlockState extends DispatcherState {
       PersistenceFactory.getService().persist(destinationBlock);
 
       //Switch the departure block sensors on again
-      dispatcher.clearIgnoreEventHandlers();
+      dispatcher.clearDepartureIgnoreEventHandlers();
 
       //Show the new states in the UI
       dispatcher.showBlockState(departureBlock);
       dispatcher.showBlockState(destinationBlock);
       dispatcher.showRoute(route, Color.magenta);
 
-      Logger.trace("Waiting for the in event from SensorId: " + dispatcher.getInSensorId() + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
+      Logger.trace("Waiting for the in event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
-    this.canAdvanceToNextState = this.dispatcher.isInDestinationBlock();
+  }
+
+  @Override
+  public void onSensorChange(SensorEvent sensorEvent) {
+    if (this.inSensorId.equals(sensorEvent.getId())) {
+      if (sensorEvent.isActive()) {
+        this.canAdvanceToNextState = true;
+        Logger.trace("In Event from Sensor " + sensorEvent.getId());
+        synchronized (this) {
+          notify();
+        }
+      }
+    }
   }
 
 }

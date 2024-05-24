@@ -20,11 +20,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
-import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
@@ -39,7 +37,7 @@ import org.tinylog.Logger;
  */
 public class DispatcherTestDialog extends javax.swing.JDialog implements StateEventListener {
 
-  final TrainDispatcher trainDispatcher;
+  final LocomotiveDispatcher trainDispatcher;
 
   private final ExecutorService executor;
 
@@ -50,15 +48,17 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
    * @param modal
    * @param dispatcher
    */
-  public DispatcherTestDialog(java.awt.Frame parent, boolean modal, TrainDispatcher dispatcher) {
+  public DispatcherTestDialog(java.awt.Frame parent, boolean modal, LocomotiveDispatcher dispatcher) {
     super(parent, modal);
     this.trainDispatcher = dispatcher;
     this.executor = Executors.newSingleThreadExecutor();
 
     initComponents();
     if (this.trainDispatcher != null) {
+
       this.setTitle(dispatcher.getName());
-      this.stateLabel.setText(dispatcher.getDispatcherState().toString());
+
+      this.stateLabel.setText(dispatcher.getDispatcherState());
     } else {
       this.setTitle("No TrainDispatcher set");
       this.stateLabel.setText("No TrainDispatcher set");
@@ -256,9 +256,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
   private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
     if (trainDispatcher != null) {
-      trainDispatcher.nextState();
-      trainDispatcher.execute();
-      this.stateLabel.setText(trainDispatcher.getDispatcherState().toString());
+      this.executor.execute(() -> trainDispatcher.performManualStep());
     }
   }//GEN-LAST:event_nextButtonActionPerformed
 
@@ -266,8 +264,6 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     if (trainDispatcher.isRunning()) {
       trainDispatcher.stopRunning();
     }
-
-    trainDispatcher.setDispatcherState(new IdleState(trainDispatcher, false));
 
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
     int lockedCounter = 0;
@@ -382,13 +378,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
   private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
     if (this.trainDispatcher != null) {
-      if (!this.trainDispatcher.isRunning() && !this.trainDispatcher.isDestroyed()) {
-        trainDispatcher.start();
-      } else {
-        LocomotiveBean locomotiveBean = this.trainDispatcher.getLocomotiveBean();
-        this.dispose();
-        AutoPilot.getInstance().startStopLocomotive(locomotiveBean, true);
-      }
+      trainDispatcher.startRunning();
     }
   }//GEN-LAST:event_startButtonActionPerformed
 
@@ -398,7 +388,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
     }
   }//GEN-LAST:event_stopButtonActionPerformed
 
-  public static DispatcherTestDialog showDialog(TrainDispatcher dispatcher) {
+  public static DispatcherTestDialog showDialog(LocomotiveDispatcher dispatcher) {
     DispatcherTestDialog dialog = new DispatcherTestDialog(new javax.swing.JFrame(), false, dispatcher);
 
     dispatcher.addStateEventListener(dialog);

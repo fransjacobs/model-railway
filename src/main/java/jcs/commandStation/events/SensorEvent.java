@@ -89,4 +89,8 @@ public class SensorEvent {
     return active != prevActive;
   }
 
+  public boolean isActive() {
+    return sensorBean.isActive();
+  }
+
 }

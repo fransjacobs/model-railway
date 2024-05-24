@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.autopilot.state;
 
-import jcs.JCS;
 import org.tinylog.Logger;
 
 /**
@@ -24,28 +23,16 @@ import org.tinylog.Logger;
  */
 abstract class DispatcherState {
 
-  protected final TrainDispatcher dispatcher;
-
-  private boolean running;
-
-  //protected int waitTime;
+  protected final LocomotiveDispatcher dispatcher;
   protected boolean canAdvanceToNextState;
 
-  protected DispatcherState(TrainDispatcher trainDispatcher, boolean running) {
+  protected DispatcherState(LocomotiveDispatcher trainDispatcher) {
     this.dispatcher = trainDispatcher;
-    this.running = running;
   }
 
-  abstract void next(TrainDispatcher dispatcher);
+  abstract DispatcherState next(LocomotiveDispatcher dispatcher);
 
   abstract void execute();
-
-  //int getWaitTime() {
-  //  return waitTime;
-  //}
-  boolean canAdvanceToNextState() {
-    return canAdvanceToNextState;
-  }
 
   @Override
   public String toString() {
@@ -59,18 +46,4 @@ abstract class DispatcherState {
       Logger.error(e);
     }
   }
-
-  synchronized boolean isRunning() {
-    return running;
-  }
-
-  synchronized void setRunning(boolean running) {
-    if (running && JCS.getJcsCommandStation() == null) {
-      Logger.error("Can't obtain a Command Station");
-      this.running = false;
-    } else {
-      this.running = running;
-    }
-  }
-
 }

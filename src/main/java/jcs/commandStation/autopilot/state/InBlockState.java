@@ -27,22 +27,18 @@ import org.tinylog.Logger;
  */
 class InBlockState extends DispatcherState {
 
-  InBlockState(TrainDispatcher dispatcher, boolean running) {
-    super(dispatcher, running);
+  InBlockState(LocomotiveDispatcher dispatcher) {
+    super(dispatcher);
   }
 
   @Override
-  public void next(TrainDispatcher locRunner) {
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new WaitState(this.dispatcher, isRunning());
-      locRunner.setDispatcherState(newState);
-    } else {
-      locRunner.setDispatcherState(this);
-    }
+  DispatcherState next(LocomotiveDispatcher locRunner) {
+    DispatcherState newState = new WaitState(this.dispatcher);
+    return newState;
   }
 
   @Override
-  public void execute() {
+  void execute() {
     LocomotiveBean locomotive = this.dispatcher.getLocomotiveBean();
     this.dispatcher.changeLocomotiveVelocity(locomotive, 0);
 
@@ -60,8 +56,6 @@ class InBlockState extends DispatcherState {
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);
 
-    dispatcher.clearRouteEventHandlers();
-
     RouteBean route = dispatcher.getRouteBean();
     route.setLocked(false);
     PersistenceFactory.getService().persist(route);
@@ -71,10 +65,5 @@ class InBlockState extends DispatcherState {
 
     this.dispatcher.resetRoute(route);
     this.dispatcher.setRouteBean(null);
-    
-    
-    
-    this.canAdvanceToNextState = true;
   }
-
 }
