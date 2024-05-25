@@ -606,15 +606,17 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
     @Override
     public void run() {
-      Map<Integer, ChannelBean> measurements = this.Controller.decoderController.getTrackMeasurements();
-      for (ChannelBean ch : measurements.values()) {
-        if (ch.isChanged()) {
-          MeasurementEvent me = new MeasurementEvent(ch);
-          if (debuglog) {
-            Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());
-          }
-          for (MeasurementEventListener mel : this.Controller.measurementEventListeners) {
-            mel.onMeasurement(me);
+      if (this.Controller != null && this.Controller.decoderController != null) {
+        Map<Integer, ChannelBean> measurements = this.Controller.decoderController.getTrackMeasurements();
+        for (ChannelBean ch : measurements.values()) {
+          if (ch.isChanged()) {
+            MeasurementEvent me = new MeasurementEvent(ch);
+            if (debuglog) {
+              Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());
+            }
+            for (MeasurementEventListener mel : this.Controller.measurementEventListeners) {
+              mel.onMeasurement(me);
+            }
           }
         }
       }

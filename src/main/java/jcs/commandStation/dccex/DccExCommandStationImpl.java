@@ -500,7 +500,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     if ("=".equals(measurementEvent.getOpcode())) {
       // config
       KeyValuePair track = measurementEvent.getTrack();
-      if ("A".equals(track.getKey())) {
+      if (track != null && "A".equals(track.getKey())) {
         //Main, or channel 1
         ChannelBean main = this.measurementChannels.get(1);
         if (main == null) {
@@ -514,7 +514,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
         main.setScale(1000);
         main.setHumanValue(0.0);
         main.setValue(0);
-      } else if ("B".equals(track.getKey())) {
+      } else if (track != null && "B".equals(track.getKey())) {
         //Prog, or channel 0
         ChannelBean prog = this.measurementChannels.get(0);
         if (prog == null) {
