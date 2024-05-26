@@ -17,6 +17,7 @@ package jcs.ui.options.table;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +42,9 @@ public class SensorTableModel extends BeanTableModel<SensorBean> implements Sens
 
   @Override
   protected List<SensorBean> getBeans() {
+    if (sensorBeanCache == null) {
+      return Collections.EMPTY_LIST;
+    }
     sensorBeanCache.clear();
 
     if (PersistenceFactory.getService() != null) {

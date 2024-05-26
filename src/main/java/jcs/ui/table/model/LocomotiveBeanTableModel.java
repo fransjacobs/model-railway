@@ -24,7 +24,7 @@ import jcs.persistence.PersistenceFactory;
  */
 public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveBean> {
 
-  private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "address", "decoder"};
+  private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "address"};
 
   public LocomotiveBeanTableModel() {
     super(LocomotiveBean.class, DISPLAY_COLUMNS);

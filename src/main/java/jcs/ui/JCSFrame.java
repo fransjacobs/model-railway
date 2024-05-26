@@ -485,7 +485,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     mainPanel.setPreferredSize(new Dimension(1315, 850));
     mainPanel.setLayout(new BorderLayout());
 
-    locoDisplaySP.setDividerLocation(240);
+    locoDisplaySP.setDividerLocation(300);
     locoDisplaySP.setMinimumSize(new Dimension(1050, 900));
     locoDisplaySP.setName("locoDisplaySP"); // NOI18N
     locoDisplaySP.setPreferredSize(new Dimension(1050, 850));

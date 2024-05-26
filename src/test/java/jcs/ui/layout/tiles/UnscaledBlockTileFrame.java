@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.tiles;
 
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
@@ -22,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JViewport;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
@@ -304,12 +306,29 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
-    centerSP.setMinimumSize(new java.awt.Dimension(1245, 455));
-    centerSP.setPreferredSize(new java.awt.Dimension(1245, 455));
+    centerSP.setDoubleBuffered(true);
+    centerSP.setMinimumSize(new java.awt.Dimension(1240, 440));
+    centerSP.setPreferredSize(new java.awt.Dimension(1240, 440));
     centerSP.setViewportView(blockTileCanvas);
+    centerSP.addHierarchyBoundsListener(new java.awt.event.HierarchyBoundsListener() {
+      public void ancestorMoved(java.awt.event.HierarchyEvent evt) {
+      }
+      public void ancestorResized(java.awt.event.HierarchyEvent evt) {
+        centerSPAncestorResized(evt);
+      }
+    });
+    centerSP.addComponentListener(new java.awt.event.ComponentAdapter() {
+      public void componentResized(java.awt.event.ComponentEvent evt) {
+        centerSPComponentResized(evt);
+      }
+    });
 
     blockTileCanvas.setMinimumSize(new java.awt.Dimension(1000, 800));
-    blockTileCanvas.setPreferredSize(new java.awt.Dimension(1240, 450));
+    blockTileCanvas.addComponentListener(new java.awt.event.ComponentAdapter() {
+      public void componentResized(java.awt.event.ComponentEvent evt) {
+        blockTileCanvasComponentResized(evt);
+      }
+    });
 
     javax.swing.GroupLayout blockTileCanvasLayout = new javax.swing.GroupLayout(blockTileCanvas);
     blockTileCanvas.setLayout(blockTileCanvasLayout);
@@ -401,6 +420,26 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     }
     repaint();
   }//GEN-LAST:event_scaleCBActionPerformed
+
+  private void centerSPAncestorResized(java.awt.event.HierarchyEvent evt) {//GEN-FIRST:event_centerSPAncestorResized
+    Logger.trace(evt);
+  }//GEN-LAST:event_centerSPAncestorResized
+
+  private void centerSPComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_centerSPComponentResized
+    Logger.trace(evt);
+  }//GEN-LAST:event_centerSPComponentResized
+
+  private void blockTileCanvasComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_blockTileCanvasComponentResized
+    Logger.trace(evt);
+    
+    Dimension d = this.blockTileCanvas.getPreferredSize();
+    
+    this.centerSP.getViewport().setViewSize(d);
+    //JViewport vp = scrollpane.getViewport();
+    //vp.setViewSize(newsize);
+    revalidate();
+    
+  }//GEN-LAST:event_blockTileCanvasComponentResized
 
   /**
    * @param args the command line arguments

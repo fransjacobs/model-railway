@@ -170,16 +170,21 @@
     </Container>
     <Container class="javax.swing.JScrollPane" name="centerSP">
       <Properties>
+        <Property name="doubleBuffered" type="boolean" value="true"/>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[1245, 455]"/>
+          <Dimension value="[1240, 440]"/>
         </Property>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[1245, 455]"/>
+          <Dimension value="[1240, 440]"/>
         </Property>
         <Property name="viewportView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="blockTileCanvas"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="ancestorResized" listener="java.awt.event.HierarchyBoundsListener" parameters="java.awt.event.HierarchyEvent" handler="centerSPAncestorResized"/>
+        <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="centerSPComponentResized"/>
+      </Events>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
           <BorderConstraints direction="Center"/>
@@ -194,6 +199,9 @@
               <Dimension value="[1000, 800]"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="blockTileCanvasComponentResized"/>
+          </Events>
 
           <Layout>
             <DimensionLayout dim="0">
