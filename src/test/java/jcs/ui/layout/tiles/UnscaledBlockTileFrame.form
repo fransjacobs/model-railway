@@ -182,7 +182,6 @@
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="ancestorResized" listener="java.awt.event.HierarchyBoundsListener" parameters="java.awt.event.HierarchyEvent" handler="centerSPAncestorResized"/>
         <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="centerSPComponentResized"/>
       </Events>
       <Constraints>
@@ -193,11 +192,9 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Container class="jcs.ui.layout.tiles.UnscaledBlockCanvas" name="blockTileCanvas">
+        <Container class="jcs.ui.layout.tiles.UnscaledBlockCanvas1" name="blockTileCanvas">
           <Properties>
-            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[1000, 800]"/>
-            </Property>
+            <Property name="doubleBuffered" type="boolean" value="true"/>
           </Properties>
           <Events>
             <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="blockTileCanvasComponentResized"/>

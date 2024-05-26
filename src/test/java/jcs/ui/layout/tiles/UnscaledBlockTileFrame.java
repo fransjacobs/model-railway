@@ -97,14 +97,6 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     return lb;
   }
 
-//  private void addViewportListener() {
-//    this.centerSP.getViewport().addChangeListener((ChangeEvent e) -> {
-//      centerSP.revalidate();
-//      //offsets....
-//      //https://stackoverflow.com/questions/6561246/scroll-event-of-a-jscrollpane
-//      repaint();
-//    });
-//  }
   private void initTile() {
     blockTile = new Block(Orientation.EAST, 750, 250);
     blockTile.setId("bk-1");
@@ -119,8 +111,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     bbe.setReverseArrival(this.reverseArrivalCB.isSelected());
 
     bbe.setArrivalSuffix(getIncomingSuffix());
-    
-    
+
     if (this.showLocCB.isSelected()) {
       bbe.setLocomotive(createLocomotiveBean());
     } else {
@@ -167,7 +158,19 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
         y = y - h / 2;
       }
     }
-    blockTile.setCenter(new Point(x, y));
+
+    int spw = this.centerSP.getSize().width;
+    int sph = this.centerSP.getSize().height;
+
+    int cw = this.blockTileCanvas.getSize().width;
+    int ch = this.blockTileCanvas.getSize().height;
+
+    //this.centerSP.getViewport().getSize()
+    Logger.trace("cw: " + cw + " ch: " + ch);
+
+    Point cc = new Point(cw / 2, ch / 2);
+    //blockTile.setCenter(new Point(x,y));
+    blockTile.setCenter(cc);
 
     if (Orientation.EAST.equals(blockTile.getOrientation()) || Orientation.WEST.equals(blockTile.getOrientation())) {
       ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH * 3);
@@ -208,7 +211,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     forwardsRB = new javax.swing.JRadioButton();
     showCenterCB = new javax.swing.JCheckBox();
     centerSP = new javax.swing.JScrollPane();
-    blockTileCanvas = new jcs.ui.layout.tiles.UnscaledBlockCanvas();
+    blockTileCanvas = new jcs.ui.layout.tiles.UnscaledBlockCanvas1();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -310,20 +313,13 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     centerSP.setMinimumSize(new java.awt.Dimension(1240, 440));
     centerSP.setPreferredSize(new java.awt.Dimension(1240, 440));
     centerSP.setViewportView(blockTileCanvas);
-    centerSP.addHierarchyBoundsListener(new java.awt.event.HierarchyBoundsListener() {
-      public void ancestorMoved(java.awt.event.HierarchyEvent evt) {
-      }
-      public void ancestorResized(java.awt.event.HierarchyEvent evt) {
-        centerSPAncestorResized(evt);
-      }
-    });
     centerSP.addComponentListener(new java.awt.event.ComponentAdapter() {
       public void componentResized(java.awt.event.ComponentEvent evt) {
         centerSPComponentResized(evt);
       }
     });
 
-    blockTileCanvas.setMinimumSize(new java.awt.Dimension(1000, 800));
+    blockTileCanvas.setDoubleBuffered(true);
     blockTileCanvas.addComponentListener(new java.awt.event.ComponentAdapter() {
       public void componentResized(java.awt.event.ComponentEvent evt) {
         blockTileCanvasComponentResized(evt);
@@ -392,7 +388,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
       return "-";
     }
   }
-  
+
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
     ((Block) blockTile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
     repaint();
@@ -421,24 +417,36 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     repaint();
   }//GEN-LAST:event_scaleCBActionPerformed
 
-  private void centerSPAncestorResized(java.awt.event.HierarchyEvent evt) {//GEN-FIRST:event_centerSPAncestorResized
-    Logger.trace(evt);
-  }//GEN-LAST:event_centerSPAncestorResized
-
   private void centerSPComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_centerSPComponentResized
     Logger.trace(evt);
+    this.centerSP.revalidate();
   }//GEN-LAST:event_centerSPComponentResized
 
   private void blockTileCanvasComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_blockTileCanvasComponentResized
     Logger.trace(evt);
-    
-    Dimension d = this.blockTileCanvas.getPreferredSize();
-    
-    this.centerSP.getViewport().setViewSize(d);
+
+    int btcw = this.blockTileCanvas.getSize().width;
+    int btch = this.blockTileCanvas.getSize().height;
+
+    int spw = this.centerSP.getPreferredSize().width;
+    int sph = this.centerSP.getPreferredSize().width;
+
+    int w = spw;
+    if (btcw > spw) {
+      w = btcw;
+    }
+    int h = sph;
+    if (btch > sph) {
+      h = btch;
+    }
+    Logger.trace("Btc W: " + btcw + " Btc H: " + btch + ". SP W: " + spw + " SP H: " + sph);
+
+//    Dimension d = new Dimension(w, h);
+//    this.centerSP.getViewport().setViewSize(d);
     //JViewport vp = scrollpane.getViewport();
     //vp.setViewSize(newsize);
-    revalidate();
-    
+//    revalidate();
+
   }//GEN-LAST:event_blockTileCanvasComponentResized
 
   /**
@@ -473,7 +481,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JRadioButton backwardsRB;
-  private jcs.ui.layout.tiles.UnscaledBlockCanvas blockTileCanvas;
+  private jcs.ui.layout.tiles.UnscaledBlockCanvas1 blockTileCanvas;
   private javax.swing.JScrollPane centerSP;
   private javax.swing.JRadioButton forwardsRB;
   private javax.swing.JComboBox<String> incomingSideCB;
