@@ -419,7 +419,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private void centerSPComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_centerSPComponentResized
     Logger.trace(evt);
-    this.centerSP.revalidate();
+    //this.centerSP.revalidate();
   }//GEN-LAST:event_centerSPComponentResized
 
   private void blockTileCanvasComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_blockTileCanvasComponentResized
