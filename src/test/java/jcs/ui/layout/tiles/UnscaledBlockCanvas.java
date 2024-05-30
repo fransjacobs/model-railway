@@ -15,33 +15,33 @@
  */
 package jcs.ui.layout.tiles;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
-import org.tinylog.Logger;
+import javax.swing.JPanel;
 
-/**
- * Inspired from https://stackoverflow.com/questions/6561246/scroll-event-of-a-jscrollpane
- */
-public class UnscaledBlockCanvas extends javax.swing.JPanel implements PropertyChangeListener, Scrollable {
+public class UnscaledBlockCanvas extends JPanel implements PropertyChangeListener {
 
   private Tile block;
-
   private boolean showCenter;
+
+  private final Dimension originalSize;
 
   /**
    * Creates new form BlockCanvas
    */
   public UnscaledBlockCanvas() {
-    initComponents();
     this.setSize(1240, 440);
+    this.originalSize = this.getSize();
+    this.setPreferredSize(originalSize);
+
+    this.setLayout(new BorderLayout());
   }
 
   public Tile getBlock() {
@@ -60,133 +60,61 @@ public class UnscaledBlockCanvas extends javax.swing.JPanel implements PropertyC
     this.showCenter = showCenter;
   }
 
-  @Override
-  public Dimension getPreferredScrollableViewportSize() {
-    Dimension pdim = this.getPreferredSize();
-    return pdim;
-  }
-
-  @Override
-  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-    //return 2;
-    return (orientation == SwingConstants.VERTICAL) ? visibleRect.height / 10 : visibleRect.width / 10;
-  }
-
-  @Override
-  public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-    //return 2;
-    return (orientation == SwingConstants.VERTICAL) ? visibleRect.height / 10 : visibleRect.width / 10;
-  }
-
-  @Override
-  public boolean getScrollableTracksViewportWidth() {
-    return false;
-  }
-
-  @Override
-  public boolean getScrollableTracksViewportHeight() {
-    return false;
-  }
-
-  @Override
-  public Dimension getPreferredSize() {
-
-    if (this.block != null) {
-      int w = this.getWidth();
-      int h = this.getHeight();
-      boolean expand = !((AbstractTile) block).isScaleImage();
-
-      int bw = block.getWidth() * (expand ? 10 : 1);
-      int bh = block.getHeight() * (expand ? 10 : 1);
-
-      Logger.trace("Canvas Size w: " + w + " h: " + h + " Block Size w: " + bw + " h: " + bh);
-
-      return new Dimension(bw, bh);
-
-    } else {
-      int w = this.getWidth();
-      int h = this.getHeight();
-
-      return new Dimension(this.getSize().width, this.getSize().height);
-      //return new Dimension(w, h);
-
+  private BufferedImage paintBlock() {
+    if (block == null) {
+      return null;
     }
+    boolean expand = !((AbstractTile) block).isScaleImage();
 
+    int bw = block.getWidth() * (expand ? 10 : 1);
+    int bh = block.getHeight() * (expand ? 10 : 1);
+
+    int w = bw + Tile.DEFAULT_WIDTH;
+    int h = bh + Tile.DEFAULT_HEIGHT;
+
+    BufferedImage blockImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    Graphics2D g2d = blockImage.createGraphics();
+    g2d.setBackground(Color.white);
+    g2d.clearRect(0, 0, w, h);
+
+    int x = (w / 2);
+    int y = (h / 2);
+    Point blockCenter = new Point(x, y);
+    //Logger.trace("BlockImageSize w: " + w + " h: " + h + " BlockCenter: (" + blockCenter.x + "," + blockCenter.y + ")");
+
+    block.setCenter(blockCenter);
+    block.drawTile(g2d, true);
+    if (this.showCenter) {
+      block.drawBounds(g2d);
+      block.drawCenterPoint(g2d, Color.red);
+    }
+    g2d.dispose();
+    return blockImage;
   }
-
-//  public void paint(Graphics g) {
-  //https://docs.oracle.com/javase/tutorial/uiswing/components/scrollpane.html#api
-  //https://github.com/tips4java/tips4java/blob/main/source/ScrollablePanel.java
-//  https://forums.codeguru.com/showthread.php?33008-Canvas-and-JScrollPane
-//    int iWidth = this.getSize().width;
-//    int iHeight = this.getSize().height;
-//    _drawSpace = createImage(this.getSize().width, this.getSize().height);
-//    _drawSpaceG = _drawSpace.getGraphics();
-//    _drawSpaceG.setColor(Color.black);
-//
-//    _drawSpaceG.fillRect(0, 0, iWidth, iHeight);
-//
-//    _drawSpaceG.setColor(Color.white);
-//
-//    _drawSpaceG.drawLine(0, 0, 1000, 1000);
-//    _drawSpaceG.drawLine(0, 1000, 500, 0);
-//
-//    g.drawImage(_drawSpace, 0, 0, Color.black, this);
-//  }
 
   @Override
   protected void paintComponent(Graphics g) {
-//    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-//    int sw = (int) dim.getWidth();
-//    int sh = (int) dim.getHeight();
-//
-//    Dimension pdim = this.getSize();
+    //super.paintComponent(g);
 
-    //Logger.trace("Canvas w: " + w + " h: " + h + " Block w: " + bw + " h: " + bh + "," + expand);
-    //Logger.trace("Screen: W: " + sw + " H: " + sh + " Panel w: " + w + " h: " + h + " Size W: " + pdim.width + " H: " + pdim.height);
-    int w = this.getWidth();
-    int h = this.getHeight();
+    Graphics2D g2d = (Graphics2D) g;
+    BufferedImage blockImage = this.paintBlock();
 
-    if (this.block != null) {
-      boolean expand = !((AbstractTile) block).isScaleImage();
+    //paint the image in the middle so
+    int w = this.getSize().width;
+    int h = this.getSize().height;
 
-      int bw = block.getWidth() * (expand ? 10 : 1);
-      int bh = block.getHeight() * (expand ? 10 : 1);
+    int cx = w / 2;
+    int cy = h / 2;
 
-      //Logger.trace("Canvas Size w: " + w + " h: " + h + " Block Size w: " + bw + " h: " + bh);
-      ///Dimension d = new Dimension(w, h);
-      if (w < bw) {
-        Logger.trace("W too small " + w + " -> " + bw);
-        w = bw + 40;
-        Dimension d = new Dimension(w, h);
-        //this.setPreferredSize(d);
-      }
-      if (h < bh) {
-        Logger.trace("H too small " + h + " -> " + bh);
-        h = bh + 40;
-        Dimension d = new Dimension(w, h);
-        //this.setPreferredSize(d);
-      }
+    int bw = blockImage.getWidth();
+    int bh = blockImage.getHeight();
 
-      //Logger.trace("Updated Canvas Size w: " + w + " h: " + h + " Block Size w: " + bw + " h: " + bh);
-      int x = w / 2;
-      int y = h / 2;
-      Point center = new Point(x, y);
-      block.setCenter(center);
+    this.setPreferredSize(new Dimension(bw, bh));
 
-      this.scrollRectToVisible(block.getBounds());
-      Logger.trace("Center: (" + x + "," + y + ")");
+    int x = cx - (bw / 2);
+    int y = cy - (bh / 2);
 
-      Graphics2D g2d = (Graphics2D) g;
-      block.drawTile(g2d, true);
-
-      if (this.showCenter) {
-        block.drawBounds(g2d);
-        block.drawCenterPoint(g2d, Color.red);
-      }
-
-    }
-
+    g2d.drawImage(blockImage, null, x, y);
   }
 
   @Override
@@ -197,19 +125,71 @@ public class UnscaledBlockCanvas extends javax.swing.JPanel implements PropertyC
     }
   }
 
-  /**
-   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
-   */
-  @SuppressWarnings("unchecked")
-  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-  private void initComponents() {
+  @Override
+  public Dimension getPreferredSize() {
+    if (block != null) {
+      boolean expand = !((AbstractTile) block).isScaleImage();
+      int bw = block.getWidth() * (expand ? 10 : 1);
+      int bh = block.getHeight() * (expand ? 10 : 1);
 
-    setMinimumSize(new java.awt.Dimension(1240, 450));
-    setPreferredSize(new java.awt.Dimension(1240, 450));
-    setLayout(null);
-  }// </editor-fold>//GEN-END:initComponents
+      int w = bw + Tile.DEFAULT_WIDTH;
+      int h = bh + Tile.DEFAULT_HEIGHT;
+      return new Dimension(w, h);
 
+    } else {
+      return this.originalSize;
+    }
+  }
 
-  // Variables declaration - do not modify//GEN-BEGIN:variables
-  // End of variables declaration//GEN-END:variables
+//  @Override
+//  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+//    Logger.trace("visibleRect: " + visibleRect.toString() + " orientation: " + orientation + " direction" + direction);
+//    return Tile.GRID;
+//  }
+//  @Override
+//  public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+//    Logger.trace("visibleRect: " + visibleRect.toString() + " orientation: " + orientation + " direction" + direction);
+//    return Tile.GRID;
+//  }
+//  @Override
+//  public boolean getScrollableTracksViewportWidth() {
+//    int w;
+//    if (getParent() instanceof JViewport jViewport) {
+//      w = jViewport.getWidth();
+//      Logger.trace("Viewport w: " + w);
+//    } else {
+//      w = this.getSize().width;
+//      Logger.trace("Size w: " + w);
+//    }
+//
+//    if (this.block != null) {
+//      boolean expand = !((AbstractTile) block).isScaleImage();
+//      int bw = block.getWidth() * (expand ? 10 : 1);
+//      Logger.trace("Min Canvas w: " + w + " Block w: " + bw + "; " + !(bw > w));
+//      return !(bw > w);
+//    } else {
+//      return true;
+//    }
+//  }
+//  @Override
+//  public boolean getScrollableTracksViewportHeight() {
+//    int h;
+//    if (getParent() instanceof JViewport jViewport) {
+//      h = jViewport.getHeight();
+//      Logger.trace("Viewport h: " + h);
+//    } else {
+//      h = this.getSize().height;
+//      Logger.trace("Size h: " + h);
+//    }
+//
+//    if (this.block != null) {
+//      boolean expand = !((AbstractTile) block).isScaleImage();
+//      int bh = block.getHeight() * (expand ? 10 : 1);
+//      Logger.trace("Min Canvas h: " + h + " Block h: " + bh + "; " + !(bh > h));
+//
+//      return !(bh > h);
+//    } else {
+//      return true;
+//    }
+//  }
 }

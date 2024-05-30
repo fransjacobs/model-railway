@@ -211,12 +211,13 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     forwardsRB = new javax.swing.JRadioButton();
     showCenterCB = new javax.swing.JCheckBox();
     centerSP = new javax.swing.JScrollPane();
-    blockTileCanvas = new jcs.ui.layout.tiles.UnscaledBlockCanvas1();
+    blockTileCanvas = new jcs.ui.layout.tiles.UnscaledBlockCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
     nPanel.setPreferredSize(new java.awt.Dimension(1250, 33));
 
+    scaleCB.setSelected(true);
     scaleCB.setText("Expand");
     scaleCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -309,9 +310,10 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
+    centerSP.setAutoscrolls(true);
     centerSP.setDoubleBuffered(true);
     centerSP.setMinimumSize(new java.awt.Dimension(1240, 440));
-    centerSP.setPreferredSize(new java.awt.Dimension(1240, 440));
+    centerSP.setPreferredSize(new java.awt.Dimension(1241, 441));
     centerSP.setViewportView(blockTileCanvas);
     centerSP.addComponentListener(new java.awt.event.ComponentAdapter() {
       public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -319,7 +321,9 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
       }
     });
 
+    blockTileCanvas.setAutoscrolls(true);
     blockTileCanvas.setDoubleBuffered(true);
+    blockTileCanvas.setPreferredSize(null);
     blockTileCanvas.addComponentListener(new java.awt.event.ComponentAdapter() {
       public void componentResized(java.awt.event.ComponentEvent evt) {
         blockTileCanvasComponentResized(evt);
@@ -330,7 +334,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     blockTileCanvas.setLayout(blockTileCanvasLayout);
     blockTileCanvasLayout.setHorizontalGroup(
       blockTileCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 1240, Short.MAX_VALUE)
+      .addGap(0, 1247, Short.MAX_VALUE)
     );
     blockTileCanvasLayout.setVerticalGroup(
       blockTileCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -349,6 +353,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
     Orientation orientation = blockTile.getOrientation();
     this.orientationCB.setSelectedItem(orientation);
+    Logger.trace("Blok is rotated to "+blockTile.getOrientation());
     this.repaint();
   }//GEN-LAST:event_rotateButtonActionPerformed
 
@@ -418,28 +423,32 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   }//GEN-LAST:event_scaleCBActionPerformed
 
   private void centerSPComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_centerSPComponentResized
-    Logger.trace(evt);
-    //this.centerSP.revalidate();
+    //Logger.trace(evt);
+    this.centerSP.validate();
+    //wordt bij init aangeroepen
   }//GEN-LAST:event_centerSPComponentResized
 
   private void blockTileCanvasComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_blockTileCanvasComponentResized
-    Logger.trace(evt);
+    //Logger.trace(evt);
+    this.centerSP.setLocation(0,0);
+    this.centerSP.getViewport().revalidate();
 
-    int btcw = this.blockTileCanvas.getSize().width;
-    int btch = this.blockTileCanvas.getSize().height;
-
-    int spw = this.centerSP.getPreferredSize().width;
-    int sph = this.centerSP.getPreferredSize().width;
-
-    int w = spw;
-    if (btcw > spw) {
-      w = btcw;
-    }
-    int h = sph;
-    if (btch > sph) {
-      h = btch;
-    }
-    Logger.trace("Btc W: " + btcw + " Btc H: " + btch + ". SP W: " + spw + " SP H: " + sph);
+//
+//    int btcw = this.blockTileCanvas.getSize().width;
+//    int btch = this.blockTileCanvas.getSize().height;
+//
+//    int spw = this.centerSP.getPreferredSize().width;
+//    int sph = this.centerSP.getPreferredSize().width;
+//
+//    int w = spw;
+//    if (btcw > spw) {
+//      w = btcw;
+//    }
+//    int h = sph;
+//    if (btch > sph) {
+//      h = btch;
+//    }
+//    Logger.trace("Btc W: " + btcw + " Btc H: " + btch + ". SP W: " + spw + " SP H: " + sph);
 
 //    Dimension d = new Dimension(w, h);
 //    this.centerSP.getViewport().setViewSize(d);
@@ -481,7 +490,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JRadioButton backwardsRB;
-  private jcs.ui.layout.tiles.UnscaledBlockCanvas1 blockTileCanvas;
+  private jcs.ui.layout.tiles.UnscaledBlockCanvas blockTileCanvas;
   private javax.swing.JScrollPane centerSP;
   private javax.swing.JRadioButton forwardsRB;
   private javax.swing.JComboBox<String> incomingSideCB;
