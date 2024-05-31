@@ -15,7 +15,6 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -24,32 +23,22 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JPanel;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JComponent;
 
-public class UnscaledBlockCanvas extends JPanel implements PropertyChangeListener {
+public class UnscaledBlockCanvas extends JComponent implements PropertyChangeListener {
 
-  private Tile block;
   private boolean showCenter;
 
-  private final Dimension originalSize;
+  private final List<Tile> tiles;
 
-  /**
-   * Creates new form BlockCanvas
-   */
   public UnscaledBlockCanvas() {
-    this.setSize(1240, 440);
-    this.originalSize = this.getSize();
-    this.setPreferredSize(originalSize);
-
-    this.setLayout(new BorderLayout());
+    tiles = new ArrayList<>();
   }
 
-  public Tile getBlock() {
-    return block;
-  }
-
-  public void setBlock(Tile block) {
-    this.block = block;
+  public void addTile(Tile block) {
+    this.tiles.add(block);
   }
 
   public boolean isShowCenter() {
@@ -60,44 +49,63 @@ public class UnscaledBlockCanvas extends JPanel implements PropertyChangeListene
     this.showCenter = showCenter;
   }
 
-  private BufferedImage paintBlock() {
-    if (block == null) {
-      return null;
+  private Dimension getMinCanvasSize() {
+    int minX = this.getSize().width;
+    int maxX = 0;
+    int minY = this.getSize().height;
+    int maxY = 0;
+
+    for (Tile tile : this.tiles) {
+      Point tc = tile.getCenter();
+
+      boolean expand = !((AbstractTile) tile).isScaleImage();
+      int tw = tile.getWidth() * (expand ? 10 : 1);
+      int th = tile.getHeight() * (expand ? 10 : 1);
+
+      if (minX > tc.x - (tw / 2)) {
+        minX = tc.x - (tw / 2);
+      }
+      if (maxX < tc.x + (tw / 2)) {
+        maxX = tc.x + (tw / 2);
+      }
+      if (minY > tc.y - (th / 2)) {
+        minY = tc.y - (th / 2);
+      }
+      if (maxY < tc.y + (th / 2)) {
+        maxY = tc.y + (th / 2);
+      }
     }
-    boolean expand = !((AbstractTile) block).isScaleImage();
 
-    int bw = block.getWidth() * (expand ? 10 : 1);
-    int bh = block.getHeight() * (expand ? 10 : 1);
+    int totalWidth = maxX - minX;
+    int totalHeight = maxY - minY;
 
-    int w = bw + Tile.DEFAULT_WIDTH;
-    int h = bh + Tile.DEFAULT_HEIGHT;
+    //Logger.trace("MinX: " + minX + " maxX: " + maxX + " minY: " + minY + " maxY: " + maxY + " Width: " + totalWidth + " Height: " + totalHeight);
+    return new Dimension(Math.abs(totalWidth), Math.abs(totalHeight));
+  }
 
-    BufferedImage blockImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-    Graphics2D g2d = blockImage.createGraphics();
+  private BufferedImage paintTiles() {
+    Dimension canvasSize = getMinCanvasSize();
+    BufferedImage canvasImage = new BufferedImage(Math.abs(canvasSize.width), Math.abs(canvasSize.height), BufferedImage.TYPE_INT_RGB);
+    Graphics2D g2d = canvasImage.createGraphics();
     g2d.setBackground(Color.white);
-    g2d.clearRect(0, 0, w, h);
+    g2d.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
-    int x = (w / 2);
-    int y = (h / 2);
-    Point blockCenter = new Point(x, y);
-    //Logger.trace("BlockImageSize w: " + w + " h: " + h + " BlockCenter: (" + blockCenter.x + "," + blockCenter.y + ")");
-
-    block.setCenter(blockCenter);
-    block.drawTile(g2d, true);
-    if (this.showCenter) {
-      block.drawBounds(g2d);
-      block.drawCenterPoint(g2d, Color.red);
+    for (Tile tile : this.tiles) {
+      tile.setDrawOutline(showCenter);
+      tile.drawTile(g2d, true);
+      if (this.showCenter) {
+        tile.drawCenterPoint(g2d, Color.red);
+      }
     }
     g2d.dispose();
-    return blockImage;
+
+    return canvasImage;
   }
 
   @Override
   protected void paintComponent(Graphics g) {
-    //super.paintComponent(g);
-
     Graphics2D g2d = (Graphics2D) g;
-    BufferedImage blockImage = this.paintBlock();
+    BufferedImage canvasImage = paintTiles();
 
     //paint the image in the middle so
     int w = this.getSize().width;
@@ -106,19 +114,20 @@ public class UnscaledBlockCanvas extends JPanel implements PropertyChangeListene
     int cx = w / 2;
     int cy = h / 2;
 
-    int bw = blockImage.getWidth();
-    int bh = blockImage.getHeight();
+    int bw = canvasImage.getWidth();
+    int bh = canvasImage.getHeight();
 
     this.setPreferredSize(new Dimension(bw, bh));
 
     int x = cx - (bw / 2);
     int y = cy - (bh / 2);
 
-    g2d.drawImage(blockImage, null, x, y);
+    g2d.drawImage(canvasImage, null, x, y);
   }
 
   @Override
-  public void propertyChange(PropertyChangeEvent evt) {
+  public void propertyChange(PropertyChangeEvent evt
+  ) {
     if ("repaintTile".equals(evt.getPropertyName())) {
       Tile tile = (Tile) evt.getNewValue();
       this.repaint(tile.getBounds());
@@ -127,69 +136,11 @@ public class UnscaledBlockCanvas extends JPanel implements PropertyChangeListene
 
   @Override
   public Dimension getPreferredSize() {
-    if (block != null) {
-      boolean expand = !((AbstractTile) block).isScaleImage();
-      int bw = block.getWidth() * (expand ? 10 : 1);
-      int bh = block.getHeight() * (expand ? 10 : 1);
-
-      int w = bw + Tile.DEFAULT_WIDTH;
-      int h = bh + Tile.DEFAULT_HEIGHT;
-      return new Dimension(w, h);
-
+    if (!tiles.isEmpty()) {
+      return getMinCanvasSize();
     } else {
-      return this.originalSize;
+      return this.getSize();
     }
   }
 
-//  @Override
-//  public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-//    Logger.trace("visibleRect: " + visibleRect.toString() + " orientation: " + orientation + " direction" + direction);
-//    return Tile.GRID;
-//  }
-//  @Override
-//  public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-//    Logger.trace("visibleRect: " + visibleRect.toString() + " orientation: " + orientation + " direction" + direction);
-//    return Tile.GRID;
-//  }
-//  @Override
-//  public boolean getScrollableTracksViewportWidth() {
-//    int w;
-//    if (getParent() instanceof JViewport jViewport) {
-//      w = jViewport.getWidth();
-//      Logger.trace("Viewport w: " + w);
-//    } else {
-//      w = this.getSize().width;
-//      Logger.trace("Size w: " + w);
-//    }
-//
-//    if (this.block != null) {
-//      boolean expand = !((AbstractTile) block).isScaleImage();
-//      int bw = block.getWidth() * (expand ? 10 : 1);
-//      Logger.trace("Min Canvas w: " + w + " Block w: " + bw + "; " + !(bw > w));
-//      return !(bw > w);
-//    } else {
-//      return true;
-//    }
-//  }
-//  @Override
-//  public boolean getScrollableTracksViewportHeight() {
-//    int h;
-//    if (getParent() instanceof JViewport jViewport) {
-//      h = jViewport.getHeight();
-//      Logger.trace("Viewport h: " + h);
-//    } else {
-//      h = this.getSize().height;
-//      Logger.trace("Size h: " + h);
-//    }
-//
-//    if (this.block != null) {
-//      boolean expand = !((AbstractTile) block).isScaleImage();
-//      int bh = block.getHeight() * (expand ? 10 : 1);
-//      Logger.trace("Min Canvas h: " + h + " Block h: " + bh + "; " + !(bh > h));
-//
-//      return !(bh > h);
-//    } else {
-//      return true;
-//    }
-//  }
 }
