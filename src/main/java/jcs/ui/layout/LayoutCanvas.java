@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -58,6 +59,14 @@ import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import static jcs.entities.TileBean.TileType.BLOCK;
+import static jcs.entities.TileBean.TileType.CROSS;
+import static jcs.entities.TileBean.TileType.CURVED;
+import static jcs.entities.TileBean.TileType.END;
+import static jcs.entities.TileBean.TileType.SENSOR;
+import static jcs.entities.TileBean.TileType.SIGNAL;
+import static jcs.entities.TileBean.TileType.STRAIGHT;
+import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.BlockControlDialog;
@@ -77,7 +86,6 @@ import org.tinylog.Logger;
 /**
  * This canvas / Panel is used to draw the layout
  *
- * @author frans
  */
 public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
@@ -99,7 +107,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private Direction direction;
   private TileBean.TileType tileType;
 
-  private Point mouseLocation = new Point(0, 0);
+  private Point mouseLocation = new Point();
 
   private BufferedImage grid;
 
@@ -143,29 +151,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     lineGrid = "true".equals(System.getProperty("draw.linegrid", "true"));
   }
 
-//  @Override
-//  public void repaint() {
-//    long start = System.nanoTime();
-//    super.repaint();
-//    long end = System.nanoTime();
-//    Logger.trace("Duration: "+(end-start)+" ns");
-//  }
-//  @Override
-//  public void repaint(Rectangle r) {
-//    long start = System.nanoTime();
-//    super.repaint(r);
-//    long end = System.nanoTime();
-//    Logger.trace("Duration: "+(end-start)+" n (r)");
-//  }
   @Override
   protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g.create();
-
     Set<Tile> snapshot = new HashSet<>(tiles.values());
-    //ensure there is no tile which is null... 
-    Map<String, RouteElementBean> routeSnapshot;
-    routeSnapshot = new HashMap<>(this.selectedRouteElements);
 
     if (this.drawGrid) {
       if (lineGrid) {
@@ -223,17 +212,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
-      } else {
       }
     }
 
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-
-      //Logger.trace("Width: " + width + " Height: " + height);
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
 
@@ -267,8 +252,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-
-      //Logger.trace("Width: " + width + " Height: " + height);
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
 
@@ -285,7 +268,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       gc.dispose();
     }
     Graphics2D g2 = (Graphics2D) g;
-    //Draw grid from pre computed image
     g2.drawImage(grid, null, 0, 0);
   }
 
@@ -298,7 +280,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       }
     }
@@ -306,14 +287,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-      //Logger.trace("Width: " + width + " Height: " + height);
-
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
 
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-
       gc.setPaint(Color.lightGray);
 
       gc.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -329,18 +307,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     g2.drawImage(grid, null, 0, 0);
   }
 
-  void resetDotGrid() {
-    Logger.debug("reset dot grid");
-    this.grid = null;
-  }
-
   void setMode(LayoutCanvas.Mode mode) {
     this.mode = mode;
     Logger.trace("Mode: " + mode);
-  }
-
-  LayoutCanvas.Mode getMode() {
-    return this.mode;
   }
 
   void setDrawGrid(boolean flag) {
@@ -353,23 +322,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
   }
 
-  Orientation getOrientation() {
-    return orientation;
-  }
-
-  void setOrientation(Orientation orientation) {
-    this.orientation = orientation;
-  }
-
   void setDirection(Direction direction) {
     this.direction = direction;
   }
 
-  Direction getDirection() {
-    return direction;
-  }
-
-  public void loadLayoutInBackground() {
+  void loadLayoutInBackground() {
     this.executor.execute(() -> loadTiles());
   }
 
@@ -413,13 +370,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     repaint();
   }
 
-  Set<Tile> getTiles() {
-    Set<Tile> snapshot = new HashSet<>(tiles.values());
-    return snapshot;
-  }
-
   public void saveLayout() {
-    //Create a snap shot as persisting is done in worker thread
+    //Create a snapshot as persisting is done in worker thread
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     this.selectedTiles.clear();
     this.executor.execute(() -> saveTiles(snapshot));
@@ -440,132 +392,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
     PersistenceFactory.getService().persist(beans);
   }
-
-  /**
-   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
-   */
-  @SuppressWarnings("unchecked")
-  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-  private void initComponents() {
-
-    straightPopupMenu = new JPopupMenu();
-    verticalMI = new JMenuItem();
-    horizontalMI = new JMenuItem();
-    curvedPopupMenu = new JPopupMenu();
-    rightMI = new JMenuItem();
-    leftMI = new JMenuItem();
-    operationsPM = new JPopupMenu();
-    xyMI = new JMenuItem();
-    propertiesMI = new JMenuItem();
-    rotateMI = new JMenuItem();
-    flipHorizontalMI = new JMenuItem();
-    flipVerticalMI = new JMenuItem();
-    moveMI = new JMenuItem();
-    deleteMI = new JMenuItem();
-
-    verticalMI.setText("Vertical");
-    verticalMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        verticalMIActionPerformed(evt);
-      }
-    });
-    straightPopupMenu.add(verticalMI);
-
-    horizontalMI.setText("Horizontal");
-    horizontalMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        horizontalMIActionPerformed(evt);
-      }
-    });
-    straightPopupMenu.add(horizontalMI);
-
-    rightMI.setText("Right");
-    rightMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        rightMIActionPerformed(evt);
-      }
-    });
-    curvedPopupMenu.add(rightMI);
-
-    leftMI.setText("Left");
-    leftMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        leftMIActionPerformed(evt);
-      }
-    });
-    curvedPopupMenu.add(leftMI);
-
-    xyMI.setText("x: y:");
-    operationsPM.add(xyMI);
-
-    propertiesMI.setText("Properties");
-    propertiesMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        propertiesMIActionPerformed(evt);
-      }
-    });
-    operationsPM.add(propertiesMI);
-
-    rotateMI.setText("Rotate");
-    rotateMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        rotateMIActionPerformed(evt);
-      }
-    });
-    operationsPM.add(rotateMI);
-
-    flipHorizontalMI.setText("Flip Horizontal");
-    flipHorizontalMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        flipHorizontalMIActionPerformed(evt);
-      }
-    });
-    operationsPM.add(flipHorizontalMI);
-
-    flipVerticalMI.setText("Flip Vertical");
-    flipVerticalMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        flipVerticalMIActionPerformed(evt);
-      }
-    });
-    operationsPM.add(flipVerticalMI);
-
-    moveMI.setText("Move");
-    moveMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        moveMIActionPerformed(evt);
-      }
-    });
-    operationsPM.add(moveMI);
-
-    deleteMI.setText("Delete");
-    deleteMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        deleteMIActionPerformed(evt);
-      }
-    });
-    operationsPM.add(deleteMI);
-
-    setBackground(new Color(250, 250, 250));
-    setOpaque(false);
-    setPreferredSize(new Dimension(800, 700));
-    addMouseMotionListener(new MouseMotionAdapter() {
-      public void mouseDragged(MouseEvent evt) {
-        formMouseDragged(evt);
-      }
-      public void mouseMoved(MouseEvent evt) {
-        formMouseMoved(evt);
-      }
-    });
-    addMouseListener(new MouseAdapter() {
-      public void mousePressed(MouseEvent evt) {
-        formMousePressed(evt);
-      }
-      public void mouseReleased(MouseEvent evt) {
-        formMouseReleased(evt);
-      }
-    });
-  }// </editor-fold>//GEN-END:initComponents
 
   private void mouseMoveAction(MouseEvent evt) {
     Point sp = LayoutUtil.snapToGrid(evt.getPoint());
@@ -944,52 +770,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.operationsPM.show(this, p.x, p.y);
   }
 
-  private void formMousePressed(MouseEvent evt) {//GEN-FIRST:event_formMousePressed
-    mousePressedAction(evt);
-  }//GEN-LAST:event_formMousePressed
-
-  private void formMouseReleased(MouseEvent evt) {//GEN-FIRST:event_formMouseReleased
-    mouseReleasedAction(evt);
-  }//GEN-LAST:event_formMouseReleased
-
-  private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
-    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-
-    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      addTile(this.mouseLocation);
-      this.mouseLocation = null;
-    }
-  }//GEN-LAST:event_horizontalMIActionPerformed
-
-  private void verticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_verticalMIActionPerformed
-    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-
-    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      addTile(this.mouseLocation);
-      this.mouseLocation = null;
-    }
-  }//GEN-LAST:event_verticalMIActionPerformed
-
-  private void rightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightMIActionPerformed
-    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-
-    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      addTile(this.mouseLocation);
-      this.mouseLocation = null;
-    }
-  }//GEN-LAST:event_rightMIActionPerformed
-
-  private void leftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftMIActionPerformed
-    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
-
-    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      addTile(this.mouseLocation);
-
-      //do someting with the rotation/direction...
-      this.mouseLocation = null;
-    }
-  }//GEN-LAST:event_leftMIActionPerformed
-
   public Tile findTile(Point cp) {
     Tile result = this.tiles.get(cp);
     if (result == null) {
@@ -999,50 +779,15 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         //Logger.trace("Found " + result + " in alt tiles");
       }
     }
-
     return result;
   }
-
-  private void formMouseMoved(MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
-    mouseMoveAction(evt);
-  }//GEN-LAST:event_formMouseMoved
-
-    private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed
-      rotateSelectedTile();
-    }//GEN-LAST:event_rotateMIActionPerformed
-
-    private void flipHorizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipHorizontalMIActionPerformed
-      flipSelectedTileHorizontal();
-    }//GEN-LAST:event_flipHorizontalMIActionPerformed
-
-    private void flipVerticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipVerticalMIActionPerformed
-      flipSelectedTileVertical();
-    }//GEN-LAST:event_flipVerticalMIActionPerformed
-
-    private void moveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveMIActionPerformed
-      this.mode = Mode.MOVE;
-    }//GEN-LAST:event_moveMIActionPerformed
-
-    private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
-      this.removeTiles(selectedTiles);
-    }//GEN-LAST:event_deleteMIActionPerformed
-
-    private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
-      editSelectedTileProperties();
-    }//GEN-LAST:event_propertiesMIActionPerformed
-
-  private void formMouseDragged(MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
-    mouseDragAction(evt);
-  }//GEN-LAST:event_formMouseDragged
 
   private Point getCheckAvailable(Point newPoint) {
     if (this.tiles.containsKey(newPoint)) {
       Tile et = this.tiles.get(newPoint);
-
       Logger.debug("@ " + newPoint + " is allready occcupied by: " + et + "...");
       //Search for the nearest avalaible free point 
       //first get the Center point of the tile which is occuping this slot
-
       // show warning!
       Point ecp = et.getCenter();
 
@@ -1081,9 +826,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
 
     Logger.trace("Adding: " + tileType + " @ " + p);
-
     Point chkp = getCheckAvailable(p);
-
     boolean fullRepaint = !chkp.equals(p);
 
     Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
@@ -1106,7 +849,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   void removeTiles() {
-
     removeTiles(selectedTiles);
   }
 
@@ -1128,7 +870,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     repaint();
   }
 
-  private java.awt.Frame getParentFrame() {
+  private JFrame getParentFrame() {
     JFrame frame = (JFrame) SwingUtilities.getRoot(this);
     return frame;
   }
@@ -1246,23 +988,214 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     this.routesDialog.setVisible(true);
   }
 
-//  @Override
-//  public void setSelectRoute(RouteBean route) {
-//    selectedRouteElements.clear();
-//    if (route != null) {
-//      List<RouteElementBean> rel = route.getRouteElements();
-//      for (RouteElementBean re : rel) {
-//        String id = re.getTileId();
-//        selectedRouteElements.put(id, re);
-//      }
-//    }
-//
-//    this.executor.execute(() -> repaint());
-//  }
-//  public void refresh() {
-//    loadLayoutInBackground();
-//    //this.executor.execute(() -> loadLayoutInBackground();());
-//  }
+  /**
+   * This method is called from within the constructor to initialize the form.<br>
+   * WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
+  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+  private void initComponents() {
+
+    straightPopupMenu = new JPopupMenu();
+    verticalMI = new JMenuItem();
+    horizontalMI = new JMenuItem();
+    curvedPopupMenu = new JPopupMenu();
+    rightMI = new JMenuItem();
+    leftMI = new JMenuItem();
+    operationsPM = new JPopupMenu();
+    xyMI = new JMenuItem();
+    propertiesMI = new JMenuItem();
+    rotateMI = new JMenuItem();
+    flipHorizontalMI = new JMenuItem();
+    flipVerticalMI = new JMenuItem();
+    moveMI = new JMenuItem();
+    deleteMI = new JMenuItem();
+
+    verticalMI.setText("Vertical");
+    verticalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        verticalMIActionPerformed(evt);
+      }
+    });
+    straightPopupMenu.add(verticalMI);
+
+    horizontalMI.setText("Horizontal");
+    horizontalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        horizontalMIActionPerformed(evt);
+      }
+    });
+    straightPopupMenu.add(horizontalMI);
+
+    rightMI.setText("Right");
+    rightMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        rightMIActionPerformed(evt);
+      }
+    });
+    curvedPopupMenu.add(rightMI);
+
+    leftMI.setText("Left");
+    leftMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        leftMIActionPerformed(evt);
+      }
+    });
+    curvedPopupMenu.add(leftMI);
+
+    xyMI.setText("x: y:");
+    operationsPM.add(xyMI);
+
+    propertiesMI.setText("Properties");
+    propertiesMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        propertiesMIActionPerformed(evt);
+      }
+    });
+    operationsPM.add(propertiesMI);
+
+    rotateMI.setText("Rotate");
+    rotateMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        rotateMIActionPerformed(evt);
+      }
+    });
+    operationsPM.add(rotateMI);
+
+    flipHorizontalMI.setText("Flip Horizontal");
+    flipHorizontalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        flipHorizontalMIActionPerformed(evt);
+      }
+    });
+    operationsPM.add(flipHorizontalMI);
+
+    flipVerticalMI.setText("Flip Vertical");
+    flipVerticalMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        flipVerticalMIActionPerformed(evt);
+      }
+    });
+    operationsPM.add(flipVerticalMI);
+
+    moveMI.setText("Move");
+    moveMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        moveMIActionPerformed(evt);
+      }
+    });
+    operationsPM.add(moveMI);
+
+    deleteMI.setText("Delete");
+    deleteMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        deleteMIActionPerformed(evt);
+      }
+    });
+    operationsPM.add(deleteMI);
+
+    setBackground(new Color(250, 250, 250));
+    setAutoscrolls(true);
+    setBounds(new Rectangle(0, 0, 1398, 848));
+    setDoubleBuffered(false);
+    setMinimumSize(new Dimension(1398, 848));
+    setOpaque(false);
+    setPreferredSize(new Dimension(1398, 848));
+    addMouseMotionListener(new MouseMotionAdapter() {
+      public void mouseDragged(MouseEvent evt) {
+        formMouseDragged(evt);
+      }
+      public void mouseMoved(MouseEvent evt) {
+        formMouseMoved(evt);
+      }
+    });
+    addMouseListener(new MouseAdapter() {
+      public void mousePressed(MouseEvent evt) {
+        formMousePressed(evt);
+      }
+      public void mouseReleased(MouseEvent evt) {
+        formMouseReleased(evt);
+      }
+    });
+    setLayout(null);
+    getAccessibleContext().setAccessibleParent(this);
+  }// </editor-fold>//GEN-END:initComponents
+
+  private void formMousePressed(MouseEvent evt) {//GEN-FIRST:event_formMousePressed
+    mousePressedAction(evt);
+  }//GEN-LAST:event_formMousePressed
+
+  private void formMouseReleased(MouseEvent evt) {//GEN-FIRST:event_formMouseReleased
+    mouseReleasedAction(evt);
+  }//GEN-LAST:event_formMouseReleased
+
+  private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed
+    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
+
+    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
+      addTile(this.mouseLocation);
+      this.mouseLocation = null;
+    }
+  }//GEN-LAST:event_horizontalMIActionPerformed
+
+  private void verticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_verticalMIActionPerformed
+    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
+
+    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
+      addTile(this.mouseLocation);
+      this.mouseLocation = null;
+    }
+  }//GEN-LAST:event_verticalMIActionPerformed
+
+  private void rightMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightMIActionPerformed
+    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
+
+    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
+      addTile(this.mouseLocation);
+      this.mouseLocation = null;
+    }
+  }//GEN-LAST:event_rightMIActionPerformed
+
+  private void leftMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_leftMIActionPerformed
+    Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
+
+    if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
+      addTile(this.mouseLocation);
+      this.mouseLocation = null;
+    }
+  }//GEN-LAST:event_leftMIActionPerformed
+
+  private void formMouseMoved(MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
+    mouseMoveAction(evt);
+  }//GEN-LAST:event_formMouseMoved
+
+  private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed
+    rotateSelectedTile();
+  }//GEN-LAST:event_rotateMIActionPerformed
+
+  private void flipHorizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipHorizontalMIActionPerformed
+    flipSelectedTileHorizontal();
+  }//GEN-LAST:event_flipHorizontalMIActionPerformed
+
+  private void flipVerticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipVerticalMIActionPerformed
+    flipSelectedTileVertical();
+  }//GEN-LAST:event_flipVerticalMIActionPerformed
+
+  private void moveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveMIActionPerformed
+    this.mode = Mode.MOVE;
+  }//GEN-LAST:event_moveMIActionPerformed
+
+  private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
+    this.removeTiles(selectedTiles);
+  }//GEN-LAST:event_deleteMIActionPerformed
+
+  private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
+    editSelectedTileProperties();
+  }//GEN-LAST:event_propertiesMIActionPerformed
+
+  private void formMouseDragged(MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
+    mouseDragAction(evt);
+  }//GEN-LAST:event_formMouseDragged
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPopupMenu curvedPopupMenu;

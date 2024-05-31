@@ -316,7 +316,7 @@ public class LayoutPanel extends JPanel {
     });
     operationsPM.add(deleteMI);
 
-    setMinimumSize(new Dimension(1000, 160));
+    setMinimumSize(new Dimension(1400, 900));
     setOpaque(false);
     setPreferredSize(new Dimension(1400, 900));
     addComponentListener(new ComponentAdapter() {
@@ -333,8 +333,8 @@ public class LayoutPanel extends JPanel {
     setLayout(new BorderLayout());
 
     topPanel.setMaximumSize(new Dimension(32767, 50));
-    topPanel.setMinimumSize(new Dimension(1000, 50));
-    topPanel.setPreferredSize(new Dimension(1000, 50));
+    topPanel.setMinimumSize(new Dimension(1400, 50));
+    topPanel.setPreferredSize(new Dimension(1400, 50));
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     topPanel.setLayout(flowLayout1);
@@ -768,12 +768,14 @@ public class LayoutPanel extends JPanel {
     add(topPanel, BorderLayout.NORTH);
 
     canvasScrollPane.setDoubleBuffered(true);
-    canvasScrollPane.setMinimumSize(new Dimension(110, 110));
-    canvasScrollPane.setPreferredSize(new Dimension(1000, 700));
+    canvasScrollPane.setMinimumSize(new Dimension(1400, 850));
+    canvasScrollPane.setPreferredSize(new Dimension(1400, 850));
     canvasScrollPane.setViewportView(canvas);
 
-    canvas.setMinimumSize(new Dimension(100, 100));
-    canvas.setPreferredSize(new Dimension(895, 695));
+    canvas.setMinimumSize(new Dimension(1398, 848));
+    canvas.setName(""); // NOI18N
+    canvas.setPreferredSize(new Dimension(1398, 848));
+    canvas.setLayout(new BorderLayout());
     canvasScrollPane.setViewportView(canvas);
 
     add(canvasScrollPane, BorderLayout.CENTER);
