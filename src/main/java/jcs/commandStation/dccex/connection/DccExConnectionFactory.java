@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 fransjacobs.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,6 @@ import jcs.util.RunUtil;
 import jcs.util.SerialPortUtil;
 import org.tinylog.Logger;
 
-/**
- *
- * @author Frans Jacobs
- */
 public class DccExConnectionFactory {
 
   private static DccExConnectionFactory instance;

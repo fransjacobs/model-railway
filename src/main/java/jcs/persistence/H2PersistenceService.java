@@ -226,12 +226,12 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId) {
     DecoderType dt;
-    if(decoderType != null) {
+    if (decoderType != null) {
       dt = decoderType;
     } else {
       dt = DecoderType.DCC;
     }
-            
+
     Object[] args = new Object[]{address, dt.getDecoderType(), commandStionId};
 
     LocomotiveBean loco = database.where("address=? and decoder_type=? and command_station_id=?", args).first(LocomotiveBean.class);
@@ -428,6 +428,14 @@ public class H2PersistenceService implements PersistenceService {
   public List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId) {
     List<AccessoryBean> accessories = database.where("command_station_id = ?", commandStationId).results(AccessoryBean.class);
     return accessories;
+  }
+
+  @Override
+  public boolean isAccessoryLocked(String accessoryId) {
+    String commandStationId = getDefaultCommandStation().getId();
+    Object[] args = new Object[]{accessoryId, commandStationId};
+    Long count = database.sql("select count(*) from accessories a join tiles t on a.id = t.accessory_id join route_elements re on t.id = re.tile_id join routes r on re.route_id = r.id where r.locked = true and a.id = ? and command_station_id = ?", args).first(Long.class);
+    return count >= 1;
   }
 
   @Override

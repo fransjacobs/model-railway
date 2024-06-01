@@ -30,7 +30,7 @@ public class DccExMessageFactory {
     txRx.put("0", "p");
     txRx.put("1", "p");
     txRx.put("J", "j");
-    txRx.put("=", "=");
+    //txRx.put("=", "=");
     txRx.put("D", "S");
     txRx.put("s", "i");
   }

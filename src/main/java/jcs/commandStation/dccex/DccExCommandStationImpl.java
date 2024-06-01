@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,10 +55,6 @@ import jcs.util.KeyValuePair;
 import jcs.util.SerialPortUtil;
 import org.tinylog.Logger;
 
-/**
- *
- * @author Frans Jacobs
- */
 public class DccExCommandStationImpl extends AbstractController implements DecoderController, AccessoryController {
 
   private DccExConnection connection;
@@ -170,7 +166,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
             //With a serial connection de version information is send with the startup messages
             now = System.currentTimeMillis();
             long start = now;
-            timeout = now + (conType == ConnectionType.NETWORK ? 200L : 10000L);
+            timeout = now + (conType == ConnectionType.NETWORK ? 200L : 15000L);
 
             while (this.mainDevice == null && now < timeout) {
               pause(100);
@@ -183,7 +179,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
               }
             } else {
               //TODO: Fix this!
-              if (conType == ConnectionType.NETWORK || conType == ConnectionType.SERIAL) {
+              if (conType == ConnectionType.NETWORK) {
                 //When using the net work the DCC-EX does not braodcast all kind of setting so ask them
                 JCS.logProgress("Obtaining Device information...");
                 String response = connection.sendMessage(DccExMessageFactory.versionHarwareInfoRequest());
@@ -305,7 +301,9 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       if ("p".equals(rm.getOpcode())) {
         this.power = "1".equals(rm.getFilteredContent());
         PowerEvent pe = new PowerEvent(power);
-        fireAllPowerEventListeners(pe);
+
+        //fireAllPowerEventListeners(pe);
+        executor.execute(() -> fireAllPowerEventListeners(pe));
       }
     }
     return this.power;
@@ -566,6 +564,19 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     }
   }
 
+  private void handleInfoMessage(String message) {
+    //executor.execute(() -> fireAllPowerEventListeners(powerEvent));
+    Logger.trace("Info: " + message);
+  }
+
+  private void handleLCDMessage(String message) {
+    Logger.trace("LCD: " + message);
+  }
+
+  private void handleTrackMessage(String opcode, String content) {
+    Logger.trace(opcode+" -> "+content);
+  }
+  
   private class MessageListener implements DccExMessageListener {
 
     private final DccExCommandStationImpl commandStation;
@@ -574,29 +585,28 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       this.commandStation = commandStation;
     }
 
-//    private static int getIntValue(String s) {
-//      int r = -1;
-//      if (s != null && s.length() > 0) {
-//        Integer.parseUnsignedInt(s);
-//      }
-//      return r;
-//    }
     @Override
     public void onMessage(DccExMessage message) {
       try {
         if (message.isValid()) {
           String opcode = "";
           String content;
-          if (message.isDiagnosticMessage()) {
+          if (message.isInfoMessage()) {
             content = message.getFilteredDiagnosticMessage();
+            commandStation.handleInfoMessage(content);
+          } else if (message.isLCDMessage()) {
+            content = message.getFilteredDiagnosticMessage();
+            commandStation.handleLCDMessage(content);
           } else {
             opcode = message.getOpcode();
             content = message.getFilteredContent();
           }
 
           if (debug) {
-            if (message.isDiagnosticMessage()) {
-              Logger.trace("D mse: " + content);
+            if (message.isInfoMessage()) {
+              //Logger.trace("Info msg: " + content);
+            } else if (message.isLCDMessage()) {
+              //Logger.trace("LCD msg: " + content);
             } else {
               Logger.trace("Opcode: " + opcode + " Content: " + content);
             }
@@ -605,7 +615,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
           switch (opcode) {
             case "p" -> {
               // Power on/off response. The character right after the opcode represents the power state
-              boolean power = "1".equals(content);
+              boolean power = "1".equals(content) || "1 MAIN".equals(content);
               PowerEvent pe = new PowerEvent(power);
               this.commandStation.notifyPowerEventListeners(pe);
             }
@@ -626,23 +636,24 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
                     d.setSerial(dccexdev[i]);
                 }
               }
-              this.commandStation.mainDevice = d;
-              Logger.trace("Main Device set to: " + d);
+              commandStation.mainDevice = d;
+              //Logger.trace("Main Device set to: " + d);
             }
             case "c" -> {
             }
             case "l" -> {
               // Locomotive changed.
               CabEvent ce = new CabEvent(content, this.commandStation.getCommandStationBean().getId());
-              this.commandStation.notifyLocomotiveEventListeners(ce);
+              commandStation.notifyLocomotiveEventListeners(ce);
             }
             case "=" -> {
-              DccExMeasurementEvent me1 = new DccExMeasurementEvent(opcode, content);
-              this.commandStation.handleMeasurement(me1);
+              commandStation.handleTrackMessage(opcode, content);
+              //DccExMeasurementEvent me1 = new DccExMeasurementEvent(opcode, content);
+              //this.commandStation.handleMeasurement(me1);
             }
             case "j" -> {
               DccExMeasurementEvent me2 = new DccExMeasurementEvent(opcode, content);
-              this.commandStation.handleMeasurement(me2);
+              commandStation.handleMeasurement(me2);
             }
             case "H" -> {
             }
@@ -686,11 +697,11 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       csb.setDescription("DCC-EX");
       csb.setClassName("jcs.commandStation.dccex.DccExCommandStationImpl");
       //csb.setConnectVia("NETWORK");
-      //csb.setIpAddress("192.168.178.73");
+      //csb.setIpAddress("192.168.1.185");
       csb.setNetworkPort(2560);
       csb.setConnectVia("SERIAL");
-      //csb.setSerialPort("cu.usbmodem14101");
-      csb.setSerialPort("ttyACM0");
+      csb.setSerialPort("cu.usbmodem14101");
+      //csb.setSerialPort("ttyACM0");
 
       csb.setDefault(true);
       csb.setIpAutoConfiguration(false);

@@ -90,11 +90,6 @@
             <artifactId>batik-transcoder</artifactId>
             <version>1.17</version>
         </dependency>
-        <!--dependency>
-            <groupId>com.thizzer.jtouchbar</groupId>
-            <artifactId>jtouchbar</artifactId>
-            <version>1.0.0</version>
-        </dependency-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -160,7 +155,7 @@
         <dependency>
             <groupId>com.fazecast</groupId>
             <artifactId>jSerialComm</artifactId>
-            <version>2.10.4</version>
+            <version>2.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.external</groupId>

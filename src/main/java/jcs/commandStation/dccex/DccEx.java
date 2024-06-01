@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 package jcs.commandStation.dccex;
 
-/**
- *
- * @author frans
- */
 interface DccEx {
 
   public static final String REQ_TRACK_CURRENT = "<c>";

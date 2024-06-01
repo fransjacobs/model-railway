@@ -90,8 +90,9 @@ insert into routes (id,from_tile_id,from_suffix,to_tile_id, to_suffix, route_col
 insert into route_elements (route_id, node_id, tile_id, accessory_value,order_seq) values
    ('[bk-1+]->[bk-2-]', 'bk-1+','bk-1',null,0),
    ('[bk-1+]->[bk-2-]', 'ct-2','ct-2',null,1),
-   ('[bk-1+]->[bk-2-]', 'st-1','st-1',null,2),
-   ('[bk-1+]->[bk-2-]', 'bk2-','bk-2',null,3);
+   ('[bk-1+]->[bk-2-]', 'sw-1','sw-1','G',2),
+   ('[bk-1+]->[bk-2-]', 'st-1','st-1',null,3),
+   ('[bk-1+]->[bk-2-]', 'bk2-','bk-2',null,4);
 
 commit;
 

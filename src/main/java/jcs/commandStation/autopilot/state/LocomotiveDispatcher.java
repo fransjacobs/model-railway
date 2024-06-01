@@ -218,10 +218,12 @@ public class LocomotiveDispatcher { //extends Thread {
   }
 
   void clearDepartureIgnoreEventHandlers() {
-    String minSensorId = this.departureBlock.getMinSensorId();
-    String plusSensorId = this.departureBlock.getPlusSensorId();
-    autoPilot.removeHandler(minSensorId);
-    autoPilot.removeHandler(plusSensorId);
+    if (this.departureBlock != null) {
+      String minSensorId = this.departureBlock.getMinSensorId();
+      autoPilot.removeHandler(minSensorId);
+      String plusSensorId = this.departureBlock.getPlusSensorId();
+      autoPilot.removeHandler(plusSensorId);
+    }
   }
 
   synchronized void onIgnoreEvent(SensorEvent event) {

@@ -77,7 +77,7 @@ class DccExSerialConnection implements DccExConnection {
       commPort.setParity(0);
 
       portOpen = commPort.openPort();
-      commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+      commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 10000, 0);
       writer = new BufferedWriter(new OutputStreamWriter(commPort.getOutputStream()));
 
       DccExSerialPortListener listener = new DccExSerialPortListener(this);

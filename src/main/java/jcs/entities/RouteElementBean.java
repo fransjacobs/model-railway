@@ -37,6 +37,7 @@ public class RouteElementBean implements Serializable {
   private String accessoryState;
   private Integer elementOrder;
   private String incomingSide;
+  private boolean locked;
 
   private TileBean tileBean;
 
@@ -145,6 +146,15 @@ public class RouteElementBean implements Serializable {
     } else {
       this.incomingSide = null;
     }
+  }
+
+  @Transient
+  public boolean isLocked() {
+    return locked;
+  }
+
+  public void setLocked(boolean locked) {
+    this.locked = locked;
   }
 
   @Transient

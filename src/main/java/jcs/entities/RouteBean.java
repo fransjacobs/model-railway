@@ -155,6 +155,13 @@ public class RouteBean implements Serializable {
 
   public void setLocked(boolean locked) {
     this.locked = locked;
+
+    //also lock unlock the routeselements
+    if (routeElements != null && !routeElements.isEmpty()) {
+      for (RouteElementBean reb : this.routeElements) {
+        reb.setLocked(locked);
+      }
+    }
   }
 
   @Column(name = "status", length = 255)
@@ -186,6 +193,10 @@ public class RouteBean implements Serializable {
 
   public void setRouteElements(List<RouteElementBean> routeElements) {
     this.routeElements = routeElements;
+
+    for (RouteElementBean reb : this.routeElements) {
+      reb.setLocked(this.locked);
+    }
   }
 
   @Override

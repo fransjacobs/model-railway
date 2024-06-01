@@ -82,6 +82,8 @@ public interface PersistenceService {
   // Accessories
   List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
 
+  boolean isAccessoryLocked(String accessoryId);
+
   List<AccessoryBean> getTurnouts();
 
   List<AccessoryBean> getSignals();
@@ -124,7 +126,7 @@ public interface PersistenceService {
   void remove(RouteBean routeBean);
 
   BlockBean getBlockByLocomotiveId(Long locomotiveId);
-  
+
   List<BlockBean> getBlocks();
 
   BlockBean getBlock(String id);
