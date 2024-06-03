@@ -42,6 +42,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   private final Map<Integer, JToggleButton> buttons;
   private LocomotiveBean locomotive;
   private final ExecutorService executor;
+  private boolean initButtons = false;
 
   public FunctionsPanel() {
     buttons = new HashMap<>();
@@ -119,6 +120,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       btn.setText("");
       btn.setEnabled(false);
 
+      //btn.setForeground(new java.awt.Color(0, 0, 0));
       btn.setForeground(new java.awt.Color(204, 204, 204));
       btn.setBackground(new java.awt.Color(204, 204, 204));
 
@@ -128,42 +130,44 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
   public void setLocomotive(LocomotiveBean locomotive) {
     resetButtons();
+    initButtons = true;
     if (PersistenceFactory.getService() != null && locomotive != null) {
       this.locomotive = locomotive;
       Map<Integer, FunctionBean> functions = locomotive.getFunctions();
 
-      //Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
-
+      Logger.trace("Loc: " + this.locomotive.getName() + " has " + functions.size() + " functions");
       for (FunctionBean fb : functions.values()) {
         Integer fnr = fb.getNumber();
         JToggleButton btn = this.buttons.get(fnr);
 
         //Logger.trace("Function: " + fb.getNumber() + " Type: " + fb.getFunctionType() + " Value: " + fb.getValue() + " isMomentary: " + fb.isMomentary());
-
         if (fb.getInActiveIconImage() != null) {
           btn.setIcon(new ImageIcon(fb.getInActiveIconImage()));
         } else {
           btn.setText("F" + fb.getNumber());
-          //Logger.trace("Missing Icon: " + fb.getInActiveIcon()+" Button Text: "+btn.getText());
+          //Logger.trace("Missing Icon: " + fb.getInActiveIcon() + " Button Text: " + btn.getText());
         }
 
         if (fb.getActiveIconImage() != null) {
           btn.setSelectedIcon(new ImageIcon(fb.getActiveIconImage()));
         } else {
           btn.setText("F" + fb.getNumber());
-          //Logger.trace("Missing Icon: " + fb.getActiveIcon()+" Button Text: "+btn.getText());
+          //Logger.trace("Missing Icon: " + fb.getActiveIcon() + " Button Text: " + btn.getText());
         }
 
-        boolean val = fb.getValue() == 1;
-        btn.setSelected(val);
-        
-        //Logger.trace("Button "+btn.getActionCommand()+" selected: "+btn.isSelected());
-        
         btn.setActionCommand("F" + fb.getNumber());
         btn.setEnabled(true);
+
+        boolean isOn = fb.getValue() == 1;
+        if (isOn) {
+          btn.doClick();
+        }
+        //Logger.trace("Button " + btn.getActionCommand() + " selected: " + btn.isSelected());
+
       }
       this.buttonsTP.setEnabled(true);
     }
+    initButtons = false;
   }
 
   public LocomotiveBean getLocomotive() {
@@ -173,13 +177,26 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   private void buttonActionPerformed(ActionEvent evt) {
     JToggleButton src = (JToggleButton) evt.getSource();
     boolean value = src.isSelected();
+
+    if (src.getIcon() == null) {
+      if (value) {
+        src.setForeground(new java.awt.Color(0, 0, 0));
+        src.setFont(new java.awt.Font("sansserif", 1, 13));
+      } else {
+        src.setForeground(new java.awt.Color(204, 204, 204));
+        src.setFont(new java.awt.Font("sansserif", 0, 13));
+      }
+    }
+
     Logger.trace(evt.getActionCommand() + ": " + (value ? "On" : "Off"));
     Integer functionNumber = Integer.decode(evt.getActionCommand().replace("F", ""));
 
     FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
-    Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
 
-    executor.execute(() -> changeFunction(value, functionNumber, locomotive));
+    if (!initButtons) {
+      Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
+      executor.execute(() -> changeFunction(value, functionNumber, locomotive));
+    }
   }
 
   private void changeFunction(boolean newValue, Integer functionNumber, LocomotiveBean locomotiveBean) {
@@ -267,7 +284,6 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
     f0TB.setMaximumSize(new java.awt.Dimension(40, 40));
     f0TB.setMinimumSize(new java.awt.Dimension(40, 40));
     f0TB.setName("f0TB"); // NOI18N
-    f0TB.setOpaque(true);
     f0TB.setPreferredSize(new java.awt.Dimension(40, 40));
     f0TB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -944,7 +960,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       if (JCS.getJcsCommandStation() != null) {
 
         //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(49189L);
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(16398L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(39L);
         Logger.debug(loc);
 
         testPanel.setLocomotive(loc);

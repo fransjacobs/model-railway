@@ -16,7 +16,9 @@
 package jcs.ui;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import jcs.entities.LocomotiveBean;
+import jcs.persistence.PersistenceFactory;
 
 /**
  *
@@ -26,23 +28,30 @@ public class DriverCabDialog extends javax.swing.JDialog {
 
   /**
    * Creates new form DrivedCabDialog
+   *
+   * @param parent
+   * @param modal
    */
-  public DriverCabDialog(java.awt.Frame parent, boolean modal) {
+  public DriverCabDialog(JFrame parent, boolean modal) {
     this(parent, null, modal);
   }
 
   public DriverCabDialog(java.awt.Frame parent, LocomotiveBean locomotiveBean, boolean modal) {
     super(parent, modal);
     initComponents();
-    this.driverCabPanel.setLocomotiveBean(locomotiveBean);
-    if (locomotiveBean != null) {
 
-      if (locomotiveBean.getLocIcon() != null) {
-        this.imageLabel.setIcon(new ImageIcon(locomotiveBean.getLocIcon()));
+    //Refresh settings
+    LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
+
+    this.driverCabPanel.setLocomotiveBean(locomotive);
+    if (locomotive != null) {
+
+      if (locomotive.getLocIcon() != null) {
+        this.imageLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
         this.imageLabel.setText(null);
-        this.locNameLabel.setText(locomotiveBean.getName());
+        this.locNameLabel.setText(locomotive.getName());
       } else {
-        this.imageLabel.setText(locomotiveBean.getName());
+        this.imageLabel.setText(locomotive.getName());
         this.locNameLabel.setText("");
       }
     }
