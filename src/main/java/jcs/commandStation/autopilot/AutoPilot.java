@@ -51,7 +51,6 @@ public class AutoPilot extends Thread {
   //Need a list to be able to unregister
   private final List<SensorListener> sensorListeners = new ArrayList<>();
 
-  //private DispatcherTestDialog dispatcherDialog;
   private AutoPilot() {
   }
 
@@ -138,7 +137,7 @@ public class AutoPilot extends Thread {
       //DispatcherTestDialog.showDialog(dispatcher);
       //lsm.startLocomotive();
     } else {
-      LocomotiveDispatcher lsm = this.dispatchers.get("LDT->" + locomotiveBean.getName());
+      LocomotiveDispatcher lsm = this.dispatchers.get(locomotiveBean.getName());
       if (lsm != null) {
         lsm.stopRunning();
       }
@@ -278,6 +277,15 @@ public class AutoPilot extends Thread {
 
   public boolean isRunning() {
     return running;
+  }
+
+  public boolean isRunning(LocomotiveBean locomotive) {
+    if (this.running && this.dispatchers.containsKey(locomotive.getName())) {
+      LocomotiveDispatcher dispatcher = this.dispatchers.get(locomotive.getName());
+      return dispatcher.isRunning();
+    } else {
+      return false;
+    }
   }
 
   public void startAutoPilot() {

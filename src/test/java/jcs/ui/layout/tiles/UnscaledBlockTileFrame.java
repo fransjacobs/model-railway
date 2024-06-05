@@ -102,12 +102,13 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     bbe.setId(blockTile.getId());
     bbe.setTileId(blockTile.getId());
     bbe.setDescription("Blok");
-    bbe.setArrivalSuffix((String) this.incomingSideCB.getSelectedItem());
+    //bbe.setArrivalSuffix((String) this.incomingSideCB.getSelectedItem());
+    bbe.setArrivalSuffix("");
 
     bbe.setBlockState((BlockState) this.stateCB.getSelectedItem());
     bbe.setReverseArrival(this.reverseArrivalCB.isSelected());
 
-    bbe.setArrivalSuffix(getIncomingSuffix());
+    //bbe.setArrivalSuffix(getIncomingSuffix());
 
     if (this.showLocCB.isSelected()) {
       bbe.setLocomotive(createLocomotiveBean());

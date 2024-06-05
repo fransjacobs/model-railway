@@ -101,7 +101,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
         } else {
           this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
-        this.startLocButton.setEnabled(true);
+
+        this.startLocButton.setEnabled(AutoPilot.getInstance().isRunning());
+        this.startLocButton.setSelected(AutoPilot.getInstance().isRunning(bb.getLocomotive()));
       } else {
         this.locomotiveCB.setSelectedItem(emptyBean);
         this.startLocButton.setEnabled(false);
@@ -241,10 +243,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
     flowLayout7.setAlignOnBaseline(true);
     leftPanel.setLayout(flowLayout7);
 
-    startLocButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/circle-stop.png"))); // NOI18N
+    startLocButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-right-24.png"))); // NOI18N
     startLocButton.setToolTipText("Start Locomotive");
+    startLocButton.setDoubleBuffered(true);
     startLocButton.setPreferredSize(new java.awt.Dimension(35, 35));
-    startLocButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/right-24.png"))); // NOI18N
+    startLocButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/circle-stop.png"))); // NOI18N
     startLocButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         startLocButtonActionPerformed(evt);

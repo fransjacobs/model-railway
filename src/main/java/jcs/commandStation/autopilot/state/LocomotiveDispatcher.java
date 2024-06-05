@@ -118,6 +118,8 @@ public class LocomotiveDispatcher { //extends Thread {
     if (this.thread != null && this.thread.isRunning()) {
       this.thread.stopRunning();
     }
+    
+    disposeDialog();
   }
 
   //For testing....

@@ -541,14 +541,15 @@
             <Component class="javax.swing.JToggleButton" name="startLocButton">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/circle-stop.png"/>
+                  <Image iconType="3" name="/media/direction-right-24.png"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="Start Locomotive"/>
+                <Property name="doubleBuffered" type="boolean" value="true"/>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[35, 35]"/>
                 </Property>
                 <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/right-24.png"/>
+                  <Image iconType="3" name="/media/circle-stop.png"/>
                 </Property>
               </Properties>
               <Events>

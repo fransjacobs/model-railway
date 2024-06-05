@@ -48,6 +48,8 @@ class InBlockState extends DispatcherState {
     BlockBean departureBlock = this.dispatcher.getDepartureBlock();
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
+    departureBlock.setReverseArrival(false);
+    departureBlock.setArrivalSuffix(null);
 
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);

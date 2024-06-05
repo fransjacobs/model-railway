@@ -201,8 +201,7 @@ public class BlockBean {
     this.locomotiveId = locomotiveId;
   }
 
-  @Column(
-          name = "reverse_arrival_side",
+  @Column(name = "reverse_arrival_side",
           nullable = false,
           columnDefinition = "reverse_arrival_side bool default '1'")
   public boolean isReverseArrival() {
@@ -263,20 +262,17 @@ public class BlockBean {
     String inSuffix = arrivalSuffix;
     if (inSuffix == null) {
       //use a default
-      inSuffix = "-";
+      inSuffix = "";
     }
 
-    String departureSuffix = "+";
-    if (reverseArrival) {
-      if ("-".equals(inSuffix)) {
-        inSuffix = "+";
-      } else {
-        inSuffix = "-";
-      }
-    }
-    if ("+".equals(inSuffix)) {
+    String departureSuffix = "";
+    if ("-".equals(inSuffix) && !reverseArrival) {
+      departureSuffix = "+";
+    } else if ("+".equals(inSuffix) && !reverseArrival) {
       departureSuffix = "-";
-    } else {
+    } else if ("-".equals(inSuffix) && reverseArrival) {
+      departureSuffix = "-";
+    } else if ("+".equals(inSuffix) && reverseArrival) {
       departureSuffix = "+";
     }
     return departureSuffix;

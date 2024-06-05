@@ -44,6 +44,7 @@ import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
+import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -386,13 +387,6 @@ public class Block extends AbstractTile implements Tile {
     }
   }
 
-//  private LocomotiveBean.Direction getLocomotiveDirection() {
-//    if (getBlockBean() != null && getBlockBean().getLocomotive() != null) {
-//      return getBlockBean().getLocomotive().getDirection();
-//    } else {
-//      return LocomotiveBean.Direction.FORWARDS;
-//    }
-//  }
   @Override
   public void renderTile(Graphics2D g2) {
     int xx = 20;
@@ -409,39 +403,29 @@ public class Block extends AbstractTile implements Tile {
     g2.setPaint(blockStateColor);
     g2.fillRoundRect(xx, yy, rw, rh, 15, 15);
 
-    // A block has a direction of travel. At first a plus (+) and a Minus(-) at the side
-    // was used, but to give more room the - is ommitted and the plus is replaced by a thicker line
-    // The default the EAST direction, the block will was like: -[ - bk-nn + ]-
-    // The new default the EAST direction, the block will look like: -[ bk-nn  ]]-
     g2.setStroke(new BasicStroke(20, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
     g2.setPaint(Color.darkGray);
     g2.drawLine(rw + 20, yy - 0, rw + 20, yy + 300);
 
-    //When there is a train in the block mark the direction of travel, ie whether the train goes
-    //forwards or backwards by drawing a little triangle in the the block 
-    //if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
-    //boolean reverseArrival = getBlockBean().isReverseArrival();
-    //private String getDepartureSuffix() {
-    String departureSuffix;
-    if (getBlockBean() != null) {
-      departureSuffix = getBlockBean().getDepartureSuffix();
-    } else {
-      departureSuffix = "+";
-    }
-
-    //Logger.trace("departureSuffix: " + departureSuffix);
-    if ("+".equals(departureSuffix)) {
-      //if (reverseArrival) {
-      //  g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-      //} else {
-      g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-      //}
-    } else {
-      //if (reverseArrival) {
-      //  g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-      //} else {
-      g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-      //}
+    //When there is a locomotive in the block mark the direction of travel.
+    //The default, forwards is in the direction of the block orientation, i.e. the +
+    if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
+      boolean reverseArrival = getBlockBean().isReverseArrival();
+      if (getBlockBean().getDepartureSuffix() == null || "".equals(getBlockBean().getDepartureSuffix())) {
+        if ((LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection() && !reverseArrival)
+                || (LocomotiveBean.Direction.BACKWARDS == getBlockBean().getLocomotive().getDirection() && reverseArrival)) {
+          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+        } else {
+          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+        }
+      } else {
+        //A departure side is set by the dispatcher
+        if ("+".equals(getBlockBean().getDepartureSuffix())) {
+          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+        } else {
+          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+        }
+      }
     }
 
     drawName(g2);
@@ -487,13 +471,13 @@ public class Block extends AbstractTile implements Tile {
           }
           int yy = y - h / 2;
 
-          locImage = ImageUtil.flipVertically(locImage);
+          //locImage = ImageUtil.flipVertically(locImage);
 
           g2d.drawImage(locImage, xx, yy, null);
         }
         case SOUTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
-          locImage = ImageUtil.flipHorizontally(locImage);
+          //locImage = ImageUtil.flipHorizontally(locImage);
 
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
