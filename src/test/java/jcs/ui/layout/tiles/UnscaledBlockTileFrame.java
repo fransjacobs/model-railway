@@ -19,6 +19,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -109,7 +110,6 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     bbe.setReverseArrival(this.reverseArrivalCB.isSelected());
 
     //bbe.setArrivalSuffix(getIncomingSuffix());
-
     if (this.showLocCB.isSelected()) {
       bbe.setLocomotive(createLocomotiveBean());
     } else {
@@ -125,8 +125,13 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
     this.blockTileCanvas.addTile(blockTile);
 
-    blockTile.drawTile((Graphics2D) getGraphics(), this.showCenterCB.isSelected());
-    this.centerSP.getViewport().revalidate();
+    BufferedImage img = new BufferedImage(blockTileCanvas.getWidth(), blockTileCanvas.getHeight(), BufferedImage.TYPE_INT_RGB);
+    Graphics2D g2d = img.createGraphics();
+
+    blockTile.drawTile(g2d, this.showCenterCB.isSelected());
+
+    this.centerSP.getViewport().validate();
+    repaint();
   }
 
   private void changeOrientation() {
@@ -152,8 +157,8 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     Point cc = new Point(Math.abs(vps.width / 2), Math.abs(vps.height / 2));
     blockTile.setCenter(cc);
 
-    repaint();
     this.centerSP.getViewport().revalidate();
+    repaint();
   }
 
   /**
@@ -321,7 +326,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     Orientation orientation = blockTile.getOrientation();
     this.orientationCB.setSelectedItem(orientation);
     Logger.trace("Blok is rotated to " + blockTile.getOrientation());
-    this.repaint();
+    repaint();
   }//GEN-LAST:event_rotateButtonActionPerformed
 
   private void showLocCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLocCBActionPerformed

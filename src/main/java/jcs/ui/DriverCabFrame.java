@@ -168,11 +168,12 @@ public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDire
       this.setTitle(locomotive.getName());
 
       if (locomotive.getLocIcon() != null) {
+        Image img = locomotive.getLocIcon();
         if (Direction.BACKWARDS == locomotive.getDirection()) {
-          Image img = ImageUtil.flipVertically(locomotive.getLocIcon());
+          img = ImageUtil.flipVertically(locomotive.getLocIcon());
           this.locoLabel.setIcon(new ImageIcon(img));
         } else {
-          this.locoLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
+          this.locoLabel.setIcon(new ImageIcon(img));
         }
         this.locoLabel.setText(null);
       } else {
@@ -191,13 +192,15 @@ public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDire
   public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
     LocomotiveBean locomotive = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
 
-    if (Direction.BACKWARDS == directionEvent.getNewDirection()) {
-      Image img = ImageUtil.flipVertically(locomotive.getLocIcon());
-      this.locoLabel.setIcon(new ImageIcon(img));
-    } else {
-      this.locoLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
+    Image img = locomotive.getLocIcon();
+    if (img != null) {
+      if (Direction.BACKWARDS == locomotive.getDirection()) {
+        img = ImageUtil.flipVertically(locomotive.getLocIcon());
+        this.locoLabel.setIcon(new ImageIcon(img));
+      } else {
+        this.locoLabel.setIcon(new ImageIcon(img));
+      }
     }
-
   }
 
   class LocomotiveBeanByNameSorter implements Comparator<LocomotiveBean> {

@@ -44,7 +44,6 @@ import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
-import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -415,8 +414,11 @@ public class Block extends AbstractTile implements Tile {
         if ((LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection() && !reverseArrival)
                 || (LocomotiveBean.Direction.BACKWARDS == getBlockBean().getLocomotive().getDirection() && reverseArrival)) {
           g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+
         } else {
           g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
         }
       } else {
         //A departure side is set by the dispatcher
@@ -441,7 +443,7 @@ public class Block extends AbstractTile implements Tile {
   protected void overlayLocImage(Graphics2D g2d) {
     Image locImage = getLocImage();
     String departureSuffix;
-    if (getBlockBean() != null) {
+    if (getBlockBean() != null && !"".equals(getBlockBean().getDepartureSuffix())) {
       departureSuffix = getBlockBean().getDepartureSuffix();
     } else {
       departureSuffix = "+";
@@ -471,13 +473,11 @@ public class Block extends AbstractTile implements Tile {
           }
           int yy = y - h / 2;
 
-          //locImage = ImageUtil.flipVertically(locImage);
-
           g2d.drawImage(locImage, xx, yy, null);
         }
         case SOUTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
-          //locImage = ImageUtil.flipHorizontally(locImage);
+          locImage = ImageUtil.flipHorizontally(locImage);
 
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
@@ -495,6 +495,7 @@ public class Block extends AbstractTile implements Tile {
         }
         case NORTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
+          locImage = ImageUtil.flipHorizontally(locImage);
 
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
@@ -513,12 +514,12 @@ public class Block extends AbstractTile implements Tile {
         default -> {
           //EAST
           int xx;
-          if ("+".equals(departureSuffix)) {
-            int maxX = x + width / 2 - 10;
-            xx = maxX - w;
-          } else {
+          if ("-".equals(departureSuffix)) {
             int minX = x - width / 2 + 10;
             xx = minX;
+          } else {
+            int maxX = x + width / 2 - 10;
+            xx = maxX - w;
           }
           int yy = y - h / 2;
           g2d.drawImage(locImage, xx, yy, null);

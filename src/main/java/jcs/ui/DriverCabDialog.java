@@ -15,16 +15,23 @@
  */
 package jcs.ui;
 
+import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import jcs.commandStation.events.LocomotiveDirectionEvent;
+import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.util.ImageUtil;
+import org.tinylog.Logger;
 
 /**
  *
  * @author FJA
  */
-public class DriverCabDialog extends javax.swing.JDialog {
+public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDirectionEventListener {
 
   /**
    * Creates new form DrivedCabDialog
@@ -39,20 +46,46 @@ public class DriverCabDialog extends javax.swing.JDialog {
   public DriverCabDialog(java.awt.Frame parent, LocomotiveBean locomotiveBean, boolean modal) {
     super(parent, modal);
     initComponents();
-
-    //Refresh settings
-    LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
-
-    this.driverCabPanel.setLocomotiveBean(locomotive);
-    if (locomotive != null) {
+    initListener();
+    
+    if (locomotiveBean != null) {
+      //Refresh settings
+      LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
+      this.driverCabPanel.setLocomotiveBean(locomotive);
 
       if (locomotive.getLocIcon() != null) {
-        this.imageLabel.setIcon(new ImageIcon(locomotive.getLocIcon()));
+        Image img = locomotive.getLocIcon();
+        if (LocomotiveBean.Direction.BACKWARDS == locomotive.getDirection()) {
+          img = ImageUtil.flipVertically(locomotive.getLocIcon());
+          this.imageLabel.setIcon(new ImageIcon(img));
+        } else {
+          this.imageLabel.setIcon(new ImageIcon(img));
+        }
         this.imageLabel.setText(null);
         this.locNameLabel.setText(locomotive.getName());
       } else {
         this.imageLabel.setText(locomotive.getName());
         this.locNameLabel.setText("");
+      }
+    }
+
+  }
+
+  private void initListener() {
+    this.driverCabPanel.setDirectionListener(this);
+  }
+
+  @Override
+  public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
+    LocomotiveBean locomotive = this.driverCabPanel.getLocomotiveBean();
+
+    Image img = locomotive.getLocIcon();
+    if (img != null) {
+      if (LocomotiveBean.Direction.BACKWARDS == locomotive.getDirection()) {
+        img = ImageUtil.flipVertically(locomotive.getLocIcon());
+        this.imageLabel.setIcon(new ImageIcon(img));
+      } else {
+        this.imageLabel.setIcon(new ImageIcon(img));
       }
     }
   }
@@ -95,42 +128,27 @@ public class DriverCabDialog extends javax.swing.JDialog {
    * @param args the command line arguments
    */
   public static void main(String args[]) {
-    /* Set the Nimbus look and feel */
-    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-     */
     try {
-      for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-        if ("Nimbus".equals(info.getName())) {
-          javax.swing.UIManager.setLookAndFeel(info.getClassName());
-          break;
-        }
+      String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
+      if (plaf != null) {
+        UIManager.setLookAndFeel(plaf);
       }
-    } catch (ClassNotFoundException ex) {
-      java.util.logging.Logger.getLogger(DriverCabDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    } catch (InstantiationException ex) {
-      java.util.logging.Logger.getLogger(DriverCabDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    } catch (IllegalAccessException ex) {
-      java.util.logging.Logger.getLogger(DriverCabDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-      java.util.logging.Logger.getLogger(DriverCabDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+      Logger.error(ex);
     }
-    //</editor-fold>
-    //</editor-fold>
+
+    LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(7L);
 
     /* Create and display the dialog */
-    java.awt.EventQueue.invokeLater(new Runnable() {
-      public void run() {
-        DriverCabDialog dialog = new DriverCabDialog(new javax.swing.JFrame(), true);
-        dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-          @Override
-          public void windowClosing(java.awt.event.WindowEvent e) {
-            System.exit(0);
-          }
-        });
-        dialog.setVisible(true);
-      }
+    java.awt.EventQueue.invokeLater(() -> {
+      DriverCabDialog dialog = new DriverCabDialog(new javax.swing.JFrame(), loc, true);
+      dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        @Override
+        public void windowClosing(java.awt.event.WindowEvent e) {
+          System.exit(0);
+        }
+      });
+      dialog.setVisible(true);
     });
   }
 

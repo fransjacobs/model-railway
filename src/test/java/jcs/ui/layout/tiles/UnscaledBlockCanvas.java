@@ -126,8 +126,7 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
   }
 
   @Override
-  public void propertyChange(PropertyChangeEvent evt
-  ) {
+  public void propertyChange(PropertyChangeEvent evt) {
     if ("repaintTile".equals(evt.getPropertyName())) {
       Tile tile = (Tile) evt.getNewValue();
       this.repaint(tile.getBounds());

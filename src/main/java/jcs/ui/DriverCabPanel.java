@@ -49,10 +49,11 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   public DriverCabPanel(LocomotiveBean locomotiveBean) {
-    this.locomotiveBean = locomotiveBean;
     executor = Executors.newCachedThreadPool();
     initComponents();
     postInit();
+    setLocomotiveBean(locomotiveBean);
+
   }
 
   private void postInit() {
@@ -62,7 +63,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(this);
       JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(this);
       JCS.getJcsCommandStation().addPowerEventListener(this);
-
     }
   }
 
@@ -77,9 +77,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     super.setVisible(aFlag);
   }
 
-//  LocomotiveDirectionEventListener getDirectionListener() {
-//    return directionListener;
-//  }
   void setDirectionListener(LocomotiveDirectionEventListener directionListener) {
     this.directionListener = directionListener;
   }
@@ -352,7 +349,7 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     }
   }
 
-  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+  public final void setLocomotiveBean(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
     this.functionsPanel.setLocomotive(locomotiveBean);
 
@@ -397,6 +394,10 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     }
   }
 
+  LocomotiveBean getLocomotiveBean() {
+    return locomotiveBean;
+  }
+
   public boolean isPower() {
     return power;
   }
@@ -415,6 +416,9 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
         this.reverseButton.setSelected(true);
       } else {
         this.forwardButton.setSelected(true);
+      }
+      if (this.directionListener != null) {
+        this.directionListener.onDirectionChange(event);
       }
     }
   }
