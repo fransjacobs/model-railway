@@ -44,7 +44,8 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LocomotiveDispatcher { //extends Thread {
+public class LocomotiveDispatcher {
+  
 
   private final LocomotiveBean locomotiveBean;
   final AutoPilot autoPilot;
@@ -83,7 +84,7 @@ public class LocomotiveDispatcher { //extends Thread {
     return this.locomotiveBean.getName();
   }
 
-  LocomotiveBean getLocomotiveBean() {
+  public LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
   }
 

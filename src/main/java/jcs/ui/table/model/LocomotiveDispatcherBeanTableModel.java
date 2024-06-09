@@ -1,0 +1,117 @@
+/*
+ * Copyright 2023 Frans Jacobs.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package jcs.ui.table.model;
+
+import java.awt.Image;
+import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
+
+/**
+ * Table Model for the dispatcher
+ */
+public class LocomotiveDispatcherBeanTableModel extends AbstractBeanTableModel<LocomotiveDispatcher> {
+
+  private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "state", "speed"};
+
+  public LocomotiveDispatcherBeanTableModel() {
+    super(LocomotiveDispatcher.class, DISPLAY_COLUMNS);
+  }
+
+  @Override
+  public void refresh() {
+    if (AutoPilot.getInstance().isRunning()) {
+      setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
+    }
+  }
+
+  @Override
+  public int findRowIndex(LocomotiveDispatcher bean) {
+    int row = -1;
+    if (bean == null) {
+      return row;
+    }
+
+    Object idValue = bean.getName();
+
+    if (idValue != null) {
+      for (int i = 0; i < this.beans.size(); i++) {
+        LocomotiveDispatcher b = beans.get(i);
+        Object id = bean.getName();
+
+        if (idValue.equals(id)) {
+          row = i;
+          break;
+        }
+      }
+    }
+    return row;
+  }
+
+  @Override
+  public int getColumnCount() {
+    return DISPLAY_COLUMNS.length;
+  }
+
+  @Override
+  public String getColumnName(int column) {
+    if (column >= 0 && column < DISPLAY_COLUMNS.length) {
+      return DISPLAY_COLUMNS[column];
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public Object getValueAt(int row, int column) {
+    if (beans != null && row < beans.size()) {
+      String columnName = getColumnName(column);
+      LocomotiveDispatcher b = beans.get(row);
+
+      if (b != null) {
+        return switch (column) {
+          case 0 ->
+            b.getLocomotiveBean().getLocIcon();
+          case 1 ->
+            b.getName();
+          case 2 ->
+            b.getDispatcherState();
+          case 3 ->
+            ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1024.0) * 100)).intValue();
+          default ->
+            null;
+        };
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public Class<?> getColumnClass(int columnIndex) {
+    return switch (columnIndex) {
+      case 0 ->
+        Image.class;
+      case 1 ->
+        String.class;
+      case 2 ->
+        String.class;
+      case 3 ->
+        Integer.class;
+      default ->
+        String.class;
+    };
+  }
+
+}

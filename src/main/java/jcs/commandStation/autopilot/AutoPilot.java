@@ -117,7 +117,11 @@ public class AutoPilot extends Thread {
     }
   }
 
-  LocomotiveDispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
+  public List<LocomotiveDispatcher> getLocomotiveDispatchers() {
+    return new ArrayList<>(dispatchers.values());
+  }
+
+  public LocomotiveDispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
     String key = locomotiveBean.getName();
     return dispatchers.get(key);
   }

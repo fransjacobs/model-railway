@@ -269,6 +269,15 @@ public class LocomotiveBean implements Serializable {
     this.commandStationId = commandStationId;
   }
 
+  @Transient
+  public CommandStationBean getCommandStationBean() {
+    return commandStationBean;
+  }
+
+  public void setCommandStationBean(CommandStationBean commandStationBean) {
+    this.commandStationBean = commandStationBean;
+  }
+
   @Column(name = "synchronize", nullable = false, columnDefinition = "synchronize bool default '0'")
   @ColumnPosition(position = 14)
   public boolean isSynchronize() {
