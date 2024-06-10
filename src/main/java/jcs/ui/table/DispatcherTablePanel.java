@@ -30,10 +30,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
+import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
 import jcs.entities.LocomotiveBean;
-import jcs.persistence.PersistenceFactory;
 import jcs.ui.DriverCabDialog;
-import jcs.ui.table.model.LocomotiveBeanTableModel;
 import org.tinylog.Logger;
 
 /**
@@ -46,13 +46,11 @@ public class DispatcherTablePanel extends javax.swing.JPanel {
    * Creates new form LocomotiveTablePanel
    */
   public DispatcherTablePanel() {
-    locomotiveBeanTableModel = new LocomotiveBeanTableModel();
 
     initComponents();
 
-    this.locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
-
-    this.locomotiveTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
+    this.dispatcherTable.setDefaultRenderer(Image.class, new LocIconRenderer());
+    this.dispatcherTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
     });
 
@@ -60,10 +58,10 @@ public class DispatcherTablePanel extends javax.swing.JPanel {
   }
 
   private void initModel() {
-    if (PersistenceFactory.getService() != null) {
-      List<LocomotiveBean> locomotiveBeans = PersistenceFactory.getService().getLocomotives();
-      Logger.trace("Found " + locomotiveBeans.size() + " Locomotives");
-      locomotiveBeanTableModel.setBeans(locomotiveBeans);
+    if (AutoPilot.getInstance().isRunning()) {
+      List<LocomotiveDispatcher> dispatchers = AutoPilot.getInstance().getLocomotiveDispatchers();
+      Logger.trace("Found " + dispatchers.size() + " Dispatchers");
+      this.locomotiveDispatcherTableModel.setBeans(dispatchers);
     }
   }
 
@@ -92,39 +90,39 @@ public class DispatcherTablePanel extends javax.swing.JPanel {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
-    locomotiveBeanTableModel = new jcs.ui.table.model.LocomotiveBeanTableModel();
-    locomotiveSP = new javax.swing.JScrollPane();
-    locomotiveTable = new javax.swing.JTable();
+    locomotiveDispatcherTableModel = new jcs.ui.table.model.LocomotiveDispatcherTableModel();
+    dispatcherSP = new javax.swing.JScrollPane();
+    dispatcherTable = new javax.swing.JTable();
 
     setPreferredSize(new java.awt.Dimension(300, 765));
     setLayout(new java.awt.BorderLayout());
 
-    locomotiveSP.setViewportView(locomotiveTable);
+    dispatcherSP.setViewportView(dispatcherTable);
 
-    locomotiveTable.setModel(locomotiveBeanTableModel);
-    locomotiveTable.setDoubleBuffered(true);
-    locomotiveTable.setDragEnabled(true);
-    locomotiveTable.setRowSorter(new TableRowSorter<>(locomotiveBeanTableModel));
-    locomotiveTable.setShowGrid(true);
-    locomotiveTable.addMouseListener(new java.awt.event.MouseAdapter() {
+    dispatcherTable.setModel(locomotiveDispatcherTableModel);
+    dispatcherTable.setDoubleBuffered(true);
+    dispatcherTable.setDragEnabled(true);
+    dispatcherTable.setRowSorter(new TableRowSorter<>(locomotiveDispatcherTableModel));
+    dispatcherTable.setShowGrid(true);
+    dispatcherTable.addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseReleased(java.awt.event.MouseEvent evt) {
-        locomotiveTableMouseReleased(evt);
+        dispatcherTableMouseReleased(evt);
       }
     });
-    locomotiveSP.setViewportView(locomotiveTable);
+    dispatcherSP.setViewportView(dispatcherTable);
 
-    add(locomotiveSP, java.awt.BorderLayout.CENTER);
+    add(dispatcherSP, java.awt.BorderLayout.CENTER);
   }// </editor-fold>//GEN-END:initComponents
 
-  private void locomotiveTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_locomotiveTableMouseReleased
-    int row = this.locomotiveTable.getSelectedRow();
+  private void dispatcherTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_dispatcherTableMouseReleased
+    int row = this.dispatcherTable.getSelectedRow();
 
-    LocomotiveBean loc = locomotiveBeanTableModel.getBeanAt(row);
-    Logger.trace("Selected " + loc.getName() + " " + evt.getClickCount());
+    LocomotiveDispatcher dispatcher = locomotiveDispatcherTableModel.getBeanAt(row);
+    Logger.trace("Selected " + dispatcher.getName() + " " + evt.getClickCount());
     if (evt.getClickCount() == 2) {
-      showDriverCabDialog(loc);
+      showDriverCabDialog(dispatcher.getLocomotiveBean());
     }
-  }//GEN-LAST:event_locomotiveTableMouseReleased
+  }//GEN-LAST:event_dispatcherTableMouseReleased
 
   private java.awt.Frame getParentFrame() {
     JFrame frame = (JFrame) SwingUtilities.getRoot(this);
@@ -144,12 +142,22 @@ public class DispatcherTablePanel extends javax.swing.JPanel {
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private jcs.ui.table.model.LocomotiveBeanTableModel locomotiveBeanTableModel;
-  private javax.swing.JScrollPane locomotiveSP;
-  private javax.swing.JTable locomotiveTable;
+  private javax.swing.JScrollPane dispatcherSP;
+  private javax.swing.JTable dispatcherTable;
+  private jcs.ui.table.model.LocomotiveDispatcherTableModel locomotiveDispatcherTableModel;
   // End of variables declaration//GEN-END:variables
 
   public static void main(String args[]) {
+
+    long now = System.currentTimeMillis();
+    long maxtime = now + 5000L;
+    AutoPilot.getInstance().startAutoPilot();
+    int dispcnt = AutoPilot.getInstance().getLocomotiveDispatchers().size();
+    while (dispcnt == 0 && now < maxtime) {
+      now = System.currentTimeMillis();
+      dispcnt = AutoPilot.getInstance().getLocomotiveDispatchers().size();
+    }
+
     try {
       String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
       if (plaf != null) {
@@ -178,7 +186,7 @@ public class DispatcherTablePanel extends javax.swing.JPanel {
       testFrame.setLocationRelativeTo(null);
 
       //testPanel.loadLocomotives();
-      testPanel.locomotiveBeanTableModel.refresh();
+      //testPanel.locomotiveDispatcherTableModel.refresh();
       testFrame.setVisible(true);
     });
   }

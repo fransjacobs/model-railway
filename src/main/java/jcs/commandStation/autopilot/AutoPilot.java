@@ -68,6 +68,8 @@ public class AutoPilot extends Thread {
     //setDaemon(running);
 
     registerAllSensors();
+    
+    prepareDispatchers();
 
     Logger.trace("Autopilot Started");
 
@@ -88,6 +90,25 @@ public class AutoPilot extends Thread {
     unRegisterAllSensors();
     sensorHandlers.clear();
     Logger.trace("Autopilot Finished");
+  }
+
+  public void prepareDispatchers() {
+    Logger.trace("Preparing Dispatcher for all on track locomotives...");
+
+    List<LocomotiveBean> locs = getOnTrackLocomotives();
+    Map<String, LocomotiveDispatcher> snapshot = new HashMap<>(this.dispatchers);
+    this.dispatchers.clear();
+
+    for (LocomotiveBean loc : locs) {
+      LocomotiveDispatcher dispatcher;
+      if (snapshot.containsKey(loc.getName())) {
+        dispatcher = snapshot.get(loc.getName());
+      } else {
+        dispatcher = new LocomotiveDispatcher(loc, this);
+      }
+      dispatchers.put(loc.getName(), dispatcher);
+      Logger.trace("Added dispatcher for " + loc.getName() + "...");
+    }
   }
 
   public void startAllLocomotives() {
@@ -227,7 +248,7 @@ public class AutoPilot extends Thread {
         cnt++;
         //Register with a command station
         JCS.getJcsCommandStation().addSensorEventListener(seh);
-        Logger.trace("Added handler " + cnt + " for sensor " + key);
+        //Logger.trace("Added handler " + cnt + " for sensor " + key);
       }
     }
     Logger.trace("Registered " + sensors.size() + " sensor event handlers");

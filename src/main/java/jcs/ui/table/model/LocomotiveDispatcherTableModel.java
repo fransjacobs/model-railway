@@ -18,15 +18,17 @@ package jcs.ui.table.model;
 import java.awt.Image;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
+import jcs.commandStation.autopilot.state.StateEventListener;
+import org.tinylog.Logger;
 
 /**
  * Table Model for the dispatcher
  */
-public class LocomotiveDispatcherBeanTableModel extends AbstractBeanTableModel<LocomotiveDispatcher> {
+public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<LocomotiveDispatcher> implements StateEventListener {
 
   private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "state", "speed"};
 
-  public LocomotiveDispatcherBeanTableModel() {
+  public LocomotiveDispatcherTableModel() {
     super(LocomotiveDispatcher.class, DISPLAY_COLUMNS);
   }
 
@@ -34,7 +36,18 @@ public class LocomotiveDispatcherBeanTableModel extends AbstractBeanTableModel<L
   public void refresh() {
     if (AutoPilot.getInstance().isRunning()) {
       setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
+      Logger.trace("There are " + this.beans.size() + " dispatchers");
     }
+  }
+
+  @Override
+  public void onStateChange(LocomotiveDispatcher dispatcher) {
+    if (this.beans.contains(dispatcher)) {
+      //replace
+      int idx = this.beans.indexOf(dispatcher);
+      this.beans.set(idx, dispatcher);
+    }
+
   }
 
   @Override

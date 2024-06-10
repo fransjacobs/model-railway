@@ -18,6 +18,7 @@ package jcs.commandStation.autopilot.state;
 import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.SensorEventHandler;
@@ -45,7 +46,6 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class LocomotiveDispatcher {
-  
 
   private final LocomotiveBean locomotiveBean;
   final AutoPilot autoPilot;
@@ -78,6 +78,10 @@ public class LocomotiveDispatcher {
 
   private void initTestDialog() {
     dispatcherDialog = DispatcherTestDialog.showDialog(this);
+  }
+
+  public Long getId() {
+    return this.locomotiveBean.getId();
   }
 
   public String getName() {
@@ -119,7 +123,7 @@ public class LocomotiveDispatcher {
     if (this.thread != null && this.thread.isRunning()) {
       this.thread.stopRunning();
     }
-    
+
     disposeDialog();
   }
 
@@ -247,7 +251,7 @@ public class LocomotiveDispatcher {
 
   void fireStateListeners(String s) {
     for (StateEventListener sel : stateEventListeners) {
-      sel.onStateChange(s);
+      sel.onStateChange(this);
     }
   }
 
@@ -342,7 +346,28 @@ public class LocomotiveDispatcher {
         Logger.trace("Updated direction to " + directionEvent.getNewDirection() + " of " + this.trainDispatcher.getLocomotiveBean().getName());
       }
     }
+  }
 
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 37 * hash + Objects.hashCode(this.locomotiveBean);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final LocomotiveDispatcher other = (LocomotiveDispatcher) obj;
+    return Objects.equals(this.locomotiveBean, other.locomotiveBean);
   }
 
   //Testing

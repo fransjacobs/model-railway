@@ -2,7 +2,7 @@
 
 <Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
-    <Component class="jcs.ui.table.model.LocomotiveBeanTableModel" name="locomotiveBeanTableModel">
+    <Component class="jcs.ui.table.model.LocomotiveDispatcherTableModel" name="locomotiveDispatcherTableModel">
     </Component>
   </NonVisualComponents>
   <Properties>
@@ -25,10 +25,10 @@
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
   <SubComponents>
-    <Container class="javax.swing.JScrollPane" name="locomotiveSP">
+    <Container class="javax.swing.JScrollPane" name="dispatcherSP">
       <Properties>
         <Property name="viewportView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="locomotiveTable"/>
+          <ComponentRef name="dispatcherTable"/>
         </Property>
       </Properties>
       <Constraints>
@@ -39,20 +39,20 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTable" name="locomotiveTable">
+        <Component class="javax.swing.JTable" name="dispatcherTable">
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection component="locomotiveBeanTableModel" type="bean"/>
+              <Connection component="locomotiveDispatcherTableModel" type="bean"/>
             </Property>
             <Property name="doubleBuffered" type="boolean" value="true"/>
             <Property name="dragEnabled" type="boolean" value="true"/>
             <Property name="rowSorter" type="javax.swing.RowSorter" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new TableRowSorter&lt;&gt;(locomotiveBeanTableModel)" type="code"/>
+              <Connection code="new TableRowSorter&lt;&gt;(locomotiveDispatcherTableModel)" type="code"/>
             </Property>
             <Property name="showGrid" type="boolean" value="true"/>
           </Properties>
           <Events>
-            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="locomotiveTableMouseReleased"/>
+            <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="dispatcherTableMouseReleased"/>
           </Events>
         </Component>
       </SubComponents>

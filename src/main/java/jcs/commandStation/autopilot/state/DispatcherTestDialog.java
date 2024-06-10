@@ -80,8 +80,8 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
   }
 
   @Override
-  public void onStateChange(String state) {
-    this.stateLabel.setText(state);
+  public void onStateChange(LocomotiveDispatcher dispatcher) {
+    this.stateLabel.setText(dispatcher.getDispatcherState());
   }
 
   /**
