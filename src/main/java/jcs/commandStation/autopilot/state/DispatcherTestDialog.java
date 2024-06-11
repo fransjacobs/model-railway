@@ -256,7 +256,7 @@ public class DispatcherTestDialog extends javax.swing.JDialog implements StateEv
 
   private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
     if (trainDispatcher != null) {
-      this.executor.execute(() -> trainDispatcher.performManualStep());
+      //this.executor.execute(() -> trainDispatcher.performManualStep());
     }
   }//GEN-LAST:event_nextButtonActionPerformed
 

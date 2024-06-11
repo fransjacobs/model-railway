@@ -37,6 +37,19 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
     if (AutoPilot.getInstance().isRunning()) {
       setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
       Logger.trace("There are " + this.beans.size() + " dispatchers");
+
+      for (LocomotiveDispatcher ld : this.beans) {
+        ld.addStateEventListener(this);
+        Logger.trace("Listen to dispatcher " + ld.getName());
+      }
+    } else {
+      if (this.beans != null) {
+        for (LocomotiveDispatcher ld : this.beans) {
+          ld.removeStateEventListener(this);
+          Logger.trace("Remove Listen to dispatcher " + ld.getName());
+        }
+      }
+      setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
     }
   }
 
@@ -46,8 +59,10 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
       //replace
       int idx = this.beans.indexOf(dispatcher);
       this.beans.set(idx, dispatcher);
+      //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherState());
+      //table data changed is too much?
+      this.fireTableDataChanged();
     }
-
   }
 
   @Override

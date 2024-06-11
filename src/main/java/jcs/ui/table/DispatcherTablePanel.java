@@ -31,6 +31,7 @@ import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.autopilot.AutoPilotStatusListener;
 import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.DriverCabDialog;
@@ -40,7 +41,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class DispatcherTablePanel extends javax.swing.JPanel {
+public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilotStatusListener {
 
   /**
    * Creates new form LocomotiveTablePanel
@@ -58,11 +59,15 @@ public class DispatcherTablePanel extends javax.swing.JPanel {
   }
 
   private void initModel() {
-    if (AutoPilot.getInstance().isRunning()) {
-      List<LocomotiveDispatcher> dispatchers = AutoPilot.getInstance().getLocomotiveDispatchers();
-      Logger.trace("Found " + dispatchers.size() + " Dispatchers");
-      this.locomotiveDispatcherTableModel.setBeans(dispatchers);
-    }
+    AutoPilot.getInstance().addAutoPilotStatusListener(this);
+    statusChanged(AutoPilot.getInstance().isRunning());
+  }
+
+  @Override
+  public void statusChanged(boolean running) {
+    List<LocomotiveDispatcher> dispatchers = AutoPilot.getInstance().getLocomotiveDispatchers();
+    Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
+    this.locomotiveDispatcherTableModel.refresh();
   }
 
   private class LocIconRenderer extends DefaultTableCellRenderer {
@@ -123,6 +128,17 @@ public class DispatcherTablePanel extends javax.swing.JPanel {
       showDriverCabDialog(dispatcher.getLocomotiveBean());
     }
   }//GEN-LAST:event_dispatcherTableMouseReleased
+
+  @Override
+  public void setVisible(boolean aFlag) {
+    super.setVisible(aFlag);
+    if (aFlag) {
+      AutoPilot.getInstance().addAutoPilotStatusListener(this);
+      statusChanged(AutoPilot.getInstance().isRunning());
+    } else {
+      AutoPilot.getInstance().removeAutoPilotStatusListener(this);
+    }
+  }
 
   private java.awt.Frame getParentFrame() {
     JFrame frame = (JFrame) SwingUtilities.getRoot(this);

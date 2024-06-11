@@ -61,7 +61,7 @@ public class LocomotiveDispatcher {
   private LocomotiveRunnerThread thread;
 
   //For Testing a dialog per dispatcher to be replaced by a panel in de main screen
-  private DispatcherTestDialog dispatcherDialog;
+  //private DispatcherTestDialog dispatcherDialog;
 
   public LocomotiveDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
@@ -77,7 +77,7 @@ public class LocomotiveDispatcher {
   }
 
   private void initTestDialog() {
-    dispatcherDialog = DispatcherTestDialog.showDialog(this);
+    //dispatcherDialog = DispatcherTestDialog.showDialog(this);
   }
 
   public Long getId() {
@@ -124,13 +124,13 @@ public class LocomotiveDispatcher {
       this.thread.stopRunning();
     }
 
-    disposeDialog();
+    //disposeDialog();
   }
 
   //For testing....
-  public void disposeDialog() {
-    this.dispatcherDialog.dispose();
-  }
+  //public void disposeDialog() {
+  //  this.dispatcherDialog.dispose();
+  //}
 
   public boolean isRunning() {
     if (this.thread != null) {
@@ -255,11 +255,11 @@ public class LocomotiveDispatcher {
     }
   }
 
-  void addStateEventListener(StateEventListener listener) {
+  public void addStateEventListener(StateEventListener listener) {
     stateEventListeners.add(listener);
   }
 
-  void removeStateEventListener(StateEventListener listener) {
+  public void removeStateEventListener(StateEventListener listener) {
     stateEventListeners.remove(listener);
   }
 
@@ -371,10 +371,10 @@ public class LocomotiveDispatcher {
   }
 
   //Testing
-  void performManualStep() {
-    if (this.thread != null) {
-      this.thread.manualStep();
-    }
-  }
+  //void performManualStep() {
+  //  if (this.thread != null) {
+  //    this.thread.manualStep();
+  //  }
+  //}
 
 }

@@ -50,6 +50,7 @@ public class AutoPilot extends Thread {
 
   //Need a list to be able to unregister
   private final List<SensorListener> sensorListeners = new ArrayList<>();
+  private final List<AutoPilotStatusListener> autoPilotStatusListeners = Collections.synchronizedList(new ArrayList<>());
 
   private AutoPilot() {
   }
@@ -68,13 +69,15 @@ public class AutoPilot extends Thread {
     //setDaemon(running);
 
     registerAllSensors();
-    
     prepareDispatchers();
 
-    Logger.trace("Autopilot Started");
+    Logger.trace("Autopilot Started. Notify " + autoPilotStatusListeners.size() + " Listeners...");
+
+    for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
+      asl.statusChanged(running);
+    }
 
     while (running) {
-
       try {
         synchronized (this) {
           wait(1000);
@@ -89,7 +92,12 @@ public class AutoPilot extends Thread {
 
     unRegisterAllSensors();
     sensorHandlers.clear();
-    Logger.trace("Autopilot Finished");
+
+    for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
+      asl.statusChanged(running);
+    }
+
+    Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
   }
 
   public void prepareDispatchers() {
@@ -127,7 +135,9 @@ public class AutoPilot extends Thread {
       }
       dispatchers.put(loc.getName(), dispatcher);
       Logger.trace("Starting " + loc.getName() + "...");
-      //dispatcher.startRunning();
+      
+      //TODO: Combine with the start stop (single) locomotive)
+      dispatcher.startRunning();
     }
   }
 
@@ -138,11 +148,15 @@ public class AutoPilot extends Thread {
     }
   }
 
-  public List<LocomotiveDispatcher> getLocomotiveDispatchers() {
-    return new ArrayList<>(dispatchers.values());
+  public synchronized List<LocomotiveDispatcher> getLocomotiveDispatchers() {
+    if (this.running) {
+      return new ArrayList<>(dispatchers.values());
+    } else {
+      return Collections.EMPTY_LIST;
+    }
   }
 
-  public LocomotiveDispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
+  public synchronized LocomotiveDispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
     String key = locomotiveBean.getName();
     return dispatchers.get(key);
   }
@@ -150,21 +164,21 @@ public class AutoPilot extends Thread {
   public void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
     if (start) {
+      LocomotiveDispatcher dispatcher;
       String key = locomotiveBean.getName();
       if (this.dispatchers.containsKey(key)) {
-        LocomotiveDispatcher td = dispatchers.remove(key);
-        td.stopRunning();
+        dispatcher = dispatchers.get(key);
+      } else {
+        dispatcher = new LocomotiveDispatcher(locomotiveBean, this);
+        dispatchers.put(key, dispatcher);
       }
 
-      LocomotiveDispatcher dispatcher = new LocomotiveDispatcher(locomotiveBean, this);
-      dispatchers.put(key, dispatcher);
       Logger.debug("Starting " + key);
-      //DispatcherTestDialog.showDialog(dispatcher);
-      //lsm.startLocomotive();
+      dispatcher.startRunning();
     } else {
-      LocomotiveDispatcher lsm = this.dispatchers.get(locomotiveBean.getName());
-      if (lsm != null) {
-        lsm.stopRunning();
+      LocomotiveDispatcher dispatcher = this.dispatchers.get(locomotiveBean.getName());
+      if (dispatcher != null) {
+        dispatcher.stopRunning();
       }
     }
   }
@@ -266,7 +280,7 @@ public class AutoPilot extends Thread {
     Logger.trace("Stopping automode testdialogs");
     for (LocomotiveDispatcher ld : this.dispatchers.values()) {
       //Test
-      ld.disposeDialog();
+      //ld.disposeDialog();
     }
   }
 
@@ -280,6 +294,16 @@ public class AutoPilot extends Thread {
 
   public synchronized void removeHandler(String sensorId) {
     sensorHandlers.remove(sensorId);
+  }
+
+  public synchronized void addAutoPilotStatusListener(AutoPilotStatusListener listener) {
+    this.autoPilotStatusListeners.add(listener);
+    Logger.trace("Status listeners: " + autoPilotStatusListeners.size());
+  }
+
+  public synchronized void removeAutoPilotStatusListener(AutoPilotStatusListener listener) {
+    this.autoPilotStatusListeners.remove(listener);
+    Logger.trace("Status listeners: " + autoPilotStatusListeners.size());
   }
 
   private class SensorListener implements SensorEventListener {
@@ -317,8 +341,13 @@ public class AutoPilot extends Thread {
     if (!running) {
       dispatchers.clear();
       sensorHandlers.clear();
+      //Keep the statuslisteners
+      List<AutoPilotStatusListener> apsl = new ArrayList<>(instance.autoPilotStatusListeners);
+
       instance = null;
       instance = new AutoPilot();
+      instance.autoPilotStatusListeners.addAll(apsl);
+
       instance.start();
     }
   }

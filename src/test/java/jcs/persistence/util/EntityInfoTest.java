@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 FJA.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author FJA
  */
 public class EntityInfoTest {
 
@@ -151,7 +150,7 @@ public class EntityInfoTest {
     Object bean = createBean();
     EntityInfo instance = new EntityInfo(bean.getClass(), true);
 
-    String[] cols = new String[]{"functions", "functionCount", "id", "image", "name", "address", "decoder", "tacho_max", "v_min", "velocity", "direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "richtung", "decoder_type"};
+    String[] cols = new String[]{"commandStationBean","functions", "functionCount", "id", "image", "name", "address", "decoder", "tacho_max", "v_min", "velocity", "direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "richtung", "decoder_type"};
     List<String> expResult = Arrays.asList(cols);
 
     List<String> result = instance.getAllColumnNames();

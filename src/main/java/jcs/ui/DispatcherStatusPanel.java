@@ -15,13 +15,6 @@
  */
 package jcs.ui;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import org.tinylog.Logger;
-
 /**
  *
  * @author FJA
@@ -44,67 +37,45 @@ public class DispatcherStatusPanel extends javax.swing.JPanel {
 
     tabsPane = new javax.swing.JTabbedPane();
     locomotiveTablePanel = new jcs.ui.table.LocomotiveTablePanel();
-    dispatcherPanel = new javax.swing.JPanel();
-    dispatcherSP = new javax.swing.JScrollPane();
-    dispatcherTable = new javax.swing.JTable();
+    dispatcherTablePanel = new jcs.ui.table.DispatcherTablePanel();
 
     setLayout(new java.awt.BorderLayout());
 
     tabsPane.setPreferredSize(new java.awt.Dimension(300, 800));
     tabsPane.addTab("Locomotives", locomotiveTablePanel);
-
-    dispatcherPanel.setLayout(new java.awt.BorderLayout());
-
-    dispatcherTable.setModel(new javax.swing.table.DefaultTableModel(
-      new Object [][] {
-        {null, null, null, null},
-        {null, null, null, null},
-        {null, null, null, null},
-        {null, null, null, null}
-      },
-      new String [] {
-        "Title 1", "Title 2", "Title 3", "Title 4"
-      }
-    ));
-    dispatcherSP.setViewportView(dispatcherTable);
-
-    dispatcherPanel.add(dispatcherSP, java.awt.BorderLayout.CENTER);
-
-    tabsPane.addTab("Dispatcher", dispatcherPanel);
+    tabsPane.addTab("Dispatcher", dispatcherTablePanel);
 
     add(tabsPane, java.awt.BorderLayout.CENTER);
   }// </editor-fold>//GEN-END:initComponents
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JPanel dispatcherPanel;
-  private javax.swing.JScrollPane dispatcherSP;
-  private javax.swing.JTable dispatcherTable;
+  private jcs.ui.table.DispatcherTablePanel dispatcherTablePanel;
   private jcs.ui.table.LocomotiveTablePanel locomotiveTablePanel;
   private javax.swing.JTabbedPane tabsPane;
   // End of variables declaration//GEN-END:variables
 
 //For standalone testing only
-  public static void main(String args[]) {
-    try {
-      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.error(ex);
-    }
-
-    java.awt.EventQueue.invokeLater(() -> {
-      JFrame f = new JFrame("DispatcherPanel Tester");
-      DispatcherStatusPanel dispatcherTestPanel = new DispatcherStatusPanel();
-      f.add(dispatcherTestPanel);
-
-      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      f.pack();
-
-      Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-      f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
-      f.setVisible(true);
-    });
-  }  
+//  public static void main(String args[]) {
+//    try {
+//      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
+//    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+//      Logger.error(ex);
+//    }
+//
+//    java.awt.EventQueue.invokeLater(() -> {
+//      JFrame f = new JFrame("DispatcherPanel Tester");
+//      DispatcherStatusPanel dispatcherTestPanel = new DispatcherStatusPanel();
+//      f.add(dispatcherTestPanel);
+//
+//      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//      f.pack();
+//
+//      Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+//      f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
+//      f.setVisible(true);
+//    });
+//  }  
   
   
 }
