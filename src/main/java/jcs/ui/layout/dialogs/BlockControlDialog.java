@@ -130,10 +130,13 @@ public class BlockControlDialog extends javax.swing.JDialog {
     namePanel = new javax.swing.JPanel();
     blockDescLbl = new javax.swing.JLabel();
     blockNameTF = new javax.swing.JTextField();
-    locomotiveImagePanel = new javax.swing.JPanel();
-    reverseArrivalCB = new javax.swing.JCheckBox();
-    locomotiveIconLbl = new javax.swing.JLabel();
     locomotivePanel = new javax.swing.JPanel();
+    directionsPanel = new javax.swing.JPanel();
+    reverseArrivalCB = new javax.swing.JCheckBox();
+    reverseDirectionCB = new javax.swing.JCheckBox();
+    imagePanel = new javax.swing.JPanel();
+    locomotiveIconLbl = new javax.swing.JLabel();
+    locomotiveSelectionPanel = new javax.swing.JPanel();
     locomotiveLbl = new javax.swing.JLabel();
     locomotiveCB = new javax.swing.JComboBox<>();
     bottomPanel = new javax.swing.JPanel();
@@ -191,37 +194,56 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     getContentPane().add(namePanel);
 
-    locomotiveImagePanel.setPreferredSize(new java.awt.Dimension(290, 60));
-    java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 1, 0);
-    flowLayout5.setAlignOnBaseline(true);
-    locomotiveImagePanel.setLayout(flowLayout5);
+    locomotivePanel.setPreferredSize(new java.awt.Dimension(290, 60));
+    locomotivePanel.setLayout(new java.awt.GridLayout(1, 2));
+
+    directionsPanel.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
 
     reverseArrivalCB.setText("Reverse Arrival Side");
+    reverseArrivalCB.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
     reverseArrivalCB.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
     reverseArrivalCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         reverseArrivalCBActionPerformed(evt);
       }
     });
-    locomotiveImagePanel.add(reverseArrivalCB);
+    directionsPanel.add(reverseArrivalCB);
+
+    reverseDirectionCB.setText("Reverse Direction");
+    reverseDirectionCB.setDoubleBuffered(true);
+    reverseDirectionCB.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+    reverseDirectionCB.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+    reverseDirectionCB.setMaximumSize(new java.awt.Dimension(135, 21));
+    reverseDirectionCB.setMinimumSize(new java.awt.Dimension(135, 21));
+    reverseDirectionCB.setPreferredSize(new java.awt.Dimension(135, 21));
+    reverseDirectionCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        reverseDirectionCBActionPerformed(evt);
+      }
+    });
+    directionsPanel.add(reverseDirectionCB);
+
+    locomotivePanel.add(directionsPanel);
 
     locomotiveIconLbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
     locomotiveIconLbl.setDoubleBuffered(true);
     locomotiveIconLbl.setPreferredSize(new java.awt.Dimension(120, 60));
-    locomotiveImagePanel.add(locomotiveIconLbl);
+    imagePanel.add(locomotiveIconLbl);
 
-    getContentPane().add(locomotiveImagePanel);
+    locomotivePanel.add(imagePanel);
 
-    locomotivePanel.setPreferredSize(new java.awt.Dimension(290, 40));
+    getContentPane().add(locomotivePanel);
+
+    locomotiveSelectionPanel.setPreferredSize(new java.awt.Dimension(290, 40));
     java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout3.setAlignOnBaseline(true);
-    locomotivePanel.setLayout(flowLayout3);
+    locomotiveSelectionPanel.setLayout(flowLayout3);
 
     locomotiveLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
     locomotiveLbl.setText("Locomotive:");
     locomotiveLbl.setDoubleBuffered(true);
     locomotiveLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    locomotivePanel.add(locomotiveLbl);
+    locomotiveSelectionPanel.add(locomotiveLbl);
 
     locomotiveCB.setPreferredSize(new java.awt.Dimension(150, 23));
     locomotiveCB.addActionListener(new java.awt.event.ActionListener() {
@@ -229,9 +251,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
         locomotiveCBActionPerformed(evt);
       }
     });
-    locomotivePanel.add(locomotiveCB);
+    locomotiveSelectionPanel.add(locomotiveCB);
 
-    getContentPane().add(locomotivePanel);
+    getContentPane().add(locomotiveSelectionPanel);
 
     bottomPanel.setPreferredSize(new java.awt.Dimension(290, 50));
     java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
@@ -329,6 +351,10 @@ public class BlockControlDialog extends javax.swing.JDialog {
     }
   }//GEN-LAST:event_startLocButtonActionPerformed
 
+  private void reverseDirectionCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseDirectionCBActionPerformed
+    Logger.trace("change the loc direction in the block");
+  }//GEN-LAST:event_reverseDirectionCBActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   javax.swing.JLabel blockDescLbl;
   javax.swing.JLabel blockIdLbl;
@@ -336,16 +362,19 @@ public class BlockControlDialog extends javax.swing.JDialog {
   javax.swing.JTextField blockNameTF;
   javax.swing.JPanel bottomPanel;
   javax.swing.JPanel deviceIdPanel;
+  javax.swing.JPanel directionsPanel;
   javax.swing.JLabel headingLbl;
   javax.swing.JPanel headingPanel;
+  javax.swing.JPanel imagePanel;
   javax.swing.JPanel leftPanel;
   javax.swing.JComboBox<LocomotiveBean> locomotiveCB;
   javax.swing.JLabel locomotiveIconLbl;
-  javax.swing.JPanel locomotiveImagePanel;
   javax.swing.JLabel locomotiveLbl;
   javax.swing.JPanel locomotivePanel;
+  javax.swing.JPanel locomotiveSelectionPanel;
   javax.swing.JPanel namePanel;
   javax.swing.JCheckBox reverseArrivalCB;
+  javax.swing.JCheckBox reverseDirectionCB;
   javax.swing.JPanel rightPanel;
   javax.swing.JButton saveExitBtn;
   javax.swing.JToggleButton startLocButton;

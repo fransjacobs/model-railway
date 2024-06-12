@@ -28,7 +28,13 @@ import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
+import static jcs.entities.BlockBean.BlockState.ARRIVING;
+import static jcs.entities.BlockBean.BlockState.DEPARTING;
+import static jcs.entities.BlockBean.BlockState.LEAVING;
+import static jcs.entities.BlockBean.BlockState.LOCKED;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.events.TileEvent;
@@ -97,6 +103,8 @@ public class AutoPilot extends Thread {
       asl.statusChanged(running);
     }
 
+    resetStates();
+    
     Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
   }
 
@@ -135,7 +143,7 @@ public class AutoPilot extends Thread {
       }
       dispatchers.put(loc.getName(), dispatcher);
       Logger.trace("Starting " + loc.getName() + "...");
-      
+
       //TODO: Combine with the start stop (single) locomotive)
       dispatcher.startRunning();
     }
@@ -145,6 +153,73 @@ public class AutoPilot extends Thread {
     Logger.trace("Stopping automode for all locomotives...");
     for (LocomotiveDispatcher ld : this.dispatchers.values()) {
       ld.stopRunning();
+    }
+  }
+
+  //For now when stopping also reset the states if needed
+  private void resetStates() {
+    List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
+    int lockedCounter = 0;
+    for (RouteBean route : routes) {
+      if (route.isLocked()) {
+        route.setLocked(false);
+        PersistenceFactory.getService().persist(route);
+        lockedCounter++;
+      }
+      resetRoute(route);
+    }
+    Logger.debug("Unlocked " + lockedCounter + " routes out of " + routes.size());
+
+    // Reset route
+    int occupiedBlockCounter = 0;
+    int freeBlockCounter = 0;
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    for (BlockBean block : blocks) {
+      if (block.getLocomotiveId() != null) {
+        if (null == block.getBlockState()) {
+          if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
+            occupiedBlockCounter++;
+          }
+        } else {
+          switch (block.getBlockState()) {
+            case LOCKED, ARRIVING -> {
+              //destinations block, reset!
+              block.setLocomotive(null);
+              block.setBlockState(BlockBean.BlockState.FREE);
+              block.setArrivalSuffix(null);
+              freeBlockCounter++;
+            }
+            case DEPARTING, LEAVING -> {
+              block.setBlockState(BlockBean.BlockState.OCCUPIED);
+              block.setArrivalSuffix(null);
+              occupiedBlockCounter++;
+            }
+            default -> {
+              if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
+                occupiedBlockCounter++;
+              }
+            }
+          }
+        }
+      } else {
+        block.setBlockState(BlockBean.BlockState.FREE);
+        freeBlockCounter++;
+      }
+      PersistenceFactory.getService().persist(block);
+      showBlockStatus(block);
+    }
+
+    JCS.getJcsCommandStation().switchPower(true);
+
+    Logger.debug("Occupied blocks: " + occupiedBlockCounter + " Free blocks " + freeBlockCounter + " of total " + blocks.size() + " blocks");
+  }
+
+  private void resetRoute(RouteBean route) {
+    List<RouteElementBean> routeElements = route.getRouteElements();
+    for (RouteElementBean re : routeElements) {
+      String tileId = re.getTileId();
+      TileEvent tileEvent = new TileEvent(tileId, false);
+      TileFactory.fireTileEventListener(tileEvent);
     }
   }
 

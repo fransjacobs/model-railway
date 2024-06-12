@@ -23,8 +23,12 @@ import org.tinylog.Logger;
  */
 class WaitState extends DispatcherState {
 
+  int defaultWaitTime;
+
   WaitState(LocomotiveDispatcher dispatcher) {
     super(dispatcher);
+
+    defaultWaitTime = Integer.getInteger("default.waittime", 5);
   }
 
   @Override
@@ -40,8 +44,7 @@ class WaitState extends DispatcherState {
   @Override
   void execute() {
     //Stub 
-    //TODO make this configurable
-    int waitTime = 5;
+    long waitTime = 1 * defaultWaitTime;
 
     Logger.debug("Waiting for " + waitTime + " s.");
 
