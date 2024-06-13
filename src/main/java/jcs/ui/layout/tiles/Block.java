@@ -340,7 +340,7 @@ public class Block extends AbstractTile implements Tile {
    * - Yellow: reserved<br>
    * - White: all clear / default<br>
    *
-   * @return the Colour which belong with the current Block State
+   * @return the Color which belong with the current Block State
    */
   public Color getBlockStateColor() {
     if (blockBean != null) {
@@ -443,7 +443,14 @@ public class Block extends AbstractTile implements Tile {
   protected void overlayLocImage(Graphics2D g2d) {
     Image locImage = getLocImage();
     String departureSuffix;
-    if (getBlockBean() != null && !"".equals(getBlockBean().getDepartureSuffix())) {
+    boolean reverseImage;
+    if (getBlockBean() != null) {
+      reverseImage = getBlockBean().isReverseArrival();
+    } else {
+      reverseImage = false;
+    }
+
+    if (getBlockBean() != null) {
       departureSuffix = getBlockBean().getDepartureSuffix();
     } else {
       departureSuffix = "+";
@@ -473,6 +480,9 @@ public class Block extends AbstractTile implements Tile {
           }
           int yy = y - h / 2;
 
+          //if (reverseImage) {
+          //  locImage = ImageUtil.flipVertically(locImage);
+          //}
           g2d.drawImage(locImage, xx, yy, null);
         }
         case SOUTH -> {
@@ -514,6 +524,7 @@ public class Block extends AbstractTile implements Tile {
         default -> {
           //EAST
           int xx;
+          
           if ("-".equals(departureSuffix)) {
             int minX = x - width / 2 + 10;
             xx = minX;
@@ -522,6 +533,10 @@ public class Block extends AbstractTile implements Tile {
             xx = maxX - w;
           }
           int yy = y - h / 2;
+
+          //if (reverseImage) {
+          //  locImage = ImageUtil.flipVertically(locImage);
+          //}
           g2d.drawImage(locImage, xx, yy, null);
         }
       }

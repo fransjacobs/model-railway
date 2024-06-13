@@ -227,6 +227,14 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     this.drawRoute = drawRoute;
   }
 
+  public int getRenderWidth() {
+    return renderWidth;
+  }
+
+  public int getRenderHeight() {
+    return renderHeight;
+  }
+
   /**
    * Draw the AbstractTile
    *
@@ -248,7 +256,6 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     if (drawRoute && incomingSide == null) {
       incomingSide = getOrientation();
     }
-
 
     g2di.setBackground(backgroundColor);
     g2di.clearRect(0, 0, this.renderWidth, this.renderHeight);
@@ -473,7 +480,7 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   }
 
   protected BufferedImage createImage() {
-    return new BufferedImage(this.renderWidth, this.renderHeight, BufferedImage.TYPE_4BYTE_ABGR);
+    return new BufferedImage(this.renderWidth, this.renderHeight, BufferedImage.TYPE_INT_RGB);
   }
 
   @Override
@@ -665,11 +672,11 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
         TileBean other = tileEvent.getTileBean();
         this.copyInto(other);
       }
-      
-      if(isBlock()) {
-        ((Block)this).setRouteBlockState(tileEvent.getBlockState());
-        if(!drawRoute) {
-          ((Block)this).setRouteBlockState(null);
+
+      if (isBlock()) {
+        ((Block) this).setRouteBlockState(tileEvent.getBlockState());
+        if (!drawRoute) {
+          ((Block) this).setRouteBlockState(null);
         }
       }
 

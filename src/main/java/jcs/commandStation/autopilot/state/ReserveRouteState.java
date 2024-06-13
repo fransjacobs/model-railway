@@ -72,6 +72,9 @@ class ReserveRouteState extends DispatcherState {
   private String getDefaultDepartureSuffix(LocomotiveBean locomotive, BlockBean blockBean) {
     String departureSuffix;
     String arrivalSuffix;
+    //does the block orientation has an influence?
+    
+    
     if ((Direction.FORWARDS == locomotive.getDirection() && !blockBean.isReverseArrival())
             || (Direction.BACKWARDS == locomotive.getDirection() && blockBean.isReverseArrival())) {
       departureSuffix = "+";
@@ -89,7 +92,7 @@ class ReserveRouteState extends DispatcherState {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
-    BlockBean blockBean = this.dispatcher.getDepartureBlock();
+    BlockBean blockBean = dispatcher.getDepartureBlock();
     String departureSuffix = blockBean.getDepartureSuffix();
     if (departureSuffix == null || "".equals(departureSuffix)) {
       departureSuffix = getDefaultDepartureSuffix(locomotive, blockBean);
@@ -111,7 +114,6 @@ class ReserveRouteState extends DispatcherState {
     if (routes.isEmpty() && locomotive.isCommuter()) {
       //No routes possible. When the Locomotive is a commuter train it can reverse direction, so
       Logger.debug("Reversing Locomotive...");
-      //blockBean.setReverseArrival(!blockBean.isReverseArrival());
 
       Direction newDirection = locomotive.toggleDirection();
       //Do NOT set the final direction yet just test....

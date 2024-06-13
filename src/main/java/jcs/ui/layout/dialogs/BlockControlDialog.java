@@ -24,7 +24,9 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.events.TileEvent;
 import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -81,11 +83,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
       this.blockIdTF.setText(block.getId());
       this.blockNameTF.setText(bb.getDescription());
 
-      this.reverseArrivalCB.setSelected(bb.isReverseArrival());
-
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
-
         this.startLocButton.setEnabled(true);
       }
 
@@ -101,6 +100,19 @@ public class BlockControlDialog extends javax.swing.JDialog {
         } else {
           this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
+        
+        
+        LocomotiveBean.Direction dir = bb.getLocomotive().getDirection();
+
+        if (LocomotiveBean.Direction.BACKWARDS == bb.getLocomotive().getDirection()) {
+          this.backwardsRB.setSelected(true);
+        } else {
+          this.forwardsRB.setSelected(true);
+        }
+
+
+        
+        
 
         this.startLocButton.setEnabled(AutoPilot.getInstance().isRunning());
         this.startLocButton.setSelected(AutoPilot.getInstance().isRunning(bb.getLocomotive()));
@@ -122,6 +134,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    locomotiveDirectionBG = new javax.swing.ButtonGroup();
     headingPanel = new javax.swing.JPanel();
     headingLbl = new javax.swing.JLabel();
     deviceIdPanel = new javax.swing.JPanel();
@@ -132,8 +145,12 @@ public class BlockControlDialog extends javax.swing.JDialog {
     blockNameTF = new javax.swing.JTextField();
     locomotivePanel = new javax.swing.JPanel();
     directionsPanel = new javax.swing.JPanel();
-    reverseArrivalCB = new javax.swing.JCheckBox();
-    reverseDirectionCB = new javax.swing.JCheckBox();
+    arrivalPanel = new javax.swing.JPanel();
+    reverseArrivalBtn = new javax.swing.JButton();
+    locDirPanel = new javax.swing.JPanel();
+    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
+    backwardsRB = new javax.swing.JRadioButton();
+    forwardsRB = new javax.swing.JRadioButton();
     imagePanel = new javax.swing.JPanel();
     locomotiveIconLbl = new javax.swing.JLabel();
     locomotiveSelectionPanel = new javax.swing.JPanel();
@@ -197,31 +214,51 @@ public class BlockControlDialog extends javax.swing.JDialog {
     locomotivePanel.setPreferredSize(new java.awt.Dimension(290, 60));
     locomotivePanel.setLayout(new java.awt.GridLayout(1, 2));
 
-    directionsPanel.setLayout(new jcs.ui.swing.layout.VerticalFlowLayout());
+    directionsPanel.setLayout(new java.awt.GridLayout(2, 1));
 
-    reverseArrivalCB.setText("Reverse Arrival Side");
-    reverseArrivalCB.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    reverseArrivalCB.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
-    reverseArrivalCB.addActionListener(new java.awt.event.ActionListener() {
+    java.awt.FlowLayout flowLayout5 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout5.setAlignOnBaseline(true);
+    arrivalPanel.setLayout(flowLayout5);
+
+    reverseArrivalBtn.setText("Reverse Arrival");
+    reverseArrivalBtn.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        reverseArrivalCBActionPerformed(evt);
+        reverseArrivalBtnActionPerformed(evt);
       }
     });
-    directionsPanel.add(reverseArrivalCB);
+    arrivalPanel.add(reverseArrivalBtn);
 
-    reverseDirectionCB.setText("Reverse Direction");
-    reverseDirectionCB.setDoubleBuffered(true);
-    reverseDirectionCB.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-    reverseDirectionCB.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
-    reverseDirectionCB.setMaximumSize(new java.awt.Dimension(135, 21));
-    reverseDirectionCB.setMinimumSize(new java.awt.Dimension(135, 21));
-    reverseDirectionCB.setPreferredSize(new java.awt.Dimension(135, 21));
-    reverseDirectionCB.addActionListener(new java.awt.event.ActionListener() {
+    directionsPanel.add(arrivalPanel);
+
+    java.awt.FlowLayout flowLayout8 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout8.setAlignOnBaseline(true);
+    locDirPanel.setLayout(flowLayout8);
+    locDirPanel.add(filler1);
+
+    locomotiveDirectionBG.add(backwardsRB);
+    backwardsRB.setText("<<");
+    backwardsRB.setToolTipText("");
+    backwardsRB.setActionCommand("BACKWARDS");
+    backwardsRB.setDoubleBuffered(true);
+    backwardsRB.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+    backwardsRB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        reverseDirectionCBActionPerformed(evt);
+        backwardsRBActionPerformed(evt);
       }
     });
-    directionsPanel.add(reverseDirectionCB);
+    locDirPanel.add(backwardsRB);
+
+    locomotiveDirectionBG.add(forwardsRB);
+    forwardsRB.setText(">>");
+    forwardsRB.setActionCommand("FORWARDS");
+    forwardsRB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        forwardsRBActionPerformed(evt);
+      }
+    });
+    locDirPanel.add(forwardsRB);
+
+    directionsPanel.add(locDirPanel);
 
     locomotivePanel.add(directionsPanel);
 
@@ -305,6 +342,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
       if (this.block != null && this.block.getBlockBean() != null) {
         BlockBean bb = this.block.getBlockBean();
         PersistenceFactory.getService().persist(bb);
+        LocomotiveBean loc = bb.getLocomotive();
+        PersistenceFactory.getService().persist(loc);
+
+        TileEvent tileEvent = new TileEvent(bb);
+        TileFactory.fireTileEventListener(tileEvent);
       }
 
       this.setVisible(false);
@@ -339,11 +381,6 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
   }//GEN-LAST:event_locomotiveCBActionPerformed
 
-  private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
-    Logger.trace(evt.getActionCommand() + " to " + this.reverseArrivalCB.isSelected());
-    this.block.getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
-  }//GEN-LAST:event_reverseArrivalCBActionPerformed
-
   private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed
     LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
     if (loc != null) {
@@ -351,11 +388,28 @@ public class BlockControlDialog extends javax.swing.JDialog {
     }
   }//GEN-LAST:event_startLocButtonActionPerformed
 
-  private void reverseDirectionCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseDirectionCBActionPerformed
-    Logger.trace("change the loc direction in the block");
-  }//GEN-LAST:event_reverseDirectionCBActionPerformed
+  private void reverseArrivalBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalBtnActionPerformed
+    String suffix = this.block.getBlockBean().getArrivalSuffix();
+    if ("+".equals(suffix)) {
+      this.block.getBlockBean().setArrivalSuffix("-");
+    } else {
+      this.block.getBlockBean().setArrivalSuffix("+");
+    }
+  }//GEN-LAST:event_reverseArrivalBtnActionPerformed
+
+  private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
+    LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
+    loc.setDirection(LocomotiveBean.Direction.BACKWARDS);
+  }//GEN-LAST:event_backwardsRBActionPerformed
+
+  private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
+    LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
+    loc.setDirection(LocomotiveBean.Direction.FORWARDS);
+  }//GEN-LAST:event_forwardsRBActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  javax.swing.JPanel arrivalPanel;
+  javax.swing.JRadioButton backwardsRB;
   javax.swing.JLabel blockDescLbl;
   javax.swing.JLabel blockIdLbl;
   javax.swing.JTextField blockIdTF;
@@ -363,18 +417,21 @@ public class BlockControlDialog extends javax.swing.JDialog {
   javax.swing.JPanel bottomPanel;
   javax.swing.JPanel deviceIdPanel;
   javax.swing.JPanel directionsPanel;
+  javax.swing.Box.Filler filler1;
+  javax.swing.JRadioButton forwardsRB;
   javax.swing.JLabel headingLbl;
   javax.swing.JPanel headingPanel;
   javax.swing.JPanel imagePanel;
   javax.swing.JPanel leftPanel;
+  javax.swing.JPanel locDirPanel;
   javax.swing.JComboBox<LocomotiveBean> locomotiveCB;
+  javax.swing.ButtonGroup locomotiveDirectionBG;
   javax.swing.JLabel locomotiveIconLbl;
   javax.swing.JLabel locomotiveLbl;
   javax.swing.JPanel locomotivePanel;
   javax.swing.JPanel locomotiveSelectionPanel;
   javax.swing.JPanel namePanel;
-  javax.swing.JCheckBox reverseArrivalCB;
-  javax.swing.JCheckBox reverseDirectionCB;
+  javax.swing.JButton reverseArrivalBtn;
   javax.swing.JPanel rightPanel;
   javax.swing.JButton saveExitBtn;
   javax.swing.JToggleButton startLocButton;

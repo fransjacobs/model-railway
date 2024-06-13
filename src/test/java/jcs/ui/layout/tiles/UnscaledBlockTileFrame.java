@@ -50,6 +50,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     this.orientationCB.setModel(createOrientationComboBoxModel());
     this.incomingSideCB.setSelectedItem("");
     this.stateCB.setModel(createStateComboBoxModel());
+    
     initTile();
   }
 
@@ -109,7 +110,6 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     bbe.setBlockState((BlockState) this.stateCB.getSelectedItem());
     bbe.setReverseArrival(this.reverseArrivalCB.isSelected());
 
-    //bbe.setArrivalSuffix(getIncomingSuffix());
     if (this.showLocCB.isSelected()) {
       bbe.setLocomotive(createLocomotiveBean());
     } else {
@@ -117,21 +117,16 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     }
 
     ((Block) blockTile).setBlockBean(bbe);
+    
+ 
     if (this.scaleCB.isSelected()) {
       ((AbstractTile) blockTile).setScaleImage(false);
     } else {
       ((AbstractTile) blockTile).setScaleImage(true);
     }
-
-    this.blockTileCanvas.addTile(blockTile);
-
-    BufferedImage img = new BufferedImage(blockTileCanvas.getWidth(), blockTileCanvas.getHeight(), BufferedImage.TYPE_INT_RGB);
-    Graphics2D g2d = img.createGraphics();
-
-    blockTile.drawTile(g2d, this.showCenterCB.isSelected());
-
-    this.centerSP.getViewport().validate();
-    repaint();
+ 
+    blockTileCanvas.addTile(blockTile);
+    centerSP.getViewport().validate();
   }
 
   private void changeOrientation() {
@@ -190,7 +185,6 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
     nPanel.setPreferredSize(new java.awt.Dimension(1250, 50));
 
-    scaleCB.setSelected(true);
     scaleCB.setText("Expand");
     scaleCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -368,6 +362,13 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
     ((Block) blockTile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
+    if("+".equals(((Block) blockTile).getBlockBean().getArrivalSuffix())) {
+      ((Block) blockTile).getBlockBean().setArrivalSuffix("-");
+    } else {
+      ((Block) blockTile).getBlockBean().setArrivalSuffix("+");
+    }
+    this.incomingSideCB.setSelectedItem(((Block) blockTile).getBlockBean().getArrivalSuffix());
+    
     repaint();
   }//GEN-LAST:event_reverseArrivalCBActionPerformed
 

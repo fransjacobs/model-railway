@@ -77,6 +77,46 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
     }
 
     int totalWidth = maxX - minX;
+    if (totalWidth <= 120) {
+      totalWidth = totalWidth + 20;
+    }
+
+    int totalHeight = maxY - minY;
+    if (totalHeight <= 40) {
+      totalHeight = totalHeight + 20;
+    }
+
+    //Logger.trace("MinX: " + minX + " maxX: " + maxX + " minY: " + minY + " maxY: " + maxY + " Width: " + totalWidth + " Height: " + totalHeight);
+    return new Dimension(Math.abs(totalWidth), Math.abs(totalHeight));
+  }
+
+  private Dimension getMinRenderCanvasSize() {
+    int minX = this.getSize().width;
+    int maxX = 0;
+    int minY = this.getSize().height;
+    int maxY = 0;
+
+    for (Tile tile : this.tiles) {
+      Point tc = tile.getCenter();
+
+      int tw = ((Block) tile).getRenderWidth();
+      int th = ((Block) tile).getRenderHeight();
+
+      if (minX > tc.x - (tw / 2)) {
+        minX = tc.x - (tw / 2);
+      }
+      if (maxX < tc.x + (tw / 2)) {
+        maxX = tc.x + (tw / 2);
+      }
+      if (minY > tc.y - (th / 2)) {
+        minY = tc.y - (th / 2);
+      }
+      if (maxY < tc.y + (th / 2)) {
+        maxY = tc.y + (th / 2);
+      }
+    }
+
+    int totalWidth = maxX - minX;
     int totalHeight = maxY - minY;
 
     //Logger.trace("MinX: " + minX + " maxX: " + maxX + " minY: " + minY + " maxY: " + maxY + " Width: " + totalWidth + " Height: " + totalHeight);
@@ -87,13 +127,16 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
     Dimension canvasSize = getMinCanvasSize();
     BufferedImage canvasImage = new BufferedImage(Math.abs(canvasSize.width), Math.abs(canvasSize.height), BufferedImage.TYPE_INT_RGB);
     Graphics2D g2d = canvasImage.createGraphics();
+
     g2d.setBackground(Color.white);
     g2d.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
-    for (Tile tile : this.tiles) {
+    for (Tile tile : tiles) {
       tile.setDrawOutline(showCenter);
+
       tile.drawTile(g2d, true);
-      if (this.showCenter) {
+ 
+      if (showCenter) {
         tile.drawCenterPoint(g2d, Color.red);
       }
     }
@@ -117,11 +160,21 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
     int bw = canvasImage.getWidth();
     int bh = canvasImage.getHeight();
 
-    this.setPreferredSize(new Dimension(bw, bh));
+    int pw = w;
+    int ph = h;
+    
+    if(bw > w) {
+       pw = w;
+    }
+    if(bh > h) {
+      ph = h;
+    }
+    
+    setPreferredSize(new Dimension(bw, bh));
+    //setPreferredSize(new Dimension(pw, ph));
 
     int x = cx - (bw / 2);
     int y = cy - (bh / 2);
-
     g2d.drawImage(canvasImage, null, x, y);
   }
 

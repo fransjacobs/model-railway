@@ -46,7 +46,6 @@
       <SubComponents>
         <Component class="javax.swing.JCheckBox" name="scaleCB">
           <Properties>
-            <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Expand"/>
           </Properties>
           <Events>

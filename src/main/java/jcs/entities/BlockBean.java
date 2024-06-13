@@ -265,16 +265,13 @@ public class BlockBean {
       inSuffix = "";
     }
 
-    String departureSuffix = "";
-    if ("-".equals(inSuffix) && !reverseArrival) {
-      departureSuffix = "+";
-    } else if ("+".equals(inSuffix) && !reverseArrival) {
+    String departureSuffix;
+    if ("+".equals(inSuffix)) {
       departureSuffix = "-";
-    } else if ("-".equals(inSuffix) && reverseArrival) {
-      departureSuffix = "-";
-    } else if ("+".equals(inSuffix) && reverseArrival) {
+    } else {
       departureSuffix = "+";
     }
+
     return departureSuffix;
   }
 
