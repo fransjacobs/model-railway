@@ -87,6 +87,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
 
       //TODO rely on the acceleration delay of the loco decoder or do something our selves..
+      dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
       dispatcher.changeLocomotiveVelocity(locomotive, 600);
 
       locomotiveStarted = true;

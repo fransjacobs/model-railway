@@ -69,37 +69,38 @@ class ReserveRouteState extends DispatcherState {
     }
   }
 
-  private String getDefaultDepartureSuffix(LocomotiveBean locomotive, BlockBean blockBean) {
-    String departureSuffix;
-    String arrivalSuffix;
-    //does the block orientation has an influence?
-    
-    
-    if ((Direction.FORWARDS == locomotive.getDirection() && !blockBean.isReverseArrival())
-            || (Direction.BACKWARDS == locomotive.getDirection() && blockBean.isReverseArrival())) {
-      departureSuffix = "+";
-      arrivalSuffix = "-";
-    } else {
-      departureSuffix = "-";
-      arrivalSuffix = "+";
-    }
-
-    blockBean.setArrivalSuffix(arrivalSuffix);
-    return departureSuffix;
-  }
+//  private String getDefaultDepartureSuffix(LocomotiveBean locomotive, BlockBean blockBean) {
+//    String departureSuffix;
+//    String arrivalSuffix;
+//    //does the block orientation has an influence?
+//    
+//    
+//    if ((Direction.FORWARDS == locomotive.getDirection() && !blockBean.isReverseArrival())
+//            || (Direction.BACKWARDS == locomotive.getDirection() && blockBean.isReverseArrival())) {
+//      departureSuffix = "+";
+//      arrivalSuffix = "-";
+//    } else {
+//      departureSuffix = "-";
+//      arrivalSuffix = "+";
+//    }
+//
+//    blockBean.setArrivalSuffix(arrivalSuffix);
+//    return departureSuffix;
+//  }
 
   boolean searchRoute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
     BlockBean blockBean = dispatcher.getDepartureBlock();
+    
     String departureSuffix = blockBean.getDepartureSuffix();
-    if (departureSuffix == null || "".equals(departureSuffix)) {
-      departureSuffix = getDefaultDepartureSuffix(locomotive, blockBean);
-      Logger.trace("Using default departure suffix: " + departureSuffix);
-    } else {
-      Logger.trace("Using departure suffix: " + departureSuffix);
-    }
+//    if (departureSuffix == null || "".equals(departureSuffix)) {
+//      departureSuffix = "+";
+//      Logger.trace("Using default departure suffix: " + departureSuffix);
+//    } else {
+//      Logger.trace("Using departure suffix: " + departureSuffix);
+//    }
 
     LocomotiveBean.Direction locDir = locomotive.getDirection();
 
@@ -114,14 +115,18 @@ class ReserveRouteState extends DispatcherState {
     if (routes.isEmpty() && locomotive.isCommuter()) {
       //No routes possible. When the Locomotive is a commuter train it can reverse direction, so
       Logger.debug("Reversing Locomotive...");
-
       Direction newDirection = locomotive.toggleDirection();
-      //Do NOT set the final direction yet just test....
+      //Do NOT yet set the direction yet just test....
       locomotive.setDirection(newDirection);
       blockBean.setLocomotive(locomotive);
 
       locDir = locomotive.getDirection();
-      departureSuffix = getDefaultDepartureSuffix(locomotive, blockBean);
+      //also flip the departure direction
+      if("-".equals(departureSuffix)) {
+        departureSuffix = "+";
+      } else {
+        departureSuffix = "-";
+      }
 
       Logger.trace("2nd; Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
       routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), departureSuffix);
@@ -186,18 +191,19 @@ class ReserveRouteState extends DispatcherState {
     //Reserve the destination
     String destinationTileId = route.getToTileId();
     String arrivalSuffix = route.getToSuffix();
+    
     Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDirection());
 
-    BlockBean departureBlock = this.dispatcher.getDepartureBlock();
+    BlockBean departureBlock = dispatcher.getDepartureBlock();
     departureBlock.setBlockState(BlockBean.BlockState.DEPARTING);
+    //String departureArrivalSuffix = dispatcher.getDepartureArrivalSuffix();
+    departureBlock.setDepartureSuffix(route.getFromSuffix());
 
-    String departureArrivalSuffix = this.dispatcher.getDepartureArrivalSuffix();
-    departureBlock.setArrivalSuffix(departureArrivalSuffix);
-
-    BlockBean destinationBlock = this.dispatcher.getDestinationBlock();
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
     destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setArrivalSuffix(arrivalSuffix);
+    destinationBlock.setReverseArrival(departureBlock.isReverseArrival());
 
     // Set Turnouts in the right state
     List<RouteElementBean> turnouts = getTurnouts(route);
@@ -219,10 +225,10 @@ class ReserveRouteState extends DispatcherState {
     if (switchesNotLocked) {
       PersistenceFactory.getService().persist(route);
 
-      if (swapLocomotiveDirection) {
-        Direction newDirection = locomotive.getDirection();
-        dispatcher.changeLocomotiveDirection(locomotive, newDirection);
-      }
+      //if (swapLocomotiveDirection) {
+      //  Direction newDirection = locomotive.getDirection();
+      //  dispatcher.changeLocomotiveDirection(locomotive, newDirection);
+      //}
 
       for (RouteElementBean reb : turnouts) {
         AccessoryValue av = reb.getAccessoryValue();

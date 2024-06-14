@@ -100,8 +100,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
         } else {
           this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
-        
-        
+
         LocomotiveBean.Direction dir = bb.getLocomotive().getDirection();
 
         if (LocomotiveBean.Direction.BACKWARDS == bb.getLocomotive().getDirection()) {
@@ -109,10 +108,6 @@ public class BlockControlDialog extends javax.swing.JDialog {
         } else {
           this.forwardsRB.setSelected(true);
         }
-
-
-        
-        
 
         this.startLocButton.setEnabled(AutoPilot.getInstance().isRunning());
         this.startLocButton.setSelected(AutoPilot.getInstance().isRunning(bb.getLocomotive()));
@@ -389,12 +384,13 @@ public class BlockControlDialog extends javax.swing.JDialog {
   }//GEN-LAST:event_startLocButtonActionPerformed
 
   private void reverseArrivalBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalBtnActionPerformed
-    String suffix = this.block.getBlockBean().getArrivalSuffix();
+    String suffix = block.getBlockBean().getArrivalSuffix();
     if ("+".equals(suffix)) {
-      this.block.getBlockBean().setArrivalSuffix("-");
+      block.getBlockBean().setArrivalSuffix("-");
     } else {
-      this.block.getBlockBean().setArrivalSuffix("+");
+      block.getBlockBean().setArrivalSuffix("+");
     }
+    block.getBlockBean().setReverseArrival(!block.getBlockBean().isReverseArrival());
   }//GEN-LAST:event_reverseArrivalBtnActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed

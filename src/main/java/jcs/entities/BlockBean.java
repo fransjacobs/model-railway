@@ -257,19 +257,27 @@ public class BlockBean {
     }
   }
 
+  public void setDepartureSuffix(String suffix) {
+    if ("-".equals(suffix)) {
+      this.arrivalSuffix = "+";
+    } else {
+      this.arrivalSuffix = "-";
+    }
+  }
+
   @Transient
   public String getDepartureSuffix() {
-    String inSuffix = arrivalSuffix;
-    if (inSuffix == null) {
-      //use a default
-      inSuffix = "";
-    }
+//    String inSuffix = arrivalSuffix;
+//    if (inSuffix == null) {
+//      //use a default
+//      inSuffix = "";
+//    }
 
     String departureSuffix;
-    if ("+".equals(inSuffix)) {
-      departureSuffix = "-";
-    } else {
+    if ("-".equals(arrivalSuffix)) {
       departureSuffix = "+";
+    } else {
+      departureSuffix = "-";
     }
 
     return departureSuffix;
