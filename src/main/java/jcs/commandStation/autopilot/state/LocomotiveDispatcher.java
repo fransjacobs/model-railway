@@ -60,26 +60,21 @@ public class LocomotiveDispatcher {
 
   private LocomotiveRunnerThread thread;
 
-  //For Testing a dialog per dispatcher to be replaced by a panel in de main screen
-  //private DispatcherTestDialog dispatcherDialog;
-
   public LocomotiveDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
     this.autoPilot = autoPilot;
 
     this.stateEventListeners = new LinkedList<>();
     initializeListeners();
-
     //Initialize a worker thread, don't start it yet
     thread = new LocomotiveRunnerThread(this);
 
-    initTestDialog();
+    //initTestDialog();
   }
 
-  private void initTestDialog() {
-    //dispatcherDialog = DispatcherTestDialog.showDialog(this);
-  }
-
+//  private void initTestDialog() {
+//    //dispatcherDialog = DispatcherTestDialog.showDialog(this);
+//  }
   public Long getId() {
     return this.locomotiveBean.getId();
   }
@@ -131,7 +126,6 @@ public class LocomotiveDispatcher {
   //public void disposeDialog() {
   //  this.dispatcherDialog.dispose();
   //}
-
   public boolean isRunning() {
     if (this.thread != null) {
       return this.thread.isRunning();
@@ -324,9 +318,9 @@ public class LocomotiveDispatcher {
 
     @Override
     public void onSpeedChange(LocomotiveSpeedEvent velocityEvent) {
-      if (velocityEvent.isEventFor(this.trainDispatcher.getLocomotiveBean())) {
-        this.trainDispatcher.getLocomotiveBean().setVelocity(velocityEvent.getVelocity());
-        Logger.trace("Updated velocity to " + velocityEvent.getVelocity() + " of " + this.trainDispatcher.getLocomotiveBean().getName());
+      if (velocityEvent.isEventFor(trainDispatcher.getLocomotiveBean())) {
+        trainDispatcher.getLocomotiveBean().setVelocity(velocityEvent.getVelocity());
+        Logger.trace("Updated velocity to " + velocityEvent.getVelocity() + " of " + trainDispatcher.getLocomotiveBean().getName());
       }
     }
   }
@@ -342,8 +336,8 @@ public class LocomotiveDispatcher {
     @Override
     public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
       if (directionEvent.isEventFor(this.trainDispatcher.getLocomotiveBean())) {
-        this.trainDispatcher.getLocomotiveBean().setDirection(directionEvent.getNewDirection());
-        Logger.trace("Updated direction to " + directionEvent.getNewDirection() + " of " + this.trainDispatcher.getLocomotiveBean().getName());
+        trainDispatcher.getLocomotiveBean().setDirection(directionEvent.getNewDirection());
+        Logger.trace("Updated direction to " + directionEvent.getNewDirection() + " of " + trainDispatcher.getLocomotiveBean().getName());
       }
     }
   }
@@ -351,7 +345,7 @@ public class LocomotiveDispatcher {
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 37 * hash + Objects.hashCode(this.locomotiveBean);
+    hash = 37 * hash + Objects.hashCode(locomotiveBean);
     return hash;
   }
 
@@ -376,5 +370,4 @@ public class LocomotiveDispatcher {
   //    this.thread.manualStep();
   //  }
   //}
-
 }

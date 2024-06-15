@@ -101,8 +101,6 @@ public class BlockControlDialog extends javax.swing.JDialog {
           this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
 
-        LocomotiveBean.Direction dir = bb.getLocomotive().getDirection();
-
         if (LocomotiveBean.Direction.BACKWARDS == bb.getLocomotive().getDirection()) {
           this.backwardsRB.setSelected(true);
         } else {
@@ -337,9 +335,10 @@ public class BlockControlDialog extends javax.swing.JDialog {
       if (this.block != null && this.block.getBlockBean() != null) {
         BlockBean bb = this.block.getBlockBean();
         PersistenceFactory.getService().persist(bb);
-        LocomotiveBean loc = bb.getLocomotive();
-        PersistenceFactory.getService().persist(loc);
-
+        if (bb.getLocomotive() != null) {
+          LocomotiveBean loc = bb.getLocomotive();
+          PersistenceFactory.getService().persist(loc);
+        }
         TileEvent tileEvent = new TileEvent(bb);
         TileFactory.fireTileEventListener(tileEvent);
       }
@@ -354,26 +353,31 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     LocomotiveBean selected = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
 
-    this.block.getBlockBean().setLocomotive(selected);
-    if (this.block.getBlockBean().getLocomotiveId() != null) {
-      this.block.getBlockBean().setBlockState(BlockBean.BlockState.OCCUPIED);
+    block.getBlockBean().setLocomotive(selected);
+    if (block.getBlockBean().getLocomotiveId() != null) {
+      block.getBlockBean().setBlockState(BlockBean.BlockState.OCCUPIED);
     } else {
-      this.block.getBlockBean().setBlockState(BlockBean.BlockState.FREE);
+      block.getBlockBean().setBlockState(BlockBean.BlockState.FREE);
     }
 
     if (selected.getLocIcon() != null) {
-      this.locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
-      this.locomotiveIconLbl.setText(null);
+      locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
+      locomotiveIconLbl.setText(null);
     } else {
-      this.locomotiveIconLbl.setText(selected.getName());
+      locomotiveIconLbl.setText(selected.getName());
     }
 
-    if (this.block.getBlockBean().getLocomotiveId() != null) {
-      this.startLocButton.setEnabled(true);
+    if (LocomotiveBean.Direction.BACKWARDS == selected.getDirection()) {
+      this.backwardsRB.setSelected(true);
     } else {
-      this.startLocButton.setEnabled(false);
+      this.forwardsRB.setSelected(true);
     }
 
+    if (block.getBlockBean().getLocomotiveId() != null) {
+      startLocButton.setEnabled(true);
+    } else {
+      startLocButton.setEnabled(false);
+    }
   }//GEN-LAST:event_locomotiveCBActionPerformed
 
   private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed

@@ -123,9 +123,11 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
     int row = this.dispatcherTable.getSelectedRow();
 
     LocomotiveDispatcher dispatcher = locomotiveDispatcherTableModel.getBeanAt(row);
-    Logger.trace("Selected " + dispatcher.getName() + " " + evt.getClickCount());
-    if (evt.getClickCount() == 2) {
-      showDriverCabDialog(dispatcher.getLocomotiveBean());
+    if (row >= 0 && dispatcher != null) {
+      Logger.trace("Selected " + dispatcher.getName() + " " + evt.getClickCount());
+      if (evt.getClickCount() == 2) {
+        showDriverCabDialog(dispatcher.getLocomotiveBean());
+      }
     }
   }//GEN-LAST:event_dispatcherTableMouseReleased
 

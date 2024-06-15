@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.BlockBean;
@@ -34,8 +35,7 @@ import org.tinylog.Logger;
  */
 class ReserveRouteState extends DispatcherState {
 
-  private boolean swapLocomotiveDirection = false;
-
+  //private boolean swapLocomotiveDirection = false;
   ReserveRouteState(LocomotiveDispatcher dispatcher) {
     super(dispatcher);
   }
@@ -54,54 +54,35 @@ class ReserveRouteState extends DispatcherState {
 
   @Override
   public void execute() {
-    ReserveRouteSemaphore semaphore = new ReserveRouteSemaphore();
-    Logger.trace("Obtaining a lock. There is currently " + semaphore.avialablePermits() + " available lock...");
+    //ReserveRouteSemaphore semaphore = new ReserveRouteSemaphore();
+    int permits = AutoPilot.getInstance().avialablePermits();
+    Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 
-    try {
-      //Blocking call....
-      semaphore.tryLock();
-      if (searchRoute()) {
-        canAdvanceToNextState = reserveRoute();
+    if (AutoPilot.getInstance().tryAquireLock()) {
+      try {
+        Logger.trace("##### Locked ####");
+        if (searchRoute()) {
+          canAdvanceToNextState = reserveRoute();
+        }
+      } finally {
+        //Make sure the lock is released
+        AutoPilot.getInstance().releaseLock();
+        Logger.trace("##### Released ####");
       }
-    } finally {
-      //Make sure the lock is released
-      semaphore.release();
+    } else {
+      Logger.trace("No Semaphore avalaible");
+      canAdvanceToNextState = false;
     }
-  }
 
-//  private String getDefaultDepartureSuffix(LocomotiveBean locomotive, BlockBean blockBean) {
-//    String departureSuffix;
-//    String arrivalSuffix;
-//    //does the block orientation has an influence?
-//    
-//    
-//    if ((Direction.FORWARDS == locomotive.getDirection() && !blockBean.isReverseArrival())
-//            || (Direction.BACKWARDS == locomotive.getDirection() && blockBean.isReverseArrival())) {
-//      departureSuffix = "+";
-//      arrivalSuffix = "-";
-//    } else {
-//      departureSuffix = "-";
-//      arrivalSuffix = "+";
-//    }
-//
-//    blockBean.setArrivalSuffix(arrivalSuffix);
-//    return departureSuffix;
-//  }
+  }
 
   boolean searchRoute() {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
     BlockBean blockBean = dispatcher.getDepartureBlock();
-    
-    String departureSuffix = blockBean.getDepartureSuffix();
-//    if (departureSuffix == null || "".equals(departureSuffix)) {
-//      departureSuffix = "+";
-//      Logger.trace("Using default departure suffix: " + departureSuffix);
-//    } else {
-//      Logger.trace("Using departure suffix: " + departureSuffix);
-//    }
 
+    String departureSuffix = blockBean.getDepartureSuffix();
     LocomotiveBean.Direction locDir = locomotive.getDirection();
 
     Logger.trace("Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
@@ -122,7 +103,7 @@ class ReserveRouteState extends DispatcherState {
 
       locDir = locomotive.getDirection();
       //also flip the departure direction
-      if("-".equals(departureSuffix)) {
+      if ("-".equals(departureSuffix)) {
         departureSuffix = "+";
       } else {
         departureSuffix = "-";
@@ -132,10 +113,6 @@ class ReserveRouteState extends DispatcherState {
       routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), departureSuffix);
 
       Logger.trace("2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s). " + (!routes.isEmpty() ? "Direction of " + locomotive.getName() + " must be swapped!" : ""));
-      if (!routes.isEmpty()) {
-        Logger.trace("Locomotive Direction Swap is needed!");
-        swapLocomotiveDirection = true;
-      }
     }
 
     //Found possible routes check on the destination for the sensors
@@ -148,7 +125,7 @@ class ReserveRouteState extends DispatcherState {
 
       Logger.trace("Destination " + destinationBlock.getId() + " + sensor: " + (plusInActive ? "Free" : "Occupied") + " - sensor: " + (minInActive ? "Free" : "Occupied"));
 
-      if (plusInActive && minInActive) {
+      if (plusInActive && minInActive && turnoutsNotLocked(route)) {
         checkedRoutes.add(route);
       }
     }
@@ -184,19 +161,15 @@ class ReserveRouteState extends DispatcherState {
     Logger.debug("Reserving route " + route);
     route.setLocked(true);
 
-//    if (swapLocomotiveDirection) {
-//      Direction newDirection = locomotive.getDirection();
-//      dispatcher.changeLocomotiveDirection(locomotive, newDirection);
-//    }
     //Reserve the destination
     String destinationTileId = route.getToTileId();
     String arrivalSuffix = route.getToSuffix();
-    
+
     Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDirection());
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     departureBlock.setBlockState(BlockBean.BlockState.DEPARTING);
-    //String departureArrivalSuffix = dispatcher.getDepartureArrivalSuffix();
+
     departureBlock.setDepartureSuffix(route.getFromSuffix());
 
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
@@ -208,33 +181,28 @@ class ReserveRouteState extends DispatcherState {
     // Set Turnouts in the right state
     List<RouteElementBean> turnouts = getTurnouts(route);
     Logger.trace("There are " + turnouts.size() + " turnouts in this route");
-
-    boolean switchesNotLocked = true;
-    for (RouteElementBean reb : turnouts) {
-      AccessoryValue av = reb.getAccessoryValue();
-      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-      //check if the accessory is not set by an other reserved route
-      boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
-      if (locked) {
-        switchesNotLocked = false;
-        Logger.debug("Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] is locked!");
-      }
-    }
+    
+//    boolean switchesNotLocked = true;
+//    for (RouteElementBean reb : turnouts) {
+//      AccessoryValue av = reb.getAccessoryValue();
+//      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
+//      //check if the accessory is not set by an other reserved route
+//      boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
+//      if (locked) {
+//        switchesNotLocked = false;
+//        Logger.debug("Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] is locked!");
+//      }
+//    }
 
     //Now start to persist and perform critical thinks
-    if (switchesNotLocked) {
+    if (turnoutsNotLocked(route)) {
       PersistenceFactory.getService().persist(route);
-
-      //if (swapLocomotiveDirection) {
-      //  Direction newDirection = locomotive.getDirection();
-      //  dispatcher.changeLocomotiveDirection(locomotive, newDirection);
-      //}
 
       for (RouteElementBean reb : turnouts) {
         AccessoryValue av = reb.getAccessoryValue();
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
         Logger.debug("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
-        this.dispatcher.switchAccessory(turnout, av);
+        dispatcher.switchAccessory(turnout, av);
       }
       Logger.trace("Turnouts set for " + route);
 
@@ -256,6 +224,24 @@ class ReserveRouteState extends DispatcherState {
 
       return false;
     }
+  }
+
+  boolean turnoutsNotLocked(RouteBean route) {
+    List<RouteElementBean> turnouts = getTurnouts(route);
+
+    boolean switchesNotLocked = true;
+    for (RouteElementBean reb : turnouts) {
+      AccessoryValue av = reb.getAccessoryValue();
+      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
+      //check if the accessory is not set by an other reserved route
+      boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
+      if (locked) {
+        Logger.debug("Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] is locked!");
+        return false;
+      }
+    }
+    Logger.trace("There are " + turnouts.size() + " free turnouts in this route");
+    return switchesNotLocked;
   }
 
   public int getRandomNumber(int min, int max) {

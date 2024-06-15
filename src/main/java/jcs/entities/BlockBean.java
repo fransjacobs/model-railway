@@ -267,12 +267,6 @@ public class BlockBean {
 
   @Transient
   public String getDepartureSuffix() {
-//    String inSuffix = arrivalSuffix;
-//    if (inSuffix == null) {
-//      //use a default
-//      inSuffix = "";
-//    }
-
     String departureSuffix;
     if ("-".equals(arrivalSuffix)) {
       departureSuffix = "+";

@@ -68,8 +68,8 @@ class StartState extends DispatcherState implements SensorEventListener {
       String exitPlusId = departureBlock.getPlusSensorId();
 
       //Should already be in the ignore list... just to sure...
-      this.dispatcher.registerIgnoreEventHandler(exitMinId);
-      this.dispatcher.registerIgnoreEventHandler(exitPlusId);
+      dispatcher.registerIgnoreEventHandler(exitMinId);
+      dispatcher.registerIgnoreEventHandler(exitPlusId);
 
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
@@ -82,24 +82,24 @@ class StartState extends DispatcherState implements SensorEventListener {
       //Register this state as a SensorEventListener
       JCS.getJcsCommandStation().addSensorEventListener(this);
       //Remove the enter sensor from the ghost detection
-      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
+      dispatcher.registerIgnoreEventHandler(enterSensorId);
 
       Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
 
       //TODO rely on the acceleration delay of the loco decoder or do something our selves..
       dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
-      dispatcher.changeLocomotiveVelocity(locomotive, 600);
+      dispatcher.changeLocomotiveVelocity(locomotive, 750);
 
       locomotiveStarted = true;
-      Logger.trace("Waiting for the enter event from SensorId: " + this.enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
+      Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
   }
 
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
-    if (this.enterSensorId.equals(sensorEvent.getId())) {
+    if (enterSensorId.equals(sensorEvent.getId())) {
       if (sensorEvent.isActive()) {
-        this.canAdvanceToNextState = true;
+        canAdvanceToNextState = true;
         Logger.trace("Enter Event from Sensor " + sensorEvent.getId());
         synchronized (this) {
           notify();

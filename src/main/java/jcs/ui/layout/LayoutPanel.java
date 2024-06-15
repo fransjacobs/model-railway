@@ -940,7 +940,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-      Logger.trace("HIDDEN");
+      ///Logger.trace("HIDDEN");
       if (JCS.getParentFrame() != null) {
         JCS.getParentFrame().hideExtraToolbar(this.toolBar);
       }

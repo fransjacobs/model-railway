@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
@@ -58,7 +61,12 @@ public class AutoPilot extends Thread {
   private final List<SensorListener> sensorListeners = new ArrayList<>();
   private final List<AutoPilotStatusListener> autoPilotStatusListeners = Collections.synchronizedList(new ArrayList<>());
 
+  private final Semaphore semaphore;
+  private final ExecutorService executor;
+
   private AutoPilot() {
+    semaphore = new Semaphore(1);
+    executor = Executors.newCachedThreadPool();
   }
 
   public static AutoPilot getInstance() {
@@ -94,8 +102,7 @@ public class AutoPilot extends Thread {
     }
 
     //Test
-    stoppingAutomodeTestDialogs();
-
+//    stoppingAutomodeTestDialogs();
     unRegisterAllSensors();
     sensorHandlers.clear();
 
@@ -104,7 +111,7 @@ public class AutoPilot extends Thread {
     }
 
     resetStates();
-    
+
     Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
   }
 
@@ -127,12 +134,11 @@ public class AutoPilot extends Thread {
     }
   }
 
-  public void startAllLocomotives() {
-    Logger.trace("Starting automode for all on track locomotives...");
-
+  private void startAllLocomotivesInBackground() {
+    Logger.trace("Starting automode for all ontrack locomotives...");
     List<LocomotiveBean> locs = getOnTrackLocomotives();
     Map<String, LocomotiveDispatcher> snapshot = new HashMap<>(this.dispatchers);
-    this.dispatchers.clear();
+    dispatchers.clear();
 
     for (LocomotiveBean loc : locs) {
       LocomotiveDispatcher dispatcher;
@@ -147,6 +153,30 @@ public class AutoPilot extends Thread {
       //TODO: Combine with the start stop (single) locomotive)
       dispatcher.startRunning();
     }
+  }
+
+  public void startAllLocomotives() {
+//    Logger.trace("Starting automode for all on track locomotives...");
+
+    this.executor.execute(() -> startAllLocomotivesInBackground());
+
+//    List<LocomotiveBean> locs = getOnTrackLocomotives();
+//    Map<String, LocomotiveDispatcher> snapshot = new HashMap<>(this.dispatchers);
+//    this.dispatchers.clear();
+//
+//    for (LocomotiveBean loc : locs) {
+//      LocomotiveDispatcher dispatcher;
+//      if (snapshot.containsKey(loc.getName())) {
+//        dispatcher = snapshot.get(loc.getName());
+//      } else {
+//        dispatcher = new LocomotiveDispatcher(loc, this);
+//      }
+//      dispatchers.put(loc.getName(), dispatcher);
+//      Logger.trace("Starting " + loc.getName() + "...");
+//
+//      //TODO: Combine with the start stop (single) locomotive)
+//      dispatcher.startRunning();
+//    }
   }
 
   public void stopAllLocomotives() {
@@ -351,14 +381,13 @@ public class AutoPilot extends Thread {
     this.sensorListeners.clear();
   }
 
-  private void stoppingAutomodeTestDialogs() {
-    Logger.trace("Stopping automode testdialogs");
-    for (LocomotiveDispatcher ld : this.dispatchers.values()) {
-      //Test
-      //ld.disposeDialog();
-    }
-  }
-
+//  private void stoppingAutomodeTestDialogs() {
+//    Logger.trace("Stopping automode testdialogs");
+//    for (LocomotiveDispatcher ld : this.dispatchers.values()) {
+//      //Test
+//      //ld.disposeDialog();
+//    }
+//  }
   public void addHandler(SensorEventHandler handler, String sensorId) {
     sensorHandlers.put(sensorId, handler);
   }
@@ -432,14 +461,16 @@ public class AutoPilot extends Thread {
     notifyAll();
   }
 
-  public static void main(String[] a) {
-    AutoPilot ap = new AutoPilot();
-    JCS.getJcsCommandStation().connect();
+  public boolean tryAquireLock() {
+    return semaphore.tryAcquire();
+  }
 
-    ap.registerAllSensors();
-    ap.startAllLocomotives();
+  public void releaseLock() {
+    semaphore.release();
+  }
 
-    //ap.startAllLocomotives();
+  public int avialablePermits() {
+    return semaphore.availablePermits();
   }
 
 }

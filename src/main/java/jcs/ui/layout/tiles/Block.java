@@ -571,11 +571,7 @@ public class Block extends AbstractTile implements Tile {
       BlockState blockState = blockBean.getBlockState();
       boolean showImage = !(BlockState.FREE == blockState || BlockState.LOCKED == blockState || BlockState.LEAVING == blockState || BlockState.GHOST == blockState);
       if (showImage) {
-        if (LocomotiveBean.Direction.BACKWARDS == blockBean.getLocomotive().getDirection()) {
-          return ImageUtil.flipVertically(blockBean.getLocomotive().getLocIcon());
-        } else {
-          return blockBean.getLocomotive().getLocIcon();
-        }
+        return blockBean.getLocomotive().getLocIcon();
       } else {
         return null;
       }

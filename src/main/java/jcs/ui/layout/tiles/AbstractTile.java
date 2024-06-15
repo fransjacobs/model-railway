@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,6 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
   protected int renderOffsetX = 0;
   protected int renderOffsetY = 0;
 
-  //protected Color drawTrackColor;
   protected Color trackColor;
   protected Color trackRouteColor;
   protected Orientation incomingSide;

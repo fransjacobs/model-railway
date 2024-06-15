@@ -19,6 +19,7 @@ import java.awt.Image;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
 import jcs.commandStation.autopilot.state.StateEventListener;
+import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
 
 /**
@@ -105,7 +106,6 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
   @Override
   public Object getValueAt(int row, int column) {
     if (beans != null && row < beans.size()) {
-      String columnName = getColumnName(column);
       LocomotiveDispatcher b = beans.get(row);
 
       if (b != null) {
@@ -117,7 +117,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
           case 2 ->
             b.getDispatcherState();
           case 3 ->
-            ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1024.0) * 100)).intValue();
+            (Direction.FORWARDS == b.getLocomotiveBean().getDirection() ? ">>" : "<<") + " " + ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1024.0) * 100)).intValue();
           default ->
             null;
         };
@@ -136,7 +136,8 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
       case 2 ->
         String.class;
       case 3 ->
-        Integer.class;
+        //Integer.class;
+        String.class;
       default ->
         String.class;
     };

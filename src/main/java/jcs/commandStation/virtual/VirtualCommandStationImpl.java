@@ -17,8 +17,11 @@ package jcs.commandStation.virtual;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
@@ -36,12 +39,14 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.BlockBean;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
+import jcs.persistence.PersistenceFactory;
 import jcs.util.NetworkUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
@@ -296,4 +301,35 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
   }
 
+  
+  //Method for virtual driving
+  
+  private List<LocomotiveBean> getOnTrackLocomotives() {
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    //filter..
+    List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
+
+    //Logger.trace("There " + (occupiedBlocks.size() == 1 ? "is" : "are") + " " + occupiedBlocks.size() + " occupied block(s)");
+    Set<LocomotiveBean> activeLocomotives = new HashSet<>();
+    for (BlockBean occupiedBlock : occupiedBlocks) {
+      LocomotiveBean dbl = PersistenceFactory.getService().getLocomotive(occupiedBlock.getLocomotiveId());
+      if (dbl != null) {
+        activeLocomotives.add(dbl);
+      }
+    }
+
+    if (Logger.isDebugEnabled()) {
+      Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
+      for (LocomotiveBean loc : activeLocomotives) {
+        Logger.trace(loc);
+      }
+    }
+    return new ArrayList<>(activeLocomotives);
+  }
+
+  
+  //Find the route the locomotive is doing....
+  
+  
+  
 }

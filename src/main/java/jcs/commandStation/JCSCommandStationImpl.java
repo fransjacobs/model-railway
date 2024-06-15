@@ -758,26 +758,35 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     @Override
     public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
       LocomotiveBean lb = directionEvent.getLocomotiveBean();
-
-      LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
-      if (dblb == null) {
-        //try via address and decoder type
-        dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType(), lb.getCommandStationId());
-      }
-
-      if (dblb != null) {
-        if (!Objects.equals(dblb.getRichtung(), lb.getRichtung())) {
-          Integer richtung = lb.getRichtung();
-          dblb.setRichtung(richtung);
-          PersistenceFactory.getService().persist(dblb);
-          directionEvent.setLocomotiveBean(dblb);
-
-          for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {
-            dl.onDirectionChange(directionEvent);
+      if (lb != null) {
+        LocomotiveBean dblb;
+        //For marklin use the ID 
+        if ("marklin.cs".equals(lb.getCommandStationId())) {
+          dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
+        } else {
+          Integer address;
+          if (lb.getAddress() != null) {
+            address = lb.getAddress();
+          } else {
+            address = lb.getId().intValue();
           }
+          dblb = PersistenceFactory.getService().getLocomotive(address, lb.getDecoderType(), lb.getCommandStationId());
         }
-      } else {
-        Logger.trace("No loc found for " + lb.toLogString());
+
+        if (dblb != null) {
+          if (!Objects.equals(dblb.getRichtung(), lb.getRichtung())) {
+            Integer richtung = lb.getRichtung();
+            dblb.setRichtung(richtung);
+            PersistenceFactory.getService().persist(dblb);
+            directionEvent.setLocomotiveBean(dblb);
+
+            for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {
+              dl.onDirectionChange(directionEvent);
+            }
+          }
+        } else {
+          Logger.trace("No loc found for " + lb.toLogString());
+        }
       }
     }
   }
@@ -793,25 +802,32 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     @Override
     public void onSpeedChange(LocomotiveSpeedEvent speedEvent) {
       LocomotiveBean lb = speedEvent.getLocomotiveBean();
-      if (lb != null && lb.getId() != null) {
-
-        LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
-        if (dblb == null) {
-          //try via address and decoder type
-          dblb = PersistenceFactory.getService().getLocomotive(lb.getAddress(), lb.getDecoderType(), lb.getCommandStationId());
+      if (lb != null) {
+        LocomotiveBean dblb;
+        //For marklin use the ID 
+        if ("marklin.cs".equals(lb.getCommandStationId())) {
+          dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
+        } else {
+          Integer address;
+          if (lb.getAddress() != null) {
+            address = lb.getAddress();
+          } else {
+            address = lb.getId().intValue();
+          }
+          dblb = PersistenceFactory.getService().getLocomotive(address, lb.getDecoderType(), lb.getCommandStationId());
         }
 
         if (dblb != null) {
-          //if (!Objects.equals(dblb.getVelocity(), lb.getVelocity())) {
           Integer velocity = lb.getVelocity();
           dblb.setVelocity(velocity);
           PersistenceFactory.getService().persist(dblb);
 
           speedEvent.setLocomotiveBean(dblb);
           for (LocomotiveSpeedEventListener dl : trackService.locomotiveSpeedEventListeners) {
-            dl.onSpeedChange(speedEvent);
+            if (dl != null) {
+              dl.onSpeedChange(speedEvent);
+            }
           }
-          //}
         } else {
           Logger.trace("No loc found for " + lb.toLogString());
         }
