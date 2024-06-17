@@ -35,7 +35,8 @@ import org.tinylog.Logger;
  */
 class ReserveRouteState extends DispatcherState {
 
-  //private boolean swapLocomotiveDirection = false;
+  private boolean swapLocomotiveDirection = false;
+
   ReserveRouteState(LocomotiveDispatcher dispatcher) {
     super(dispatcher);
   }
@@ -95,13 +96,16 @@ class ReserveRouteState extends DispatcherState {
 
     if (routes.isEmpty() && locomotive.isCommuter()) {
       //No routes possible. When the Locomotive is a commuter train it can reverse direction, so
-      Logger.debug("Reversing Locomotive...");
+      Direction oldDirection = locomotive.getDirection();
       Direction newDirection = locomotive.toggleDirection();
+      Logger.trace("Reversing Locomotive, from " + oldDirection + " to " + newDirection + "...");
+
+      this.swapLocomotiveDirection = true;
+
       //Do NOT yet set the direction yet just test....
       locomotive.setDirection(newDirection);
       blockBean.setLocomotive(locomotive);
 
-      locDir = locomotive.getDirection();
       //also flip the departure direction
       if ("-".equals(departureSuffix)) {
         departureSuffix = "+";
@@ -146,6 +150,13 @@ class ReserveRouteState extends DispatcherState {
       Logger.trace("Choosen route " + route.toLogString());
     } else {
       Logger.debug("No route available for " + locomotive.getName() + " ...");
+
+      if (swapLocomotiveDirection) {
+        Direction newDirection = locomotive.toggleDirection();
+        Logger.trace("Rollback Locomotive reverse to " + newDirection + "...");
+        locomotive.setDirection(newDirection);
+      }
+
     }
     dispatcher.setRouteBean(route);
     return !checkedRoutes.isEmpty();
@@ -181,18 +192,6 @@ class ReserveRouteState extends DispatcherState {
     // Set Turnouts in the right state
     List<RouteElementBean> turnouts = getTurnouts(route);
     Logger.trace("There are " + turnouts.size() + " turnouts in this route");
-    
-//    boolean switchesNotLocked = true;
-//    for (RouteElementBean reb : turnouts) {
-//      AccessoryValue av = reb.getAccessoryValue();
-//      AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
-//      //check if the accessory is not set by an other reserved route
-//      boolean locked = PersistenceFactory.getService().isAccessoryLocked(turnout.getId());
-//      if (locked) {
-//        switchesNotLocked = false;
-//        Logger.debug("Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] is locked!");
-//      }
-//    }
 
     //Now start to persist and perform critical thinks
     if (turnoutsNotLocked(route)) {
@@ -214,6 +213,12 @@ class ReserveRouteState extends DispatcherState {
 
       dispatcher.showRoute(route, Color.green);
       Logger.trace(route + " Locked");
+
+      if (this.swapLocomotiveDirection) {
+        Direction newDir = locomotive.getDirection();
+        Logger.trace("Changing Direction to " + newDir);
+        dispatcher.changeLocomotiveDirection(locomotive, newDir);
+      }
 
       return true;
     } else {

@@ -73,7 +73,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   private Map<String, FeedbackController> feedbackControllers;
 
   private final List<SensorEventListener> anonymousSensorListeners;
-  private final Map<String, SensorEventListener> sensorEventListeners;
+  //private final Map<String, SensorEventListener> sensorEventListeners;
 
   private final List<AccessoryEventListener> accessoryEventListeners;
   private final List<LocomotiveFunctionEventListener> LocomotiveFunctionEventListeners;
@@ -95,7 +95,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     feedbackControllers = new HashMap<>();
 
     anonymousSensorListeners = new LinkedList<>();
-    sensorEventListeners = new HashMap<>();
+    //sensorEventListeners = new HashMap<>();
     accessoryEventListeners = new LinkedList<>();
     LocomotiveFunctionEventListeners = new LinkedList<>();
     locomotiveDirectionEventListeners = new LinkedList<>();
@@ -103,11 +103,15 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     measurementEventListeners = new LinkedList<>();
     supportedProtocols = new HashSet<>();
 
-    if (autoConnectController && decoderController != null || accessoryControllers.isEmpty() || feedbackControllers.isEmpty()) {
-      connect();
-      Logger.trace(decoderController != null ? "Aquired " + decoderController.getClass().getSimpleName() : "Could not aquire a Command Station! " + (decoderController.isConnected() ? "Connected" : "NOT Connected"));
-    } else {
-      Logger.trace("Auto Connect disabled");
+    try {
+      if (autoConnectController && decoderController != null && decoderController.getCommandStationBean() != null || accessoryControllers.isEmpty() || feedbackControllers.isEmpty()) {
+        connect();
+        Logger.trace(decoderController != null ? "Aquired " + decoderController.getClass().getSimpleName() : "Could not aquire a Command Station! " + (decoderController.isConnected() ? "Connected" : "NOT Connected"));
+      } else {
+        Logger.trace("Auto Connect disabled");
+      }
+    } catch (Exception e) {
+      Logger.warn("Can't connect with default Command Station!");
     }
   }
 
@@ -134,7 +138,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       return false;
     }
 
-    if (decoderController == null) {
+    if (decoderController == null && commandStation != null) {
       decoderController = ControllerFactory.getDecoderController(commandStation, false);
     }
 
@@ -721,10 +725,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     @Override
     public void onFunctionChange(LocomotiveFunctionEvent functionEvent) {
       FunctionBean fb = functionEvent.getFunctionBean();
-      FunctionBean dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
 
-      if (dbfb == null) {
-        //try via loc address and decoder type
+      FunctionBean dbfb = null;
+      if ("marklin.cs".equals(trackService.getDecoderController().getCommandStationBean().getId())) {
+        dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
+      } else {
         Integer address = fb.getLocomotiveId().intValue();
         LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
         if (dblb != null) {
@@ -732,6 +737,14 @@ public class JCSCommandStationImpl implements JCSCommandStation {
         }
       }
 
+//      if (dbfb == null) {
+//        //try via loc address and decoder type
+//        Integer address = fb.getLocomotiveId().intValue();
+//        LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
+//        if (dblb != null) {
+//          dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
+//        }
+//      }
       if (dbfb != null) {
         if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
           dbfb.setValue(fb.getValue());
@@ -778,6 +791,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
             Integer richtung = lb.getRichtung();
             dblb.setRichtung(richtung);
             PersistenceFactory.getService().persist(dblb);
+            
+            Logger.trace(dblb.getId()+", "+dblb.getName()+": "+dblb.getDirection().getDirection());
+            
             directionEvent.setLocomotiveBean(dblb);
 
             for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {

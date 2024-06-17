@@ -301,8 +301,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       if ("p".equals(rm.getOpcode())) {
         this.power = "1".equals(rm.getFilteredContent());
         PowerEvent pe = new PowerEvent(power);
-
-        //fireAllPowerEventListeners(pe);
         executor.execute(() -> fireAllPowerEventListeners(pe));
       }
     }

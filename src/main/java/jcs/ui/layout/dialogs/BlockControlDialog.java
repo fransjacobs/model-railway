@@ -335,7 +335,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
       if (this.block != null && this.block.getBlockBean() != null) {
         BlockBean bb = this.block.getBlockBean();
         PersistenceFactory.getService().persist(bb);
-        if (bb.getLocomotive() != null) {
+        if (bb.getLocomotive() != null && bb.getLocomotive().getName() != null) {
           LocomotiveBean loc = bb.getLocomotive();
           PersistenceFactory.getService().persist(loc);
         }

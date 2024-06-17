@@ -22,10 +22,6 @@ import java.util.Objects;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.SensorEventHandler;
-import jcs.commandStation.events.LocomotiveDirectionEvent;
-import jcs.commandStation.events.LocomotiveDirectionEventListener;
-import jcs.commandStation.events.LocomotiveSpeedEvent;
-import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
@@ -48,6 +44,9 @@ import org.tinylog.Logger;
 public class LocomotiveDispatcher {
 
   private final LocomotiveBean locomotiveBean;
+  private final Long locomotiveId;
+  private final String locomotiveName;
+
   final AutoPilot autoPilot;
   private RouteBean routeBean;
 
@@ -55,36 +54,36 @@ public class LocomotiveDispatcher {
   private BlockBean destinationBlock;
 
   private final List<StateEventListener> stateEventListeners;
-  private LocomotiveVelocityListener locomotiveVelocityListener;
-  private LocomotiveDirectionChangeListener locomotiveDirectionChangeListener;
+//  private LocomotiveVelocityListener locomotiveVelocityListener;
+//  private LocomotiveDirectionChangeListener locomotiveDirectionChangeListener;
 
   private LocomotiveRunnerThread thread;
 
   public LocomotiveDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
+    this.locomotiveId = locomotiveBean.getId();
+    this.locomotiveName = locomotiveBean.getName();
     this.autoPilot = autoPilot;
 
     this.stateEventListeners = new LinkedList<>();
-    initializeListeners();
+    //initializeListeners();
     //Initialize a worker thread, don't start it yet
     thread = new LocomotiveRunnerThread(this);
-
-    //initTestDialog();
   }
 
-//  private void initTestDialog() {
-//    //dispatcherDialog = DispatcherTestDialog.showDialog(this);
-//  }
   public Long getId() {
-    return this.locomotiveBean.getId();
+    //return this.locomotiveBean.getId();
+    return this.locomotiveId;
   }
 
   public String getName() {
-    return this.locomotiveBean.getName();
+    //return this.locomotiveBean.getName();
+    return this.locomotiveName;
   }
 
   public LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
+    //return PersistenceFactory.getService().getLocomotive(locomotiveId);
   }
 
   RouteBean getRouteBean() {
@@ -118,14 +117,14 @@ public class LocomotiveDispatcher {
     if (this.thread != null && this.thread.isRunning()) {
       this.thread.stopRunning();
     }
-
-    //disposeDialog();
   }
 
-  //For testing....
-  //public void disposeDialog() {
-  //  this.dispatcherDialog.dispose();
-  //}
+  public void forceStopRunning() {
+    if (this.thread != null && this.thread.isRunning()) {
+      this.thread.forceStopRunning();
+    }
+  }
+
   public boolean isRunning() {
     if (this.thread != null) {
       return this.thread.isRunning();
@@ -134,21 +133,21 @@ public class LocomotiveDispatcher {
     }
   }
 
-  private void initializeListeners() {
-    locomotiveVelocityListener = new LocomotiveVelocityListener(this);
-    JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(locomotiveVelocityListener);
+//  private void initializeListeners() {
+//    locomotiveVelocityListener = new LocomotiveVelocityListener(this);
+//    JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(locomotiveVelocityListener);
+//
+//    locomotiveDirectionChangeListener = new LocomotiveDirectionChangeListener(this);
+//    JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
+//  }
 
-    locomotiveDirectionChangeListener = new LocomotiveDirectionChangeListener(this);
-    JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
-  }
-
-  void unRegisterListeners() {
-    JCS.getJcsCommandStation().removeLocomotiveSpeedEventListener(locomotiveVelocityListener);
-    JCS.getJcsCommandStation().removeLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
-
-    locomotiveVelocityListener = null;
-    locomotiveDirectionChangeListener = null;
-  }
+//  void unRegisterListeners() {
+//    JCS.getJcsCommandStation().removeLocomotiveSpeedEventListener(locomotiveVelocityListener);
+//    JCS.getJcsCommandStation().removeLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
+//
+//    locomotiveVelocityListener = null;
+//    locomotiveDirectionChangeListener = null;
+//  }
 
   private BlockBean getBlock(String tileId) {
     BlockBean block = PersistenceFactory.getService().getBlockByTileId(tileId);
@@ -160,7 +159,8 @@ public class LocomotiveDispatcher {
       if (routeBean != null) {
         departureBlock = getBlock(routeBean.getFromTileId());
       } else {
-        departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
+        //departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
+        departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(this.locomotiveId);
       }
     }
     return departureBlock;
@@ -211,10 +211,9 @@ public class LocomotiveDispatcher {
     if (!this.autoPilot.isSensorRegistered(sensorId)) {
       IgnoreSensorHandler ish = new IgnoreSensorHandler(sensorId, this);
       this.autoPilot.addHandler(ish, sensorId);
-      //this.ignoreSensorEventHandlers.add(ish);
       Logger.trace("Added sensor " + sensorId + " to the ignore handlers");
     } else {
-      Logger.trace("Ssensor " + sensorId + " is already ignored");
+      Logger.trace("Sensor " + sensorId + " is allready ignored");
     }
   }
 
@@ -228,7 +227,7 @@ public class LocomotiveDispatcher {
   }
 
   synchronized void onIgnoreEvent(SensorEvent event) {
-    Logger.trace("Event for a ignored listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
+    //Logger.trace("Event for a ignored listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
   }
 
   synchronized void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
@@ -237,10 +236,12 @@ public class LocomotiveDispatcher {
 
   synchronized void changeLocomotiveVelocity(LocomotiveBean locomotive, int velocity) {
     JCS.getJcsCommandStation().changeLocomotiveSpeed(velocity, locomotive);
+    this.locomotiveBean.setVelocity(velocity);
   }
 
   synchronized void changeLocomotiveDirection(LocomotiveBean locomotive, Direction newDirection) {
     JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
+    this.locomotiveBean.setDirection(newDirection);
   }
 
   void fireStateListeners(String s) {
@@ -308,44 +309,44 @@ public class LocomotiveDispatcher {
     }
   }
 
-  private class LocomotiveVelocityListener implements LocomotiveSpeedEventListener {
+//  private class LocomotiveVelocityListener implements LocomotiveSpeedEventListener {
+//
+//    private final LocomotiveDispatcher trainDispatcher;
+//
+//    LocomotiveVelocityListener(LocomotiveDispatcher trainDispatcher) {
+//      this.trainDispatcher = trainDispatcher;
+//    }
+//
+//    @Override
+//    public void onSpeedChange(LocomotiveSpeedEvent velocityEvent) {
+//      if (velocityEvent.isEventFor(trainDispatcher.getLocomotiveBean())) {
+//        trainDispatcher.getLocomotiveBean().setVelocity(velocityEvent.getVelocity());
+//        Logger.trace("Updated velocity to " + velocityEvent.getVelocity() + " of " + trainDispatcher.getLocomotiveBean().getName());
+//      }
+//    }
+//  }
 
-    private final LocomotiveDispatcher trainDispatcher;
-
-    LocomotiveVelocityListener(LocomotiveDispatcher trainDispatcher) {
-      this.trainDispatcher = trainDispatcher;
-    }
-
-    @Override
-    public void onSpeedChange(LocomotiveSpeedEvent velocityEvent) {
-      if (velocityEvent.isEventFor(trainDispatcher.getLocomotiveBean())) {
-        trainDispatcher.getLocomotiveBean().setVelocity(velocityEvent.getVelocity());
-        Logger.trace("Updated velocity to " + velocityEvent.getVelocity() + " of " + trainDispatcher.getLocomotiveBean().getName());
-      }
-    }
-  }
-
-  private class LocomotiveDirectionChangeListener implements LocomotiveDirectionEventListener {
-
-    private final LocomotiveDispatcher trainDispatcher;
-
-    LocomotiveDirectionChangeListener(LocomotiveDispatcher trainDispatcher) {
-      this.trainDispatcher = trainDispatcher;
-    }
-
-    @Override
-    public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
-      if (directionEvent.isEventFor(this.trainDispatcher.getLocomotiveBean())) {
-        trainDispatcher.getLocomotiveBean().setDirection(directionEvent.getNewDirection());
-        Logger.trace("Updated direction to " + directionEvent.getNewDirection() + " of " + trainDispatcher.getLocomotiveBean().getName());
-      }
-    }
-  }
+//  private class LocomotiveDirectionChangeListener implements LocomotiveDirectionEventListener {
+//
+//    private final LocomotiveDispatcher trainDispatcher;
+//
+//    LocomotiveDirectionChangeListener(LocomotiveDispatcher trainDispatcher) {
+//      this.trainDispatcher = trainDispatcher;
+//    }
+//
+//    @Override
+//    public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
+//      if (directionEvent.isEventFor(this.trainDispatcher.getLocomotiveBean())) {
+//        trainDispatcher.getLocomotiveBean().setDirection(directionEvent.getNewDirection());
+//        Logger.trace("Updated direction to " + directionEvent.getNewDirection() + " of " + trainDispatcher.getLocomotiveBean().getName());
+//      }
+//    }
+//  }
 
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 37 * hash + Objects.hashCode(locomotiveBean);
+    hash = 37 * hash + Objects.hashCode(this.locomotiveId);
     return hash;
   }
 
@@ -361,13 +362,6 @@ public class LocomotiveDispatcher {
       return false;
     }
     final LocomotiveDispatcher other = (LocomotiveDispatcher) obj;
-    return Objects.equals(this.locomotiveBean, other.locomotiveBean);
+    return Objects.equals(this.locomotiveId, other.locomotiveId);
   }
-
-  //Testing
-  //void performManualStep() {
-  //  if (this.thread != null) {
-  //    this.thread.manualStep();
-  //  }
-  //}
 }

@@ -42,6 +42,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
 
   private boolean power;
 
+  private boolean disableListener = false;
+
   private LocomotiveDirectionEventListener directionListener;
 
   public DriverCabPanel() {
@@ -251,11 +253,15 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }// </editor-fold>//GEN-END:initComponents
 
   private void reverseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseButtonActionPerformed
-    changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    if (!disableListener) {
+      changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    }
   }//GEN-LAST:event_reverseButtonActionPerformed
 
   private void forwardButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardButtonActionPerformed
-    changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    if (!disableListener) {
+      changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    }
   }//GEN-LAST:event_forwardButtonActionPerformed
 
   private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
@@ -410,13 +416,16 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     if (event.isEventFor(locomotiveBean)) {
       Logger.trace(lb.getName() + " direction changed from " + this.locomotiveBean.getDirection() + " to " + lb.getDirection());
 
-      locomotiveBean.setRichtung(lb.getRichtung());
+      //locomotiveBean.setRichtung(lb.getRichtung());
+      locomotiveBean.setDirection(lb.getDirection());
 
+      disableListener = true;
       if (Direction.BACKWARDS.equals(lb.getDirection())) {
         this.reverseButton.setSelected(true);
       } else {
         this.forwardButton.setSelected(true);
       }
+      disableListener = false;
       if (this.directionListener != null) {
         this.directionListener.onDirectionChange(event);
       }

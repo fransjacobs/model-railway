@@ -216,19 +216,23 @@ public class JCS extends Thread {
     persistentStore = getPersistenceService();
     jcsCommandStation = getJcsCommandStation();
 
-    if (persistentStore != null && jcsCommandStation != null) {
+    if (persistentStore != null) {
       if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
-        boolean connected = jcsCommandStation.connect();
-        if (connected) {
-          logProgress("Connected with Command Station...");
+        if(jcsCommandStation != null) {
+          boolean connected = jcsCommandStation.connect();
+          if (connected) {
+            logProgress("Connected with Command Station...");
 
-          boolean power = jcsCommandStation.isPowerOn();
-          logProgress("Track Power is " + (power ? "on" : "off"));
-          Logger.info("Track Power is " + (power ? "on" : "off"));
-          jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+            boolean power = jcsCommandStation.isPowerOn();
+            logProgress("Track Power is " + (power ? "on" : "off"));
+            Logger.info("Track Power is " + (power ? "on" : "off"));
+            jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+          } else {
+            logProgress("Could NOT connect with Command Station...");
+          }
         } else {
-          logProgress("Could NOT connect with Command Station...");
-        }
+           logProgress("NO Default Command Station found...");
+        }  
       }
 
       logProgress("Starting UI...");

@@ -101,8 +101,32 @@ public class AutoPilot extends Thread {
       }
     }
 
-    //Test
-//    stoppingAutomodeTestDialogs();
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 30000;
+    //Check if all dispachers are stopped
+    boolean dispatchersRunning = dispatchersRunning();
+    while (dispatchersRunning && now < timeout) {
+      dispatchersRunning = dispatchersRunning();
+      try {
+        sleep(1000);
+      } catch (InterruptedException ex) {
+        Logger.trace("Interrupted");
+      }
+      now = System.currentTimeMillis();
+    }
+
+    Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s");
+
+    if (dispatchersRunning) {
+      for (LocomotiveDispatcher ld : this.dispatchers.values()) {
+        if (ld.isRunning()) {
+          ld.forceStopRunning();
+          Logger.trace("Forse Stop on " + ld.getName());
+        }
+      }
+    }
+
     unRegisterAllSensors();
     sensorHandlers.clear();
 
@@ -113,6 +137,17 @@ public class AutoPilot extends Thread {
     resetStates();
 
     Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
+  }
+
+  private boolean dispatchersRunning() {
+    boolean isRunning = false;
+    for (LocomotiveDispatcher ld : this.dispatchers.values()) {
+      isRunning = ld.isRunning();
+      if (isRunning) {
+        return isRunning;
+      }
+    }
+    return isRunning;
   }
 
   public void prepareDispatchers() {
@@ -134,60 +169,50 @@ public class AutoPilot extends Thread {
     }
   }
 
-  private void startAllLocomotivesInBackground() {
-    Logger.trace("Starting automode for all ontrack locomotives...");
-    List<LocomotiveBean> locs = getOnTrackLocomotives();
-    Map<String, LocomotiveDispatcher> snapshot = new HashMap<>(this.dispatchers);
-    dispatchers.clear();
-
-    for (LocomotiveBean loc : locs) {
+  public synchronized void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
+    Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
+    if (start) {
       LocomotiveDispatcher dispatcher;
-      if (snapshot.containsKey(loc.getName())) {
-        dispatcher = snapshot.get(loc.getName());
+      String key = locomotiveBean.getName();
+      if (dispatchers.containsKey(key)) {
+        dispatcher = dispatchers.get(key);
+        Logger.trace("Dispatcher " + key + " exists");
       } else {
-        dispatcher = new LocomotiveDispatcher(loc, this);
+        dispatcher = new LocomotiveDispatcher(locomotiveBean, this);
+        dispatchers.put(key, dispatcher);
       }
-      dispatchers.put(loc.getName(), dispatcher);
-      Logger.trace("Starting " + loc.getName() + "...");
 
-      //TODO: Combine with the start stop (single) locomotive)
-      dispatcher.startRunning();
+      Logger.trace("Starting dispatcher " + key);
+      if (!dispatcher.isRunning()) {
+        dispatcher.startRunning();
+      }
+    } else {
+      LocomotiveDispatcher dispatcher = dispatchers.get(locomotiveBean.getName());
+      if (dispatcher != null && dispatcher.isRunning()) {
+        dispatcher.stopRunning();
+      }
+    }
+  }
+
+  private void startStopAllLocomotivesInBackground(boolean start) {
+    List<LocomotiveBean> onTrackLocos = getOnTrackLocomotives();
+    Logger.trace((start ? "Starting" : "Stopping") + " automode for " + onTrackLocos.size() + " ontrack locomotives...");
+
+    for (LocomotiveBean locomotiveBean : onTrackLocos) {
+      startStopLocomotive(locomotiveBean, start);
     }
   }
 
   public void startAllLocomotives() {
-//    Logger.trace("Starting automode for all on track locomotives...");
-
-    this.executor.execute(() -> startAllLocomotivesInBackground());
-
-//    List<LocomotiveBean> locs = getOnTrackLocomotives();
-//    Map<String, LocomotiveDispatcher> snapshot = new HashMap<>(this.dispatchers);
-//    this.dispatchers.clear();
-//
-//    for (LocomotiveBean loc : locs) {
-//      LocomotiveDispatcher dispatcher;
-//      if (snapshot.containsKey(loc.getName())) {
-//        dispatcher = snapshot.get(loc.getName());
-//      } else {
-//        dispatcher = new LocomotiveDispatcher(loc, this);
-//      }
-//      dispatchers.put(loc.getName(), dispatcher);
-//      Logger.trace("Starting " + loc.getName() + "...");
-//
-//      //TODO: Combine with the start stop (single) locomotive)
-//      dispatcher.startRunning();
-//    }
+    this.executor.execute(() -> startStopAllLocomotivesInBackground(true));
   }
 
   public void stopAllLocomotives() {
-    Logger.trace("Stopping automode for all locomotives...");
-    for (LocomotiveDispatcher ld : this.dispatchers.values()) {
-      ld.stopRunning();
-    }
+    this.executor.execute(() -> startStopAllLocomotivesInBackground(false));
   }
 
   //For now when stopping also reset the states if needed
-  private void resetStates() {
+  void resetStates() {
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
     int lockedCounter = 0;
     for (RouteBean route : routes) {
@@ -264,28 +289,6 @@ public class AutoPilot extends Thread {
   public synchronized LocomotiveDispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
     String key = locomotiveBean.getName();
     return dispatchers.get(key);
-  }
-
-  public void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
-    Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
-    if (start) {
-      LocomotiveDispatcher dispatcher;
-      String key = locomotiveBean.getName();
-      if (this.dispatchers.containsKey(key)) {
-        dispatcher = dispatchers.get(key);
-      } else {
-        dispatcher = new LocomotiveDispatcher(locomotiveBean, this);
-        dispatchers.put(key, dispatcher);
-      }
-
-      Logger.debug("Starting " + key);
-      dispatcher.startRunning();
-    } else {
-      LocomotiveDispatcher dispatcher = this.dispatchers.get(locomotiveBean.getName());
-      if (dispatcher != null) {
-        dispatcher.stopRunning();
-      }
-    }
   }
 
   private List<LocomotiveBean> getOnTrackLocomotives() {
@@ -381,13 +384,6 @@ public class AutoPilot extends Thread {
     this.sensorListeners.clear();
   }
 
-//  private void stoppingAutomodeTestDialogs() {
-//    Logger.trace("Stopping automode testdialogs");
-//    for (LocomotiveDispatcher ld : this.dispatchers.values()) {
-//      //Test
-//      //ld.disposeDialog();
-//    }
-//  }
   public void addHandler(SensorEventHandler handler, String sensorId) {
     sensorHandlers.put(sensorId, handler);
   }

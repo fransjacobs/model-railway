@@ -27,6 +27,7 @@ class LocomotiveRunnerThread extends Thread {
   private final LocomotiveDispatcher dispatcher;
   private DispatcherState dispatcherState;
   private boolean running;
+  private boolean forceStop = false;
 
   LocomotiveRunnerThread(LocomotiveDispatcher dispatcher) {
     this.dispatcher = dispatcher;
@@ -41,11 +42,23 @@ class LocomotiveRunnerThread extends Thread {
   }
 
   boolean isRunning() {
-    return this.running;
+    boolean waitState = dispatcherState instanceof IdleState || dispatcherState instanceof WaitState;
+    return this.running || !waitState;
   }
 
   synchronized void stopRunning() {
     this.running = false;
+
+    boolean waitState = dispatcherState instanceof IdleState || dispatcherState instanceof WaitState;
+
+    Logger.trace("Stopping " + dispatcher.getName() + " Reached waitState " + waitState);
+    notify();
+  }
+
+  synchronized void forceStopRunning() {
+    this.running = false;
+    forceStop = true;
+    Logger.trace("KILLING " + dispatcher.getName());
     notify();
   }
 
@@ -63,8 +76,13 @@ class LocomotiveRunnerThread extends Thread {
       Logger.trace(getName() + " " + this.dispatcher.getDispatcherState() + " Running...");
     }
 
-    while (running) {
-      //Perform the action for the current state
+    boolean waitState = dispatcherState instanceof IdleState || dispatcherState instanceof WaitState;
+
+    boolean logOnce = true;
+    while ((running || !waitState) && !forceStop) {
+      waitState = dispatcherState instanceof IdleState || dispatcherState instanceof WaitState;
+
+      //Perform the action for the current state      
       dispatcherState.execute();
 
       DispatcherState previousState = this.dispatcherState;
@@ -80,8 +98,15 @@ class LocomotiveRunnerThread extends Thread {
         } catch (InterruptedException ex) {
           Logger.trace(ex.getMessage());
         }
+      } else {
+        waitState = dispatcherState instanceof IdleState || dispatcherState instanceof WaitState;
       }
       dispatcher.fireStateListeners(dispatcherState.getClass().getSimpleName());
+      
+      if (!running && logOnce) {
+        Logger.trace(this.getName() + " is ending. Current State: " + dispatcherState.getClass().getSimpleName());
+        logOnce = false;
+      }
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is Stopping...");
@@ -92,20 +117,13 @@ class LocomotiveRunnerThread extends Thread {
 
     //TODO do the cleanup in in a different way
     dispatcher.clearDepartureIgnoreEventHandlers();
-    dispatcher.unRegisterListeners();
-    Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " is Finished");
-  }
+    //dispatcher.unRegisterListeners();
+    if (!forceStop) {
+      Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " is Finished");
+    } else {
+      Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " KILLED!");
 
-  //Testing
-  void manualStep() {
-    dispatcherState.execute();
-    DispatcherState previousState = this.dispatcherState;
-    
-    this.dispatcherState = dispatcherState.next(dispatcher);
-    if (previousState == dispatcherState) {
-      Logger.trace(dispatcherState.getClass().getSimpleName() + " has not changed");
     }
-    dispatcher.fireStateListeners("Manual: " + dispatcherState.getClass().getSimpleName());
   }
 
 }

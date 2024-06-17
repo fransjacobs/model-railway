@@ -43,7 +43,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       JCS.getJcsCommandStation().removeSensorEventListener(this);
       //For the remaining states ignore events from the enter sensor
       this.dispatcher.registerIgnoreEventHandler(enterSensorId);
-      
+
       return newState;
     } else {
       return this;
@@ -87,8 +87,10 @@ class StartState extends DispatcherState implements SensorEventListener {
       Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
 
       //TODO rely on the acceleration delay of the loco decoder or do something our selves..
-      dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
+      //dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
+      Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
       dispatcher.changeLocomotiveVelocity(locomotive, 750);
+      
 
       locomotiveStarted = true;
       Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
