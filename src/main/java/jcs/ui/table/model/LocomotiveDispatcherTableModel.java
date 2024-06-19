@@ -17,7 +17,7 @@ package jcs.ui.table.model;
 
 import java.awt.Image;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
+import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.autopilot.state.StateEventListener;
 import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
@@ -25,12 +25,12 @@ import org.tinylog.Logger;
 /**
  * Table Model for the dispatcher
  */
-public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<LocomotiveDispatcher> implements StateEventListener {
+public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispatcher> implements StateEventListener {
 
   private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "state", "speed"};
 
   public LocomotiveDispatcherTableModel() {
-    super(LocomotiveDispatcher.class, DISPLAY_COLUMNS);
+    super(Dispatcher.class, DISPLAY_COLUMNS);
   }
 
   @Override
@@ -39,13 +39,13 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
       setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
       Logger.trace("There are " + this.beans.size() + " dispatchers");
 
-      for (LocomotiveDispatcher ld : this.beans) {
+      for (Dispatcher ld : this.beans) {
         ld.addStateEventListener(this);
         Logger.trace("Listen to dispatcher " + ld.getName());
       }
     } else {
       if (this.beans != null) {
-        for (LocomotiveDispatcher ld : this.beans) {
+        for (Dispatcher ld : this.beans) {
           ld.removeStateEventListener(this);
           Logger.trace("Remove Listen to dispatcher " + ld.getName());
         }
@@ -55,7 +55,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
   }
 
   @Override
-  public void onStateChange(LocomotiveDispatcher dispatcher) {
+  public void onStateChange(Dispatcher dispatcher) {
     if (this.beans.contains(dispatcher)) {
       //replace
       int idx = this.beans.indexOf(dispatcher);
@@ -67,7 +67,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
   }
 
   @Override
-  public int findRowIndex(LocomotiveDispatcher bean) {
+  public int findRowIndex(Dispatcher bean) {
     int row = -1;
     if (bean == null) {
       return row;
@@ -77,7 +77,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
 
     if (idValue != null) {
       for (int i = 0; i < this.beans.size(); i++) {
-        LocomotiveDispatcher b = beans.get(i);
+        Dispatcher b = beans.get(i);
         Object id = bean.getName();
 
         if (idValue.equals(id)) {
@@ -106,7 +106,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Locom
   @Override
   public Object getValueAt(int row, int column) {
     if (beans != null && row < beans.size()) {
-      LocomotiveDispatcher b = beans.get(row);
+      Dispatcher b = beans.get(row);
 
       if (b != null) {
         return switch (column) {

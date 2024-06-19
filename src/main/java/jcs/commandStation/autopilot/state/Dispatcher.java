@@ -41,7 +41,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LocomotiveDispatcher {
+public class Dispatcher {
 
   private final LocomotiveBean locomotiveBean;
   private final Long locomotiveId;
@@ -57,9 +57,9 @@ public class LocomotiveDispatcher {
 //  private LocomotiveVelocityListener locomotiveVelocityListener;
 //  private LocomotiveDirectionChangeListener locomotiveDirectionChangeListener;
 
-  private LocomotiveRunnerThread thread;
+  private DispatcherThread thread;
 
-  public LocomotiveDispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
+  public Dispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
     this.locomotiveId = locomotiveBean.getId();
     this.locomotiveName = locomotiveBean.getName();
@@ -68,7 +68,7 @@ public class LocomotiveDispatcher {
     this.stateEventListeners = new LinkedList<>();
     //initializeListeners();
     //Initialize a worker thread, don't start it yet
-    thread = new LocomotiveRunnerThread(this);
+    thread = new DispatcherThread(this);
   }
 
   public Long getId() {
@@ -107,7 +107,7 @@ public class LocomotiveDispatcher {
     }
 
     if (this.thread == null || !this.thread.isAlive()) {
-      thread = new LocomotiveRunnerThread(this);
+      thread = new DispatcherThread(this);
     }
 
     this.thread.start();
@@ -294,9 +294,9 @@ public class LocomotiveDispatcher {
   private class IgnoreSensorHandler implements SensorEventHandler {
 
     private final String sensorId;
-    private final LocomotiveDispatcher trainDispatcher;
+    private final Dispatcher trainDispatcher;
 
-    IgnoreSensorHandler(String sensorId, LocomotiveDispatcher trainDispatcher) {
+    IgnoreSensorHandler(String sensorId, Dispatcher trainDispatcher) {
       this.sensorId = sensorId;
       this.trainDispatcher = trainDispatcher;
     }
@@ -311,9 +311,9 @@ public class LocomotiveDispatcher {
 
 //  private class LocomotiveVelocityListener implements LocomotiveSpeedEventListener {
 //
-//    private final LocomotiveDispatcher trainDispatcher;
+//    private final Dispatcher trainDispatcher;
 //
-//    LocomotiveVelocityListener(LocomotiveDispatcher trainDispatcher) {
+//    LocomotiveVelocityListener(Dispatcher trainDispatcher) {
 //      this.trainDispatcher = trainDispatcher;
 //    }
 //
@@ -328,9 +328,9 @@ public class LocomotiveDispatcher {
 
 //  private class LocomotiveDirectionChangeListener implements LocomotiveDirectionEventListener {
 //
-//    private final LocomotiveDispatcher trainDispatcher;
+//    private final Dispatcher trainDispatcher;
 //
-//    LocomotiveDirectionChangeListener(LocomotiveDispatcher trainDispatcher) {
+//    LocomotiveDirectionChangeListener(Dispatcher trainDispatcher) {
 //      this.trainDispatcher = trainDispatcher;
 //    }
 //
@@ -361,7 +361,7 @@ public class LocomotiveDispatcher {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final LocomotiveDispatcher other = (LocomotiveDispatcher) obj;
+    final Dispatcher other = (Dispatcher) obj;
     return Objects.equals(this.locomotiveId, other.locomotiveId);
   }
 }

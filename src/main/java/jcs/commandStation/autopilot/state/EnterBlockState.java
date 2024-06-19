@@ -34,12 +34,12 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
   private boolean locomotiveBraking = false;
   private String inSensorId;
 
-  EnterBlockState(LocomotiveDispatcher dispatcher) {
+  EnterBlockState(Dispatcher dispatcher) {
     super(dispatcher);
   }
 
   @Override
-  synchronized DispatcherState next(LocomotiveDispatcher locRunner) {
+  synchronized DispatcherState next(Dispatcher locRunner) {
     if (this.canAdvanceToNextState) {
       DispatcherState newState = new InBlockState(dispatcher);
       //Remove handler as the state will now change

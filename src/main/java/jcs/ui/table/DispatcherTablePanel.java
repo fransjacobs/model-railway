@@ -32,7 +32,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.AutoPilotStatusListener;
-import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
+import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.entities.LocomotiveBean;
 import jcs.ui.DriverCabDialog;
 import org.tinylog.Logger;
@@ -65,7 +65,7 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
 
   @Override
   public void statusChanged(boolean running) {
-    List<LocomotiveDispatcher> dispatchers = AutoPilot.getInstance().getLocomotiveDispatchers();
+    List<Dispatcher> dispatchers = AutoPilot.getInstance().getLocomotiveDispatchers();
     Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
     this.locomotiveDispatcherTableModel.refresh();
   }
@@ -122,7 +122,7 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   private void dispatcherTableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_dispatcherTableMouseReleased
     int row = this.dispatcherTable.getSelectedRow();
 
-    LocomotiveDispatcher dispatcher = locomotiveDispatcherTableModel.getBeanAt(row);
+    Dispatcher dispatcher = locomotiveDispatcherTableModel.getBeanAt(row);
     if (row >= 0 && dispatcher != null) {
       Logger.trace("Selected " + dispatcher.getName() + " " + evt.getClickCount());
       if (evt.getClickCount() == 2) {

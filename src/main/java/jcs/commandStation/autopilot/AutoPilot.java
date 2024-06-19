@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.autopilot;
 
-import jcs.commandStation.autopilot.state.LocomotiveDispatcher;
+import jcs.commandStation.autopilot.state.Dispatcher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,7 +55,7 @@ public class AutoPilot extends Thread {
 
   //private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, SensorEventHandler> sensorHandlers = new HashMap<>();
-  private final Map<String, LocomotiveDispatcher> dispatchers = Collections.synchronizedMap(new HashMap<>());
+  private final Map<String, Dispatcher> dispatchers = Collections.synchronizedMap(new HashMap<>());
 
   //Need a list to be able to unregister
   private final List<SensorListener> sensorListeners = new ArrayList<>();
@@ -119,7 +119,7 @@ public class AutoPilot extends Thread {
     Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s");
 
     if (dispatchersRunning) {
-      for (LocomotiveDispatcher ld : this.dispatchers.values()) {
+      for (Dispatcher ld : this.dispatchers.values()) {
         if (ld.isRunning()) {
           ld.forceStopRunning();
           Logger.trace("Forse Stop on " + ld.getName());
@@ -141,7 +141,7 @@ public class AutoPilot extends Thread {
 
   private boolean dispatchersRunning() {
     boolean isRunning = false;
-    for (LocomotiveDispatcher ld : this.dispatchers.values()) {
+    for (Dispatcher ld : this.dispatchers.values()) {
       isRunning = ld.isRunning();
       if (isRunning) {
         return isRunning;
@@ -154,15 +154,15 @@ public class AutoPilot extends Thread {
     Logger.trace("Preparing Dispatcher for all on track locomotives...");
 
     List<LocomotiveBean> locs = getOnTrackLocomotives();
-    Map<String, LocomotiveDispatcher> snapshot = new HashMap<>(this.dispatchers);
+    Map<String, Dispatcher> snapshot = new HashMap<>(this.dispatchers);
     this.dispatchers.clear();
 
     for (LocomotiveBean loc : locs) {
-      LocomotiveDispatcher dispatcher;
+      Dispatcher dispatcher;
       if (snapshot.containsKey(loc.getName())) {
         dispatcher = snapshot.get(loc.getName());
       } else {
-        dispatcher = new LocomotiveDispatcher(loc, this);
+        dispatcher = new Dispatcher(loc, this);
       }
       dispatchers.put(loc.getName(), dispatcher);
       Logger.trace("Added dispatcher for " + loc.getName() + "...");
@@ -172,13 +172,13 @@ public class AutoPilot extends Thread {
   public synchronized void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
     if (start) {
-      LocomotiveDispatcher dispatcher;
+      Dispatcher dispatcher;
       String key = locomotiveBean.getName();
       if (dispatchers.containsKey(key)) {
         dispatcher = dispatchers.get(key);
         Logger.trace("Dispatcher " + key + " exists");
       } else {
-        dispatcher = new LocomotiveDispatcher(locomotiveBean, this);
+        dispatcher = new Dispatcher(locomotiveBean, this);
         dispatchers.put(key, dispatcher);
       }
 
@@ -187,7 +187,7 @@ public class AutoPilot extends Thread {
         dispatcher.startRunning();
       }
     } else {
-      LocomotiveDispatcher dispatcher = dispatchers.get(locomotiveBean.getName());
+      Dispatcher dispatcher = dispatchers.get(locomotiveBean.getName());
       if (dispatcher != null && dispatcher.isRunning()) {
         dispatcher.stopRunning();
       }
@@ -278,7 +278,7 @@ public class AutoPilot extends Thread {
     }
   }
 
-  public synchronized List<LocomotiveDispatcher> getLocomotiveDispatchers() {
+  public synchronized List<Dispatcher> getLocomotiveDispatchers() {
     if (this.running) {
       return new ArrayList<>(dispatchers.values());
     } else {
@@ -286,7 +286,7 @@ public class AutoPilot extends Thread {
     }
   }
 
-  public synchronized LocomotiveDispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
+  public synchronized Dispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
     String key = locomotiveBean.getName();
     return dispatchers.get(key);
   }
@@ -430,7 +430,7 @@ public class AutoPilot extends Thread {
 
   public boolean isRunning(LocomotiveBean locomotive) {
     if (this.running && this.dispatchers.containsKey(locomotive.getName())) {
-      LocomotiveDispatcher dispatcher = this.dispatchers.get(locomotive.getName());
+      Dispatcher dispatcher = this.dispatchers.get(locomotive.getName());
       return dispatcher.isRunning();
     } else {
       return false;

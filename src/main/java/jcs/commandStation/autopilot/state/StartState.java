@@ -31,12 +31,12 @@ class StartState extends DispatcherState implements SensorEventListener {
   private boolean locomotiveStarted = false;
   private String enterSensorId;
 
-  StartState(LocomotiveDispatcher dispatcher) {
+  StartState(Dispatcher dispatcher) {
     super(dispatcher);
   }
 
   @Override
-  DispatcherState next(LocomotiveDispatcher locRunner) {
+  DispatcherState next(Dispatcher locRunner) {
     if (canAdvanceToNextState) {
       DispatcherState newState = new EnterBlockState(dispatcher);
       //Remove handler as the state will now change

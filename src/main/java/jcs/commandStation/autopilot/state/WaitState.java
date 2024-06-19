@@ -25,16 +25,16 @@ class WaitState extends DispatcherState {
 
   int defaultWaitTime;
 
-  WaitState(LocomotiveDispatcher dispatcher) {
+  WaitState(Dispatcher dispatcher) {
     super(dispatcher);
 
     defaultWaitTime = Integer.getInteger("default.waittime", 5);
   }
 
   @Override
-  DispatcherState next(LocomotiveDispatcher locRunner) {
+  DispatcherState next(Dispatcher locRunner) {
     if (canAdvanceToNextState) {
-      DispatcherState newState = new ReserveRouteState(dispatcher);
+      DispatcherState newState = new PrepareRouteState(dispatcher);
       return newState;
     } else {
       return this;

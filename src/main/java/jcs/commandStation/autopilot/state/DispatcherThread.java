@@ -22,14 +22,14 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-class LocomotiveRunnerThread extends Thread {
+class DispatcherThread extends Thread {
 
-  private final LocomotiveDispatcher dispatcher;
+  private final Dispatcher dispatcher;
   private DispatcherState dispatcherState;
   private boolean running;
   private boolean forceStop = false;
 
-  LocomotiveRunnerThread(LocomotiveDispatcher dispatcher) {
+  DispatcherThread(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
     this.dispatcherState = new IdleState(dispatcher);
   }

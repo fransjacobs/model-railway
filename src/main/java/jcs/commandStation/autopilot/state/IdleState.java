@@ -24,15 +24,15 @@ import org.tinylog.Logger;
  */
 class IdleState extends DispatcherState {
 
-  IdleState(LocomotiveDispatcher dispatcher) {
+  IdleState(Dispatcher dispatcher) {
     super(dispatcher);
   }
 
   @Override
-  DispatcherState next(LocomotiveDispatcher dispatcher) {
+  DispatcherState next(Dispatcher dispatcher) {
     //Next state is only possible when this locomotive is on the track and in a block
     if (canAdvanceToNextState) {
-      DispatcherState newState = new ReserveRouteState(dispatcher);
+      DispatcherState newState = new PrepareRouteState(dispatcher);
       return newState;
     } else {
       return this;

@@ -17,6 +17,6 @@ package jcs.commandStation.autopilot.state;
 
 public interface StateEventListener {
 
-  void onStateChange(LocomotiveDispatcher dispatcher);
+  void onStateChange(Dispatcher dispatcher);
 
 }

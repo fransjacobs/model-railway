@@ -33,16 +33,16 @@ import org.tinylog.Logger;
 /**
  * Lock the route, set the block states and turnout directions
  */
-class ReserveRouteState extends DispatcherState {
+class PrepareRouteState extends DispatcherState {
 
   private boolean swapLocomotiveDirection = false;
 
-  ReserveRouteState(LocomotiveDispatcher dispatcher) {
+  PrepareRouteState(Dispatcher dispatcher) {
     super(dispatcher);
   }
 
   @Override
-  DispatcherState next(LocomotiveDispatcher dispatcher) {
+  DispatcherState next(Dispatcher dispatcher) {
     if (canAdvanceToNextState) {
       DispatcherState newState = new StartState(dispatcher);
       return newState;

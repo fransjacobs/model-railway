@@ -27,12 +27,12 @@ import org.tinylog.Logger;
  */
 class InBlockState extends DispatcherState {
 
-  InBlockState(LocomotiveDispatcher dispatcher) {
+  InBlockState(Dispatcher dispatcher) {
     super(dispatcher);
   }
 
   @Override
-  DispatcherState next(LocomotiveDispatcher locRunner) {
+  DispatcherState next(Dispatcher locRunner) {
     DispatcherState newState = new WaitState(this.dispatcher);
     return newState;
   }
