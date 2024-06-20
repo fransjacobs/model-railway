@@ -46,6 +46,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
@@ -115,6 +116,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private final Map<Point, Tile> tiles;
   private final Map<Point, Tile> altTiles;
   private final Set<Point> selectedTiles;
+
+  private Tile selectedTile;
 
   private RoutesDialog routesDialog;
   private final Map<String, RouteElementBean> selectedRouteElements;
@@ -428,7 +431,15 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     switch (mode) {
       case CONTROL -> {
         if (tile != null) {
-          executeControlActionForTile(tile, snapPoint);
+          if (evt.getButton() == MouseEvent.BUTTON1) {
+            executeControlActionForTile(tile, snapPoint);
+          } else {
+            Logger.trace("Show menuitems for tile " + tile);
+            this.selectedTile = tile;
+            if (tile.isBlock()) {
+              showBlockPopupMenu(tile, snapPoint);
+            }
+          }
         }
       }
       case ADD -> {
@@ -571,7 +582,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
       case SENSOR -> {
         this.executor.execute(() -> toggleSensor((Sensor) tile));
-        //toggleSensor((Sensor) tile);
       }
       case BLOCK -> {
         Logger.trace("Show BlockDialog for " + tile.getId());
@@ -701,6 +711,22 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
     //this.executor.execute(() -> repaint());
     repaint();
+  }
+
+  private void showBlockPopupMenu(Tile tile, Point p) {
+    if (tile == null || p == null) {
+      return;
+    }
+    //Check if automode is on etc
+    boolean autoPilotEnabled = AutoPilot.getInstance().isRunning();
+    boolean hasLoco = ((Block)tile).getBlockBean().getLocomotive() != null;
+    this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
+    this.stopLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
+    this.resetDispatcherMI.setEnabled(autoPilotEnabled && hasLoco);
+    this.removeLocMI.setEnabled(autoPilotEnabled && hasLoco);
+    
+    
+    this.blockPopupMenu.show(this, p.x, p.y);
   }
 
   private void showOperationsPopupMenu(Tile tile, Point p) {
@@ -1009,6 +1035,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     flipVerticalMI = new JMenuItem();
     moveMI = new JMenuItem();
     deleteMI = new JMenuItem();
+    blockPopupMenu = new JPopupMenu();
+    startLocomotiveMI = new JMenuItem();
+    stopLocomotiveMI = new JMenuItem();
+    resetDispatcherMI = new JMenuItem();
+    removeLocMI = new JMenuItem();
+    blockPropertiesMI = new JMenuItem();
 
     verticalMI.setText("Vertical");
     verticalMI.addActionListener(new ActionListener() {
@@ -1092,6 +1124,46 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     });
     operationsPM.add(deleteMI);
+
+    startLocomotiveMI.setText("Start Locomotive");
+    startLocomotiveMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        startLocomotiveMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(startLocomotiveMI);
+
+    stopLocomotiveMI.setText("Stop Locomotive");
+    stopLocomotiveMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        stopLocomotiveMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(stopLocomotiveMI);
+
+    resetDispatcherMI.setText("Reset Dispatcher");
+    resetDispatcherMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetDispatcherMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(resetDispatcherMI);
+
+    removeLocMI.setText("Remove Locomotive");
+    removeLocMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        removeLocMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(removeLocMI);
+
+    blockPropertiesMI.setText("Properties");
+    blockPropertiesMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        blockPropertiesMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(blockPropertiesMI);
 
     setBackground(new Color(250, 250, 250));
     setAutoscrolls(true);
@@ -1194,7 +1266,37 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     mouseDragAction(evt);
   }//GEN-LAST:event_formMouseDragged
 
+  private void startLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startLocomotiveMIActionPerformed
+    // ((Block)tile).getBlockBean().getLocomotive() != null;
+  }//GEN-LAST:event_startLocomotiveMIActionPerformed
+
+  private void stopLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopLocomotiveMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_stopLocomotiveMIActionPerformed
+
+  private void resetDispatcherMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetDispatcherMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_resetDispatcherMIActionPerformed
+
+  private void removeLocMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeLocMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_removeLocMIActionPerformed
+
+  private void blockPropertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_blockPropertiesMIActionPerformed
+    if (this.selectedTile != null) {
+      Logger.trace("Show BlockDialog for " + selectedTile.getId());
+      //show the Block control dialog so tha a locomotive can be assigned to the block
+      Block block = (Block) selectedTile;
+      BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
+      bcd.setVisible(true);
+
+      this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
+    }
+  }//GEN-LAST:event_blockPropertiesMIActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private JPopupMenu blockPopupMenu;
+  private JMenuItem blockPropertiesMI;
   private JPopupMenu curvedPopupMenu;
   private JMenuItem deleteMI;
   private JMenuItem flipHorizontalMI;
@@ -1204,8 +1306,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private JMenuItem moveMI;
   private JPopupMenu operationsPM;
   private JMenuItem propertiesMI;
+  private JMenuItem removeLocMI;
+  private JMenuItem resetDispatcherMI;
   private JMenuItem rightMI;
   private JMenuItem rotateMI;
+  private JMenuItem startLocomotiveMI;
+  private JMenuItem stopLocomotiveMI;
   private JPopupMenu straightPopupMenu;
   private JMenuItem verticalMI;
   private JMenuItem xyMI;
