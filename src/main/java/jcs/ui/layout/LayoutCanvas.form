@@ -117,6 +117,16 @@
         <Property name="useNullLayout" type="boolean" value="true"/>
       </Layout>
       <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="reverseArrivalSideMI">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Reversd Arrival Side"/>
+          </Properties>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="toggleLocomotiveDirectionMI">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Toggle Direction"/>
+          </Properties>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="startLocomotiveMI">
           <Properties>
             <Property name="text" type="java.lang.String" value="Start Locomotive"/>
@@ -148,6 +158,11 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeLocMIActionPerformed"/>
           </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="outOfOrderMI">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Set out of Order"/>
+          </Properties>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="blockPropertiesMI">
           <Properties>

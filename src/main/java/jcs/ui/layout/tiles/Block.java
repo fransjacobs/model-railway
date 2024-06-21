@@ -445,7 +445,7 @@ public class Block extends AbstractTile implements Tile {
     String departureSuffix;
     boolean reverseImage = true;
     if (getBlockBean() != null) {
-      reverseImage = !getBlockBean().isReverseArrival();
+      reverseImage = getBlockBean().isReverseArrival();
     }
 
     if (getBlockBean() != null) {
@@ -485,7 +485,8 @@ public class Block extends AbstractTile implements Tile {
         }
         case SOUTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
-          locImage = ImageUtil.flipHorizontally(locImage);
+          //locImage = ImageUtil.flipHorizontally(locImage);
+          //locImage = ImageUtil.flipVertically(locImage);
 
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
@@ -499,11 +500,14 @@ public class Block extends AbstractTile implements Tile {
             int minY = y - height / 2 + 10;
             yy = minY;
           }
+          if (reverseImage) {
+            locImage = ImageUtil.flipHorizontally(locImage);
+          }
           g2d.drawImage(locImage, xx, yy, null);
         }
         case NORTH -> {
           locImage = ImageUtil.rotate(locImage, 270);
-          locImage = ImageUtil.flipHorizontally(locImage);
+          //locImage = ImageUtil.flipVertically(locImage);
 
           w = locImage.getWidth(null);
           h = locImage.getHeight(null);
@@ -516,6 +520,9 @@ public class Block extends AbstractTile implements Tile {
           } else {
             int maxY = y + height / 2 - 10;
             yy = maxY - h;
+          }
+          if (reverseImage) {
+            locImage = ImageUtil.flipHorizontally(locImage);
           }
           g2d.drawImage(locImage, xx, yy, null);
         }

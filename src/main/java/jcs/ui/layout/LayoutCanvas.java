@@ -1036,10 +1036,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     moveMI = new JMenuItem();
     deleteMI = new JMenuItem();
     blockPopupMenu = new JPopupMenu();
+    reverseArrivalSideMI = new JMenuItem();
+    toggleLocomotiveDirectionMI = new JMenuItem();
     startLocomotiveMI = new JMenuItem();
     stopLocomotiveMI = new JMenuItem();
     resetDispatcherMI = new JMenuItem();
     removeLocMI = new JMenuItem();
+    outOfOrderMI = new JMenuItem();
     blockPropertiesMI = new JMenuItem();
 
     verticalMI.setText("Vertical");
@@ -1125,6 +1128,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     });
     operationsPM.add(deleteMI);
 
+    reverseArrivalSideMI.setText("Reversd Arrival Side");
+    blockPopupMenu.add(reverseArrivalSideMI);
+
+    toggleLocomotiveDirectionMI.setText("Toggle Direction");
+    blockPopupMenu.add(toggleLocomotiveDirectionMI);
+
     startLocomotiveMI.setText("Start Locomotive");
     startLocomotiveMI.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -1156,6 +1165,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     });
     blockPopupMenu.add(removeLocMI);
+
+    outOfOrderMI.setText("Set out of Order");
+    blockPopupMenu.add(outOfOrderMI);
 
     blockPropertiesMI.setText("Properties");
     blockPropertiesMI.addActionListener(new ActionListener() {
@@ -1305,14 +1317,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private JMenuItem leftMI;
   private JMenuItem moveMI;
   private JPopupMenu operationsPM;
+  private JMenuItem outOfOrderMI;
   private JMenuItem propertiesMI;
   private JMenuItem removeLocMI;
   private JMenuItem resetDispatcherMI;
+  private JMenuItem reverseArrivalSideMI;
   private JMenuItem rightMI;
   private JMenuItem rotateMI;
   private JMenuItem startLocomotiveMI;
   private JMenuItem stopLocomotiveMI;
   private JPopupMenu straightPopupMenu;
+  private JMenuItem toggleLocomotiveDirectionMI;
   private JMenuItem verticalMI;
   private JMenuItem xyMI;
   // End of variables declaration//GEN-END:variables
