@@ -1128,10 +1128,20 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     });
     operationsPM.add(deleteMI);
 
-    reverseArrivalSideMI.setText("Reversd Arrival Side");
+    reverseArrivalSideMI.setText("Reverse Arrival Side");
+    reverseArrivalSideMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        reverseArrivalSideMIActionPerformed(evt);
+      }
+    });
     blockPopupMenu.add(reverseArrivalSideMI);
 
     toggleLocomotiveDirectionMI.setText("Toggle Direction");
+    toggleLocomotiveDirectionMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        toggleLocomotiveDirectionMIActionPerformed(evt);
+      }
+    });
     blockPopupMenu.add(toggleLocomotiveDirectionMI);
 
     startLocomotiveMI.setText("Start Locomotive");
@@ -1167,6 +1177,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     blockPopupMenu.add(removeLocMI);
 
     outOfOrderMI.setText("Set out of Order");
+    outOfOrderMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        outOfOrderMIActionPerformed(evt);
+      }
+    });
     blockPopupMenu.add(outOfOrderMI);
 
     blockPropertiesMI.setText("Properties");
@@ -1305,6 +1320,18 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
     }
   }//GEN-LAST:event_blockPropertiesMIActionPerformed
+
+  private void reverseArrivalSideMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_reverseArrivalSideMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_reverseArrivalSideMIActionPerformed
+
+  private void toggleLocomotiveDirectionMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleLocomotiveDirectionMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
+
+  private void outOfOrderMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_outOfOrderMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_outOfOrderMIActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPopupMenu blockPopupMenu;

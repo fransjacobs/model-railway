@@ -119,13 +119,19 @@
       <SubComponents>
         <MenuItem class="javax.swing.JMenuItem" name="reverseArrivalSideMI">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Reversd Arrival Side"/>
+            <Property name="text" type="java.lang.String" value="Reverse Arrival Side"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reverseArrivalSideMIActionPerformed"/>
+          </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="toggleLocomotiveDirectionMI">
           <Properties>
             <Property name="text" type="java.lang.String" value="Toggle Direction"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleLocomotiveDirectionMIActionPerformed"/>
+          </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="startLocomotiveMI">
           <Properties>
@@ -163,6 +169,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Set out of Order"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="outOfOrderMIActionPerformed"/>
+          </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="blockPropertiesMI">
           <Properties>
