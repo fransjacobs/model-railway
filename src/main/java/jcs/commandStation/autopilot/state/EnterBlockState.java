@@ -81,8 +81,8 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
       //Change Block statuses 
       BlockBean departureBlock = dispatcher.getDepartureBlock();
-      departureBlock.setBlockState(BlockBean.BlockState.LEAVING);
-      destinationBlock.setBlockState(BlockBean.BlockState.ARRIVING);
+      departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+      destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);

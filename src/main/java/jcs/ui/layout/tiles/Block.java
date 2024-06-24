@@ -25,9 +25,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
-import static jcs.entities.BlockBean.BlockState.ARRIVING;
-import static jcs.entities.BlockBean.BlockState.DEPARTING;
 import static jcs.entities.BlockBean.BlockState.LOCKED;
 import static jcs.entities.BlockBean.BlockState.OCCUPIED;
 import jcs.entities.LocomotiveBean;
@@ -359,11 +358,11 @@ public class Block extends AbstractTile implements Tile {
         new Color(250, 250, 210);
       case OCCUPIED ->
         new Color(250, 210, 210);
-      case LEAVING ->
+      case OUT_OF_ORDER ->
         new Color(190, 190, 190);
-      case DEPARTING ->
+      case OUTBOUND ->
         new Color(210, 250, 210);
-      case ARRIVING ->
+      case INBOUND ->
         new Color(250, 210, 250);
       default ->
         new Color(255, 255, 255);
@@ -378,12 +377,19 @@ public class Block extends AbstractTile implements Tile {
     return routeBlockState;
   }
 
-  public String getBlockState() {
+  public BlockState getBlockState() {
     if (blockBean != null) {
-      return blockBean.getBlockState().getState();
+      return blockBean.getBlockState();
     } else {
-      return BlockState.FREE.getState();
+      return BlockState.FREE;
     }
+  }
+
+  public void setBlockState(BlockState blockState) {
+    if (blockBean == null) {
+      this.blockBean = new BlockBean((TileBean) this);
+    }
+    blockBean.setBlockState(blockState);
   }
 
   @Override
@@ -574,9 +580,9 @@ public class Block extends AbstractTile implements Tile {
 
   private Image getLocImage() {
     if (blockBean != null && blockBean.getLocomotive() != null && blockBean.getLocomotive().getLocIcon() != null) {
-      //Do not show the image in block state FREE, LEAVING and LOCKED
+      //Do not show the image in block state FREE, OUT_OF_ORDER and LOCKED
       BlockState blockState = blockBean.getBlockState();
-      boolean showImage = !(BlockState.FREE == blockState || BlockState.LOCKED == blockState || BlockState.LEAVING == blockState || BlockState.GHOST == blockState);
+      boolean showImage = !(BlockState.FREE == blockState || BlockState.LOCKED == blockState || BlockState.OUT_OF_ORDER == blockState || BlockState.GHOST == blockState);
       if (showImage) {
         return blockBean.getLocomotive().getLocIcon();
       } else {

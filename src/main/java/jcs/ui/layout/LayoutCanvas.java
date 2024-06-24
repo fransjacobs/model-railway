@@ -51,6 +51,8 @@ import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
+import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
@@ -719,13 +721,22 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
     //Check if automode is on etc
     boolean autoPilotEnabled = AutoPilot.getInstance().isRunning();
-    boolean hasLoco = ((Block)tile).getBlockBean().getLocomotive() != null;
+    boolean hasLoco = ((Block) tile).getBlockBean().getLocomotive() != null;
     this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
     this.stopLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
     this.resetDispatcherMI.setEnabled(autoPilotEnabled && hasLoco);
-    this.removeLocMI.setEnabled(autoPilotEnabled && hasLoco);
-    
-    
+    this.removeLocMI.setEnabled(hasLoco);
+    this.toggleLocomotiveDirectionMI.setEnabled(hasLoco);
+    this.reverseArrivalSideMI.setEnabled(hasLoco);
+
+    this.toggleOutOfOrderMI.setEnabled(!hasLoco);
+
+    if (BlockBean.BlockState.OUT_OF_ORDER == ((Block) tile).getBlockState()) {
+      this.toggleOutOfOrderMI.setText("Enable Block");
+    } else {
+      this.toggleOutOfOrderMI.setText("Set Out of Order");
+    }
+
     this.blockPopupMenu.show(this, p.x, p.y);
   }
 
@@ -1036,13 +1047,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     moveMI = new JMenuItem();
     deleteMI = new JMenuItem();
     blockPopupMenu = new JPopupMenu();
-    reverseArrivalSideMI = new JMenuItem();
-    toggleLocomotiveDirectionMI = new JMenuItem();
+    toggleOutOfOrderMI = new JMenuItem();
     startLocomotiveMI = new JMenuItem();
     stopLocomotiveMI = new JMenuItem();
     resetDispatcherMI = new JMenuItem();
+    reverseArrivalSideMI = new JMenuItem();
+    toggleLocomotiveDirectionMI = new JMenuItem();
     removeLocMI = new JMenuItem();
-    outOfOrderMI = new JMenuItem();
     blockPropertiesMI = new JMenuItem();
 
     verticalMI.setText("Vertical");
@@ -1128,21 +1139,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     });
     operationsPM.add(deleteMI);
 
-    reverseArrivalSideMI.setText("Reverse Arrival Side");
-    reverseArrivalSideMI.addActionListener(new ActionListener() {
+    toggleOutOfOrderMI.setText("Set Out of Order");
+    toggleOutOfOrderMI.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        reverseArrivalSideMIActionPerformed(evt);
+        toggleOutOfOrderMIActionPerformed(evt);
       }
     });
-    blockPopupMenu.add(reverseArrivalSideMI);
-
-    toggleLocomotiveDirectionMI.setText("Toggle Direction");
-    toggleLocomotiveDirectionMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        toggleLocomotiveDirectionMIActionPerformed(evt);
-      }
-    });
-    blockPopupMenu.add(toggleLocomotiveDirectionMI);
+    blockPopupMenu.add(toggleOutOfOrderMI);
 
     startLocomotiveMI.setText("Start Locomotive");
     startLocomotiveMI.addActionListener(new ActionListener() {
@@ -1168,6 +1171,22 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     });
     blockPopupMenu.add(resetDispatcherMI);
 
+    reverseArrivalSideMI.setText("Reverse Arrival Side");
+    reverseArrivalSideMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        reverseArrivalSideMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(reverseArrivalSideMI);
+
+    toggleLocomotiveDirectionMI.setText("Toggle Direction");
+    toggleLocomotiveDirectionMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        toggleLocomotiveDirectionMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(toggleLocomotiveDirectionMI);
+
     removeLocMI.setText("Remove Locomotive");
     removeLocMI.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -1175,14 +1194,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     });
     blockPopupMenu.add(removeLocMI);
-
-    outOfOrderMI.setText("Set out of Order");
-    outOfOrderMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        outOfOrderMIActionPerformed(evt);
-      }
-    });
-    blockPopupMenu.add(outOfOrderMI);
 
     blockPropertiesMI.setText("Properties");
     blockPropertiesMI.addActionListener(new ActionListener() {
@@ -1306,12 +1317,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }//GEN-LAST:event_resetDispatcherMIActionPerformed
 
   private void removeLocMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeLocMIActionPerformed
-    // TODO add your handling code here:
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      block.getBlockBean().setLocomotive(null);
+
+      this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
+      this.repaint();
+    }
   }//GEN-LAST:event_removeLocMIActionPerformed
 
   private void blockPropertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_blockPropertiesMIActionPerformed
     if (this.selectedTile != null) {
-      Logger.trace("Show BlockDialog for " + selectedTile.getId());
       //show the Block control dialog so tha a locomotive can be assigned to the block
       Block block = (Block) selectedTile;
       BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
@@ -1322,16 +1338,52 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }//GEN-LAST:event_blockPropertiesMIActionPerformed
 
   private void reverseArrivalSideMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_reverseArrivalSideMIActionPerformed
-    // TODO add your handling code here:
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+
+      String suffix = block.getBlockBean().getArrivalSuffix();
+      if ("+".equals(suffix)) {
+        block.getBlockBean().setArrivalSuffix("-");
+      } else {
+        block.getBlockBean().setArrivalSuffix("+");
+      }
+      block.getBlockBean().setReverseArrival(!block.getBlockBean().isReverseArrival());
+      this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
+      this.repaint();
+    }
   }//GEN-LAST:event_reverseArrivalSideMIActionPerformed
 
   private void toggleLocomotiveDirectionMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleLocomotiveDirectionMIActionPerformed
-    // TODO add your handling code here:
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+      LocomotiveBean.Direction curDir = locomotive.getDirection();
+      LocomotiveBean.Direction newDir = locomotive.toggleDirection();
+      locomotive.setDirection(newDir);
+      Logger.trace("Direction changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
+
+      this.executor.execute(() -> PersistenceFactory.getService().persist(locomotive));
+      this.repaint();
+    }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
 
-  private void outOfOrderMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_outOfOrderMIActionPerformed
-    // TODO add your handling code here:
-  }//GEN-LAST:event_outOfOrderMIActionPerformed
+
+  private void toggleOutOfOrderMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleOutOfOrderMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      BlockBean.BlockState currentState = block.getBlockState();
+      if (BlockBean.BlockState.FREE == currentState) {
+        block.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+      } else if (BlockBean.BlockState.OUT_OF_ORDER == currentState) {
+        block.setBlockState(BlockBean.BlockState.FREE);
+      }
+
+      if (currentState != block.getRouteBlockState()) {
+        this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
+        this.repaint();
+      }
+    }
+  }//GEN-LAST:event_toggleOutOfOrderMIActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPopupMenu blockPopupMenu;
@@ -1344,7 +1396,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private JMenuItem leftMI;
   private JMenuItem moveMI;
   private JPopupMenu operationsPM;
-  private JMenuItem outOfOrderMI;
   private JMenuItem propertiesMI;
   private JMenuItem removeLocMI;
   private JMenuItem resetDispatcherMI;
@@ -1355,6 +1406,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private JMenuItem stopLocomotiveMI;
   private JPopupMenu straightPopupMenu;
   private JMenuItem toggleLocomotiveDirectionMI;
+  private JMenuItem toggleOutOfOrderMI;
   private JMenuItem verticalMI;
   private JMenuItem xyMI;
   // End of variables declaration//GEN-END:variables

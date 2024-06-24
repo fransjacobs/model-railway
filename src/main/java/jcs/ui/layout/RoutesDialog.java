@@ -138,9 +138,9 @@ public class RoutesDialog extends javax.swing.JDialog {
       } else if (re.isBlock()) {
         if (re.getTileId().equals(routeBean.getFromTileId())) {
           //departure block
-          tileEvent = new TileEvent(tileId, true, BlockState.DEPARTING);
+          tileEvent = new TileEvent(tileId, true, BlockState.OUTBOUND);
         } else {
-          tileEvent = new TileEvent(tileId, true, BlockState.ARRIVING);
+          tileEvent = new TileEvent(tileId, true, BlockState.INBOUND);
         }
       } else {
         tileEvent = new TileEvent(tileId, true, incomingSide);

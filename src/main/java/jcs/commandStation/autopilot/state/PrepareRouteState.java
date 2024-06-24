@@ -179,7 +179,7 @@ class PrepareRouteState extends DispatcherState {
     Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDirection());
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    departureBlock.setBlockState(BlockBean.BlockState.DEPARTING);
+    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
 
     departureBlock.setDepartureSuffix(route.getFromSuffix());
 

@@ -692,7 +692,7 @@ public class H2PersistenceService implements PersistenceService {
     List<RouteBean> filtered = new ArrayList<>();
 
     for (RouteBean r : routes) {
-      BlockBean dest = this.getBlockByTileId(r.getToTileId());
+      BlockBean dest = getBlockByTileId(r.getToTileId());
       if (BlockBean.BlockState.FREE == dest.getBlockState()) {
         List<RouteElementBean> routeElements = getRouteElements(r.getId());
         r.setRouteElements(routeElements);

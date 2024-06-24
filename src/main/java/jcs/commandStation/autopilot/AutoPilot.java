@@ -31,9 +31,6 @@ import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
-import static jcs.entities.BlockBean.BlockState.ARRIVING;
-import static jcs.entities.BlockBean.BlockState.DEPARTING;
-import static jcs.entities.BlockBean.BlockState.LEAVING;
 import static jcs.entities.BlockBean.BlockState.LOCKED;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
@@ -237,14 +234,14 @@ public class AutoPilot extends Thread {
           }
         } else {
           switch (block.getBlockState()) {
-            case LOCKED, ARRIVING -> {
+            case LOCKED, INBOUND -> {
               //destinations block, reset!
               block.setLocomotive(null);
               block.setBlockState(BlockBean.BlockState.FREE);
               block.setArrivalSuffix(null);
               freeBlockCounter++;
             }
-            case DEPARTING, LEAVING -> {
+            case OUTBOUND -> {
               block.setBlockState(BlockBean.BlockState.OCCUPIED);
               block.setArrivalSuffix(null);
               occupiedBlockCounter++;
