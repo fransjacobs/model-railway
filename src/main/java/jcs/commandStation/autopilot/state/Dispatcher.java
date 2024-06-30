@@ -37,15 +37,13 @@ import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
- * The context
+ * The Dispatcher is the controlling class during auto mode of one Locomotive<br>
+ * When a Locomotive runs a separate thread is started which handles all the states.<br>
  *
- * @author frans
  */
 public class Dispatcher {
 
   private final LocomotiveBean locomotiveBean;
-  private final Long locomotiveId;
-  private final String locomotiveName;
 
   final AutoPilot autoPilot;
   private RouteBean routeBean;
@@ -54,36 +52,36 @@ public class Dispatcher {
   private BlockBean destinationBlock;
 
   private final List<StateEventListener> stateEventListeners;
-//  private LocomotiveVelocityListener locomotiveVelocityListener;
-//  private LocomotiveDirectionChangeListener locomotiveDirectionChangeListener;
 
   private DispatcherThread thread;
 
   public Dispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
-    this.locomotiveId = locomotiveBean.getId();
-    this.locomotiveName = locomotiveBean.getName();
     this.autoPilot = autoPilot;
 
     this.stateEventListeners = new LinkedList<>();
-    //initializeListeners();
-    //Initialize a worker thread, don't start it yet
     thread = new DispatcherThread(this);
+    startDispatcherThread();
+  }
+
+  private void startDispatcherThread() {
+    this.thread.start();
+  }
+
+  DispatcherThread getDispatcherThread() {
+    return thread;
   }
 
   public Long getId() {
-    //return this.locomotiveBean.getId();
-    return this.locomotiveId;
+    return this.locomotiveBean.getId();
   }
 
   public String getName() {
-    //return this.locomotiveBean.getName();
-    return this.locomotiveName;
+    return this.locomotiveBean.getName();
   }
 
   public LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
-    //return PersistenceFactory.getService().getLocomotive(locomotiveId);
   }
 
   RouteBean getRouteBean() {
@@ -101,53 +99,131 @@ public class Dispatcher {
     }
   }
 
-  public void startRunning() {
-    if (this.thread != null && this.thread.isRunning()) {
-      return;
-    }
-
-    if (this.thread == null || !this.thread.isAlive()) {
-      thread = new DispatcherThread(this);
-    }
-
-    this.thread.start();
+  public final void startStateMachine() {
+    thread.startStateMachine();
   }
 
+  public void stopStateMachine() {
+    thread.stopStateMachine();
+  }
+
+  public void stopLocomotiveAutomode() {
+    thread.stopLocomotiveAutomode();
+  }
+
+  @Deprecated
+  public void startRunning() {
+//    if (this.thread != null && this.thread.isRunning()) {
+//      return;
+//    }
+//
+//    if (this.thread == null || !this.thread.isAlive()) {
+//      thread = new DispatcherThread(this);
+//    }
+//
+//    this.thread.start();
+    startStateMachine();
+  }
+
+  @Deprecated
   public void stopRunning() {
-    if (this.thread != null && this.thread.isRunning()) {
-      this.thread.stopRunning();
-    }
+//    if (thread != null && thread.isThreadRunning()) {
+//      thread.stopThread();
+//    }
+    stopLocomotiveAutomode();
   }
 
   public void forceStopRunning() {
-    if (this.thread != null && this.thread.isRunning()) {
-      this.thread.forceStopRunning();
+//    if (thread != null && thread.isThreadRunning()) {
+//      this.thread.forceStop();
+//    }
+  }
+
+  public void reset() {
+    if (this.isRunning()) {
+      Logger.trace("Resetting dispatcher " + getName() + "...");
+
+      BlockBean fromBlock = departureBlock;
+      BlockBean toBlock = destinationBlock;
+
+      //Stop the thread
+      forceStopRunning();
+
+      if (fromBlock == null) {
+        Logger.trace("No From block where " + this.locomotiveBean.getName() + " currently is?");
+        return;
+      }
+
+      //Wait until the thread is really stopped
+      //TODO does this need a timeout?
+//      boolean waiting = thread.isRunning();
+//      Logger.trace("Thread " + thread.getName() + " Running: " + waiting);
+//      while (waiting) {
+      try {
+//          //synchronized (this) {
+//            //wait(25L);
+        Thread.sleep(100L);
+//            waiting = thread.isRunning();
+//            Logger.trace("Loop Thread "+thread.getName()+" Running: "+waiting);
+//          //}
+      } catch (InterruptedException ex) {
+        Logger.trace(ex.getMessage());
+      }
+//      }
+      boolean waiting = thread.isThreadRunning();
+      Logger.trace("Thread " + thread.getName() + " Running: " + waiting);
+
+//Thread is stopped
+      Logger.trace("Dispatcher Thread for " + getName() + " has stopped, reset block statusses...");
+
+      clearDepartureIgnoreEventHandlers();
+
+      Logger.trace("Listeners cleared for " + getName() + "...");
+
+      if (routeBean != null) {
+        routeBean.setLocked(false);
+        PersistenceFactory.getService().persist(routeBean);
+        resetRoute(routeBean);
+        Logger.trace("Unlocked route " + routeBean.getId());
+      }
+
+      if (toBlock != null) {
+        toBlock.setLocomotive(null);
+        toBlock.setBlockState(BlockBean.BlockState.FREE);
+        toBlock.setArrivalSuffix(null);
+
+        PersistenceFactory.getService().persist(toBlock);
+        showBlockState(toBlock);
+        Logger.trace("Reset toBlock " + toBlock.getId());
+      }
+
+      fromBlock.setLocomotive(this.locomotiveBean);
+      fromBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
+      PersistenceFactory.getService().persist(fromBlock);
+
+      this.departureBlock = fromBlock;
+      showBlockState(fromBlock);
+      Logger.trace("Reset toBlock " + fromBlock.getId());
+
+      this.destinationBlock = null;
+      this.routeBean = null;
+
+      //Initialize a new worker thread
+      thread = new DispatcherThread(this);
+      Logger.trace("Created new Thread for " + getName() + "...");
+    } else {
+      Logger.trace("Dispatcher " + getName() + " is not running...");
     }
   }
 
+  ///????
   public boolean isRunning() {
-    if (this.thread != null) {
-      return this.thread.isRunning();
+    if (thread != null) {
+      return thread.isThreadRunning();
     } else {
       return false;
     }
   }
-
-//  private void initializeListeners() {
-//    locomotiveVelocityListener = new LocomotiveVelocityListener(this);
-//    JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(locomotiveVelocityListener);
-//
-//    locomotiveDirectionChangeListener = new LocomotiveDirectionChangeListener(this);
-//    JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
-//  }
-
-//  void unRegisterListeners() {
-//    JCS.getJcsCommandStation().removeLocomotiveSpeedEventListener(locomotiveVelocityListener);
-//    JCS.getJcsCommandStation().removeLocomotiveDirectionEventListener(locomotiveDirectionChangeListener);
-//
-//    locomotiveVelocityListener = null;
-//    locomotiveDirectionChangeListener = null;
-//  }
 
   private BlockBean getBlock(String tileId) {
     BlockBean block = PersistenceFactory.getService().getBlockByTileId(tileId);
@@ -159,8 +235,7 @@ public class Dispatcher {
       if (routeBean != null) {
         departureBlock = getBlock(routeBean.getFromTileId());
       } else {
-        //departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
-        departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(this.locomotiveId);
+        departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
       }
     }
     return departureBlock;
@@ -178,15 +253,15 @@ public class Dispatcher {
     if (routeBean == null) {
       return null;
     }
-    String departureSuffix = this.routeBean.getFromSuffix();
+    String departureSuffix = routeBean.getFromSuffix();
     return swapSuffix(departureSuffix);
   }
 
   String getDestinationArrivalSuffix() {
-    if (this.routeBean == null) {
+    if (routeBean == null) {
       return null;
     }
-    String destinationArrivalSuffix = this.routeBean.getToSuffix();
+    String destinationArrivalSuffix = routeBean.getToSuffix();
     return destinationArrivalSuffix;
   }
 
@@ -200,28 +275,28 @@ public class Dispatcher {
   }
 
   public String getDispatcherState() {
-    if (this.thread != null) {
-      return this.thread.getDispatcherState().getClass().getSimpleName();
+    if (thread != null) {
+      return thread.getState().getClass().getSimpleName();
     } else {
       return "#Idle";
     }
   }
 
   void registerIgnoreEventHandler(String sensorId) {
-    if (!this.autoPilot.isSensorRegistered(sensorId)) {
+    if (!autoPilot.isSensorRegistered(sensorId)) {
       IgnoreSensorHandler ish = new IgnoreSensorHandler(sensorId, this);
-      this.autoPilot.addHandler(ish, sensorId);
+      autoPilot.addHandler(ish, sensorId);
       Logger.trace("Added sensor " + sensorId + " to the ignore handlers");
     } else {
       Logger.trace("Sensor " + sensorId + " is allready ignored");
     }
   }
 
-  void clearDepartureIgnoreEventHandlers() {
-    if (this.departureBlock != null) {
-      String minSensorId = this.departureBlock.getMinSensorId();
+  synchronized void clearDepartureIgnoreEventHandlers() {
+    if (departureBlock != null) {
+      String minSensorId = departureBlock.getMinSensorId();
       autoPilot.removeHandler(minSensorId);
-      String plusSensorId = this.departureBlock.getPlusSensorId();
+      String plusSensorId = departureBlock.getPlusSensorId();
       autoPilot.removeHandler(plusSensorId);
     }
   }
@@ -236,15 +311,15 @@ public class Dispatcher {
 
   synchronized void changeLocomotiveVelocity(LocomotiveBean locomotive, int velocity) {
     JCS.getJcsCommandStation().changeLocomotiveSpeed(velocity, locomotive);
-    this.locomotiveBean.setVelocity(velocity);
+    locomotiveBean.setVelocity(velocity);
   }
 
   synchronized void changeLocomotiveDirection(LocomotiveBean locomotive, Direction newDirection) {
     JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
-    this.locomotiveBean.setDirection(newDirection);
+    locomotiveBean.setDirection(newDirection);
   }
 
-  void fireStateListeners(String s) {
+  synchronized void fireStateListeners(String s) {
     for (StateEventListener sel : stateEventListeners) {
       sel.onStateChange(this);
     }
@@ -258,7 +333,7 @@ public class Dispatcher {
     stateEventListeners.remove(listener);
   }
 
-  void resetRoute(RouteBean route) {
+  public static void resetRoute(RouteBean route) {
     List<RouteElementBean> routeElements = route.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
@@ -309,44 +384,10 @@ public class Dispatcher {
     }
   }
 
-//  private class LocomotiveVelocityListener implements LocomotiveSpeedEventListener {
-//
-//    private final Dispatcher trainDispatcher;
-//
-//    LocomotiveVelocityListener(Dispatcher trainDispatcher) {
-//      this.trainDispatcher = trainDispatcher;
-//    }
-//
-//    @Override
-//    public void onSpeedChange(LocomotiveSpeedEvent velocityEvent) {
-//      if (velocityEvent.isEventFor(trainDispatcher.getLocomotiveBean())) {
-//        trainDispatcher.getLocomotiveBean().setVelocity(velocityEvent.getVelocity());
-//        Logger.trace("Updated velocity to " + velocityEvent.getVelocity() + " of " + trainDispatcher.getLocomotiveBean().getName());
-//      }
-//    }
-//  }
-
-//  private class LocomotiveDirectionChangeListener implements LocomotiveDirectionEventListener {
-//
-//    private final Dispatcher trainDispatcher;
-//
-//    LocomotiveDirectionChangeListener(Dispatcher trainDispatcher) {
-//      this.trainDispatcher = trainDispatcher;
-//    }
-//
-//    @Override
-//    public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
-//      if (directionEvent.isEventFor(this.trainDispatcher.getLocomotiveBean())) {
-//        trainDispatcher.getLocomotiveBean().setDirection(directionEvent.getNewDirection());
-//        Logger.trace("Updated direction to " + directionEvent.getNewDirection() + " of " + trainDispatcher.getLocomotiveBean().getName());
-//      }
-//    }
-//  }
-
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 37 * hash + Objects.hashCode(this.locomotiveId);
+    hash = 37 * hash + Objects.hashCode(locomotiveBean.getId());
     return hash;
   }
 
@@ -362,6 +403,6 @@ public class Dispatcher {
       return false;
     }
     final Dispatcher other = (Dispatcher) obj;
-    return Objects.equals(this.locomotiveId, other.locomotiveId);
+    return Objects.equals(locomotiveBean.getId(), other.locomotiveBean.getId());
   }
 }

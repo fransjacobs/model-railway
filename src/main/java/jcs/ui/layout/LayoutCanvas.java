@@ -720,7 +720,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       return;
     }
     //Check if automode is on etc
-    boolean autoPilotEnabled = AutoPilot.getInstance().isRunning();
+    boolean autoPilotEnabled = AutoPilot.getInstance().isAutoModeActive();
     boolean hasLoco = ((Block) tile).getBlockBean().getLocomotive() != null;
     this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
     this.stopLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
@@ -1305,15 +1305,33 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }//GEN-LAST:event_formMouseDragged
 
   private void startLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startLocomotiveMIActionPerformed
-    // ((Block)tile).getBlockBean().getLocomotive() != null;
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+
+      this.executor.execute(() -> AutoPilot.getInstance().startStopLocomotive(locomotive, true));
+      repaint();
+    }
   }//GEN-LAST:event_startLocomotiveMIActionPerformed
 
   private void stopLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopLocomotiveMIActionPerformed
-    // TODO add your handling code here:
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+
+      this.executor.execute(() -> AutoPilot.getInstance().startStopLocomotive(locomotive, false));
+      repaint();
+    }
   }//GEN-LAST:event_stopLocomotiveMIActionPerformed
 
   private void resetDispatcherMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetDispatcherMIActionPerformed
-    // TODO add your handling code here:
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+
+      this.executor.execute(() -> AutoPilot.getInstance().resetDispatcher(locomotive));
+      repaint();
+    }
   }//GEN-LAST:event_resetDispatcherMIActionPerformed
 
   private void removeLocMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeLocMIActionPerformed

@@ -60,7 +60,7 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
 
   private void initModel() {
     AutoPilot.getInstance().addAutoPilotStatusListener(this);
-    statusChanged(AutoPilot.getInstance().isRunning());
+    statusChanged(AutoPilot.getInstance().isAutoModeActive());
   }
 
   @Override
@@ -136,7 +136,7 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
     super.setVisible(aFlag);
     if (aFlag) {
       AutoPilot.getInstance().addAutoPilotStatusListener(this);
-      statusChanged(AutoPilot.getInstance().isRunning());
+      statusChanged(AutoPilot.getInstance().isAutoModeActive());
     } else {
       AutoPilot.getInstance().removeAutoPilotStatusListener(this);
     }
@@ -169,7 +169,7 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
 
     long now = System.currentTimeMillis();
     long maxtime = now + 5000L;
-    AutoPilot.getInstance().startAutoPilot();
+    AutoPilot.getInstance().startAutoMode();
     int dispcnt = AutoPilot.getInstance().getLocomotiveDispatchers().size();
     while (dispcnt == 0 && now < maxtime) {
       now = System.currentTimeMillis();

@@ -970,14 +970,14 @@ public class LayoutPanel extends JPanel {
     if (this.autoPilotBtn.isSelected()) {
       this.startAllLocomotivesBtn.setEnabled(true);
 
-      AutoPilot.getInstance().startAutoPilot();
+      AutoPilot.getInstance().startAutoMode();
     } else {
       if (this.startAllLocomotivesBtn.isSelected()) {
         startAllLocomotivesBtn.doClick();
       }
       this.startAllLocomotivesBtn.setEnabled(false);
 
-      AutoPilot.getInstance().stopAutoPilot();
+      AutoPilot.getInstance().stopAutoMode();
     }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 

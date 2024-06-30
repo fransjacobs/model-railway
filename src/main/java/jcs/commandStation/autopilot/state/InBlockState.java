@@ -67,7 +67,7 @@ class InBlockState extends DispatcherState {
     dispatcher.showBlockState(departureBlock);
     dispatcher.showBlockState(destinationBlock);
 
-    dispatcher.resetRoute(route);
+    Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
   }
 }

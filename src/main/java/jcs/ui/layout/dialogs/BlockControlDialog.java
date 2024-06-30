@@ -107,7 +107,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
           this.forwardsRB.setSelected(true);
         }
 
-        this.startLocButton.setEnabled(AutoPilot.getInstance().isRunning());
+        this.startLocButton.setEnabled(AutoPilot.getInstance().isAutoModeActive());
         this.startLocButton.setSelected(AutoPilot.getInstance().isRunning(bb.getLocomotive()));
       } else {
         this.locomotiveCB.setSelectedItem(emptyBean);

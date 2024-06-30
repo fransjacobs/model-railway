@@ -35,7 +35,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
   @Override
   public void refresh() {
-    if (AutoPilot.getInstance().isRunning()) {
+    if (AutoPilot.getInstance().isAutoModeActive()) {
       setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
       Logger.trace("There are " + this.beans.size() + " dispatchers");
 

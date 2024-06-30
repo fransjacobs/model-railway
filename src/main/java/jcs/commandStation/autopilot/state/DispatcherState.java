@@ -39,6 +39,10 @@ abstract class DispatcherState {
     return this.getClass().getSimpleName();
   }
 
+  public String getName() {
+    return this.getClass().getSimpleName();
+  }
+
   void pause(int millis) {
     try {
       Thread.sleep(millis);
