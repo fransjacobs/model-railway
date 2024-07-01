@@ -152,7 +152,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void changeVelocity(int locUid, int speed, LocomotiveBean.Direction direction) {
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " speed " + speed);
-      
+
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, speed, commandStationBean.getId());
       notifyLocomotiveSpeedEventListeners(lse);
     }
@@ -243,10 +243,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public void fireSensorEventListeners(final SensorEvent sensorEvent) {
+  public synchronized void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
-      
-      listener.onSensorChange(sensorEvent);
+      if (listener != null) {
+        listener.onSensorChange(sensorEvent);
+      }
     }
   }
 
@@ -301,9 +302,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
   }
 
-  
   //Method for virtual driving
-  
   private List<LocomotiveBean> getOnTrackLocomotives() {
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     //filter..
@@ -327,9 +326,5 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     return new ArrayList<>(activeLocomotives);
   }
 
-  
   //Find the route the locomotive is doing....
-  
-  
-  
 }

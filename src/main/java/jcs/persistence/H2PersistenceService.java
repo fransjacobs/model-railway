@@ -685,7 +685,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
+  public synchronized List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix};
     List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ? and locked = false", args).results(RouteBean.class);
 
@@ -693,12 +693,14 @@ public class H2PersistenceService implements PersistenceService {
 
     for (RouteBean r : routes) {
       BlockBean dest = getBlockByTileId(r.getToTileId());
-      if (BlockBean.BlockState.FREE == dest.getBlockState()) {
-        List<RouteElementBean> routeElements = getRouteElements(r.getId());
-        r.setRouteElements(routeElements);
-        filtered.add(r);
-      } else {
-        Logger.trace("Skip " + r.getId() + " dest status: " + dest.getStatus());
+      if (dest != null) {
+        if (BlockBean.BlockState.FREE == dest.getBlockState()) {
+          List<RouteElementBean> routeElements = getRouteElements(r.getId());
+          r.setRouteElements(routeElements);
+          filtered.add(r);
+        } else {
+          Logger.trace("Skip " + r.getId() + " dest status: " + dest.getStatus());
+        }
       }
     }
     return filtered;

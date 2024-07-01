@@ -69,5 +69,7 @@ class InBlockState extends DispatcherState {
 
     Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
+    //Wait a short while...
+    pause(100);
   }
 }

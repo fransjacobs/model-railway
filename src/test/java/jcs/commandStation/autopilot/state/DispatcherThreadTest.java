@@ -15,9 +15,16 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import jcs.JCS;
+import jcs.commandStation.FeedbackController;
 import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
@@ -39,9 +46,12 @@ public class DispatcherThreadTest {
   private LocomotiveBean dhg;
   private Dispatcher dispatcher;
 
+  private final ExecutorService executor;
+
   public DispatcherThreadTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
     testHelper = PersistenceTestHelper.getInstance();
+    this.executor = Executors.newSingleThreadExecutor();
   }
 
   @BeforeEach
@@ -68,14 +78,14 @@ public class DispatcherThreadTest {
   public void testStartStateMachine() {
     System.out.println("startStateMachine");
     DispatcherThread instance = dispatcher.getDispatcherThread();
-    
+
     assertTrue(instance.isThreadRunning());
     assertFalse(instance.isLocomotiveAutomodeOn());
     assertTrue(instance.isAlive());
-    
+
     assertEquals("DT->NS DHG 6505", instance.getName());
     assertEquals("IdleState", instance.getDispatcherStateName());
-    
+
     instance.startStateMachine();
     Logger.debug("Statemachine Started");
     assertTrue(instance.isThreadRunning());
@@ -87,11 +97,11 @@ public class DispatcherThreadTest {
   public void testStopStateMachine() {
     System.out.println("stopStateMachine");
     DispatcherThread instance = dispatcher.getDispatcherThread();
-    
+
     assertTrue(instance.isThreadRunning());
     assertFalse(instance.isLocomotiveAutomodeOn());
     assertTrue(instance.isAlive());
-    
+
     assertEquals("DT->NS DHG 6505", instance.getName());
     assertEquals("IdleState", instance.getDispatcherStateName());
 
@@ -109,16 +119,16 @@ public class DispatcherThreadTest {
     assertFalse(instance.isThreadRunning());
     assertTrue(instance.isAlive());
   }
-  
+
   @Test
   public void testStopLocomotiveAutomode() {
     System.out.println("stopLocomotiveAutomode");
     DispatcherThread instance = dispatcher.getDispatcherThread();
-    
+
     assertTrue(instance.isThreadRunning());
     assertFalse(instance.isLocomotiveAutomodeOn());
     assertTrue(instance.isAlive());
-    
+
     assertEquals("DT->NS DHG 6505", instance.getName());
     assertEquals("IdleState", instance.getDispatcherStateName());
 
@@ -131,12 +141,12 @@ public class DispatcherThreadTest {
 
     pause(250);
     assertEquals("StartState", instance.getDispatcherStateName());
-    
+
     instance.stopLocomotiveAutomode();
     Logger.debug("Requested to stop Automode");
     assertFalse(instance.isLocomotiveAutomodeOn());
     assertTrue(instance.isThreadRunning());
-    
+
     assertEquals("StartState", instance.getDispatcherStateName());
     pause(250);
     assertEquals("StartState", instance.getDispatcherStateName());
@@ -144,89 +154,61 @@ public class DispatcherThreadTest {
     //this is part of other test
     //for now stop all
     instance.stopStateMachine();
-    
+
     assertFalse(instance.isLocomotiveAutomodeOn());
     assertFalse(instance.isThreadRunning());
-    
-    
-  }
-  
-  
-  
-  
-  
-  //@Test
-  public void testIsThreadRunning() {
-    System.out.println("isThreadRunning");
-    DispatcherThread instance = null;
-    boolean expResult = false;
-    boolean result = instance.isThreadRunning();
-    assertEquals(expResult, result);
-    fail("The test case is a prototype.");
   }
 
-  //@Test
-  public void testIsStopRequested() {
-    System.out.println("isStopRequested");
-    DispatcherThread instance = null;
-    boolean expResult = false;
-    boolean result = instance.isLocomotiveAutomodeOn();
-    assertEquals(expResult, result);
-    fail("The test case is a prototype.");
+  @Test
+  public void testStateMachineRun() {
+    System.out.println("stateMachineRun");
+    DispatcherThread instance = dispatcher.getDispatcherThread();
+    //force a route
+    BlockBean block4 = db.getBlockByTileId("bk-4");
+    block4.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+    db.persist(block4);
+
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    instance.startStateMachine();
+    assertTrue(instance.isThreadRunning());
+    assertTrue(instance.isLocomotiveAutomodeOn());
+    assertTrue(instance.isAlive());
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    pause(250);
+    assertEquals("StartState", instance.getDispatcherStateName());
+    SensorBean s11 = db.getSensor("0-0011");
+    toggleSensor(s11);
+
+    pause(250);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    SensorBean s10 = db.getSensor("0-0010");
+    toggleSensor(s10);
+
+    pause(80);
+    assertEquals("InBlockState", instance.getDispatcherStateName());
+
+    pause(300);
+    assertEquals("WaitState", instance.getDispatcherStateName());
   }
 
-  //@Test
-  public void testRequestStart() {
-    System.out.println("requestStart");
-    DispatcherThread instance = null;
-    //instance.requestStart();
-    fail("The test case is a prototype.");
+  private void toggleSensor(SensorBean sensorBean) {
+    sensorBean.toggle();
+    sensorBean.setActive((sensorBean.getStatus() == 1));
+    SensorEvent sensorEvent = new SensorEvent(sensorBean);
+    this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
+    //fireFeedbackEvent(sensorEvent);
   }
 
-  //@Test
-  public void testRequestStop() {
-    System.out.println("requestStop");
-    DispatcherThread instance = null;
-    //instance.requestStop();
-    fail("The test case is a prototype.");
+  private void fireFeedbackEvent(SensorEvent sensorEvent) {
+    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+    for (FeedbackController fbc : acl) {
+      fbc.fireSensorEventListeners(sensorEvent);
+    }
   }
 
-  //@Test
-  public void testStopThread() {
-    System.out.println("stopThread");
-    DispatcherThread instance = null;
-    //instance.stopThread();
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
-  public void testForceStop() {
-    System.out.println("forceStop");
-    DispatcherThread instance = null;
-    //instance.forceStop();
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
-  public void testGetDispatcherState() {
-    System.out.println("getDispatcherState");
-    DispatcherThread instance = null;
-    DispatcherState expResult = null;
-    DispatcherState result = instance.getDispatcherState();
-    assertEquals(expResult, result);
-    fail("The test case is a prototype.");
-  }
-
-  //@Test
-  public void testRun() {
-    System.out.println("run");
-    DispatcherThread instance = null;
-    instance.run();
-    fail("The test case is a prototype.");
-  }
-
-  
-  
   private void pause(int millis) {
     try {
       Thread.sleep(millis);
