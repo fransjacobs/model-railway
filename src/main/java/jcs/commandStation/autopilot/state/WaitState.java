@@ -31,18 +31,18 @@ class WaitState extends DispatcherState {
     defaultWaitTime = Integer.getInteger("default.waittime", 5);
   }
 
-  @Override
-  DispatcherState next(Dispatcher locRunner) {
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new PrepareRouteState(dispatcher);
-      return newState;
-    } else {
-      return this;
-    }
-  }
+//  @Override
+//  DispatcherState next(Dispatcher locRunner) {
+//    if (canAdvanceToNextState) {
+//      DispatcherState newState = new PrepareRouteState(dispatcher);
+//      return newState;
+//    } else {
+//      return this;
+//    }
+//  }
 
   @Override
-  void execute() {
+  DispatcherState execute(Dispatcher locRunner) {
     //Stub 
     long waitTime = 1 * defaultWaitTime;
 
@@ -57,6 +57,13 @@ class WaitState extends DispatcherState {
     }
 
     canAdvanceToNextState = true; //running;
+
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new PrepareRouteState(dispatcher);
+      return newState;
+    } else {
+      return this;
+    }
   }
 
 }

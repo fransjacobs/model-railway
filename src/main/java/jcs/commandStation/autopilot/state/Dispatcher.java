@@ -61,10 +61,10 @@ public class Dispatcher {
 
     this.stateEventListeners = new LinkedList<>();
     thread = new DispatcherThread(this);
-    startDispatcherThread();
+    //startDispatcherThread();
   }
 
-  private void startDispatcherThread() {
+  void startDispatcherThread() {
     this.thread.start();
   }
 
@@ -98,39 +98,50 @@ public class Dispatcher {
       this.destinationBlock = getBlock(routeBean.getToTileId());
     }
   }
+  
+  boolean isLocomotiveAutomodeOn() {
+    return this.thread.isLocomotiveAutomodeOn();
+  }
+  
 
   public final void startStateMachine() {
-    thread.startStateMachine();
+    //thread.runStateMachine(true);
   }
 
   public void stopStateMachine() {
-    thread.stopStateMachine();
+    //thread.runStateMachine(false);
+  }
+
+  public void startLocomotiveAutomode() {
+    //thread.stopLocomotiveAutomode();
+    thread.setLocomotiveAutomode(true);
   }
 
   public void stopLocomotiveAutomode() {
-    thread.stopLocomotiveAutomode();
+    //thread.stopLocomotiveAutomode();
+    thread.setLocomotiveAutomode(false);
   }
 
-  @Deprecated
+  //@Deprecated
   public void startRunning() {
-//    if (this.thread != null && this.thread.isRunning()) {
-//      return;
-//    }
-//
-//    if (this.thread == null || !this.thread.isAlive()) {
-//      thread = new DispatcherThread(this);
-//    }
-//
-//    this.thread.start();
-    startStateMachine();
+    if (this.thread != null && this.thread.isThreadRunning()) {
+      return;
+    }
+
+    if (this.thread == null || !this.thread.isAlive()) {
+      thread = new DispatcherThread(this);
+    }
+
+    this.thread.start();
+//    startStateMachine();
   }
 
-  @Deprecated
+  //@Deprecated
   public void stopRunning() {
-//    if (thread != null && thread.isThreadRunning()) {
-//      thread.stopThread();
-//    }
-    stopLocomotiveAutomode();
+    if (thread != null && thread.isThreadRunning()) {
+      thread.stopRunningThread();
+    }
+//    stopLocomotiveAutomode();
   }
 
   public void forceStopRunning() {

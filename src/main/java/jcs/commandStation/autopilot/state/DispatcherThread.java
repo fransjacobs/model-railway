@@ -41,7 +41,9 @@ class DispatcherThread extends Thread {
   private DispatcherState dispatcherState;
 
   private boolean running = false;
+
   private boolean stateMachineRunning = false;
+
   private boolean locomotiveAutomodeOn = false;
   private boolean resetRequested = false;
 
@@ -51,11 +53,16 @@ class DispatcherThread extends Thread {
     this.dispatcher = dispatcher;
     this.dispatcherState = new IdleState(dispatcher);
     setName("DT->" + dispatcher.getLocomotiveBean().getName());
-    this.running = true;
+    //this.running = true;
   }
 
   boolean isThreadRunning() {
     return this.running;
+  }
+
+  synchronized void stopRunningThread() {
+    this.running = false;
+    notify();
   }
 
   boolean isLocomotiveAutomodeOn() {
@@ -63,42 +70,71 @@ class DispatcherThread extends Thread {
   }
 
   //(Re)Start automode for the locomotive
-  synchronized void startStateMachine() {
-    if(!running) {
-      start();
+  synchronized void setLocomotiveAutomode(boolean start) {
+//    if (!running) {
+//      start();
+//    }
+    this.locomotiveAutomodeOn = start;
+    this.stateMachineRunning = start;
+    if (running) {
+      notify();
     }
-    this.locomotiveAutomodeOn = true;
-    this.stateMachineRunning = true;
-    notify();
   }
 
   //Stop automode for the locomotive
-  synchronized void stopLocomotiveAutomode() {
-    this.locomotiveAutomodeOn = false;
-    notify();
-  }
-  
+//  synchronized void stopLocomotiveAutomode() {
+//    this.locomotiveAutomodeOn = false;
+//    notify();
+//  }
   //Stop the dispatcher Thread
-  synchronized void stopStateMachine() {    
-    this.running = false;
-    this.stateMachineRunning = false;
-    this.locomotiveAutomodeOn = false;
-    notify();
-  }
-
+//  synchronized void stopStateMachine() {
+//    this.running = false;
+//    this.stateMachineRunning = false;
+//    this.locomotiveAutomodeOn = false;
+//    notify();
+//  }
 //  synchronized void forceStop() {
 //    this.running = false;
 //    this.forceStop = true;
 //    Logger.trace("KILLING " + dispatcher.getName() + " State " + dispatcherState.getName());
 //    notify();
 //  }
-
   DispatcherState getDispatcherState() {
     return dispatcherState;
   }
 
   String getDispatcherStateName() {
     return dispatcherState.getName();
+  }
+
+  //For testing move the logic outside the running thread so that a manual stepper is also possible
+  void handleStates(boolean inLoop) {
+    //Obtain current dispatcherState
+    DispatcherState currentState = dispatcherState;
+    //Execute the action for the current dispatcherState      
+    dispatcherState = currentState.execute(dispatcher);
+
+    if (!this.dispatcher.autoPilot.isAutoModeActive()) {
+      //Automode has stopped, let the Thread finish when WaitState is reached
+      if (currentState instanceof IdleState || currentState instanceof WaitState) {
+        Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
+        this.running = false;
+      }
+
+      if (inLoop) {
+        //No dispatcherState change so lets wait a while
+        try {
+          synchronized (this) {
+            wait(100);
+          }
+        } catch (InterruptedException ex) {
+          Logger.trace(ex.getMessage());
+        }
+      }
+    }
+
+    //handle the dispatcherState changes
+    dispatcher.fireStateListeners(dispatcherState.getName());
   }
 
   /**
@@ -120,6 +156,7 @@ class DispatcherThread extends Thread {
       this.running = false;
       return;
     } else {
+      this.running = true;
       Logger.trace(getName() + " StateMachine Started. State " + dispatcherState.getName() + "...");
     }
 
@@ -127,55 +164,56 @@ class DispatcherThread extends Thread {
     //boolean logOnce = true;
     //It forcestop check nodig?
     while (running) {
-      //Obtain current dispatcherState
-      DispatcherState currentState = dispatcherState;
-      //Execute the action for the current dispatcherState      
-      currentState.execute();
-      //TODO let the execute return the next dispatcherState
-      DispatcherState newState = currentState.next(dispatcher);
-
-      if (!locomotiveAutomodeOn && newState instanceof WaitState) {
-        //stop (automode) for this locomotice is requested, the WaitState is reached.
-        //Force to IdleState.
-        newState = new IdleState(dispatcher);
-      } else if (!locomotiveAutomodeOn && currentState instanceof IdleState && !(newState instanceof IdleState)) {
-        //Still stopped keep current state
-        newState = currentState;
-      } else {
-        if (!this.dispatcher.autoPilot.isAutoModeActive()) {
-          //Automode has stopped, so finish the Thread when the Wait dispatcherState is reached
-          if (currentState instanceof IdleState || currentState instanceof WaitState) {
-            Logger.trace(getName()+" Stopping thread as Autopilot automode is stopped");
-            this.running = false;
-          }
-        }
-      }
-
-      if (currentState != newState) {
-        //State has changed
-        dispatcherState = newState;
-        //handle the dispatcherState changes
-        dispatcher.fireStateListeners(dispatcherState.getName());
-      } else {
-        //Check if we need to (force) stop?
-        //in the wait dispatcherState the name also hold the time so
-        if (dispatcherState instanceof WaitState) {
-          dispatcher.fireStateListeners(dispatcherState.getName());
-        }
-
-        //No dispatcherState change so lets wait a while
-        try {
-          synchronized (this) {
-            wait(100);
-          }
-        } catch (InterruptedException ex) {
-          Logger.trace(ex.getMessage());
-        }
-      }
-
-//      if (!running) {
-//        Logger.trace(this.getName() + " is ending. Current State: " + dispatcherState.getClass().getSimpleName());
+      handleStates(running);
+//      //Obtain current dispatcherState
+//      DispatcherState currentState = dispatcherState;
+//      //Execute the action for the current dispatcherState      
+//      currentState.execute();
+//      //TODO let the execute return the next dispatcherState
+//      DispatcherState newState = currentState.next(dispatcher);
+//
+//      if (!locomotiveAutomodeOn && newState instanceof WaitState) {
+//        //stop (automode) for this locomotice is requested, the WaitState is reached.
+//        //Force to IdleState.
+//        newState = new IdleState(dispatcher);
+//      } else if (!locomotiveAutomodeOn && currentState instanceof IdleState && !(newState instanceof IdleState)) {
+//        //Still stopped keep current state
+//        newState = currentState;
+//      } else {
+//        if (!this.dispatcher.autoPilot.isAutoModeActive()) {
+//          //Automode has stopped, so finish the Thread when the Wait dispatcherState is reached
+//          if (currentState instanceof IdleState || currentState instanceof WaitState) {
+//            Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
+//            this.running = false;
+//          }
+//        }
 //      }
+//
+//      if (currentState != newState) {
+//        //State has changed
+//        dispatcherState = newState;
+//        //handle the dispatcherState changes
+//        dispatcher.fireStateListeners(dispatcherState.getName());
+//      } else {
+//        //Check if we need to (force) stop?
+//        //in the wait dispatcherState the name also hold the time so
+//        if (dispatcherState instanceof WaitState) {
+//          dispatcher.fireStateListeners(dispatcherState.getName());
+//        }
+//
+//        //No dispatcherState change so lets wait a while
+//        try {
+//          synchronized (this) {
+//            wait(100);
+//          }
+//        } catch (InterruptedException ex) {
+//          Logger.trace(ex.getMessage());
+//        }
+//      }
+//
+////      if (!running) {
+////        Logger.trace(this.getName() + " is ending. Current State: " + dispatcherState.getClass().getSimpleName());
+////      }
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is ending...");
@@ -202,7 +240,6 @@ class DispatcherThread extends Thread {
     }
 
     this.running = false;
-
   }
 
 }

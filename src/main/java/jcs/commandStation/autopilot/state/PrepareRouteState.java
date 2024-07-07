@@ -41,20 +41,20 @@ class PrepareRouteState extends DispatcherState {
     super(dispatcher);
   }
 
-  @Override
-  DispatcherState next(Dispatcher dispatcher) {
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new StartState(dispatcher);
-      return newState;
-    } else {
-      //Go back to waiting and try again
-      DispatcherState newWaitState = new WaitState(dispatcher);
-      return newWaitState;
-    }
-  }
+//  @Override
+//  DispatcherState next(Dispatcher dispatcher) {
+//    if (canAdvanceToNextState) {
+//      DispatcherState newState = new StartState(dispatcher);
+//      return newState;
+//    } else {
+//      //Go back to waiting and try again
+//      DispatcherState newWaitState = new WaitState(dispatcher);
+//      return newWaitState;
+//    }
+//  }
 
   @Override
-  public void execute() {
+  DispatcherState execute(Dispatcher dispatcher) {
     //ReserveRouteSemaphore semaphore = new ReserveRouteSemaphore();
     int permits = AutoPilot.getInstance().avialablePermits();
     Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
@@ -73,6 +73,15 @@ class PrepareRouteState extends DispatcherState {
     } else {
       Logger.trace("No Semaphore avalaible");
       canAdvanceToNextState = false;
+    }
+
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new StartState(dispatcher);
+      return newState;
+    } else {
+      //Go back to waiting and try again
+      DispatcherState newWaitState = new WaitState(dispatcher);
+      return newWaitState;
     }
 
   }

@@ -38,22 +38,22 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
     super(dispatcher);
   }
 
-  @Override
-  synchronized DispatcherState next(Dispatcher locRunner) {
-    if (this.canAdvanceToNextState) {
-      DispatcherState newState = new InBlockState(dispatcher);
-      //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(this);
-      //For the remaining states ignore events from the in sensor
-      this.dispatcher.registerIgnoreEventHandler(inSensorId);
-      return newState;
-    } else {
-      return this;
-    }
-  }
+//  @Override
+//  synchronized DispatcherState next(Dispatcher locRunner) {
+//    if (this.canAdvanceToNextState) {
+//      DispatcherState newState = new InBlockState(dispatcher);
+//      //Remove handler as the state will now change
+//      JCS.getJcsCommandStation().removeSensorEventListener(this);
+//      //For the remaining states ignore events from the in sensor
+//      this.dispatcher.registerIgnoreEventHandler(inSensorId);
+//      return newState;
+//    } else {
+//      return this;
+//    }
+//  }
 
   @Override
-  void execute() {
+  synchronized DispatcherState execute(Dispatcher locRunner) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     if (!locomotiveBraking) {
       //Slowdown
@@ -96,6 +96,17 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       dispatcher.showRoute(route, Color.magenta);
 
       Logger.trace("Waiting for the in event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
+    }
+    
+    if (this.canAdvanceToNextState) {
+      DispatcherState newState = new InBlockState(dispatcher);
+      //Remove handler as the state will now change
+      JCS.getJcsCommandStation().removeSensorEventListener(this);
+      //For the remaining states ignore events from the in sensor
+      this.dispatcher.registerIgnoreEventHandler(inSensorId);
+      return newState;
+    } else {
+      return this;
     }
   }
 

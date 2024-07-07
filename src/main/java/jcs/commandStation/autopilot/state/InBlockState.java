@@ -31,20 +31,19 @@ class InBlockState extends DispatcherState {
     super(dispatcher);
   }
 
+//  @Override
+//  DispatcherState next(Dispatcher locRunner) {
+//    DispatcherState newState = new WaitState(this.dispatcher);
+//    return newState;
+//  }
   @Override
-  DispatcherState next(Dispatcher locRunner) {
-    DispatcherState newState = new WaitState(this.dispatcher);
-    return newState;
-  }
-
-  @Override
-  void execute() {
+  DispatcherState execute(Dispatcher locRunner) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     this.dispatcher.changeLocomotiveVelocity(locomotive, 0);
 
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     BlockBean departureBlock = dispatcher.getDepartureBlock();
- 
+
     Logger.trace("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + ". Stopping....");
 
     destinationBlock.setLocomotive(locomotive);
@@ -71,5 +70,15 @@ class InBlockState extends DispatcherState {
     dispatcher.setRouteBean(null);
     //Wait a short while...
     pause(100);
+
+    DispatcherState newState;
+    if (this.dispatcher.isLocomotiveAutomodeOn()) {
+      newState = new WaitState(this.dispatcher);
+    } else {
+      newState = new IdleState(this.dispatcher);
+    }
+
+    return newState;
   }
+
 }

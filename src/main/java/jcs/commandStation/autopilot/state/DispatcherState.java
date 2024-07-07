@@ -30,9 +30,9 @@ abstract class DispatcherState {
     this.dispatcher = trainDispatcher;
   }
 
-  abstract DispatcherState next(Dispatcher dispatcher);
+  //abstract DispatcherState next(Dispatcher dispatcher);
 
-  abstract void execute();
+  abstract DispatcherState execute(Dispatcher dispatcher);
 
   @Override
   public String toString() {

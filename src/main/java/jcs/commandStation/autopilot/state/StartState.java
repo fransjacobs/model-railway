@@ -35,23 +35,23 @@ class StartState extends DispatcherState implements SensorEventListener {
     super(dispatcher);
   }
 
-  @Override
-  DispatcherState next(Dispatcher locRunner) {
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new EnterBlockState(dispatcher);
-      //Remove handler as the state will now change
-      JCS.getJcsCommandStation().removeSensorEventListener(this);
-      //For the remaining states ignore events from the enter sensor
-      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
+//  @Override
+//  DispatcherState next(Dispatcher locRunner) {
+//    if (canAdvanceToNextState) {
+//      DispatcherState newState = new EnterBlockState(dispatcher);
+//      //Remove handler as the state will now change
+//      JCS.getJcsCommandStation().removeSensorEventListener(this);
+//      //For the remaining states ignore events from the enter sensor
+//      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
+//
+//      return newState;
+//    } else {
+//      return this;
+//    }
+//  }
 
-      return newState;
-    } else {
-      return this;
-    }
-  }
-
   @Override
-  public void execute() {
+  DispatcherState execute(Dispatcher locRunner) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     if (!locomotiveStarted) {
       //Which sensors do we need to watch?
@@ -90,11 +90,23 @@ class StartState extends DispatcherState implements SensorEventListener {
       //dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
       Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
       dispatcher.changeLocomotiveVelocity(locomotive, 750);
-      
 
       locomotiveStarted = true;
       Logger.trace("Waiting for the enter event from SensorId: " + enterSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
+
+    if (canAdvanceToNextState) {
+      DispatcherState newState = new EnterBlockState(dispatcher);
+      //Remove handler as the state will now change
+      JCS.getJcsCommandStation().removeSensorEventListener(this);
+      //For the remaining states ignore events from the enter sensor
+      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
+
+      return newState;
+    } else {
+      return this;
+    }
+
   }
 
   @Override

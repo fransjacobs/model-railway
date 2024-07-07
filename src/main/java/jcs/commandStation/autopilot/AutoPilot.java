@@ -188,6 +188,35 @@ public class AutoPilot extends Thread {
 
   public synchronized void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
+    String key = locomotiveBean.getName();
+    if (start) {
+      Dispatcher dispatcher;
+      if (dispatchers.containsKey(key)) {
+        dispatcher = dispatchers.get(key);
+        Logger.trace("Dispatcher " + key + " exists");
+      } else {
+        dispatcher = new Dispatcher(locomotiveBean, this);
+        dispatchers.put(key, dispatcher);
+      }
+
+      if (!dispatcher.isRunning()) {
+        Logger.trace("Starting dispatcher statemachine thread" + key);
+        dispatcher.startStateMachine();
+      }
+
+      dispatcher.stopLocomotiveAutomode();
+      Logger.trace("Started dispatcher" + key + " automode...");
+    } else {
+      Dispatcher dispatcher = dispatchers.get(key);
+      if (dispatcher != null && dispatcher.isRunning()) {
+        dispatcher.stopLocomotiveAutomode();
+        Logger.trace("Stopped dispatcher" + key + " automode...");
+      }
+    }
+  }
+
+  public synchronized void startStopLocomotiveOld(LocomotiveBean locomotiveBean, boolean start) {
+    Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
     if (start) {
       Dispatcher dispatcher;
       String key = locomotiveBean.getName();
