@@ -110,7 +110,7 @@ public class DispatcherThreadTest {
     assertEquals("StartState", instance.getDispatcherStateName());
 
     SensorBean s11 = db.getSensor("0-0011");
-    toggleSensor(s11);
+    toggleSensorBackground(s11);
     pause(200);
 
     instance.handleStates(false);
@@ -121,7 +121,7 @@ public class DispatcherThreadTest {
     assertEquals("EnterBlockState", instance.getDispatcherStateName());
 
     SensorBean s10 = db.getSensor("0-0010");
-    toggleSensor(s10);
+    toggleSensorBackground(s10);
     pause(100);
 
     instance.handleStates(false);
@@ -132,97 +132,161 @@ public class DispatcherThreadTest {
     assertEquals("WaitState", instance.getDispatcherStateName());
   }
 
-  //@Test
-  public void testStartStateMachine() {
-    System.out.println("startStateMachine");
+  @Test
+  public void testStartStopThreadRunning() {
+    System.out.println("startStopThreadRunning");
     DispatcherThread instance = dispatcher.getDispatcherThread();
 
-    assertTrue(instance.isThreadRunning());
-    assertFalse(instance.isLocomotiveAutomodeOn());
-    assertTrue(instance.isAlive());
+    assertFalse(instance.isThreadRunning());
+    assertFalse(instance.isAlive());
 
     assertEquals("DT->NS DHG 6505", instance.getName());
     assertEquals("IdleState", instance.getDispatcherStateName());
 
-    //instance.startStateMachine();
-    Logger.debug("Statemachine Started");
+    instance.start();
+    pause(10);
+
+    Logger.debug("Dispatcher Thread Started");
     assertTrue(instance.isThreadRunning());
-    assertTrue(instance.isLocomotiveAutomodeOn());
     assertTrue(instance.isAlive());
-  }
-
-  //@Test
-  public void testStopStateMachine() {
-    System.out.println("stopStateMachine");
-    DispatcherThread instance = dispatcher.getDispatcherThread();
-
-    assertTrue(instance.isThreadRunning());
-    assertFalse(instance.isLocomotiveAutomodeOn());
-    assertTrue(instance.isAlive());
-
-    assertEquals("DT->NS DHG 6505", instance.getName());
-    assertEquals("IdleState", instance.getDispatcherStateName());
-
-    //instance.startStateMachine();
-    Logger.debug("Statemachine Started");
-    assertTrue(instance.isThreadRunning());
-    assertTrue(instance.isLocomotiveAutomodeOn());
-    assertTrue(instance.isAlive());
-    assertEquals("IdleState", instance.getDispatcherStateName());
-
-    //instance.stopStateMachine();
-    Logger.debug("Statemachine Stopped");
     assertFalse(instance.isLocomotiveAutomodeOn());
 
+    instance.stopRunningThread();
+    Logger.debug("Dispatcher Thread Stopped");
     assertFalse(instance.isThreadRunning());
     assertTrue(instance.isAlive());
   }
 
-  //@Test
-  public void testStopLocomotiveAutomode() {
-    System.out.println("stopLocomotiveAutomode");
+  @Test
+  public void testStartStopLocomotiveAutomode() {
+    System.out.println("startStopLocomotiveAutomode");
     DispatcherThread instance = dispatcher.getDispatcherThread();
 
-    assertTrue(instance.isThreadRunning());
-    assertFalse(instance.isLocomotiveAutomodeOn());
-    assertTrue(instance.isAlive());
+    //force a route
+    BlockBean block3 = db.getBlockByTileId("bk-3");
+    block3.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+    db.persist(block3);
 
-    assertEquals("DT->NS DHG 6505", instance.getName());
-    assertEquals("IdleState", instance.getDispatcherStateName());
-
-    //instance.startStateMachine();
-    Logger.debug("Statemachine Started");
-    assertTrue(instance.isThreadRunning());
-    assertTrue(instance.isLocomotiveAutomodeOn());
-    assertTrue(instance.isAlive());
-    assertEquals("IdleState", instance.getDispatcherStateName());
-
-    pause(250);
-    assertEquals("StartState", instance.getDispatcherStateName());
-
-    //instance.stopLocomotiveAutomode();
-    Logger.debug("Requested to stop Automode");
-    assertFalse(instance.isLocomotiveAutomodeOn());
-    assertTrue(instance.isThreadRunning());
-
-    assertEquals("StartState", instance.getDispatcherStateName());
-    pause(250);
-    assertEquals("StartState", instance.getDispatcherStateName());
-    //State still stays in startstate, so need to iterate through the states
-    //this is part of other test
-    //for now stop all
-    //instance.stopStateMachine();
-
-    assertFalse(instance.isLocomotiveAutomodeOn());
     assertFalse(instance.isThreadRunning());
+    assertFalse(instance.isLocomotiveAutomodeOn());
+    assertEquals("IdleState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    instance.setLocomotiveAutomode(true);
+    assertTrue(instance.isLocomotiveAutomodeOn());
+    instance.handleStates(false);
+    assertEquals("PrepareRouteState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("StartState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    SensorBean s13 = db.getSensor("0-0013");
+    toggleSensorDirect(s13);
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    SensorBean s12 = db.getSensor("0-0012");
+    toggleSensorDirect(s12);
+    instance.handleStates(false);
+    assertEquals("InBlockState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("WaitState", instance.getDispatcherStateName());
+
+    instance.setLocomotiveAutomode(false);
+    assertFalse(instance.isLocomotiveAutomodeOn());
+
+    instance.handleStates(false);
+    assertEquals("IdleState", instance.getDispatcherStateName());
   }
 
-  private void toggleSensor(SensorBean sensorBean) {
+  @Test
+  public void testStartStopLocomotiveAutomode2() {
+    System.out.println("startStopLocomotiveAutomode2");
+    DispatcherThread instance = dispatcher.getDispatcherThread();
+
+    //force  routes
+    BlockBean block2 = db.getBlockByTileId("bk-2");
+    block2.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+    db.persist(block2);
+    
+    BlockBean block3 = db.getBlockByTileId("bk-3");
+    block3.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+    db.persist(block3);
+    
+    assertFalse(instance.isThreadRunning());
+    assertFalse(instance.isLocomotiveAutomodeOn());
+    assertEquals("IdleState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    instance.setLocomotiveAutomode(true);
+    assertTrue(instance.isLocomotiveAutomodeOn());
+    instance.handleStates(false);
+    assertEquals("PrepareRouteState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("StartState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    SensorBean s13 = db.getSensor("0-0013");
+    toggleSensorDirect(s13);
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    SensorBean s12 = db.getSensor("0-0012");
+    toggleSensorDirect(s12);
+    instance.handleStates(false);
+    assertEquals("InBlockState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("WaitState", instance.getDispatcherStateName());
+
+    instance.handleStates(false);
+    
+    assertEquals("PrepareRouteState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("StartState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("StartState", instance.getDispatcherStateName());
+    
+    SensorBean s2 = db.getSensor("0-0002");
+    toggleSensorDirect(s2);
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    SensorBean s1 = db.getSensor("0-0001");
+    toggleSensorDirect(s1);
+    instance.handleStates(false);
+    assertEquals("InBlockState", instance.getDispatcherStateName());
+    instance.handleStates(false);
+    assertEquals("WaitState", instance.getDispatcherStateName());
+
+    instance.setLocomotiveAutomode(false);
+    assertFalse(instance.isLocomotiveAutomodeOn());
+
+    instance.handleStates(false);
+    assertEquals("IdleState", instance.getDispatcherStateName());
+  }
+
+  private void toggleSensorDirect(SensorBean sensorBean) {
+    sensorBean.toggle();
+    sensorBean.setActive((sensorBean.getStatus() == 1));
+    SensorEvent sensorEvent = new SensorEvent(sensorBean);
+    fireFeedbackEvent(sensorEvent);
+  }
+
+  private void toggleSensorBackground(SensorBean sensorBean) {
     sensorBean.toggle();
     sensorBean.setActive((sensorBean.getStatus() == 1));
     SensorEvent sensorEvent = new SensorEvent(sensorBean);
     this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
-    //fireFeedbackEvent(sensorEvent);
   }
 
   private void fireFeedbackEvent(SensorEvent sensorEvent) {

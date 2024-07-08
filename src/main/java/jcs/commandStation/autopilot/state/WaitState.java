@@ -31,39 +31,41 @@ class WaitState extends DispatcherState {
     defaultWaitTime = Integer.getInteger("default.waittime", 5);
   }
 
-//  @Override
-//  DispatcherState next(Dispatcher locRunner) {
-//    if (canAdvanceToNextState) {
-//      DispatcherState newState = new PrepareRouteState(dispatcher);
-//      return newState;
-//    } else {
-//      return this;
-//    }
-//  }
-
   @Override
   DispatcherState execute(Dispatcher locRunner) {
-    //Stub 
+    //Stub
+    //TODO Obtain the wait time from either the block in the database of from the locomotive
     long waitTime = 1 * defaultWaitTime;
 
+    //when the thread is running and the loc is in automode wait until the wait time has past.
+    //then switch state.
+    //incase the auto mode is disabled switch to Idle mode
     Logger.debug("Waiting for " + waitTime + " s.");
 
     for (; waitTime >= 0; waitTime--) {
-      if (this.dispatcher.isRunning()) {
+      if (this.dispatcher.isLocomotiveAutomodeOn()) {
         String s = this.dispatcher.getDispatcherState() + " (" + waitTime + ")";
         this.dispatcher.fireStateListeners(s);
-        pause(1000);
+
+        //For manual testing
+        if (this.dispatcher.isRunning()) {
+          pause(1000);
+        }
+      } else {
+        //Locomotive automode is disabled break the loop
+        break;
       }
     }
 
-    canAdvanceToNextState = true; //running;
-
-    if (canAdvanceToNextState) {
-      DispatcherState newState = new PrepareRouteState(dispatcher);
-      return newState;
+    //canAdvanceToNextState = this.dispatcher.isRunning() && this.dispatcher.isLocomotiveAutomodeOn(); 
+    DispatcherState newState;
+    if (this.dispatcher.isLocomotiveAutomodeOn()) {
+      newState = new PrepareRouteState(dispatcher);
     } else {
-      return this;
+      newState = new IdleState(dispatcher);
     }
+    return newState;
+
   }
 
 }
