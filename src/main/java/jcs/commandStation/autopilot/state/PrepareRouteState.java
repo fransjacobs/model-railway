@@ -41,18 +41,6 @@ class PrepareRouteState extends DispatcherState {
     super(dispatcher);
   }
 
-//  @Override
-//  DispatcherState next(Dispatcher dispatcher) {
-//    if (canAdvanceToNextState) {
-//      DispatcherState newState = new StartState(dispatcher);
-//      return newState;
-//    } else {
-//      //Go back to waiting and try again
-//      DispatcherState newWaitState = new WaitState(dispatcher);
-//      return newWaitState;
-//    }
-//  }
-
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
     //ReserveRouteSemaphore semaphore = new ReserveRouteSemaphore();
@@ -188,7 +176,7 @@ class PrepareRouteState extends DispatcherState {
     Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDirection());
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
-    departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+    departureBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
 
     departureBlock.setDepartureSuffix(route.getFromSuffix());
 

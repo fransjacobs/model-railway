@@ -21,6 +21,7 @@ import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -35,21 +36,6 @@ class StartState extends DispatcherState implements SensorEventListener {
     super(dispatcher);
   }
 
-//  @Override
-//  DispatcherState next(Dispatcher locRunner) {
-//    if (canAdvanceToNextState) {
-//      DispatcherState newState = new EnterBlockState(dispatcher);
-//      //Remove handler as the state will now change
-//      JCS.getJcsCommandStation().removeSensorEventListener(this);
-//      //For the remaining states ignore events from the enter sensor
-//      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
-//
-//      return newState;
-//    } else {
-//      return this;
-//    }
-//  }
-
   @Override
   DispatcherState execute(Dispatcher locRunner) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
@@ -57,6 +43,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       //Which sensors do we need to watch?
       RouteBean route = dispatcher.getRouteBean();
       BlockBean departureBlock = dispatcher.getDepartureBlock();
+      BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
       //From which side on the block is the train expected to arrive?
       String arrivalSuffix = route.getToSuffix();
@@ -71,8 +58,6 @@ class StartState extends DispatcherState implements SensorEventListener {
       dispatcher.registerIgnoreEventHandler(exitMinId);
       dispatcher.registerIgnoreEventHandler(exitPlusId);
 
-      BlockBean destinationBlock = dispatcher.getDestinationBlock();
-
       if ("+".equals(arrivalSuffix)) {
         enterSensorId = destinationBlock.getPlusSensorId();
       } else {
@@ -86,8 +71,16 @@ class StartState extends DispatcherState implements SensorEventListener {
 
       Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
 
-      //TODO rely on the acceleration delay of the loco decoder or do something our selves..
-      //dispatcher.changeLocomotiveDirection(locomotive, locomotive.getDirection());
+      departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+      PersistenceFactory.getService().persist(departureBlock);
+
+      destinationBlock.setBlockState(BlockBean.BlockState.LOCKED);
+      PersistenceFactory.getService().persist(destinationBlock);
+
+      dispatcher.showBlockState(departureBlock);
+      dispatcher.showBlockState(destinationBlock);
+
+      //TODO: for now rely on the acceleration delay of the loco decoder. Future make a smooth accelerator our selves..
       Logger.trace("Starting " + locomotive.getName() + " Direction " + locomotive.getDirection());
       dispatcher.changeLocomotiveVelocity(locomotive, 750);
 

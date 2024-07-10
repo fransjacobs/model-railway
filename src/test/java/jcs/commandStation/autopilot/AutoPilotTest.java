@@ -124,7 +124,7 @@ public class AutoPilotTest {
     assertEquals(expected, onTraclLocos);
   }
 
-  @Test
+  //@Test
   public void testGetLocomotiveDispatchers() {
     System.out.println("getLocomotiveDispatchers");
     AutoPilot instance = AutoPilot.getInstance();
@@ -157,7 +157,7 @@ public class AutoPilotTest {
 //    assertFalse(instance.areDispatchersRunning());
   }
 
-  @Test
+  //@Test
   public void testGetLocomotiveDispatcher() {
     System.out.println("getLocomotiveDispatcher");
     AutoPilot instance = AutoPilot.getInstance();

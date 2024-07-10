@@ -387,14 +387,18 @@ public class H2PersistenceService implements PersistenceService {
   public Image readImage(String imageName, boolean function) {
     Image image = null;
     if (imageName != null) {
-      String path;
+      String path = null;
       if (imageName.contains(File.separator)) {
         //Contains path seperators so assume it is a manual selected image
         path = imageName;
       } else {
         //no path seperators so assume it is a synchonized command station icon
-        String shortName = getDefaultCommandStation().getShortName().toLowerCase();
-        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
+        if (getDefaultCommandStation() != null) {
+          String shortName = getDefaultCommandStation().getShortName().toLowerCase();
+          path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
+        } else {
+          path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
+        }
       }
 
       if (function) {

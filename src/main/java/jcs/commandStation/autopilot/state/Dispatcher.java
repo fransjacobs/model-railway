@@ -48,8 +48,8 @@ public class Dispatcher {
   final AutoPilot autoPilot;
   private RouteBean routeBean;
 
-  private BlockBean departureBlock;
-  private BlockBean destinationBlock;
+  private String departureBlockId;
+  private String destinationBlockId;
 
   private final List<StateEventListener> stateEventListeners;
 
@@ -91,18 +91,17 @@ public class Dispatcher {
   void setRouteBean(RouteBean routeBean) {
     this.routeBean = routeBean;
     if (routeBean == null) {
-      this.departureBlock = null;
-      this.destinationBlock = null;
+      this.departureBlockId = null;
+      this.destinationBlockId = null;
     } else {
-      this.departureBlock = getBlock(routeBean.getFromTileId());
-      this.destinationBlock = getBlock(routeBean.getToTileId());
+      this.departureBlockId = routeBean.getFromTileId();
+      this.destinationBlockId = routeBean.getToTileId();
     }
   }
-  
+
   boolean isLocomotiveAutomodeOn() {
     return this.thread.isLocomotiveAutomodeOn();
   }
-  
 
   public final void startStateMachine() {
     //thread.runStateMachine(true);
@@ -154,8 +153,8 @@ public class Dispatcher {
     if (this.isRunning()) {
       Logger.trace("Resetting dispatcher " + getName() + "...");
 
-      BlockBean fromBlock = departureBlock;
-      BlockBean toBlock = destinationBlock;
+      BlockBean fromBlock = null; //departureBlock;
+      BlockBean toBlock = null; //destinationBlock;
 
       //Stop the thread
       forceStopRunning();
@@ -212,11 +211,11 @@ public class Dispatcher {
       fromBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
       PersistenceFactory.getService().persist(fromBlock);
 
-      this.departureBlock = fromBlock;
+      // this.departureBlock = fromBlock;
       showBlockState(fromBlock);
       Logger.trace("Reset toBlock " + fromBlock.getId());
 
-      this.destinationBlock = null;
+      // this.destinationBlock = null;
       this.routeBean = null;
 
       //Initialize a new worker thread
@@ -241,15 +240,29 @@ public class Dispatcher {
     return block;
   }
 
+  //Make sure the last copy/ status of the block is represented
   BlockBean getDepartureBlock() {
-    if (departureBlock == null) {
-      if (routeBean != null) {
-        departureBlock = getBlock(routeBean.getFromTileId());
-      } else {
-        departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
-      }
+    if (departureBlockId != null) {
+      return PersistenceFactory.getService().getBlockByTileId(departureBlockId);
+    } else if (routeBean != null) {
+      departureBlockId = routeBean.getFromTileId();
+      return PersistenceFactory.getService().getBlockByTileId(departureBlockId);
+    } else {
+      BlockBean departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
+      this.departureBlockId = departureBlock.getTileId();
+      return departureBlock;
     }
-    return departureBlock;
+  }
+
+  BlockBean getDestinationBlock() {
+    if (destinationBlockId != null) {
+      return PersistenceFactory.getService().getBlockByTileId(destinationBlockId);
+    } else if (routeBean != null) {
+      destinationBlockId = routeBean.getToTileId();
+      return PersistenceFactory.getService().getBlockByTileId(destinationBlockId);
+    } else {
+      return null;
+    }
   }
 
   String swapSuffix(String suffix) {
@@ -276,15 +289,6 @@ public class Dispatcher {
     return destinationArrivalSuffix;
   }
 
-  BlockBean getDestinationBlock() {
-    if (routeBean != null) {
-      String destinationTileId = routeBean.getToTileId();
-      BlockBean blockBean = PersistenceFactory.getService().getBlockByTileId(destinationTileId);
-      destinationBlock = blockBean;
-    }
-    return destinationBlock;
-  }
-
   public String getDispatcherState() {
     if (thread != null) {
       return thread.getState().getClass().getSimpleName();
@@ -304,7 +308,8 @@ public class Dispatcher {
   }
 
   synchronized void clearDepartureIgnoreEventHandlers() {
-    if (departureBlock != null) {
+    if (departureBlockId != null) {
+      BlockBean departureBlock = this.getDepartureBlock();
       String minSensorId = departureBlock.getMinSensorId();
       autoPilot.removeHandler(minSensorId);
       String plusSensorId = departureBlock.getPlusSensorId();

@@ -31,11 +31,6 @@ class InBlockState extends DispatcherState {
     super(dispatcher);
   }
 
-//  @Override
-//  DispatcherState next(Dispatcher locRunner) {
-//    DispatcherState newState = new WaitState(this.dispatcher);
-//    return newState;
-//  }
   @Override
   DispatcherState execute(Dispatcher locRunner) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
@@ -68,6 +63,7 @@ class InBlockState extends DispatcherState {
 
     Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
+
     //Wait a short while...
     pause(100);
 

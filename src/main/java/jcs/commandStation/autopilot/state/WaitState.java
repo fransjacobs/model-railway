@@ -47,9 +47,11 @@ class WaitState extends DispatcherState {
         String s = this.dispatcher.getDispatcherState() + " (" + waitTime + ")";
         this.dispatcher.fireStateListeners(s);
 
-        //For manual testing
+        //For manual testing the thread is not running, step mode
         if (this.dispatcher.isRunning()) {
           pause(1000);
+        } else {
+          Logger.trace("Test mode: "+s);
         }
       } else {
         //Locomotive automode is disabled break the loop
