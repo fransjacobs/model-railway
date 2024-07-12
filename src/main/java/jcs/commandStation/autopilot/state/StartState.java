@@ -30,14 +30,11 @@ import org.tinylog.Logger;
 class StartState extends DispatcherState implements SensorEventListener {
 
   private boolean locomotiveStarted = false;
+  private boolean canAdvanceToNextState = false;
   private String enterSensorId;
 
-  StartState(Dispatcher dispatcher) {
-    super(dispatcher);
-  }
-
   @Override
-  DispatcherState execute(Dispatcher locRunner) {
+  DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     if (!locomotiveStarted) {
       //Which sensors do we need to watch?
@@ -89,11 +86,11 @@ class StartState extends DispatcherState implements SensorEventListener {
     }
 
     if (canAdvanceToNextState) {
-      DispatcherState newState = new EnterBlockState(dispatcher);
+      DispatcherState newState = new EnterBlockState();
       //Remove handler as the state will now change
       JCS.getJcsCommandStation().removeSensorEventListener(this);
       //For the remaining states ignore events from the enter sensor
-      this.dispatcher.registerIgnoreEventHandler(enterSensorId);
+      dispatcher.registerIgnoreEventHandler(enterSensorId);
 
       return newState;
     } else {

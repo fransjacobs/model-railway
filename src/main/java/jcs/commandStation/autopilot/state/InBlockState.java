@@ -27,14 +27,10 @@ import org.tinylog.Logger;
  */
 class InBlockState extends DispatcherState {
 
-  InBlockState(Dispatcher dispatcher) {
-    super(dispatcher);
-  }
-
   @Override
-  DispatcherState execute(Dispatcher locRunner) {
+  DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    this.dispatcher.changeLocomotiveVelocity(locomotive, 0);
+    dispatcher.changeLocomotiveVelocity(locomotive, 0);
 
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     BlockBean departureBlock = dispatcher.getDepartureBlock();
@@ -68,10 +64,10 @@ class InBlockState extends DispatcherState {
     pause(100);
 
     DispatcherState newState;
-    if (this.dispatcher.isLocomotiveAutomodeOn()) {
-      newState = new WaitState(this.dispatcher);
+    if (dispatcher.isLocomotiveAutomodeOn()) {
+      newState = new WaitState();
     } else {
-      newState = new IdleState(this.dispatcher);
+      newState = new IdleState();
     }
 
     return newState;

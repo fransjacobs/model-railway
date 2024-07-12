@@ -24,27 +24,12 @@ import org.tinylog.Logger;
  */
 class IdleState extends DispatcherState {
 
-  IdleState(Dispatcher dispatcher) {
-    super(dispatcher);
-  }
-
-//  @Override
-//  DispatcherState next(Dispatcher dispatcher) {
-//    //Next state is only possible when this locomotive is on the track and in a block
-//    if (canAdvanceToNextState) {
-//      DispatcherState newState = new PrepareRouteState(dispatcher);
-//      return newState;
-//    } else {
-//      return this;
-//    }
-//  }
-
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
-    BlockBean block = this.dispatcher.getDepartureBlock();
+    BlockBean block = dispatcher.getDepartureBlock();
 
-    canAdvanceToNextState = block != null && this.dispatcher.isLocomotiveAutomodeOn();
+    boolean canAdvanceToNextState = block != null && dispatcher.isLocomotiveAutomodeOn();
 
     if (block != null) {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in block " + block.getDescription() + " [" + block.getId() + "] dir: " + locomotive.getDirection().getDirection() + " Can advance: " + canAdvanceToNextState);
@@ -52,7 +37,7 @@ class IdleState extends DispatcherState {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block. Can advance: " + canAdvanceToNextState);
     }
     if (canAdvanceToNextState) {
-      DispatcherState newState = new PrepareRouteState(dispatcher);
+      DispatcherState newState = new PrepareRouteState();
       return newState;
     } else {
       return this;

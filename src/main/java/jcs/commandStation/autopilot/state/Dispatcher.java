@@ -61,7 +61,6 @@ public class Dispatcher {
 
     this.stateEventListeners = new LinkedList<>();
     thread = new DispatcherThread(this);
-    //startDispatcherThread();
   }
 
   void startDispatcherThread() {
@@ -150,80 +149,8 @@ public class Dispatcher {
   }
 
   public void reset() {
-    if (this.isRunning()) {
-      Logger.trace("Resetting dispatcher " + getName() + "...");
-
-      BlockBean fromBlock = null; //departureBlock;
-      BlockBean toBlock = null; //destinationBlock;
-
-      //Stop the thread
-      forceStopRunning();
-
-      if (fromBlock == null) {
-        Logger.trace("No From block where " + this.locomotiveBean.getName() + " currently is?");
-        return;
-      }
-
-      //Wait until the thread is really stopped
-      //TODO does this need a timeout?
-//      boolean waiting = thread.isRunning();
-//      Logger.trace("Thread " + thread.getName() + " Running: " + waiting);
-//      while (waiting) {
-      try {
-//          //synchronized (this) {
-//            //wait(25L);
-        Thread.sleep(100L);
-//            waiting = thread.isRunning();
-//            Logger.trace("Loop Thread "+thread.getName()+" Running: "+waiting);
-//          //}
-      } catch (InterruptedException ex) {
-        Logger.trace(ex.getMessage());
-      }
-//      }
-      boolean waiting = thread.isThreadRunning();
-      Logger.trace("Thread " + thread.getName() + " Running: " + waiting);
-
-//Thread is stopped
-      Logger.trace("Dispatcher Thread for " + getName() + " has stopped, reset block statusses...");
-
-      clearDepartureIgnoreEventHandlers();
-
-      Logger.trace("Listeners cleared for " + getName() + "...");
-
-      if (routeBean != null) {
-        routeBean.setLocked(false);
-        PersistenceFactory.getService().persist(routeBean);
-        resetRoute(routeBean);
-        Logger.trace("Unlocked route " + routeBean.getId());
-      }
-
-      if (toBlock != null) {
-        toBlock.setLocomotive(null);
-        toBlock.setBlockState(BlockBean.BlockState.FREE);
-        toBlock.setArrivalSuffix(null);
-
-        PersistenceFactory.getService().persist(toBlock);
-        showBlockState(toBlock);
-        Logger.trace("Reset toBlock " + toBlock.getId());
-      }
-
-      fromBlock.setLocomotive(this.locomotiveBean);
-      fromBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
-      PersistenceFactory.getService().persist(fromBlock);
-
-      // this.departureBlock = fromBlock;
-      showBlockState(fromBlock);
-      Logger.trace("Reset toBlock " + fromBlock.getId());
-
-      // this.destinationBlock = null;
-      this.routeBean = null;
-
-      //Initialize a new worker thread
-      thread = new DispatcherThread(this);
-      Logger.trace("Created new Thread for " + getName() + "...");
-    } else {
-      Logger.trace("Dispatcher " + getName() + " is not running...");
-    }
+    Logger.trace("Resetting dispatcher " + getName() + " StateMachine...");
+    this.thread.reset();
   }
 
   ///????

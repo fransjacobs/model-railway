@@ -44,13 +44,9 @@ public class DispatcherThreadTest {
   private LocomotiveBean dhg;
   private Dispatcher dispatcher;
 
-  private final ExecutorService executor;
-
   public DispatcherThreadTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
     testHelper = PersistenceTestHelper.getInstance();
-
-    this.executor = Executors.newSingleThreadExecutor();
 
     PersistenceFactory.getService();
     autoPilot = AutoPilot.getInstance();
@@ -87,67 +83,10 @@ public class DispatcherThreadTest {
   public void tearDown() {
   }
 
-  //@Test
-  public void testStateMachineHappyFlow() {
-    System.out.println("stateMachineHappyFlow");
-    DispatcherThread instance = dispatcher.getDispatcherThread();
-    //force a route
-    BlockBean block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
-    block4.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-    PersistenceFactory.getService().persist(block4);
-
-    assertFalse(instance.isThreadRunning());
-    assertFalse(instance.isLocomotiveAutomodeOn());
-    assertFalse(instance.isAlive());
-
-    assertEquals("IdleState", instance.getDispatcherStateName());
-
-    instance.handleStates(false);
-
-    assertEquals("IdleState", instance.getDispatcherStateName());
-
-    instance.setLocomotiveAutomode(true);
-
-    assertTrue(instance.isLocomotiveAutomodeOn());
-
-    instance.handleStates(false);
-
-    assertEquals("PrepareRouteState", instance.getDispatcherStateName());
-
-    instance.handleStates(false);
-
-    assertEquals("StartState", instance.getDispatcherStateName());
-
-    instance.handleStates(false);
-
-    assertEquals("StartState", instance.getDispatcherStateName());
-
-    SensorBean s11 = PersistenceFactory.getService().getSensor("0-0011");
-    toggleSensorBackground(s11);
-    pause(200);
-
-    instance.handleStates(false);
-
-    assertEquals("EnterBlockState", instance.getDispatcherStateName());
-
-    instance.handleStates(false);
-    assertEquals("EnterBlockState", instance.getDispatcherStateName());
-
-    SensorBean s10 = PersistenceFactory.getService().getSensor("0-0010");
-    toggleSensorBackground(s10);
-    pause(100);
-
-    instance.handleStates(false);
-
-    assertEquals("InBlockState", instance.getDispatcherStateName());
-
-    instance.handleStates(false);
-    assertEquals("WaitState", instance.getDispatcherStateName());
-  }
-
-  //@Test
+  @Test
   public void testStartStopThreadRunning() {
     System.out.println("startStopThreadRunning");
+    setupbk1bk4();
     DispatcherThread instance = dispatcher.getDispatcherThread();
 
     assertFalse(instance.isThreadRunning());
@@ -170,15 +109,11 @@ public class DispatcherThreadTest {
     assertTrue(instance.isAlive());
   }
 
-  //@Test
+  @Test
   public void testStartStopLocomotiveAutomode() {
     System.out.println("startStopLocomotiveAutomode");
+    setupbk1bk4();
     DispatcherThread instance = dispatcher.getDispatcherThread();
-
-    //force a route
-    BlockBean block3 = PersistenceFactory.getService().getBlockByTileId("bk-3");
-    block3.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-    PersistenceFactory.getService().persist(block3);
 
     assertFalse(instance.isThreadRunning());
     assertFalse(instance.isLocomotiveAutomodeOn());
@@ -414,8 +349,7 @@ public class DispatcherThreadTest {
     //Destination block state
     block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
     assertEquals(BlockBean.BlockState.LOCKED, block1.getBlockState());
-    
-    
+
     assertEquals(750, dispatcher.getLocomotiveBean().getVelocity());
     assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
 
@@ -429,33 +363,359 @@ public class DispatcherThreadTest {
     //Destination block state
     block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
     assertEquals(BlockBean.BlockState.LOCKED, block1.getBlockState());
-    
+
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
 
     //Execute the StartState
     instance.handleStates(false);
     assertEquals("StartState", instance.getDispatcherStateName());
-//    
-//    SensorBean s2 = db.getSensor("0-0002");
-//    toggleSensorDirect(s2);
-//    instance.handleStates(false);
-//    assertEquals("EnterBlockState", instance.getDispatcherStateName());
-//    
-//    instance.handleStates(false);
-//    assertEquals("EnterBlockState", instance.getDispatcherStateName());
-//
-//    SensorBean s1 = db.getSensor("0-0001");
-//    toggleSensorDirect(s1);
-//    instance.handleStates(false);
-//    assertEquals("InBlockState", instance.getDispatcherStateName());
-//    instance.handleStates(false);
-//    assertEquals("WaitState", instance.getDispatcherStateName());
-//
-//    instance.setLocomotiveAutomode(false);
-//    assertFalse(instance.isLocomotiveAutomodeOn());
-//
-//    instance.handleStates(false);
-//    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    //Now lets Toggle the enter sensor
+    SensorBean s2 = PersistenceFactory.getService().getSensor("0-0002");
+    toggleSensorDirect(s2);
+
+    //Execute the StartState
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    //Execute the EnterBlockState
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    //Execute the EnterState
+    instance.handleStates(false);
+
+    //Loc should be slowing down
+    assertEquals(100, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //Departure block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block4.getBlockState());
+
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.INBOUND, block1.getBlockState());
+    //Destination block state
+
+    assertEquals(NS_DHG_6505, block1.getLocomotiveId());
+
+    //Execute the EnterState
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    //Togggle the IN sensor
+    SensorBean s1 = PersistenceFactory.getService().getSensor("0-0001");
+    toggleSensorDirect(s1);
+
+    //Execute the EnterState
+    instance.handleStates(false);
+    assertEquals("InBlockState", instance.getDispatcherStateName());
+
+    //Execute the InBlockState
+    instance.handleStates(false);
+
+    //Loc should be stopped
+    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //Departure block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
+
+    //Destination block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+
+    assertEquals(NS_DHG_6505, block1.getLocomotiveId());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    assertNull(dispatcher.getRouteBean());
+    assertNull(dispatcher.getDestinationBlock());
+
+    assertEquals("bk-1", dispatcher.getDepartureBlock().getId());
+
+    //Result of the InBlockState execution should be Wait
+    assertEquals("WaitState", instance.getDispatcherStateName());//    instance.setLocomotiveAutomode(false);
+
+    //Automode OFF!
+    instance.setLocomotiveAutomode(false);
+    assertFalse(instance.isLocomotiveAutomodeOn());
+
+    //Execute the WaitState
+    instance.handleStates(false);
+    //Should switch to Idle
+    assertEquals("IdleState", instance.getDispatcherStateName());
+  }
+
+  @Test
+  public void testStartStopLocomotiveAutomodeToOnly() {
+    System.out.println("startStopLocomotiveAutomodeToOnly");
+    setupbk1bk4();
+
+    DispatcherThread instance = dispatcher.getDispatcherThread();
+
+    //Start from bk-1
+    BlockBean block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(NS_DHG_6505, block1.getLocomotiveId());
+
+    //Destination bk-4
+    BlockBean block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertNull(block4.getLocomotiveId());
+    assertNull(dispatcher.getRouteBean());
+
+    assertFalse(instance.isThreadRunning());
+    assertFalse(instance.isLocomotiveAutomodeOn());
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    //Execute IdleState
+    instance.handleStates(false);
+    //Automode is off should stay Idle
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    //Departure 
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
+
+    //Automode ON!
+    instance.setLocomotiveAutomode(true);
+    assertTrue(instance.isLocomotiveAutomodeOn());
+
+    //Execute IdleState
+    instance.handleStates(false);
+    //State should advance to PrepareRoute    
+    assertEquals("PrepareRouteState", instance.getDispatcherStateName());
+    //execute the PrepareRouteState
+    instance.handleStates(false);
+
+    //After executing the PrepareRouteState should be advanced to StartState
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    //Check the results of the PrepareRouteState execution
+    String routeId = dispatcher.getRouteBean().getId();
+    assertEquals("[bk-1-]->[bk-4+]", routeId);
+    assertTrue(dispatcher.getRouteBean().isLocked());
+
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
+
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
+
+    //After executing the status should be advanced to StartState
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    //Automode OFF!
+    instance.setLocomotiveAutomode(false);
+    assertFalse(instance.isLocomotiveAutomodeOn());
+
+    //Execute the StartState
+    instance.handleStates(false);
+
+    //Check the result of the StartState execution
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block1.getBlockState());
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
+
+    assertEquals(750, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //State should stay the same as the enter sensor of the destination is not het.
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block1.getBlockState());
+
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
+
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+
+    //Execute the StartState
+    instance.handleStates(false);
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    //Now lets Toggle the enter sensor
+    SensorBean s13 = PersistenceFactory.getService().getSensor("0-0013");
+    toggleSensorDirect(s13);
+
+    //Execute the StartState
+    instance.handleStates(false);
+    //State shoul be advanced to EnterBlock
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    //Execute the EnterState
+    instance.handleStates(false);
+
+    //Loc should be slowing down
+    assertEquals(100, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block1.getBlockState());
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.INBOUND, block4.getBlockState());
+
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+
+    //Execute the EnterState
+    instance.handleStates(false);
+    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+
+    //Toggle the IN sensor
+    SensorBean s12 = PersistenceFactory.getService().getSensor("0-0012");
+    toggleSensorDirect(s12);
+
+    //Execute the EnterState
+    instance.handleStates(false);
+    assertEquals("InBlockState", instance.getDispatcherStateName());
+
+    //Execute the InBlockState
+    instance.handleStates(false);
+
+    //Loc should be stopped
+    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.FREE, block1.getBlockState());
+
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block4.getBlockState());
+
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    assertNull(dispatcher.getRouteBean());
+    assertNull(dispatcher.getDestinationBlock());
+
+    assertEquals("bk-4", dispatcher.getDepartureBlock().getId());
+
+    //Should switch to Idle
+    assertEquals("IdleState", instance.getDispatcherStateName());
+  }
+
+  @Test
+  public void testReset() {
+    System.out.println("reset");
+    setupbk1bk4();
+
+    DispatcherThread instance = dispatcher.getDispatcherThread();
+
+    //Start from bk-1
+    BlockBean block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(NS_DHG_6505, block1.getLocomotiveId());
+
+    //Destination bk-4
+    BlockBean block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertNull(block4.getLocomotiveId());
+    assertNull(dispatcher.getRouteBean());
+
+    assertFalse(instance.isThreadRunning());
+    assertFalse(instance.isLocomotiveAutomodeOn());
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    //Execute IdleState
+    instance.handleStates(false);
+    //Automode is off should stay Idle
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    //Departure 
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
+
+    //Automode ON!
+    instance.setLocomotiveAutomode(true);
+    assertTrue(instance.isLocomotiveAutomodeOn());
+
+    //Execute IdleState
+    instance.handleStates(false);
+    //State should advance to PrepareRoute    
+    assertEquals("PrepareRouteState", instance.getDispatcherStateName());
+    //execute the PrepareRouteState
+    instance.handleStates(false);
+
+    //After executing the PrepareRouteState should be advanced to StartState
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    //Check the results of the PrepareRouteState execution
+    String routeId = dispatcher.getRouteBean().getId();
+    assertEquals("[bk-1-]->[bk-4+]", routeId);
+    assertTrue(dispatcher.getRouteBean().isLocked());
+
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
+
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
+
+    //After executing the status should be advanced to StartState
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    //Execute the StartState
+    instance.handleStates(false);
+
+    //Check the result of the StartState execution
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block1.getBlockState());
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
+
+    assertEquals(750, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //State should stay the same as the enter sensor of the destination is not het.
+    assertEquals("StartState", instance.getDispatcherStateName());
+
+    instance.resetStateMachine();
+
+    //State should be reset to Idle.
+    assertEquals("IdleState", instance.getDispatcherStateName());
+
+    //Departure block state
+    block1 = PersistenceFactory.getService().getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+
+    //Destination block state
+    block4 = PersistenceFactory.getService().getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
+
+    assertNull(block4.getLocomotiveId());
+
+    //Loc should be stopped
+    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
+
+    assertNull(dispatcher.getRouteBean());
+    assertNull(dispatcher.getDestinationBlock());
+
+    assertFalse(instance.isLocomotiveAutomodeOn());
+
   }
 
   private void toggleSensorDirect(SensorBean sensorBean) {
@@ -463,13 +723,6 @@ public class DispatcherThreadTest {
     sensorBean.setActive((sensorBean.getStatus() == 1));
     SensorEvent sensorEvent = new SensorEvent(sensorBean);
     fireFeedbackEvent(sensorEvent);
-  }
-
-  private void toggleSensorBackground(SensorBean sensorBean) {
-    sensorBean.toggle();
-    sensorBean.setActive((sensorBean.getStatus() == 1));
-    SensorEvent sensorEvent = new SensorEvent(sensorBean);
-    this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
   }
 
   private void fireFeedbackEvent(SensorEvent sensorEvent) {

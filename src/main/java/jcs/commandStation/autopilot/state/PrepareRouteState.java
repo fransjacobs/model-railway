@@ -36,10 +36,7 @@ import org.tinylog.Logger;
 class PrepareRouteState extends DispatcherState {
 
   private boolean swapLocomotiveDirection = false;
-
-  PrepareRouteState(Dispatcher dispatcher) {
-    super(dispatcher);
-  }
+  private boolean canAdvanceToNextState = false;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -50,8 +47,8 @@ class PrepareRouteState extends DispatcherState {
     if (AutoPilot.getInstance().tryAquireLock()) {
       try {
         Logger.trace("##### Locked ####");
-        if (searchRoute()) {
-          canAdvanceToNextState = reserveRoute();
+        if (searchRoute(dispatcher)) {
+          canAdvanceToNextState = reserveRoute(dispatcher);
         }
       } finally {
         //Make sure the lock is released
@@ -64,17 +61,17 @@ class PrepareRouteState extends DispatcherState {
     }
 
     if (canAdvanceToNextState) {
-      DispatcherState newState = new StartState(dispatcher);
+      DispatcherState newState = new StartState();
       return newState;
     } else {
       //Go back to waiting and try again
-      DispatcherState newWaitState = new WaitState(dispatcher);
+      DispatcherState newWaitState = new WaitState();
       return newWaitState;
     }
 
   }
 
-  boolean searchRoute() {
+  boolean searchRoute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
@@ -159,7 +156,7 @@ class PrepareRouteState extends DispatcherState {
     return !checkedRoutes.isEmpty();
   }
 
-  boolean reserveRoute() {
+  boolean reserveRoute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     RouteBean route = dispatcher.getRouteBean();
 
@@ -211,7 +208,7 @@ class PrepareRouteState extends DispatcherState {
       dispatcher.showRoute(route, Color.green);
       Logger.trace(route + " Locked");
 
-      if (this.swapLocomotiveDirection) {
+      if (swapLocomotiveDirection) {
         Direction newDir = locomotive.getDirection();
         Logger.trace("Changing Direction to " + newDir);
         dispatcher.changeLocomotiveDirection(locomotive, newDir);

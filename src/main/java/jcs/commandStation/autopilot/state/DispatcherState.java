@@ -23,14 +23,15 @@ import org.tinylog.Logger;
  */
 abstract class DispatcherState {
 
-  protected final Dispatcher dispatcher;
-  protected boolean canAdvanceToNextState;
+  //protected final Dispatcher dispatcher;
+  //protected boolean canAdvanceToNextState;
 
-  protected DispatcherState(Dispatcher trainDispatcher) {
-    this.dispatcher = trainDispatcher;
+  protected DispatcherState() {
   }
 
-  //abstract DispatcherState next(Dispatcher dispatcher);
+  //protected DispatcherState(Dispatcher trainDispatcher) {
+  //  this.dispatcher = trainDispatcher;
+  //}
 
   abstract DispatcherState execute(Dispatcher dispatcher);
 

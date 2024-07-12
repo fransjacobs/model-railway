@@ -16,6 +16,11 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
+import jcs.commandStation.events.SensorEventListener;
+import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
+import jcs.entities.RouteBean;
+import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 /**
@@ -42,8 +47,7 @@ class DispatcherThread extends Thread {
 
   private boolean running = false;
 
-  private boolean stateMachineRunning = false;
-
+  //private boolean stateMachineRunning = false;
   private boolean locomotiveAutomodeOn = false;
   private boolean resetRequested = false;
 
@@ -51,7 +55,7 @@ class DispatcherThread extends Thread {
 
   DispatcherThread(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
-    this.dispatcherState = new IdleState(dispatcher);
+    this.dispatcherState = new IdleState();
     setName("DT->" + dispatcher.getLocomotiveBean().getName());
     //this.running = true;
   }
@@ -71,34 +75,27 @@ class DispatcherThread extends Thread {
 
   //(Re)Start automode for the locomotive
   synchronized void setLocomotiveAutomode(boolean start) {
-//    if (!running) {
-//      start();
-//    }
     this.locomotiveAutomodeOn = start;
-    this.stateMachineRunning = start;
+    //this.stateMachineRunning = start;
     if (running) {
       notify();
     }
   }
 
-  //Stop automode for the locomotive
-//  synchronized void stopLocomotiveAutomode() {
-//    this.locomotiveAutomodeOn = false;
-//    notify();
-//  }
-  //Stop the dispatcher Thread
-//  synchronized void stopStateMachine() {
-//    this.running = false;
-//    this.stateMachineRunning = false;
-//    this.locomotiveAutomodeOn = false;
-//    notify();
-//  }
-//  synchronized void forceStop() {
-//    this.running = false;
-//    this.forceStop = true;
-//    Logger.trace("KILLING " + dispatcher.getName() + " State " + dispatcherState.getName());
-//    notify();
-//  }
+  //Reset the statemachine
+  synchronized void reset() {
+    //Switch of running
+    this.locomotiveAutomodeOn = false;
+    this.resetRequested = true;
+
+    Logger.trace("Reset requested...");
+    //Notify the running thread
+    if (running) {
+      notify();
+    }
+
+  }
+
   DispatcherState getDispatcherState() {
     return dispatcherState;
   }
@@ -111,7 +108,7 @@ class DispatcherThread extends Thread {
   void handleStates(boolean inLoop) {
     //Obtain current dispatcherState
     DispatcherState currentState = dispatcherState;
-    //Execute the action for the current dispatcherState      
+    //Execute the action for the current dispatcherState   
     dispatcherState = currentState.execute(dispatcher);
 
     if (!this.dispatcher.autoPilot.isAutoModeActive()) {
@@ -137,6 +134,52 @@ class DispatcherThread extends Thread {
     dispatcher.fireStateListeners(dispatcherState.getName());
   }
 
+  //Reset the statemachine
+  void resetStateMachine() {
+    this.locomotiveAutomodeOn = false;
+    LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+    dispatcher.changeLocomotiveVelocity(locomotive, 0);
+    Logger.trace("Stoppped " + locomotive.getName() + "...");
+
+    //Remove the sensor listeners
+    DispatcherState currentState = dispatcherState;
+    if (currentState instanceof SensorEventListener) {
+      Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
+      JCS.getJcsCommandStation().removeSensorEventListener((SensorEventListener) currentState);
+    }
+
+    dispatcher.clearDepartureIgnoreEventHandlers();
+
+    //Restore the Departure block state
+    BlockBean departureBlock = dispatcher.getDepartureBlock();
+    departureBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
+
+    //Clear the destination block
+    BlockBean destinationBlock = dispatcher.getDestinationBlock();
+    destinationBlock.setBlockState(BlockBean.BlockState.FREE);
+    destinationBlock.setLocomotive(null);
+    destinationBlock.setArrivalSuffix(null);
+    destinationBlock.setReverseArrival(false);
+
+    PersistenceFactory.getService().persist(departureBlock);
+    PersistenceFactory.getService().persist(destinationBlock);
+
+    //reset the route
+    RouteBean route = dispatcher.getRouteBean();
+    route.setLocked(false);
+    Dispatcher.resetRoute(route);
+
+    PersistenceFactory.getService().persist(route);
+    dispatcher.setRouteBean(null);
+
+    dispatcher.showBlockState(departureBlock);
+    dispatcher.showBlockState(destinationBlock);
+
+    dispatcherState = new IdleState();
+
+    this.resetRequested = false;
+  }
+
   /**
    * The Locomotive Driving handling.<br>
    * Normal flow is:<br>
@@ -160,78 +203,33 @@ class DispatcherThread extends Thread {
       Logger.trace(getName() + " StateMachine Started. State " + dispatcherState.getName() + "...");
     }
 
-    //boolean waitState = dispatcherState instanceof IdleState || dispatcherState instanceof WaitState;
-    //boolean logOnce = true;
-    //It forcestop check nodig?
     while (running) {
-      handleStates(running);
-//      //Obtain current dispatcherState
-//      DispatcherState currentState = dispatcherState;
-//      //Execute the action for the current dispatcherState      
-//      currentState.execute();
-//      //TODO let the execute return the next dispatcherState
-//      DispatcherState newState = currentState.next(dispatcher);
-//
-//      if (!locomotiveAutomodeOn && newState instanceof WaitState) {
-//        //stop (automode) for this locomotice is requested, the WaitState is reached.
-//        //Force to IdleState.
-//        newState = new IdleState(dispatcher);
-//      } else if (!locomotiveAutomodeOn && currentState instanceof IdleState && !(newState instanceof IdleState)) {
-//        //Still stopped keep current state
-//        newState = currentState;
-//      } else {
-//        if (!this.dispatcher.autoPilot.isAutoModeActive()) {
-//          //Automode has stopped, so finish the Thread when the Wait dispatcherState is reached
-//          if (currentState instanceof IdleState || currentState instanceof WaitState) {
-//            Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
-//            this.running = false;
-//          }
-//        }
-//      }
-//
-//      if (currentState != newState) {
-//        //State has changed
-//        dispatcherState = newState;
-//        //handle the dispatcherState changes
-//        dispatcher.fireStateListeners(dispatcherState.getName());
-//      } else {
-//        //Check if we need to (force) stop?
-//        //in the wait dispatcherState the name also hold the time so
-//        if (dispatcherState instanceof WaitState) {
-//          dispatcher.fireStateListeners(dispatcherState.getName());
-//        }
-//
-//        //No dispatcherState change so lets wait a while
-//        try {
-//          synchronized (this) {
-//            wait(100);
-//          }
-//        } catch (InterruptedException ex) {
-//          Logger.trace(ex.getMessage());
-//        }
-//      }
-//
-////      if (!running) {
-////        Logger.trace(this.getName() + " is ending. Current State: " + dispatcherState.getClass().getSimpleName());
-////      }
+      if (resetRequested) {
+        resetStateMachine();
+      } else {
+        handleStates(running);
+      }
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is ending...");
 
-    //Make sure that also the linked locomotive is stopped
-    dispatcher.changeLocomotiveVelocity(dispatcher.getLocomotiveBean(), 0);
+    if (forceStop) {
+      //Make sure that also the linked locomotive is stopped
+      dispatcher.changeLocomotiveVelocity(dispatcher.getLocomotiveBean(), 0);
+      Logger.trace(getName() + " Send stop to locomotive " + dispatcher.getLocomotiveBean().getName() + "...");
 
-    Logger.trace(getName() + " Send stop to locomotive " + dispatcher.getLocomotiveBean().getName() + "...");
+      //Remove the sensor listeners if applicable
+      DispatcherState currentState = dispatcherState;
+      if (currentState instanceof SensorEventListener) {
+        Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
+        JCS.getJcsCommandStation().removeSensorEventListener((SensorEventListener) currentState);
+      }
+
+      dispatcher.clearDepartureIgnoreEventHandlers();
+    }
 
     dispatcher.fireStateListeners(getName() + " Finished");
-
     Logger.trace(getName() + " State listeners fired...");
-
-    //TODO do the cleanup in in a different way
-    if (!forceStop) {
-      dispatcher.clearDepartureIgnoreEventHandlers();
-      //dispatcher.unRegisterListeners();
-    }
 
     if (!forceStop) {
       Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " is Finished");

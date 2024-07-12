@@ -25,14 +25,12 @@ class WaitState extends DispatcherState {
 
   int defaultWaitTime;
 
-  WaitState(Dispatcher dispatcher) {
-    super(dispatcher);
-
+  WaitState() {
     defaultWaitTime = Integer.getInteger("default.waittime", 5);
   }
 
   @Override
-  DispatcherState execute(Dispatcher locRunner) {
+  DispatcherState execute(Dispatcher dispatcher) {
     //Stub
     //TODO Obtain the wait time from either the block in the database of from the locomotive
     long waitTime = 1 * defaultWaitTime;
@@ -43,15 +41,15 @@ class WaitState extends DispatcherState {
     Logger.debug("Waiting for " + waitTime + " s.");
 
     for (; waitTime >= 0; waitTime--) {
-      if (this.dispatcher.isLocomotiveAutomodeOn()) {
-        String s = this.dispatcher.getDispatcherState() + " (" + waitTime + ")";
-        this.dispatcher.fireStateListeners(s);
+      if (dispatcher.isLocomotiveAutomodeOn()) {
+        String s = dispatcher.getDispatcherState() + " (" + waitTime + ")";
+        dispatcher.fireStateListeners(s);
 
         //For manual testing the thread is not running, step mode
-        if (this.dispatcher.isRunning()) {
+        if (dispatcher.isRunning()) {
           pause(1000);
         } else {
-          Logger.trace("Test mode: "+s);
+          Logger.trace("Test mode: " + s);
         }
       } else {
         //Locomotive automode is disabled break the loop
@@ -59,15 +57,13 @@ class WaitState extends DispatcherState {
       }
     }
 
-    //canAdvanceToNextState = this.dispatcher.isRunning() && this.dispatcher.isLocomotiveAutomodeOn(); 
     DispatcherState newState;
-    if (this.dispatcher.isLocomotiveAutomodeOn()) {
-      newState = new PrepareRouteState(dispatcher);
+    if (dispatcher.isLocomotiveAutomodeOn()) {
+      newState = new PrepareRouteState();
     } else {
-      newState = new IdleState(dispatcher);
+      newState = new IdleState();
     }
     return newState;
-
   }
 
 }
