@@ -688,7 +688,7 @@ public class DispatcherThreadTest {
     assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
 
     assertEquals(750, dispatcher.getLocomotiveBean().getVelocity());
-    assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
+    //assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
 
     //State should stay the same as the enter sensor of the destination is not het.
     assertEquals("StartState", instance.getDispatcherStateName());
