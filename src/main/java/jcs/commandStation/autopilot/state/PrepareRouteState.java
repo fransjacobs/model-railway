@@ -40,7 +40,6 @@ class PrepareRouteState extends DispatcherState {
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
-    //ReserveRouteSemaphore semaphore = new ReserveRouteSemaphore();
     int permits = AutoPilot.getInstance().avialablePermits();
     Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 

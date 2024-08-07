@@ -337,6 +337,10 @@ public class BlockBean {
             + tileId
             + ", description="
             + description
+            + ", status="
+            + status
+            + ", arrivalSuffix="
+            + arrivalSuffix
             + ", plusSensorId="
             + plusSensorId
             + ", minSensorId="

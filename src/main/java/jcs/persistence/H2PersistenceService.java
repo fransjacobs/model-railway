@@ -827,7 +827,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public BlockBean persist(BlockBean block) {
+  public synchronized BlockBean persist(BlockBean block) {
     if (block != null && block.getId() == null && block.getTileId() != null) {
       BlockBean bb = getBlockByTileId(block.getTileId());
       if (bb != null) {
@@ -836,9 +836,9 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     if (block != null && block.getId() != null && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
-      database.update(block).getRowsAffected();
+      database.update(block);
     } else {
-      database.insert(block).getRowsAffected();
+      database.insert(block);
     }
 
     return block;

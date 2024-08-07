@@ -40,20 +40,19 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-class DispatcherThread extends Thread {
+class StateMachineThread extends Thread {
 
   private final Dispatcher dispatcher;
   private DispatcherState dispatcherState;
 
   private boolean running = false;
 
-  //private boolean stateMachineRunning = false;
-  private boolean locomotiveAutomodeOn = false;
+  private boolean enableAutomode = false;
   private boolean resetRequested = false;
 
   private boolean forceStop = false;
 
-  DispatcherThread(Dispatcher dispatcher) {
+  StateMachineThread(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
     this.dispatcherState = new IdleState();
     setName("DT->" + dispatcher.getLocomotiveBean().getName());
@@ -69,13 +68,13 @@ class DispatcherThread extends Thread {
     notify();
   }
 
-  boolean isLocomotiveAutomodeOn() {
-    return this.locomotiveAutomodeOn;
+  boolean isEnableAutomode() {
+    return this.enableAutomode;
   }
 
   //(Re)Start automode for the locomotive
-  synchronized void setLocomotiveAutomode(boolean start) {
-    this.locomotiveAutomodeOn = start;
+  synchronized void setEnableAutomode(boolean start) {
+    this.enableAutomode = start;
     //this.stateMachineRunning = start;
     if (running) {
       notify();
@@ -85,7 +84,7 @@ class DispatcherThread extends Thread {
   //Reset the statemachine
   synchronized void reset() {
     //Switch of running
-    this.locomotiveAutomodeOn = false;
+    this.enableAutomode = false;
     this.resetRequested = true;
 
     Logger.trace("Reset requested...");
@@ -104,48 +103,49 @@ class DispatcherThread extends Thread {
     return dispatcherState.getName();
   }
 
-  //For testing move the logic outside the running thread so that a manual stepper is also possible
-  void handleStates(boolean inLoop) {
+  void handleState() {
     //Obtain current dispatcherState
-    DispatcherState currentState = dispatcherState;
+    DispatcherState previousState = dispatcherState;
     //Execute the action for the current dispatcherState   
-    dispatcherState = currentState.execute(dispatcher);
+    dispatcherState = dispatcherState.execute(dispatcher);
 
     if (!this.dispatcher.autoPilot.isAutoModeActive()) {
       //Automode has stopped, let the Thread finish when WaitState is reached
-      if (currentState instanceof IdleState || currentState instanceof WaitState) {
+      if (dispatcherState instanceof IdleState || dispatcherState instanceof WaitState) {
         Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
         this.running = false;
       }
 
-      if (inLoop) {
-        //No dispatcherState change so lets wait a while
-        try {
-          synchronized (this) {
-            wait(100);
-          }
-        } catch (InterruptedException ex) {
-          Logger.trace(ex.getMessage());
-        }
-      }
+//      if (inLoop) {
+//        //No dispatcherState change so lets wait a while
+//        try {
+//          synchronized (this) {
+//            wait(100);
+//          }
+//        } catch (InterruptedException ex) {
+//          Logger.trace(ex.getMessage());
+//        }
+//      }
     }
 
-    //handle the dispatcherState changes
-    dispatcher.fireStateListeners(dispatcherState.getName());
+    if (previousState != dispatcherState || dispatcherState instanceof WaitState) {
+      //handle the dispatcherState changes
+      dispatcher.fireStateListeners(dispatcherState.getName());
+    }
   }
 
   //Reset the statemachine
   void resetStateMachine() {
-    this.locomotiveAutomodeOn = false;
+    this.enableAutomode = false;
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     dispatcher.changeLocomotiveVelocity(locomotive, 0);
     Logger.trace("Stoppped " + locomotive.getName() + "...");
 
     //Remove the sensor listeners
     DispatcherState currentState = dispatcherState;
-    if (currentState instanceof SensorEventListener) {
-      Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
-      JCS.getJcsCommandStation().removeSensorEventListener((SensorEventListener) currentState);
+    if (currentState instanceof SensorEventListener sensorEventListener) {
+      Logger.trace("Removing " + sensorEventListener.toString() + " as Sensor Listener...");
+      JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener);
     }
 
     dispatcher.clearDepartureIgnoreEventHandlers();
@@ -200,14 +200,14 @@ class DispatcherThread extends Thread {
       return;
     } else {
       this.running = true;
-      Logger.trace(getName() + " StateMachine Started. State " + dispatcherState.getName() + "...");
+      Logger.trace(getName() + " Started. State " + dispatcherState.getName() + "...");
     }
 
     while (running) {
       if (resetRequested) {
         resetStateMachine();
       } else {
-        handleStates(running);
+        handleState();
       }
     }
 
@@ -220,9 +220,9 @@ class DispatcherThread extends Thread {
 
       //Remove the sensor listeners if applicable
       DispatcherState currentState = dispatcherState;
-      if (currentState instanceof SensorEventListener) {
+      if (currentState instanceof SensorEventListener sensorEventListener) {
         Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
-        JCS.getJcsCommandStation().removeSensorEventListener((SensorEventListener) currentState);
+        JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener);
       }
 
       dispatcher.clearDepartureIgnoreEventHandlers();

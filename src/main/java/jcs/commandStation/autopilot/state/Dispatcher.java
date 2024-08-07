@@ -38,7 +38,7 @@ import org.tinylog.Logger;
 
 /**
  * The Dispatcher is the controlling class during auto mode of one Locomotive<br>
- * When a Locomotive runs a separate thread is started which handles all the states.<br>
+ * When a Locomotive runs a separate stateMachineThread is started which handles all the states.<br>
  *
  */
 public class Dispatcher {
@@ -53,22 +53,22 @@ public class Dispatcher {
 
   private final List<StateEventListener> stateEventListeners;
 
-  private DispatcherThread thread;
+  private StateMachineThread stateMachineThread;
 
   public Dispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
     this.autoPilot = autoPilot;
 
     this.stateEventListeners = new LinkedList<>();
-    thread = new DispatcherThread(this);
+    this.stateMachineThread = new StateMachineThread(this);
   }
 
-  void startDispatcherThread() {
-    this.thread.start();
+  void startStateMachineThread() {
+    this.stateMachineThread.start();
   }
 
-  DispatcherThread getDispatcherThread() {
-    return thread;
+  StateMachineThread getStateMachineThread() {
+    return stateMachineThread;
   }
 
   public Long getId() {
@@ -99,64 +99,71 @@ public class Dispatcher {
   }
 
   boolean isLocomotiveAutomodeOn() {
-    return this.thread.isLocomotiveAutomodeOn();
+    return this.stateMachineThread.isEnableAutomode();
   }
 
-  public final void startStateMachine() {
-    //thread.runStateMachine(true);
-  }
-
-  public void stopStateMachine() {
-    //thread.runStateMachine(false);
-  }
-
+//  public final void startStateMachine() {
+//    //thread.runStateMachine(true);
+//  }
+//  public void stopStateMachine() {
+//    //thread.runStateMachine(false);
+//  }
   public void startLocomotiveAutomode() {
     //thread.stopLocomotiveAutomode();
-    thread.setLocomotiveAutomode(true);
+    stateMachineThread.setEnableAutomode(true);
   }
 
   public void stopLocomotiveAutomode() {
     //thread.stopLocomotiveAutomode();
-    thread.setLocomotiveAutomode(false);
+    stateMachineThread.setEnableAutomode(false);
   }
 
   //@Deprecated
   public void startRunning() {
-    if (this.thread != null && this.thread.isThreadRunning()) {
+    if (this.stateMachineThread != null && this.stateMachineThread.isThreadRunning()) {
       return;
     }
 
-    if (this.thread == null || !this.thread.isAlive()) {
-      thread = new DispatcherThread(this);
+    if (this.stateMachineThread == null || !this.stateMachineThread.isAlive()) {
+      stateMachineThread = new StateMachineThread(this);
     }
 
-    this.thread.start();
+    this.stateMachineThread.start();
 //    startStateMachine();
   }
 
   //@Deprecated
   public void stopRunning() {
-    if (thread != null && thread.isThreadRunning()) {
-      thread.stopRunningThread();
+    if (stateMachineThread != null && stateMachineThread.isThreadRunning()) {
+      stateMachineThread.stopRunningThread();
     }
 //    stopLocomotiveAutomode();
   }
 
   public void forceStopRunning() {
-//    if (thread != null && thread.isThreadRunning()) {
-//      this.thread.forceStop();
+//    if (stateMachineThread != null && stateMachineThread.isThreadRunning()) {
+//      this.stateMachineThread.forceStop();
 //    }
+  }
+
+  void resetDispatcher() {
+    this.routeBean = null;
+    this.departureBlockId = null;
+    this.destinationBlockId = null;
+    this.stateEventListeners.clear();
+    this.stateMachineThread = new StateMachineThread(this);
   }
 
   public void reset() {
     Logger.trace("Resetting dispatcher " + getName() + " StateMachine...");
-    this.thread.reset();
+    this.stateMachineThread.reset();
+    resetDispatcher();
   }
 
   ///????
   public boolean isRunning() {
-    if (thread != null) {
-      return thread.isThreadRunning();
+    if (stateMachineThread != null) {
+      return stateMachineThread.isThreadRunning();
     } else {
       return false;
     }
@@ -217,8 +224,8 @@ public class Dispatcher {
   }
 
   public String getDispatcherState() {
-    if (thread != null) {
-      return thread.getState().getClass().getSimpleName();
+    if (stateMachineThread != null) {
+      return stateMachineThread.getState().getClass().getSimpleName();
     } else {
       return "#Idle";
     }

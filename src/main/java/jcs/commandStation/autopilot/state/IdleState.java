@@ -36,6 +36,7 @@ class IdleState extends DispatcherState {
     } else {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block. Can advance: " + canAdvanceToNextState);
     }
+
     if (canAdvanceToNextState) {
       DispatcherState newState = new PrepareRouteState();
       return newState;

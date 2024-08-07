@@ -126,9 +126,11 @@ public class AutoPilot extends Thread {
     while (dispatchersRunning && now < timeout) {
       dispatchersRunning = areDispatchersRunning();
       try {
-        sleep(1000);
+        synchronized (this) {
+          wait(1000);
+        }
       } catch (InterruptedException ex) {
-        Logger.trace("Interrupted");
+        Logger.trace("Interrupted during dispatcher running check");
       }
       now = System.currentTimeMillis();
     }
@@ -168,7 +170,7 @@ public class AutoPilot extends Thread {
   }
 
   public synchronized void prepareDispatchers() {
-    Logger.trace("Preparing Dispatcher for all on track locomotives...");
+    Logger.trace("Preparing Dispatchers for all on track locomotives...");
 
     List<LocomotiveBean> locs = getOnTrackLocomotives();
     Map<String, Dispatcher> snapshot = new HashMap<>(this.dispatchers);
@@ -186,9 +188,22 @@ public class AutoPilot extends Thread {
     }
   }
 
+  public synchronized void clearDispatchers() {
+    Logger.trace("Remove all Dispatchers...");
+
+    for (Dispatcher dispatcher : this.dispatchers.values()) {
+      dispatcher.stopLocomotiveAutomode();
+      dispatcher.forceStopRunning();
+    }
+
+    this.dispatchers.clear();
+
+  }
+
   public synchronized void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
     Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
     String key = locomotiveBean.getName();
+
     if (start) {
       Dispatcher dispatcher;
       if (dispatchers.containsKey(key)) {
@@ -197,14 +212,16 @@ public class AutoPilot extends Thread {
       } else {
         dispatcher = new Dispatcher(locomotiveBean, this);
         dispatchers.put(key, dispatcher);
+        Logger.trace("Dispatcher " + key + " created");
       }
 
       if (!dispatcher.isRunning()) {
-        Logger.trace("Starting dispatcher statemachine thread" + key);
-        dispatcher.startStateMachine();
+        Logger.trace("Starting dispatcher thread" + key);
+        //TODO
+        //dispatcher.startStateMachine();
       }
 
-      dispatcher.stopLocomotiveAutomode();
+      //dispatcher.stopLocomotiveAutomode();
       Logger.trace("Started dispatcher" + key + " automode...");
     } else {
       Dispatcher dispatcher = dispatchers.get(key);

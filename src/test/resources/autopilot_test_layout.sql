@@ -102,10 +102,10 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 commit;
 
 INSERT INTO jcs.blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,reverse_arrival_side,status,incoming_suffix) VALUES
-	 ('bk-1','bk-1','Blok 1','0-0001','0-0002',NULL,NULL,NULL,true,'Free',NULL),
-	 ('bk-2','bk-2','Blok 2','0-0004','0-0003',NULL,NULL,NULL,true,'Free',null),
-	 ('bk-3','bk-3','Blok 3','0-0010','0-0011',NULL,NULL,NULL,true,'Free',null),
-	 ('bk-4','bk-4','Blok 4','0-0013','0-0012',NULL,NULL,NULL,true,'Free',NULL);
+	 ('bk-1','bk-1','Blok 1','0-0001','0-0002',NULL,NULL,NULL,false,'Free',NULL),
+	 ('bk-2','bk-2','Blok 2','0-0004','0-0003',NULL,NULL,NULL,false,'Free',null),
+	 ('bk-3','bk-3','Blok 3','0-0010','0-0011',NULL,NULL,NULL,false,'Free',null),
+	 ('bk-4','bk-4','Blok 4','0-0013','0-0012',NULL,NULL,NULL,false,'Free',NULL);
 commit;
 
 
