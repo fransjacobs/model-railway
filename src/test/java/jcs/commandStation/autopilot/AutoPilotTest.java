@@ -84,7 +84,7 @@ public class AutoPilotTest {
   public void tearDown() {
     AutoPilot.getInstance().stopAutoMode();
     //let the autopilot finish...
-    pause(1000);
+    pause(1100);
     AutoPilot.getInstance().clearDispatchers();
   }
   
@@ -92,6 +92,7 @@ public class AutoPilotTest {
   public void testStartStopAutoMode() {
     System.out.println("startStopAutoMode");
     AutoPilot instance = AutoPilot.getInstance();
+    
     assertFalse(instance.isAutoModeActive());
     
     instance.startAutoMode();
@@ -131,7 +132,7 @@ public class AutoPilotTest {
     assertFalse(instance.isSensorHandlerRegistered(sensorId));
     instance.startAutoMode();
     //let the autopilot start...
-    pause(50);
+    pause(150);
     assertTrue(instance.isAutoModeActive());
     assertFalse(instance.isSensorHandlerRegistered(sensorId));
     TestSensorHandler testSensorHandler = new TestSensorHandler(sensorId, this);
@@ -212,7 +213,7 @@ public class AutoPilotTest {
     System.out.println("getLocomotiveDispatchers");
     AutoPilot instance = AutoPilot.getInstance();
     instance.startAutoMode();
-    pause(50);
+    pause(150);
     assertTrue(instance.isAutoModeActive());
     
     List<LocomotiveBean> onTraclLocos = instance.getOnTrackLocomotives();

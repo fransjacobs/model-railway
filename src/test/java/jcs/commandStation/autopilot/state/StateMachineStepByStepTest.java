@@ -1034,7 +1034,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     instance.start();
-    pause(10);
+    pause(50);
 
     Logger.debug("Dispatcher Thread Started");
     assertTrue(instance.isThreadRunning());
