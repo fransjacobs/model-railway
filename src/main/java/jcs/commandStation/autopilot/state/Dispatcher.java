@@ -232,7 +232,7 @@ public class Dispatcher {
   }
 
   void registerIgnoreEventHandler(String sensorId) {
-    if (!autoPilot.isSensorRegistered(sensorId)) {
+    if (!autoPilot.isSensorHandlerRegistered(sensorId)) {
       IgnoreSensorHandler ish = new IgnoreSensorHandler(sensorId, this);
       autoPilot.addHandler(ish, sensorId);
       Logger.trace("Added sensor " + sensorId + " to the ignore handlers");

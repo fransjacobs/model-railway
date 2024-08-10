@@ -72,15 +72,16 @@ public class LocomotiveTablePanel extends javax.swing.JPanel {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-      Image img = (Image) value;
-      int size = 40;
-      float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
-      img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
-      BufferedImage bi = ImageUtil.toBuffered(img);
-      setIcon(new ImageIcon(bi));
-      setHorizontalAlignment(JLabel.CENTER);
-      setText("");
+      if (value != null) {
+        Image img = (Image) value;
+        int size = 40;
+        float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
+        img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
+        BufferedImage bi = ImageUtil.toBuffered(img);
+        setIcon(new ImageIcon(bi));
+        setHorizontalAlignment(JLabel.CENTER);
+        setText("");
+      }
       return this;
     }
   }

@@ -25,8 +25,6 @@ public class PersistenceFactory {
   private PersistenceService persistenceService;
   private static PersistenceFactory instance;
 
-  //public static boolean testMode;
-
   private PersistenceFactory() {
   }
 
@@ -38,7 +36,7 @@ public class PersistenceFactory {
     return instance;
   }
 
-  public static PersistenceService getService() {
+  public synchronized static PersistenceService getService() {
     return PersistenceFactory.getInstance().getPersistenceServiceImpl();
   }
 

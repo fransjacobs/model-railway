@@ -44,17 +44,16 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class AutoPilot extends Thread {
+public class AutoPilot {
 
   private static AutoPilot instance = null;
-  private boolean autoModeActive;
+  private AutoPilotThread autoPilotThread = null;
 
   //private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, SensorEventHandler> sensorHandlers = new HashMap<>();
   private final Map<String, Dispatcher> dispatchers = Collections.synchronizedMap(new HashMap<>());
 
   //Need a list to be able to unregister
-  private final List<SensorListener> sensorListeners = new ArrayList<>();
   private final List<AutoPilotStatusListener> autoPilotStatusListeners = Collections.synchronizedList(new ArrayList<>());
 
   private final Semaphore semaphore;
@@ -72,90 +71,21 @@ public class AutoPilot extends Thread {
     return instance;
   }
 
-  public void startAutoMode() {
-    if (!autoModeActive) {
+  public synchronized void startAutoMode() {
+    if (this.autoPilotThread != null && this.autoPilotThread.isRunning()) {
+      Logger.trace("Allready running");
+    } else {
+
       dispatchers.clear();
       sensorHandlers.clear();
-      //Keep the statuslisteners
-      List<AutoPilotStatusListener> apsl = new ArrayList<>(instance.autoPilotStatusListeners);
-
-      instance = null;
-      instance = new AutoPilot();
-      instance.autoPilotStatusListeners.addAll(apsl);
-
-      autoModeActive = true;
-      instance.start();
+      this.autoPilotThread = new AutoPilotThread(this);
+      autoPilotThread.start();
     }
   }
 
   public synchronized void stopAutoMode() {
-    this.autoModeActive = false;
+    this.autoPilotThread.stopAutoMode();
     notifyAll();
-  }
-
-  @Override
-  public void run() {
-    setName("AutoPilot");
-    //setDaemon(autoModeActive);
-
-    registerAllSensors();
-    prepareDispatchers();
-
-    Logger.trace("Autopilot Started. Notify " + autoPilotStatusListeners.size() + " Listeners...");
-
-    for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
-      asl.statusChanged(autoModeActive);
-    }
-
-    while (autoModeActive) {
-      try {
-        synchronized (this) {
-          wait(1000);
-        }
-      } catch (InterruptedException ex) {
-        Logger.trace("Interrupted");
-      }
-    }
-
-    long now = System.currentTimeMillis();
-    long start = now;
-    long timeout = now + 30000;
-    //Check if all dispachers are stopped
-    boolean dispatchersRunning = areDispatchersRunning();
-
-    while (dispatchersRunning && now < timeout) {
-      dispatchersRunning = areDispatchersRunning();
-      try {
-        synchronized (this) {
-          wait(1000);
-        }
-      } catch (InterruptedException ex) {
-        Logger.trace("Interrupted during dispatcher running check");
-      }
-      now = System.currentTimeMillis();
-    }
-
-    Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s");
-
-    if (dispatchersRunning) {
-      for (Dispatcher ld : this.dispatchers.values()) {
-        if (ld.isRunning()) {
-          ld.forceStopRunning();
-          Logger.trace("Forse Stop on " + ld.getName());
-        }
-      }
-    }
-
-    unRegisterAllSensors();
-    sensorHandlers.clear();
-
-    for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
-      asl.statusChanged(autoModeActive);
-    }
-
-    resetStates();
-
-    Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
   }
 
   boolean areDispatchersRunning() {
@@ -169,10 +99,27 @@ public class AutoPilot extends Thread {
     return isRunning;
   }
 
-  public synchronized void prepareDispatchers() {
-    Logger.trace("Preparing Dispatchers for all on track locomotives...");
+  public synchronized Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
+    Dispatcher dispatcher = null;
+    //check if the locomotive is on track
+    if (isOnTrack(locomotiveBean)) {
+      if (this.dispatchers.containsKey(locomotiveBean.getName())) {
+        dispatcher = this.dispatchers.get(locomotiveBean.getName());
+        Logger.trace("Reuse dispatcher for " + locomotiveBean.getName() + "...");
+      } else {
+        dispatcher = new Dispatcher(locomotiveBean, this);
+        //Also add it to the dispatchers
+        dispatchers.put(locomotiveBean.getName(), dispatcher);
+        Logger.trace("Added new dispatcher for " + locomotiveBean.getName() + "...");
+      }
+    }
+    return dispatcher;
+  }
 
+  public void prepareAllDispatchers() {
+    Logger.trace("Preparing Dispatchers for all on track locomotives...");
     List<LocomotiveBean> locs = getOnTrackLocomotives();
+
     Map<String, Dispatcher> snapshot = new HashMap<>(this.dispatchers);
     this.dispatchers.clear();
 
@@ -180,11 +127,11 @@ public class AutoPilot extends Thread {
       Dispatcher dispatcher;
       if (snapshot.containsKey(loc.getName())) {
         dispatcher = snapshot.get(loc.getName());
+        dispatchers.put(loc.getName(), dispatcher);
+        Logger.trace("Reused dispatcher for " + loc.getName() + "...");
       } else {
-        dispatcher = new Dispatcher(loc, this);
+        createDispatcher(loc);
       }
-      dispatchers.put(loc.getName(), dispatcher);
-      Logger.trace("Added dispatcher for " + loc.getName() + "...");
     }
   }
 
@@ -197,7 +144,6 @@ public class AutoPilot extends Thread {
     }
 
     this.dispatchers.clear();
-
   }
 
   public synchronized void startStopLocomotive(LocomotiveBean locomotiveBean, boolean start) {
@@ -228,31 +174,6 @@ public class AutoPilot extends Thread {
       if (dispatcher != null && dispatcher.isRunning()) {
         dispatcher.stopLocomotiveAutomode();
         Logger.trace("Stopped dispatcher" + key + " automode...");
-      }
-    }
-  }
-
-  public synchronized void startStopLocomotiveOld(LocomotiveBean locomotiveBean, boolean start) {
-    Logger.trace((start ? "Starting" : "Stopping") + " auto drive for " + locomotiveBean.getName());
-    if (start) {
-      Dispatcher dispatcher;
-      String key = locomotiveBean.getName();
-      if (dispatchers.containsKey(key)) {
-        dispatcher = dispatchers.get(key);
-        Logger.trace("Dispatcher " + key + " exists");
-      } else {
-        dispatcher = new Dispatcher(locomotiveBean, this);
-        dispatchers.put(key, dispatcher);
-      }
-
-      Logger.trace("Starting dispatcher " + key);
-      if (!dispatcher.isRunning()) {
-        dispatcher.startRunning();
-      }
-    } else {
-      Dispatcher dispatcher = dispatchers.get(locomotiveBean.getName());
-      if (dispatcher != null && dispatcher.isRunning()) {
-        dispatcher.stopRunning();
       }
     }
   }
@@ -356,6 +277,16 @@ public class AutoPilot extends Thread {
     return dispatchers.get(key);
   }
 
+  public boolean isOnTrack(LocomotiveBean locomotiveBean) {
+    List<LocomotiveBean> onTrackLocomotives = getOnTrackLocomotives();
+    for (LocomotiveBean locomotive : onTrackLocomotives) {
+      if (locomotiveBean.getId().equals(locomotive.getId())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   List<LocomotiveBean> getOnTrackLocomotives() {
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     //filter..
@@ -392,6 +323,8 @@ public class AutoPilot extends Thread {
       if (block.getMinSensorId().equals(gostSensorId) || block.getPlusSensorId().equals(gostSensorId)) {
         if (event.getSensorBean().isActive()) {
           block.setBlockState(BlockBean.BlockState.GHOST);
+          //Also persist
+          PersistenceFactory.getService().persist(block);
         } else {
           block.setBlockState(BlockBean.BlockState.FREE);
         }
@@ -424,36 +357,11 @@ public class AutoPilot extends Thread {
     }
   }
 
-  private void registerAllSensors() {
-    List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
-    int cnt = 0;
-    for (SensorBean sb : sensors) {
-      String key = sb.getId();
-      if (!sensorHandlers.containsKey(key)) {
-        SensorListener seh = new SensorListener(key, this);
-        sensorListeners.add(seh);
-        cnt++;
-        //Register with a command station
-        JCS.getJcsCommandStation().addSensorEventListener(seh);
-        //Logger.trace("Added handler " + cnt + " for sensor " + key);
-      }
-    }
-    Logger.trace("Registered " + sensors.size() + " sensor event handlers");
-  }
-
-  private void unRegisterAllSensors() {
-    for (SensorListener seh : this.sensorListeners) {
-      JCS.getJcsCommandStation().removeSensorEventListener(seh);
-    }
-    Logger.trace("Unregistered " + sensorListeners.size() + " sensor event handlers");
-    this.sensorListeners.clear();
-  }
-
-  public void addHandler(SensorEventHandler handler, String sensorId) {
+  public synchronized void addHandler(SensorEventHandler handler, String sensorId) {
     sensorHandlers.put(sensorId, handler);
   }
 
-  public boolean isSensorRegistered(String sensorId) {
+  public synchronized boolean isSensorHandlerRegistered(String sensorId) {
     return this.sensorHandlers.containsKey(sensorId);
   }
 
@@ -471,30 +379,16 @@ public class AutoPilot extends Thread {
     Logger.trace("Status listeners: " + autoPilotStatusListeners.size());
   }
 
-  private class SensorListener implements SensorEventListener {
-
-    private final String sensorId;
-    private final AutoPilot delegate;
-
-    SensorListener(String sensorId, AutoPilot delegate) {
-      this.sensorId = sensorId;
-      this.delegate = delegate;
-    }
-
-    @Override
-    public void onSensorChange(SensorEvent event) {
-      if (sensorId.equals(event.getId())) {
-        delegate.handleSensorEvent(event);
-      }
-    }
-  }
-
   public boolean isAutoModeActive() {
-    return autoModeActive;
+    if (this.autoPilotThread != null) {
+      return this.autoPilotThread.isRunning();
+    } else {
+      return false;
+    }
   }
 
   public boolean isRunning(LocomotiveBean locomotive) {
-    if (this.autoModeActive && this.dispatchers.containsKey(locomotive.getName())) {
+    if (this.isAutoModeActive() && this.dispatchers.containsKey(locomotive.getName())) {
       Dispatcher dispatcher = this.dispatchers.get(locomotive.getName());
       return dispatcher.isRunning();
     } else {
@@ -514,4 +408,132 @@ public class AutoPilot extends Thread {
     return semaphore.availablePermits();
   }
 
+  private class AutoPilotThread extends Thread {
+
+    private final AutoPilot autoPilot;
+    private final List<SensorListener> sensorListeners = new ArrayList<>();
+
+    private boolean running = false;
+
+    AutoPilotThread(AutoPilot autoPilot) {
+      this.autoPilot = autoPilot;
+      setName("AutoPilot");
+    }
+
+    synchronized void stopAutoMode() {
+      Logger.trace("Stopping Automode...");
+      this.running = false;
+    }
+
+    boolean isRunning() {
+      return this.running;
+    }
+
+    private void registerAllSensors() {
+      List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+      int cnt = 0;
+      for (SensorBean sb : sensors) {
+        String key = sb.getId();
+        if (!sensorHandlers.containsKey(key)) {
+          SensorListener seh = new SensorListener(key, autoPilot);
+          sensorListeners.add(seh);
+          cnt++;
+          //Register with a command station
+          JCS.getJcsCommandStation().addSensorEventListener(seh);
+          //Logger.trace("Added handler " + cnt + " for sensor " + key);
+        }
+      }
+      Logger.trace("Registered " + sensors.size() + " sensor event handlers");
+    }
+
+    private void unRegisterAllSensors() {
+      for (SensorListener seh : this.sensorListeners) {
+        JCS.getJcsCommandStation().removeSensorEventListener(seh);
+      }
+      Logger.trace("Unregistered " + sensorListeners.size() + " sensor event handlers");
+      this.sensorListeners.clear();
+    }
+
+    @Override
+    public void run() {
+      running = true;
+
+      registerAllSensors();
+      prepareAllDispatchers();
+
+      Logger.trace("Autopilot Started. Notify " + autoPilotStatusListeners.size() + " Listeners...");
+
+      for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
+        asl.statusChanged(running);
+      }
+
+      while (running) {
+        try {
+
+          synchronized (this) {
+            wait(1000);
+          }
+        } catch (InterruptedException ex) {
+          Logger.trace("Interrupted");
+        }
+      }
+
+      long now = System.currentTimeMillis();
+      long start = now;
+      long timeout = now + 30000;
+      //Check if all dispachers are stopped
+      boolean dispatchersRunning = areDispatchersRunning();
+
+      while (dispatchersRunning && now < timeout) {
+        dispatchersRunning = areDispatchersRunning();
+        try {
+          synchronized (this) {
+            wait(1000);
+          }
+        } catch (InterruptedException ex) {
+          Logger.trace("Interrupted during dispatcher running check");
+        }
+        now = System.currentTimeMillis();
+      }
+
+      Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s");
+
+      if (dispatchersRunning) {
+        for (Dispatcher ld : dispatchers.values()) {
+          if (ld.isRunning()) {
+            ld.forceStopRunning();
+            Logger.trace("Forse Stop on " + ld.getName());
+          }
+        }
+      }
+
+      unRegisterAllSensors();
+      sensorHandlers.clear();
+
+      for (AutoPilotStatusListener asl : autoPilotStatusListeners) {
+        asl.statusChanged(running);
+      }
+
+      //resetStates();
+      Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
+    }
+  }
+
+  private class SensorListener implements SensorEventListener {
+
+    private final String sensorId;
+    private final AutoPilot delegate;
+
+    SensorListener(String sensorId, AutoPilot delegate) {
+      this.sensorId = sensorId;
+      this.delegate = delegate;
+    }
+
+    @Override
+    public void onSensorChange(SensorEvent event) {
+      if (sensorId.equals(event.getId())) {
+        delegate.handleSensorEvent(event);
+      }
+    }
+  }
 }
