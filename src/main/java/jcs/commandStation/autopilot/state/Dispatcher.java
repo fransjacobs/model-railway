@@ -102,24 +102,18 @@ public class Dispatcher {
     return this.stateMachineThread.isEnableAutomode();
   }
 
-//  public final void startStateMachine() {
-//    //thread.runStateMachine(true);
-//  }
-//  public void stopStateMachine() {
-//    //thread.runStateMachine(false);
-//  }
   public void startLocomotiveAutomode() {
-    //thread.stopLocomotiveAutomode();
     stateMachineThread.setEnableAutomode(true);
+    //is the thread running?
+    startRunning();
   }
 
   public void stopLocomotiveAutomode() {
-    //thread.stopLocomotiveAutomode();
     stateMachineThread.setEnableAutomode(false);
+    stopRunning();
   }
 
-  //@Deprecated
-  public void startRunning() {
+  void startRunning() {
     if (this.stateMachineThread != null && this.stateMachineThread.isThreadRunning()) {
       return;
     }
@@ -128,16 +122,16 @@ public class Dispatcher {
       stateMachineThread = new StateMachineThread(this);
     }
 
-    this.stateMachineThread.start();
-//    startStateMachine();
+    this.stateMachineThread.setEnableAutomode(true);
+    if(!this.stateMachineThread.isThreadRunning()) {
+      this.stateMachineThread.start();
+    }
   }
 
-  //@Deprecated
-  public void stopRunning() {
+  void stopRunning() {
     if (stateMachineThread != null && stateMachineThread.isThreadRunning()) {
       stateMachineThread.stopRunningThread();
     }
-//    stopLocomotiveAutomode();
   }
 
   public void forceStopRunning() {

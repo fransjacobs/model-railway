@@ -52,6 +52,7 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
+import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
@@ -722,12 +723,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     //Check if automode is on etc
     boolean autoPilotEnabled = AutoPilot.getInstance().isAutoModeActive();
     boolean hasLoco = ((Block) tile).getBlockBean().getLocomotive() != null;
+    boolean isGhost = ((Block) tile).getBlockBean().getBlockState() == BlockState.GHOST;
     this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
     this.stopLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
     this.resetDispatcherMI.setEnabled(autoPilotEnabled && hasLoco);
     this.removeLocMI.setEnabled(hasLoco);
     this.toggleLocomotiveDirectionMI.setEnabled(hasLoco);
     this.reverseArrivalSideMI.setEnabled(hasLoco);
+    this.resetGhostMI.setEnabled(isGhost);
 
     this.toggleOutOfOrderMI.setEnabled(!hasLoco);
 
@@ -1048,6 +1051,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     deleteMI = new JMenuItem();
     blockPopupMenu = new JPopupMenu();
     toggleOutOfOrderMI = new JMenuItem();
+    resetGhostMI = new JMenuItem();
     startLocomotiveMI = new JMenuItem();
     stopLocomotiveMI = new JMenuItem();
     resetDispatcherMI = new JMenuItem();
@@ -1146,6 +1150,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     });
     blockPopupMenu.add(toggleOutOfOrderMI);
+
+    resetGhostMI.setText("Reset Ghost");
+    resetGhostMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetGhostMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(resetGhostMI);
 
     startLocomotiveMI.setText("Start Locomotive");
     startLocomotiveMI.addActionListener(new ActionListener() {
@@ -1403,6 +1415,22 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     }
   }//GEN-LAST:event_toggleOutOfOrderMIActionPerformed
 
+  private void resetGhostMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetGhostMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      BlockBean.BlockState currentState = block.getBlockState();
+      if (BlockBean.BlockState.GHOST == currentState) {
+        if (block.getBlockBean().getLocomotiveId() != null) {
+          block.setBlockState(BlockBean.BlockState.OCCUPIED);
+        } else {
+          block.setBlockState(BlockBean.BlockState.FREE);
+        }
+        this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
+        this.repaint();
+      }
+    }
+  }//GEN-LAST:event_resetGhostMIActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JPopupMenu blockPopupMenu;
   private JMenuItem blockPropertiesMI;
@@ -1417,6 +1445,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private JMenuItem propertiesMI;
   private JMenuItem removeLocMI;
   private JMenuItem resetDispatcherMI;
+  private JMenuItem resetGhostMI;
   private JMenuItem reverseArrivalSideMI;
   private JMenuItem rightMI;
   private JMenuItem rotateMI;

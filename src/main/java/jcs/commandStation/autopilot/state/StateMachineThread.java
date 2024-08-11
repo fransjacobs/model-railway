@@ -65,6 +65,7 @@ class StateMachineThread extends Thread {
 
   synchronized void stopRunningThread() {
     this.running = false;
+    this.enableAutomode = false;
     notify();
   }
 
@@ -75,10 +76,7 @@ class StateMachineThread extends Thread {
   //(Re)Start automode for the locomotive
   synchronized void setEnableAutomode(boolean start) {
     this.enableAutomode = start;
-    //this.stateMachineRunning = start;
-    if (running) {
-      notify();
-    }
+    notify();
   }
 
   //Reset the statemachine

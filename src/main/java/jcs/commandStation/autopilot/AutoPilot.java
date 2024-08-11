@@ -156,15 +156,14 @@ public class AutoPilot {
         dispatcher = dispatchers.get(key);
         Logger.trace("Dispatcher " + key + " exists");
       } else {
-        dispatcher = new Dispatcher(locomotiveBean, this);
-        dispatchers.put(key, dispatcher);
+        dispatcher = createDispatcher(locomotiveBean);
         Logger.trace("Dispatcher " + key + " created");
       }
 
       if (!dispatcher.isRunning()) {
         Logger.trace("Starting dispatcher thread" + key);
         //TODO
-        //dispatcher.startStateMachine();
+        dispatcher.startLocomotiveAutomode();
       }
 
       //dispatcher.stopLocomotiveAutomode();

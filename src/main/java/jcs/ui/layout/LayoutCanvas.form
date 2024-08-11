@@ -125,6 +125,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleOutOfOrderMIActionPerformed"/>
           </Events>
         </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="resetGhostMI">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Reset Ghost"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetGhostMIActionPerformed"/>
+          </Events>
+        </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="startLocomotiveMI">
           <Properties>
             <Property name="text" type="java.lang.String" value="Start Locomotive"/>
