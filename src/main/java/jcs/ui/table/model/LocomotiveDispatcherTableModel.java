@@ -60,7 +60,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
       //replace
       int idx = this.beans.indexOf(dispatcher);
       this.beans.set(idx, dispatcher);
-      //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherState());
+      //Logger.trace("idx: "+idx+" "+dispatcher.getName()+" "+dispatcher.getDispatcherStateString());
       //table data changed is too much?
       this.fireTableDataChanged();
     }
@@ -115,7 +115,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
           case 1 ->
             b.getName();
           case 2 ->
-            b.getDispatcherState();
+            b.getDispatcherStateString();
           case 3 ->
             (Direction.FORWARDS == b.getLocomotiveBean().getDirection() ? ">>" : "<<") + " " + ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1024.0) * 100)).intValue();
           default ->

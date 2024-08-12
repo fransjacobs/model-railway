@@ -245,6 +245,20 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public LocomotiveBean getLocomotive(Integer locUid, String commandStionId) {
+    Object[] args = new Object[]{locUid, commandStionId};
+
+    LocomotiveBean loco = database.where("uid=? and command_station_id=?", args).first(LocomotiveBean.class);
+    if (loco != null) {
+      if (loco.getIcon() != null) {
+        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      }
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
+    return loco;
+  }
+
+  @Override
   public LocomotiveBean getLocomotive(Long id) {
     LocomotiveBean loco = database.where("id=?", id).first(LocomotiveBean.class);
     if (loco != null) {

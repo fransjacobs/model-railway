@@ -64,7 +64,8 @@ class StartState extends DispatcherState implements SensorEventListener {
       //Register this state as a SensorEventListener
       JCS.getJcsCommandStation().addSensorEventListener(this);
       //Remove the enter sensor from the ghost detection
-      dispatcher.registerIgnoreEventHandler(enterSensorId);
+      //dispatcher.registerIgnoreEventHandler(enterSensorId);
+      dispatcher.setWaitForSensorid(enterSensorId);
 
       Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
 
@@ -96,7 +97,6 @@ class StartState extends DispatcherState implements SensorEventListener {
     } else {
       return this;
     }
-
   }
 
   @Override

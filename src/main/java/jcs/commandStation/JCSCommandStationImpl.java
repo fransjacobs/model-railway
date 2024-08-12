@@ -264,6 +264,15 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
+  public CommandStationBean getCommandStationBean() {
+    if (this.decoderController != null) {
+      return this.decoderController.getCommandStationBean();
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   public boolean isConnected() {
     if (decoderController != null) {
       return decoderController.isConnected();
@@ -791,9 +800,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
             Integer richtung = lb.getRichtung();
             dblb.setRichtung(richtung);
             PersistenceFactory.getService().persist(dblb);
-            
-            Logger.trace(dblb.getId()+", "+dblb.getName()+": "+dblb.getDirection().getDirection());
-            
+
+            Logger.trace(dblb.getId() + ", " + dblb.getName() + ": " + dblb.getDirection().getDirection());
+
             directionEvent.setLocomotiveBean(dblb);
 
             for (LocomotiveDirectionEventListener dl : this.trackService.locomotiveDirectionEventListeners) {

@@ -146,6 +146,9 @@ public class LayoutPanel extends JPanel {
       this.autoPilotBtn.setEnabled(readonly);
       this.autoPilotBtn.setVisible(readonly);
 
+      this.resetAutopilotBtn.setEnabled(readonly);
+      this.resetAutopilotBtn.setVisible(readonly);
+
       this.startAllLocomotivesBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
       this.startAllLocomotivesBtn.setVisible(readonly);
     } else {
@@ -153,6 +156,9 @@ public class LayoutPanel extends JPanel {
       this.toolBar.remove(this.autoPilotBtn);
       this.autoPilotBtn.setEnabled(readonly);
       this.autoPilotBtn.setVisible(readonly);
+      this.toolBar.remove(this.resetAutopilotBtn);
+      this.resetAutopilotBtn.setEnabled(readonly);
+      this.resetAutopilotBtn.setVisible(readonly);
 
       this.toolBar.remove(this.startAllLocomotivesBtn);
       this.startAllLocomotivesBtn.setEnabled(readonly);
@@ -206,6 +212,7 @@ public class LayoutPanel extends JPanel {
     routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
     startAllLocomotivesBtn = new JToggleButton();
+    resetAutopilotBtn = new JButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     selectBtn = new JButton();
     addBtn = new JButton();
@@ -440,6 +447,21 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(startAllLocomotivesBtn);
+
+    resetAutopilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/director-red.png"))); // NOI18N
+    resetAutopilotBtn.setToolTipText("Reset AutoPilot");
+    resetAutopilotBtn.setFocusable(false);
+    resetAutopilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    resetAutopilotBtn.setMaximumSize(new Dimension(38, 38));
+    resetAutopilotBtn.setMinimumSize(new Dimension(38, 38));
+    resetAutopilotBtn.setPreferredSize(new Dimension(38, 38));
+    resetAutopilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    resetAutopilotBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetAutopilotBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(resetAutopilotBtn);
     toolBar.add(filler1);
 
     selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png"))); // NOI18N
@@ -772,9 +794,7 @@ public class LayoutPanel extends JPanel {
     canvasScrollPane.setPreferredSize(new Dimension(1400, 850));
     canvasScrollPane.setViewportView(canvas);
 
-    canvas.setMinimumSize(new Dimension(1398, 848));
     canvas.setName(""); // NOI18N
-    canvas.setPreferredSize(new Dimension(1398, 848));
     canvas.setLayout(new BorderLayout());
     canvasScrollPane.setViewportView(canvas);
 
@@ -994,6 +1014,10 @@ public class LayoutPanel extends JPanel {
     setTileType(TileBean.TileType.CROSSING);
   }//GEN-LAST:event_crossingBtnActionPerformed
 
+  private void resetAutopilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotBtnActionPerformed
+    AutoPilot.getInstance().resetStates();
+  }//GEN-LAST:event_resetAutopilotBtnActionPerformed
+
   private void setTileType(TileBean.TileType tileType) {
     this.canvas.setTileType(tileType);
   }
@@ -1063,6 +1087,7 @@ public class LayoutPanel extends JPanel {
   private JPopupMenu operationsPM;
   private JMenuItem propertiesMI;
   private JButton repaintBtn;
+  private JButton resetAutopilotBtn;
   private JMenuItem rightMI;
   private JToggleButton rightSwitchBtn;
   private JButton rotateBtn;

@@ -32,6 +32,7 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import static jcs.entities.BlockBean.BlockState.LOCKED;
+import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
@@ -48,6 +49,7 @@ public class AutoPilot {
 
   private static AutoPilot instance = null;
   private AutoPilotThread autoPilotThread = null;
+  private CommandStationBean commandStationBean;
 
   //private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, SensorEventHandler> sensorHandlers = new HashMap<>();
@@ -75,7 +77,7 @@ public class AutoPilot {
     if (this.autoPilotThread != null && this.autoPilotThread.isRunning()) {
       Logger.trace("Allready running");
     } else {
-
+      commandStationBean = JCS.getJcsCommandStation().getCommandStationBean();
       dispatchers.clear();
       sensorHandlers.clear();
       this.autoPilotThread = new AutoPilotThread(this);
@@ -209,8 +211,7 @@ public class AutoPilot {
     this.executor.execute(() -> startStopAllLocomotivesInBackground(false));
   }
 
-  //For now when stopping also reset the states if needed
-  void resetStates() {
+  public void resetStates() {
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes();
     int lockedCounter = 0;
     for (RouteBean route : routes) {
@@ -274,6 +275,11 @@ public class AutoPilot {
   public synchronized Dispatcher getLocomotiveDispatcher(LocomotiveBean locomotiveBean) {
     String key = locomotiveBean.getName();
     return dispatchers.get(key);
+  }
+
+  public Dispatcher getLocomotiveDispatcher(int locUid) {
+    LocomotiveBean locomotiveBean = PersistenceFactory.getService().getLocomotive(locUid, this.commandStationBean.getId());
+    return getLocomotiveDispatcher(locomotiveBean);
   }
 
   public boolean isOnTrack(LocomotiveBean locomotiveBean) {
@@ -513,7 +519,6 @@ public class AutoPilot {
         asl.statusChanged(running);
       }
 
-      //resetStates();
       Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
     }
   }

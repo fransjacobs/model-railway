@@ -35,9 +35,6 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
   synchronized DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     if (!locomotiveBraking) {
-      //Slowdown
-      dispatcher.changeLocomotiveVelocity(locomotive, 100);
-
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
       RouteBean route = dispatcher.getRouteBean();
       Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + ". Slowing down....");
@@ -56,7 +53,11 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       JCS.getJcsCommandStation().addSensorEventListener(this);
       Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
       //Remove the in sensor from the ghost detection
-      dispatcher.registerIgnoreEventHandler(inSensorId);
+      //dispatcher.registerIgnoreEventHandler(inSensorId);
+      dispatcher.setWaitForSensorid(inSensorId);
+
+      //Slowdown
+      dispatcher.changeLocomotiveVelocity(locomotive, 100);
 
       //Change Block statuses 
       BlockBean departureBlock = dispatcher.getDepartureBlock();

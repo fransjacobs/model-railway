@@ -51,6 +51,8 @@ public class Dispatcher {
   private String departureBlockId;
   private String destinationBlockId;
 
+  private String waitingForSensorId;
+
   private final List<StateEventListener> stateEventListeners;
 
   private StateMachineThread stateMachineThread;
@@ -98,7 +100,7 @@ public class Dispatcher {
     }
   }
 
-  boolean isLocomotiveAutomodeOn() {
+  public boolean isLocomotiveAutomodeOn() {
     return this.stateMachineThread.isEnableAutomode();
   }
 
@@ -123,7 +125,7 @@ public class Dispatcher {
     }
 
     this.stateMachineThread.setEnableAutomode(true);
-    if(!this.stateMachineThread.isThreadRunning()) {
+    if (!this.stateMachineThread.isThreadRunning()) {
       this.stateMachineThread.start();
     }
   }
@@ -144,6 +146,7 @@ public class Dispatcher {
     this.routeBean = null;
     this.departureBlockId = null;
     this.destinationBlockId = null;
+    this.waitingForSensorId = null;
     this.stateEventListeners.clear();
     this.stateMachineThread = new StateMachineThread(this);
   }
@@ -163,11 +166,10 @@ public class Dispatcher {
     }
   }
 
-  private BlockBean getBlock(String tileId) {
-    BlockBean block = PersistenceFactory.getService().getBlockByTileId(tileId);
-    return block;
-  }
-
+//  private BlockBean getBlock(String tileId) {
+//    BlockBean block = PersistenceFactory.getService().getBlockByTileId(tileId);
+//    return block;
+//  }
   //Make sure the last copy/ status of the block is represented
   BlockBean getDepartureBlock() {
     if (departureBlockId != null) {
@@ -217,12 +219,21 @@ public class Dispatcher {
     return destinationArrivalSuffix;
   }
 
-  public String getDispatcherState() {
+  public String getDispatcherStateString() {
     if (stateMachineThread != null) {
       return stateMachineThread.getState().getClass().getSimpleName();
     } else {
       return "#Idle";
     }
+  }
+
+  void setWaitForSensorid(String sensorId) {
+    registerIgnoreEventHandler(sensorId);
+    this.waitingForSensorId = sensorId;
+  }
+
+  public String getWaitingForSensorId() {
+    return waitingForSensorId;
   }
 
   void registerIgnoreEventHandler(String sensorId) {
@@ -246,6 +257,9 @@ public class Dispatcher {
   }
 
   synchronized void onIgnoreEvent(SensorEvent event) {
+    if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getId())) {
+      this.waitingForSensorId = null;
+    }
     //Logger.trace("Event for a ignored listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
   }
 

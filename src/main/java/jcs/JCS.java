@@ -63,12 +63,6 @@ public class JCS extends Thread {
     }
   }
 
-//  public static void showTouchbar(JCSFrame frame) {
-//    if (RunUtil.isMacOSX()) {
-//      osAdapter.showTouchbar(frame);
-//    }
-//  }
-
   public static JCSFrame getParentFrame() {
     return jcsFrame;
   }
