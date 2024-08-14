@@ -357,7 +357,9 @@ public class AutoPilot {
         sh.handleEvent(event);
       } else {
         //sensor is not registered and thus not expected!
-        handleGhost(event);
+        if (event.isActive()) {
+          handleGhost(event);
+        }
       }
     }
   }

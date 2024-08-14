@@ -46,14 +46,25 @@ class StartState extends DispatcherState implements SensorEventListener {
       String arrivalSuffix = route.getToSuffix();
       Logger.trace("Destination tile: " + departureBlock.getId() + " Arrival on the " + arrivalSuffix + " side of the block");
 
-      //The sensors on the departure block do not yet play a role,
-      //but they can switch on so they have to be removed from the ghost list
-      String exitMinId = departureBlock.getMinSensorId();
-      String exitPlusId = departureBlock.getPlusSensorId();
+      String inSensorId;
+      String exitSensorId;
+
+      if ("+".equals(route.getFromSuffix())) {
+        exitSensorId = departureBlock.getPlusSensorId();
+        inSensorId = departureBlock.getMinSensorId();
+        Logger.trace("Departure exit side: +");
+      } else {
+        inSensorId = departureBlock.getPlusSensorId();
+        exitSensorId = departureBlock.getMinSensorId();
+        Logger.trace("Departure exit side: -");
+      }
+
+      dispatcher.setInSensorId(inSensorId);
+      dispatcher.setExitSensorId(exitSensorId);
 
       //Should already be in the ignore list... just to sure...
-      dispatcher.registerIgnoreEventHandler(exitMinId);
-      dispatcher.registerIgnoreEventHandler(exitPlusId);
+      dispatcher.registerIgnoreEventHandler(inSensorId);
+      dispatcher.registerIgnoreEventHandler(exitSensorId);
 
       if ("+".equals(arrivalSuffix)) {
         enterSensorId = destinationBlock.getPlusSensorId();
@@ -67,7 +78,7 @@ class StartState extends DispatcherState implements SensorEventListener {
       //dispatcher.registerIgnoreEventHandler(enterSensorId);
       dispatcher.setWaitForSensorid(enterSensorId);
 
-      Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors minId: " + exitMinId + ", plusId: " + exitPlusId);
+      Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors inId: " + inSensorId + ", exitId: " + exitSensorId);
 
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
       PersistenceFactory.getService().persist(departureBlock);

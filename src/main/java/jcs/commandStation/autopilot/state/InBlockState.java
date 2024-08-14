@@ -61,7 +61,7 @@ class InBlockState extends DispatcherState {
     dispatcher.setRouteBean(null);
 
     //Wait a short while...
-    pause(100);
+    pause(250);
 
     DispatcherState newState;
     if (dispatcher.isLocomotiveAutomodeOn()) {

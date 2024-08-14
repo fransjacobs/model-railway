@@ -26,11 +26,11 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 class EnterBlockState extends DispatcherState implements SensorEventListener {
-
+  
   private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
   private String inSensorId;
-
+  
   @Override
   synchronized DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
@@ -38,7 +38,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
       RouteBean route = dispatcher.getRouteBean();
       Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + ". Slowing down....");
-
+      
       String arrivalSuffix = route.getToSuffix();
       locomotiveBraking = true;
 
@@ -63,21 +63,23 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
       destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
-
+      
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
 
       //Switch the departure block sensors on again
       dispatcher.clearDepartureIgnoreEventHandlers();
+      dispatcher.setInSensorId(null);
+      dispatcher.setExitSensorId(null);
 
       //Show the new states in the UI
       dispatcher.showBlockState(departureBlock);
       dispatcher.showBlockState(destinationBlock);
       dispatcher.showRoute(route, Color.magenta);
-
+      
       Logger.trace("Waiting for the in event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
-
+    
     if (canAdvanceToNextState) {
       DispatcherState newState = new InBlockState();
       //Remove handler as the state will now change
@@ -89,7 +91,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       return this;
     }
   }
-
+  
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
     if (this.inSensorId.equals(sensorEvent.getId())) {
@@ -102,5 +104,5 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       }
     }
   }
-
+  
 }

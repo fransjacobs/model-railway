@@ -52,6 +52,8 @@ public class Dispatcher {
   private String destinationBlockId;
 
   private String waitingForSensorId;
+  private String inSensorId;
+  private String exitSensorId;
 
   private final List<StateEventListener> stateEventListeners;
 
@@ -147,6 +149,8 @@ public class Dispatcher {
     this.departureBlockId = null;
     this.destinationBlockId = null;
     this.waitingForSensorId = null;
+    this.inSensorId = null;
+    this.exitSensorId = null;
     this.stateEventListeners.clear();
     this.stateMachineThread = new StateMachineThread(this);
   }
@@ -166,10 +170,6 @@ public class Dispatcher {
     }
   }
 
-//  private BlockBean getBlock(String tileId) {
-//    BlockBean block = PersistenceFactory.getService().getBlockByTileId(tileId);
-//    return block;
-//  }
   //Make sure the last copy/ status of the block is represented
   BlockBean getDepartureBlock() {
     if (departureBlockId != null) {
@@ -236,6 +236,22 @@ public class Dispatcher {
     return waitingForSensorId;
   }
 
+  public String getInSensorId() {
+    return inSensorId;
+  }
+
+  void setInSensorId(String inSensorId) {
+    this.inSensorId = inSensorId;
+  }
+
+  public String getExitSensorId() {
+    return exitSensorId;
+  }
+
+  void setExitSensorId(String exitSensorId) {
+    this.exitSensorId = exitSensorId;
+  }
+
   void registerIgnoreEventHandler(String sensorId) {
     if (!autoPilot.isSensorHandlerRegistered(sensorId)) {
       IgnoreSensorHandler ish = new IgnoreSensorHandler(sensorId, this);
@@ -257,8 +273,26 @@ public class Dispatcher {
   }
 
   synchronized void onIgnoreEvent(SensorEvent event) {
-    if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getId())) {
-      this.waitingForSensorId = null;
+    //Only in Simulator mode
+    if (JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
+      if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getId())) {
+        if (event.isActive()) {
+          this.waitingForSensorId = null;
+        }
+      }
+
+      if (this.inSensorId != null && this.inSensorId.equals(event.getId())) {
+        if (!event.isActive()) {
+          this.inSensorId = null;
+        }
+      }
+
+      if (this.exitSensorId != null && this.exitSensorId.equals(event.getId())) {
+        if (!event.isActive()) {
+          this.exitSensorId = null;
+        }
+      }
+
     }
     //Logger.trace("Event for a ignored listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
   }
