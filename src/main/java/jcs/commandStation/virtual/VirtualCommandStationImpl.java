@@ -17,14 +17,13 @@ package jcs.commandStation.virtual;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
@@ -45,7 +44,6 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.BlockBean;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.DeviceBean;
@@ -69,6 +67,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   private InfoBean infoBean;
 
   private final ScheduledExecutorService scheduledExecutor;
+  private final ExecutorService executor;
 
   public VirtualCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -76,7 +75,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   public VirtualCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
-    scheduledExecutor = new ScheduledThreadPoolExecutor(10);
+    scheduledExecutor = new ScheduledThreadPoolExecutor(30);
+    executor = Executors.newCachedThreadPool();
 
     if (autoConnect) {
       autoConnect();
@@ -170,7 +170,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     //When a locomotive has a speed change (>0) check if Auto mode is on.
     //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
     if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
-      simulateDriving(locUid, speed, direction);
+      this.executor.execute(() -> simulateDriving(locUid, speed, direction));
+      //simulateDriving(locUid, speed, direction);
     }
 
   }
@@ -319,30 +320,29 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
   }
 
-  //Method for virtual driving
-  private List<LocomotiveBean> getOnTrackLocomotives() {
-    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-    //filter..
-    List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
-
-    //Logger.trace("There " + (occupiedBlocks.size() == 1 ? "is" : "are") + " " + occupiedBlocks.size() + " occupied block(s)");
-    Set<LocomotiveBean> activeLocomotives = new HashSet<>();
-    for (BlockBean occupiedBlock : occupiedBlocks) {
-      LocomotiveBean dbl = PersistenceFactory.getService().getLocomotive(occupiedBlock.getLocomotiveId());
-      if (dbl != null) {
-        activeLocomotives.add(dbl);
-      }
-    }
-
-    if (Logger.isDebugEnabled()) {
-      Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
-      for (LocomotiveBean loc : activeLocomotives) {
-        Logger.trace(loc);
-      }
-    }
-    return new ArrayList<>(activeLocomotives);
-  }
-
+//  //Method for virtual driving
+//  private List<LocomotiveBean> getOnTrackLocomotives() {
+//    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+//    //filter..
+//    List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
+//
+//    //Logger.trace("There " + (occupiedBlocks.size() == 1 ? "is" : "are") + " " + occupiedBlocks.size() + " occupied block(s)");
+//    Set<LocomotiveBean> activeLocomotives = new HashSet<>();
+//    for (BlockBean occupiedBlock : occupiedBlocks) {
+//      LocomotiveBean dbl = PersistenceFactory.getService().getLocomotive(occupiedBlock.getLocomotiveId());
+//      if (dbl != null) {
+//        activeLocomotives.add(dbl);
+//      }
+//    }
+//
+//    if (Logger.isDebugEnabled()) {
+//      Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
+//      for (LocomotiveBean loc : activeLocomotives) {
+//        Logger.trace(loc);
+//      }
+//    }
+//    return new ArrayList<>(activeLocomotives);
+//  }
   //Find the route the locomotive is doing....
   void simulateDriving(int locUid, int speed, LocomotiveBean.Direction direction) {
     //Check is the Dispatcher for the locomotive is running...
@@ -366,7 +366,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       String sensorId = dispatcher.getWaitingForSensorId();
       if (sensorId != null) {
         //Start a time which execute a worker thread which fires the sensor
-        scheduledExecutor.schedule(() -> toggleSensor(sensorId), 4, TimeUnit.SECONDS);
+        scheduledExecutor.schedule(() -> toggleSensor(sensorId), 3, TimeUnit.SECONDS);
       }
     }
   }
