@@ -17,5 +17,11 @@ alter table routes add status varchar(255);
 
 alter table blocks add status varchar(255);
 alter table blocks add incoming_suffix varchar(255);
+
+alter table blocks add min_wait_time integer not null default 10;
+alter table blocks add max_wait_time integer null;
+alter table blocks add random_wait bool not null default false;
+alter table blocks add always_stop bool not null default false;
+
 --alter table blocks rename column incoming_side to incoming_suffix;
 commit;

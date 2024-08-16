@@ -39,6 +39,11 @@ public class BlockBean {
   private String status;
   private String arrivalSuffix;
 
+  private Integer minWaitTime;
+  private Integer maxWaitTime;
+  private boolean randomWait;
+  private boolean alwaysStop;
+
   private TileBean tileBean;
 
   private SensorBean plusSensorBean;
@@ -201,9 +206,7 @@ public class BlockBean {
     this.locomotiveId = locomotiveId;
   }
 
-  @Column(name = "reverse_arrival_side",
-          nullable = false,
-          columnDefinition = "reverse_arrival_side bool default '1'")
+  @Column(name = "reverse_arrival_side", nullable = false, columnDefinition = "reverse_arrival_side bool default '1'")
   public boolean isReverseArrival() {
     return reverseArrival;
   }
@@ -228,6 +231,46 @@ public class BlockBean {
 
   public void setArrivalSuffix(String arrivalSuffix) {
     this.arrivalSuffix = arrivalSuffix;
+  }
+
+  @Column(name = "min_wait_time", nullable = false, columnDefinition = "integer default 10")
+  public Integer getMinWaitTime() {
+    return minWaitTime;
+  }
+
+  public void setMinWaitTime(Integer minWaitTime) {
+    if (minWaitTime == null) {
+      this.minWaitTime = 10;
+    } else {
+      this.minWaitTime = minWaitTime;
+    }
+  }
+
+  @Column(name = "max_wait_time")
+  public Integer getMaxWaitTime() {
+    return maxWaitTime;
+  }
+
+  public void setMaxWaitTime(Integer maxWaitTime) {
+    this.maxWaitTime = maxWaitTime;
+  }
+
+  @Column(name = "random_wait", nullable = false, columnDefinition = "random_wait bool default '0'")
+  public boolean isRandomWait() {
+    return randomWait;
+  }
+
+  public void setRandomWait(boolean randomWait) {
+    this.randomWait = randomWait;
+  }
+
+  @Column(name = "always_stop", nullable = false, columnDefinition = "always_stop bool default '0'")
+  public boolean isAlwaysStop() {
+    return alwaysStop;
+  }
+
+  public void setAlwaysStop(boolean alwaysStop) {
+    this.alwaysStop = alwaysStop;
   }
 
   @Transient
