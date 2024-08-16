@@ -58,7 +58,7 @@ VALUES ('0-0002','B0-S-2',0,2,0,1,NULL,NULL),
        ('0-0014','B0-S-14',0,14,0,NULL,NULL,NULL),
        ('0-0006','B0-S-6',0,6,0,NULL,NULL,NULL),
        ('0-0005','B0-S-5',0,5,0,NULL,NULL,NULL);
-INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated)
+INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated)
 VALUES ('0-0016','B0-S-16',0,16,0,NULL,NULL,NULL),
        ('0-0008','B0-S-8',0,8,0,NULL,NULL,NULL),
        ('0-0007','B0-S-7',0,7,0,NULL,NULL,NULL),
@@ -67,7 +67,7 @@ VALUES ('0-0016','B0-S-16',0,16,0,NULL,NULL,NULL),
        ('0-0010','B0-S-10',0,10,0,1,1,null);
 commit;
 
-INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
+INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('se-1','Sensor','East','Center',260,60,NULL,NULL,'0-0001'),
 	 ('ct-2','Curved','South','Center',500,60,NULL,NULL,NULL),
 	 ('sw-1','Switch','West','Left',580,100,NULL,'001',NULL),
@@ -78,7 +78,7 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('st-5','Straight','West','Center',220,100,NULL,NULL,NULL),
 	 ('st-4','Straight','East','Center',540,100,NULL,NULL,NULL),
 	 ('se-4','Sensor','East','Center',420,100,NULL,NULL,'0-0004');
-INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
+INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('st-1','Straight','East','Center',220,60,NULL,NULL,NULL),
 	 ('bk-3','Block','East','Center',740,60,NULL,NULL,NULL),
 	 ('se-3','Sensor','East','Center',260,100,NULL,NULL,'0-0003'),
@@ -89,7 +89,7 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('st-13','Straight','West','Center',620,60,NULL,NULL,NULL),
 	 ('st-14','Straight','West','Center',860,100,NULL,NULL,NULL),
 	 ('se-5','Sensor','West','Center',660,60,NULL,NULL,'0-0011');
-INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
+INSERT INTO tiles (id,tile_type,orientation,direction,x,y,signal_type,accessory_id,sensor_id) VALUES
 	 ('se-6','Sensor','West','Center',820,60,NULL,NULL,'0-0010'),
 	 ('et-5','End','West','Center',180,60,NULL,NULL,NULL),
 	 ('se-9','Sensor','West','Center',820,100,NULL,NULL,'0-0012'),
@@ -101,15 +101,15 @@ INSERT INTO jcs.tiles (id,tile_type,orientation,direction,x,y,signal_type,access
 	 ('bk-4','Block','West','Center',740,100,NULL,NULL,NULL);
 commit;
 
-INSERT INTO jcs.blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,reverse_arrival_side,status,incoming_suffix) VALUES
-	 ('bk-1','bk-1','Blok 1','0-0001','0-0002',NULL,NULL,NULL,false,'Free',NULL),
-	 ('bk-2','bk-2','Blok 2','0-0004','0-0003',NULL,NULL,NULL,false,'Free',null),
-	 ('bk-3','bk-3','Blok 3','0-0010','0-0011',NULL,NULL,NULL,false,'Free',null),
-	 ('bk-4','bk-4','Blok 4','0-0013','0-0012',NULL,NULL,NULL,false,'Free',NULL);
+INSERT INTO blocks (id,tile_id,description,plus_sensor_id,min_sensor_id,plus_signal_id,min_signal_id,locomotive_id,reverse_arrival_side,status,incoming_suffix, always_stop) VALUES
+	 ('bk-1','bk-1','Blok 1','0-0001','0-0002',NULL,NULL,NULL,false,'Free',NULL,true),
+	 ('bk-2','bk-2','Blok 2','0-0004','0-0003',NULL,NULL,NULL,false,'Free',null,true),
+	 ('bk-3','bk-3','Blok 3','0-0010','0-0011',NULL,NULL,NULL,false,'Free',null,true),
+	 ('bk-4','bk-4','Blok 4','0-0013','0-0012',NULL,NULL,NULL,false,'Free',NULL,true);
 commit;
 
 
-INSERT INTO jcs.routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_color,locked,status) VALUES
+INSERT INTO routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_color,locked,status) VALUES
 	 ('[bk-1-]->[bk-3-]','bk-1','-','bk-3','-',NULL,false,NULL),
 	 ('[bk-4+]->[bk-2+]','bk-4','+','bk-2','+',NULL,false,NULL),
 	 ('[bk-3-]->[bk-2+]','bk-3','-','bk-2','+',NULL,false,NULL),
@@ -120,7 +120,7 @@ INSERT INTO jcs.routes (id,from_tile_id,from_suffix,to_tile_id,to_suffix,route_c
 	 ('[bk-3-]->[bk-1-]','bk-3','-','bk-1','-',NULL,false,NULL);
 commit;
 
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-4+]->[bk-2+]','bk-4','bk-4',NULL,0,NULL),
 	 ('[bk-4+]->[bk-2+]','bk-4+','bk-4',NULL,1,NULL),
 	 ('[bk-4+]->[bk-2+]','se-10','se-10',NULL,2,'East'),
@@ -131,7 +131,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-4+]->[bk-2+]','st-3','st-3',NULL,7,'East'),
 	 ('[bk-4+]->[bk-2+]','se-4','se-4',NULL,8,'East'),
 	 ('[bk-4+]->[bk-2+]','bk-2+','bk-2',NULL,9,'East');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-2+]->[bk-4+]','bk-2','bk-2',NULL,0,NULL),
 	 ('[bk-2+]->[bk-4+]','bk-2+','bk-2',NULL,1,NULL),
 	 ('[bk-2+]->[bk-4+]','se-4','se-4',NULL,2,'West'),
@@ -142,7 +142,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-2+]->[bk-4+]','st-17','st-17',NULL,7,'West'),
 	 ('[bk-2+]->[bk-4+]','se-10','se-10',NULL,8,'West'),
 	 ('[bk-2+]->[bk-4+]','bk-4+','bk-4',NULL,9,'West');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-2+]->[bk-3-]','bk-2','bk-2',NULL,0,NULL),
 	 ('[bk-2+]->[bk-3-]','bk-2+','bk-2',NULL,1,NULL),
 	 ('[bk-2+]->[bk-3-]','se-4','se-4',NULL,2,'West'),
@@ -153,7 +153,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-2+]->[bk-3-]','ct-1','ct-1',NULL,7,'South'),
 	 ('[bk-2+]->[bk-3-]','st-13','st-13',NULL,8,'West'),
 	 ('[bk-2+]->[bk-3-]','se-5','se-5',NULL,9,'West');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-2+]->[bk-3-]','bk-3-','bk-3',NULL,10,'West'),
 	 ('[bk-3-]->[bk-2+]','bk-3','bk-3',NULL,0,NULL),
 	 ('[bk-3-]->[bk-2+]','bk-3-','bk-3',NULL,1,NULL),
@@ -164,7 +164,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-3-]->[bk-2+]','st-4','st-4',NULL,6,'East'),
 	 ('[bk-3-]->[bk-2+]','sw-2','sw-2','G',7,'East'),
 	 ('[bk-3-]->[bk-2+]','st-3','st-3',NULL,8,'East');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-3-]->[bk-2+]','se-4','se-4',NULL,9,'East'),
 	 ('[bk-3-]->[bk-2+]','bk-2+','bk-2',NULL,10,'East'),
 	 ('[bk-4+]->[bk-1-]','bk-4','bk-4',NULL,0,NULL),
@@ -175,7 +175,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-4+]->[bk-1-]','st-4','st-4',NULL,5,'East'),
 	 ('[bk-4+]->[bk-1-]','sw-2','sw-2','R',6,'East'),
 	 ('[bk-4+]->[bk-1-]','ct-2','ct-2',NULL,7,'South');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-4+]->[bk-1-]','st-2','st-2',NULL,8,'East'),
 	 ('[bk-4+]->[bk-1-]','se-2','se-2',NULL,9,'East'),
 	 ('[bk-4+]->[bk-1-]','bk-1-','bk-1',NULL,10,'East'),
@@ -186,7 +186,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-1-]->[bk-4+]','ct-2','ct-2',NULL,4,'West'),
 	 ('[bk-1-]->[bk-4+]','sw-2','sw-2','R',5,'North'),
 	 ('[bk-1-]->[bk-4+]','st-4','st-4',NULL,6,'West');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-1-]->[bk-4+]','sw-1','sw-1','G',7,'West'),
 	 ('[bk-1-]->[bk-4+]','st-17','st-17',NULL,8,'West'),
 	 ('[bk-1-]->[bk-4+]','se-10','se-10',NULL,9,'West'),
@@ -197,7 +197,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-1-]->[bk-3-]','st-2','st-2',NULL,3,'West'),
 	 ('[bk-1-]->[bk-3-]','ct-2','ct-2',NULL,4,'West'),
 	 ('[bk-1-]->[bk-3-]','sw-2','sw-2','R',5,'North');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-1-]->[bk-3-]','st-4','st-4',NULL,6,'West'),
 	 ('[bk-1-]->[bk-3-]','sw-1','sw-1','R',7,'West'),
 	 ('[bk-1-]->[bk-3-]','ct-1','ct-1',NULL,8,'South'),
@@ -208,7 +208,7 @@ INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_s
 	 ('[bk-3-]->[bk-1-]','bk-3-','bk-3',NULL,1,NULL),
 	 ('[bk-3-]->[bk-1-]','se-5','se-5',NULL,2,'East'),
 	 ('[bk-3-]->[bk-1-]','st-13','st-13',NULL,3,'East');
-INSERT INTO jcs.route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
+INSERT INTO route_elements (route_id,node_id,tile_id,accessory_value,order_seq,incoming_side) VALUES
 	 ('[bk-3-]->[bk-1-]','ct-1','ct-1',NULL,4,'East'),
 	 ('[bk-3-]->[bk-1-]','sw-1','sw-1','R',5,'North'),
 	 ('[bk-3-]->[bk-1-]','st-4','st-4',NULL,6,'East'),

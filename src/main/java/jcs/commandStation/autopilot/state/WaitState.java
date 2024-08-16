@@ -31,6 +31,19 @@ class WaitState extends DispatcherState {
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
+
+    //BlockBean blockBean = dispatcher.getDepartureBlock();
+    //boolean random = blockBean.isRandomWait();
+    //int minWait = blockBean.getMinWaitTime();
+    //int defaultMaxWaitTime = Integer.getInteger("default.max.waittime", 20);
+    //int maxWait = blockBean.getMaxWaitTime();
+    //Choose randomly the route
+//      for (int i = 0; i < 10; i++) {
+//        //Seed a bit....
+//        getRandomNumber(0, checkedRoutes.size());
+//      }
+//      rIdx = getRandomNumber(0, checkedRoutes.size());
+    //hoe te wachen? aparte worker thread?
     //Stub
     //TODO Obtain the wait time from either the block in the database of from the locomotive
     long waitTime = 1 * defaultWaitTime;

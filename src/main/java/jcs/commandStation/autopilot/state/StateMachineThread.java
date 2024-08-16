@@ -113,23 +113,20 @@ class StateMachineThread extends Thread {
         Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
         this.running = false;
       }
-
-//      if (inLoop) {
-//        //No dispatcherState change so lets wait a while
-//        try {
-//          synchronized (this) {
-//            wait(100);
-//          }
-//        } catch (InterruptedException ex) {
-//          Logger.trace(ex.getMessage());
-//        }
-//      }
     }
 
     if (previousState != dispatcherState || dispatcherState instanceof WaitState) {
       //handle the dispatcherState changes
       dispatcher.fireStateListeners(dispatcherState.getName());
     }
+    try {
+      synchronized (this) {
+        wait(100);
+      }
+    } catch (InterruptedException ex) {
+      Logger.trace(ex.getMessage());
+    }
+
   }
 
   //Reset the statemachine

@@ -987,6 +987,7 @@ public class PersistenceServiceTest {
     block.setId("st-1");
     block.setTileId("st-1");
     block.setDescription("A Test Block");
+    block.setMinWaitTime(10);
 
     PersistenceService instance = PersistenceFactory.getService();
 
@@ -1008,6 +1009,7 @@ public class PersistenceServiceTest {
     block.setId("si-3");
     block.setTileId("si-3");
     block.setDescription("A Test Block to remove");
+    block.setMinWaitTime(10);
 
     PersistenceService instance = PersistenceFactory.getService();
 

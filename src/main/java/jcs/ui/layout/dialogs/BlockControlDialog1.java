@@ -33,10 +33,10 @@ import org.tinylog.Logger;
  *
  * @author fransjacobs
  */
-public class BlockControlDialog extends javax.swing.JDialog {
-  
+public class BlockControlDialog1 extends javax.swing.JDialog {
+
   private final Block block;
-  
+
   private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
 
   /**
@@ -45,19 +45,19 @@ public class BlockControlDialog extends javax.swing.JDialog {
    * @param parent
    * @param block
    */
-  public BlockControlDialog(java.awt.Frame parent, Block block) {
+  public BlockControlDialog1(java.awt.Frame parent, Block block) {
     super(parent, true);
     this.block = block;
     initComponents();
-    
+
     postInit();
   }
-  
+
   private void postInit() {
     setLocationRelativeTo(null);
     String text = this.headingLbl.getText() + " " + this.block.getId();
     this.headingLbl.setText(text);
-    
+
     if (this.block != null) {
       List<LocomotiveBean> locos = new LinkedList<>();
       LocomotiveBean emptyBean = new LocomotiveBean();
@@ -65,7 +65,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
       locos.addAll(PersistenceFactory.getService().getLocomotives());
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
       this.locomotiveCB.setModel(locomotiveComboBoxModel);
-      
+
       BlockBean bb = this.block.getBlockBean();
       if (bb == null) {
         bb = PersistenceFactory.getService().getBlockByTileId(block.getId());
@@ -76,56 +76,43 @@ public class BlockControlDialog extends javax.swing.JDialog {
           bb.setTile(block);
           bb.setTileId(block.getId());
           bb.setBlockState(BlockBean.BlockState.FREE);
-          bb.setMaxWaitTime(0);
-          bb.setMinWaitTime(10);
         }
         this.block.setBlockBean(bb);
       }
-      
+
       this.blockIdTF.setText(block.getId());
       this.blockNameTF.setText(bb.getDescription());
-      
+
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
         this.startLocButton.setEnabled(true);
       }
-      
-      if (bb.getMinWaitTime() != null) {
-        this.minWaitSpinner.setValue(bb.getMinWaitTime());
-      }
-      
-      if (bb.getMaxWaitTime() != null) {
-        this.maxWaitSpinner.setValue(bb.getMaxWaitTime());
-      }
-      
-      this.alwaysStopCB.setSelected(bb.isAlwaysStop());
-      this.randomWaitCB.setSelected(bb.isRandomWait());
-      
+
       if (bb.getLocomotive() != null) {
         this.locomotiveCB.setSelectedItem(bb.getLocomotive());
         if (bb.getBlockState() == null) {
           bb.setBlockState(BlockBean.BlockState.OCCUPIED);
         }
-        
+
         if (bb.getLocomotive().getLocIcon() != null) {
           this.locomotiveIconLbl.setIcon(new ImageIcon(bb.getLocomotive().getLocIcon()));
           this.locomotiveIconLbl.setText(null);
         } else {
           this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
-        
+
         if (LocomotiveBean.Direction.BACKWARDS == bb.getLocomotive().getDirection()) {
           this.backwardsRB.setSelected(true);
         } else {
           this.forwardsRB.setSelected(true);
         }
-        
+
         this.startLocButton.setEnabled(AutoPilot.getInstance().isAutoModeActive());
         this.startLocButton.setSelected(AutoPilot.getInstance().isRunning(bb.getLocomotive()));
       } else {
         this.locomotiveCB.setSelectedItem(emptyBean);
         this.startLocButton.setEnabled(false);
-        
+
         if (bb.getBlockState() == null) {
           bb.setBlockState(BlockBean.BlockState.FREE);
         }
@@ -143,8 +130,6 @@ public class BlockControlDialog extends javax.swing.JDialog {
     locomotiveDirectionBG = new javax.swing.ButtonGroup();
     headingPanel = new javax.swing.JPanel();
     headingLbl = new javax.swing.JLabel();
-    propertiesTP = new javax.swing.JTabbedPane();
-    propPanel = new javax.swing.JPanel();
     deviceIdPanel = new javax.swing.JPanel();
     blockIdLbl = new javax.swing.JLabel();
     blockIdTF = new javax.swing.JTextField();
@@ -155,6 +140,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
     directionsPanel = new javax.swing.JPanel();
     arrivalPanel = new javax.swing.JPanel();
     reverseArrivalBtn = new javax.swing.JButton();
+    locDirPanel = new javax.swing.JPanel();
+    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 0), new java.awt.Dimension(10, 32767));
     backwardsRB = new javax.swing.JRadioButton();
     forwardsRB = new javax.swing.JRadioButton();
     imagePanel = new javax.swing.JPanel();
@@ -162,39 +149,26 @@ public class BlockControlDialog extends javax.swing.JDialog {
     locomotiveSelectionPanel = new javax.swing.JPanel();
     locomotiveLbl = new javax.swing.JLabel();
     locomotiveCB = new javax.swing.JComboBox<>();
-    filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
-    startLocButton = new javax.swing.JToggleButton();
-    waitPanel = new javax.swing.JPanel();
-    waitPropPanel = new javax.swing.JPanel();
-    filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(100, 0), new java.awt.Dimension(20, 32767));
-    alwaysStopCB = new javax.swing.JCheckBox();
-    randomWaitCB = new javax.swing.JCheckBox();
-    minTimePanel = new javax.swing.JPanel();
-    minWaitLbl = new javax.swing.JLabel();
-    minWaitSpinner = new javax.swing.JSpinner();
-    maxTimePanel = new javax.swing.JPanel();
-    maxWaitLbl = new javax.swing.JLabel();
-    maxWaitSpinner = new javax.swing.JSpinner();
     bottomPanel = new javax.swing.JPanel();
+    leftPanel = new javax.swing.JPanel();
+    startLocButton = new javax.swing.JToggleButton();
+    rightPanel = new javax.swing.JPanel();
     saveExitBtn = new javax.swing.JButton();
-    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 0), new java.awt.Dimension(20, 32767));
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Block Control Properties");
-    setMinimumSize(new java.awt.Dimension(410, 310));
-    setSize(new java.awt.Dimension(410, 410));
+    setMinimumSize(new java.awt.Dimension(290, 200));
+    getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
     headingPanel.setMinimumSize(new java.awt.Dimension(290, 40));
     headingPanel.setPreferredSize(new java.awt.Dimension(290, 40));
     headingPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
     headingLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/new-block.png"))); // NOI18N
-    headingLbl.setText("Block properties");
+    headingLbl.setText("Block, assign Locomotive");
     headingPanel.add(headingLbl);
 
-    getContentPane().add(headingPanel, java.awt.BorderLayout.NORTH);
-
-    propPanel.setLayout(new javax.swing.BoxLayout(propPanel, javax.swing.BoxLayout.Y_AXIS));
+    getContentPane().add(headingPanel);
 
     deviceIdPanel.setPreferredSize(new java.awt.Dimension(290, 40));
     java.awt.FlowLayout flowLayout2 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
@@ -210,7 +184,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
     blockIdTF.setPreferredSize(new java.awt.Dimension(150, 23));
     deviceIdPanel.add(blockIdTF);
 
-    propPanel.add(deviceIdPanel);
+    getContentPane().add(deviceIdPanel);
 
     namePanel.setMinimumSize(new java.awt.Dimension(290, 40));
     namePanel.setPreferredSize(new java.awt.Dimension(290, 40));
@@ -228,7 +202,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
     blockNameTF.setPreferredSize(new java.awt.Dimension(150, 23));
     namePanel.add(blockNameTF);
 
-    propPanel.add(namePanel);
+    getContentPane().add(namePanel);
 
     locomotivePanel.setPreferredSize(new java.awt.Dimension(290, 60));
     locomotivePanel.setLayout(new java.awt.GridLayout(1, 2));
@@ -240,14 +214,19 @@ public class BlockControlDialog extends javax.swing.JDialog {
     arrivalPanel.setLayout(flowLayout5);
 
     reverseArrivalBtn.setText("Reverse Arrival");
-    reverseArrivalBtn.setToolTipText("Reverse the Block arrival side");
-    reverseArrivalBtn.setMargin(new java.awt.Insets(2, 2, 2, 2));
     reverseArrivalBtn.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         reverseArrivalBtnActionPerformed(evt);
       }
     });
     arrivalPanel.add(reverseArrivalBtn);
+
+    directionsPanel.add(arrivalPanel);
+
+    java.awt.FlowLayout flowLayout8 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout8.setAlignOnBaseline(true);
+    locDirPanel.setLayout(flowLayout8);
+    locDirPanel.add(filler1);
 
     locomotiveDirectionBG.add(backwardsRB);
     backwardsRB.setText("<<");
@@ -260,7 +239,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
         backwardsRBActionPerformed(evt);
       }
     });
-    arrivalPanel.add(backwardsRB);
+    locDirPanel.add(backwardsRB);
 
     locomotiveDirectionBG.add(forwardsRB);
     forwardsRB.setText(">>");
@@ -270,9 +249,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
         forwardsRBActionPerformed(evt);
       }
     });
-    arrivalPanel.add(forwardsRB);
+    locDirPanel.add(forwardsRB);
 
-    directionsPanel.add(arrivalPanel);
+    directionsPanel.add(locDirPanel);
 
     locomotivePanel.add(directionsPanel);
 
@@ -283,7 +262,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     locomotivePanel.add(imagePanel);
 
-    propPanel.add(locomotivePanel);
+    getContentPane().add(locomotivePanel);
 
     locomotiveSelectionPanel.setPreferredSize(new java.awt.Dimension(290, 40));
     java.awt.FlowLayout flowLayout3 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
@@ -303,7 +282,18 @@ public class BlockControlDialog extends javax.swing.JDialog {
       }
     });
     locomotiveSelectionPanel.add(locomotiveCB);
-    locomotiveSelectionPanel.add(filler3);
+
+    getContentPane().add(locomotiveSelectionPanel);
+
+    bottomPanel.setPreferredSize(new java.awt.Dimension(290, 50));
+    java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0);
+    flowLayout4.setAlignOnBaseline(true);
+    bottomPanel.setLayout(flowLayout4);
+
+    leftPanel.setPreferredSize(new java.awt.Dimension(145, 50));
+    java.awt.FlowLayout flowLayout7 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
+    flowLayout7.setAlignOnBaseline(true);
+    leftPanel.setLayout(flowLayout7);
 
     startLocButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/direction-right-24.png"))); // NOI18N
     startLocButton.setToolTipText("Start Locomotive");
@@ -315,85 +305,14 @@ public class BlockControlDialog extends javax.swing.JDialog {
         startLocButtonActionPerformed(evt);
       }
     });
-    locomotiveSelectionPanel.add(startLocButton);
+    leftPanel.add(startLocButton);
 
-    propPanel.add(locomotiveSelectionPanel);
+    bottomPanel.add(leftPanel);
 
-    propertiesTP.addTab("Assignments", propPanel);
-
-    waitPanel.setLayout(new javax.swing.BoxLayout(waitPanel, javax.swing.BoxLayout.Y_AXIS));
-
-    java.awt.FlowLayout flowLayout9 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout9.setAlignOnBaseline(true);
-    waitPropPanel.setLayout(flowLayout9);
-    waitPropPanel.add(filler2);
-
-    alwaysStopCB.setText("Always Stop");
-    alwaysStopCB.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        alwaysStopCBActionPerformed(evt);
-      }
-    });
-    waitPropPanel.add(alwaysStopCB);
-
-    randomWaitCB.setText("Random Wait");
-    randomWaitCB.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        randomWaitCBActionPerformed(evt);
-      }
-    });
-    waitPropPanel.add(randomWaitCB);
-
-    waitPanel.add(waitPropPanel);
-
-    java.awt.FlowLayout flowLayout10 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout10.setAlignOnBaseline(true);
-    minTimePanel.setLayout(flowLayout10);
-
-    minWaitLbl.setLabelFor(minWaitSpinner);
-    minWaitLbl.setText("Min. Wait Time");
-    minWaitLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    minTimePanel.add(minWaitLbl);
-
-    minWaitSpinner.setModel(new javax.swing.SpinnerNumberModel(10, 0, null, 1));
-    minWaitSpinner.setPreferredSize(new java.awt.Dimension(75, 23));
-    minWaitSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-      public void stateChanged(javax.swing.event.ChangeEvent evt) {
-        minWaitSpinnerStateChanged(evt);
-      }
-    });
-    minTimePanel.add(minWaitSpinner);
-
-    waitPanel.add(minTimePanel);
-
-    java.awt.FlowLayout flowLayout11 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
-    flowLayout11.setAlignOnBaseline(true);
-    maxTimePanel.setLayout(flowLayout11);
-
-    maxWaitLbl.setLabelFor(maxWaitSpinner);
-    maxWaitLbl.setText("Max. Wait Time");
-    maxWaitLbl.setPreferredSize(new java.awt.Dimension(100, 17));
-    maxTimePanel.add(maxWaitLbl);
-
-    maxWaitSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, 600, 1));
-    maxWaitSpinner.setPreferredSize(new java.awt.Dimension(75, 23));
-    maxWaitSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-      public void stateChanged(javax.swing.event.ChangeEvent evt) {
-        maxWaitSpinnerStateChanged(evt);
-      }
-    });
-    maxTimePanel.add(maxWaitSpinner);
-
-    waitPanel.add(maxTimePanel);
-
-    propertiesTP.addTab("Wait Times", waitPanel);
-
-    getContentPane().add(propertiesTP, java.awt.BorderLayout.CENTER);
-
-    bottomPanel.setPreferredSize(new java.awt.Dimension(290, 50));
-    java.awt.FlowLayout flowLayout4 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
-    flowLayout4.setAlignOnBaseline(true);
-    bottomPanel.setLayout(flowLayout4);
+    rightPanel.setPreferredSize(new java.awt.Dimension(145, 50));
+    java.awt.FlowLayout flowLayout6 = new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT);
+    flowLayout6.setAlignOnBaseline(true);
+    rightPanel.setLayout(flowLayout6);
 
     saveExitBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
     saveExitBtn.setToolTipText("Save and Exit");
@@ -403,10 +322,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
         saveExitBtnActionPerformed(evt);
       }
     });
-    bottomPanel.add(saveExitBtn);
-    bottomPanel.add(filler1);
+    rightPanel.add(saveExitBtn);
 
-    getContentPane().add(bottomPanel, java.awt.BorderLayout.SOUTH);
+    bottomPanel.add(rightPanel);
+
+    getContentPane().add(bottomPanel);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -422,7 +342,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
         TileEvent tileEvent = new TileEvent(bb);
         TileFactory.fireTileEventListener(tileEvent);
       }
-      
+
       this.setVisible(false);
       this.dispose();
       Logger.trace(evt.getActionCommand() + "Block " + block.getId() + " Locomotive: " + this.block.getBlockBean().getLocomotive());
@@ -430,29 +350,29 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
   private void locomotiveCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locomotiveCBActionPerformed
     Logger.trace(evt.getActionCommand() + " -> " + this.locomotiveComboBoxModel.getSelectedItem());
-    
+
     LocomotiveBean selected = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
-    
+
     block.getBlockBean().setLocomotive(selected);
     if (block.getBlockBean().getLocomotiveId() != null) {
       block.getBlockBean().setBlockState(BlockBean.BlockState.OCCUPIED);
     } else {
       block.getBlockBean().setBlockState(BlockBean.BlockState.FREE);
     }
-    
+
     if (selected.getLocIcon() != null) {
       locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
       locomotiveIconLbl.setText(null);
     } else {
       locomotiveIconLbl.setText(selected.getName());
     }
-    
+
     if (LocomotiveBean.Direction.BACKWARDS == selected.getDirection()) {
       this.backwardsRB.setSelected(true);
     } else {
       this.forwardsRB.setSelected(true);
     }
-    
+
     if (block.getBlockBean().getLocomotiveId() != null) {
       startLocButton.setEnabled(true);
     } else {
@@ -487,24 +407,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
     loc.setDirection(LocomotiveBean.Direction.FORWARDS);
   }//GEN-LAST:event_forwardsRBActionPerformed
 
-  private void alwaysStopCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alwaysStopCBActionPerformed
-    this.block.getBlockBean().setAlwaysStop(this.alwaysStopCB.isSelected());
-  }//GEN-LAST:event_alwaysStopCBActionPerformed
-
-  private void randomWaitCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_randomWaitCBActionPerformed
-    this.block.getBlockBean().setRandomWait(this.randomWaitCB.isSelected());
-  }//GEN-LAST:event_randomWaitCBActionPerformed
-
-  private void minWaitSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_minWaitSpinnerStateChanged
-    this.block.getBlockBean().setMinWaitTime((Integer) this.minWaitSpinner.getValue());
-  }//GEN-LAST:event_minWaitSpinnerStateChanged
-
-  private void maxWaitSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_maxWaitSpinnerStateChanged
-    this.block.getBlockBean().setMaxWaitTime((Integer) this.maxWaitSpinner.getValue());
-  }//GEN-LAST:event_maxWaitSpinnerStateChanged
-
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  javax.swing.JCheckBox alwaysStopCB;
   javax.swing.JPanel arrivalPanel;
   javax.swing.JRadioButton backwardsRB;
   javax.swing.JLabel blockDescLbl;
@@ -515,32 +418,22 @@ public class BlockControlDialog extends javax.swing.JDialog {
   javax.swing.JPanel deviceIdPanel;
   javax.swing.JPanel directionsPanel;
   javax.swing.Box.Filler filler1;
-  javax.swing.Box.Filler filler2;
-  javax.swing.Box.Filler filler3;
   javax.swing.JRadioButton forwardsRB;
   javax.swing.JLabel headingLbl;
   javax.swing.JPanel headingPanel;
   javax.swing.JPanel imagePanel;
+  javax.swing.JPanel leftPanel;
+  javax.swing.JPanel locDirPanel;
   javax.swing.JComboBox<LocomotiveBean> locomotiveCB;
   javax.swing.ButtonGroup locomotiveDirectionBG;
   javax.swing.JLabel locomotiveIconLbl;
   javax.swing.JLabel locomotiveLbl;
   javax.swing.JPanel locomotivePanel;
   javax.swing.JPanel locomotiveSelectionPanel;
-  javax.swing.JPanel maxTimePanel;
-  javax.swing.JLabel maxWaitLbl;
-  javax.swing.JSpinner maxWaitSpinner;
-  javax.swing.JPanel minTimePanel;
-  javax.swing.JLabel minWaitLbl;
-  javax.swing.JSpinner minWaitSpinner;
   javax.swing.JPanel namePanel;
-  javax.swing.JPanel propPanel;
-  javax.swing.JTabbedPane propertiesTP;
-  javax.swing.JCheckBox randomWaitCB;
   javax.swing.JButton reverseArrivalBtn;
+  javax.swing.JPanel rightPanel;
   javax.swing.JButton saveExitBtn;
   javax.swing.JToggleButton startLocButton;
-  javax.swing.JPanel waitPanel;
-  javax.swing.JPanel waitPropPanel;
   // End of variables declaration//GEN-END:variables
 }

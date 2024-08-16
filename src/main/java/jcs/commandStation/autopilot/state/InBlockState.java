@@ -42,6 +42,8 @@ class InBlockState extends DispatcherState {
     destinationBlock.setReverseArrival(departureBlock.isReverseArrival());
     destinationBlock.setArrivalSuffix(dispatcher.getRouteBean().getToSuffix());
 
+    boolean alwaysStop = destinationBlock.isAlwaysStop();
+
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
     departureBlock.setReverseArrival(false);
@@ -65,7 +67,13 @@ class InBlockState extends DispatcherState {
 
     DispatcherState newState;
     if (dispatcher.isLocomotiveAutomodeOn()) {
-      newState = new WaitState();
+
+      if (alwaysStop) {
+        newState = new WaitState();
+      } else {
+        //Do not wait if posible
+        newState = new PrepareRouteState();
+      }
     } else {
       newState = new IdleState();
     }
