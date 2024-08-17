@@ -48,6 +48,8 @@ public class StateMachineStepByStepTest {
 
   public StateMachineStepByStepTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+    //Switch the Virtual Simulator OFF as it will interfeare with this step test
+    System.setProperty("dispatcher.stepTest", "true");
     testHelper = PersistenceTestHelper.getInstance();
     testHelper.runTestDataInsertScript("autopilot_test_layout.sql");
 
@@ -175,9 +177,8 @@ public class StateMachineStepByStepTest {
     //Start from bk-1
     BlockBean block1 = ps.getBlockByTileId("bk-1");
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
-    
+
     assertTrue(block1.isAlwaysStop());
-    
 
     //Destination bk-4
     BlockBean block4 = ps.getBlockByTileId("bk-4");
@@ -185,7 +186,6 @@ public class StateMachineStepByStepTest {
     assertNull(dispatcher.getRouteBean());
     assertTrue(block4.isAlwaysStop());
 
-    
     assertFalse(instance.isThreadRunning());
     assertFalse(instance.isEnableAutomode());
     assertEquals("IdleState", instance.getDispatcherStateName());
@@ -428,7 +428,7 @@ public class StateMachineStepByStepTest {
 
     //Execute the StartState
     instance.handleState();
-    assertEquals("EnterBlockState", instance.getDispatcherStateName());
+    assertEquals("StartState", instance.getDispatcherStateName());
 
     //Now lets Toggle the enter sensor
     SensorBean s2 = ps.getSensor("0-0002");
@@ -510,7 +510,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", instance.getDispatcherStateName());
   }
 
-  //@Test
+  @Test
   public void testFromBk1ToBk4Gost() {
     Logger.info("fromBk1ToBk4Gost");
     setupbk1bkNsDHG();
@@ -659,7 +659,7 @@ public class StateMachineStepByStepTest {
     assertEquals(LocomotiveBean.Direction.BACKWARDS, dispatcher.getLocomotiveBean().getDirection());
   }
 
-  //@Test
+  @Test
   public void testBk1ToBk4StartStopLocomotiveAutomode() {
     Logger.info("Bk1ToBk4StartStopLocomotiveAutomode");
     setupbk1bkNsDHG();
@@ -829,7 +829,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", instance.getDispatcherStateName());
   }
 
-  //@Test
+  @Test
   public void testReset() {
     Logger.info("reset");
     setupbk2bkNs1631();
@@ -981,7 +981,7 @@ public class StateMachineStepByStepTest {
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
   }
 
-  //@Test
+  @Test
   public void testStartStopLocomotiveAutomode() {
     Logger.info("startStopLocomotiveAutomode");
     setupbk1bkNsDHG();
@@ -1030,7 +1030,7 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", instance.getDispatcherStateName());
   }
 
-  //@Test
+  @Test
   public void testStartStopThreadRunning() {
     Logger.info("startStopThreadRunning");
     setupbk1bkNsDHG();

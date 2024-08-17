@@ -269,7 +269,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     }
   }
 
-  //TODO: is a threaded varian needed?
+  //TODO: is a threaded variant needed?
   private void notifySensorEventListeners(final SensorEvent sensorEvent) {
     executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }
@@ -320,31 +320,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
   }
 
-//  //Method for virtual driving
-//  private List<LocomotiveBean> getOnTrackLocomotives() {
-//    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
-//    //filter..
-//    List<BlockBean> occupiedBlocks = blocks.stream().filter(t -> t.getLocomotive() != null && t.getLocomotive().getId() != null).collect(Collectors.toList());
-//
-//    //Logger.trace("There " + (occupiedBlocks.size() == 1 ? "is" : "are") + " " + occupiedBlocks.size() + " occupied block(s)");
-//    Set<LocomotiveBean> activeLocomotives = new HashSet<>();
-//    for (BlockBean occupiedBlock : occupiedBlocks) {
-//      LocomotiveBean dbl = PersistenceFactory.getService().getLocomotive(occupiedBlock.getLocomotiveId());
-//      if (dbl != null) {
-//        activeLocomotives.add(dbl);
-//      }
-//    }
-//
-//    if (Logger.isDebugEnabled()) {
-//      Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
-//      for (LocomotiveBean loc : activeLocomotives) {
-//        Logger.trace(loc);
-//      }
-//    }
-//    return new ArrayList<>(activeLocomotives);
-//  }
   //Find the route the locomotive is doing....
   void simulateDriving(int locUid, int speed, LocomotiveBean.Direction direction) {
+    if ("true".equals(System.getProperty("dispatcher.stepTest", "false"))) {
+      return;
+    }
     //Check is the Dispatcher for the locomotive is running...
     Dispatcher dispatcher = AutoPilot.getInstance().getLocomotiveDispatcher(locUid);
 
@@ -369,6 +349,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
         scheduledExecutor.schedule(() -> toggleSensor(sensorId), 3, TimeUnit.SECONDS);
       }
     }
+
   }
 
   private void toggleSensor(String sensorId) {
