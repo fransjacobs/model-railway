@@ -19,7 +19,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -42,8 +46,16 @@ public class BlockTileTester extends JFrame {
   public BlockTileTester(String title) {
     super(title);
 
-    LocomotiveBean lok1 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true);
+    //LocomotiveBean lok1 = new LocomotiveBean(2L, "BR 81 002", 2L, 2, "DB BR 81 008", "mm_prg", 120, 1, 0, 0, false, true);
     LocomotiveBean lok2 = new LocomotiveBean(12L, "BR 141 015-08", 12L, 12, "DB BR 141 136-2", "mm_prg", 120, 0, 0, 2, false, true);
+    
+    LocomotiveBean lok1 = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
+
+    String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "dcc-ex" + File.separator + "ns dhg 6505.png";
+    lok1.setIcon(imgPath);
+
+    Image locImage = readImage(imgPath);
+    lok1.setLocIcon(locImage);
 
     tileEast = new Block(Orientation.EAST, 70, 190);
     tileEast.setId("bk-1");
@@ -51,6 +63,7 @@ public class BlockTileTester extends JFrame {
     BlockBean bbe = new BlockBean();
     bbe.setId(tileEast.getId());
     bbe.setTileId(tileEast.getId());
+    //lok1.setDirection(LocomotiveBean.Direction.FORWARDS);
     bbe.setLocomotive(lok1);
     bbe.setDescription(tileEast.getId());
     //bbe.setReverseArrival(true);
@@ -59,13 +72,13 @@ public class BlockTileTester extends JFrame {
     //
     tileSouth = new Block(Orientation.SOUTH, 160, 190);
     tileSouth.setId("bk-2");
+    
     BlockBean bbs = new BlockBean();
     bbs.setId(tileSouth.getId());
     bbs.setTileId(tileSouth.getId());
-    lok2.setDirection(lok2.getDirection().toggle());
     bbs.setDescription(tileSouth.getId());
-
-    bbs.setLocomotive(lok2);
+    //lok1.setDirection(LocomotiveBean.Direction.BACKWARDS);
+    bbs.setLocomotive(lok1);
     //bbs.setReverseArrival(true);
     ((Block) tileSouth).setBlockBean(bbs);
 
@@ -74,7 +87,8 @@ public class BlockTileTester extends JFrame {
     BlockBean bbw = new BlockBean();
     bbw.setId(tileWest.getId());
     bbw.setTileId(tileWest.getId());
-    bbw.setLocomotive(lok2);
+    //lok1.setDirection(LocomotiveBean.Direction.FORWARDS);
+    bbw.setLocomotive(lok1);
     bbw.setDescription(tileWest.getId());
     //bbw.setReverseArrival(true);
     ((Block) tileWest).setBlockBean(bbw);
@@ -84,15 +98,15 @@ public class BlockTileTester extends JFrame {
     BlockBean bbn = new BlockBean();
     bbn.setId(tileNorth.getId());
     bbn.setTileId(tileNorth.getId());
-    //bbn.setLocomotive(lok2);
-    bbn.setReverseArrival(true);
+    lok1.setDirection(LocomotiveBean.Direction.BACKWARDS);
+    bbn.setLocomotive(lok1);
+    //bbn.setReverseArrival(true);
     ((Block) tileNorth).setBlockBean(bbn);
     
-    
-    Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());
-    Logger.trace("West: "+ ((Block)tileWest).getLocomotiveBlockSuffix());
-    Logger.trace("North: "+ ((Block)tileNorth).getLocomotiveBlockSuffix());
-    Logger.trace("South: "+ ((Block)tileSouth).getLocomotiveBlockSuffix());
+//    Logger.trace("East: "+ ((Block)tileEast).getLocomotiveBlockSuffix());
+//    Logger.trace("West: "+ ((Block)tileWest).getLocomotiveBlockSuffix());
+//    Logger.trace("North: "+ ((Block)tileNorth).getLocomotiveBlockSuffix());
+//    Logger.trace("South: "+ ((Block)tileSouth).getLocomotiveBlockSuffix());
     
     
   }
@@ -117,6 +131,37 @@ public class BlockTileTester extends JFrame {
     tileNorth.drawBounds(g2d);
     tileNorth.drawCenterPoint(g2d, Color.cyan);
   }
+  
+  public static Image readImage(String path) {
+    Image image = null;
+    //path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
+
+    File imgFile;
+    if (path.contains(".")) {
+      imgFile = new File(path);
+    } else {
+      imgFile = new File(path);
+    }
+
+    if (imgFile.exists()) {
+      try {
+        image = ImageIO.read(imgFile);
+
+        //Image is sized by default so
+        if (image != null) {
+          int size = 100;
+          float aspect = (float) image.getHeight(null) / (float) image.getWidth(null);
+          image = image.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
+        }
+
+      } catch (IOException e) {
+        Logger.trace("Image file " + path + " does not exists");
+      }
+    }
+    return image;
+  }
+  
+  
 
   public static void main(String args[]) {
     try {

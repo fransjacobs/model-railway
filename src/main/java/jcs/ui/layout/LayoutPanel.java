@@ -146,17 +146,23 @@ public class LayoutPanel extends JPanel {
       this.autoPilotBtn.setEnabled(readonly);
       this.autoPilotBtn.setVisible(readonly);
 
-      this.startAutoPilotBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
-      this.startAutoPilotBtn.setVisible(readonly);
+      this.resetAutopilotBtn.setEnabled(readonly);
+      this.resetAutopilotBtn.setVisible(readonly);
+
+      this.startAllLocomotivesBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
+      this.startAllLocomotivesBtn.setVisible(readonly);
     } else {
 
       this.toolBar.remove(this.autoPilotBtn);
       this.autoPilotBtn.setEnabled(readonly);
       this.autoPilotBtn.setVisible(readonly);
+      this.toolBar.remove(this.resetAutopilotBtn);
+      this.resetAutopilotBtn.setEnabled(readonly);
+      this.resetAutopilotBtn.setVisible(readonly);
 
-      this.toolBar.remove(this.startAutoPilotBtn);
-      this.startAutoPilotBtn.setEnabled(readonly);
-      this.startAutoPilotBtn.setVisible(readonly);
+      this.toolBar.remove(this.startAllLocomotivesBtn);
+      this.startAllLocomotivesBtn.setEnabled(readonly);
+      this.startAllLocomotivesBtn.setVisible(readonly);
     }
 
     if (readonly) {
@@ -205,7 +211,8 @@ public class LayoutPanel extends JPanel {
     repaintBtn = new JButton();
     routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
-    startAutoPilotBtn = new JToggleButton();
+    startAllLocomotivesBtn = new JToggleButton();
+    resetAutopilotBtn = new JButton();
     filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     selectBtn = new JButton();
     addBtn = new JButton();
@@ -316,7 +323,7 @@ public class LayoutPanel extends JPanel {
     });
     operationsPM.add(deleteMI);
 
-    setMinimumSize(new Dimension(1000, 160));
+    setMinimumSize(new Dimension(1400, 900));
     setOpaque(false);
     setPreferredSize(new Dimension(1400, 900));
     addComponentListener(new ComponentAdapter() {
@@ -333,8 +340,8 @@ public class LayoutPanel extends JPanel {
     setLayout(new BorderLayout());
 
     topPanel.setMaximumSize(new Dimension(32767, 50));
-    topPanel.setMinimumSize(new Dimension(1000, 50));
-    topPanel.setPreferredSize(new Dimension(1000, 50));
+    topPanel.setMinimumSize(new Dimension(1400, 50));
+    topPanel.setPreferredSize(new Dimension(1400, 50));
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     topPanel.setLayout(flowLayout1);
@@ -408,6 +415,7 @@ public class LayoutPanel extends JPanel {
 
     autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
     autoPilotBtn.setToolTipText("Auto mode");
+    autoPilotBtn.setDoubleBuffered(true);
     autoPilotBtn.setFocusable(false);
     autoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
     autoPilotBtn.setMaximumSize(new Dimension(38, 38));
@@ -422,21 +430,38 @@ public class LayoutPanel extends JPanel {
     });
     toolBar.add(autoPilotBtn);
 
-    startAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
-    startAutoPilotBtn.setToolTipText("Auto mode");
-    startAutoPilotBtn.setFocusable(false);
-    startAutoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    startAutoPilotBtn.setMaximumSize(new Dimension(38, 38));
-    startAutoPilotBtn.setMinimumSize(new Dimension(38, 38));
-    startAutoPilotBtn.setPreferredSize(new Dimension(38, 38));
-    startAutoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
-    startAutoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    startAutoPilotBtn.addActionListener(new ActionListener() {
+    startAllLocomotivesBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
+    startAllLocomotivesBtn.setToolTipText("Start all Locomotives");
+    startAllLocomotivesBtn.setDoubleBuffered(true);
+    startAllLocomotivesBtn.setEnabled(false);
+    startAllLocomotivesBtn.setFocusable(false);
+    startAllLocomotivesBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    startAllLocomotivesBtn.setMaximumSize(new Dimension(38, 38));
+    startAllLocomotivesBtn.setMinimumSize(new Dimension(38, 38));
+    startAllLocomotivesBtn.setPreferredSize(new Dimension(38, 38));
+    startAllLocomotivesBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
+    startAllLocomotivesBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    startAllLocomotivesBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        startAutoPilotBtnActionPerformed(evt);
+        startAllLocomotivesBtnActionPerformed(evt);
       }
     });
-    toolBar.add(startAutoPilotBtn);
+    toolBar.add(startAllLocomotivesBtn);
+
+    resetAutopilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/director-red.png"))); // NOI18N
+    resetAutopilotBtn.setToolTipText("Reset AutoPilot");
+    resetAutopilotBtn.setFocusable(false);
+    resetAutopilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    resetAutopilotBtn.setMaximumSize(new Dimension(38, 38));
+    resetAutopilotBtn.setMinimumSize(new Dimension(38, 38));
+    resetAutopilotBtn.setPreferredSize(new Dimension(38, 38));
+    resetAutopilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    resetAutopilotBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetAutopilotBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(resetAutopilotBtn);
     toolBar.add(filler1);
 
     selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png"))); // NOI18N
@@ -765,12 +790,12 @@ public class LayoutPanel extends JPanel {
     add(topPanel, BorderLayout.NORTH);
 
     canvasScrollPane.setDoubleBuffered(true);
-    canvasScrollPane.setMinimumSize(new Dimension(110, 110));
-    canvasScrollPane.setPreferredSize(new Dimension(1000, 700));
+    canvasScrollPane.setMinimumSize(new Dimension(1400, 850));
+    canvasScrollPane.setPreferredSize(new Dimension(1400, 850));
     canvasScrollPane.setViewportView(canvas);
 
-    canvas.setMinimumSize(new Dimension(100, 100));
-    canvas.setPreferredSize(new Dimension(895, 695));
+    canvas.setName(""); // NOI18N
+    canvas.setLayout(new BorderLayout());
     canvasScrollPane.setViewportView(canvas);
 
     add(canvasScrollPane, BorderLayout.CENTER);
@@ -935,7 +960,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void formComponentHidden(ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-      Logger.trace("HIDDEN");
+      ///Logger.trace("HIDDEN");
       if (JCS.getParentFrame() != null) {
         JCS.getParentFrame().hideExtraToolbar(this.toolBar);
       }
@@ -960,25 +985,38 @@ public class LayoutPanel extends JPanel {
   }//GEN-LAST:event_endTrackBtnActionPerformed
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + " Enable Auto mode " + this.autoPilotBtn.isSelected());
-    //incase auto pilot was on and is switched of also stop driving
-    if (startAutoPilotBtn.isSelected() && !autoPilotBtn.isSelected()) {
-      startAutoPilotBtn.doClick();
-    }
-    startAutoPilotBtn.setEnabled(readonly && autoPilotBtn.isSelected());
-    if (autoPilotBtn.isSelected()) {
-      AutoPilot.getInstance().initialize();
+    Logger.trace(evt.getActionCommand() + (this.autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
+
+    if (this.autoPilotBtn.isSelected()) {
+      this.startAllLocomotivesBtn.setEnabled(true);
+
+      AutoPilot.getInstance().startAutoMode();
+    } else {
+      if (this.startAllLocomotivesBtn.isSelected()) {
+        startAllLocomotivesBtn.doClick();
+      }
+      this.startAllLocomotivesBtn.setEnabled(false);
+
+      AutoPilot.getInstance().stopAutoMode();
     }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
-  private void startAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAutoPilotBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAutoPilotBtn.isSelected());
-    AutoPilot.getInstance().startAllLocomotives(this.startAutoPilotBtn.isSelected());
-  }//GEN-LAST:event_startAutoPilotBtnActionPerformed
+  private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
+    Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
+    if (this.startAllLocomotivesBtn.isSelected()) {
+      AutoPilot.getInstance().startAllLocomotives();
+    } else {
+      AutoPilot.getInstance().stopAllLocomotives();
+    }
+  }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
 
   private void crossingBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_crossingBtnActionPerformed
     setTileType(TileBean.TileType.CROSSING);
   }//GEN-LAST:event_crossingBtnActionPerformed
+
+  private void resetAutopilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotBtnActionPerformed
+    AutoPilot.getInstance().resetStates();
+  }//GEN-LAST:event_resetAutopilotBtnActionPerformed
 
   private void setTileType(TileBean.TileType tileType) {
     this.canvas.setTileType(tileType);
@@ -1049,6 +1087,7 @@ public class LayoutPanel extends JPanel {
   private JPopupMenu operationsPM;
   private JMenuItem propertiesMI;
   private JButton repaintBtn;
+  private JButton resetAutopilotBtn;
   private JMenuItem rightMI;
   private JToggleButton rightSwitchBtn;
   private JButton rotateBtn;
@@ -1058,7 +1097,7 @@ public class LayoutPanel extends JPanel {
   private JButton selectBtn;
   private JToggleButton sensorBtn;
   private JToggleButton signalBtn;
-  private JToggleButton startAutoPilotBtn;
+  private JToggleButton startAllLocomotivesBtn;
   private JToggleButton straightBtn;
   private JToggleButton straightDirectionBtn;
   private JPopupMenu straightPopupMenu;

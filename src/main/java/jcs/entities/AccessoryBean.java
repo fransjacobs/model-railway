@@ -43,16 +43,18 @@ public class AccessoryBean {
   private String commandStationId;
   private boolean synchronize;
 
+  private boolean locked;
+
   public AccessoryBean() {
     this(null, null, null, null, null, null, null, null, null);
   }
 
-  public AccessoryBean(String id, Integer address, String name, String type, Integer state, Integer switchTime, String protocol, String decoder,String commandStationId) {
-    this(id, address, name, type, state, null, switchTime, protocol, decoder, null, null, null,commandStationId);
+  public AccessoryBean(String id, Integer address, String name, String type, Integer state, Integer switchTime, String protocol, String decoder, String commandStationId) {
+    this(id, address, name, type, state, null, switchTime, protocol, decoder, null, null, null, commandStationId);
   }
 
   public AccessoryBean(String id, Integer address, String name, String type, Integer state, Integer states, Integer switchTime, String protocol,
-          String decoder, String group, String icon, String iconFile,String commandStationId) {
+          String decoder, String group, String icon, String iconFile, String commandStationId) {
     this.id = id;
     this.address = address;
     this.name = name;
@@ -268,20 +270,20 @@ public class AccessoryBean {
 
   @Transient
   public boolean isSignal() {
-    if (group != null) {
-      return "lichtsignale".equals(this.group);
-    } else {
-      return type != null && type.contains("lichtsignal");
-    }
+    //if (group != null) {
+    //  return "lichtsignale".equals(this.group);
+    //} else {
+    return type != null && type.contains("lichtsignal");
+    //}
   }
 
   @Transient
   public boolean isTurnout() {
-    if (group != null) {
-      return "weichen".equals(group);
-    } else {
-      return type != null && type.contains("weiche");
-    }
+    //if (group != null) {
+    //  return "weichen".equals(group);
+    //} else {
+    return type != null && type.contains("weiche");
+    //}
   }
 
   @Transient
@@ -469,17 +471,16 @@ public class AccessoryBean {
 //          -1;
 //      };
 //    }
-
     public Integer getState() {
       //return translate2CS3Value(this.value);
-      return AccessoryValue.GREEN.getValue().equals(this.value)?1:0;
+      return AccessoryValue.GREEN.getValue().equals(this.value) ? 1 : 0;
     }
 
     public static AccessoryValue get(Integer state) {
-      return 1==state?GREEN:RED;
+      return 1 == state ? GREEN : RED;
       //return ENUM_MAP.get(translateCS3Value(cs2Value));
     }
- 
+
 //    private static String translateCS3Value(int value) {
 //      return switch (value) {
 //        case 0 ->
@@ -490,7 +491,6 @@ public class AccessoryBean {
 //          "Off";
 //      };
 //    }
-
   }
 
   public enum SignalValue {

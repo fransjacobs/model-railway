@@ -74,10 +74,15 @@ public class Sensor extends Straight implements SensorEventListener {
   }
 
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  public void renderTile(Graphics2D g2) {
     Graphics2D g2d = (Graphics2D) g2.create();
 
-    renderStraight(g2d, trackColor, backgroundColor);
+    renderStraight(g2d);
+
+    if (drawRoute) {
+      renderTileRoute(g2);
+    }
+
     renderSensor(g2d);
 
     g2d.dispose();
@@ -95,12 +100,5 @@ public class Sensor extends Straight implements SensorEventListener {
   @Override
   public String toString() {
     return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", active: " + active + ", center: (" + x + "," + y + ")}";
-  }
-
-  @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    sb.append(isActive() ? "y" : "n");
-    return sb.toString();
   }
 }

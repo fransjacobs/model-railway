@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 frans.
+ * Copyright 2023 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,8 @@
  */
 package jcs.commandStation.dccex;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
- * @author frans
  */
 public class DccExMessage implements DccEx {
 
@@ -61,8 +57,26 @@ public class DccExMessage implements DccEx {
     return this.message.substring(0, 1).equals("<") && !this.message.substring(1, 1).equals("*");
   }
 
-  public boolean isDiagnosticMessage() {
-    return this.message.substring(0, 2).equals("<*");
+  public boolean isInfoMessage() {
+    String start = this.message.substring(0, 2);
+    String lcd;
+    if (this.message.length() < 6) {
+      lcd = "LCD";
+    } else {
+      lcd = this.message.substring(3, 6);
+    }
+    return start.equals("<*") && !lcd.equals("LCD");
+  }
+
+  public boolean isLCDMessage() {
+    String start = this.message.substring(0, 2);
+    String lcd;
+    if (this.message.length() < 6) {
+      lcd = "";
+    } else {
+      lcd = this.message.substring(3, 6);
+    }
+    return start.equals("<*") && lcd.equals("LCD");
   }
 
   @Override

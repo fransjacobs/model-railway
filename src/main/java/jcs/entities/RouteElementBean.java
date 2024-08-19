@@ -24,6 +24,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.TileBean.TileType;
 
 @Table(name = "route_elements", indexes = {
   @Index(name = "roel_rout_node+tile_idx", columnList = "route_id,node_id,tile_id", unique = true)})
@@ -36,6 +37,7 @@ public class RouteElementBean implements Serializable {
   private String accessoryState;
   private Integer elementOrder;
   private String incomingSide;
+  private boolean locked;
 
   private TileBean tileBean;
 
@@ -147,12 +149,57 @@ public class RouteElementBean implements Serializable {
   }
 
   @Transient
+  public boolean isLocked() {
+    return locked;
+  }
+
+  public void setLocked(boolean locked) {
+    this.locked = locked;
+  }
+
+  @Transient
   public TileBean getTileBean() {
     return tileBean;
   }
 
   public void setTileBean(TileBean tileBean) {
     this.tileBean = tileBean;
+  }
+
+  @Transient
+  public boolean isTurnout() {
+    if (tileBean != null) {
+      return TileType.SWITCH == tileBean.getTileType() || TileType.CROSS == tileBean.getTileType();
+    } else {
+      return false;
+    }
+  }
+
+  @Transient
+  public boolean isSignal() {
+    if (tileBean != null) {
+      return TileType.SIGNAL == tileBean.getTileType();
+    } else {
+      return false;
+    }
+  }
+
+  @Transient
+  public boolean isSensor() {
+    if (tileBean != null) {
+      return TileType.SENSOR == tileBean.getTileType();
+    } else {
+      return false;
+    }
+  }
+
+  @Transient
+  public boolean isBlock() {
+    if (tileBean != null) {
+      return TileType.BLOCK == tileBean.getTileType();
+    } else {
+      return false;
+    }
   }
 
   @Override

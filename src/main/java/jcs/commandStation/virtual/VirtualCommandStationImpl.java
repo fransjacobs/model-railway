@@ -19,10 +19,18 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
@@ -42,7 +50,10 @@ import jcs.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.SensorBean;
+import jcs.persistence.PersistenceFactory;
 import jcs.util.NetworkUtil;
+import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 
 /**
@@ -55,12 +66,25 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   private DeviceBean feedbackDevice;
   private InfoBean infoBean;
 
+  private final ScheduledExecutorService scheduledExecutor;
+  private final ExecutorService executor;
+
   public VirtualCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
 
   public VirtualCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
+    scheduledExecutor = new ScheduledThreadPoolExecutor(30);
+    executor = Executors.newCachedThreadPool();
+
+    if (autoConnect) {
+      autoConnect();
+    }
+  }
+
+  private void autoConnect() {
+    connect();
   }
 
   @Override
@@ -69,7 +93,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
     mainDevice = new DeviceBean();
     mainDevice.setArticleNumber("JCS Virtual CS");
-    mainDevice.setVersion("0.0.1");
+    mainDevice.setVersion(VersionInfo.getVersion());
+
     mainDevice.setSerial("1");
     mainDevice.setIdentifier(this.commandStationBean.getId());
     mainDevice.setName(this.commandStationBean.getDescription());
@@ -78,6 +103,8 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     infoBean.setProductName(commandStationBean.getDescription());
     infoBean.setArticleNumber(commandStationBean.getShortName());
     infoBean.setHostname(this.getIp());
+
+    power(true);
 
     return connected;
   }
@@ -135,9 +162,18 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void changeVelocity(int locUid, int speed, LocomotiveBean.Direction direction) {
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " speed " + speed);
+
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, speed, commandStationBean.getId());
       notifyLocomotiveSpeedEventListeners(lse);
     }
+
+    //When a locomotive has a speed change (>0) check if Auto mode is on.
+    //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
+    if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
+      this.executor.execute(() -> simulateDriving(locUid, speed, direction));
+      //simulateDriving(locUid, speed, direction);
+    }
+
   }
 
   @Override
@@ -191,7 +227,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       id = "0" + id;
     }
     ab.setId(id);
-    ab.setCommandStationId(this.commandStationBean.getId());
+    ab.setCommandStationId(commandStationBean.getId());
 
     AccessoryEvent ae = new AccessoryEvent(ab);
     notifyAccessoryEventListeners(ae);
@@ -225,12 +261,15 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public void fireSensorEventListeners(final SensorEvent sensorEvent) {
+  public synchronized void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
-      listener.onSensorChange(sensorEvent);
+      if (listener != null) {
+        listener.onSensorChange(sensorEvent);
+      }
     }
   }
 
+  //TODO: is a threaded variant needed?
   private void notifySensorEventListeners(final SensorEvent sensorEvent) {
     executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }
@@ -279,6 +318,52 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent locomotiveEvent) {
     executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
+  }
+
+  //Find the route the locomotive is doing....
+  void simulateDriving(int locUid, int speed, LocomotiveBean.Direction direction) {
+    if ("true".equals(System.getProperty("dispatcher.stepTest", "false"))) {
+      return;
+    }
+    //Check is the Dispatcher for the locomotive is running...
+    Dispatcher dispatcher = AutoPilot.getInstance().getLocomotiveDispatcher(locUid);
+
+    if (dispatcher.isLocomotiveAutomodeOn()) {
+      Logger.trace("Try to simulate the next sensor of " + dispatcher.getName());
+
+      String inSensorId = dispatcher.getInSensorId();
+      if (inSensorId != null) {
+        //Start a time which execute a worker thread which fires the sensor
+        scheduledExecutor.schedule(() -> toggleSensor(inSensorId), 1, TimeUnit.SECONDS);
+      }
+
+      String exitSensorId = dispatcher.getExitSensorId();
+      if (inSensorId != null) {
+        //Start a time which execute a worker thread which fires the sensor
+        scheduledExecutor.schedule(() -> toggleSensor(exitSensorId), 2, TimeUnit.SECONDS);
+      }
+
+      String sensorId = dispatcher.getWaitingForSensorId();
+      if (sensorId != null) {
+        //Start a time which execute a worker thread which fires the sensor
+        scheduledExecutor.schedule(() -> toggleSensor(sensorId), 3, TimeUnit.SECONDS);
+      }
+    }
+
+  }
+
+  private void toggleSensor(String sensorId) {
+    SensorBean sensor = PersistenceFactory.getService().getSensor(sensorId);
+    sensor.toggle();
+    sensor.setActive((sensor.getStatus() == 1));
+
+    SensorEvent sensorEvent = new SensorEvent(sensor);
+    Logger.trace("Fire Sensor " + sensorId);
+
+    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+    for (FeedbackController fbc : acl) {
+      fbc.fireSensorEventListeners(sensorEvent);
+    }
   }
 
 }

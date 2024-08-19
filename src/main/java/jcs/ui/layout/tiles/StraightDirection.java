@@ -61,7 +61,6 @@ public class StraightDirection extends Straight {
   }
 
   private void renderDirectionArrow(Graphics2D g2) {
-
     //   |\
     // ==|+===
     //   |/
@@ -72,11 +71,17 @@ public class StraightDirection extends Straight {
   }
 
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  public void renderTile(Graphics2D g2) {
     Graphics2D g2d = (Graphics2D) g2.create();
 
-    renderStraight(g2d, trackColor, backgroundColor);
+    renderStraight(g2d);
+
     renderDirectionArrow(g2d);
+
+    if (drawRoute) {
+      renderTileRoute(g2);
+    }
+
     g2d.dispose();
   }
 

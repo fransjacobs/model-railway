@@ -71,10 +71,24 @@ public class SensorBean implements Serializable {
   @Id
   @Column(name = "id", nullable = false)
   public String getId() {
-    if (this.id == null) {
-      this.id = this.deviceId + "-" + this.contactId;
+    if (id == null) {
+      id = generateId();
     }
     return id;
+  }
+
+  private String generateId() {
+    //Format the id start with the device then "-"
+    //than a 4 char contact id
+    if(contactId == null) {
+      return null;
+    }
+    String cn = contactId.toString();
+    int cnl = cn.length();
+    for (int x = 0; x < 4 - cnl; x++) {
+      cn = "0" + cn;
+    }
+    return deviceId + "-" + cn;
   }
 
   public void setId(String id) {

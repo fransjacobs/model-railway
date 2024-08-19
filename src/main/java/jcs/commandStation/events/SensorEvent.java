@@ -27,20 +27,17 @@ import org.tinylog.Logger;
  */
 public class SensorEvent {
 
-  //TODO move away the Commnad station specific messages
-  
   private SensorBean sensorBean;
-  private CanMessage message;
 
   public SensorEvent(SensorBean sensorBean) {
     this.sensorBean = sensorBean;
   }
 
   public SensorEvent(CanMessage message, Date eventDate) {
-    this.message = message;
     parseMessage(message, eventDate);
   }
-  
+
+  //TODO move away the Marklin CS2/3 specific message parsing
   private void parseMessage(CanMessage message, Date eventDate) {
     CanMessage resp;
     if (!message.isResponseMessage()) {
@@ -59,8 +56,7 @@ public class SensorEvent {
       int status = data[5];
 
       Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
-
-      this.sensorBean = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
+      sensorBean = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
     } else {
       Logger.warn("Can't parse message, not a Sensor Response! " + resp);
     }
@@ -70,8 +66,31 @@ public class SensorEvent {
     return sensorBean;
   }
 
-  public CanMessage getMessage() {
-    return this.message;
+  public String getId() {
+    if (sensorBean.getId() != null) {
+      return sensorBean.getId();
+    } else {
+      //TODO: Number format? check with both CS 3 and HSI 88 life sensors
+      Integer deviceId = sensorBean.getDeviceId();
+      Integer contactId = sensorBean.getContactId();
+      String cn = ((contactId) > 9 ? "" : "0");
+      if (cn.length() == 2) {
+        cn = "00" + cn;
+      } else if (cn.length() == 3) {
+        cn = "0" + cn;
+      }
+      return deviceId + "-" + cn;
+    }
+  }
+
+  public boolean isChanged() {
+    boolean active = sensorBean.isActive();
+    boolean prevActive = sensorBean.isPreviousActive();
+    return active != prevActive;
+  }
+
+  public boolean isActive() {
+    return sensorBean.isActive();
   }
 
 }

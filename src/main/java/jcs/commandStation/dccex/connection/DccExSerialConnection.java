@@ -46,7 +46,7 @@ class DccExSerialConnection implements DccExConnection {
 
   private final List<DccExMessageListener> dccExListeners;
   private ResponseCallback responseCallback;
-  private static final long TIMEOUT = 3000L;
+  private static final long TIMEOUT = 6000L;
 
   private final List<DccExMessage> startupMessages;
 
@@ -77,7 +77,7 @@ class DccExSerialConnection implements DccExConnection {
       commPort.setParity(0);
 
       portOpen = commPort.openPort();
-      commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+      commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 10000, 0);
       writer = new BufferedWriter(new OutputStreamWriter(commPort.getOutputStream()));
 
       DccExSerialPortListener listener = new DccExSerialPortListener(this);
@@ -120,7 +120,7 @@ class DccExSerialConnection implements DccExConnection {
       response = responseCallback.getResponse();
       if (debug) {
         if (responseComplete) {
-          Logger.trace("Got Response in " + (now - start) + " ms");
+          Logger.trace("Got Response in " + (now - start) + " ms: "+response);
         } else {
           Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
         }

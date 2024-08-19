@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.Set;
@@ -41,14 +42,25 @@ public interface Tile extends Shape {
   static final int RENDER_WIDTH = RENDER_GRID * 2;
   static final int RENDER_HEIGHT = RENDER_GRID * 2;
 
+  public static final Color DEFAULT_BACKGROUND_COLOR = Color.white;
   public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
+  public static final Color DEFAULT_ROUTE_TRACK_COLOR = Color.blue;
+
+  boolean isDrawRoute();
+
+  void setDrawRoute(boolean drawRoute);
 
   Color getTrackColor();
 
   void setTrackColor(Color trackColor);
 
-  //Color getTrackRouteColor();
-  void setTrackRouteColor(Color trackRouteColor, Orientation incomingSide);
+  Color getTrackRouteColor();
+
+  void setTrackRouteColor(Color trackRouteColor);
+
+  Orientation getIncomingSide();
+
+  void setIncomingSide(Orientation incomingSide);
 
   Color getBackgroundColor();
 
@@ -58,11 +70,15 @@ public interface Tile extends Shape {
 
   void setId(String id);
 
-  String getImageKey();
+  //String getImageKey();
+  
+  BufferedImage getTileImage();
 
   void drawTile(Graphics2D g2d, boolean drawOutline);
 
-  void renderTile(Graphics2D g2d, Color trackColor, Color backgroundColor);
+  void renderTile(Graphics2D g2d);
+
+  void renderTileRoute(Graphics2D g2d);
 
   void drawName(Graphics2D g2);
 

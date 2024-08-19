@@ -57,6 +57,7 @@ public class CommandStationBean {
   private boolean enabled;
   private String lastUsedSerial;
   private String supConnTypesStr;
+  private boolean virtual;
 
   private String feedbackModuleIdentifier;
   private Integer feedbackChannelCount;
@@ -91,6 +92,7 @@ public class CommandStationBean {
 
   public void setShortName(String shortName) {
     this.shortName = shortName;
+    this.virtual = "VIR".equals(shortName);
   }
 
   @Column(name = "class_name", length = 255, nullable = false)
@@ -317,6 +319,15 @@ public class CommandStationBean {
 
   public void setFeedbackBus3ModuleCount(Integer feedbackBus3ModuleCount) {
     this.feedbackBus3ModuleCount = feedbackBus3ModuleCount;
+  }
+
+  @Transient
+  public boolean isVirtual() {
+    return virtual;
+  }
+
+  public void setVirtual(boolean virtual) {
+    this.virtual = virtual;
   }
 
   @Transient

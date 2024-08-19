@@ -141,6 +141,7 @@ public abstract class AbstractController implements GenericController {
     this.locomotiveSpeedEventListeners.remove(listener);
   }
 
+  
   protected void pause(long millis) {
     try {
       Thread.sleep(millis);

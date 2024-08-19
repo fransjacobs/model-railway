@@ -132,6 +132,9 @@ public class H2PersistenceService implements PersistenceService {
   public void remove(SensorBean sensor) {
     // First ensure the linked tile records are decoupled
     database.sql("update tiles set sensor_id = null where sensor_id = ?", sensor.getId()).execute();
+    // Also update the blocks
+    database.sql("update blocks set min_sensor_id = null where min_sensor_id = ?", sensor.getId()).execute();
+    database.sql("update blocks set plus_sensor_id = null where plus_sensor_id = ?", sensor.getId()).execute();
 
     int rows = database.delete(sensor).getRowsAffected();
     Logger.trace(sensor + " rows + " + rows + " deleted");
@@ -144,18 +147,10 @@ public class H2PersistenceService implements PersistenceService {
     if (bus0len != null) {
       for (int i = 0; i < (bus0len * 16); i++) {
         SensorBean sb = new SensorBean();
-        //ensure a leading zero for sorting   
-        String cn = ((i + 1) > 9 ? "" : "0") + (i + 1);
-        if (cn.length() == 2) {
-          cn = "00" + cn;
-        } else if (cn.length() == 3) {
-          cn = "0" + cn;
-        }
-        String id = deviceId + "-" + cn;
-        sb.setId(id);
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 1));
         sb.setName("B0-S-" + (i + 1));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -163,11 +158,10 @@ public class H2PersistenceService implements PersistenceService {
     if (bus1len != null) {
       for (int i = 0; i < (bus1len * 16); i++) {
         SensorBean sb = new SensorBean();
-        String id = deviceId + "-" + (i + 1001);
-        sb.setId(id);
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 1001));
         sb.setName("B1-S-" + (i + 1001));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -175,11 +169,10 @@ public class H2PersistenceService implements PersistenceService {
     if (bus2len != null) {
       for (int i = 0; i < (bus2len * 16); i++) {
         SensorBean sb = new SensorBean();
-        String id = deviceId + "-" + (i + 2001);
-        sb.setId(id);
         sb.setDeviceId(deviceId);
         sb.setContactId((i + 2001));
         sb.setName("B2-S-" + (i + 2001));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
@@ -187,28 +180,26 @@ public class H2PersistenceService implements PersistenceService {
     if (bus3len != null) {
       for (int i = 0; i < (bus3len * 16); i++) {
         SensorBean sb = new SensorBean();
-        String id = deviceId + "-" + (i + 3001);
-        sb.setId(id);
-        sb.setDeviceId(deviceId);
         sb.setContactId((i + 3001));
         sb.setName("B3-S-" + (i + 3001));
+        String id = sb.getId();
         sensorBeans.put(id, sb);
       }
     }
 
-    List<SensorBean> existing = this.getSensors();
+    List<SensorBean> existing = getSensors();
     for (SensorBean sb : existing) {
       if (!sensorBeans.containsKey(sb.getId())) {
         Logger.trace("Removing " + sb);
-        this.remove(sb);
+        remove(sb);
       }
     }
 
     for (SensorBean sb : sensorBeans.values()) {
-      this.persist(sb);
+      persist(sb);
     }
 
-    return this.getSensors();
+    return getSensors();
   }
 
   @Override
@@ -234,9 +225,30 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId) {
-    Object[] args = new Object[]{address, decoderType.getDecoderType(), commandStionId};
+    DecoderType dt;
+    if (decoderType != null) {
+      dt = decoderType;
+    } else {
+      dt = DecoderType.DCC;
+    }
+
+    Object[] args = new Object[]{address, dt.getDecoderType(), commandStionId};
 
     LocomotiveBean loco = database.where("address=? and decoder_type=? and command_station_id=?", args).first(LocomotiveBean.class);
+    if (loco != null) {
+      if (loco.getIcon() != null) {
+        loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
+      }
+      loco.addAllFunctions(getLocomotiveFunctions(loco.getId()));
+    }
+    return loco;
+  }
+
+  @Override
+  public LocomotiveBean getLocomotive(Integer locUid, String commandStionId) {
+    Object[] args = new Object[]{locUid, commandStionId};
+
+    LocomotiveBean loco = database.where("uid=? and command_station_id=?", args).first(LocomotiveBean.class);
     if (loco != null) {
       if (loco.getIcon() != null) {
         loco.setLocIcon(getLocomotiveImage(loco.getIcon()));
@@ -257,7 +269,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<LocomotiveBean> getLocomotives() {
+  public List<LocomotiveBean> getAllLocomotives() {
     List<LocomotiveBean> locos = database.orderBy("id").results(LocomotiveBean.class);
 
     for (LocomotiveBean loco : locos) {
@@ -266,6 +278,12 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     return locos;
+  }
+
+  @Override
+  public List<LocomotiveBean> getLocomotives() {
+    String commandStationId = getDefaultCommandStation().getId();
+    return getLocomotivesByCommandStationId(commandStationId);
   }
 
   @Override
@@ -383,14 +401,18 @@ public class H2PersistenceService implements PersistenceService {
   public Image readImage(String imageName, boolean function) {
     Image image = null;
     if (imageName != null) {
-      String path;
+      String path = null;
       if (imageName.contains(File.separator)) {
         //Contains path seperators so assume it is a manual selected image
         path = imageName;
       } else {
         //no path seperators so assume it is a synchonized command station icon
-        String shortName = getDefaultCommandStation().getShortName().toLowerCase();
-        path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
+        if (getDefaultCommandStation() != null) {
+          String shortName = getDefaultCommandStation().getShortName().toLowerCase();
+          path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + shortName + File.separator;
+        } else {
+          path = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator;
+        }
       }
 
       if (function) {
@@ -424,6 +446,14 @@ public class H2PersistenceService implements PersistenceService {
   public List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId) {
     List<AccessoryBean> accessories = database.where("command_station_id = ?", commandStationId).results(AccessoryBean.class);
     return accessories;
+  }
+
+  @Override
+  public synchronized boolean isAccessoryLocked(String accessoryId) {
+    String commandStationId = getDefaultCommandStation().getId();
+    Object[] args = new Object[]{accessoryId, commandStationId};
+    Long count = database.sql("select count(*) from accessories a join tiles t on a.id = t.accessory_id join route_elements re on t.id = re.tile_id join routes r on re.route_id = r.id where r.locked = true and a.id = ? and command_station_id = ?", args).first(Long.class);
+    return count >= 1;
   }
 
   @Override
@@ -486,19 +516,23 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " Accessories deleted");
   }
 
-  private TileBean addReleatedObjects(TileBean tileBean) {
+  private TileBean addReleatedObjects(TileBean tileBean, BlockBean blockBean) {
     if (tileBean != null) {
       if (tileBean.getAccessoryId() != null) {
-        tileBean.setAccessoryBean(this.getAccessory(tileBean.getAccessoryId()));
+        tileBean.setAccessoryBean(getAccessory(tileBean.getAccessoryId()));
       }
 
       if (tileBean.getSensorId() != null) {
-        tileBean.setSensorBean(this.getSensor(tileBean.getSensorId()));
+        tileBean.setSensorBean(getSensor(tileBean.getSensorId()));
       }
 
-      if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
-        Logger.trace("Look for blok " + tileBean.getId());
-        tileBean.setBlockBean(this.getBlock(tileBean.getId()));
+      if (blockBean != null) {
+        tileBean.setBlockBean(blockBean);
+      } else {
+        if (tileBean.getTileType() != null && TileBean.TileType.BLOCK == tileBean.getTileType()) {
+          //Logger.trace("Look for blok " + tileBean.getId());
+          tileBean.setBlockBean(getBlock(tileBean.getId()));
+        }
       }
     }
     return tileBean;
@@ -506,7 +540,7 @@ public class H2PersistenceService implements PersistenceService {
 
   private List<TileBean> addReleatedObjects(List<TileBean> tileBeans) {
     for (TileBean tileBean : tileBeans) {
-      addReleatedObjects(tileBean);
+      addReleatedObjects(tileBean, null);
     }
     return tileBeans;
   }
@@ -526,14 +560,19 @@ public class H2PersistenceService implements PersistenceService {
   @Override
   public TileBean getTileBean(String id) {
     TileBean tileBean = database.where("id=?", id).first(TileBean.class);
-    return addReleatedObjects(tileBean);
+    return addReleatedObjects(tileBean, null);
+  }
+
+  private TileBean getTileBean(BlockBean blockBean) {
+    TileBean tileBean = database.where("id=?", blockBean.getId()).first(TileBean.class);
+    return addReleatedObjects(tileBean, blockBean);
   }
 
   @Override
   public TileBean getTileBean(Integer x, Integer y) {
     Object[] args = new Object[]{x, y};
     TileBean tileBean = database.where("x=? and y=?", args).first(TileBean.class);
-    return addReleatedObjects(tileBean);
+    return addReleatedObjects(tileBean, null);
   }
 
   @Override
@@ -603,9 +642,21 @@ public class H2PersistenceService implements PersistenceService {
     }
   }
 
+  private RouteElementBean addRelatedObjects(RouteElementBean routeElementBean) {
+    if (routeElementBean.getTileId() != null) {
+      routeElementBean.setTileBean(getTileBean(routeElementBean.getTileId()));
+    }
+
+    return routeElementBean;
+  }
+
   private List<RouteElementBean> getRouteElements(String routeId) {
     List<RouteElementBean> routeElements = database.where("route_id=?", routeId).orderBy("order_seq").results(RouteElementBean.class);
     //is the tile needed inside the route element?
+    for (RouteElementBean reb : routeElements) {
+      addRelatedObjects(reb);
+    }
+
     return routeElements;
   }
 
@@ -643,6 +694,7 @@ public class H2PersistenceService implements PersistenceService {
   public RouteBean getRoute(String fromTileId, String fromSuffix, String toTileId, String toSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix, toTileId, toSuffix};
     RouteBean route = database.where("from_tile_id = ? and from_suffix = ? and to_tile_id = ? and to_suffix = ?", args).first(RouteBean.class);
+
     if (route != null) {
       List<RouteElementBean> routeElements = getRouteElements(route.getId());
       route.setRouteElements(routeElements);
@@ -651,15 +703,25 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
+  public synchronized List<RouteBean> getRoutes(String fromTileId, String fromSuffix) {
     Object[] args = new Object[]{fromTileId, fromSuffix};
-    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ?", args).results(RouteBean.class);
+    List<RouteBean> routes = database.where("from_tile_id = ? and from_suffix = ? and locked = false", args).results(RouteBean.class);
+
+    List<RouteBean> filtered = new ArrayList<>();
 
     for (RouteBean r : routes) {
-      List<RouteElementBean> routeElements = getRouteElements(r.getId());
-      r.setRouteElements(routeElements);
+      BlockBean dest = getBlockByTileId(r.getToTileId());
+      if (dest != null) {
+        if (BlockBean.BlockState.FREE == dest.getBlockState()) {
+          List<RouteElementBean> routeElements = getRouteElements(r.getId());
+          r.setRouteElements(routeElements);
+          filtered.add(r);
+        } else {
+          Logger.trace("Skip " + r.getId() + " dest status: " + dest.getStatus());
+        }
+      }
     }
-    return routes;
+    return filtered;
   }
 
   @Override
@@ -713,9 +775,15 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public BlockBean getBlockByLocomotiveId(Long locomotiveId) {
+    Object[] args = new Object[]{locomotiveId};
+    BlockBean block = database.where("locomotive_id = ?", args).first(BlockBean.class);
+    return addReleatedObjects(block);
+  }
+
+  @Override
   public List<BlockBean> getBlocks() {
     List<BlockBean> blocks = database.results(BlockBean.class);
-
     return addBlockReleatedObjects(blocks);
   }
 
@@ -728,25 +796,28 @@ public class H2PersistenceService implements PersistenceService {
 
   private BlockBean addReleatedObjects(BlockBean blockBean) {
     if (blockBean != null) {
-
       if (blockBean.getLocomotiveId() != null) {
-        blockBean.setLocomotive(this.getLocomotive(blockBean.getLocomotiveId()));
+        blockBean.setLocomotive(getLocomotive(blockBean.getLocomotiveId()));
       }
 
-      if (blockBean.getPlusSensorBean() != null) {
-        blockBean.setPlusSensorBean(this.getSensor(blockBean.getPlusSensorId()));
+      if (blockBean.getPlusSensorId() != null) {
+        blockBean.setPlusSensorBean(getSensor(blockBean.getPlusSensorId()));
       }
 
-      if (blockBean.getMinSensorBean() != null) {
-        blockBean.setMinSensorBean(this.getSensor(blockBean.getMinSensorId()));
+      if (blockBean.getMinSensorId() != null) {
+        blockBean.setMinSensorBean(getSensor(blockBean.getMinSensorId()));
       }
 
       if (blockBean.getPlusSignalId() != null) {
-        blockBean.setPlusSignal(this.getAccessory(blockBean.getPlusSignalId()));
+        blockBean.setPlusSignal(getAccessory(blockBean.getPlusSignalId()));
       }
 
       if (blockBean.getMinSignalId() != null) {
-        blockBean.setMinSignal(this.getAccessory(blockBean.getMinSignalId()));
+        blockBean.setMinSignal(getAccessory(blockBean.getMinSignalId()));
+      }
+
+      if (blockBean.getTileId() != null && blockBean.getTileBean() == null) {
+        blockBean.setTile(this.getTileBean(blockBean));
       }
     }
     return blockBean;
@@ -770,7 +841,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public BlockBean persist(BlockBean block) {
+  public synchronized BlockBean persist(BlockBean block) {
     if (block != null && block.getId() == null && block.getTileId() != null) {
       BlockBean bb = getBlockByTileId(block.getTileId());
       if (bb != null) {
@@ -779,9 +850,9 @@ public class H2PersistenceService implements PersistenceService {
     }
 
     if (block != null && block.getId() != null && database.where("id=?", block.getId()).first(BlockBean.class) != null) {
-      database.update(block).getRowsAffected();
+      database.update(block);
     } else {
-      database.insert(block).getRowsAffected();
+      database.insert(block);
     }
 
     return block;

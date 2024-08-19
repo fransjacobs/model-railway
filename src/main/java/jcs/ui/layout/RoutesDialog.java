@@ -26,8 +26,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.ImageIcon;
 import jcs.JCS;
+import jcs.entities.AccessoryBean;
+import jcs.entities.BlockBean.BlockState;
 import jcs.entities.RouteBean;
+import jcs.entities.RouteElementBean;
+import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -38,6 +44,7 @@ public class RoutesDialog extends javax.swing.JDialog {
 
   private final boolean readonly;
   private final List<RouteBean> routes;
+  private RouteBean selectedRoute;
 
   private final LayoutCanvas layoutCanvas;
 
@@ -89,6 +96,57 @@ public class RoutesDialog extends javax.swing.JDialog {
       listData[i] = routes.get(i).getId() + "";
     }
     this.routeList.setListData(listData);
+  }
+
+  private void routeLayout() {
+    layoutCanvas.routeLayout();
+    loadRoutes();
+  }
+
+  private void setSelectedRoute(RouteBean route) {
+    if (selectedRoute != null) {
+      resetRoute(selectedRoute.getRouteElements());
+    }
+    selectedRoute = route;
+
+    if (selectedRoute != null) {
+
+      Logger.trace("Setting Selected " + selectedRoute.toLogString());
+      showRoute(selectedRoute);
+    }
+  }
+
+  private void resetRoute(List<RouteElementBean> routeElements) {
+    for (RouteElementBean re : routeElements) {
+      String tileId = re.getTileId();
+      TileEvent tileEvent = new TileEvent(tileId, false);
+      TileFactory.fireTileEventListener(tileEvent);
+    }
+  }
+
+  private void showRoute(RouteBean routeBean) {
+
+    List<RouteElementBean> routeElements = routeBean.getRouteElements();
+    for (RouteElementBean re : routeElements) {
+      String tileId = re.getTileId();
+      Orientation incomingSide = re.getIncomingOrientation();
+
+      TileEvent tileEvent;
+      if (re.isTurnout()) {
+        AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
+        tileEvent = new TileEvent(tileId, true, incomingSide, routeState);
+      } else if (re.isBlock()) {
+        if (re.getTileId().equals(routeBean.getFromTileId())) {
+          //departure block
+          tileEvent = new TileEvent(tileId, true, BlockState.OUTBOUND);
+        } else {
+          tileEvent = new TileEvent(tileId, true, BlockState.INBOUND);
+        }
+      } else {
+        tileEvent = new TileEvent(tileId, true, incomingSide);
+      }
+      TileFactory.fireTileEventListener(tileEvent);
+    }
   }
 
   /**
@@ -174,31 +232,25 @@ public class RoutesDialog extends javax.swing.JDialog {
     private void routeListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_routeListValueChanged
       if (!evt.getValueIsAdjusting() && !this.routes.isEmpty() && this.routeList.getSelectedIndex() >= 0) {
         RouteBean selected = this.routes.get(this.routeList.getSelectedIndex());
-        Logger.trace("Setting Selected " + selected.toLogString());
-        this.layoutCanvas.setSelectRoute(selected);
+        setSelectedRoute(selected);
       }
     }//GEN-LAST:event_routeListValueChanged
 
-  private void routeLayout() {
-    this.layoutCanvas.routeLayout();
-    loadRoutes();
-  }
-
-
     private void routeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_routeBtnActionPerformed
-      if (this.layoutCanvas != null) {
-        //this.layoutCanvas.routeLayout();
+      if (layoutCanvas != null) {
         this.executor.execute(() -> routeLayout());
-        //loadRoutes();
       } else {
         Logger.warn("Can not perform routing as the LayoutPanel is null " + evt.paramString());
       }
     }//GEN-LAST:event_routeBtnActionPerformed
 
     private void deleteRoutesBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteRoutesBtnActionPerformed
+      if (selectedRoute != null) {
+        resetRoute(selectedRoute.getRouteElements());
+      }
+
       removeAllRoutes();
       loadRoutes();
-      this.layoutCanvas.setSelectRoute(null);
     }//GEN-LAST:event_deleteRoutesBtnActionPerformed
 
   public static Point getLocationOnCurrentScreen(final Component c) {
@@ -213,8 +265,6 @@ public class RoutesDialog extends javax.swing.JDialog {
 
   private void removeAllRoutes() {
     if (PersistenceFactory.getService() != null) {
-      PersistenceFactory.getService().removeAllBlocks();
-
       List<RouteBean> rl = PersistenceFactory.getService().getRoutes();
       for (RouteBean r : rl) {
         PersistenceFactory.getService().remove(r);
@@ -234,10 +284,11 @@ public class RoutesDialog extends javax.swing.JDialog {
       Logger.trace("Canvas S  w: " + this.layoutCanvas.getWidth() + " h: " + this.layoutCanvas.getHeight());
 
       Point d = new Point(p.x + this.layoutCanvas.getWidth() + 30, p.y);
-      this.setLocation(d);
+      setLocation(d);
     } else {
-      this.layoutCanvas.setSelectRoute(null);
-
+      if (selectedRoute != null) {
+        resetRoute(this.selectedRoute.getRouteElements());
+      }
     }
 
     super.setVisible(b);
@@ -245,7 +296,10 @@ public class RoutesDialog extends javax.swing.JDialog {
 
   @Override
   public void dispose() {
-    this.layoutCanvas.setSelectRoute(null);
+    if (selectedRoute != null) {
+      resetRoute(selectedRoute.getRouteElements());
+    }
+
     super.dispose();
   }
 

@@ -27,6 +27,7 @@ import jcs.commandStation.events.PowerEventListener;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.CommandStationBean;
 import jcs.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 
@@ -85,6 +86,8 @@ public interface JCSCommandStation {
   void addMeasurementEventListener(MeasurementEventListener listener);
 
   void removeMeasurementListener(MeasurementEventListener listener);
+
+  CommandStationBean getCommandStationBean();
 
   InfoBean getCommandStationInfo();
 

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.LocomotiveBean.Direction;
 import org.tinylog.Logger;
 
 /**
@@ -85,6 +86,10 @@ public class LocomotiveDirectionEvent implements Serializable {
 
   public boolean isValid() {
     return this.locomotiveBean != null && this.locomotiveBean.getId() != null;
+  }
+
+  public Direction getNewDirection() {
+    return this.locomotiveBean.getDirection();
   }
 
   public boolean isEventFor(LocomotiveBean locomotive) {

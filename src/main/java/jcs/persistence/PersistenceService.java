@@ -57,6 +57,8 @@ public interface PersistenceService {
   List<SensorBean> generateSensorBeans(Integer deviceId, Integer bus0len, Integer bus1len, Integer bus2len, Integer bus3len);
 
   // Locomotive
+  List<LocomotiveBean> getAllLocomotives();
+
   List<LocomotiveBean> getLocomotives();
 
   List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId);
@@ -64,6 +66,8 @@ public interface PersistenceService {
   List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId, Boolean show);
 
   LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId);
+  
+  LocomotiveBean getLocomotive(Integer locUid, String commandStionId);
 
   LocomotiveBean getLocomotive(Long id);
 
@@ -79,6 +83,8 @@ public interface PersistenceService {
 
   // Accessories
   List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
+
+  boolean isAccessoryLocked(String accessoryId);
 
   List<AccessoryBean> getTurnouts();
 
@@ -120,6 +126,8 @@ public interface PersistenceService {
   RouteBean persist(RouteBean routeBean);
 
   void remove(RouteBean routeBean);
+
+  BlockBean getBlockByLocomotiveId(Long locomotiveId);
 
   List<BlockBean> getBlocks();
 

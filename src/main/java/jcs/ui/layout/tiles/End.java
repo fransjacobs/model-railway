@@ -92,7 +92,7 @@ public class End extends AbstractTile implements Tile {
     return edgeConnections;
   }
 
-  protected void renderEnd(Graphics2D g2, Color trackColor, Color backgroundColor) {
+  protected void renderEnd(Graphics2D g2) {
     int xx, yy, w, h;
     xx = 0;
     yy = 175;
@@ -115,13 +115,12 @@ public class End extends AbstractTile implements Tile {
   }
 
   @Override
-  public void renderTile(Graphics2D g2, Color trackColor, Color backgroundColor) {
-    renderEnd(g2, trackColor, backgroundColor);
+  public void renderTile(Graphics2D g2) {
+    renderEnd(g2);
   }
 
   @Override
-  public String getImageKey() {
-    StringBuilder sb = getImageKeyBuilder();
-    return sb.toString();
+  public void renderTileRoute(Graphics2D g2d) {
   }
+
 }

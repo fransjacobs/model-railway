@@ -46,12 +46,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
-import jcs.entities.AccessoryBean.AccessoryValue;
-import jcs.entities.RouteBean;
+import jcs.entities.BlockBean;
+import jcs.entities.BlockBean.BlockState;
+import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
@@ -60,6 +62,15 @@ import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import static jcs.entities.TileBean.TileType.BLOCK;
+import static jcs.entities.TileBean.TileType.CROSS;
+import static jcs.entities.TileBean.TileType.CURVED;
+import static jcs.entities.TileBean.TileType.END;
+import static jcs.entities.TileBean.TileType.SENSOR;
+import static jcs.entities.TileBean.TileType.SIGNAL;
+import static jcs.entities.TileBean.TileType.STRAIGHT;
+import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
+import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
@@ -78,7 +89,6 @@ import org.tinylog.Logger;
 /**
  * This canvas / Panel is used to draw the layout
  *
- * @author frans
  */
 public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
@@ -100,7 +110,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private Direction direction;
   private TileBean.TileType tileType;
 
-  private Point mouseLocation = new Point(0, 0);
+  private Point mouseLocation = new Point();
 
   private BufferedImage grid;
 
@@ -110,8 +120,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private final Map<Point, Tile> altTiles;
   private final Set<Point> selectedTiles;
 
+  private Tile selectedTile;
+
   private RoutesDialog routesDialog;
   private final Map<String, RouteElementBean> selectedRouteElements;
+
+  private Point movingTileCenterPoint;
+  private BufferedImage movingTileImage;
 
   public LayoutCanvas() {
     this(false);
@@ -143,13 +158,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   @Override
   protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g.create();
-
     Set<Tile> snapshot = new HashSet<>(tiles.values());
-    //ensure there is no tile which is null... 
-    Map<String, RouteElementBean> routeSnapshot;
-    routeSnapshot = new HashMap<>(this.selectedRouteElements);
 
     if (this.drawGrid) {
       if (lineGrid) {
@@ -163,33 +173,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
     for (Tile tile : snapshot) {
       tile.setDrawOutline(drawGrid);
-      tile.setTrackRouteColor(null, null);
 
-      if (selectedTiles.contains(tile.getCenter())) {
-        //tile.setBackgroundColor(Color.yellow);
-        tile.setBackgroundColor(Color.orange);
-      } else {
-        tile.setBackgroundColor(Color.white);
-      }
-
-      if (routeSnapshot.containsKey(tile.getId())) {
-        RouteElementBean re = routeSnapshot.get(tile.getId());
-        tile.setTrackRouteColor(Color.black, re.getIncomingOrientation());
-
-        if (tile.isJunction()) {
-          AccessoryValue av = re.getAccessoryValue();
-          ((Switch) tile).setRouteValue(av, Color.darkGray);
-          Logger.trace("Tile: " + tile.getId() + " Value: " + av + "; " + re);
+      if (Mode.CONTROL != mode) {
+        if (selectedTiles.contains(tile.getCenter())) {
+          //tile.setBackgroundColor(Color.yellow);
+          tile.setBackgroundColor(Color.orange);
         } else {
-          tile.setTrackColor(Color.darkGray);
-        }
-      } else {
-        tile.setTrackRouteColor(null, null);
-
-        if (tile.isJunction()) {
-          ((Switch) tile).setRouteValue(AccessoryValue.OFF, Tile.DEFAULT_TRACK_COLOR);
-        } else {
-          tile.setTrackColor(Tile.DEFAULT_TRACK_COLOR);
+          tile.setBackgroundColor(Color.white);
         }
       }
 
@@ -199,6 +189,15 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         tile.drawCenterPoint(g2, Color.magenta, 3);
       }
     }
+
+    if (this.movingTileCenterPoint != null && this.movingTileImage != null) {
+      int x = movingTileCenterPoint.x;
+      int y = movingTileCenterPoint.y;
+      int w = movingTileImage.getWidth();
+      int h = movingTileImage.getHeight();
+      g2.drawImage(movingTileImage, (x - w / 2), (y - h / 2), null);
+    }
+
     g2.dispose();
   }
 
@@ -218,18 +217,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
-      } else {
       }
     }
 
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-
-      Logger.trace("Width: " + width + " Height: " + height);
-
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
 
@@ -254,7 +248,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
+        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       } else {
       }
@@ -263,9 +257,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-
-      Logger.trace("Width: " + width + " Height: " + height);
-
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
 
@@ -282,7 +273,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       gc.dispose();
     }
     Graphics2D g2 = (Graphics2D) g;
-    //Draw grid from pre computed image
     g2.drawImage(grid, null, 0, 0);
   }
 
@@ -295,7 +285,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       int gh = grid.getHeight();
 
       if (pw != gw || ph != gh) {
-        Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
         this.grid = null;
       }
     }
@@ -303,14 +292,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.grid == null) {
       int width = getSize().width;
       int height = getSize().height;
-      Logger.trace("Width: " + width + " Height: " + height);
-
       grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       Graphics2D gc = grid.createGraphics();
 
       gc.setBackground(Color.white);
       gc.clearRect(0, 0, width, height);
-
       gc.setPaint(Color.lightGray);
 
       gc.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -326,18 +312,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     g2.drawImage(grid, null, 0, 0);
   }
 
-  void resetDotGrid() {
-    Logger.debug("reset dot grid");
-    this.grid = null;
-  }
-
   void setMode(LayoutCanvas.Mode mode) {
     this.mode = mode;
     Logger.trace("Mode: " + mode);
-  }
-
-  LayoutCanvas.Mode getMode() {
-    return this.mode;
   }
 
   void setDrawGrid(boolean flag) {
@@ -350,23 +327,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Logger.trace("TileType: " + tileType + " Current mode: " + mode);
   }
 
-  Orientation getOrientation() {
-    return orientation;
-  }
-
-  void setOrientation(Orientation orientation) {
-    this.orientation = orientation;
-  }
-
   void setDirection(Direction direction) {
     this.direction = direction;
   }
 
-  Direction getDirection() {
-    return direction;
-  }
-
-  public void loadLayoutInBackground() {
+  void loadLayoutInBackground() {
     this.executor.execute(() -> loadTiles());
   }
 
@@ -382,8 +347,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
+      
       tile.setPropertyChangeListener(this);
 
+      //TODO move this to tile factory?:
       switch (tile.getTileType()) {
         case SENSOR ->
           JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
@@ -391,7 +358,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
         case SIGNAL ->
           JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
-
         default -> {
           //Do nothing
         }
@@ -407,17 +373,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     Logger.debug("Loaded " + tiles.size() + " Tiles...");
-
-    this.repaint();
+    repaint();
   }
 
   public void saveLayout() {
+    //Create a snapshot as persisting is done in worker thread
     Set<Tile> snapshot = new HashSet<>(tiles.values());
     this.selectedTiles.clear();
     this.executor.execute(() -> saveTiles(snapshot));
   }
 
-  private void saveTiles(Set<Tile> snapshot) {
+  private synchronized void saveTiles(Set<Tile> snapshot) {
     Logger.debug("Saving " + snapshot.size() + " tiles...");
     List<TileBean> beans = new LinkedList<>();
 
@@ -433,8 +399,638 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     PersistenceFactory.getService().persist(beans);
   }
 
+  private void mouseMoveAction(MouseEvent evt) {
+    Point sp = LayoutUtil.snapToGrid(evt.getPoint());
+    Tile tile = findTile(sp);
+    if (tile != null) {
+      setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+    } else {
+      setCursor(Cursor.getDefaultCursor());
+    }
+  }
+
+  private Tile getSelectedTile() {
+    Tile t = null;
+    if (!selectedTiles.isEmpty()) {
+      for (Point p : this.selectedTiles) {
+        t = tiles.get(p);
+        if (t != null) {
+          return t;
+        }
+      }
+    }
+    return t;
+  }
+
+  private void mousePressedAction(MouseEvent evt) {
+    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
+    Tile tile = findTile(snapPoint);
+
+    //Clear any previous selection
+    selectedTiles.clear();
+    if (tile != null) {
+      selectedTiles.addAll(tile.getAllPoints());
+    }
+
+    switch (mode) {
+      case CONTROL -> {
+        if (tile != null) {
+          if (evt.getButton() == MouseEvent.BUTTON1) {
+            executeControlActionForTile(tile, snapPoint);
+          } else {
+            Logger.trace("Show menuitems for tile " + tile);
+            this.selectedTile = tile;
+            if (tile.isBlock()) {
+              showBlockPopupMenu(tile, snapPoint);
+            }
+          }
+        }
+      }
+      case ADD -> {
+        if (MouseEvent.BUTTON1 == evt.getButton() && tile == null) {
+          //Only add a new tile when there is no tile on the selected snapPoint
+          Logger.debug("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
+          Tile addedTile = addTile(snapPoint);
+          selectedTiles.addAll(addedTile.getAllPoints());
+        } else {
+          if (tile != null) {
+            Logger.debug("A tile exists at the selected position: " + tile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ") id: " + tile.getId());
+          } else {
+            Logger.warn("Found something (" + snapPoint.x + ", " + snapPoint.y + ")");
+          }
+        }
+        if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
+          showOperationsPopupMenu(tile, snapPoint);
+        }
+      }
+      case DELETE -> {
+        removeTiles(selectedTiles);
+      }
+      default -> {
+        Logger.trace((tile != null ? "Selected tile: " + tile.getId() + ", " + tile.xyToString() : "No tile selected"));
+        if (tile == null) {
+          this.selectedTiles.clear();
+        }
+
+        if (MouseEvent.BUTTON3 == evt.getButton()) {
+          showOperationsPopupMenu(tile, snapPoint);
+        }
+      }
+    }
+    repaint();
+  }
+
+  private void mouseDragAction(MouseEvent evt) {
+    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
+    Tile selTile = getSelectedTile();
+    if (selTile != null) {
+      movingTileImage = selTile.getTileImage();
+      movingTileCenterPoint = snapPoint;
+    } else {
+      movingTileImage = null;
+      movingTileCenterPoint = null;
+    }
+    repaint();
+  }
+
+  private boolean checkTileOccupation(Tile tile) {
+    Set<Point> tilePoints = tile.getAllPoints();
+    for (Point p : tilePoints) {
+      if (tiles.containsKey(p) || altTiles.containsKey(p)) {
+        //The is a match, check if it is an other tile
+        Tile mt = this.findTile(p);
+        if (tile.getId().equals(mt.getId())) {
+          //same tile continue
+        } else {
+          //Other tile so really occupied
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private void mouseReleasedAction(MouseEvent evt) {
+    Tile selTile = getSelectedTile();
+    if (selTile != null) {
+      Logger.trace("Selected tile: " + selTile.getId() + ", " + selTile.xyToString());
+    }
+
+    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
+
+    if (!LayoutCanvas.Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selTile != null) {
+      Point tp = selTile.getCenter();
+      if (!tp.equals(snapPoint)) {
+        Logger.tag("Moving Tile from " + tp + " to " + snapPoint + " Tile to move: " + selTile);
+        //Check if new position is free
+        boolean canMove = true;
+        if (tiles.containsKey(snapPoint) || altTiles.containsKey(snapPoint)) {
+          Tile tile = findTile(snapPoint);
+          if (selTile.getId().equals(tile.getId())) {
+            //same tile so we can move
+            canMove = true;
+          } else {
+            Logger.debug("Position " + snapPoint + " is occupied with tile: " + tile + ", can't move tile " + selTile.getId());
+            canMove = false;
+          }
+        }
+
+        if (canMove) {
+          //Remove the original tile center from the tiles
+          Tile movingTile = tiles.remove(tp);
+          if (movingTile != null) {
+            //Also remove from the alt points
+            Point oldCenter = movingTile.getCenter();
+            Set<Point> oldAltPoints = movingTile.getAltPoints();
+            //Logger.trace("Removing " + oldAltPoints.size() + " alt tile points");
+            for (Point ep : oldAltPoints) {
+              altTiles.remove(ep);
+              tiles.remove(ep);
+            }
+
+            //Set the new center position
+            movingTile.setCenter(snapPoint);
+            //Check again, needed for tiles which are longer then 1 square, like a block
+            if (!checkTileOccupation(movingTile)) {
+              Logger.trace("Moved Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint + "...");
+              tiles.put(snapPoint, movingTile);
+              for (Point ep : movingTile.getAltPoints()) {
+                altTiles.put(ep, movingTile);
+              }
+              selectedTiles.clear();
+              selectedTiles.addAll(movingTile.getAllPoints());
+            } else {
+              //Do not move Tile, put back where it was
+              movingTile.setCenter(oldCenter);
+              tiles.put(oldCenter, movingTile);
+              for (Point ep : movingTile.getAltPoints()) {
+                altTiles.put(ep, movingTile);
+              }
+            }
+          }
+        }
+      }
+    }
+    movingTileImage = null;
+    movingTileCenterPoint = null;
+
+    repaint();
+  }
+
+  private void executeControlActionForTile(Tile tile, Point p) {
+    TileBean.TileType tt = tile.getTileType();
+    switch (tt) {
+      case STRAIGHT -> {
+      }
+      case CURVED -> {
+      }
+      case SENSOR -> {
+        this.executor.execute(() -> toggleSensor((Sensor) tile));
+      }
+      case BLOCK -> {
+        Logger.trace("Show BlockDialog for " + tile.getId());
+        //show the Block control dialog so tha a locomotive can be assigned to the block
+        Block block = (Block) tile;
+        BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
+        bcd.setVisible(true);
+
+        this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
+      }
+      case SIGNAL ->
+        this.executor.execute(() -> toggleSignal((Signal) tile));
+      case SWITCH ->
+        this.executor.execute(() -> toggleSwitch((Switch) tile));
+      case CROSS -> {
+        this.executor.execute(() -> toggleSwitch((Switch) tile));
+      }
+      default -> {
+      }
+    }
+  }
+
+  private void toggleSwitch(Switch turnout) {
+    if (turnout.getAccessoryBean() != null) {
+      AccessoryBean ab = turnout.getAccessoryBean();
+      ab.toggle();
+      turnout.setValue(ab.getAccessoryValue());
+
+      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
+      repaint(turnout.getX(), turnout.getY(), turnout.getWidth(), turnout.getHeight());
+    } else {
+      Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
+    }
+  }
+
+  private void toggleSignal(Signal signal) {
+    if (signal.getAccessoryBean() != null) {
+      AccessoryBean ab = signal.getAccessoryBean();
+      ab.toggle();
+      Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getState());
+
+      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
+      repaint(signal.getX(), signal.getY(), signal.getWidth(), signal.getHeight());
+    } else {
+      Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
+    }
+  }
+
+  private void toggleSensor(Sensor sensor) {
+    SensorBean sb = sensor.getSensorBean();
+    if (sb != null) {
+      sb.toggle();
+      sensor.setActive((sb.getStatus() == 1));
+      Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
+
+      sensor.repaintTile();
+
+      SensorEvent sensorEvent = new SensorEvent(sb);
+      //this.executor.execute(() -> fireFeedbackEvent(sensorEvent));
+      fireFeedbackEvent(sensorEvent);
+    }
+  }
+
+  private void fireFeedbackEvent(SensorEvent sensorEvent) {
+    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+    for (FeedbackController fbc : acl) {
+      fbc.fireSensorEventListeners(sensorEvent);
+    }
+  }
+
+  private void editSelectedTileProperties() {
+    //the first tile should be the selected one
+    boolean showProperties = false;
+    boolean showFlip = false;
+    boolean showRotate = false;
+    boolean showMove = false;
+    boolean showDelete = false;
+
+    if (!this.selectedTiles.isEmpty()) {
+      Point tcp = this.selectedTiles.iterator().next();
+      Tile tile = findTile(tcp);
+      TileBean.TileType tt = tile.getTileType();
+
+      Logger.trace("Seleted tile " + tile.getId() + " TileType " + tt);
+
+      switch (tt) {
+        case END -> {
+          showRotate = true;
+          showDelete = true;
+        }
+        case STRAIGHT_DIR -> {
+          showRotate = true;
+          showDelete = true;
+        }
+        case STRAIGHT -> {
+          showRotate = true;
+          showDelete = true;
+        }
+        case CURVED -> {
+          showRotate = true;
+          showDelete = true;
+        }
+        case SENSOR -> {
+          SensorDialog fbd = new SensorDialog(getParentFrame(), (Sensor) tile);
+          fbd.setVisible(true);
+        }
+        case SIGNAL -> {
+          SignalDialog sd = new SignalDialog(getParentFrame(), (Signal) tile);
+          sd.setVisible(true);
+        }
+        case SWITCH -> {
+          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
+          td.setVisible(true);
+        }
+        case CROSS -> {
+          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
+          td.setVisible(true);
+        }
+        case BLOCK -> {
+          Logger.trace("Show BlockDialog for " + tile.getId());
+          BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile, this);
+          bd.setVisible(true);
+        }
+        default -> {
+        }
+      }
+    }
+    //this.executor.execute(() -> repaint());
+    repaint();
+  }
+
+  private void showBlockPopupMenu(Tile tile, Point p) {
+    if (tile == null || p == null) {
+      return;
+    }
+    //Check if automode is on etc
+    boolean autoPilotEnabled = AutoPilot.getInstance().isAutoModeActive();
+    boolean hasLoco = ((Block) tile).getBlockBean().getLocomotive() != null;
+    boolean isGhost = ((Block) tile).getBlockBean().getBlockState() == BlockState.GHOST;
+    this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
+    this.stopLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
+    this.resetDispatcherMI.setEnabled(autoPilotEnabled && hasLoco);
+    this.removeLocMI.setEnabled(hasLoco);
+    this.toggleLocomotiveDirectionMI.setEnabled(hasLoco);
+    this.reverseArrivalSideMI.setEnabled(hasLoco);
+    this.resetGhostMI.setEnabled(isGhost);
+
+    this.toggleOutOfOrderMI.setEnabled(!hasLoco);
+
+    if (BlockBean.BlockState.OUT_OF_ORDER == ((Block) tile).getBlockState()) {
+      this.toggleOutOfOrderMI.setText("Enable Block");
+    } else {
+      this.toggleOutOfOrderMI.setText("Set Out of Order");
+    }
+
+    this.blockPopupMenu.show(this, p.x, p.y);
+  }
+
+  private void showOperationsPopupMenu(Tile tile, Point p) {
+    if (tile == null || p == null) {
+      return;
+    }
+
+    //which items should be shown
+    boolean showProperties = false;
+    boolean showFlip = false;
+    boolean showRotate = false;
+    boolean showMove = false;
+    boolean showDelete = false;
+
+    TileBean.TileType tt = tile.getTileType();
+    switch (tt) {
+      case SENSOR -> {
+        showProperties = true;
+        showRotate = true;
+        showDelete = true;
+      }
+      case BLOCK -> {
+        showProperties = true;
+        showRotate = true;
+        showDelete = true;
+      }
+      case SIGNAL -> {
+        showProperties = true;
+        showRotate = true;
+        showDelete = true;
+      }
+      case SWITCH -> {
+        showProperties = true;
+        showFlip = true;
+        showRotate = true;
+        showDelete = true;
+      }
+      case CROSS -> {
+        showProperties = true;
+        showFlip = true;
+        showRotate = true;
+        showDelete = true;
+      }
+      default -> {
+        showRotate = true;
+        showDelete = true;
+      }
+    }
+    this.xyMI.setVisible(true);
+
+    String extra = "";
+    if (tile instanceof Sensor s) {
+      if (s.getSensorBean() != null) {
+        extra = " " + s.getSensorBean().getName();
+      }
+    }
+
+    this.xyMI.setText(tile.getId() + extra + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
+
+    this.propertiesMI.setVisible(showProperties);
+    this.flipHorizontalMI.setVisible(showFlip);
+    this.flipVerticalMI.setVisible(showFlip);
+    this.rotateMI.setVisible(showRotate);
+    this.moveMI.setVisible(showMove);
+    this.deleteMI.setVisible(showDelete);
+    this.operationsPM.show(this, p.x, p.y);
+  }
+
+  public Tile findTile(Point cp) {
+    Tile result = this.tiles.get(cp);
+    if (result == null) {
+      //Logger.trace("Using alternative points...");
+      result = this.altTiles.get(cp);
+      if (result != null) {
+        //Logger.trace("Found " + result + " in alt tiles");
+      }
+    }
+    return result;
+  }
+
+  private Point getCheckAvailable(Point newPoint) {
+    if (this.tiles.containsKey(newPoint)) {
+      Tile et = this.tiles.get(newPoint);
+      Logger.debug("@ " + newPoint + " is allready occcupied by: " + et + "...");
+      //Search for the nearest avalaible free point 
+      //first get the Center point of the tile which is occuping this slot
+      // show warning!
+      Point ecp = et.getCenter();
+
+      int w = et.getWidth();
+      int h = et.getHeight();
+
+      Point np;
+      np = switch (this.orientation) {
+        case EAST ->
+          new Point(ecp.x + w, ecp.y);
+        case WEST ->
+          new Point(newPoint.x - w, ecp.y);
+        case SOUTH ->
+          new Point(ecp.x, newPoint.y + h);
+        default ->
+          new Point(ecp.x, newPoint.y - h);
+      };
+
+      Logger.trace("Alternative CP: " + np);
+      // recursive check
+      return getCheckAvailable(np);
+    } else {
+      Logger.debug("@ " + newPoint + " is not yet used...");
+
+      return newPoint;
+    }
+  }
+
+  private Tile addTile(Point p) {
+    if (this.orientation == null) {
+      this.orientation = Orientation.EAST;
+    }
+
+    if (this.direction == null) {
+      this.direction = Direction.RIGHT;
+    }
+
+    Logger.trace("Adding: " + tileType + " @ " + p);
+    Point chkp = getCheckAvailable(p);
+    boolean fullRepaint = !chkp.equals(p);
+
+    Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
+
+    tiles.put(chkp, tile);
+    //Alternative point(s) to be able to find all points
+    if (!tile.getAltPoints().isEmpty()) {
+      Set<Point> alt = tile.getAltPoints();
+      for (Point ap : alt) {
+        this.altTiles.put(ap, tile);
+      }
+    }
+    Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
+    Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
+
+    if (fullRepaint) {
+      this.repaint();
+    }
+    return tile;
+  }
+
+  void removeTiles() {
+    removeTiles(selectedTiles);
+  }
+
+  private void removeTiles(Set<Point> pointsToRemove) {
+    for (Point p : pointsToRemove) {
+      Tile removed = this.tiles.remove(p);
+
+      if (removed != null && removed.getAllPoints() != null) {
+        Set<Point> rps = removed.getAltPoints();
+        //Also remove alt points
+        for (Point ap : rps) {
+          tiles.remove(ap);
+        }
+
+        Logger.trace("Removed: " + removed);
+      }
+    }
+    selectedTiles.clear();
+    repaint();
+  }
+
+  private JFrame getParentFrame() {
+    JFrame frame = (JFrame) SwingUtilities.getRoot(this);
+    return frame;
+  }
+
+  public void rotateSelectedTile() {
+    Logger.trace("Selected Tiles " + selectedTiles.size());
+
+    //make copy as the map could be cleared
+    Set<Point> snapshot = new HashSet<>(selectedTiles);
+    for (Point p : snapshot) {
+      Logger.trace("Selected Tile @ " + p);
+      if (this.tiles.containsKey(p)) {
+        Tile t = this.tiles.get(p);
+        //Remove the alternative or extra points...
+        for (Point ep : t.getAltPoints()) {
+          this.altTiles.remove(ep);
+        }
+
+        t.rotate();
+        Logger.trace("Rotated " + t);
+        this.orientation = t.getOrientation();
+        this.direction = t.getDirection();
+
+        //override
+        this.tiles.put(p, t);
+        for (Point ep : t.getAltPoints()) {
+          this.altTiles.put(ep, t);
+        }
+
+        this.selectedTiles.clear();
+        this.selectedTiles.addAll(t.getAllPoints());
+      }
+    }
+    //this.executor.execute(() -> repaint());
+    repaint();
+  }
+
+  public void flipSelectedTileHorizontal() {
+    Set<Point> snapshot = new HashSet<>(selectedTiles);
+    for (Point p : snapshot) {
+      Logger.trace("Selected Tile @ " + p);
+      if (this.tiles.containsKey(p)) {
+        Tile t = this.tiles.get(p);
+        //Remove the alternative or extra points...
+        for (Point ep : t.getAltPoints()) {
+          this.altTiles.remove(ep);
+        }
+
+        t.flipHorizontal();
+        Logger.trace("Flipped " + t);
+        this.orientation = t.getOrientation();
+        this.direction = t.getDirection();
+
+        //override
+        this.tiles.put(p, t);
+        for (Point ep : t.getAltPoints()) {
+          this.altTiles.put(ep, t);
+        }
+
+        this.selectedTiles.clear();
+        this.selectedTiles.addAll(t.getAllPoints());
+      }
+    }
+    this.executor.execute(() -> repaint());
+  }
+
+  public void flipSelectedTileVertical() {
+    Set<Point> snapshot = new HashSet<>(selectedTiles);
+    for (Point p : snapshot) {
+      Logger.trace("Selected Tile @ " + p);
+      if (this.tiles.containsKey(p)) {
+        Tile t = this.tiles.get(p);
+        //Remove the alternative or extra points...
+        for (Point ep : t.getAltPoints()) {
+          this.altTiles.remove(ep);
+        }
+
+        t.flipVertical();
+        Logger.trace("Flipped " + t);
+        this.orientation = t.getOrientation();
+        this.direction = t.getDirection();
+
+        //override
+        this.tiles.put(p, t);
+        for (Point ep : t.getAltPoints()) {
+          this.altTiles.put(ep, t);
+        }
+
+        this.selectedTiles.clear();
+        this.selectedTiles.addAll(t.getAllPoints());
+      }
+    }
+    this.executor.execute(() -> repaint());
+  }
+
+  void routeLayout() {
+    this.executor.execute(() -> routeLayoutWithAStar());
+  }
+
+  private void routeLayoutWithAStar() {
+    //Make sure the layout is saved
+    Set<Tile> snapshot = new HashSet<>(tiles.values());
+    this.saveTiles(snapshot);
+
+    AStar astar = new AStar();
+    astar.buildGraph(this.tiles.values().stream().collect(Collectors.toList()));
+    astar.routeAll();
+    astar.persistRoutes();
+    if (this.routesDialog.isVisible()) {
+      this.routesDialog.loadRoutes();
+    }
+  }
+
+  void showRoutesDialog() {
+    this.routesDialog.setVisible(true);
+  }
+
   /**
-   * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+   * This method is called from within the constructor to initialize the form.<br>
+   * WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
    */
   @SuppressWarnings("unchecked")
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -454,6 +1050,16 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     flipVerticalMI = new JMenuItem();
     moveMI = new JMenuItem();
     deleteMI = new JMenuItem();
+    blockPopupMenu = new JPopupMenu();
+    toggleOutOfOrderMI = new JMenuItem();
+    resetGhostMI = new JMenuItem();
+    startLocomotiveMI = new JMenuItem();
+    stopLocomotiveMI = new JMenuItem();
+    resetDispatcherMI = new JMenuItem();
+    reverseArrivalSideMI = new JMenuItem();
+    toggleLocomotiveDirectionMI = new JMenuItem();
+    removeLocMI = new JMenuItem();
+    blockPropertiesMI = new JMenuItem();
 
     verticalMI.setText("Vertical");
     verticalMI.addActionListener(new ActionListener() {
@@ -538,9 +1144,83 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     });
     operationsPM.add(deleteMI);
 
+    toggleOutOfOrderMI.setText("Set Out of Order");
+    toggleOutOfOrderMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        toggleOutOfOrderMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(toggleOutOfOrderMI);
+
+    resetGhostMI.setText("Reset Ghost");
+    resetGhostMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetGhostMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(resetGhostMI);
+
+    startLocomotiveMI.setText("Start Locomotive");
+    startLocomotiveMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        startLocomotiveMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(startLocomotiveMI);
+
+    stopLocomotiveMI.setText("Stop Locomotive");
+    stopLocomotiveMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        stopLocomotiveMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(stopLocomotiveMI);
+
+    resetDispatcherMI.setText("Reset Dispatcher");
+    resetDispatcherMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetDispatcherMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(resetDispatcherMI);
+
+    reverseArrivalSideMI.setText("Reverse Arrival Side");
+    reverseArrivalSideMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        reverseArrivalSideMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(reverseArrivalSideMI);
+
+    toggleLocomotiveDirectionMI.setText("Toggle Direction");
+    toggleLocomotiveDirectionMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        toggleLocomotiveDirectionMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(toggleLocomotiveDirectionMI);
+
+    removeLocMI.setText("Remove Locomotive");
+    removeLocMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        removeLocMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(removeLocMI);
+
+    blockPropertiesMI.setText("Properties");
+    blockPropertiesMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        blockPropertiesMIActionPerformed(evt);
+      }
+    });
+    blockPopupMenu.add(blockPropertiesMI);
+
     setBackground(new Color(250, 250, 250));
+    setAutoscrolls(true);
+    setMinimumSize(new Dimension(1398, 848));
     setOpaque(false);
-    setPreferredSize(new Dimension(800, 700));
+    setPreferredSize(new Dimension(1398, 848));
     addMouseMotionListener(new MouseMotionAdapter() {
       public void mouseDragged(MouseEvent evt) {
         formMouseDragged(evt);
@@ -557,353 +1237,9 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         formMouseReleased(evt);
       }
     });
+    setLayout(null);
+    getAccessibleContext().setAccessibleParent(this);
   }// </editor-fold>//GEN-END:initComponents
-
-  private void mouseMoveAction(MouseEvent evt) {
-    //Only repaint when the mouse is snapped to the next grid
-    Point sp = LayoutUtil.snapToGrid(evt.getPoint());
-
-    Tile tile = findTile(sp);
-    if (tile != null) {
-      setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-    } else {
-      setCursor(Cursor.getDefaultCursor());
-    }
-  }
-
-  private Tile getSelectedTile() {
-    if (!selectedTiles.isEmpty()) {
-      Set<Tile> sts = new HashSet<>();
-      for (Point p : this.selectedTiles) {
-        if (this.tiles.containsKey(p)) {
-          Tile t = this.tiles.get(p);
-          sts.add(t);
-        }
-      }
-      Logger.trace("There are " + sts.size() + " selected tiles.");
-      return sts.iterator().next();
-    }
-    return null;
-  }
-
-  private void mousePressedAction(MouseEvent evt) {
-    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    Tile tile = findTile(snapPoint);
-
-    //Clear any previous selection
-    selectedTiles.clear();
-    if (tile != null) {
-      selectedTiles.addAll(tile.getAllPoints());
-    }
-
-    switch (mode) {
-      case CONTROL -> {
-        if (tile != null) {
-          executeControlActionForTile(tile, snapPoint);
-        }
-      }
-      case ADD -> {
-        if (MouseEvent.BUTTON1 == evt.getButton() && tile == null) {
-          //Only add a new tile when there is no tile on the selected snapPoint
-          Logger.debug("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
-          Tile addedTile = addTile(snapPoint);
-          selectedTiles.addAll(addedTile.getAllPoints());
-        } else {
-          Logger.debug("A tile exists at the selected position: " + tile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
-        }
-        if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
-          showOperationsPopupMenu(tile, snapPoint);
-        }
-      }
-      case DELETE -> {
-        removeTiles(selectedTiles);
-      }
-      default -> {
-        Logger.trace((tile != null ? "Selected tile: " + tile.getId() + ", " + tile.xyToString() : "No tile selected"));
-        if (MouseEvent.BUTTON3 == evt.getButton()) {
-          showOperationsPopupMenu(tile, snapPoint);
-        }
-      }
-    }
-
-    //in theory only the surrouding of the snapPoint should be repainted...
-    this.repaint();
-  }
-
-  private void mouseDragAction(MouseEvent evt) {
-    //Use this for showing the tile moving in the future
-  }
-
-  private boolean checkTileOccupation(Tile tile) {
-    Set<Point> tilePoints = tile.getAllPoints();
-    return checkTileOccupation(tilePoints);
-  }
-
-  private boolean checkTileOccupation(Set<Point> tilePoints) {
-    for (Point p : tilePoints) {
-      if (tiles.containsKey(p) || altTiles.containsKey(p)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private void mouseReleasedAction(MouseEvent evt) {
-    Tile selTile = getSelectedTile();
-    if (selTile != null) {
-      Logger.trace("Selected tile: " + selTile.getId() + ", " + selTile.xyToString());
-    }
-
-    Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-
-    if (!LayoutCanvas.Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selTile != null) {
-      Point tp = selTile.getCenter();
-      if (!tp.equals(snapPoint)) {
-        Logger.tag("Moving Tile from " + tp + " to " + snapPoint + " Tile to move: " + selTile);
-        //Check if new position is free
-
-        if (tiles.containsKey(snapPoint) || this.altTiles.containsKey(snapPoint)) {
-          Tile tile = findTile(snapPoint);
-          Logger.debug("Position " + snapPoint + " is occupied with tile: " + tile + ", can't move tile");
-        } else {
-          //Remove the original tile center from the tiles
-          Tile movingTile = tiles.remove(tp);
-          if (movingTile != null) {
-            //Also remove from the alt points
-            Point oldCenter = movingTile.getCenter();
-            Set<Point> oldAltPoints = movingTile.getAltPoints();
-
-            //Set the new center position
-            movingTile.setCenter(snapPoint);
-            //Check again
-            if (!checkTileOccupation(movingTile)) {
-              //Also remove previous alt points
-              for (Point ap : oldAltPoints) {
-                tiles.remove(tp);
-                altTiles.remove(tp);
-              }
-              Logger.trace("Moved Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint + "...");
-              tiles.put(snapPoint, movingTile);
-              for (Point ep : movingTile.getAltPoints()) {
-                altTiles.put(ep, movingTile);
-              }
-
-              selectedTiles.clear();
-              selectedTiles.addAll(movingTile.getAllPoints());
-
-              repaint();
-            } else {
-              //Do not move Tile, put back where it was
-              movingTile.setCenter(oldCenter);
-              tiles.put(oldCenter, movingTile);
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private void executeControlActionForTile(Tile tile, Point p) {
-    TileBean.TileType tt = tile.getTileType();
-    switch (tt) {
-      case STRAIGHT -> {
-      }
-      case CURVED -> {
-      }
-      case SENSOR -> {
-        this.executor.execute(() -> toggleSensor((Sensor) tile));
-        //toggleSensor((Sensor) tile);
-      }
-      case BLOCK -> {
-        Logger.trace("Show BlockDialog for " + tile.getId());
-        //show the Block control dialog so tha a locomotive can be assigned to the block
-        Block block = (Block) tile;
-        BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
-        bcd.setVisible(true);
-
-        this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
-      }
-      case SIGNAL ->
-        this.executor.execute(() -> toggleSignal((Signal) tile));
-      case SWITCH ->
-        this.executor.execute(() -> toggleSwitch((Switch) tile));
-      case CROSS -> {
-      }
-      default -> {
-      }
-    }
-  }
-
-  private void toggleSwitch(Switch turnout) {
-    if (turnout.getAccessoryBean() != null) {
-      AccessoryBean ab = turnout.getAccessoryBean();
-      ab.toggle();
-      turnout.setValue(ab.getAccessoryValue());
-      
-      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
-      repaint(turnout.getX(), turnout.getY(), turnout.getWidth(), turnout.getHeight());
-    } else {
-      Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
-    }
-  }
-
-  private void toggleSignal(Signal signal) {
-    if (signal.getAccessoryBean() != null) {
-      AccessoryBean ab = signal.getAccessoryBean();
-      ab.toggle();
-      Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getState());
-
-      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
-      repaint(signal.getX(), signal.getY(), signal.getWidth(), signal.getHeight());
-    } else {
-      Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
-    }
-  }
-
-  private void toggleSensor(Sensor sensor) {
-    SensorBean sb = sensor.getSensorBean();
-    if (sb != null) {
-      sb.toggle();
-      sensor.setActive((sb.getStatus()==1));
-      Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
-
-      sensor.repaintTile();
-      
-      SensorEvent sensorEvent = new SensorEvent(sb);
-
-      List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-      for (FeedbackController fbc : acl) {
-        fbc.fireSensorEventListeners(sensorEvent);
-      }
-    }
-  }
-
-  private void notifyFeedbackListeners(SensorEvent sensorEvent) {
-    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-
-    for (FeedbackController fbc : acl) {
-      fbc.fireSensorEventListeners(sensorEvent);
-    }
-  }
-
-  private void editSelectedTileProperties() {
-    //the first tile should be the selected one
-    boolean showProperties = false;
-    boolean showFlip = false;
-    boolean showRotate = false;
-    boolean showMove = false;
-    boolean showDelete = false;
-
-    if (!this.selectedTiles.isEmpty()) {
-      Point tcp = this.selectedTiles.iterator().next();
-      Tile tile = findTile(tcp);
-      TileBean.TileType tt = tile.getTileType();
-
-      Logger.trace("Seleted tile " + tile.getId() + " TileType " + tt);
-
-      switch (tt) {
-        case END -> {
-          showRotate = true;
-          showDelete = true;
-        }
-        case STRAIGHT_DIR -> {
-          showRotate = true;
-          showDelete = true;
-        }
-        case STRAIGHT -> {
-          showRotate = true;
-          showDelete = true;
-        }
-        case CURVED -> {
-          showRotate = true;
-          showDelete = true;
-        }
-        case SENSOR -> {
-          SensorDialog fbd = new SensorDialog(getParentFrame(), (Sensor) tile);
-          fbd.setVisible(true);
-        }
-        case SIGNAL -> {
-          SignalDialog sd = new SignalDialog(getParentFrame(), (Signal) tile);
-          sd.setVisible(true);
-        }
-        case SWITCH -> {
-          SwitchDialog td = new SwitchDialog(getParentFrame(), (Switch) tile);
-          td.setVisible(true);
-        }
-        case BLOCK -> {
-          Logger.trace("Show BlockDialog for " + tile.getId());
-          BlockDialog bd = new BlockDialog(getParentFrame(), (Block) tile, this);
-          bd.setVisible(true);
-        }
-        default -> {
-        }
-      }
-    }
-    this.executor.execute(() -> repaint());
-    Logger.trace("Edit done");
-  }
-
-  private void showOperationsPopupMenu(Tile tile, Point p) {
-    //which items should be shown
-    boolean showProperties = false;
-    boolean showFlip = false;
-    boolean showRotate = false;
-    boolean showMove = false;
-    boolean showDelete = false;
-
-    TileBean.TileType tt = tile.getTileType();
-    switch (tt) {
-      case SENSOR -> {
-        showProperties = true;
-        showRotate = true;
-        showDelete = true;
-      }
-      case BLOCK -> {
-        showProperties = true;
-        showRotate = true;
-        showDelete = true;
-      }
-      case SIGNAL -> {
-        showProperties = true;
-        showRotate = true;
-        showDelete = true;
-      }
-      case SWITCH -> {
-        showProperties = true;
-        showFlip = true;
-        showRotate = true;
-        showDelete = true;
-      }
-      case CROSS -> {
-        showProperties = true;
-        showFlip = true;
-        showRotate = true;
-        showDelete = true;
-      }
-      default -> {
-        showRotate = true;
-        showDelete = true;
-      }
-    }
-    this.xyMI.setVisible(true);
-
-    String extra = "";
-    if (tile instanceof Sensor s) {
-      if (s.getSensorBean() != null) {
-        extra = " " + s.getSensorBean().getName();
-      }
-    }
-
-    this.xyMI.setText(tile.getId() + extra + " (" + p.x + "," + p.y + ") O: " + tile.getOrientation().getOrientation() + " D: " + tile.getDirection());
-
-    this.propertiesMI.setVisible(showProperties);
-    this.flipHorizontalMI.setVisible(showFlip);
-    this.flipVerticalMI.setVisible(showFlip);
-    this.rotateMI.setVisible(showRotate);
-    this.moveMI.setVisible(showMove);
-    this.deleteMI.setVisible(showDelete);
-    this.operationsPM.show(this, p.x, p.y);
-  }
 
   private void formMousePressed(MouseEvent evt) {//GEN-FIRST:event_formMousePressed
     mousePressedAction(evt);
@@ -945,293 +1281,160 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
       addTile(this.mouseLocation);
-
-      //do someting with the rotation/direction...
       this.mouseLocation = null;
     }
   }//GEN-LAST:event_leftMIActionPerformed
-
-  public Tile findTile(Point cp) {
-    Tile result = this.tiles.get(cp);
-    if (result == null) {
-      //Logger.trace("Using alternative points...");
-      result = this.altTiles.get(cp);
-      if (result != null) {
-        //Logger.trace("Found " + result + " in alt tiles");
-      }
-    }
-
-    return result;
-  }
 
   private void formMouseMoved(MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
     mouseMoveAction(evt);
   }//GEN-LAST:event_formMouseMoved
 
-    private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed
-      rotateSelectedTile();
-    }//GEN-LAST:event_rotateMIActionPerformed
+  private void rotateMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateMIActionPerformed
+    rotateSelectedTile();
+  }//GEN-LAST:event_rotateMIActionPerformed
 
-    private void flipHorizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipHorizontalMIActionPerformed
-      flipSelectedTileHorizontal();
-    }//GEN-LAST:event_flipHorizontalMIActionPerformed
+  private void flipHorizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipHorizontalMIActionPerformed
+    flipSelectedTileHorizontal();
+  }//GEN-LAST:event_flipHorizontalMIActionPerformed
 
-    private void flipVerticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipVerticalMIActionPerformed
-      flipSelectedTileVertical();
-    }//GEN-LAST:event_flipVerticalMIActionPerformed
+  private void flipVerticalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipVerticalMIActionPerformed
+    flipSelectedTileVertical();
+  }//GEN-LAST:event_flipVerticalMIActionPerformed
 
-    private void moveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveMIActionPerformed
-      this.mode = Mode.MOVE;
-    }//GEN-LAST:event_moveMIActionPerformed
+  private void moveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveMIActionPerformed
+    this.mode = Mode.MOVE;
+  }//GEN-LAST:event_moveMIActionPerformed
 
-    private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
-      this.removeTiles(selectedTiles);
-    }//GEN-LAST:event_deleteMIActionPerformed
+  private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
+    this.removeTiles(selectedTiles);
+  }//GEN-LAST:event_deleteMIActionPerformed
 
-    private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
-      editSelectedTileProperties();
-    }//GEN-LAST:event_propertiesMIActionPerformed
+  private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
+    editSelectedTileProperties();
+  }//GEN-LAST:event_propertiesMIActionPerformed
 
   private void formMouseDragged(MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
     mouseDragAction(evt);
   }//GEN-LAST:event_formMouseDragged
 
-  private Point getCheckAvailable(Point newPoint) {
-    if (this.tiles.containsKey(newPoint)) {
-      Tile et = this.tiles.get(newPoint);
+  private void startLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startLocomotiveMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
 
-      Logger.debug("@ " + newPoint + " is allready occcupied by: " + et + "...");
-      //Search for the nearest avalaible free point 
-      //first get the Center point of the tile which is occuping this slot
-
-      // show warning!
-      Point ecp = et.getCenter();
-
-      int w = et.getWidth();
-      int h = et.getHeight();
-
-      Point np;
-      np = switch (this.orientation) {
-        case EAST ->
-          new Point(ecp.x + w, ecp.y);
-        case WEST ->
-          new Point(newPoint.x - w, ecp.y);
-        case SOUTH ->
-          new Point(ecp.x, newPoint.y + h);
-        default ->
-          new Point(ecp.x, newPoint.y - h);
-      };
-
-      Logger.trace("Alternative CP: " + np);
-      // recursive check
-      return getCheckAvailable(np);
-    } else {
-      Logger.debug("@ " + newPoint + " is not yet used...");
-
-      return newPoint;
+      this.executor.execute(() -> AutoPilot.getInstance().startStopLocomotive(locomotive, true));
+      repaint();
     }
-  }
+  }//GEN-LAST:event_startLocomotiveMIActionPerformed
 
-  private Tile addTile(Point p) {
-    if (this.orientation == null) {
-      this.orientation = Orientation.EAST;
+  private void stopLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopLocomotiveMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+
+      this.executor.execute(() -> AutoPilot.getInstance().startStopLocomotive(locomotive, false));
+      repaint();
     }
+  }//GEN-LAST:event_stopLocomotiveMIActionPerformed
 
-    if (this.direction == null) {
-      this.direction = Direction.RIGHT;
+  private void resetDispatcherMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetDispatcherMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+
+      this.executor.execute(() -> AutoPilot.getInstance().resetDispatcher(locomotive));
+      repaint();
     }
+  }//GEN-LAST:event_resetDispatcherMIActionPerformed
 
-    Logger.trace("Adding: " + tileType + " @ " + p);
+  private void removeLocMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeLocMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      block.getBlockBean().setLocomotive(null);
 
-    Point chkp = getCheckAvailable(p);
-
-    boolean fullRepaint = !chkp.equals(p);
-
-    Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
-
-    tiles.put(chkp, tile);
-    //Alternative point(s) to be able to find all points
-    if (!tile.getAltPoints().isEmpty()) {
-      Set<Point> alt = tile.getAltPoints();
-      for (Point ap : alt) {
-        this.altTiles.put(ap, tile);
-      }
-    }
-    Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
-    Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
-
-    if (fullRepaint) {
+      this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
       this.repaint();
     }
-    return tile;
-  }
+  }//GEN-LAST:event_removeLocMIActionPerformed
 
-  void removeTiles() {
+  private void blockPropertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_blockPropertiesMIActionPerformed
+    if (this.selectedTile != null) {
+      //show the Block control dialog so tha a locomotive can be assigned to the block
+      Block block = (Block) selectedTile;
+      BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
+      bcd.setVisible(true);
 
-    removeTiles(selectedTiles);
-  }
+      this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
+    }
+  }//GEN-LAST:event_blockPropertiesMIActionPerformed
 
-  private void removeTiles(Set<Point> pointsToRemove) {
-    for (Point p : pointsToRemove) {
-      Tile removed = this.tiles.remove(p);
+  private void reverseArrivalSideMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_reverseArrivalSideMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
 
-      if (removed != null && removed.getAllPoints() != null) {
-        Set<Point> rps = removed.getAltPoints();
-        //Also remove alt points
-        for (Point ap : rps) {
-          tiles.remove(ap);
-        }
+      String suffix = block.getBlockBean().getArrivalSuffix();
+      if ("+".equals(suffix)) {
+        block.getBlockBean().setArrivalSuffix("-");
+      } else {
+        block.getBlockBean().setArrivalSuffix("+");
+      }
+      block.getBlockBean().setReverseArrival(!block.getBlockBean().isReverseArrival());
+      this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
+      this.repaint();
+    }
+  }//GEN-LAST:event_reverseArrivalSideMIActionPerformed
 
-        Logger.trace("Removed: " + removed);
+  private void toggleLocomotiveDirectionMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleLocomotiveDirectionMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+      LocomotiveBean.Direction curDir = locomotive.getDirection();
+      LocomotiveBean.Direction newDir = locomotive.toggleDirection();
+      locomotive.setDirection(newDir);
+      Logger.trace("Direction changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
+
+      this.executor.execute(() -> PersistenceFactory.getService().persist(locomotive));
+      this.repaint();
+    }
+  }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
+
+
+  private void toggleOutOfOrderMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleOutOfOrderMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      BlockBean.BlockState currentState = block.getBlockState();
+      if (BlockBean.BlockState.FREE == currentState) {
+        block.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
+      } else if (BlockBean.BlockState.OUT_OF_ORDER == currentState) {
+        block.setBlockState(BlockBean.BlockState.FREE);
+      }
+
+      if (currentState != block.getRouteBlockState()) {
+        this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
+        this.repaint();
       }
     }
-    selectedTiles.clear();
-    repaint();
-  }
+  }//GEN-LAST:event_toggleOutOfOrderMIActionPerformed
 
-  private java.awt.Frame getParentFrame() {
-    JFrame frame = (JFrame) SwingUtilities.getRoot(this);
-    return frame;
-  }
-
-  public void rotateSelectedTile() {
-    Logger.trace("Selected Tiles " + selectedTiles.size());
-
-    //make copy as the map could be cleared
-    Set<Point> snapshot = new HashSet<>(selectedTiles);
-    for (Point p : snapshot) {
-      Logger.trace("Selected Tile @ " + p);
-      if (this.tiles.containsKey(p)) {
-        Tile t = this.tiles.get(p);
-        //Remove the alternative or extra points...
-        for (Point ep : t.getAltPoints()) {
-          this.altTiles.remove(ep);
+  private void resetGhostMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetGhostMIActionPerformed
+    if (this.selectedTile != null) {
+      Block block = (Block) selectedTile;
+      BlockBean.BlockState currentState = block.getBlockState();
+      if (BlockBean.BlockState.GHOST == currentState) {
+        if (block.getBlockBean().getLocomotiveId() != null) {
+          block.setBlockState(BlockBean.BlockState.OCCUPIED);
+        } else {
+          block.setBlockState(BlockBean.BlockState.FREE);
         }
-
-        t.rotate();
-        Logger.trace("Rotated " + t);
-        this.orientation = t.getOrientation();
-        this.direction = t.getDirection();
-
-        //override
-        this.tiles.put(p, t);
-        for (Point ep : t.getAltPoints()) {
-          this.altTiles.put(ep, t);
-        }
-
-        this.selectedTiles.clear();
-        this.selectedTiles.addAll(t.getAllPoints());
+        this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
+        this.repaint();
       }
     }
-    this.executor.execute(() -> repaint());
-  }
-
-  public void flipSelectedTileHorizontal() {
-    Set<Point> snapshot = new HashSet<>(selectedTiles);
-    for (Point p : snapshot) {
-      Logger.trace("Selected Tile @ " + p);
-      if (this.tiles.containsKey(p)) {
-        Tile t = this.tiles.get(p);
-        //Remove the alternative or extra points...
-        for (Point ep : t.getAltPoints()) {
-          this.altTiles.remove(ep);
-        }
-
-        t.flipHorizontal();
-        Logger.trace("Flipped " + t);
-        this.orientation = t.getOrientation();
-        this.direction = t.getDirection();
-
-        //override
-        this.tiles.put(p, t);
-        for (Point ep : t.getAltPoints()) {
-          this.altTiles.put(ep, t);
-        }
-
-        this.selectedTiles.clear();
-        this.selectedTiles.addAll(t.getAllPoints());
-      }
-    }
-    this.executor.execute(() -> repaint());
-  }
-
-  public void flipSelectedTileVertical() {
-    Set<Point> snapshot = new HashSet<>(selectedTiles);
-    for (Point p : snapshot) {
-      Logger.trace("Selected Tile @ " + p);
-      if (this.tiles.containsKey(p)) {
-        Tile t = this.tiles.get(p);
-        //Remove the alternative or extra points...
-        for (Point ep : t.getAltPoints()) {
-          this.altTiles.remove(ep);
-        }
-
-        t.flipVertical();
-        Logger.trace("Flipped " + t);
-        this.orientation = t.getOrientation();
-        this.direction = t.getDirection();
-
-        //override
-        this.tiles.put(p, t);
-        for (Point ep : t.getAltPoints()) {
-          this.altTiles.put(ep, t);
-        }
-
-        this.selectedTiles.clear();
-        this.selectedTiles.addAll(t.getAllPoints());
-      }
-    }
-    this.executor.execute(() -> repaint());
-  }
-
-  void routeLayout() {
-    //routeLayoutWithAStar();
-    this.executor.execute(() -> routeLayoutWithAStar());
-  }
-
-  private void routeLayoutWithAStar() {
-    //Make sure the layout is saved
-    Set<Tile> snapshot = new HashSet<>(tiles.values());
-    this.saveTiles(snapshot);
-
-    AStar astar = new AStar();
-    astar.buildGraph(this.tiles.values().stream().collect(Collectors.toList()));
-    astar.routeAll();
-    astar.persistRoutes();
-    if (this.routesDialog.isVisible()) {
-      this.routesDialog.loadRoutes();
-    }
-  }
-
-  void showRoutesDialog() {
-    this.routesDialog.setVisible(true);
-  }
-
-  void setSelectRoute(RouteBean route) {
-    selectedRouteElements.clear();
-    if (route != null) {
-      List<RouteElementBean> rel = route.getRouteElements();
-      for (RouteElementBean re : rel) {
-        String id = re.getTileId();
-        Orientation incomingSide = re.getIncomingOrientation();
-
-        String nodeId = re.getNodeId();
-
-        //if (id.startsWith("sw-") || id.startsWith("cs-")) {
-        //Switches are 2 times in there, only the one with a value is needed
-        //if (!id.equals(nodeId)) {
-        //  selectedRouteElements.put(id, re);
-        //}
-        //} else {
-        selectedRouteElements.put(id, re);
-        //}
-      }
-    }
-
-    this.executor.execute(() -> repaint());
-  }
+  }//GEN-LAST:event_resetGhostMIActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private JPopupMenu blockPopupMenu;
+  private JMenuItem blockPropertiesMI;
   private JPopupMenu curvedPopupMenu;
   private JMenuItem deleteMI;
   private JMenuItem flipHorizontalMI;
@@ -1241,9 +1444,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private JMenuItem moveMI;
   private JPopupMenu operationsPM;
   private JMenuItem propertiesMI;
+  private JMenuItem removeLocMI;
+  private JMenuItem resetDispatcherMI;
+  private JMenuItem resetGhostMI;
+  private JMenuItem reverseArrivalSideMI;
   private JMenuItem rightMI;
   private JMenuItem rotateMI;
+  private JMenuItem startLocomotiveMI;
+  private JMenuItem stopLocomotiveMI;
   private JPopupMenu straightPopupMenu;
+  private JMenuItem toggleLocomotiveDirectionMI;
+  private JMenuItem toggleOutOfOrderMI;
   private JMenuItem verticalMI;
   private JMenuItem xyMI;
   // End of variables declaration//GEN-END:variables

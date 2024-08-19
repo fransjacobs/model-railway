@@ -24,7 +24,7 @@ import jcs.persistence.PersistenceFactory;
  */
 public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveBean> {
 
-  private static final String[] DISPLAY_COLUMNS = new String[]{"id", "decoder_type", "address", "name", "velocity", "richtung"};
+  private static final String[] DISPLAY_COLUMNS = new String[]{"image", "name", "address"};
 
   public LocomotiveBeanTableModel() {
     super(LocomotiveBean.class, DISPLAY_COLUMNS);
@@ -32,8 +32,9 @@ public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveB
 
   @Override
   public void refresh() {
-    this.setBeans(PersistenceFactory.getService().getLocomotives());
-    this.beans = PersistenceFactory.getService().getLocomotives();
+    if (PersistenceFactory.getService() != null) {
+      this.setBeans(PersistenceFactory.getService().getLocomotives());
+    }
   }
 
 }

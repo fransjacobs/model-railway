@@ -50,10 +50,9 @@ public class JCS extends Thread {
 
   private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
-  private static VersionInfo versionInfo;
+  private static String version;
 
   private JCS() {
-    versionInfo = new VersionInfo(JCS.class, "jcs", "ui");
   }
 
   public static void logProgress(String message) {
@@ -62,16 +61,6 @@ public class JCS extends Thread {
     } else {
       Logger.info(message);
     }
-  }
-
-  public static void showTouchbar(JCSFrame frame) {
-    if (RunUtil.isMacOSX()) {
-      osAdapter.showTouchbar(frame);
-    }
-  }
-
-  public static VersionInfo getVersionInfo() {
-    return versionInfo;
   }
 
   public static JCSFrame getParentFrame() {
@@ -154,9 +143,10 @@ public class JCS extends Thread {
   @Override
   public void run() {
     // Perform shutdown methods.
+    Thread.currentThread().setName("JCS finalize thread");
     Logger.trace("Shutting Down...");
     ProcessFactory.getInstance().shutdown();
-    Logger.info("Finished...");
+    Logger.info("JCS "+VersionInfo.getVersion()+" session finished");
   }
 
   public static JCS getInstance() {
@@ -170,6 +160,8 @@ public class JCS extends Thread {
 
   public static void main(String[] args) {
     System.setProperty("fazecast.jSerialComm.appid", "JCS");
+    version = VersionInfo.getVersion();
+    Logger.info("Starting JCS Version "+version+"...");
 
     if (GraphicsEnvironment.isHeadless()) {
       Logger.error("This JDK environment is headless, can't start a GUI!");
@@ -198,10 +190,10 @@ public class JCS extends Thread {
     logProgress("JCS is Starting...");
 
     //Check the persistent properties, prepare environment
-    if (!H2DatabaseUtil.databaseFileExists(false)) {
+    if (!H2DatabaseUtil.databaseFileExists()) {
       //No Database file so maybe first start lets create one
       logProgress("Create new Database...");
-      H2DatabaseUtil.createDatabaseUsers(false);
+      H2DatabaseUtil.createDatabaseUsers();
       H2DatabaseUtil.createDatabase();
     }
 
@@ -218,19 +210,23 @@ public class JCS extends Thread {
     persistentStore = getPersistenceService();
     jcsCommandStation = getJcsCommandStation();
 
-    if (persistentStore != null && jcsCommandStation != null) {
+    if (persistentStore != null) {
       if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
-        boolean connected = jcsCommandStation.connect();
-        if (connected) {
-          logProgress("Connected with Command Station...");
+        if(jcsCommandStation != null) {
+          boolean connected = jcsCommandStation.connect();
+          if (connected) {
+            logProgress("Connected with Command Station...");
 
-          boolean power = jcsCommandStation.isPowerOn();
-          logProgress("Track Power is " + (power ? "on" : "off"));
-          Logger.info("Track Power is " + (power ? "on" : "off"));
-          jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+            boolean power = jcsCommandStation.isPowerOn();
+            logProgress("Track Power is " + (power ? "on" : "off"));
+            Logger.info("Track Power is " + (power ? "on" : "off"));
+            jcsCommandStation.addPowerEventListener(new JCS.Powerlistener());
+          } else {
+            logProgress("Could NOT connect with Command Station...");
+          }
         } else {
-          logProgress("Could NOT connect with Command Station...");
-        }
+           logProgress("NO Default Command Station found...");
+        }  
       }
 
       logProgress("Starting UI...");

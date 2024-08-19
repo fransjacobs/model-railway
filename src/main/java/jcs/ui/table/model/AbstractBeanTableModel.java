@@ -37,7 +37,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
   }
 
   public AbstractBeanTableModel(Class T, String[] displayColumnNames) {
-    beanInfo = new EntityInfo(T, displayColumnNames);
+    beanInfo = new EntityInfo(T, displayColumnNames, true);
   }
 
   public List<T> getBeans() {
@@ -89,12 +89,12 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
 
   public void addRow(T row) {
     this.beans.add(row);
-    int rowNumAdded = this.beans.size() - 1;
+    int rowNumAdded = beans.size() - 1;
     fireTableRowsInserted(rowNumAdded, rowNumAdded);
   }
 
   public void removeRow(T entity) {
-    int row = this.findRowIndex(entity);
+    int row = findRowIndex(entity);
     beans.remove(entity);
     fireTableRowsDeleted(row, row);
   }
@@ -105,7 +105,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
    * @param row the row index.
    */
   public void removeRow(int row) {
-    this.beans.remove(row);
+    beans.remove(row);
     fireTableRowsDeleted(row, row);
   }
 
@@ -116,10 +116,10 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
    */
   @Override
   public int getRowCount() {
-    if (this.beans == null) {
+    if (beans == null) {
       return 0;
     }
-    return this.beans.size();
+    return beans.size();
   }
 
   /**
@@ -129,9 +129,9 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
    */
   @Override
   public int getColumnCount() {
-    if (this.beanInfo != null) {
+    if (beanInfo != null) {
 
-      List<String> columns = this.beanInfo.getColumnNames();
+      List<String> columns = beanInfo.getColumnNames();
       return columns.size();
     } else {
       return 0;
@@ -218,7 +218,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
   public T getBeanAt(int row) {
     if (beans != null && row >= 0 && row < beans.size()) {
       //Logger.trace("Row: " + row);
-      return this.beans.get(row);
+      return beans.get(row);
     }
     Logger.warn("No row " + row + " rowsize is " + (beans == null ? "null" : "" + beans.size()));
     return null;
@@ -227,8 +227,8 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
   @Override
   public int findColumn(String columnName) {
     int col = -1;
-    if (this.beanInfo != null) {
-      List<String> columns = this.beanInfo.getColumnNames();
+    if (beanInfo != null) {
+      List<String> columns = beanInfo.getColumnNames();
 
       for (int i = 0; columns.size() < i; i++) {
         if (columnName.equals(columns.get(i))) {
@@ -243,7 +243,7 @@ public abstract class AbstractBeanTableModel<T> extends AbstractTableModel {
   @Override
   public Class<?> getColumnClass(int columnIndex) {
     String columnName = getColumnName(columnIndex);
-    return this.beanInfo.getColumnDataType(columnName);
+    return beanInfo.getColumnDataType(columnName);
   }
 
 }

@@ -50,7 +50,7 @@ public class TileBean implements Serializable, Comparable {
 
   protected SensorBean sensorBean;
   protected BlockBean blockBean;
-  
+
   public TileBean() {
     this(null, TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, null, null, null);
   }
@@ -138,7 +138,11 @@ public class TileBean implements Serializable, Comparable {
 
   @Transient
   public Orientation getOrientation() {
-    return Orientation.get(this.tileOrientation);
+    if (tileOrientation == null) {
+      return Orientation.EAST;
+    } else {
+      return Orientation.get(this.tileOrientation);
+    }
   }
 
   public void setOrientation(Orientation orientation) {
@@ -400,9 +404,18 @@ public class TileBean implements Serializable, Comparable {
       return this.orientation;
     }
 
-    public static Orientation get(String direction) {
-      return ENUM_MAP.get(direction);
+    public static Orientation get(String orientation) {
+      return ENUM_MAP.get(orientation);
     }
+
+    public boolean isHorizontal() {
+      return EAST == ENUM_MAP.get(orientation) || WEST == ENUM_MAP.get(orientation);
+    }
+
+    public boolean isVertical() {
+      return SOUTH == ENUM_MAP.get(orientation) || NORTH == ENUM_MAP.get(orientation);
+    }
+
   }
 
   public enum Direction {

@@ -17,9 +17,12 @@ package jcs.entities;
 
 import java.awt.Color;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Index;
@@ -38,6 +41,7 @@ public class RouteBean implements Serializable {
   private String toSuffix;
   private String color;
   private boolean locked;
+  private String status;
 
   private List<RouteElementBean> routeElements;
 
@@ -151,6 +155,35 @@ public class RouteBean implements Serializable {
 
   public void setLocked(boolean locked) {
     this.locked = locked;
+
+    //also lock unlock the routeselements
+    if (routeElements != null && !routeElements.isEmpty()) {
+      for (RouteElementBean reb : this.routeElements) {
+        reb.setLocked(locked);
+      }
+    }
+  }
+
+  @Column(name = "status", length = 255)
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  @Transient
+  public RouteState getRouteState() {
+    if (this.status != null) {
+      return RouteState.get(status);
+    } else {
+      return RouteState.FREE;
+    }
+  }
+
+  public void setBlockState(RouteState routeState) {
+    this.status = routeState.getState();
   }
 
   @Transient
@@ -160,39 +193,12 @@ public class RouteBean implements Serializable {
 
   public void setRouteElements(List<RouteElementBean> routeElements) {
     this.routeElements = routeElements;
+
+    for (RouteElementBean reb : this.routeElements) {
+      reb.setLocked(this.locked);
+    }
   }
 
-//    private static List<RouteElementBean> createdRouteElementsFromElements(String fromTileId, String toTileId, List<String> elementIds) {
-//        List<RouteElementBean> rel = new LinkedList<>();
-//        for (int i = 0; i < elementIds.size(); i++) {
-//            String nodeId = elementIds.get(i);
-//
-//            String tileId;
-//            if (nodeId.endsWith("-R")) {
-//                tileId = nodeId.replace("-R", "");
-//            } else if (nodeId.endsWith("-G")) {
-//                tileId = nodeId.replace("-G", "");
-//            } else if (nodeId.endsWith("-") || nodeId.endsWith("+")) {
-//                tileId = nodeId.substring(0, nodeId.length() - 1);
-//            } else {
-//                tileId = nodeId;
-//            }
-//
-//            AccessoryValue accessoryValue = null;
-//            if (nodeId.endsWith("-R")) {
-//                accessoryValue = AccessoryValue.RED;
-//            } else if (nodeId.endsWith("-G")) {
-//                accessoryValue = AccessoryValue.GREEN;
-//            }
-//            Integer elementOrder = i;
-//
-//            RouteElementBean routeElement = new RouteElementBean(fromTileId + "|" + toTileId, nodeId, tileId, accessoryValue, elementOrder);
-//            rel.add(routeElement);
-//
-//            Logger.trace(routeElement);
-//        }
-//        return rel;
-//    }
   @Override
   public int hashCode() {
     int hash = 7;
@@ -241,7 +247,7 @@ public class RouteBean implements Serializable {
 
   @Override
   public String toString() {
-    return "Route{" + "id=" + id + ", fromTile=" + fromTileId + "["+fromSuffix + "], toTile=" + toTileId +"["+ toSuffix + "], color=" + color + ", locked=" + locked + "}";
+    return "Route{" + "id=" + id + ", fromTile=" + fromTileId + "[" + fromSuffix + "], toTile=" + toTileId + "[" + toSuffix + "], color=" + color + ", locked=" + locked + "}";
   }
 
   public String toLogString() {
@@ -270,6 +276,37 @@ public class RouteBean implements Serializable {
       }
     }
     return sb.toString();
+  }
+
+  public enum RouteState {
+    FREE("Free"), RESERVED("Reserved"), BLOCKED("Blocked");
+
+    private final String state;
+
+    private static final Map<String, RouteState> ENUM_MAP;
+
+    RouteState(String state) {
+      this.state = state;
+    }
+
+    public String getState() {
+      return this.state;
+    }
+
+    static {
+      Map<String, RouteState> map = new ConcurrentHashMap<>();
+      for (RouteState instance : RouteState.values()) {
+        map.put(instance.getState(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static RouteState get(String state) {
+      if (state == null) {
+        return null;
+      }
+      return ENUM_MAP.get(state);
+    }
   }
 
 }

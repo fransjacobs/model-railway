@@ -42,10 +42,20 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
 
   private boolean power;
 
+  private boolean disableListener = false;
+
+  private LocomotiveDirectionEventListener directionListener;
+
   public DriverCabPanel() {
+    this(null);
+  }
+
+  public DriverCabPanel(LocomotiveBean locomotiveBean) {
     executor = Executors.newCachedThreadPool();
     initComponents();
     postInit();
+    setLocomotiveBean(locomotiveBean);
+
   }
 
   private void postInit() {
@@ -55,7 +65,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       JCS.getJcsCommandStation().addLocomotiveSpeedEventListener(this);
       JCS.getJcsCommandStation().addLocomotiveDirectionEventListener(this);
       JCS.getJcsCommandStation().addPowerEventListener(this);
-
     }
   }
 
@@ -68,6 +77,10 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       JCS.getJcsCommandStation().removeLocomotiveFunctionEventListener(this.functionsPanel);
     }
     super.setVisible(aFlag);
+  }
+
+  void setDirectionListener(LocomotiveDirectionEventListener directionListener) {
+    this.directionListener = directionListener;
   }
 
   /**
@@ -240,15 +253,22 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }// </editor-fold>//GEN-END:initComponents
 
   private void reverseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseButtonActionPerformed
-    changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    if (!disableListener) {
+      changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    }
   }//GEN-LAST:event_reverseButtonActionPerformed
 
   private void forwardButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardButtonActionPerformed
-    changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    if (!disableListener) {
+      changeDirection(LocomotiveBean.Direction.get(evt.getActionCommand()));
+    }
   }//GEN-LAST:event_forwardButtonActionPerformed
 
   private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
     this.speedSlider.setValue(0);
+    if (this.locomotiveBean == null) {
+      Logger.trace(evt.getActionCommand());
+    }
   }//GEN-LAST:event_stopButtonActionPerformed
 
   private void speed4ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speed4ButtonActionPerformed
@@ -256,6 +276,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 4; // 80 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed4ButtonActionPerformed
 
@@ -264,6 +286,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 3; // 60 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed3ButtonActionPerformed
 
@@ -272,6 +296,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = (tachoMax / 5) * 2; // 40 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed2ButtonActionPerformed
 
@@ -280,6 +306,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       int tachoMax = locomotiveBean.getTachoMax();
       tachoMax = tachoMax / 5; // 20 %
       this.speedSlider.setValue(tachoMax);
+    } else {
+      Logger.trace(evt.getActionCommand());
     }
   }//GEN-LAST:event_speed1ButtonActionPerformed
 
@@ -319,9 +347,15 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       Logger.trace("Changing direction of " + locomotiveBean + " to: " + newDirection);
       JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotiveBean);
     }
+
+    if (this.directionListener != null && locomotiveBean != null) {
+      locomotiveBean.setDirection(newDirection);
+      LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(locomotiveBean);
+      this.directionListener.onDirectionChange(dme);
+    }
   }
 
-  public void setLocomotiveBean(LocomotiveBean locomotiveBean) {
+  public final void setLocomotiveBean(LocomotiveBean locomotiveBean) {
     this.locomotiveBean = locomotiveBean;
     this.functionsPanel.setLocomotive(locomotiveBean);
 
@@ -366,6 +400,10 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     }
   }
 
+  LocomotiveBean getLocomotiveBean() {
+    return locomotiveBean;
+  }
+
   public boolean isPower() {
     return power;
   }
@@ -373,19 +411,23 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   @Override
   public void onDirectionChange(LocomotiveDirectionEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
-    
-    Logger.trace("Evt: id: "+lb.getId()+" Addr: "+lb.getAddress()+" cid: "+lb.getCommandStationId()+" dir: "+lb.getDirection());
- 
-    if(event.isEventFor(locomotiveBean)) {
-    //if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
+    Logger.trace("Evt: id: " + lb.getId() + " Addr: " + lb.getAddress() + " cid: " + lb.getCommandStationId() + " dir: " + lb.getDirection());
+
+    if (event.isEventFor(locomotiveBean)) {
       Logger.trace(lb.getName() + " direction changed from " + this.locomotiveBean.getDirection() + " to " + lb.getDirection());
 
-      locomotiveBean.setRichtung(lb.getRichtung());
+      //locomotiveBean.setRichtung(lb.getRichtung());
+      locomotiveBean.setDirection(lb.getDirection());
 
+      disableListener = true;
       if (Direction.BACKWARDS.equals(lb.getDirection())) {
         this.reverseButton.setSelected(true);
       } else {
         this.forwardButton.setSelected(true);
+      }
+      disableListener = false;
+      if (this.directionListener != null) {
+        this.directionListener.onDirectionChange(event);
       }
     }
   }
@@ -394,8 +436,7 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   public void onSpeedChange(LocomotiveSpeedEvent event) {
     LocomotiveBean lb = event.getLocomotiveBean();
 
-    if(event.isEventFor(locomotiveBean)) {
-    //if (lb != null && locomotiveBean != null && lb.getId().equals(locomotiveBean.getId())) {
+    if (event.isEventFor(locomotiveBean)) {
       Logger.trace(lb.getName() + " Speed changed from " + this.locomotiveBean.getVelocity() + " to " + lb.getVelocity());
 
       locomotiveBean.setVelocity(lb.getVelocity());
@@ -435,7 +476,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
       Logger.trace("Power is " + this.power);
     }
   }
-
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel centerPanel;

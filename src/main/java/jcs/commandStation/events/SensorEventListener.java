@@ -18,5 +18,4 @@ package jcs.commandStation.events;
 public interface SensorEventListener {
 
   void onSensorChange(SensorEvent sensorEvent);
-
 }

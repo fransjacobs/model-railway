@@ -16,8 +16,10 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
@@ -27,6 +29,8 @@ import static jcs.entities.TileBean.TileType.SENSOR;
 import static jcs.entities.TileBean.TileType.SIGNAL;
 import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.SWITCH;
+import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.events.TileEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -47,6 +51,8 @@ public class TileFactory {
   private static int blockIdSeq;
   private static int straightDirectionIdSeq;
   private static int endIdSeq;
+
+  private static final Map<String, TileEventListener> tileEventListeners = new HashMap<>();
 
   private TileFactory() {
   }
@@ -114,6 +120,10 @@ public class TileFactory {
     }
   }
 
+  public static Tile createTile(TileBean tileBean) {
+    return createTile(tileBean, false, false);
+  }
+
   public static Tile createTile(TileBean tileBean, boolean drawOutline, boolean showValues) {
     if (tileBean == null) {
       return null;
@@ -149,8 +159,7 @@ public class TileFactory {
         tile = new Signal(tileBean);
         signalIdSeq = maxIdSeq(signalIdSeq, nextIdSeq(tileBean.getId()));
         if (showValues && tileBean.getAccessoryBean() != null) {
-          ((Signal) tile)
-                  .setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
+          ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
       }
       case SENSOR -> {
@@ -166,8 +175,7 @@ public class TileFactory {
       }
       case STRAIGHT_DIR -> {
         tile = new StraightDirection(tileBean);
-        straightDirectionIdSeq
-                = maxIdSeq(straightDirectionIdSeq, nextIdSeq(tileBean.getId()));
+        straightDirectionIdSeq = maxIdSeq(straightDirectionIdSeq, nextIdSeq(tileBean.getId()));
       }
       case END -> {
         tile = new End(tileBean);
@@ -180,6 +188,8 @@ public class TileFactory {
     if (tile != null) {
       tile.setDrawOutline(drawOutline);
     }
+
+    addTileEventListener((TileEventListener) tile);
     return (Tile) tile;
   }
 
@@ -242,11 +252,11 @@ public class TileFactory {
       tile.setId(nextTileId(tileType));
     }
 
+    addTileEventListener((TileEventListener) tile);
     return (Tile) tile;
   }
 
-  public static List<Tile> toTiles(
-          List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
+  public static List<Tile> toTiles(List<TileBean> tileBeans, boolean drawOutline, boolean showValues) {
     List<Tile> tiles = new LinkedList<>();
 
     for (TileBean tileBean : tileBeans) {
@@ -254,6 +264,38 @@ public class TileFactory {
       tiles.add(tile);
     }
     return tiles;
+  }
+
+  private static void addTileEventListener(TileEventListener listener) {
+    String key = listener.getId();
+    tileEventListeners.put(key, listener);
+  }
+
+  public static void removeTileEventListener(Tile tile) {
+    if (tile instanceof TileEventListener tileEventListener) {
+      removeTileEventListener(tileEventListener);
+    }
+  }
+
+  public static void removeTileEventListener(TileEventListener listener) {
+    String key = listener.getId();
+    tileEventListeners.remove(key, listener);
+  }
+
+  public static void fireTileEventListener(TileEvent tileEvent) {
+    String key = tileEvent.getTileId();
+    TileEventListener listener = tileEventListeners.get(key);
+    if (listener != null) {
+      listener.onTileChange(tileEvent);
+    } else {
+      //Logger.trace("Tile " + key + " not available");
+    }
+  }
+
+  public static void fireAllTileEventListeners(TileEvent tileEvent) {
+    for (TileEventListener listener : tileEventListeners.values()) {
+      listener.onTileChange(tileEvent);
+    }
   }
 
 }

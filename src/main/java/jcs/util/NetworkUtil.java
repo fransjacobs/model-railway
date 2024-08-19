@@ -45,13 +45,14 @@ public class NetworkUtil {
         for (InetAddress ia : Collections.list(inetAddresses)) {
           if (ia instanceof Inet4Address) {
             //Got an ip4 address, which kind?
-            if (netint.getDisplayName().contains("wlan")) {
+            if (netint.getDisplayName().contains("wlan") ||  netint.getName().contains("wlan")) {
               wlan = ia;
-            } else if (netint.getDisplayName().contains("eth")) {
+            } else if (netint.getDisplayName().contains("eth") || netint.getName().contains("eth")) {
               eth = ia;
-            } else if (netint.getDisplayName().contains("lo")) {
+            } else if (netint.getDisplayName().contains("lo") || netint.getName().contains("lo")) {
               lo = ia;
             }
+            
           }
         }
       }

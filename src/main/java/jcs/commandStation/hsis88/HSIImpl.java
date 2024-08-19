@@ -268,7 +268,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
             SensorEvent se = new SensorEvent(sb);
             events.add(se);
 
-            Logger.trace("U: " + sb.toLogString());
+            //Logger.trace("U: " + sb.toLogString());
           }
         } else {
           sb = new SensorBean(0, key, contacts[i]);
@@ -282,7 +282,7 @@ public class HSIImpl extends AbstractController implements FeedbackController {
       }
 
       //Inform the sensor listeners
-      Logger.trace("Informing " + sensorEventListeners.size() + " sensorListeners with " + events.size() + " events");
+      //Logger.trace("Informing " + sensorEventListeners.size() + " sensorListeners with " + events.size() + " events");
       for (SensorEvent sensorEvent : events) {
         fireSensorEventListeners(sensorEvent);
       }

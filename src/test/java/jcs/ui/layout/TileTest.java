@@ -39,9 +39,7 @@ public class TileTest {
   @Test
   public void testgetCenterX() {
     System.out.println("getCenterX");
-    Tile instance
-            = TileFactory.createTile(
-                    TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 180, 100, false);
+    Tile instance = TileFactory.createTile(TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 180, 100, false);
     int expResult = 180;
     int result = instance.getCenterX();
     assertEquals(expResult, result);

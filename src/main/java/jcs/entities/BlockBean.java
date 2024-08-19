@@ -15,7 +15,10 @@
  */
 package jcs.entities;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -33,6 +36,14 @@ public class BlockBean {
   private String minSignalId;
   private Long locomotiveId;
   private boolean reverseArrival;
+  private String status;
+  private String arrivalSuffix;
+
+  private Integer minWaitTime;
+  private Integer maxWaitTime;
+  private boolean randomWait;
+  private boolean alwaysStop;
+  private boolean allowCommuterOnly;
 
   private TileBean tileBean;
 
@@ -42,7 +53,8 @@ public class BlockBean {
   private AccessoryBean minSignal;
   private LocomotiveBean locomotive;
 
-  public BlockBean() {}
+  public BlockBean() {
+  }
 
   public BlockBean(TileBean tileBean) {
     this.tileBean = tileBean;
@@ -195,16 +207,93 @@ public class BlockBean {
     this.locomotiveId = locomotiveId;
   }
 
-  @Column(
-      name = "reverse_arrival_side",
-      nullable = false,
-      columnDefinition = "reverse_arrival_side bool default '1'")
+  @Column(name = "reverse_arrival_side", nullable = false, columnDefinition = "reverse_arrival_side bool default '1'")
   public boolean isReverseArrival() {
     return reverseArrival;
   }
 
   public void setReverseArrival(boolean reverseArrival) {
     this.reverseArrival = reverseArrival;
+  }
+
+  @Column(name = "status", length = 255)
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  @Column(name = "incoming_suffix", length = 255)
+  public String getArrivalSuffix() {
+    return arrivalSuffix;
+  }
+
+  public void setArrivalSuffix(String arrivalSuffix) {
+    this.arrivalSuffix = arrivalSuffix;
+  }
+
+  @Column(name = "min_wait_time", nullable = false, columnDefinition = "integer default 10")
+  public Integer getMinWaitTime() {
+    return minWaitTime;
+  }
+
+  public void setMinWaitTime(Integer minWaitTime) {
+    if (minWaitTime == null) {
+      this.minWaitTime = 10;
+    } else {
+      this.minWaitTime = minWaitTime;
+    }
+  }
+
+  @Column(name = "max_wait_time")
+  public Integer getMaxWaitTime() {
+    return maxWaitTime;
+  }
+
+  public void setMaxWaitTime(Integer maxWaitTime) {
+    this.maxWaitTime = maxWaitTime;
+  }
+
+  @Column(name = "random_wait", nullable = false, columnDefinition = "random_wait bool default '0'")
+  public boolean isRandomWait() {
+    return randomWait;
+  }
+
+  public void setRandomWait(boolean randomWait) {
+    this.randomWait = randomWait;
+  }
+
+  @Column(name = "always_stop", nullable = false, columnDefinition = "always_stop bool default '0'")
+  public boolean isAlwaysStop() {
+    return alwaysStop;
+  }
+
+  public void setAlwaysStop(boolean alwaysStop) {
+    this.alwaysStop = alwaysStop;
+  }
+
+  @Column(name = "allow_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
+  public boolean isAllowCommuterOnly() {
+    return allowCommuterOnly;
+  }
+
+  public void setAllowCommuterOnly(boolean allowCommuterOnly) {
+    this.allowCommuterOnly = allowCommuterOnly;
+  }
+
+  @Transient
+  public BlockState getBlockState() {
+    if (this.status != null) {
+      return BlockState.get(status);
+    } else {
+      return BlockState.FREE;
+    }
+  }
+
+  public void setBlockState(BlockState blockState) {
+    this.status = blockState.getState();
   }
 
   @Transient
@@ -219,6 +308,26 @@ public class BlockBean {
     } else {
       this.locomotiveId = null;
     }
+  }
+
+  public void setDepartureSuffix(String suffix) {
+    if ("-".equals(suffix)) {
+      this.arrivalSuffix = "+";
+    } else {
+      this.arrivalSuffix = "-";
+    }
+  }
+
+  @Transient
+  public String getDepartureSuffix() {
+    String departureSuffix;
+    if ("-".equals(arrivalSuffix)) {
+      departureSuffix = "+";
+    } else {
+      departureSuffix = "-";
+    }
+
+    return departureSuffix;
   }
 
   @Override
@@ -236,7 +345,8 @@ public class BlockBean {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(Object obj
+  ) {
     if (this == obj) {
       return true;
     }
@@ -274,22 +384,58 @@ public class BlockBean {
   @Override
   public String toString() {
     return "BlockBean{"
-        + "id="
-        + id
-        + ", tileId="
-        + tileId
-        + ", description="
-        + description
-        + ", plusSensorId="
-        + plusSensorId
-        + ", minSensorId="
-        + minSensorId
-        + ", plusSignalId="
-        + plusSignalId
-        + ", minSignalId="
-        + minSignalId
-        + ", locomotiveId="
-        + locomotiveId
-        + "}";
+            + "id="
+            + id
+            + ", tileId="
+            + tileId
+            + ", description="
+            + description
+            + ", status="
+            + status
+            + ", arrivalSuffix="
+            + arrivalSuffix
+            + ", plusSensorId="
+            + plusSensorId
+            + ", minSensorId="
+            + minSensorId
+            + ", plusSignalId="
+            + plusSignalId
+            + ", minSignalId="
+            + minSignalId
+            + ", locomotiveId="
+            + locomotiveId
+            + "}";
   }
+
+  public enum BlockState {
+    OUT_OF_ORDER("Out of Order"), FREE("Free"), LOCKED("Locked"), INBOUND("Inbound"), OUTBOUND("Outbound"), OCCUPIED("Occupied"), GHOST("Ghost");
+
+    private final String state;
+
+    private static final Map<String, BlockState> ENUM_MAP;
+
+    BlockState(String state) {
+      this.state = state;
+    }
+
+    public String getState() {
+      return this.state;
+    }
+
+    static {
+      Map<String, BlockState> map = new ConcurrentHashMap<>();
+      for (BlockState instance : BlockState.values()) {
+        map.put(instance.getState(), instance);
+      }
+      ENUM_MAP = Collections.unmodifiableMap(map);
+    }
+
+    public static BlockState get(String state) {
+      if (state == null) {
+        return null;
+      }
+      return ENUM_MAP.get(state);
+    }
+  }
+
 }
