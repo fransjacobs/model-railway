@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.SensorEventHandler;
@@ -356,6 +357,11 @@ public class Dispatcher {
       }
       TileFactory.fireTileEventListener(tileEvent);
     }
+  }
+
+  int getRandomNumber(int min, int max) {
+    Random random = new Random();
+    return random.ints(min, max).findFirst().getAsInt();
   }
 
   private class IgnoreSensorHandler implements SensorEventHandler {

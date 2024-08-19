@@ -43,6 +43,7 @@ public class BlockBean {
   private Integer maxWaitTime;
   private boolean randomWait;
   private boolean alwaysStop;
+  private boolean allowCommuterOnly;
 
   private TileBean tileBean;
 
@@ -271,6 +272,15 @@ public class BlockBean {
 
   public void setAlwaysStop(boolean alwaysStop) {
     this.alwaysStop = alwaysStop;
+  }
+
+  @Column(name = "allow_commuter_only", nullable = false, columnDefinition = "allow_commuter_only bool default '0'")
+  public boolean isAllowCommuterOnly() {
+    return allowCommuterOnly;
+  }
+
+  public void setAllowCommuterOnly(boolean allowCommuterOnly) {
+    this.allowCommuterOnly = allowCommuterOnly;
   }
 
   @Transient

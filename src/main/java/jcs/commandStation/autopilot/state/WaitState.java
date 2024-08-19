@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.entities.BlockBean;
 import org.tinylog.Logger;
 
 /**
@@ -23,34 +24,34 @@ import org.tinylog.Logger;
  */
 class WaitState extends DispatcherState {
 
-  int defaultWaitTime;
-
   WaitState() {
-    defaultWaitTime = Integer.getInteger("default.waittime", 5);
+    super();
   }
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
 
-    //BlockBean blockBean = dispatcher.getDepartureBlock();
-    //boolean random = blockBean.isRandomWait();
-    //int minWait = blockBean.getMinWaitTime();
-    //int defaultMaxWaitTime = Integer.getInteger("default.max.waittime", 20);
-    //int maxWait = blockBean.getMaxWaitTime();
-    //Choose randomly the route
-//      for (int i = 0; i < 10; i++) {
-//        //Seed a bit....
-//        getRandomNumber(0, checkedRoutes.size());
-//      }
-//      rIdx = getRandomNumber(0, checkedRoutes.size());
-    //hoe te wachen? aparte worker thread?
-    //Stub
-    //TODO Obtain the wait time from either the block in the database of from the locomotive
-    long waitTime = 1 * defaultWaitTime;
+    BlockBean blockBean = dispatcher.getDepartureBlock();
+    int minWait = blockBean.getMinWaitTime();
+    int maxWait;
+    if (blockBean.getMaxWaitTime() != null) {
+      maxWait = blockBean.getMaxWaitTime();
+    } else {
+      maxWait = Integer.getInteger("default.max.waittime", 20);
+    }
 
-    //when the thread is running and the loc is in automode wait until the wait time has past.
-    //then switch state.
-    //incase the auto mode is disabled switch to Idle mode
+    long waitTime;
+    if (blockBean.isRandomWait()) {
+      //Seed a bit....
+      for (int i = 0; i < 10; i++) {
+        dispatcher.getRandomNumber(minWait, maxWait);
+      }
+
+      waitTime = dispatcher.getRandomNumber(minWait, maxWait);
+    } else {
+      waitTime = minWait;
+    }
+
     Logger.debug("Waiting for " + waitTime + " s.");
 
     for (; waitTime >= 0; waitTime--) {
@@ -59,8 +60,14 @@ class WaitState extends DispatcherState {
         dispatcher.fireStateListeners(s);
 
         //For manual testing the thread is not running, step mode
-        if (dispatcher.isRunning()) {
-          pause(1000);
+        if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
+          synchronized (this) {
+            try {
+              wait(1000);
+            } catch (InterruptedException ex) {
+              Logger.trace("Wait loop interrupted");
+            }
+          }
         } else {
           Logger.trace("Test mode: " + s);
         }

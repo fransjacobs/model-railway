@@ -347,6 +347,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
+      
       tile.setPropertyChangeListener(this);
 
       //TODO move this to tile factory?:

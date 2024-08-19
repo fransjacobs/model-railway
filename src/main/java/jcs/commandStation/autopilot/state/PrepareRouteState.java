@@ -132,9 +132,9 @@ class PrepareRouteState extends DispatcherState {
       //Choose randomly the route
       for (int i = 0; i < 10; i++) {
         //Seed a bit....
-        getRandomNumber(0, checkedRoutes.size());
+        dispatcher.getRandomNumber(0, checkedRoutes.size());
       }
-      rIdx = getRandomNumber(0, checkedRoutes.size());
+      rIdx = dispatcher.getRandomNumber(0, checkedRoutes.size());
     }
 
     RouteBean route = null;
@@ -240,11 +240,6 @@ class PrepareRouteState extends DispatcherState {
     }
     Logger.trace("There are " + turnouts.size() + " free turnouts in this route");
     return switchesNotLocked;
-  }
-
-  public int getRandomNumber(int min, int max) {
-    Random random = new Random();
-    return random.ints(min, max).findFirst().getAsInt();
   }
 
   private List<RouteElementBean> getTurnouts(RouteBean routeBean) {
