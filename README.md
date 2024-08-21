@@ -43,6 +43,12 @@ Currently the following modules are build:
 * A HAL for command Stations such that other hardware then the Marklin CS 2/3 can be used.
 * [First Release V 0.0.1](https://github.com/fransjacobs/model-railway/releases/tag/V0.0.1)
 
+## NEW
+* Layout router, After the layout is created automatically all driveways are calculated.
+* Autopilot, automatically drive locomotives.
+* Virtual Command station.
+* Auto [Simulator](https://youtu.be/xP6eUdScMY0) in the Virtual Commandstation to test routes.
+
 ## Screenshots
 So here are a few screenshots of the Project:
 #### Thottle / Driver Cab
