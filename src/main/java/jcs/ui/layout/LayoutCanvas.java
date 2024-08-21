@@ -347,21 +347,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, drawGrid, showValues);
-      
       tile.setPropertyChangeListener(this);
-
-      //TODO move this to tile factory?:
-      switch (tile.getTileType()) {
-        case SENSOR ->
-          JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
-        case SWITCH ->
-          JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
-        case SIGNAL ->
-          JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
-        default -> {
-          //Do nothing
-        }
-      }
       tiles.put(tile.getCenter(), tile);
 
       //Alternative point(s) to be able to find all points
@@ -397,6 +383,24 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       }
     }
     PersistenceFactory.getService().persist(beans);
+  }
+
+  private void saveTile(final Tile tile) {
+    if (tile != null) {
+      TileBean tb = tile.getTileBean();
+      this.executor.execute(() -> PersistenceFactory.getService().persist(tb));
+    } else {
+      Logger.warn("Tile is null?");
+    }
+  }
+
+  private void deleteTile(final Tile tile) {
+    if (tile != null) {
+      TileBean tb = tile.getTileBean();
+      this.executor.execute(() -> PersistenceFactory.getService().remove(tb));
+    } else {
+      Logger.warn("Tile is null?");
+    }
   }
 
   private void mouseMoveAction(MouseEvent evt) {
@@ -449,9 +453,13 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       case ADD -> {
         if (MouseEvent.BUTTON1 == evt.getButton() && tile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
-          Logger.debug("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
+          Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
           Tile addedTile = addTile(snapPoint);
           selectedTiles.addAll(addedTile.getAllPoints());
+
+          if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+            this.saveTile(tile);
+          }
         } else {
           if (tile != null) {
             Logger.debug("A tile exists at the selected position: " + tile.getTileType() + " @ (" + snapPoint.x + ", " + snapPoint.y + ") id: " + tile.getId());
@@ -566,6 +574,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
               for (Point ep : movingTile.getAltPoints()) {
                 altTiles.put(ep, movingTile);
               }
+            }
+
+            if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+              this.saveTile(movingTile);
             }
           }
         }
@@ -879,6 +891,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         this.altTiles.put(ap, tile);
       }
     }
+
+    if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+      this.saveTile(tile);
+    }
+
     Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
     Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
 
@@ -895,6 +912,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private void removeTiles(Set<Point> pointsToRemove) {
     for (Point p : pointsToRemove) {
       Tile removed = this.tiles.remove(p);
+
+      if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+        this.deleteTile(removed);
+      }
 
       if (removed != null && removed.getAllPoints() != null) {
         Set<Point> rps = removed.getAltPoints();
@@ -942,9 +963,12 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
         this.selectedTiles.clear();
         this.selectedTiles.addAll(t.getAllPoints());
+
+        if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+          this.saveTile(t);
+        }
       }
     }
-    //this.executor.execute(() -> repaint());
     repaint();
   }
 
@@ -968,6 +992,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         this.tiles.put(p, t);
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
+        }
+
+        if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+          this.saveTile(t);
         }
 
         this.selectedTiles.clear();
@@ -997,6 +1025,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         this.tiles.put(p, t);
         for (Point ep : t.getAltPoints()) {
           this.altTiles.put(ep, t);
+        }
+
+        if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+          this.saveTile(t);
         }
 
         this.selectedTiles.clear();
@@ -1351,6 +1383,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.selectedTile != null) {
       Block block = (Block) selectedTile;
       block.getBlockBean().setLocomotive(null);
+      block.setBlockState(BlockState.FREE);
 
       this.executor.execute(() -> PersistenceFactory.getService().persist(block.getBlockBean()));
       this.repaint();
@@ -1397,7 +1430,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       this.repaint();
     }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
-
 
   private void toggleOutOfOrderMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleOutOfOrderMIActionPerformed
     if (this.selectedTile != null) {

@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import jcs.JCS;
+import jcs.commandStation.events.AccessoryEventListener;
+import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
@@ -150,6 +153,7 @@ public class TileFactory {
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Switch) tile).setValue((tileBean.getAccessoryBean()).getAccessoryValue());
         }
+        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
       }
       case CROSS -> {
         tile = new Cross(tileBean);
@@ -161,6 +165,7 @@ public class TileFactory {
         if (showValues && tileBean.getAccessoryBean() != null) {
           ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
         }
+        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
       }
       case SENSOR -> {
         tile = new Sensor(tileBean);
@@ -168,6 +173,7 @@ public class TileFactory {
         if (showValues && tileBean.getSensorBean() != null) {
           ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
         }
+        JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
       }
       case BLOCK -> {
         tile = new Block(tileBean);
@@ -190,6 +196,7 @@ public class TileFactory {
     }
 
     addTileEventListener((TileEventListener) tile);
+
     return (Tile) tile;
   }
 
