@@ -39,6 +39,7 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.TileType;
+import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
 /**
@@ -61,6 +62,8 @@ public class LayoutPanel extends JPanel {
   }
 
   private void postInit() {
+    RunUtil.loadProperties();
+    
     this.straightBtn.setSelected(true);
     this.canvas.setTileType(TileType.STRAIGHT);
     this.setMode(readonly ? LayoutCanvas.Mode.CONTROL : LayoutCanvas.Mode.SELECT);
@@ -152,6 +155,14 @@ public class LayoutPanel extends JPanel {
       this.startAllLocomotivesBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
       this.startAllLocomotivesBtn.setVisible(readonly);
     } else {
+      if ("true".equals(System.getProperty("batch.tile.persist", "true"))) {
+        this.saveBtn.setEnabled(true);
+        this.saveBtn.setVisible(true);
+      } else {
+        this.saveBtn.setEnabled(false);
+        this.saveBtn.setVisible(false);
+        this.toolBar.remove(this.saveBtn);
+      }
 
       this.toolBar.remove(this.autoPilotBtn);
       this.autoPilotBtn.setEnabled(readonly);
