@@ -85,6 +85,31 @@ public class AutoPilot {
     }
   }
 
+  public boolean isAutoModeActive() {
+    if (this.autoPilotThread != null) {
+      return this.autoPilotThread.isRunning();
+    } else {
+      return false;
+    }
+  }
+
+  boolean isAutoPilotThreadStopped() {
+    if (this.autoPilotThread != null) {
+      return this.autoPilotThread.isStopped();
+    } else {
+      return true;
+    }
+  }
+
+  public boolean isRunning(LocomotiveBean locomotive) {
+    if (this.isAutoModeActive() && this.dispatchers.containsKey(locomotive.getName())) {
+      Dispatcher dispatcher = this.dispatchers.get(locomotive.getName());
+      return dispatcher.isRunning();
+    } else {
+      return false;
+    }
+  }
+
   public synchronized void stopAutoMode() {
     this.autoPilotThread.stopAutoMode();
     notifyAll();
@@ -384,31 +409,6 @@ public class AutoPilot {
   public synchronized void removeAutoPilotStatusListener(AutoPilotStatusListener listener) {
     this.autoPilotStatusListeners.remove(listener);
     Logger.trace("Status listeners: " + autoPilotStatusListeners.size());
-  }
-
-  public boolean isAutoModeActive() {
-    if (this.autoPilotThread != null) {
-      return this.autoPilotThread.isRunning();
-    } else {
-      return false;
-    }
-  }
-
-  boolean isAutoPilotThreadStopped() {
-    if (this.autoPilotThread != null) {
-      return this.autoPilotThread.isStopped();
-    } else {
-      return true;
-    }
-  }
-
-  public boolean isRunning(LocomotiveBean locomotive) {
-    if (this.isAutoModeActive() && this.dispatchers.containsKey(locomotive.getName())) {
-      Dispatcher dispatcher = this.dispatchers.get(locomotive.getName());
-      return dispatcher.isRunning();
-    } else {
-      return false;
-    }
   }
 
   public boolean tryAquireLock() {

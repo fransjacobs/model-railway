@@ -107,10 +107,14 @@ public class Dispatcher {
     return this.stateMachineThread.isEnableAutomode();
   }
 
-  public void startLocomotiveAutomode() {
-    stateMachineThread.setEnableAutomode(true);
-    //is the thread running?
-    startRunning();
+  public boolean startLocomotiveAutomode() {
+    //Only when the Autopilot is ON!
+    if (autoPilot.isAutoModeActive()) {
+      stateMachineThread.setEnableAutomode(true);
+      //is the thread running?
+      startRunning();
+    }
+    return this.stateMachineThread.isEnableAutomode();
   }
 
   public void stopLocomotiveAutomode() {
@@ -220,9 +224,9 @@ public class Dispatcher {
     return destinationArrivalSuffix;
   }
 
-  public String getDispatcherStateString() {
+  public String getStateName() {
     if (stateMachineThread != null) {
-      return stateMachineThread.getState().getClass().getSimpleName();
+      return stateMachineThread.getDispatcherStateName();
     } else {
       return "#Idle";
     }
