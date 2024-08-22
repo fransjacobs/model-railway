@@ -138,7 +138,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public boolean power(boolean on) {
+  public synchronized boolean power(boolean on) {
     if (this.connected) {
       power = on;
       PowerEvent pe = new PowerEvent(this.power);
@@ -173,7 +173,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       this.executor.execute(() -> simulateDriving(locUid, speed, direction));
       //simulateDriving(locUid, speed, direction);
     }
-
   }
 
   @Override
@@ -349,7 +348,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
         scheduledExecutor.schedule(() -> toggleSensor(sensorId), 3, TimeUnit.SECONDS);
       }
     }
-
   }
 
   private void toggleSensor(String sensorId) {
