@@ -138,7 +138,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public boolean power(boolean on) {
+  public synchronized boolean power(boolean on) {
     if (this.connected) {
       power = on;
       PowerEvent pe = new PowerEvent(this.power);

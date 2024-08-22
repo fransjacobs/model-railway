@@ -89,7 +89,7 @@ public abstract class AbstractController implements GenericController {
     this.disconnectionEventListeners.remove(listener);
   }
 
-  public boolean isPower() {
+  public synchronized boolean isPower() {
     return this.power;
   }
 
