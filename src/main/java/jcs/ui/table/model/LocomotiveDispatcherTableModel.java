@@ -115,7 +115,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
           case 1 ->
             b.getName();
           case 2 ->
-            b.getDispatcherStateString();
+            b.getStateName();
           case 3 ->
             (Direction.FORWARDS == b.getLocomotiveBean().getDirection() ? ">>" : "<<") + " " + ((Long) Math.round((b.getLocomotiveBean().getVelocity() / 1024.0) * 100)).intValue();
           default ->
