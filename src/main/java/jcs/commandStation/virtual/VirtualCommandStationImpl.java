@@ -173,7 +173,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       this.executor.execute(() -> simulateDriving(locUid, speed, direction));
       //simulateDriving(locUid, speed, direction);
     }
-
   }
 
   @Override
@@ -349,7 +348,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
         scheduledExecutor.schedule(() -> toggleSensor(sensorId), 3, TimeUnit.SECONDS);
       }
     }
-
   }
 
   private void toggleSensor(String sensorId) {
