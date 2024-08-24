@@ -53,7 +53,14 @@ public class Dispatcher {
   private String destinationBlockId;
 
   private String waitingForSensorId;
+  //Enter Sensor of the destination
+  private String enterSensorId;
+  //In Sensor of the destination
   private String inSensorId;
+
+  //The Occupation sensor of the departure 
+  private String occupationSensorId;
+  //The exit of the departure
   private String exitSensorId;
 
   private final List<StateEventListener> stateEventListeners;
@@ -119,7 +126,6 @@ public class Dispatcher {
 
   public void stopLocomotiveAutomode() {
     stateMachineThread.setEnableAutomode(false);
-    stopRunning();
   }
 
   void startRunning() {
@@ -154,6 +160,7 @@ public class Dispatcher {
     this.departureBlockId = null;
     this.destinationBlockId = null;
     this.waitingForSensorId = null;
+    this.enterSensorId = null;
     this.inSensorId = null;
     this.exitSensorId = null;
     this.stateEventListeners.clear();
@@ -241,12 +248,28 @@ public class Dispatcher {
     return waitingForSensorId;
   }
 
+  public String getEnterSensorId() {
+    return enterSensorId;
+  }
+
+  void setEnterSensorId(String enterSensorId) {
+    this.enterSensorId = enterSensorId;
+  }
+
   public String getInSensorId() {
     return inSensorId;
   }
 
   void setInSensorId(String inSensorId) {
     this.inSensorId = inSensorId;
+  }
+
+  public String getOccupationSensorId() {
+    return occupationSensorId;
+  }
+
+  void setOccupationSensorId(String occupationSensorId) {
+    this.occupationSensorId = occupationSensorId;
   }
 
   public String getExitSensorId() {
@@ -283,6 +306,12 @@ public class Dispatcher {
       if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getId())) {
         if (event.isActive()) {
           this.waitingForSensorId = null;
+        }
+      }
+
+      if (this.enterSensorId != null && this.enterSensorId.equals(event.getId())) {
+        if (!event.isActive()) {
+          this.enterSensorId = null;
         }
       }
 

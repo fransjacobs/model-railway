@@ -67,7 +67,6 @@ class InBlockState extends DispatcherState {
 
     DispatcherState newState;
     if (dispatcher.isLocomotiveAutomodeOn()) {
-
       if (alwaysStop) {
         newState = new WaitState();
       } else {

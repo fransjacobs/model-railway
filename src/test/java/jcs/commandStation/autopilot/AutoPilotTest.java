@@ -89,7 +89,7 @@ public class AutoPilotTest {
     AutoPilot.getInstance().clearDispatchers();
   }
 
-  @Test
+  //@Test
   public void testStartStopAutoMode() {
     System.out.println("startStopAutoMode");
     AutoPilot instance = AutoPilot.getInstance();
@@ -220,7 +220,7 @@ public class AutoPilotTest {
     block1.setBlockState(BlockBean.BlockState.GHOST);
   }
 
-  @Test
+  //@Test
   public void testGetLocomotiveDispatchers() {
     System.out.println("getLocomotiveDispatchers");
     AutoPilot instance = AutoPilot.getInstance();

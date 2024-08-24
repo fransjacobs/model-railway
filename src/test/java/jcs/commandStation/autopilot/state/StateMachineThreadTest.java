@@ -15,7 +15,10 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.JCSCommandStation;
@@ -49,8 +52,12 @@ public class StateMachineThreadTest {
   private LocomotiveBean ns1631;
   private Dispatcher dispatcher;
 
+  private final ExecutorService executor;
+
   public StateMachineThreadTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
+
+    executor = Executors.newCachedThreadPool();
 
     //Switch the Virtual Simulator OFF 
     System.setProperty("dispatcher.stepTest", "true");
@@ -145,6 +152,15 @@ public class StateMachineThreadTest {
     Logger.trace("Prepared layout");
   }
 
+  private void toggleSensorInDirect(String sensorId) {
+    this.executor.execute(() -> toggleSensorDirect(sensorId));
+  }
+
+  private void toggleSensorDirect(String sensorId) {
+    SensorBean sensor = ps.getSensor(sensorId);
+    toggleSensorDirect(sensor);
+  }
+
   private void toggleSensorDirect(SensorBean sensorBean) {
     sensorBean.toggle();
     sensorBean.setActive((sensorBean.getStatus() == 1));
@@ -192,6 +208,11 @@ public class StateMachineThreadTest {
 
     assertTrue(autoPilot.isOnTrack(dhg));
 
+    List<String> passedStates = new ArrayList<>();
+
+    StatesListener statesListener = new StatesListener(passedStates);
+    dispatcher.addStateEventListener(statesListener);
+
     boolean started = dispatcher.startLocomotiveAutomode();
     //Should NOT start as the Autopilot is not in automode
     assertFalse(started);
@@ -204,6 +225,9 @@ public class StateMachineThreadTest {
     assertFalse(dispatcher.isLocomotiveAutomodeOn());
     assertFalse(dispatcher.isRunning());
 
+    long now = System.currentTimeMillis();
+    long timeout = now + 10000;
+
     started = dispatcher.startLocomotiveAutomode();
     //Should start as the Autopilot is in automode
     assertTrue(started);
@@ -212,13 +236,90 @@ public class StateMachineThreadTest {
     assertTrue(dispatcher.isLocomotiveAutomodeOn());
 
     //After a while the loc should start running as it is on track
+    int executedStates = passedStates.size();
+    while (executedStates < 2 && timeout > now) {
+      pause(100);
+      executedStates = passedStates.size();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertEquals(2, passedStates.size());
+
     String dispatcherState = dispatcher.getStateName();
+    assertEquals("StartState", dispatcherState);
 
-    pause(100);
-    assertEquals("PrepareRouteState", dispatcherState);
-    
+    String routeId = dispatcher.getRouteBean().getId();
+    assertEquals("[bk-1-]->[bk-4+]", routeId);
+    assertTrue(dispatcher.getRouteBean().isLocked());
+
+    //When the LocomotiveAutomode is stopped but the Autopilut Automode is still on
+    //the thread should continue until the IN state and ther jump to idle instead of wait. 
+    //Thread should stay alive.
+    dispatcher.stopLocomotiveAutomode();
+
+    pause(300);
+    dispatcherState = dispatcher.getStateName();
+    assertEquals("StartState", dispatcherState);
+    assertEquals(2, passedStates.size());
+
+    now = System.currentTimeMillis();
+    timeout = now + 10000;
+
+    //Trigger the enter sensor
+    String enterSensorId = dispatcher.getEnterSensorId();
+    toggleSensorInDirect(enterSensorId);
+    //Wait for the state transition
+
+    executedStates = passedStates.size();
+    while (executedStates < 3 && timeout > now) {
+      pause(100);
+      executedStates = passedStates.size();
+      now = System.currentTimeMillis();
+    }
+
+    assertEquals(3, passedStates.size());
+    assertTrue(timeout > now);
+    dispatcherState = dispatcher.getStateName();
+    assertEquals("EnterBlockState", dispatcherState);
+
+    //Let the enterState execute a few times
+    pause(300);
+    dispatcherState = dispatcher.getStateName();
+    assertEquals("EnterBlockState", dispatcherState);
+
+    now = System.currentTimeMillis();
+    timeout = now + 10000;
+
+    //Trigger the In Sensor
+    String inSensorId = dispatcher.getInSensorId();
+    while (inSensorId == null && timeout > now) {
+      pause(100);
+      inSensorId = dispatcher.getInSensorId();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertNotNull(inSensorId);
+
+    toggleSensorInDirect(inSensorId);
+
+    executedStates = passedStates.size();
+    while (executedStates < 4 && timeout > now) {
+      pause(100);
+      executedStates = passedStates.size();
+      now = System.currentTimeMillis();
+    }
+
+    assertEquals(4, passedStates.size());
+    assertTrue(timeout > now);
+    dispatcherState = dispatcher.getStateName();
+    assertEquals("InBlockState", dispatcherState);
+
+//    assertEquals("PrepareRouteState", dispatcherState);
+    //pause(100);
+    //assertEquals(1, passedStates.size());
     //Add state listner in this test
-
 //    StateMachineThread instance = dispatcher.getStateMachineThread();
 //
 //    assertFalse(instance.isThreadRunning());
@@ -1132,6 +1233,24 @@ public class StateMachineThreadTest {
 
     instance.handleState();
     assertEquals("IdleState", instance.getDispatcherStateName());
+  }
+
+  private class StatesListener implements StateEventListener {
+
+    private final List<String> stateNameList;
+
+    StatesListener(List<String> stateNameList) {
+      this.stateNameList = stateNameList;
+    }
+
+    @Override
+    public void onStateChange(Dispatcher dispatcher) {
+
+      String currentDispatcherState = dispatcher.getStateName();
+      stateNameList.add(currentDispatcherState);
+
+    }
+
   }
 
 }

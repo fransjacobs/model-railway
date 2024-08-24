@@ -90,7 +90,6 @@ class StateMachineThread extends Thread {
     if (running) {
       notify();
     }
-
   }
 
   DispatcherState getDispatcherState() {
@@ -121,12 +120,11 @@ class StateMachineThread extends Thread {
     }
     try {
       synchronized (this) {
-        wait(100);
+        wait(50);
       }
     } catch (InterruptedException ex) {
       Logger.trace(ex.getMessage());
     }
-
   }
 
   //Reset the statemachine
