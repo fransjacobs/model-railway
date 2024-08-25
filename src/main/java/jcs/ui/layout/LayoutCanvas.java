@@ -1426,7 +1426,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       locomotive.setDirection(newDir);
       Logger.trace("Direction changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
 
-      this.executor.execute(() -> PersistenceFactory.getService().persist(locomotive));
+      this.executor.execute(() -> JCS.getJcsCommandStation().changeLocomotiveDirection(newDir, locomotive));
+      //this.executor.execute(() -> PersistenceFactory.getService().persist(locomotive));
       this.repaint();
     }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
