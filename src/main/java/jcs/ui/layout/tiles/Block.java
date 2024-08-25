@@ -416,24 +416,36 @@ public class Block extends AbstractTile implements Tile {
     //The default, forwards is in the direction of the block orientation, i.e. the +
     if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
       boolean reverseArrival = getBlockBean().isReverseArrival();
-      if (getBlockBean().getDepartureSuffix() == null || "".equals(getBlockBean().getDepartureSuffix())) {
-        if ((LocomotiveBean.Direction.FORWARDS == getBlockBean().getLocomotive().getDirection() && !reverseArrival)
-                || (LocomotiveBean.Direction.BACKWARDS == getBlockBean().getLocomotive().getDirection() && reverseArrival)) {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-          //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+      String departureSuffix = getBlockBean().getDepartureSuffix();
+      LocomotiveBean.Direction direction = getBlockBean().getLocomotive().getDirection();
+      Orientation orientation = this.getOrientation();
+      //How set the direction arrow
+      //In a default blok (orientation EAST) when a locomotive (Direction F) is added de default is EAST  ->
+      //When the reverseArrival = true <-
+      //In a blok (orientation WEST) when a locomotive (Direction F) is added de default is EAST ->
+      //When the reverseArrival = true ->
+      //The when the loc direction = F the arrow direction should be in the forward direction so in the first case -> second case -> 
+      //When loc direction = B then <- and <-
 
-        } else {
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-          //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        }
+      //if (getBlockBean().getDepartureSuffix() == null || "".equals(getBlockBean().getDepartureSuffix())) {
+      if ((Orientation.EAST == orientation && LocomotiveBean.Direction.FORWARDS == direction)
+              || (Orientation.WEST == orientation && LocomotiveBean.Direction.BACKWARDS == direction)) {
+
+        g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+
+        //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
       } else {
-        //A departure side is set by the dispatcher
-        if ("+".equals(getBlockBean().getDepartureSuffix())) {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        } else {
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-        }
+        g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+        //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
       }
+      //} else {
+      //  //A departure side is set by the dispatcher
+      //  if ("+".equals(getBlockBean().getDepartureSuffix())) {
+      //    g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+      //  } else {
+      //    g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+      //  }
+      //}
     }
 
     drawName(g2);
