@@ -422,7 +422,8 @@ public class Block extends AbstractTile implements Tile {
       Orientation orientation = this.getOrientation();
 
       if (departureSuffix == null) {
-        if (reverseArrival) {
+        if (Orientation.EAST == orientation && !reverseArrival || Orientation.WEST == orientation && reverseArrival
+                || Orientation.SOUTH == orientation && reverseArrival || Orientation.NORTH == orientation && !reverseArrival) {
           departureSuffix = "+";
         } else {
           departureSuffix = "-";
@@ -431,61 +432,35 @@ public class Block extends AbstractTile implements Tile {
 
       LocomotiveBean.Direction direction = getBlockBean().getLocomotive().getDirection();
 
-      //How set the direction arrow
-      //In a default blok (orientation EAST) when a locomotive (Direction F) is added de default is EAST  ->
-      //When the reverseArrival = true <-
-      //In a blok (orientation WEST) when a locomotive (Direction F) is added de default is EAST ->
-      //When the reverseArrival = true ->
-      //The when the loc direction = F the arrow direction should be in the forward direction so in the first case -> second case -> 
-      //When loc direction = B then <- and <-
-      
-      //TODO get this working in the righet way, il seem ok, but the first auto route it turns?
-      
-      if (Orientation.EAST == orientation && "+".equals(departureSuffix)) {
-        if (LocomotiveBean.Direction.FORWARDS == direction) {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+      if (this.isHorizontal()) {
+        if ("+".equals(departureSuffix)) {
+          if (LocomotiveBean.Direction.FORWARDS == direction) {
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          } else {
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          }
         } else {
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          if (LocomotiveBean.Direction.BACKWARDS == direction) {
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          } else {
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          }
         }
-      } else if (Orientation.EAST == orientation && "-".equals(departureSuffix)) {
-        if (LocomotiveBean.Direction.FORWARDS == direction) {
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+      } else {
+        if ("-".equals(departureSuffix)) {
+          if (LocomotiveBean.Direction.FORWARDS == direction) {
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          } else {
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          }
         } else {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        }
-      } else if (Orientation.WEST == orientation && "+".equals(departureSuffix)) {
-        if (LocomotiveBean.Direction.FORWARDS == direction) {
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-        } else {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        }
-      } else if (Orientation.WEST == orientation && "-".equals(departureSuffix)) {
-        if (LocomotiveBean.Direction.FORWARDS == direction) {
-          g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-        } else {
-          g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          if (LocomotiveBean.Direction.BACKWARDS == direction) {
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          } else {
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          }
         }
       }
-
-      //if (getBlockBean().getDepartureSuffix() == null || "".equals(getBlockBean().getDepartureSuffix())) {
-//      if ((Orientation.EAST == orientation && LocomotiveBean.Direction.FORWARDS == direction && !reverseArrival)
-//              || (Orientation.WEST == orientation && LocomotiveBean.Direction.BACKWARDS == direction && reverseArrival)) {
-//
-//        g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-//
-//        //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-//      } else {
-//        g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-//        //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-//      }
-      //} else {
-      //  //A departure side is set by the dispatcher
-      //  if ("+".equals(getBlockBean().getDepartureSuffix())) {
-      //    g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-      //  } else {
-      //    g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-      //  }
-      //}
     }
 
     drawName(g2);
@@ -501,7 +476,7 @@ public class Block extends AbstractTile implements Tile {
 
   protected void overlayLocImage(Graphics2D g2d) {
     Image locImage = getLocImage();
-    String departureSuffix;
+    String departureSuffix = null;
     boolean reverseImage = true;
     if (getBlockBean() != null) {
       reverseImage = getBlockBean().isReverseArrival();
@@ -509,10 +484,7 @@ public class Block extends AbstractTile implements Tile {
 
     if (getBlockBean() != null) {
       departureSuffix = getBlockBean().getDepartureSuffix();
-    } else {
-      departureSuffix = "+";
     }
-
     if (locImage != null) {
       // scale it to max h of 45
       int size = 45;
@@ -520,20 +492,26 @@ public class Block extends AbstractTile implements Tile {
       //TODO: Use Scalr?
       locImage = locImage.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
 
-      int w = locImage.getWidth(null);
-      int h = locImage.getHeight(null);
       //Logger.trace("LocImage w: " + w + " h: " + h);
-
       //Depending on the block orientation the image needs to be rotated and flipped
+      //Incase the departure suffix is NOT set center the locomotive image
       switch (getOrientation()) {
         case WEST -> {
           int xx;
-          if ("+".equals(departureSuffix)) {
-            int minX = x - width / 2 + 10;
-            xx = minX;
+          int w = locImage.getWidth(null);
+          int h = locImage.getHeight(null);
+
+          if (null == departureSuffix) {
+            xx = x - width / 2 + w;
           } else {
-            int maxX = x + width / 2 - 10;
-            xx = maxX - w;
+            switch (departureSuffix) {
+              case "+" -> {
+                xx = x - width / 2 + w - 25;
+              }
+              default -> {
+                xx = x - width / 2 + w + 10;
+              }
+            }
           }
           int yy = y - h / 2;
 
@@ -543,21 +521,25 @@ public class Block extends AbstractTile implements Tile {
           g2d.drawImage(locImage, xx, yy, null);
         }
         case SOUTH -> {
-          locImage = ImageUtil.rotate(locImage, 270);
-          //locImage = ImageUtil.flipHorizontally(locImage);
-          //locImage = ImageUtil.flipVertically(locImage);
+          locImage = ImageUtil.flipHorizontally(locImage);
+          locImage = ImageUtil.rotate(locImage, 90);
 
-          w = locImage.getWidth(null);
-          h = locImage.getHeight(null);
+          int w = locImage.getWidth(null);
+          int h = locImage.getHeight(null);
 
           int xx = x - w / 2;
           int yy;
-          if ("+".equals(departureSuffix)) {
-            int maxY = y + height / 2 - 10;
-            yy = maxY - h;
+          if (null == departureSuffix) {
+            yy = y - height / 2 + h;
           } else {
-            int minY = y - height / 2 + 10;
-            yy = minY;
+            switch (departureSuffix) {
+              case "+" -> {
+                yy = y - height / 2 + h - 25;
+              }
+              default -> {
+                yy = y - height / 2 + h + 10;
+              }
+            }
           }
           if (reverseImage) {
             locImage = ImageUtil.flipHorizontally(locImage);
@@ -565,20 +547,28 @@ public class Block extends AbstractTile implements Tile {
           g2d.drawImage(locImage, xx, yy, null);
         }
         case NORTH -> {
-          locImage = ImageUtil.rotate(locImage, 270);
-          //locImage = ImageUtil.flipVertically(locImage);
+          locImage = ImageUtil.flipHorizontally(locImage);
+          locImage = ImageUtil.rotate(locImage, 90);
 
-          w = locImage.getWidth(null);
-          h = locImage.getHeight(null);
+          int w = locImage.getWidth(null);
+          int h = locImage.getHeight(null);
 
           int xx = x - w / 2;
           int yy;
-          if ("+".equals(departureSuffix)) {
-            int minY = y - height / 2 + 10;
+          if (null == departureSuffix) {
+            int minY = y - height / 2 + h;
             yy = minY;
           } else {
-            int maxY = y + height / 2 - 10;
-            yy = maxY - h;
+            switch (departureSuffix) {
+              case "+" -> {
+                int minY = y - height / 2 + 10;
+                yy = minY;
+              }
+              default -> {
+                int maxY = y + height / 2 - 10;
+                yy = maxY - h;
+              }
+            }
           }
           if (reverseImage) {
             locImage = ImageUtil.flipHorizontally(locImage);
@@ -588,13 +578,20 @@ public class Block extends AbstractTile implements Tile {
         default -> {
           //EAST
           int xx;
+          int w = locImage.getWidth(null);
+          int h = locImage.getHeight(null);
 
-          if ("-".equals(departureSuffix)) {
-            int minX = x - width / 2 + 10;
-            xx = minX;
+          if (null == departureSuffix) {
+            xx = x - width / 2 + w;
           } else {
-            int maxX = x + width / 2 - 10;
-            xx = maxX - w;
+            switch (departureSuffix) {
+              case "-" -> {
+                xx = x - width / 2 + w - 25;
+              }
+              default -> {
+                xx = x - width / 2 + w + 10;
+              }
+            }
           }
           int yy = y - h / 2;
 

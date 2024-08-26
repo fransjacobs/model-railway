@@ -42,7 +42,6 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class TileFactory {
-
   // Keep the records of the used id sequence number
   private static int straightIdSeq;
   private static int crossingIdSeq;

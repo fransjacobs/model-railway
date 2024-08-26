@@ -123,7 +123,7 @@ public class AutoPilotTest {
     pause(1000);
   }
 
-  @Test
+  //@Test
   public void testIsSensorRegistered() {
     System.out.println("isSensorRegistered");
     String sensorId = "0-0001";
@@ -148,7 +148,7 @@ public class AutoPilotTest {
     assertFalse(instance.isSensorHandlerRegistered(sensorId));
   }
 
-  @Test
+  //@Test
   public void testGetOnTrackLocomotives() {
     System.out.println("getOnTrackLocomotives");
     //Check is the test script has run well

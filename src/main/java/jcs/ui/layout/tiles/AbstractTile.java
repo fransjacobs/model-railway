@@ -115,7 +115,6 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     this.y = y;
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
-
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
 
