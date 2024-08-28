@@ -149,12 +149,6 @@ public class Dispatcher {
     }
   }
 
-  public void forceStopRunning() {
-//    if (stateMachineThread != null && stateMachineThread.isThreadRunning()) {
-//      this.stateMachineThread.forceStop();
-//    }
-  }
-
   void resetDispatcher() {
     this.routeBean = null;
     this.departureBlockId = null;

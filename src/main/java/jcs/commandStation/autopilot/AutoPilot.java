@@ -167,7 +167,7 @@ public class AutoPilot {
 
     for (Dispatcher dispatcher : this.dispatchers.values()) {
       dispatcher.stopLocomotiveAutomode();
-      dispatcher.forceStopRunning();
+      //dispatcher.forceStopRunning();
     }
 
     this.dispatchers.clear();
@@ -517,7 +517,7 @@ public class AutoPilot {
       if (dispatchersRunning) {
         for (Dispatcher ld : dispatchers.values()) {
           if (ld.isRunning()) {
-            ld.forceStopRunning();
+            //ld.forceStopRunning();
             Logger.trace("Forse Stop on " + ld.getName());
           }
         }
