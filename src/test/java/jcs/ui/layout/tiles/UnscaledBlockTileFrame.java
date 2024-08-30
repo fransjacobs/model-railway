@@ -103,7 +103,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     bbe.setId(blockTile.getId());
     bbe.setTileId(blockTile.getId());
     bbe.setDescription("Blok");
-    
+
     //bbe.setArrivalSuffix((String) this.incomingSideCB.getSelectedItem());
     bbe.setDepartureSuffix(null);
 
@@ -337,11 +337,11 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private void departureSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departureSideCBActionPerformed
     if (blockTile != null && ((Block) blockTile).getBlockBean() != null) {
-      if("".equals(this.departureSideCB.getSelectedItem())) {
+      if ("".equals(this.departureSideCB.getSelectedItem())) {
         ((Block) blockTile).getBlockBean().setDepartureSuffix(null);
       } else {
         ((Block) blockTile).getBlockBean().setDepartureSuffix((String) this.departureSideCB.getSelectedItem());
-      }  
+      }
       repaint();
     }
   }//GEN-LAST:event_departureSideCBActionPerformed
@@ -365,7 +365,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
     ((Block) blockTile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
-    
+
     //The Suffix is orientation dependent!
 //    if ("+".equals(((Block) blockTile).getBlockBean().getArrivalSuffix())) {
 //      ((Block) blockTile).getBlockBean().setArrivalSuffix("-");
@@ -373,20 +373,19 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 //      ((Block) blockTile).getBlockBean().setArrivalSuffix("+");
 //    }
 //    this.departureSideCB.setSelectedItem(((Block) blockTile).getBlockBean().getArrivalSuffix());
-
     repaint();
   }//GEN-LAST:event_reverseArrivalCBActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
     if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      ((Block) blockTile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.BACKWARDS);
+      ((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.BACKWARDS);
       repaint();
     }
   }//GEN-LAST:event_backwardsRBActionPerformed
 
   private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
     if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      ((Block) blockTile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.FORWARDS);
+      ((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.FORWARDS);
       repaint();
     }
   }//GEN-LAST:event_forwardsRBActionPerformed

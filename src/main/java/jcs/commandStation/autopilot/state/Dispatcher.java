@@ -69,6 +69,7 @@ public class Dispatcher {
 
   public Dispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
+    this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
     this.autoPilot = autoPilot;
 
     this.stateEventListeners = new LinkedList<>();
@@ -89,6 +90,14 @@ public class Dispatcher {
 
   public String getName() {
     return this.locomotiveBean.getName();
+  }
+
+  public Direction getLocomotiveDirection() {
+    return this.locomotiveBean.getDispatcherDirection();
+  }
+
+  public void setLocomotiveDirection(Direction locomotiveDirection) {
+    this.locomotiveBean.setDispatcherDirection(locomotiveDirection);
   }
 
   public LocomotiveBean getLocomotiveBean() {
@@ -158,7 +167,8 @@ public class Dispatcher {
     this.inSensorId = null;
     this.exitSensorId = null;
     this.stateEventListeners.clear();
-    this.stateMachineThread = new StateMachineThread(this);
+    this.locomotiveBean.setDispatcherDirection(Direction.SWITCH);
+    this.stateMachineThread = new StateMachineThread(null);
   }
 
   public void reset() {

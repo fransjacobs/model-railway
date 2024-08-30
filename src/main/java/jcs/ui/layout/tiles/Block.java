@@ -434,34 +434,67 @@ public class Block extends AbstractTile implements Tile {
         departureSuffix = getDefaultDepartureSuffix(orientation, reverseArrival);
       }
 
-      LocomotiveBean.Direction direction = getBlockBean().getLocomotive().getDirection();
+      LocomotiveBean.Direction direction = getBlockBean().getLocomotive().getDispatcherDirection();
 
       if (this.isHorizontal()) {
         if ("+".equals(departureSuffix)) {
-          if (LocomotiveBean.Direction.FORWARDS == direction) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          if (Orientation.EAST == orientation) {
+            if (LocomotiveBean.Direction.FORWARDS == direction) {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            }
           } else {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            if (LocomotiveBean.Direction.BACKWARDS == direction) {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            }
           }
         } else {
-          if (LocomotiveBean.Direction.BACKWARDS == direction) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          if (Orientation.EAST == orientation) {
+            if (LocomotiveBean.Direction.BACKWARDS == direction) {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            }
           } else {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            if (LocomotiveBean.Direction.FORWARDS == direction) {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            }
           }
         }
       } else {
         if ("-".equals(departureSuffix)) {
-          if (LocomotiveBean.Direction.FORWARDS == direction) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          if (Orientation.SOUTH == orientation) {
+            if (LocomotiveBean.Direction.FORWARDS == direction) {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            }
           } else {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            if (LocomotiveBean.Direction.BACKWARDS == direction) {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            }
           }
-        } else {
-          if (LocomotiveBean.Direction.BACKWARDS == direction) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+        } 
+        else {
+          if (Orientation.SOUTH == orientation) {
+            if (LocomotiveBean.Direction.FORWARDS == direction) {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            }
           } else {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            if (LocomotiveBean.Direction.BACKWARDS == direction) {
+              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            } else {
+              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            }
           }
         }
       }
@@ -565,12 +598,10 @@ public class Block extends AbstractTile implements Tile {
           } else {
             switch (departureSuffix) {
               case "+" -> {
-                int minY = y - height / 2 + 10;
-                yy = minY;
+                yy = y - height / 2 + h - 25;
               }
               default -> {
-                int maxY = y + height / 2 - 10;
-                yy = maxY - h;
+                yy = y - height / 2 + h + 10;
               }
             }
           }

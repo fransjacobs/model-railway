@@ -23,5 +23,9 @@ alter table blocks add random_wait bool not null default false;
 alter table blocks add always_stop bool not null default false;
 alter table blocks add allow_commuter_only bool not null default false;
 
+alter table locomotives add dispatcher_direction varchar(255);
+
+
+
 --alter table blocks rename column incoming_side to incoming_suffix;
 commit;

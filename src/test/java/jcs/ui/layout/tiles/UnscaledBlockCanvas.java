@@ -57,7 +57,6 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
 
     for (Tile tile : this.tiles) {
       Point tc = tile.getCenter();
-
       boolean expand = !((AbstractTile) tile).isScaleImage();
       int tw = tile.getWidth() * (expand ? 10 : 1);
       int th = tile.getHeight() * (expand ? 10 : 1);

@@ -49,6 +49,8 @@ public class LocomotiveBean implements Serializable {
   private String commandStationId;
   private boolean synchronize;
 
+  private String dispatcherDirection;
+
   private Image locIcon;
   private CommandStationBean commandStationBean;
 
@@ -214,8 +216,35 @@ public class LocomotiveBean implements Serializable {
     }
   }
 
+  @Transient
+  public Direction toggleDispatcherDirection() {
+    Direction d = getDispatcherDirection();
+    if (Direction.FORWARDS == d) {
+      return Direction.BACKWARDS;
+    } else {
+      return Direction.FORWARDS;
+    }
+  }
+
   public void setDirection(Direction direction) {
     this.richtung = direction.getMarklinValue();
+  }
+
+  @Column(name = "dispatcher_direction", length = 255, nullable = true)
+  public Direction getDispatcherDirection() {
+    if (dispatcherDirection != null) {
+      return Direction.get(dispatcherDirection);
+    } else {
+      return this.getDirection();
+    }
+  }
+
+  public void setDispatcherDirection(Direction dispatcherDirection) {
+    if (dispatcherDirection != null) {
+      this.dispatcherDirection = dispatcherDirection.getDirection();
+    } else {
+      this.dispatcherDirection = null;
+    }
   }
 
   @Column(name = "commuter", columnDefinition = "commuter bool default '0'")

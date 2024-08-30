@@ -89,7 +89,7 @@ class PrepareRouteState extends DispatcherState {
       Logger.trace("Using default departure suffix: " + departureSuffix);
     }
 
-    LocomotiveBean.Direction locDir = locomotive.getDirection();
+    LocomotiveBean.Direction locDir = locomotive.getDispatcherDirection();
 
     Logger.trace("Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 
@@ -102,15 +102,18 @@ class PrepareRouteState extends DispatcherState {
     if (routes.isEmpty() && locomotive.isCommuter()) {
       //No routes possible. When the Locomotive is a commuter train it can reverse direction, so
       Direction oldDirection = locomotive.getDirection();
-      Direction newDirection = locomotive.toggleDirection();
+      Direction newDirection = locomotive.toggleDispatcherDirection();
       Logger.trace("Reversing Locomotive, from " + oldDirection + " to " + newDirection + "...");
 
       this.swapLocomotiveDirection = true;
 
       //Do NOT yet set the direction yet just test....
-      locomotive.setDirection(newDirection);
+      //locomotive.setDirection(newDirection);
+      locomotive.setDispatcherDirection(newDirection);
       blockBean.setLocomotive(locomotive);
 
+      locDir = newDirection;
+      
       //also flip the departure direction
       if ("-".equals(departureSuffix)) {
         departureSuffix = "+";
@@ -157,9 +160,9 @@ class PrepareRouteState extends DispatcherState {
       Logger.debug("No route available for " + locomotive.getName() + " ...");
 
       if (swapLocomotiveDirection) {
-        Direction newDirection = locomotive.toggleDirection();
+        Direction newDirection = locomotive.toggleDispatcherDirection();
         Logger.trace("Rollback Locomotive reverse to " + newDirection + "...");
-        locomotive.setDirection(newDirection);
+        locomotive.setDispatcherDirection(newDirection);
       }
 
     }
@@ -181,7 +184,7 @@ class PrepareRouteState extends DispatcherState {
     String destinationTileId = route.getToTileId();
     String arrivalSuffix = route.getToSuffix();
 
-    Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDirection());
+    Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDispatcherDirection());
 
     BlockBean departureBlock = dispatcher.getDepartureBlock();
     departureBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
@@ -220,7 +223,7 @@ class PrepareRouteState extends DispatcherState {
       Logger.trace(route + " Locked");
 
       if (swapLocomotiveDirection) {
-        Direction newDir = locomotive.getDirection();
+        Direction newDir = locomotive.getDispatcherDirection();
         Logger.trace("Changing Direction to " + newDir);
         dispatcher.changeLocomotiveDirection(locomotive, newDir);
       }
