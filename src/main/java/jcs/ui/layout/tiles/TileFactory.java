@@ -42,6 +42,7 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class TileFactory {
+
   // Keep the records of the used id sequence number
   private static int straightIdSeq;
   private static int crossingIdSeq;
@@ -120,6 +121,11 @@ public class TileFactory {
     } else {
       return currentId;
     }
+  }
+
+  public static Tile createTile(String tileId) {
+    TileBean tileBean = JCS.getPersistenceService().getTileBean(tileId);
+    return createTile(tileBean);
   }
 
   public static Tile createTile(TileBean tileBean) {

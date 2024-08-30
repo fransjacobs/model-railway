@@ -18,7 +18,6 @@ package jcs.commandStation.autopilot.state;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
@@ -27,7 +26,10 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -77,6 +79,16 @@ class PrepareRouteState extends DispatcherState {
     BlockBean blockBean = dispatcher.getDepartureBlock();
 
     String departureSuffix = blockBean.getDepartureSuffix();
+
+    if (departureSuffix == null) {
+      //Use a default as the suffix has not been set before
+      Block blockTile = (Block) TileFactory.createTile(blockBean.getTileId());
+      Orientation tileOrientation = blockTile.getOrientation();
+      boolean reverseArrival = blockBean.isReverseArrival();
+      departureSuffix = blockTile.getDefaultDepartureSuffix(tileOrientation, reverseArrival);
+      Logger.trace("Using default departure suffix: " + departureSuffix);
+    }
+
     LocomotiveBean.Direction locDir = locomotive.getDirection();
 
     Logger.trace("Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");

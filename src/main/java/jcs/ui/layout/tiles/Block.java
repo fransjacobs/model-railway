@@ -392,6 +392,15 @@ public class Block extends AbstractTile implements Tile {
     blockBean.setBlockState(blockState);
   }
 
+  public String getDefaultDepartureSuffix(Orientation tileOrientation, boolean reverseArrival) {
+    if (Orientation.EAST == tileOrientation && !reverseArrival || Orientation.WEST == tileOrientation && reverseArrival
+            || Orientation.SOUTH == tileOrientation && reverseArrival || Orientation.NORTH == tileOrientation && !reverseArrival) {
+      return "+";
+    } else {
+      return "-";
+    }
+  }
+
   @Override
   public void renderTile(Graphics2D g2) {
     int xx = 20;
@@ -422,12 +431,7 @@ public class Block extends AbstractTile implements Tile {
       Orientation orientation = this.getOrientation();
 
       if (departureSuffix == null) {
-        if (Orientation.EAST == orientation && !reverseArrival || Orientation.WEST == orientation && reverseArrival
-                || Orientation.SOUTH == orientation && reverseArrival || Orientation.NORTH == orientation && !reverseArrival) {
-          departureSuffix = "+";
-        } else {
-          departureSuffix = "-";
-        }
+        departureSuffix = getDefaultDepartureSuffix(orientation, reverseArrival);
       }
 
       LocomotiveBean.Direction direction = getBlockBean().getLocomotive().getDirection();

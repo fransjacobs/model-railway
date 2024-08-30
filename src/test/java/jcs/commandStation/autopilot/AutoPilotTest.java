@@ -220,7 +220,7 @@ public class AutoPilotTest {
     block1.setBlockState(BlockBean.BlockState.GHOST);
   }
 
-  //@Test
+  @Test
   public void testGetLocomotiveDispatchers() {
     System.out.println("getLocomotiveDispatchers");
     AutoPilot instance = AutoPilot.getInstance();
