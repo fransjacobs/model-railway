@@ -50,6 +50,9 @@ public class H2DatabaseUtil {
   protected static final String JDBC_PRE = "jdbc:h2:";
 
   protected static final String DB_CREATE_DDL = "jcs-db.sql";
+  
+  //Future use
+  protected static final String CLOSE_ON_EXIT = ";DB_CLOSE_ON_EXIT=FALSE";
 
   /**
    * This is the latest database version

@@ -26,10 +26,10 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
+import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Block;
-import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -77,21 +77,15 @@ class PrepareRouteState extends DispatcherState {
     Logger.trace("Search a free route for " + locomotive.getName() + "...");
 
     BlockBean blockBean = dispatcher.getDepartureBlock();
+    Direction locomotiveDirection = locomotive.getDispatcherDirection();
 
-    String departureSuffix = blockBean.getDepartureSuffix();
+    TileBean tileBean = PersistenceFactory.getService().getTileBean(blockBean.getTileId());
+    Orientation blockOrientation = tileBean.getOrientation();
+    boolean reverseArrival = blockBean.isReverseArrival();
 
-    if (departureSuffix == null) {
-      //Use a default as the suffix has not been set before
-      Block blockTile = (Block) TileFactory.createTile(blockBean.getTileId());
-      Orientation tileOrientation = blockTile.getOrientation();
-      boolean reverseArrival = blockBean.isReverseArrival();
-      departureSuffix = blockTile.getDefaultDepartureSuffix(tileOrientation, reverseArrival);
-      Logger.trace("Using default departure suffix: " + departureSuffix);
-    }
+    String departureSuffix = Block.getDepartureSuffix(blockOrientation, reverseArrival, locomotiveDirection);
 
-    LocomotiveBean.Direction locDir = locomotive.getDispatcherDirection();
-
-    Logger.trace("Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
+    Logger.trace("Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locomotiveDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
 
     //Search for the possible routes
     List<RouteBean> routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), departureSuffix);
@@ -99,32 +93,29 @@ class PrepareRouteState extends DispatcherState {
 
     List<RouteBean> checkedRoutes = new ArrayList<>();
 
+    //No routes found or possible. When the Locomotive is a commuter train it can reverse direction.
+    //Lets try that...
     if (routes.isEmpty() && locomotive.isCommuter()) {
-      //No routes possible. When the Locomotive is a commuter train it can reverse direction, so
-      Direction oldDirection = locomotive.getDirection();
+      Direction oldDirection = locomotiveDirection;
       Direction newDirection = locomotive.toggleDispatcherDirection();
       Logger.trace("Reversing Locomotive, from " + oldDirection + " to " + newDirection + "...");
 
       this.swapLocomotiveDirection = true;
-
-      //Do NOT yet set the direction yet just test....
-      //locomotive.setDirection(newDirection);
+      //Do NOT persist the direction yet, just test....
       locomotive.setDispatcherDirection(newDirection);
       blockBean.setLocomotive(locomotive);
 
-      locDir = newDirection;
-      
-      //also flip the departure direction
+      //Now flip the departure direction
       if ("-".equals(departureSuffix)) {
         departureSuffix = "+";
       } else {
         departureSuffix = "-";
       }
 
-      Logger.trace("2nd; Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + locDir.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
+      Logger.trace("2nd attempt for Loco " + locomotive.getName() + " is in block " + blockBean.getId() + ". Direction " + newDirection.getDirection() + ". DepartureSuffix " + departureSuffix + "...");
       routes = PersistenceFactory.getService().getRoutes(blockBean.getId(), departureSuffix);
 
-      Logger.trace("2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s). " + (!routes.isEmpty() ? "Direction of " + locomotive.getName() + " must be swapped!" : ""));
+      Logger.trace("After the 2nd attempt, there " + (routes.size() == 1 ? "is" : "are") + " " + routes.size() + " possible route(s). " + (!routes.isEmpty() ? "Direction of " + locomotive.getName() + " must be swapped!" : ""));
     }
 
     //Found possible routes check on the destination for the sensors
@@ -142,6 +133,7 @@ class PrepareRouteState extends DispatcherState {
       }
     }
 
+    //Randomly pick a route in case multiple routes are found...
     int rIdx = 0;
     if (checkedRoutes.size() > 1) {
       //Choose randomly the route
@@ -160,14 +152,13 @@ class PrepareRouteState extends DispatcherState {
       Logger.debug("No route available for " + locomotive.getName() + " ...");
 
       if (swapLocomotiveDirection) {
-        Direction newDirection = locomotive.toggleDispatcherDirection();
-        Logger.trace("Rollback Locomotive reverse to " + newDirection + "...");
-        locomotive.setDispatcherDirection(newDirection);
+        Direction oldDirection = locomotive.toggleDispatcherDirection();
+        Logger.trace("Rollback Locomotive reverse to " + oldDirection + "...");
+        locomotive.setDispatcherDirection(oldDirection);
       }
-
     }
     dispatcher.setRouteBean(route);
-    return !checkedRoutes.isEmpty();
+    return route != null;
   }
 
   boolean reserveRoute(Dispatcher dispatcher) {
@@ -216,9 +207,6 @@ class PrepareRouteState extends DispatcherState {
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
 
-      dispatcher.showBlockState(departureBlock);
-      dispatcher.showBlockState(destinationBlock);
-
       dispatcher.showRoute(route, Color.green);
       Logger.trace(route + " Locked");
 
@@ -227,6 +215,9 @@ class PrepareRouteState extends DispatcherState {
         Logger.trace("Changing Direction to " + newDir);
         dispatcher.changeLocomotiveDirection(locomotive, newDir);
       }
+
+      dispatcher.showBlockState(departureBlock);
+      dispatcher.showBlockState(destinationBlock);
 
       return true;
     } else {

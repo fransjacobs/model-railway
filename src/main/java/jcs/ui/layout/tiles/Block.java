@@ -27,22 +27,22 @@ import java.util.Map;
 import java.util.Set;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
-import static jcs.entities.BlockBean.BlockState.LOCKED;
-import static jcs.entities.BlockBean.BlockState.OCCUPIED;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.events.TileEvent;
-import static jcs.ui.layout.tiles.AbstractTile.drawRotate;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
-import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
+import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -392,12 +392,35 @@ public class Block extends AbstractTile implements Tile {
     blockBean.setBlockState(blockState);
   }
 
-  public String getDefaultDepartureSuffix(Orientation tileOrientation, boolean reverseArrival) {
-    if (Orientation.EAST == tileOrientation && !reverseArrival || Orientation.WEST == tileOrientation && reverseArrival
-            || Orientation.SOUTH == tileOrientation && reverseArrival || Orientation.NORTH == tileOrientation && !reverseArrival) {
-      return "+";
+  public static String getDepartureSuffix(Orientation tileOrientation, boolean reverseArrival, LocomotiveBean.Direction direction) {
+    if (LocomotiveBean.Direction.FORWARDS == direction) {
+      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
+        if (reverseArrival) {
+          return "-";
+        } else {
+          return "+";
+        }
+      } else {
+        if (reverseArrival) {
+          return "+";
+        } else {
+          return "-";
+        }
+      }
     } else {
-      return "-";
+      if (Orientation.EAST == tileOrientation || Orientation.SOUTH == tileOrientation) {
+        if (reverseArrival) {
+          return "+";
+        } else {
+          return "-";
+        }
+      } else {
+        if (reverseArrival) {
+          return "-";
+        } else {
+          return "+";
+        }
+      }
     }
   }
 
@@ -414,6 +437,9 @@ public class Block extends AbstractTile implements Tile {
     g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
 
     Color blockStateColor = getBlockStateColor();
+
+    Logger.trace("Block " + this.id + " State: " + this.getBlockBean().getBlockState().getState() + " Color: " + blockStateColor.toString());
+
     g2.setPaint(blockStateColor);
     g2.fillRoundRect(xx, yy, rw, rh, 15, 15);
 
@@ -424,77 +450,45 @@ public class Block extends AbstractTile implements Tile {
     //When there is a locomotive in the block mark the direction of travel.
     //The default, forwards is in the direction of the block orientation, i.e. the +
     if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
-      //Reverse arrival determine how the loc is placed in a blok.
-      //When reverse arrive is false a lock will point to the east. in a east block
       boolean reverseArrival = getBlockBean().isReverseArrival();
-      String departureSuffix = getBlockBean().getDepartureSuffix();
+      LocomotiveBean.Direction locDir = getBlockBean().getLocomotive().getDispatcherDirection();
+      if (locDir == null) {
+        locDir = getBlockBean().getLocomotive().getDirection();
+      }
       Orientation orientation = this.getOrientation();
 
+      String departureSuffix = getBlockBean().getDepartureSuffix();
       if (departureSuffix == null) {
-        departureSuffix = getDefaultDepartureSuffix(orientation, reverseArrival);
+        departureSuffix = Block.getDepartureSuffix(orientation, reverseArrival, locDir);
       }
 
-      LocomotiveBean.Direction direction = getBlockBean().getLocomotive().getDispatcherDirection();
-
-      if (this.isHorizontal()) {
-        if ("+".equals(departureSuffix)) {
-          if (Orientation.EAST == orientation) {
-            if (LocomotiveBean.Direction.FORWARDS == direction) {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            }
+      //Logger.trace("LocDir: " + locDir.getDirection() + " Orientation: " + orientation.getOrientation() + " departureSuffix: " + departureSuffix);
+      if ("+".equals(departureSuffix)) {
+        if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
+          if (reverseArrival) {
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
           } else {
-            if (LocomotiveBean.Direction.BACKWARDS == direction) {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            }
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
           }
         } else {
-          if (Orientation.EAST == orientation) {
-            if (LocomotiveBean.Direction.BACKWARDS == direction) {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            }
+          if (reverseArrival) {
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
           } else {
-            if (LocomotiveBean.Direction.FORWARDS == direction) {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            }
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
           }
         }
       } else {
-        if ("-".equals(departureSuffix)) {
-          if (Orientation.SOUTH == orientation) {
-            if (LocomotiveBean.Direction.FORWARDS == direction) {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            }
+        if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
+          if (reverseArrival) {
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
           } else {
-            if (LocomotiveBean.Direction.BACKWARDS == direction) {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            }
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
           }
-        } 
-        else {
-          if (Orientation.SOUTH == orientation) {
-            if (LocomotiveBean.Direction.FORWARDS == direction) {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            }
+        } else {
+          if (reverseArrival) {
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
           } else {
-            if (LocomotiveBean.Direction.BACKWARDS == direction) {
-              g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-            } else {
-              g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-            }
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
           }
         }
       }
@@ -570,7 +564,7 @@ public class Block extends AbstractTile implements Tile {
             yy = y - height / 2 + h;
           } else {
             switch (departureSuffix) {
-              case "+" -> {
+              case "-" -> {
                 yy = y - height / 2 + h - 25;
               }
               default -> {

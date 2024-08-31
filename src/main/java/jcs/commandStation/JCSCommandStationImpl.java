@@ -431,6 +431,9 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       address = locomotive.getUid().intValue();
     }
     if (decoderController != null) {
+      //Set the velocity to zero before changing the direction
+      //Run this in a worker thread...
+
       decoderController.changeVelocity(address, 0, locomotive.getDirection());
       decoderController.changeDirection(address, newDirection);
     }
@@ -781,7 +784,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     public void onDirectionChange(LocomotiveDirectionEvent directionEvent) {
       LocomotiveBean lb = directionEvent.getLocomotiveBean();
       if (lb != null) {
-        LocomotiveBean dblb;
+        LocomotiveBean dblb = null;
         //For marklin use the ID 
         if ("marklin.cs".equals(lb.getCommandStationId())) {
           dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
@@ -792,7 +795,19 @@ public class JCSCommandStationImpl implements JCSCommandStation {
           } else {
             address = lb.getId().intValue();
           }
-          dblb = PersistenceFactory.getService().getLocomotive(address, lb.getDecoderType(), lb.getCommandStationId());
+          if (lb.getDecoderType() != null) {
+            dblb = PersistenceFactory.getService().getLocomotive(address, lb.getDecoderType(), lb.getCommandStationId());
+          } else {
+            //Try to match one...
+            Set<Protocol> protocols = PersistenceFactory.getService().getDefaultCommandStation().getSupportedProtocols();
+            for (Protocol protocol : protocols) {
+              DecoderType decoder = DecoderType.get(protocol.getProtocol());
+              dblb = PersistenceFactory.getService().getLocomotive(address, decoder, lb.getCommandStationId());
+              if (dblb != null) {
+                break;
+              }
+            }
+          }
         }
 
         if (dblb != null) {

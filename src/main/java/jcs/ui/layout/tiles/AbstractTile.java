@@ -682,9 +682,9 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       setTrackColor(tileEvent.getTrackColor());
       setTrackRouteColor(tileEvent.getTrackRouteColor());
 
-      if (tileEvent.getBlockBean() != null) {
-        setBlockBean(tileEvent.getBlockBean());
-      }
+//      if (tileEvent.getBlockBean() != null) {
+//        setBlockBean(tileEvent.getBlockBean());
+//      }
       repaintTile();
     }
   }

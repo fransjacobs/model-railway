@@ -275,6 +275,7 @@ public class AutoPilot {
             }
             default -> {
               if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
+                block.setArrivalSuffix(null);
                 occupiedBlockCounter++;
               }
             }

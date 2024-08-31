@@ -30,12 +30,15 @@ class InBlockState extends DispatcherState {
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
+
+    //Stop the locomotive
     dispatcher.changeLocomotiveVelocity(locomotive, 0);
+    Logger.trace("Locomotive " + locomotive.getName() + " is stopped....");
 
     BlockBean destinationBlock = dispatcher.getDestinationBlock();
     BlockBean departureBlock = dispatcher.getDepartureBlock();
 
-    Logger.trace("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + ". Stopping....");
+    Logger.trace("Locomotive " + locomotive.getName() + " has arrived in destination " + destinationBlock.getDescription() + "...");
 
     destinationBlock.setLocomotive(locomotive);
     destinationBlock.setBlockState(BlockBean.BlockState.OCCUPIED);
@@ -47,7 +50,7 @@ class InBlockState extends DispatcherState {
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
     departureBlock.setReverseArrival(false);
-    departureBlock.setArrivalSuffix("-");
+    departureBlock.setArrivalSuffix(null);
 
     PersistenceFactory.getService().persist(departureBlock);
     PersistenceFactory.getService().persist(destinationBlock);

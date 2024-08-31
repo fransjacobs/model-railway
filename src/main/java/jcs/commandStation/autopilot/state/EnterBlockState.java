@@ -37,7 +37,8 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
     if (!locomotiveBraking) {
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
       RouteBean route = dispatcher.getRouteBean();
-      Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + ". Slowing down....");
+
+      Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + "...");
 
       String arrivalSuffix = route.getToSuffix();
       locomotiveBraking = true;
@@ -57,29 +58,29 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       dispatcher.setWaitForSensorid(inSensorId);
 
       //Slowdown
+      Logger.trace("Slowdown " + locomotive.getName() + "...");
       dispatcher.changeLocomotiveVelocity(locomotive, 100);
 
       //Change Block statuses 
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
+      
       destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
       PersistenceFactory.getService().persist(departureBlock);
+      dispatcher.showBlockState(departureBlock);
+      
+      dispatcher.showRoute(route, Color.magenta);
+
       PersistenceFactory.getService().persist(destinationBlock);
+      dispatcher.showBlockState(destinationBlock);
 
       //Switch the departure block sensors on again
       dispatcher.clearDepartureIgnoreEventHandlers();
 
       dispatcher.setExitSensorId(null);
-
-      //Show the new states in the UI
-      dispatcher.showBlockState(departureBlock);
-      dispatcher.showBlockState(destinationBlock);
-      dispatcher.showRoute(route, Color.magenta);
-
-      Logger.trace("Waiting for the in event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
-
-      Logger.trace("Waiting for the in event from SensorId: " + this.inSensorId + " via dispatcher: " + dispatcher.getInSensorId() + "...");
+      
+      Logger.trace("Now Waiting for the IN event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
 
     if (canAdvanceToNextState) {
