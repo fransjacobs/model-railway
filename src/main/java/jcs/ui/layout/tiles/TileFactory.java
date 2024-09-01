@@ -123,6 +123,11 @@ public class TileFactory {
     }
   }
 
+  public static Tile createTile(String tileId) {
+    TileBean tileBean = JCS.getPersistenceService().getTileBean(tileId);
+    return createTile(tileBean);
+  }
+
   public static Tile createTile(TileBean tileBean) {
     return createTile(tileBean, false, false);
   }

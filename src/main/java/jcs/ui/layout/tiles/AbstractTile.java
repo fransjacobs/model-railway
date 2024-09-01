@@ -115,7 +115,6 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
     this.y = y;
     this.width = DEFAULT_WIDTH;
     this.height = DEFAULT_HEIGHT;
-
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
 
@@ -683,9 +682,9 @@ abstract class AbstractTile extends TileBean implements Tile, TileEventListener 
       setTrackColor(tileEvent.getTrackColor());
       setTrackRouteColor(tileEvent.getTrackRouteColor());
 
-      if (tileEvent.getBlockBean() != null) {
-        setBlockBean(tileEvent.getBlockBean());
-      }
+//      if (tileEvent.getBlockBean() != null) {
+//        setBlockBean(tileEvent.getBlockBean());
+//      }
       repaintTile();
     }
   }

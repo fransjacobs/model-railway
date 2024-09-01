@@ -56,7 +56,7 @@ class WaitState extends DispatcherState {
 
     for (; waitTime >= 0; waitTime--) {
       if (dispatcher.isLocomotiveAutomodeOn()) {
-        String s = dispatcher.getDispatcherStateString() + " (" + waitTime + ")";
+        String s = dispatcher.getStateName() + " (" + waitTime + ")";
         dispatcher.fireStateListeners(s);
 
         //For manual testing the thread is not running, step mode

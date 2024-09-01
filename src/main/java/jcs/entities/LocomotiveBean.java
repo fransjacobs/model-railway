@@ -49,6 +49,9 @@ public class LocomotiveBean implements Serializable {
   private String commandStationId;
   private boolean synchronize;
 
+  private String dispatcherDirection;
+  private String locomotiveDirection;
+
   private Image locIcon;
   private CommandStationBean commandStationBean;
 
@@ -76,7 +79,10 @@ public class LocomotiveBean implements Serializable {
     this.tachoMax = tachoMax;
     this.vMin = vMin;
     this.velocity = velocity;
-    this.richtung = direction;
+    if (direction != null) {
+      this.locomotiveDirection = Direction.getDirectionMarkin(direction).getDirection();
+    }
+
     this.commuter = commuter;
     this.show = show;
     this.synchronize = synchronize;
@@ -183,24 +189,36 @@ public class LocomotiveBean implements Serializable {
     this.velocity = velocity;
   }
 
+  @Transient
   @Column(name = "richtung")
   @ColumnPosition(position = 21)
   public Integer getRichtung() {
-    return richtung;
+    return getDirection().getMarklinValue();
   }
 
   public void setRichtung(Integer richtung) {
-    this.richtung = richtung;
+    if (richtung != null) {
+      this.locomotiveDirection = Direction.getDirectionMarkin(richtung).getDirection();
+    } else {
+      this.locomotiveDirection = null;
+    }
   }
 
-  @Transient
-  @Column(name = "direction")
+  @Column(name = "locomotive_direction", length = 255, nullable = true)
   @ColumnPosition(position = 8)
   public Direction getDirection() {
-    if (this.richtung != null) {
-      return Direction.getDirectionMarkin(this.richtung);
+    if (locomotiveDirection != null) {
+      return Direction.get(locomotiveDirection);
     } else {
       return Direction.FORWARDS;
+    }
+  }
+
+  public void setDirection(Direction direction) {
+    if (direction != null) {
+      this.locomotiveDirection = direction.getDirection();
+    } else {
+      this.locomotiveDirection = null;
     }
   }
 
@@ -214,8 +232,31 @@ public class LocomotiveBean implements Serializable {
     }
   }
 
-  public void setDirection(Direction direction) {
-    this.richtung = direction.getMarklinValue();
+  @Transient
+  public Direction toggleDispatcherDirection() {
+    Direction d = getDispatcherDirection();
+    if (Direction.BACKWARDS == d) {
+      return Direction.FORWARDS;
+    } else {
+      return Direction.BACKWARDS;
+    }
+  }
+
+  @Column(name = "dispatcher_direction", length = 255, nullable = true)
+  public Direction getDispatcherDirection() {
+    if (dispatcherDirection != null) {
+      return Direction.get(dispatcherDirection);
+    } else {
+      return null;
+    }
+  }
+
+  public void setDispatcherDirection(Direction dispatcherDirection) {
+    if (dispatcherDirection != null) {
+      this.dispatcherDirection = dispatcherDirection.getDirection();
+    } else {
+      this.dispatcherDirection = null;
+    }
   }
 
   @Column(name = "commuter", columnDefinition = "commuter bool default '0'")

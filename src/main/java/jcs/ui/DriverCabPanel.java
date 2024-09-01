@@ -51,7 +51,7 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   public DriverCabPanel(LocomotiveBean locomotiveBean) {
-    executor = Executors.newCachedThreadPool();
+    executor = Executors.newFixedThreadPool(3);
     initComponents();
     postInit();
     setLocomotiveBean(locomotiveBean);
@@ -339,7 +339,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   private void changeDirection(LocomotiveBean.Direction direction) {
-    executor.execute(() -> changeDirection(direction, this.locomotiveBean));
+    //executor.execute(() -> changeDirection(direction, this.locomotiveBean));
+    changeDirection(direction, this.locomotiveBean);
   }
 
   private void changeDirection(LocomotiveBean.Direction newDirection, LocomotiveBean locomotiveBean) {
@@ -349,7 +350,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
     }
 
     if (this.directionListener != null && locomotiveBean != null) {
-      locomotiveBean.setDirection(newDirection);
       LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(locomotiveBean);
       this.directionListener.onDirectionChange(dme);
     }

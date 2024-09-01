@@ -311,20 +311,29 @@ public class BlockBean {
   }
 
   public void setDepartureSuffix(String suffix) {
-    if ("-".equals(suffix)) {
-      this.arrivalSuffix = "+";
+    if (null == suffix) {
+      this.arrivalSuffix = null;
     } else {
-      this.arrivalSuffix = "-";
+      switch (suffix) {
+        case "-":
+          this.arrivalSuffix = "+";
+          break;
+        default:
+          this.arrivalSuffix = "-";
+          break;
+      }
     }
   }
 
   @Transient
   public String getDepartureSuffix() {
-    String departureSuffix;
-    if ("-".equals(arrivalSuffix)) {
-      departureSuffix = "+";
-    } else {
-      departureSuffix = "-";
+    String departureSuffix = null;
+    if (arrivalSuffix != null) {
+      if ("-".equals(arrivalSuffix)) {
+        departureSuffix = "+";
+      } else {
+        departureSuffix = "-";
+      }
     }
 
     return departureSuffix;

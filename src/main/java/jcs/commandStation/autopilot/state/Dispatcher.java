@@ -53,7 +53,14 @@ public class Dispatcher {
   private String destinationBlockId;
 
   private String waitingForSensorId;
+  //Enter Sensor of the destination
+  private String enterSensorId;
+  //In Sensor of the destination
   private String inSensorId;
+
+  //The Occupation sensor of the departure 
+  private String occupationSensorId;
+  //The exit of the departure
   private String exitSensorId;
 
   private final List<StateEventListener> stateEventListeners;
@@ -62,8 +69,9 @@ public class Dispatcher {
 
   public Dispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
     this.locomotiveBean = locomotiveBean;
+    //Prefill with the current locomotive direction
+    this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
     this.autoPilot = autoPilot;
-
     this.stateEventListeners = new LinkedList<>();
     this.stateMachineThread = new StateMachineThread(this);
   }
@@ -107,15 +115,18 @@ public class Dispatcher {
     return this.stateMachineThread.isEnableAutomode();
   }
 
-  public void startLocomotiveAutomode() {
-    stateMachineThread.setEnableAutomode(true);
-    //is the thread running?
-    startRunning();
+  public boolean startLocomotiveAutomode() {
+    //Only when the Autopilot is ON!
+    if (autoPilot.isAutoModeActive()) {
+      stateMachineThread.setEnableAutomode(true);
+      //is the thread running?
+      startRunning();
+    }
+    return this.stateMachineThread.isEnableAutomode();
   }
 
   public void stopLocomotiveAutomode() {
     stateMachineThread.setEnableAutomode(false);
-    stopRunning();
   }
 
   void startRunning() {
@@ -139,21 +150,17 @@ public class Dispatcher {
     }
   }
 
-  public void forceStopRunning() {
-//    if (stateMachineThread != null && stateMachineThread.isThreadRunning()) {
-//      this.stateMachineThread.forceStop();
-//    }
-  }
-
   void resetDispatcher() {
     this.routeBean = null;
     this.departureBlockId = null;
     this.destinationBlockId = null;
     this.waitingForSensorId = null;
+    this.enterSensorId = null;
     this.inSensorId = null;
     this.exitSensorId = null;
     this.stateEventListeners.clear();
-    this.stateMachineThread = new StateMachineThread(this);
+    this.locomotiveBean.setDispatcherDirection(Direction.SWITCH);
+    this.stateMachineThread = new StateMachineThread(null);
   }
 
   public void reset() {
@@ -220,9 +227,9 @@ public class Dispatcher {
     return destinationArrivalSuffix;
   }
 
-  public String getDispatcherStateString() {
+  public String getStateName() {
     if (stateMachineThread != null) {
-      return stateMachineThread.getState().getClass().getSimpleName();
+      return stateMachineThread.getDispatcherStateName();
     } else {
       return "#Idle";
     }
@@ -237,12 +244,28 @@ public class Dispatcher {
     return waitingForSensorId;
   }
 
+  public String getEnterSensorId() {
+    return enterSensorId;
+  }
+
+  void setEnterSensorId(String enterSensorId) {
+    this.enterSensorId = enterSensorId;
+  }
+
   public String getInSensorId() {
     return inSensorId;
   }
 
   void setInSensorId(String inSensorId) {
     this.inSensorId = inSensorId;
+  }
+
+  public String getOccupationSensorId() {
+    return occupationSensorId;
+  }
+
+  void setOccupationSensorId(String occupationSensorId) {
+    this.occupationSensorId = occupationSensorId;
   }
 
   public String getExitSensorId() {
@@ -265,7 +288,7 @@ public class Dispatcher {
 
   synchronized void clearDepartureIgnoreEventHandlers() {
     if (departureBlockId != null) {
-      BlockBean departureBlock = this.getDepartureBlock();
+      BlockBean departureBlock = getDepartureBlock();
       String minSensorId = departureBlock.getMinSensorId();
       autoPilot.removeHandler(minSensorId);
       String plusSensorId = departureBlock.getPlusSensorId();
@@ -279,6 +302,12 @@ public class Dispatcher {
       if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getId())) {
         if (event.isActive()) {
           this.waitingForSensorId = null;
+        }
+      }
+
+      if (this.enterSensorId != null && this.enterSensorId.equals(event.getId())) {
+        if (!event.isActive()) {
+          this.enterSensorId = null;
         }
       }
 

@@ -19,10 +19,10 @@ INSERT INTO accessories (id,address,name,"type",state,states,switch_time,protoco
 VALUES ('002',2,'W02','rechtsweiche',0,2,200,'dcc',NULL,'other',NULL,NULL,NULL,'virtual',false), ('001',1,'W01','linksweiche',1,2,200,'dcc',NULL,'other',NULL,NULL,NULL,'virtual',false);
 commit;
 
-INSERT INTO locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_min,velocity,richtung,synchronize,imported,commuter,show,command_station_id) 
-VALUES (7,'NS DHG 6505',8,8,'/home/frans/jcs/cache/dcc-ex/ns dhg 6505.png','dcc',100,0,0,2,false,'Manual Updated',true,true,'virtual'),
-       (23,'BR 101 003-2',23,23,'/home/frans/jcs/cache/cs/db br 101 109-7.png','mm',200,0,0,2,false,'Manual Updated',true,true,'virtual'),
-       (39,'NS 1631',39,39,'/home/frans/jcs/cache/cs/ns 1652.png','dcc',120,0,0,1,false,'Manual Updated',true,true,'virtual');
+INSERT INTO locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_min,velocity,locomotive_direction,synchronize,imported,commuter,show,command_station_id) 
+VALUES (7,'NS DHG 6505',8,8,'/home/frans/jcs/cache/dcc-ex/ns dhg 6505.png','dcc',100,0,0,'BACKWARDS',false,'Manual Updated',true,true,'virtual'),
+       (23,'BR 101 003-2',23,23,'/home/frans/jcs/cache/cs/db br 101 109-7.png','dcc',200,0,0,'FORWARDS',false,'Manual Updated',true,true,'virtual'),
+       (39,'NS 1631',39,39,'/home/frans/jcs/cache/cs/ns 1652.png','dcc',120,0,0,'FORWARDS',false,'Manual Updated',true,true,'virtual');
 
 INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary)
 VALUES (7,0,50,0,NULL,false),

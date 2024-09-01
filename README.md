@@ -31,6 +31,12 @@ The aim of the program is to automate the running of trains on my layout.
 * [Marklin CS-2](https://www.marklin.nl/producten/details/article/60215)
 * [Marklin CS-3](https://www.marklin.nl/producten/details/article/60216)
 * [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino) for feedback
+
+## NEW
+* Layout router, After the layout is created automatically all driveways are calculated.
+* Autopilot, automatically drive locomotives.
+* Virtual Command station.
+* Auto [Simulator](https://youtu.be/xP6eUdScMY0) in the Virtual Commandstation to test routes.
  
 ## Current status
 Currently the following modules are build:

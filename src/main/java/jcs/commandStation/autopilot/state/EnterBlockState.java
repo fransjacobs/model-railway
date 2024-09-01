@@ -26,60 +26,56 @@ import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
 class EnterBlockState extends DispatcherState implements SensorEventListener {
-  
+
   private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
   private String inSensorId;
-  
+
   @Override
-  synchronized DispatcherState execute(Dispatcher dispatcher) {
+  DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     if (!locomotiveBraking) {
+      BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
       RouteBean route = dispatcher.getRouteBean();
-      Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + ". Slowing down....");
-      
-      String arrivalSuffix = route.getToSuffix();
-      locomotiveBraking = true;
 
-      //Register for the In event
-      if ("-".equals(arrivalSuffix)) {
-        inSensorId = destinationBlock.getPlusSensorId();
-      } else {
-        inSensorId = destinationBlock.getMinSensorId();
-      }
+      Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + "...");
+
+      inSensorId = dispatcher.getInSensorId();
+
+      dispatcher.setWaitForSensorid(inSensorId);
 
       //Register this state as a SensorEventListener
       JCS.getJcsCommandStation().addSensorEventListener(this);
       Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
-      //Remove the in sensor from the ghost detection
-      //dispatcher.registerIgnoreEventHandler(inSensorId);
-      dispatcher.setWaitForSensorid(inSensorId);
+
+      locomotiveBraking = true;
 
       //Slowdown
+      Logger.trace("Slowdown " + locomotive.getName() + "...");
       dispatcher.changeLocomotiveVelocity(locomotive, 100);
 
       //Change Block statuses 
-      BlockBean departureBlock = dispatcher.getDepartureBlock();
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
       destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
-      
+
       PersistenceFactory.getService().persist(departureBlock);
+      dispatcher.showBlockState(departureBlock);
+
+      dispatcher.showRoute(route, Color.magenta);
+
       PersistenceFactory.getService().persist(destinationBlock);
+      dispatcher.showBlockState(destinationBlock);
 
       //Switch the departure block sensors on again
       dispatcher.clearDepartureIgnoreEventHandlers();
-      dispatcher.setInSensorId(null);
+
+      dispatcher.setOccupationSensorId(null);
       dispatcher.setExitSensorId(null);
 
-      //Show the new states in the UI
-      dispatcher.showBlockState(departureBlock);
-      dispatcher.showBlockState(destinationBlock);
-      dispatcher.showRoute(route, Color.magenta);
-      
-      Logger.trace("Waiting for the in event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
+      Logger.trace("Now Waiting for the IN event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
-    
+
     if (canAdvanceToNextState) {
       DispatcherState newState = new InBlockState();
       //Remove handler as the state will now change
@@ -91,7 +87,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       return this;
     }
   }
-  
+
   @Override
   public void onSensorChange(SensorEvent sensorEvent) {
     if (this.inSensorId.equals(sensorEvent.getId())) {
@@ -104,5 +100,5 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       }
     }
   }
-  
+
 }

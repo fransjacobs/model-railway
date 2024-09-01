@@ -31,7 +31,8 @@ class IdleState extends DispatcherState {
 
     boolean canAdvanceToNextState = block != null && dispatcher.isLocomotiveAutomodeOn();
 
-    if (block != null) {
+    //TODO Reduce the number of log lines....
+    if (block != null && dispatcher.autoPilot.isAutoModeActive()) {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in block " + block.getDescription() + " [" + block.getId() + "] dir: " + locomotive.getDirection().getDirection() + " Can advance: " + canAdvanceToNextState);
     } else {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block. Can advance: " + canAdvanceToNextState);

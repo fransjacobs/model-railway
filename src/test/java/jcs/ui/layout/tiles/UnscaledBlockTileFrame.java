@@ -29,6 +29,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
@@ -47,7 +48,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   public UnscaledBlockTileFrame() {
     initComponents();
     this.orientationCB.setModel(createOrientationComboBoxModel());
-    this.incomingSideCB.setSelectedItem("");
+    this.departureSideCB.setSelectedItem("");
     this.stateCB.setModel(createStateComboBoxModel());
 
     initTile();
@@ -95,15 +96,16 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private void initTile() {
     Dimension vps = this.blockTileCanvas.getPreferredSize();
-    blockTile = new Block(Orientation.EAST, vps.width / 2, vps.height / 2);
+    blockTile = new Block(TileBean.Orientation.EAST, vps.width / 2, vps.height / 2);
     blockTile.setId("bk-1");
 
     BlockBean bbe = new BlockBean();
     bbe.setId(blockTile.getId());
     bbe.setTileId(blockTile.getId());
     bbe.setDescription("Blok");
+
     //bbe.setArrivalSuffix((String) this.incomingSideCB.getSelectedItem());
-    bbe.setArrivalSuffix("");
+    bbe.setDepartureSuffix(null);
 
     bbe.setBlockState((BlockState) this.stateCB.getSelectedItem());
     bbe.setReverseArrival(this.reverseArrivalCB.isSelected());
@@ -166,7 +168,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     orientationLabel = new javax.swing.JLabel();
     orientationCB = new javax.swing.JComboBox<>();
     incomingSuffix = new javax.swing.JLabel();
-    incomingSideCB = new javax.swing.JComboBox<>();
+    departureSideCB = new javax.swing.JComboBox<>();
     stateCB = new javax.swing.JComboBox<>();
     reverseArrivalCB = new javax.swing.JCheckBox();
     rotateButton = new javax.swing.JButton();
@@ -201,17 +203,17 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     });
     nPanel.add(orientationCB);
 
-    incomingSuffix.setText("Incoming Suffix");
+    incomingSuffix.setText("Departure Suffix");
     nPanel.add(incomingSuffix);
 
-    incomingSideCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "+", "-", "" }));
-    incomingSideCB.setPreferredSize(new java.awt.Dimension(50, 22));
-    incomingSideCB.addActionListener(new java.awt.event.ActionListener() {
+    departureSideCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "+", "-", "" }));
+    departureSideCB.setPreferredSize(new java.awt.Dimension(50, 22));
+    departureSideCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        incomingSideCBActionPerformed(evt);
+        departureSideCBActionPerformed(evt);
       }
     });
-    nPanel.add(incomingSideCB);
+    nPanel.add(departureSideCB);
 
     stateCB.setPreferredSize(new java.awt.Dimension(150, 22));
     stateCB.addActionListener(new java.awt.event.ActionListener() {
@@ -333,12 +335,16 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     changeOrientation();
   }//GEN-LAST:event_orientationCBActionPerformed
 
-  private void incomingSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_incomingSideCBActionPerformed
+  private void departureSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departureSideCBActionPerformed
     if (blockTile != null && ((Block) blockTile).getBlockBean() != null) {
-      ((Block) blockTile).getBlockBean().setArrivalSuffix((String) this.incomingSideCB.getSelectedItem());
+      if ("".equals(this.departureSideCB.getSelectedItem())) {
+        ((Block) blockTile).getBlockBean().setDepartureSuffix(null);
+      } else {
+        ((Block) blockTile).getBlockBean().setDepartureSuffix((String) this.departureSideCB.getSelectedItem());
+      }
       repaint();
     }
-  }//GEN-LAST:event_incomingSideCBActionPerformed
+  }//GEN-LAST:event_departureSideCBActionPerformed
 
   private void stateCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stateCBActionPerformed
     ((Block) blockTile).getBlockBean().setBlockState((BlockState) this.stateCB.getSelectedItem());
@@ -349,36 +355,37 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     repaint();
   }//GEN-LAST:event_showCenterCBActionPerformed
 
-  private String getIncomingSuffix() {
-    if (((Block) blockTile).getBlockBean() != null && ((Block) blockTile).getBlockBean().getArrivalSuffix() != null && !"".equals(((Block) blockTile).getBlockBean().getArrivalSuffix())) {
-      return ((Block) blockTile).getBlockBean().getArrivalSuffix();
+  private String getDepartureSuffix() {
+    if (((Block) blockTile).getBlockBean() != null && ((Block) blockTile).getBlockBean().getDepartureSuffix() != null && !"".equals(((Block) blockTile).getBlockBean().getDepartureSuffix())) {
+      return ((Block) blockTile).getBlockBean().getDepartureSuffix();
     } else {
-      return "-";
+      return "+";
     }
   }
 
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
     ((Block) blockTile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
-    if ("+".equals(((Block) blockTile).getBlockBean().getArrivalSuffix())) {
-      ((Block) blockTile).getBlockBean().setArrivalSuffix("-");
-    } else {
-      ((Block) blockTile).getBlockBean().setArrivalSuffix("+");
-    }
-    this.incomingSideCB.setSelectedItem(((Block) blockTile).getBlockBean().getArrivalSuffix());
 
+    //The Suffix is orientation dependent!
+//    if ("+".equals(((Block) blockTile).getBlockBean().getArrivalSuffix())) {
+//      ((Block) blockTile).getBlockBean().setArrivalSuffix("-");
+//    } else {
+//      ((Block) blockTile).getBlockBean().setArrivalSuffix("+");
+//    }
+//    this.departureSideCB.setSelectedItem(((Block) blockTile).getBlockBean().getArrivalSuffix());
     repaint();
   }//GEN-LAST:event_reverseArrivalCBActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
     if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      ((Block) blockTile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.BACKWARDS);
+      ((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.BACKWARDS);
       repaint();
     }
   }//GEN-LAST:event_backwardsRBActionPerformed
 
   private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
     if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      ((Block) blockTile).getBlockBean().getLocomotive().setDirection(LocomotiveBean.Direction.FORWARDS);
+      ((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.FORWARDS);
       repaint();
     }
   }//GEN-LAST:event_forwardsRBActionPerformed
@@ -461,8 +468,8 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   private javax.swing.JRadioButton backwardsRB;
   private jcs.ui.layout.tiles.UnscaledBlockCanvas blockTileCanvas;
   private javax.swing.JScrollPane centerSP;
+  private javax.swing.JComboBox<String> departureSideCB;
   private javax.swing.JRadioButton forwardsRB;
-  private javax.swing.JComboBox<String> incomingSideCB;
   private javax.swing.JLabel incomingSuffix;
   private javax.swing.ButtonGroup locDirectionBG;
   private javax.swing.JPanel nPanel;

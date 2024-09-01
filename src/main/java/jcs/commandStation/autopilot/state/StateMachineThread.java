@@ -50,8 +50,6 @@ class StateMachineThread extends Thread {
   private boolean enableAutomode = false;
   private boolean resetRequested = false;
 
-  private boolean forceStop = false;
-
   StateMachineThread(Dispatcher dispatcher) {
     this.dispatcher = dispatcher;
     this.dispatcherState = new IdleState();
@@ -90,7 +88,6 @@ class StateMachineThread extends Thread {
     if (running) {
       notify();
     }
-
   }
 
   DispatcherState getDispatcherState() {
@@ -119,14 +116,6 @@ class StateMachineThread extends Thread {
       //handle the dispatcherState changes
       dispatcher.fireStateListeners(dispatcherState.getName());
     }
-    try {
-      synchronized (this) {
-        wait(100);
-      }
-    } catch (InterruptedException ex) {
-      Logger.trace(ex.getMessage());
-    }
-
   }
 
   //Reset the statemachine
@@ -204,35 +193,37 @@ class StateMachineThread extends Thread {
       } else {
         handleState();
       }
+      try {
+        synchronized (this) {
+          wait(250);
+        }
+      } catch (InterruptedException ex) {
+        Logger.trace("Interrupted: " + ex.getMessage());
+      }
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is ending...");
 
-    if (forceStop) {
-      //Make sure that also the linked locomotive is stopped
-      dispatcher.changeLocomotiveVelocity(dispatcher.getLocomotiveBean(), 0);
-      Logger.trace(getName() + " Send stop to locomotive " + dispatcher.getLocomotiveBean().getName() + "...");
+    //Make sure that also the linked locomotive is stopped
+    dispatcher.changeLocomotiveVelocity(dispatcher.getLocomotiveBean(), 0);
+    Logger.trace(getName() + " Send stop to locomotive " + dispatcher.getLocomotiveBean().getName() + "...");
 
-      //Remove the sensor listeners if applicable
-      DispatcherState currentState = dispatcherState;
-      if (currentState instanceof SensorEventListener sensorEventListener) {
-        Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
-        JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener);
-      }
-
-      dispatcher.clearDepartureIgnoreEventHandlers();
+    //Remove the sensor listeners if applicable
+    DispatcherState currentState = dispatcherState;
+    if (currentState instanceof SensorEventListener sensorEventListener) {
+      Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
+      JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener);
     }
+
+    dispatcher.clearDepartureIgnoreEventHandlers();
 
     dispatcher.fireStateListeners(getName() + " Finished");
     Logger.trace(getName() + " State listeners fired...");
 
-    if (!forceStop) {
-      Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " is Finished");
-    } else {
-      Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " KILLED!");
-    }
+    Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " is Finished");
 
-    this.running = false;
+    //Force Idle
+    this.dispatcherState = new IdleState();
   }
 
 }

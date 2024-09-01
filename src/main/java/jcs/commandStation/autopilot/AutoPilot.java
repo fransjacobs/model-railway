@@ -85,6 +85,31 @@ public class AutoPilot {
     }
   }
 
+  public boolean isAutoModeActive() {
+    if (this.autoPilotThread != null) {
+      return this.autoPilotThread.isRunning();
+    } else {
+      return false;
+    }
+  }
+
+  boolean isAutoPilotThreadStopped() {
+    if (this.autoPilotThread != null) {
+      return this.autoPilotThread.isStopped();
+    } else {
+      return true;
+    }
+  }
+
+  public boolean isRunning(LocomotiveBean locomotive) {
+    if (this.isAutoModeActive() && this.dispatchers.containsKey(locomotive.getName())) {
+      Dispatcher dispatcher = this.dispatchers.get(locomotive.getName());
+      return dispatcher.isRunning();
+    } else {
+      return false;
+    }
+  }
+
   public synchronized void stopAutoMode() {
     this.autoPilotThread.stopAutoMode();
     notifyAll();
@@ -142,7 +167,7 @@ public class AutoPilot {
 
     for (Dispatcher dispatcher : this.dispatchers.values()) {
       dispatcher.stopLocomotiveAutomode();
-      dispatcher.forceStopRunning();
+      //dispatcher.forceStopRunning();
     }
 
     this.dispatchers.clear();
@@ -250,6 +275,7 @@ public class AutoPilot {
             }
             default -> {
               if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
+                block.setArrivalSuffix(null);
                 occupiedBlockCounter++;
               }
             }
@@ -386,23 +412,6 @@ public class AutoPilot {
     Logger.trace("Status listeners: " + autoPilotStatusListeners.size());
   }
 
-  public boolean isAutoModeActive() {
-    if (this.autoPilotThread != null) {
-      return this.autoPilotThread.isRunning();
-    } else {
-      return false;
-    }
-  }
-
-  public boolean isRunning(LocomotiveBean locomotive) {
-    if (this.isAutoModeActive() && this.dispatchers.containsKey(locomotive.getName())) {
-      Dispatcher dispatcher = this.dispatchers.get(locomotive.getName());
-      return dispatcher.isRunning();
-    } else {
-      return false;
-    }
-  }
-
   public boolean tryAquireLock() {
     return semaphore.tryAcquire();
   }
@@ -421,6 +430,7 @@ public class AutoPilot {
     private final List<SensorListener> sensorListeners = new ArrayList<>();
 
     private boolean running = false;
+    private boolean stopped = false;
 
     AutoPilotThread(AutoPilot autoPilot) {
       this.autoPilot = autoPilot;
@@ -508,7 +518,7 @@ public class AutoPilot {
       if (dispatchersRunning) {
         for (Dispatcher ld : dispatchers.values()) {
           if (ld.isRunning()) {
-            ld.forceStopRunning();
+            //ld.forceStopRunning();
             Logger.trace("Forse Stop on " + ld.getName());
           }
         }
@@ -521,7 +531,12 @@ public class AutoPilot {
         asl.statusChanged(running);
       }
 
-      Logger.trace("Autopilot Finished. Notify " + autoPilotStatusListeners.size() + " Listeners...");
+      Logger.trace("Autopilot Finished. Notified " + autoPilotStatusListeners.size() + " Listeners. Power is " + (JCS.getJcsCommandStation().isPowerOn() ? "on" : "off"));
+      stopped = true;
+    }
+
+    boolean isStopped() {
+      return this.stopped;
     }
   }
 

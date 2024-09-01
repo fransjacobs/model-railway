@@ -67,7 +67,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   private InfoBean infoBean;
 
   private final ScheduledExecutorService scheduledExecutor;
-  private final ExecutorService executor;
 
   public VirtualCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -138,7 +137,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public boolean power(boolean on) {
+  public synchronized boolean power(boolean on) {
     if (this.connected) {
       power = on;
       PowerEvent pe = new PowerEvent(this.power);
@@ -153,8 +152,14 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void changeDirection(int locUid, LocomotiveBean.Direction direction) {
     if (this.power && this.connected) {
       Logger.debug("locUid " + locUid + " direction " + direction);
+
       LocomotiveDirectionEvent lde = new LocomotiveDirectionEvent(locUid, direction, commandStationBean.getId());
+
       notifyLocomotiveDirectionEventListeners(lde);
+    } else {
+      if (!this.power) {
+        Logger.warn("Can't change direction of locUid: " + locUid + " Power is OFF!");
+      }
     }
   }
 
@@ -165,15 +170,17 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, speed, commandStationBean.getId());
       notifyLocomotiveSpeedEventListeners(lse);
-    }
 
-    //When a locomotive has a speed change (>0) check if Auto mode is on.
-    //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-    if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
-      this.executor.execute(() -> simulateDriving(locUid, speed, direction));
-      //simulateDriving(locUid, speed, direction);
+      //When a locomotive has a speed change (>0) check if Auto mode is on.
+      //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
+      if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
+        this.executor.execute(() -> simulateDriving(locUid, speed, direction));
+      }
+    } else {
+      if (!this.power) {
+        Logger.warn("Can't change velocity locUid: " + locUid + " Power is OFF!");
+      }
     }
-
   }
 
   @Override
@@ -182,6 +189,10 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       Logger.debug("locUid " + locUid + " functionNumber " + functionNumber + " " + (flag ? "on" : "off"));
       LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, functionNumber, flag, commandStationBean.getId());
       notifyLocomotiveFunctionEventListeners(lfe);
+    } else {
+      if (!this.power) {
+        Logger.warn("Can't change function " + functionNumber + " of locUid: " + locUid + " Power is OFF!");
+      }
     }
   }
 
@@ -217,20 +228,27 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
-    AccessoryBean ab = new AccessoryBean();
-    ab.setAddress(address);
-    ab.setAccessoryValue(value);
-    String id = address + "";
-    if (id.length() == 1) {
-      id = "00" + id;
-    } else if (id.length() == 2) {
-      id = "0" + id;
-    }
-    ab.setId(id);
-    ab.setCommandStationId(commandStationBean.getId());
+    if (this.power && connected) {
 
-    AccessoryEvent ae = new AccessoryEvent(ab);
-    notifyAccessoryEventListeners(ae);
+      AccessoryBean ab = new AccessoryBean();
+      ab.setAddress(address);
+      ab.setAccessoryValue(value);
+      String id = address + "";
+      if (id.length() == 1) {
+        id = "00" + id;
+      } else if (id.length() == 2) {
+        id = "0" + id;
+      }
+      ab.setId(id);
+      ab.setCommandStationId(commandStationBean.getId());
+
+      AccessoryEvent ae = new AccessoryEvent(ab);
+      notifyAccessoryEventListeners(ae);
+    } else {
+      if (!this.power) {
+        Logger.warn("Can't switch accessory " + address + " to: " + value + " Power is OFF!");
+      }
+    }
   }
 
   @Override
@@ -349,7 +367,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
         scheduledExecutor.schedule(() -> toggleSensor(sensorId), 3, TimeUnit.SECONDS);
       }
     }
-
   }
 
   private void toggleSensor(String sensorId) {

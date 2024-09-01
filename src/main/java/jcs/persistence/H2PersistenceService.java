@@ -344,7 +344,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public LocomotiveBean persist(LocomotiveBean locomotive) {
+  public synchronized LocomotiveBean persist(LocomotiveBean locomotive) {
     if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
       database.update(locomotive);
     } else {
@@ -361,7 +361,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public void remove(LocomotiveBean locomotive) {
+  public synchronized void remove(LocomotiveBean locomotive) {
     // First femove the functions
     database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
 
@@ -499,7 +499,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public AccessoryBean persist(AccessoryBean accessory) {
+  public synchronized AccessoryBean persist(AccessoryBean accessory) {
     if (database.where("id=?", accessory.getId()).first(AccessoryBean.class) != null) {
       database.update(accessory);
     } else {
@@ -509,7 +509,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public void remove(AccessoryBean accessory) {
+  public synchronized void remove(AccessoryBean accessory) {
     // First ensure the linked tile records are decoupled
     database.sql("update tiles set sensor_id = null where accessory_id =?", accessory.getId()).execute();
     int rows = database.delete(accessory).getRowsAffected();
@@ -576,7 +576,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public TileBean persist(TileBean tileBean) {
+  public synchronized TileBean persist(TileBean tileBean) {
     if (tileBean == null) {
       return null;
     }
@@ -604,7 +604,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public void remove(TileBean tileBean) {
+  public synchronized void remove(TileBean tileBean) {
     if (tileBean.getBlockBean() != null) {
       BlockBean bb = tileBean.getBlockBean();
       this.remove(bb);
@@ -614,7 +614,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public void persist(List<TileBean> tiles) {
+  public synchronized void persist(List<TileBean> tiles) {
     List<TileBean> dbTiles = this.getTileBeans();
     Set<String> newTileIds = new HashSet<>();
     for (TileBean tb : tiles) {
@@ -725,7 +725,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public RouteBean persist(RouteBean route) {
+  public synchronized RouteBean persist(RouteBean route) {
     if (database.where("id=?", route.getId()).first(RouteBean.class) != null) {
       database.update(route);
     } else {
@@ -751,7 +751,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public void remove(RouteBean route) {
+  public synchronized void remove(RouteBean route) {
     if (route.getRouteElements() != null && !route.getRouteElements().isEmpty()) {
       // remove all
       database.sql("delete from route_elements where route_id =?", route.getId()).execute();
@@ -761,7 +761,7 @@ public class H2PersistenceService implements PersistenceService {
     Logger.trace(rows + " rows deleted");
   }
 
-  public void removeAllRoutes() {
+  public synchronized void removeAllRoutes() {
     database.sql("delete from route_elements").execute();
     int rows = database.sql("delete from routes").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " routes");
@@ -859,13 +859,13 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public void remove(BlockBean block) {
+  public synchronized void remove(BlockBean block) {
     int rows = this.database.delete(block).getRowsAffected();
     Logger.trace(rows + " rows deleted");
   }
 
   @Override
-  public void removeAllBlocks() {
+  public synchronized void removeAllBlocks() {
     int rows = database.sql("delete from blocks").execute().getRowsAffected();
     Logger.trace("Deleted " + rows + " blocks");
   }
@@ -888,7 +888,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public CommandStationBean persist(CommandStationBean commandStationBean) {
+  public synchronized CommandStationBean persist(CommandStationBean commandStationBean) {
     if (database.where("id=?", commandStationBean.getId()).first(CommandStationBean.class) != null) {
       database.update(commandStationBean);
     } else {
@@ -898,7 +898,7 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
-  public CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean) {
+  public synchronized CommandStationBean changeDefaultCommandStation(CommandStationBean newDefaultCommandStationBean) {
     Object[] args = new Object[]{newDefaultCommandStationBean.getId(), newDefaultCommandStationBean.getId()};
     database.sql("update command_stations set default_cs = case when id = ? then true else false end, enabled = case when id = ? then true else false end", args).execute();
     return newDefaultCommandStationBean;
