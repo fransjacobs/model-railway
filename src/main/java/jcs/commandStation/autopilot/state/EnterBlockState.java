@@ -32,44 +32,36 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
   private String inSensorId;
 
   @Override
-  synchronized DispatcherState execute(Dispatcher dispatcher) {
+  DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     if (!locomotiveBraking) {
+      BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
       RouteBean route = dispatcher.getRouteBean();
 
       Logger.trace("Locomotive " + locomotive.getName() + " has entered destination " + destinationBlock.getDescription() + "...");
 
-      String arrivalSuffix = route.getToSuffix();
-      locomotiveBraking = true;
+      inSensorId = dispatcher.getInSensorId();
 
-      //Register for the In event
-      if ("-".equals(arrivalSuffix)) {
-        inSensorId = destinationBlock.getPlusSensorId();
-      } else {
-        inSensorId = destinationBlock.getMinSensorId();
-      }
+      dispatcher.setWaitForSensorid(inSensorId);
 
       //Register this state as a SensorEventListener
       JCS.getJcsCommandStation().addSensorEventListener(this);
       Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
-      dispatcher.setInSensorId(inSensorId);
-      dispatcher.setWaitForSensorid(inSensorId);
+      locomotiveBraking = true;
 
       //Slowdown
       Logger.trace("Slowdown " + locomotive.getName() + "...");
       dispatcher.changeLocomotiveVelocity(locomotive, 100);
 
       //Change Block statuses 
-      BlockBean departureBlock = dispatcher.getDepartureBlock();
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
-      
       destinationBlock.setBlockState(BlockBean.BlockState.INBOUND);
 
       PersistenceFactory.getService().persist(departureBlock);
       dispatcher.showBlockState(departureBlock);
-      
+
       dispatcher.showRoute(route, Color.magenta);
 
       PersistenceFactory.getService().persist(destinationBlock);
@@ -78,8 +70,9 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       //Switch the departure block sensors on again
       dispatcher.clearDepartureIgnoreEventHandlers();
 
+      dispatcher.setOccupationSensorId(null);
       dispatcher.setExitSensorId(null);
-      
+
       Logger.trace("Now Waiting for the IN event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }
 

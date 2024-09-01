@@ -37,48 +37,24 @@ class StartState extends DispatcherState implements SensorEventListener {
   DispatcherState execute(Dispatcher dispatcher) {
     LocomotiveBean locomotive = dispatcher.getLocomotiveBean();
     if (!locomotiveStarted) {
-      //Which sensors do we need to watch?
-      RouteBean route = dispatcher.getRouteBean();
       BlockBean departureBlock = dispatcher.getDepartureBlock();
       BlockBean destinationBlock = dispatcher.getDestinationBlock();
 
-      //From which side on the block is the train expected to arrive?
-      String arrivalSuffix = route.getToSuffix();
-      Logger.trace("Destination tile: " + departureBlock.getId() + " Arrival on the " + arrivalSuffix + " side of the block");
+      String occupancySensorId = dispatcher.getOccupationSensorId();
+      String exitSensorId = dispatcher.getExitSensorId();
 
-      String inSensorId;
-      String exitSensorId;
-
-      if ("+".equals(route.getFromSuffix())) {
-        exitSensorId = departureBlock.getPlusSensorId();
-        inSensorId = departureBlock.getMinSensorId();
-        Logger.trace("Departure exit side: +");
-      } else {
-        inSensorId = departureBlock.getPlusSensorId();
-        exitSensorId = departureBlock.getMinSensorId();
-        Logger.trace("Departure exit side: -");
-      }
-
-      dispatcher.setInSensorId(inSensorId);
-      dispatcher.setExitSensorId(exitSensorId);
-
-      //Should already be in the ignore list... just to sure...
-      dispatcher.registerIgnoreEventHandler(inSensorId);
+      //Register them both to ignore event form these sensors.
+      dispatcher.registerIgnoreEventHandler(occupancySensorId);
       dispatcher.registerIgnoreEventHandler(exitSensorId);
+      Logger.trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
 
-      if ("+".equals(arrivalSuffix)) {
-        enterSensorId = destinationBlock.getPlusSensorId();
-      } else {
-        enterSensorId = destinationBlock.getMinSensorId();
-      }
+      //The enter Sensor triggering will switch states.
+      enterSensorId = dispatcher.getEnterSensorId();
+      Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
 
       //Register this state as a SensorEventListener
       JCS.getJcsCommandStation().addSensorEventListener(this);
-
-      dispatcher.setEnterSensorId(enterSensorId);
       dispatcher.setWaitForSensorid(enterSensorId);
-
-      Logger.debug("Enter SensorId: " + enterSensorId + " Ignoring Departure Sensors inId: " + inSensorId + ", exitId: " + exitSensorId);
 
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
       PersistenceFactory.getService().persist(departureBlock);

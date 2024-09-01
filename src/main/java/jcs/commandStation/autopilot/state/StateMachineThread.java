@@ -116,13 +116,6 @@ class StateMachineThread extends Thread {
       //handle the dispatcherState changes
       dispatcher.fireStateListeners(dispatcherState.getName());
     }
-    try {
-      synchronized (this) {
-        wait(50);
-      }
-    } catch (InterruptedException ex) {
-      Logger.trace(ex.getMessage());
-    }
   }
 
   //Reset the statemachine
@@ -199,6 +192,13 @@ class StateMachineThread extends Thread {
         resetStateMachine();
       } else {
         handleState();
+      }
+      try {
+        synchronized (this) {
+          wait(250);
+        }
+      } catch (InterruptedException ex) {
+        Logger.trace("Interrupted: " + ex.getMessage());
       }
     }
 

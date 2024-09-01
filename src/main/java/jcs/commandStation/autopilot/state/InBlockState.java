@@ -65,6 +65,8 @@ class InBlockState extends DispatcherState {
     Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
 
+    //Swap the sensorId's?
+    
     //Wait a short while...
     pause(250);
 
@@ -73,7 +75,7 @@ class InBlockState extends DispatcherState {
       if (alwaysStop) {
         newState = new WaitState();
       } else {
-        //Do not wait if posible
+        //Do not wait if possible
         newState = new PrepareRouteState();
       }
     } else {

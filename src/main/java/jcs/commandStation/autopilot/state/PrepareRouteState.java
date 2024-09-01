@@ -69,7 +69,6 @@ class PrepareRouteState extends DispatcherState {
       DispatcherState newWaitState = new WaitState();
       return newWaitState;
     }
-
   }
 
   boolean searchRoute(Dispatcher dispatcher) {
@@ -174,6 +173,7 @@ class PrepareRouteState extends DispatcherState {
     //Reserve the destination
     String destinationTileId = route.getToTileId();
     String arrivalSuffix = route.getToSuffix();
+    String departureSuffix = route.getFromSuffix();
 
     Logger.debug("Destination: " + destinationTileId + " Arrival on the " + arrivalSuffix + " side of the block. Loco direction: " + locomotive.getDispatcherDirection());
 
@@ -206,6 +206,38 @@ class PrepareRouteState extends DispatcherState {
 
       PersistenceFactory.getService().persist(departureBlock);
       PersistenceFactory.getService().persist(destinationBlock);
+
+      //Now that we have reserved the route lets determine which sensors
+      //Are playing a role.
+      //On the departure side we have the OccupiedSensor, ie the IN sensor when arriving.
+      //The exit sensor i.e the last sensor to leave the departure block.
+      String occupancySensorId, exitSensorId;
+      if ("+".equals(departureSuffix)) {
+        occupancySensorId = departureBlock.getMinSensorId();
+        exitSensorId = departureBlock.getPlusSensorId();
+      } else {
+        occupancySensorId = departureBlock.getPlusSensorId();
+        exitSensorId = departureBlock.getMinSensorId();
+      }
+      dispatcher.setOccupationSensorId(occupancySensorId);
+      dispatcher.setExitSensorId(exitSensorId);
+
+      //On the destination side we have the enterSensor end the IN sensor.
+      //From which side on the block is the train expected to arrive?
+      String enterSensorId, inSensorId;
+      if ("+".equals(arrivalSuffix)) {
+        enterSensorId = destinationBlock.getPlusSensorId();
+        inSensorId = destinationBlock.getMinSensorId();
+      } else {
+        enterSensorId = destinationBlock.getMinSensorId();
+        inSensorId = destinationBlock.getPlusSensorId();
+      }
+
+      dispatcher.setEnterSensorId(enterSensorId);
+      dispatcher.setInSensorId(inSensorId);
+
+      Logger.trace("Departure: " + departureBlock.getId() + " Occupancy Sensor: " + occupancySensorId + " Exit Sensor: " + exitSensorId);
+      Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + " In Sensor: " + inSensorId);
 
       dispatcher.showRoute(route, Color.green);
       Logger.trace(route + " Locked");
