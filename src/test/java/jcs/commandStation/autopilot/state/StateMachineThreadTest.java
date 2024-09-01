@@ -331,7 +331,7 @@ public class StateMachineThreadTest {
 
     //Now we can trigger the sensor   
     now = System.currentTimeMillis();
-    timeout = now + 100000;
+    timeout = now + 10000;
 
     //Trigger the enter sensor
     toggleSensorInDirect(enterSensorId);
@@ -351,7 +351,7 @@ public class StateMachineThreadTest {
 
     //State machine will stay in Enterstate unil the IN sensor is hit
     now = System.currentTimeMillis();
-    timeout = now + 100000;
+    timeout = now + 10000;
     //Must be sure the the enter sensor is registered
     waitingForSensorId = dispatcher.getWaitingForSensorId();
     while (!inSensorId.equals(waitingForSensorId) && timeout > now) {
@@ -366,7 +366,7 @@ public class StateMachineThreadTest {
 
     //Let it figure out the IN sensor
     now = System.currentTimeMillis();
-    timeout = now + 100000;
+    timeout = now + 10000;
 
     //Trigger the In Sensor
     toggleSensorInDirect(inSensorId);
@@ -455,9 +455,20 @@ public class StateMachineThreadTest {
 
     assertTrue(timeout > now);
     assertEquals(7, passedStates.size());
+    
+    //Let wait for the idle state
+    now = System.currentTimeMillis();
+    timeout = now + 10000;
     dispatcherState = dispatcher.getStateName();
-    assertEquals("IdleState", dispatcherState);
+    while (!"IdleState".equals(dispatcherState) && timeout > now) {
+      pause(1);
+      dispatcherState = dispatcher.getStateName();
+      now = System.currentTimeMillis();
+    }
 
+    assertEquals("IdleState", dispatcherState);
+    assertTrue(timeout > now);
+  
     assertFalse(dispatcher.isRunning());
     assertFalse(dispatcher.isLocomotiveAutomodeOn());
   }
