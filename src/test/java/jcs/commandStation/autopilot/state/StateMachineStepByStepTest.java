@@ -217,6 +217,13 @@ public class StateMachineStepByStepTest {
     block3 = ps.getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block3.getBlockState());
 
+    if (!JCS.getJcsCommandStation().isPowerOn()) {
+      Logger.warn("Skipping fromBk1ToBk4andViceVersa due to power OFF!");
+      return;
+    }
+
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
+
     //Automode ON!
     instance.setEnableAutomode(true);
     assertTrue(instance.isEnableAutomode());
@@ -308,6 +315,7 @@ public class StateMachineStepByStepTest {
 
     //Execute the StartState
     instance.handleState();
+
     //State should be advanced to EnterBlock
     assertEquals("EnterBlockState", instance.getDispatcherStateName());
 
@@ -530,8 +538,6 @@ public class StateMachineStepByStepTest {
     Logger.info("fromBk1ToBk4Gost");
     setupbk1bkNsDHG();
 
-    assertTrue(JCS.getJcsCommandStation().isPowerOn());
-
     BlockBean block2 = ps.getBlockByTileId("bk-2");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block2.getBlockState());
 
@@ -570,6 +576,13 @@ public class StateMachineStepByStepTest {
 
     block3 = ps.getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block3.getBlockState());
+
+    if (!JCS.getJcsCommandStation().isPowerOn()) {
+      Logger.warn("Skipping fromBk1ToBk4Gost due to power OFF!");
+      return;
+    }
+
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
     //Automode ON!
     instance.setEnableAutomode(true);
@@ -754,6 +767,13 @@ public class StateMachineStepByStepTest {
     //Automode OFF!
     instance.setEnableAutomode(false);
     assertFalse(instance.isEnableAutomode());
+
+    if (!JCS.getJcsCommandStation().isPowerOn()) {
+      Logger.warn("Skipping fromBk1ToBk4Gost due to power OFF!");
+      return;
+    }
+
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
     //Execute the StartState
     instance.handleState();

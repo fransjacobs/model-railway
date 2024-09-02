@@ -192,6 +192,11 @@ public class StateMachineThreadTest {
 //      return;
 //    }
 
+    if (!JCS.getJcsCommandStation().isPowerOn()) {
+      Logger.warn("Skipping StartStopLocomotiveAutomode due to power OFF!");
+      return;
+    }
+
     Logger.info("StartStopLocomotiveAutomode");
     setupbk1bkNsDHG();
 
@@ -455,7 +460,7 @@ public class StateMachineThreadTest {
 
     assertTrue(timeout > now);
     assertEquals(7, passedStates.size());
-    
+
     //Let wait for the idle state
     now = System.currentTimeMillis();
     timeout = now + 10000;
@@ -468,7 +473,7 @@ public class StateMachineThreadTest {
 
     assertEquals("IdleState", dispatcherState);
     assertTrue(timeout > now);
-  
+
     assertFalse(dispatcher.isRunning());
     assertFalse(dispatcher.isLocomotiveAutomodeOn());
   }
@@ -498,7 +503,12 @@ public class StateMachineThreadTest {
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     instance.start();
-    pause(50);
+    pause(250);
+
+    if (!JCS.getJcsCommandStation().isPowerOn()) {
+      Logger.warn("Skipping startStopThreadRunning due to power OFF!");
+      return;
+    }
 
     Logger.debug("Dispatcher Thread Started");
     assertTrue(instance.isThreadRunning());

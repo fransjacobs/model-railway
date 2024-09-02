@@ -19,7 +19,6 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -75,7 +74,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public VirtualCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     scheduledExecutor = new ScheduledThreadPoolExecutor(30);
-    executor = Executors.newCachedThreadPool();
 
     if (autoConnect) {
       autoConnect();
@@ -137,9 +135,10 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public synchronized boolean power(boolean on) {
+  public boolean power(boolean on) {
     if (this.connected) {
-      power = on;
+      this.power = on;
+      Logger.trace("Power is " + (power ? "On" : "Off"));
       PowerEvent pe = new PowerEvent(this.power);
       notifyPowerEventListeners(pe);
       return power;
@@ -267,12 +266,12 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   private void notifyPowerEventListeners(final PowerEvent powerEvent) {
-    this.power = powerEvent.isPower();
+    //this.power = powerEvent.isPower();
     executor.execute(() -> fireAllPowerEventListeners(powerEvent));
   }
 
   private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
-    this.power = powerEvent.isPower();
+    //this.power = powerEvent.isPower();
     for (PowerEventListener listener : powerEventListeners) {
       listener.onPowerChange(powerEvent);
     }

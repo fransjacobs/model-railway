@@ -89,7 +89,7 @@ public abstract class AbstractController implements GenericController {
     this.disconnectionEventListeners.remove(listener);
   }
 
-  public synchronized boolean isPower() {
+  public boolean isPower() {
     return this.power;
   }
 
@@ -141,7 +141,6 @@ public abstract class AbstractController implements GenericController {
     this.locomotiveSpeedEventListeners.remove(listener);
   }
 
-  
   protected void pause(long millis) {
     try {
       Thread.sleep(millis);

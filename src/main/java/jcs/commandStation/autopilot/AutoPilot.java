@@ -74,14 +74,18 @@ public class AutoPilot {
   }
 
   public synchronized void startAutoMode() {
-    if (this.autoPilotThread != null && this.autoPilotThread.isRunning()) {
-      Logger.trace("Allready running");
+    if (JCS.getJcsCommandStation().isPowerOn()) {
+      if (this.autoPilotThread != null && this.autoPilotThread.isRunning()) {
+        Logger.trace("Allready running");
+      } else {
+        commandStationBean = JCS.getJcsCommandStation().getCommandStationBean();
+        dispatchers.clear();
+        sensorHandlers.clear();
+        this.autoPilotThread = new AutoPilotThread(this);
+        autoPilotThread.start();
+      }
     } else {
-      commandStationBean = JCS.getJcsCommandStation().getCommandStationBean();
-      dispatchers.clear();
-      sensorHandlers.clear();
-      this.autoPilotThread = new AutoPilotThread(this);
-      autoPilotThread.start();
+      Logger.warn("Can't start Automode is Power is Off!");
     }
   }
 
@@ -111,8 +115,10 @@ public class AutoPilot {
   }
 
   public synchronized void stopAutoMode() {
-    this.autoPilotThread.stopAutoMode();
-    notifyAll();
+    if (this.autoPilotThread != null) {
+      this.autoPilotThread.stopAutoMode();
+      notifyAll();
+    }
   }
 
   boolean areDispatchersRunning() {
