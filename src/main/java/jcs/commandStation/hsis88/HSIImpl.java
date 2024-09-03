@@ -299,7 +299,8 @@ public class HSIImpl extends AbstractController implements FeedbackController {
     csb.setShortName("HSI");
     csb.setClassName("jcs.commandStation.hsis88.HSIImpl");
     csb.setConnectVia("SERIAL");
-    csb.setSerialPort("cu.usbmodem14201");  //cu.usbmodem14201
+    //csb.setSerialPort("cu.usbmodem14201");  //cu.usbmodem14201
+    csb.setSerialPort("ttyACM1");  //cu.usbmodem14201
     csb.setDecoderControlSupport(false);
     csb.setAccessorySynchronizationSupport(false);
     csb.setFeedbackSupport(true);

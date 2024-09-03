@@ -136,6 +136,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public boolean power(boolean on) {
+    Logger.trace("Switching Power " + (on ? "On" : "Off"));
     if (this.connected) {
       this.power = on;
       Logger.trace("Power is " + (power ? "On" : "Off"));

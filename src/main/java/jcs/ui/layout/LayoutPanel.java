@@ -36,6 +36,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.events.PowerEvent;
+import jcs.commandStation.events.PowerEventListener;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.TileType;
@@ -63,7 +65,7 @@ public class LayoutPanel extends JPanel {
 
   private void postInit() {
     RunUtil.loadProperties();
-    
+
     this.straightBtn.setSelected(true);
     this.canvas.setTileType(TileType.STRAIGHT);
     this.setMode(readonly ? LayoutCanvas.Mode.CONTROL : LayoutCanvas.Mode.SELECT);
@@ -146,7 +148,7 @@ public class LayoutPanel extends JPanel {
       this.rotateBtn.setEnabled(!readonly);
       this.rotateBtn.setVisible(!readonly);
 
-      this.autoPilotBtn.setEnabled(readonly);
+      this.autoPilotBtn.setEnabled(readonly && JCS.getJcsCommandStation().isPowerOn());
       this.autoPilotBtn.setVisible(readonly);
 
       this.resetAutopilotBtn.setEnabled(readonly);
@@ -178,7 +180,12 @@ public class LayoutPanel extends JPanel {
 
     if (readonly) {
       loadLayout();
+
+      Powerlistener powerlistener = new Powerlistener(this);
+      JCS.getJcsCommandStation().addPowerEventListener(powerlistener);
+
     }
+
   }
 
   public void saveLayout() {
@@ -1063,6 +1070,25 @@ public class LayoutPanel extends JPanel {
     }
 
     this.canvas.setMode(mode);
+  }
+
+  private class Powerlistener implements PowerEventListener {
+
+    private final LayoutPanel layoutPanel;
+
+    Powerlistener(LayoutPanel layoutPanel) {
+      this.layoutPanel = layoutPanel;
+    }
+
+    @Override
+    public void onPowerChange(PowerEvent event) {
+      Logger.info("Track Power is " + (event.isPower() ? "on" : "off"));
+
+      if (!event.isPower() && autoPilotBtn.isSelected()) {
+        autoPilotBtn.doClick();
+      }
+      autoPilotBtn.setEnabled(event.isPower());
+    }
   }
 
 

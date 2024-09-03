@@ -193,13 +193,15 @@ class StateMachineThread extends Thread {
       } else {
         handleState();
       }
-      try {
-        synchronized (this) {
-          wait(250);
-        }
-      } catch (InterruptedException ex) {
-        Logger.trace("Interrupted: " + ex.getMessage());
-      }
+      StateMachineThread.yield();
+
+//      try {
+//        synchronized (this) {
+//          wait(250);
+//        }
+//      } catch (InterruptedException ex) {
+//        Logger.trace("Interrupted: " + ex.getMessage());
+//      }
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is ending...");

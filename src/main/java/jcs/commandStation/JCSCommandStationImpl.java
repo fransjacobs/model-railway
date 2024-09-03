@@ -405,7 +405,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void switchPower(boolean on) {
-    Logger.trace("Switch Power " + (on ? "On" : "Off"));
+    //Logger.trace("Switch Power " + (on ? "On" : "Off"));
     if (decoderController != null) {
       decoderController.power(on);
     }
