@@ -201,6 +201,8 @@ class PrepareRouteState extends DispatcherState {
         AccessoryBean turnout = reb.getTileBean().getAccessoryBean();
         Logger.debug("Setting Turnout " + turnout.getName() + " [" + turnout.getAddress() + "] to : " + av.getValue());
         dispatcher.switchAccessory(turnout, av);
+        //TODO configurable wait time between switches
+        pause(500);
       }
       Logger.trace("Turnouts set for " + route);
 
