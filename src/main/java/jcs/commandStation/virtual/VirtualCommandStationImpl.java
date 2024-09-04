@@ -19,7 +19,6 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +61,7 @@ import org.tinylog.Logger;
 public class VirtualCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
 
   private DeviceBean mainDevice;
-  private DeviceBean feedbackDevice;
+  //private DeviceBean feedbackDevice;
   private InfoBean infoBean;
 
   private final ScheduledExecutorService scheduledExecutor;
@@ -85,7 +84,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public boolean connect() {
+  public synchronized boolean connect() {
     this.connected = true;
 
     mainDevice = new DeviceBean();
@@ -110,6 +109,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void disconnect() {
     this.connected = false;
     this.infoBean = null;
+    this.mainDevice = null;
   }
 
   @Override
@@ -125,7 +125,9 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   @Override
   public List<DeviceBean> getDevices() {
     List<DeviceBean> devices = new ArrayList<>();
-    devices.add(this.mainDevice);
+    if (mainDevice != null) {
+      devices.add(this.mainDevice);
+    }
     return devices;
   }
 
@@ -141,10 +143,17 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       this.power = on;
       Logger.trace("Power is " + (power ? "On" : "Off"));
       PowerEvent pe = new PowerEvent(this.power);
-      notifyPowerEventListeners(pe);
+
+      executor.execute(() -> fireAllPowerEventListeners(pe));
       return power;
     } else {
       return false;
+    }
+  }
+
+  private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
+    for (PowerEventListener listener : powerEventListeners) {
+      listener.onPowerChange(powerEvent);
     }
   }
 
@@ -163,22 +172,51 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     }
   }
 
+  private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
+    executor.execute(() -> fireAllDirectionEventListeners(directionEvent));
+  }
+
+  private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
+    if (directionEvent.isValid()) {
+      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+        listener.onDirectionChange(directionEvent);
+      }
+    }
+  }
+
   @Override
   public void changeVelocity(int locUid, int speed, LocomotiveBean.Direction direction) {
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " speed " + speed);
 
       LocomotiveSpeedEvent lse = new LocomotiveSpeedEvent(locUid, speed, commandStationBean.getId());
-      notifyLocomotiveSpeedEventListeners(lse);
+      executor.execute(() -> {
+        fireAllLocomotiveSpeedEventListeners(lse);
+
+        //When a locomotive has a speed change (>0) check if Auto mode is on.
+        //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
+        if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
+          simulateDriving(locUid, speed, direction);
+        }
+
+      });
 
       //When a locomotive has a speed change (>0) check if Auto mode is on.
       //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-      if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
-        this.executor.execute(() -> simulateDriving(locUid, speed, direction));
-      }
+//      if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
+//        this.executor.execute(() -> simulateDriving(locUid, speed, direction));
+//      }
     } else {
       if (!this.power) {
         Logger.warn("Can't change velocity locUid: " + locUid + " Power is OFF!");
+      }
+    }
+  }
+
+  private void fireAllLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
+    if (speedEvent.isValid()) {
+      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+        listener.onSpeedChange(speedEvent);
       }
     }
   }
@@ -188,10 +226,18 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " functionNumber " + functionNumber + " " + (flag ? "on" : "off"));
       LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, functionNumber, flag, commandStationBean.getId());
-      notifyLocomotiveFunctionEventListeners(lfe);
+      executor.execute(() -> fireAllFunctionEventListeners(lfe));
     } else {
       if (!this.power) {
         Logger.warn("Can't change function " + functionNumber + " of locUid: " + locUid + " Power is OFF!");
+      }
+    }
+  }
+
+  private void fireAllFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
+    if (functionEvent.isValid()) {
+      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+        listener.onFunctionChange(functionEvent);
       }
     }
   }
@@ -229,7 +275,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   @Override
   public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
     if (this.power && connected) {
-
       AccessoryBean ab = new AccessoryBean();
       ab.setAddress(address);
       ab.setAccessoryValue(value);
@@ -243,11 +288,17 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       ab.setCommandStationId(commandStationBean.getId());
 
       AccessoryEvent ae = new AccessoryEvent(ab);
-      notifyAccessoryEventListeners(ae);
+      executor.execute(() -> fireAllAccessoryEventListeners(ae));
     } else {
       if (!this.power) {
         Logger.warn("Can't switch accessory " + address + " to: " + value + " Power is OFF!");
       }
+    }
+  }
+
+  private void fireAllAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
+    for (AccessoryEventListener listener : this.accessoryEventListeners) {
+      listener.onAccessoryChange(accessoryEvent);
     }
   }
 
@@ -266,18 +317,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  private void notifyPowerEventListeners(final PowerEvent powerEvent) {
-    //this.power = powerEvent.isPower();
-    executor.execute(() -> fireAllPowerEventListeners(powerEvent));
-  }
-
-  private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
-    //this.power = powerEvent.isPower();
-    for (PowerEventListener listener : powerEventListeners) {
-      listener.onPowerChange(powerEvent);
-    }
-  }
-
   @Override
   public synchronized void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
@@ -292,52 +331,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }
 
-  private void fireAllAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
-    for (AccessoryEventListener listener : this.accessoryEventListeners) {
-      listener.onAccessoryChange(accessoryEvent);
-    }
-  }
-
-  private void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
-    executor.execute(() -> fireAllAccessoryEventListeners(accessoryEvent));
-  }
-
-  private void fireAllFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
-    if (functionEvent.isValid()) {
-      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
-        listener.onFunctionChange(functionEvent);
-      }
-    }
-  }
-
-  private void notifyLocomotiveFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
-    executor.execute(() -> fireAllFunctionEventListeners(functionEvent));
-  }
-
-  private void fireAllDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-    if (directionEvent.isValid()) {
-      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
-        listener.onDirectionChange(directionEvent);
-      }
-    }
-  }
-
-  private void notifyLocomotiveDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
-    executor.execute(() -> fireAllDirectionEventListeners(directionEvent));
-  }
-
-  private void fireAllLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
-    if (speedEvent.isValid()) {
-      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
-        listener.onSpeedChange(speedEvent);
-      }
-    }
-  }
-
-  private void notifyLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent locomotiveEvent) {
-    executor.execute(() -> fireAllLocomotiveSpeedEventListeners(locomotiveEvent));
-  }
-
   //Find the route the locomotive is doing....
   void simulateDriving(int locUid, int speed, LocomotiveBean.Direction direction) {
     if ("true".equals(System.getProperty("dispatcher.stepTest", "false"))) {
@@ -349,22 +342,31 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     if (dispatcher.isLocomotiveAutomodeOn()) {
       Logger.trace("Try to simulate the next sensor of " + dispatcher.getName());
 
-      String inSensorId = dispatcher.getInSensorId();
-      if (inSensorId != null) {
-        //Start a time which execute a worker thread which fires the sensor
-        scheduledExecutor.schedule(() -> toggleSensor(inSensorId), 1, TimeUnit.SECONDS);
+      String occupationSensorId = dispatcher.getOccupationSensorId();
+      if (occupationSensorId != null) {
+        //Start a timer which execute a worker thread which fires the sensor
+        scheduledExecutor.schedule(() -> toggleSensor(occupationSensorId), 500, TimeUnit.MILLISECONDS);
       }
 
       String exitSensorId = dispatcher.getExitSensorId();
-      if (inSensorId != null) {
+      if (exitSensorId != null) {
         //Start a time which execute a worker thread which fires the sensor
-        scheduledExecutor.schedule(() -> toggleSensor(exitSensorId), 2, TimeUnit.SECONDS);
+        scheduledExecutor.schedule(() -> toggleSensor(exitSensorId), 1500, TimeUnit.MILLISECONDS);
       }
 
+      String enterSensorId = dispatcher.getEnterSensorId();
+      String inSensorId = dispatcher.getInSensorId();
+
       String sensorId = dispatcher.getWaitingForSensorId();
+
+      int time = 3000;
+      if (sensorId != null && sensorId.equals(inSensorId)) {
+        time = 1000;
+      }
+
       if (sensorId != null) {
         //Start a time which execute a worker thread which fires the sensor
-        scheduledExecutor.schedule(() -> toggleSensor(sensorId), 3, TimeUnit.SECONDS);
+        scheduledExecutor.schedule(() -> toggleSensor(sensorId), time, TimeUnit.MILLISECONDS);
       }
     }
   }

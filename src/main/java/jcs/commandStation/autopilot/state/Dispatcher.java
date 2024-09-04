@@ -150,6 +150,10 @@ public class Dispatcher {
     }
   }
 
+  void sensorUpdated(SensorEvent sensorEvent) {
+    this.stateMachineThread.sensorUpdated(sensorEvent);
+  }
+
   void resetDispatcher() {
     this.routeBean = null;
     this.departureBlockId = null;

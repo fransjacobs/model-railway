@@ -30,6 +30,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
   private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
   private String inSensorId;
+  private Dispatcher dispatcher;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -46,6 +47,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       dispatcher.setWaitForSensorid(inSensorId);
 
       //Register this state as a SensorEventListener
+      this.dispatcher = dispatcher;
       JCS.getJcsCommandStation().addSensorEventListener(this);
       Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
@@ -94,9 +96,8 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       if (sensorEvent.isActive()) {
         this.canAdvanceToNextState = true;
         Logger.trace("In Event from Sensor " + sensorEvent.getId());
-        synchronized (this) {
-          notify();
-        }
+
+        this.dispatcher.sensorUpdated(sensorEvent);
       }
     }
   }

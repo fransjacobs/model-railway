@@ -20,7 +20,6 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -32,6 +31,7 @@ class StartState extends DispatcherState implements SensorEventListener {
   private boolean locomotiveStarted = false;
   private boolean canAdvanceToNextState = false;
   private String enterSensorId;
+  private Dispatcher dispatcher;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -53,7 +53,9 @@ class StartState extends DispatcherState implements SensorEventListener {
       Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
 
       //Register this state as a SensorEventListener
+      this.dispatcher = dispatcher;
       JCS.getJcsCommandStation().addSensorEventListener(this);
+
       dispatcher.setWaitForSensorid(enterSensorId);
 
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -94,9 +96,8 @@ class StartState extends DispatcherState implements SensorEventListener {
       if (sensorEvent.isActive()) {
         canAdvanceToNextState = true;
         Logger.trace("Enter Event from Sensor " + sensorEvent.getId());
-        synchronized (this) {
-          notify();
-        }
+
+        this.dispatcher.sensorUpdated(sensorEvent);
       }
     }
   }

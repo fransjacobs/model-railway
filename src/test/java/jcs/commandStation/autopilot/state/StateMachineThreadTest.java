@@ -166,6 +166,9 @@ public class StateMachineThreadTest {
     sensorBean.setActive((sensorBean.getStatus() == 1));
     SensorEvent sensorEvent = new SensorEvent(sensorBean);
     fireFeedbackEvent(sensorEvent);
+    synchronized(this) {
+      notifyAll();
+    }
   }
 
   private void fireFeedbackEvent(SensorEvent sensorEvent) {

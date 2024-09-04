@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import jcs.JCS;
 import jcs.commandStation.events.SensorEvent;
@@ -117,7 +118,6 @@ public class AutoPilot {
   public synchronized void stopAutoMode() {
     if (this.autoPilotThread != null) {
       this.autoPilotThread.stopAutoMode();
-      notifyAll();
     }
   }
 
@@ -199,7 +199,6 @@ public class AutoPilot {
         dispatcher.startLocomotiveAutomode();
       }
 
-      //dispatcher.stopLocomotiveAutomode();
       Logger.trace("Started dispatcher" + key + " automode...");
     } else {
       Dispatcher dispatcher = dispatchers.get(key);
@@ -446,6 +445,13 @@ public class AutoPilot {
     synchronized void stopAutoMode() {
       Logger.trace("Stopping Automode...");
       this.running = false;
+      this.notifyAll();
+      //      try {
+//        this.join();
+//      } catch (InterruptedException ex) {
+//        Logger.trace(ex);
+//      }
+
     }
 
     boolean isRunning() {
@@ -494,7 +500,7 @@ public class AutoPilot {
         try {
 
           synchronized (this) {
-            wait(1000);
+            wait(10000);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted");
@@ -511,7 +517,7 @@ public class AutoPilot {
         dispatchersRunning = areDispatchersRunning();
         try {
           synchronized (this) {
-            wait(1000);
+            wait(10000);
           }
         } catch (InterruptedException ex) {
           Logger.trace("Interrupted during dispatcher running check");
@@ -524,8 +530,8 @@ public class AutoPilot {
       if (dispatchersRunning) {
         for (Dispatcher ld : dispatchers.values()) {
           if (ld.isRunning()) {
-            //ld.forceStopRunning();
-            Logger.trace("Forse Stop on " + ld.getName());
+            Logger.trace("Dispatcher: " + ld.getName() + " in State: " + ld.getStateName() + " is still running...");
+
           }
         }
       }
@@ -544,6 +550,7 @@ public class AutoPilot {
     boolean isStopped() {
       return this.stopped;
     }
+
   }
 
   private class SensorListener implements SensorEventListener {

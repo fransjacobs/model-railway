@@ -152,6 +152,9 @@ public class StateMachineStepByStepTest {
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
     }
+    synchronized (this) {
+      notifyAll();
+    }
   }
 
   private void pause(int millis) {

@@ -16,6 +16,7 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
+import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
@@ -64,7 +65,7 @@ class StateMachineThread extends Thread {
   synchronized void stopRunningThread() {
     this.running = false;
     this.enableAutomode = false;
-    notify();
+    notifyAll();
   }
 
   boolean isEnableAutomode() {
@@ -74,7 +75,7 @@ class StateMachineThread extends Thread {
   //(Re)Start automode for the locomotive
   synchronized void setEnableAutomode(boolean start) {
     this.enableAutomode = start;
-    notify();
+    notifyAll();
   }
 
   //Reset the statemachine
@@ -84,9 +85,8 @@ class StateMachineThread extends Thread {
     this.resetRequested = true;
 
     Logger.trace("Reset requested...");
-    //Notify the running thread
     if (running) {
-      notify();
+      notifyAll();
     }
   }
 
@@ -115,6 +115,18 @@ class StateMachineThread extends Thread {
     if (previousState != dispatcherState || dispatcherState instanceof WaitState) {
       //handle the dispatcherState changes
       dispatcher.fireStateListeners(dispatcherState.getName());
+    }
+
+    //Do not bring the CPU up to 100% An event should call notifyAll() to quickly get out of waiting
+    //To be sure check every second...
+    if (previousState == dispatcherState) {
+      try {
+        synchronized (this) {
+          wait(1000);
+        }
+      } catch (InterruptedException ex) {
+        Logger.trace("Interrupted: " + ex.getMessage());
+      }
     }
   }
 
@@ -193,15 +205,6 @@ class StateMachineThread extends Thread {
       } else {
         handleState();
       }
-      StateMachineThread.yield();
-
-//      try {
-//        synchronized (this) {
-//          wait(250);
-//        }
-//      } catch (InterruptedException ex) {
-//        Logger.trace("Interrupted: " + ex.getMessage());
-//      }
     }
 
     Logger.trace(getName() + " in state " + dispatcherState.getClass().getSimpleName() + " is ending...");
@@ -226,6 +229,11 @@ class StateMachineThread extends Thread {
 
     //Force Idle
     this.dispatcherState = new IdleState();
+  }
+
+  synchronized void sensorUpdated(final SensorEvent sensorEvent) {
+    Logger.trace("Sensor " + sensorEvent.getId() + " Value " + (sensorEvent.isActive() ? "On" : "Off"));
+    this.notifyAll();
   }
 
 }
