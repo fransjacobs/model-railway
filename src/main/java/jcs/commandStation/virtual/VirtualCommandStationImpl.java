@@ -145,10 +145,14 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       PowerEvent pe = new PowerEvent(this.power);
 
       executor.execute(() -> fireAllPowerEventListeners(pe));
+      synchronized(this) {
+        notifyAll();
+      }
       return power;
     } else {
       return false;
     }
+    
   }
 
   private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
