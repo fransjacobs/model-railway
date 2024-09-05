@@ -86,6 +86,14 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       dispatcher.registerIgnoreEventHandler(inSensorId);
       return newState;
     } else {
+      try {
+        synchronized (this) {
+          wait(10000);
+        }
+      } catch (InterruptedException ex) {
+        Logger.trace("Interrupted: " + ex.getMessage());
+      }
+
       return this;
     }
   }

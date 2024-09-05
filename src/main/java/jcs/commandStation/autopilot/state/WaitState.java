@@ -61,13 +61,14 @@ class WaitState extends DispatcherState {
 
         //For manual testing the thread is not running, step mode
         if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
-          synchronized (this) {
-            try {
-              wait(1000);
-            } catch (InterruptedException ex) {
-              Logger.trace("Wait loop interrupted");
-            }
+          //synchronized (this) {
+          try {
+            //wait(1000);
+            Thread.sleep(1000L);
+          } catch (InterruptedException ex) {
+            Logger.trace("Wait loop interrupted");
           }
+          //}
         } else {
           Logger.trace("Test mode: " + s);
         }

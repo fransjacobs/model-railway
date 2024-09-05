@@ -47,7 +47,7 @@ public class StateMachineThreadTest {
   private final PersistenceTestHelper testHelper;
   private final JCSCommandStation cs;
   private final PersistenceService ps;
-  private final AutoPilot autoPilot;
+  //private final AutoPilot autoPilot;
   private LocomotiveBean dhg;
   private LocomotiveBean ns1631;
   private Dispatcher dispatcher;
@@ -67,7 +67,7 @@ public class StateMachineThreadTest {
     ps = PersistenceFactory.getService();
     cs = JCS.getJcsCommandStation();
 
-    autoPilot = AutoPilot.getInstance();
+    //autoPilot = AutoPilot.getInstance();
     //autoPilot.startAutoMode();
   }
 
@@ -119,9 +119,9 @@ public class StateMachineThreadTest {
     block3.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
     ps.persist(block3);
 
-    autoPilot.prepareAllDispatchers();
+    AutoPilot.prepareAllDispatchers();
 
-    dispatcher = autoPilot.getLocomotiveDispatcher(dhg);
+    dispatcher = AutoPilot.getLocomotiveDispatcher(dhg);
     Logger.trace("Prepared layout");
   }
 
@@ -147,8 +147,8 @@ public class StateMachineThreadTest {
     block4.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
     ps.persist(block4);
 
-    autoPilot.prepareAllDispatchers();
-    dispatcher = autoPilot.getLocomotiveDispatcher(ns1631);
+    AutoPilot.prepareAllDispatchers();
+    dispatcher = AutoPilot.getLocomotiveDispatcher(ns1631);
     Logger.trace("Prepared layout");
   }
 
@@ -166,7 +166,7 @@ public class StateMachineThreadTest {
     sensorBean.setActive((sensorBean.getStatus() == 1));
     SensorEvent sensorEvent = new SensorEvent(sensorBean);
     fireFeedbackEvent(sensorEvent);
-    synchronized(this) {
+    synchronized (this) {
       notifyAll();
     }
   }
@@ -209,7 +209,7 @@ public class StateMachineThreadTest {
     BlockBean block3 = PersistenceFactory.getService().getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block3.getBlockState());
 
-    assertFalse(autoPilot.isAutoModeActive());
+    assertFalse(AutoPilot.isAutoModeActive());
 
     //Capture the State Events by adding a Statelistener. 
     List<String> passedStates = new ArrayList<>();
@@ -220,7 +220,7 @@ public class StateMachineThreadTest {
     assertFalse(dispatcher.isLocomotiveAutomodeOn());
     assertFalse(dispatcher.isRunning());
 
-    assertTrue(autoPilot.isOnTrack(dhg));
+    assertTrue(AutoPilot.isOnTrack(dhg));
 
     boolean started = dispatcher.startLocomotiveAutomode();
     //Should NOT start as the Autopilot is not in automode
@@ -229,17 +229,17 @@ public class StateMachineThreadTest {
     long now = System.currentTimeMillis();
     long timeout = now + 10000;
     //Start Automode
-    autoPilot.startAutoMode();
+    AutoPilot.startAutoMode();
 
-    boolean autoPilotRunning = autoPilot.isAutoModeActive();
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
     while (!autoPilotRunning && timeout > now) {
       pause(1);
-      autoPilotRunning = autoPilot.isAutoModeActive();
+      autoPilotRunning = AutoPilot.isAutoModeActive();
       now = System.currentTimeMillis();
     }
 
     assertTrue(timeout > now);
-    assertTrue(autoPilot.isAutoModeActive());
+    assertTrue(AutoPilot.isAutoModeActive());
 
     assertFalse(dispatcher.isLocomotiveAutomodeOn());
     assertFalse(dispatcher.isRunning());

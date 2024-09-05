@@ -42,7 +42,7 @@ public class StateMachineStepByStepTest {
 
   private final PersistenceTestHelper testHelper;
   private final PersistenceService ps;
-  private final AutoPilot autoPilot;
+  //private final AutoPilot autoPilot;
   private LocomotiveBean dhg;
   private LocomotiveBean ns1631;
   private Dispatcher dispatcher;
@@ -55,8 +55,8 @@ public class StateMachineStepByStepTest {
     testHelper.runTestDataInsertScript("autopilot_test_layout.sql");
 
     ps = PersistenceFactory.getService();
-    autoPilot = AutoPilot.getInstance();
-    autoPilot.startAutoMode();
+    //autoPilot = AutoPilot.getInstance();
+    AutoPilot.startAutoMode();
   }
 
   @BeforeEach
@@ -79,10 +79,10 @@ public class StateMachineStepByStepTest {
 
   @AfterEach
   public void tearDown() {
-    autoPilot.stopAutoMode();
+    AutoPilot.stopAutoMode();
     //let the autopilot finish...
     pause(1000);
-    autoPilot.clearDispatchers();
+    AutoPilot.clearDispatchers();
   }
 
   private void setupbk1bkNsDHG() {
@@ -107,9 +107,9 @@ public class StateMachineStepByStepTest {
     block3.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
     ps.persist(block3);
 
-    autoPilot.prepareAllDispatchers();
+    AutoPilot.prepareAllDispatchers();
 
-    dispatcher = autoPilot.getLocomotiveDispatcher(dhg);
+    dispatcher = AutoPilot.getLocomotiveDispatcher(dhg);
     Logger.trace("Prepared layout");
   }
 
@@ -135,8 +135,8 @@ public class StateMachineStepByStepTest {
     block4.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
     ps.persist(block4);
 
-    autoPilot.prepareAllDispatchers();
-    dispatcher = autoPilot.getLocomotiveDispatcher(ns1631);
+    AutoPilot.prepareAllDispatchers();
+    dispatcher = AutoPilot.getLocomotiveDispatcher(ns1631);
     Logger.trace("Prepared layout");
   }
 

@@ -145,14 +145,14 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       PowerEvent pe = new PowerEvent(this.power);
 
       executor.execute(() -> fireAllPowerEventListeners(pe));
-      synchronized(this) {
+      synchronized (this) {
         notifyAll();
       }
       return power;
     } else {
       return false;
     }
-    
+
   }
 
   private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
@@ -199,7 +199,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
         //When a locomotive has a speed change (>0) check if Auto mode is on.
         //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-        if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
+        if (AutoPilot.isAutoModeActive() && speed > 0) {
           simulateDriving(locUid, speed, direction);
         }
 
@@ -341,7 +341,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
       return;
     }
     //Check is the Dispatcher for the locomotive is running...
-    Dispatcher dispatcher = AutoPilot.getInstance().getLocomotiveDispatcher(locUid);
+    Dispatcher dispatcher = AutoPilot.getLocomotiveDispatcher(locUid);
 
     if (dispatcher.isLocomotiveAutomodeOn()) {
       Logger.trace("Try to simulate the next sensor of " + dispatcher.getName());

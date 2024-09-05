@@ -42,10 +42,10 @@ class PrepareRouteState extends DispatcherState {
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
-    int permits = AutoPilot.getInstance().avialablePermits();
+    int permits = AutoPilot.avialablePermits();
     Logger.trace("Obtaining a lock. There is currently " + permits + " available permits...");
 
-    if (AutoPilot.getInstance().tryAquireLock()) {
+    if (AutoPilot.tryAquireLock()) {
       try {
         Logger.trace("##### Locked ####");
         if (searchRoute(dispatcher)) {
@@ -53,7 +53,7 @@ class PrepareRouteState extends DispatcherState {
         }
       } finally {
         //Make sure the lock is released
-        AutoPilot.getInstance().releaseLock();
+        AutoPilot.releaseLock();
         Logger.trace("##### Released ####");
       }
     } else {

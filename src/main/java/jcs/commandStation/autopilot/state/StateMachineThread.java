@@ -16,6 +16,7 @@
 package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
@@ -51,10 +52,11 @@ class StateMachineThread extends Thread {
   private boolean enableAutomode = false;
   private boolean resetRequested = false;
 
-  StateMachineThread(Dispatcher dispatcher) {
+  StateMachineThread(ThreadGroup parent, Dispatcher dispatcher) {
+    super(parent, "STM->" + dispatcher.getLocomotiveBean().getName());
     this.dispatcher = dispatcher;
     this.dispatcherState = new IdleState();
-    setName("DT->" + dispatcher.getLocomotiveBean().getName());
+    //setName("DT->" + dispatcher.getLocomotiveBean().getName());
     //this.running = true;
   }
 
@@ -104,7 +106,7 @@ class StateMachineThread extends Thread {
     //Execute the action for the current dispatcherState   
     dispatcherState = dispatcherState.execute(dispatcher);
 
-    if (!this.dispatcher.autoPilot.isAutoModeActive()) {
+    if (!AutoPilot.isAutoModeActive()) {
       //Automode has stopped, let the Thread finish when WaitState is reached
       if (dispatcherState instanceof IdleState || dispatcherState instanceof WaitState) {
         Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
@@ -120,13 +122,14 @@ class StateMachineThread extends Thread {
     //Do not bring the CPU up to 100% An event should call notifyAll() to quickly get out of waiting
     //To be sure check every second...
     if (previousState == dispatcherState) {
-      try {
-        synchronized (this) {
-          wait(1000);
-        }
-      } catch (InterruptedException ex) {
-        Logger.trace("Interrupted: " + ex.getMessage());
-      }
+      Logger.trace("State not changed: " + dispatcherState.getName());
+//      try {
+//        synchronized (this) {
+//          wait(1000);
+//        }
+//      } catch (InterruptedException ex) {
+//        Logger.trace("Interrupted: " + ex.getMessage());
+//      }
     }
   }
 
@@ -211,24 +214,24 @@ class StateMachineThread extends Thread {
 
     //Make sure that also the linked locomotive is stopped
     dispatcher.changeLocomotiveVelocity(dispatcher.getLocomotiveBean(), 0);
-    Logger.trace(getName() + " Send stop to locomotive " + dispatcher.getLocomotiveBean().getName() + "...");
+    Logger.trace(getName() + " stopped locomotive " + dispatcher.getLocomotiveBean().getName() + "...");
 
     //Remove the sensor listeners if applicable
     DispatcherState currentState = dispatcherState;
     if (currentState instanceof SensorEventListener sensorEventListener) {
       Logger.trace("Removing " + currentState.toString() + " as Sensor Listener...");
       JCS.getJcsCommandStation().removeSensorEventListener(sensorEventListener);
+    } else {
+      Logger.trace("No sensor listeners are registered...");
     }
 
     dispatcher.clearDepartureIgnoreEventHandlers();
+    Logger.trace("Ignore Handlers removed...");
 
     dispatcher.fireStateListeners(getName() + " Finished");
     Logger.trace(getName() + " State listeners fired...");
 
     Logger.trace(getName() + " last state " + dispatcherState.getClass().getSimpleName() + " is Finished");
-
-    //Force Idle
-    this.dispatcherState = new IdleState();
   }
 
   synchronized void sensorUpdated(final SensorEvent sensorEvent) {

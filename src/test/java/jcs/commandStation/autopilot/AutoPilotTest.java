@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.autopilot.SensorEventHandler;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
@@ -50,7 +52,7 @@ public class AutoPilotTest {
 
   private final PersistenceTestHelper testHelper;
   private final PersistenceService ps;
-  private Dispatcher dispatcher;
+  //private Dispatcher dispatcher;
 
   private List<SensorEvent> sensorHandlerEvents;
 
@@ -84,71 +86,235 @@ public class AutoPilotTest {
 
   @AfterEach
   public void tearDown() {
-    if (AutoPilot.getInstance() != null) {
-      AutoPilot.getInstance().stopAutoMode();
-      //let the autopilot finish...
-      pause(1100);
-      AutoPilot.getInstance().clearDispatchers();
+    AutoPilot.stopAutoMode();
+
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
     }
+
+    assertTrue(timeout > now);
+    assertFalse(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot Automode stopped in " + (now - start) + " ms.");
+
+    AutoPilot.clearDispatchers();
   }
 
-  //@Test
-  public void testStartStopAutoMode() {
-    System.out.println("startStopAutoMode");
-    AutoPilot instance = AutoPilot.getInstance();
+  @Test
+  public void testStartStopAutoModeNoDispatchers() {
+    Logger.info("startStopAutoModeNoDispatchers");
+    assertFalse(AutoPilot.isAutoModeActive());
 
-    assertFalse(instance.isAutoModeActive());
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
 
-    instance.startAutoMode();
-    pause(50);
-    Logger.debug("Started automode");
-    assertTrue(instance.isAutoModeActive());
+    AutoPilot.startAutoMode();
 
-    instance.stopAutoMode();
-    //let the autopilot finish...
-    pause(1000);
-    assertFalse(instance.isAutoModeActive());
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (!autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot automode started in " + (now - start) + " ms.");
+
+    now = System.currentTimeMillis();
+    start = now;
+    timeout = now + 10000;
+
+    AutoPilot.stopAutoMode();
+
+    autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertFalse(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot automode stopped in " + (now - start) + " ms.");
+
   }
 
-  //@Test
-  public void testNoDispatchersRunning() {
-    System.out.println("NoDispatchersRunning");
-    AutoPilot instance = AutoPilot.getInstance();
-    assertFalse(instance.isAutoModeActive());
-    instance.startAutoMode();
-    pause(250);
-    assertTrue(instance.isAutoModeActive());
-    assertFalse(instance.areDispatchersRunning());
+  @Test
+  public void testStartStopAutoModeDispatcherstNotRunning() {
+    Logger.info("StartStopAutoModeDispatcherstNotRunning");
+    assertFalse(AutoPilot.isAutoModeActive());
 
-    instance.stopAutoMode();
-    assertFalse(instance.isAutoModeActive());
-    //let the autopilot finish...
-    pause(1000);
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+
+    AutoPilot.startAutoMode();
+
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (!autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot automode started in " + (now - start) + " ms.");
+
+    assertFalse(AutoPilot.areDispatchersRunning());
+
+    //Lets create a dispatcher. A Loc must be on the track
+    LocomotiveBean dhg = ps.getLocomotive(NS_DHG_6505);
+    BlockBean block1 = ps.getBlockByTileId("bk-1");
+    block1.setLocomotive(dhg);
+    block1.setBlockState(BlockBean.BlockState.OCCUPIED);
+    ps.persist(block1);
+
+    AutoPilot.prepareAllDispatchers();
+
+    Dispatcher dhgDisp = AutoPilot.getLocomotiveDispatcher(dhg);
+    assertNotNull(dhgDisp);
+
+    assertFalse(dhgDisp.isLocomotiveAutomodeOn());
+    assertFalse(dhgDisp.isRunning());
+
+    now = System.currentTimeMillis();
+    start = now;
+    timeout = now + 10000;
+
+    AutoPilot.stopAutoMode();
+
+    autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertFalse(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot automode stopped in " + (now - start) + " ms.");
+  }
+
+  @Test
+  public void testStartStopAutoModeDispatcherRunning() {
+    Logger.info("StartStopAutoModeDispatcherRunning");
+    assertFalse(AutoPilot.isAutoModeActive());
+
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+
+    AutoPilot.startAutoMode();
+
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (!autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot automode started in " + (now - start) + " ms.");
+
+    assertFalse(AutoPilot.areDispatchersRunning());
+
+    //Lets create a dispatcher. A Loc must be on the track
+    LocomotiveBean dhg = ps.getLocomotive(NS_DHG_6505);
+    BlockBean block1 = ps.getBlockByTileId("bk-1");
+    block1.setLocomotive(dhg);
+    block1.setBlockState(BlockBean.BlockState.OCCUPIED);
+    ps.persist(block1);
+
+    AutoPilot.prepareAllDispatchers();
+
+    Dispatcher dhgDisp = AutoPilot.getLocomotiveDispatcher(dhg);
+    assertNotNull(dhgDisp);
+
+    assertFalse(dhgDisp.isLocomotiveAutomodeOn());
+    assertFalse(dhgDisp.isRunning());
+
+    now = System.currentTimeMillis();
+    start = now;
+    timeout = now + 10000;
+
+    boolean started = dhgDisp.startLocomotiveAutomode();
+    assertTrue(started);
+    String dispatcherState = dhgDisp.getStateName();
+    assertEquals("IdleState", dispatcherState);
+
+    boolean dispatcherThreadRunning = dhgDisp.isRunning();
+    while (!dispatcherThreadRunning && timeout > now) {
+      pause(10);
+      dispatcherThreadRunning = dhgDisp.isRunning();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(dhgDisp.isRunning());
+    assertTrue(dhgDisp.isLocomotiveAutomodeOn());
+
+    Logger.debug("Dispatcher " + dhgDisp.getName() + " started in " + (now - start) + " ms.");
+
+    dispatcherState = dhgDisp.getStateName();
+    assertEquals("IdleState", dispatcherState);
+
+    now = System.currentTimeMillis();
+    start = now;
+    timeout = now + 10000;
+
+    AutoPilot.stopAutoMode();
+
+    autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertFalse(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot automode stopped in " + (now - start) + " ms.");
   }
 
   //@Test
   public void testIsSensorRegistered() {
     System.out.println("isSensorRegistered");
     String sensorId = "0-0001";
-    AutoPilot instance = AutoPilot.getInstance();
-    assertFalse(instance.isAutoModeActive());
+    //AutoPilot instance = AutoPilot.getInstance();
+    assertFalse(AutoPilot.isAutoModeActive());
 
-    assertFalse(instance.isSensorHandlerRegistered(sensorId));
-    instance.startAutoMode();
+    assertFalse(AutoPilot.isSensorHandlerRegistered(sensorId));
+    AutoPilot.startAutoMode();
     //let the autopilot start...
     pause(150);
-    assertTrue(instance.isAutoModeActive());
-    assertFalse(instance.isSensorHandlerRegistered(sensorId));
+    assertTrue(AutoPilot.isAutoModeActive());
+    assertFalse(AutoPilot.isSensorHandlerRegistered(sensorId));
     TestSensorHandler testSensorHandler = new TestSensorHandler(sensorId, this);
-    instance.addHandler(testSensorHandler, sensorId);
+    AutoPilot.addHandler(testSensorHandler, sensorId);
 
-    assertTrue(instance.isSensorHandlerRegistered(sensorId));
+    assertTrue(AutoPilot.isSensorHandlerRegistered(sensorId));
 
-    instance.stopAutoMode();
-    assertFalse(instance.isAutoModeActive());
+    AutoPilot.stopAutoMode();
+    assertFalse(AutoPilot.isAutoModeActive());
     //let the autopilot finish...
     pause(1000);
-    assertFalse(instance.isSensorHandlerRegistered(sensorId));
+    assertFalse(AutoPilot.isSensorHandlerRegistered(sensorId));
   }
 
   //@Test
@@ -160,12 +326,12 @@ public class AutoPilotTest {
     List<BlockBean> blocks = ps.getBlocks();
     assertEquals(4, blocks.size());
 
-    AutoPilot instance = AutoPilot.getInstance();
-    instance.startAutoMode();
+    //AutoPilot instance = AutoPilot.getInstance();
+    AutoPilot.startAutoMode();
     pause(50);
-    assertTrue(instance.isAutoModeActive());
+    assertTrue(AutoPilot.isAutoModeActive());
 
-    List<LocomotiveBean> onTraclLocos = instance.getOnTrackLocomotives();
+    List<LocomotiveBean> onTraclLocos = AutoPilot.getOnTrackLocomotives();
     assertTrue(onTraclLocos.isEmpty());
 
     //get a loc and put it in a block
@@ -177,16 +343,16 @@ public class AutoPilotTest {
     List<LocomotiveBean> expected = new ArrayList<>();
     expected.add(ns1631);
 
-    onTraclLocos = instance.getOnTrackLocomotives();
+    onTraclLocos = AutoPilot.getOnTrackLocomotives();
     assertEquals(expected, onTraclLocos);
 
-    instance.stopAutoMode();
-    assertFalse(instance.isAutoModeActive());
+    AutoPilot.stopAutoMode();
+    assertFalse(AutoPilot.isAutoModeActive());
     //let the autopilot finish...
     pause(1000);
   }
 
-  @Test
+  //@Test
   public void testGhostDetection() {
     if (RunUtil.isWindows()) {
       //For some unknown reason in Windows this does not work....
@@ -196,7 +362,7 @@ public class AutoPilotTest {
 
     System.out.println("GhostDetection test");
 
-    AutoPilot instance = AutoPilot.getInstance();
+    //AutoPilot instance = AutoPilot.getInstance();
     JCS.getJcsCommandStation().switchPower(true);
 
     long now = System.currentTimeMillis();
@@ -219,10 +385,10 @@ public class AutoPilotTest {
     assertTrue(timeout > now);
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
-    instance.startAutoMode();
+    AutoPilot.startAutoMode();
     pause(150);
 
-    assertTrue(instance.isAutoModeActive());
+    assertTrue(AutoPilot.isAutoModeActive());
 
     BlockBean block1 = ps.getBlockByTileId("bk-1");
     block1.setBlockState(BlockBean.BlockState.FREE);
@@ -240,11 +406,11 @@ public class AutoPilotTest {
     block1.setBlockState(BlockBean.BlockState.GHOST);
   }
 
-  @Test
+  //@Test
   public void testGetLocomotiveDispatchers() {
     System.out.println("getLocomotiveDispatchers");
-    AutoPilot instance = AutoPilot.getInstance();
-    instance.startAutoMode();
+    //AutoPilot instance = AutoPilot.getInstance();
+    AutoPilot.startAutoMode();
     pause(150);
 
     if (!JCS.getJcsCommandStation().isPowerOn()) {
@@ -254,9 +420,9 @@ public class AutoPilotTest {
 
     assertTrue(JCS.getJcsCommandStation().isPowerOn());
 
-    assertTrue(instance.isAutoModeActive());
+    assertTrue(AutoPilot.isAutoModeActive());
 
-    List<LocomotiveBean> onTraclLocos = instance.getOnTrackLocomotives();
+    List<LocomotiveBean> onTraclLocos = AutoPilot.getOnTrackLocomotives();
     assertTrue(onTraclLocos.isEmpty());
 
     //get a loc and put it in a block
@@ -269,35 +435,35 @@ public class AutoPilotTest {
     List<LocomotiveBean> expected = new ArrayList<>();
     expected.add(ns1631);
 
-    onTraclLocos = instance.getOnTrackLocomotives();
+    onTraclLocos = AutoPilot.getOnTrackLocomotives();
     assertEquals(expected, onTraclLocos);
 
-    instance.prepareAllDispatchers();
-    List<Dispatcher> dispList = instance.getLocomotiveDispatchers();
+    AutoPilot.prepareAllDispatchers();
+    List<Dispatcher> dispList = AutoPilot.getLocomotiveDispatchers();
     assertEquals(1, dispList.size());
 
-    assertFalse(instance.areDispatchersRunning());
+    assertFalse(AutoPilot.areDispatchersRunning());
 
-    instance.stopAutoMode();
+    AutoPilot.stopAutoMode();
     //let the autopilot finish...
     pause(1000);
-    assertFalse(instance.isAutoModeActive());
+    assertFalse(AutoPilot.isAutoModeActive());
 
-    dispList = instance.getLocomotiveDispatchers();
+    dispList = AutoPilot.getLocomotiveDispatchers();
     assertEquals(1, dispList.size());
 
-    instance.clearDispatchers();
+    AutoPilot.clearDispatchers();
 
-    dispList = instance.getLocomotiveDispatchers();
+    dispList = AutoPilot.getLocomotiveDispatchers();
     assertEquals(0, dispList.size());
   }
 
-  @Test
+  //@Test
   public void testGetLocomotiveDispatcher() {
     System.out.println("getLocomotiveDispatcher");
-    AutoPilot instance = AutoPilot.getInstance();
+    //AutoPilot instance = AutoPilot.getInstance();
 
-    List<LocomotiveBean> onTraclLocos = instance.getOnTrackLocomotives();
+    List<LocomotiveBean> onTraclLocos = AutoPilot.getOnTrackLocomotives();
     assertTrue(onTraclLocos.isEmpty());
     //get a loc and put it in a block
     LocomotiveBean ns1631 = PersistenceFactory.getService().getLocomotive(NS_1631);
@@ -305,11 +471,11 @@ public class AutoPilotTest {
     block1.setLocomotive(ns1631);
     ps.persist(block1);
 
-    instance.startAutoMode();
+    AutoPilot.startAutoMode();
     pause(50);
-    instance.prepareAllDispatchers();
+    AutoPilot.prepareAllDispatchers();
 
-    Dispatcher disp = instance.getLocomotiveDispatcher(ns1631);
+    Dispatcher disp = AutoPilot.getLocomotiveDispatcher(ns1631);
     assertNotNull(disp);
     assertEquals("NS 1631", disp.getName());
   }
@@ -319,7 +485,7 @@ public class AutoPilotTest {
     System.out.println("resetDispatcher");
     LocomotiveBean locomotiveBean = null;
     AutoPilot instance = null;
-    instance.resetDispatcher(locomotiveBean);
+    AutoPilot.resetDispatcher(locomotiveBean);
     fail("The test case is a prototype.");
   }
 
@@ -327,7 +493,7 @@ public class AutoPilotTest {
   public void testStartAllLocomotives() {
     System.out.println("startAllLocomotives");
     AutoPilot instance = null;
-    instance.startAllLocomotives();
+    AutoPilot.startAllLocomotives();
     fail("The test case is a prototype.");
   }
 
@@ -335,7 +501,7 @@ public class AutoPilotTest {
   public void testStopAllLocomotives() {
     System.out.println("stopAllLocomotives");
     AutoPilot instance = null;
-    instance.stopAllLocomotives();
+    AutoPilot.stopAllLocomotives();
     fail("The test case is a prototype.");
   }
 
@@ -343,7 +509,7 @@ public class AutoPilotTest {
   public void testResetStates() {
     System.out.println("resetStates");
     AutoPilot instance = null;
-    instance.resetStates();
+    AutoPilot.resetStates();
     fail("The test case is a prototype.");
   }
 

@@ -120,8 +120,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
           this.forwardsRB.setSelected(true);
         }
         
-        this.startLocButton.setEnabled(AutoPilot.getInstance().isAutoModeActive());
-        this.startLocButton.setSelected(AutoPilot.getInstance().isRunning(bb.getLocomotive()));
+        this.startLocButton.setEnabled(AutoPilot.isAutoModeActive());
+        this.startLocButton.setSelected(AutoPilot.isRunning(bb.getLocomotive()));
       } else {
         this.locomotiveCB.setSelectedItem(emptyBean);
         this.startLocButton.setEnabled(false);
@@ -463,7 +463,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
   private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed
     LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
     if (loc != null) {
-      AutoPilot.getInstance().startStopLocomotive(loc, this.startLocButton.isSelected());
+      AutoPilot.startStopLocomotive(loc, this.startLocButton.isSelected());
     }
   }//GEN-LAST:event_startLocButtonActionPerformed
 

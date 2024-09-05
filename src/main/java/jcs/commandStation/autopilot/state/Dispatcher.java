@@ -46,7 +46,6 @@ public class Dispatcher {
 
   private final LocomotiveBean locomotiveBean;
 
-  final AutoPilot autoPilot;
   private RouteBean routeBean;
 
   private String departureBlockId;
@@ -65,15 +64,17 @@ public class Dispatcher {
 
   private final List<StateEventListener> stateEventListeners;
 
+  private final ThreadGroup parent;
+
   private StateMachineThread stateMachineThread;
 
-  public Dispatcher(LocomotiveBean locomotiveBean, AutoPilot autoPilot) {
+  public Dispatcher(ThreadGroup parent, LocomotiveBean locomotiveBean) {
+    this.parent = parent;
     this.locomotiveBean = locomotiveBean;
     //Prefill with the current locomotive direction
     this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
-    this.autoPilot = autoPilot;
     this.stateEventListeners = new LinkedList<>();
-    this.stateMachineThread = new StateMachineThread(this);
+    this.stateMachineThread = new StateMachineThread(parent, this);
   }
 
   void startStateMachineThread() {
@@ -117,7 +118,7 @@ public class Dispatcher {
 
   public boolean startLocomotiveAutomode() {
     //Only when the Autopilot is ON!
-    if (autoPilot.isAutoModeActive()) {
+    if (AutoPilot.isAutoModeActive()) {
       stateMachineThread.setEnableAutomode(true);
       //is the thread running?
       startRunning();
@@ -135,7 +136,7 @@ public class Dispatcher {
     }
 
     if (this.stateMachineThread == null || !this.stateMachineThread.isAlive()) {
-      stateMachineThread = new StateMachineThread(this);
+      stateMachineThread = new StateMachineThread(this.parent, this);
     }
 
     this.stateMachineThread.setEnableAutomode(true);
@@ -144,9 +145,17 @@ public class Dispatcher {
     }
   }
 
-  void stopRunning() {
+  public void stopRunning() {
     if (stateMachineThread != null && stateMachineThread.isThreadRunning()) {
       stateMachineThread.stopRunningThread();
+
+      try {
+        Logger.trace(this.getName() + " Thread Joining...");
+        stateMachineThread.join();
+      } catch (InterruptedException ex) {
+        Logger.trace("Join error " + ex);
+      }
+      Logger.trace(this.getName() + " Thread Joined!");
     }
   }
 
@@ -164,7 +173,7 @@ public class Dispatcher {
     this.exitSensorId = null;
     this.stateEventListeners.clear();
     this.locomotiveBean.setDispatcherDirection(Direction.SWITCH);
-    this.stateMachineThread = new StateMachineThread(null);
+    //this.stateMachineThread = new StateMachineThread(this.parent,this);
   }
 
   public void reset() {
@@ -281,22 +290,22 @@ public class Dispatcher {
   }
 
   void registerIgnoreEventHandler(String sensorId) {
-    if (!autoPilot.isSensorHandlerRegistered(sensorId)) {
+    if (!AutoPilot.isSensorHandlerRegistered(sensorId)) {
       IgnoreSensorHandler ish = new IgnoreSensorHandler(sensorId, this);
-      autoPilot.addHandler(ish, sensorId);
+      AutoPilot.addHandler(ish, sensorId);
       Logger.trace("Added sensor " + sensorId + " to the ignore handlers");
     } else {
       Logger.trace("Sensor " + sensorId + " is allready ignored");
     }
   }
 
-  synchronized void clearDepartureIgnoreEventHandlers() {
+  void clearDepartureIgnoreEventHandlers() {
     if (departureBlockId != null) {
       BlockBean departureBlock = getDepartureBlock();
       String minSensorId = departureBlock.getMinSensorId();
-      autoPilot.removeHandler(minSensorId);
+      AutoPilot.removeHandler(minSensorId);
       String plusSensorId = departureBlock.getPlusSensorId();
-      autoPilot.removeHandler(plusSensorId);
+      AutoPilot.removeHandler(plusSensorId);
     }
   }
 
@@ -345,7 +354,7 @@ public class Dispatcher {
     locomotiveBean.setDirection(newDirection);
   }
 
-  synchronized void fireStateListeners(String s) {
+  void fireStateListeners(String s) {
     for (StateEventListener sel : stateEventListeners) {
       sel.onStateChange(this);
     }

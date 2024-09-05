@@ -1008,23 +1008,23 @@ public class LayoutPanel extends JPanel {
     if (this.autoPilotBtn.isSelected()) {
       this.startAllLocomotivesBtn.setEnabled(true);
 
-      AutoPilot.getInstance().startAutoMode();
+      AutoPilot.startAutoMode();
     } else {
       if (this.startAllLocomotivesBtn.isSelected()) {
         startAllLocomotivesBtn.doClick();
       }
       this.startAllLocomotivesBtn.setEnabled(false);
 
-      AutoPilot.getInstance().stopAutoMode();
+      AutoPilot.stopAutoMode();
     }
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
     if (this.startAllLocomotivesBtn.isSelected()) {
-      AutoPilot.getInstance().startAllLocomotives();
+      AutoPilot.startAllLocomotives();
     } else {
-      AutoPilot.getInstance().stopAllLocomotives();
+      AutoPilot.stopAllLocomotives();
     }
   }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
 
@@ -1033,7 +1033,7 @@ public class LayoutPanel extends JPanel {
   }//GEN-LAST:event_crossingBtnActionPerformed
 
   private void resetAutopilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotBtnActionPerformed
-    AutoPilot.getInstance().resetStates();
+    AutoPilot.resetStates();
   }//GEN-LAST:event_resetAutopilotBtnActionPerformed
 
   private void setTileType(TileBean.TileType tileType) {
