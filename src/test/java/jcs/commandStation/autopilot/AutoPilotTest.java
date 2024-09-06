@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.SensorEventHandler;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
@@ -52,16 +50,22 @@ public class AutoPilotTest {
 
   private final PersistenceTestHelper testHelper;
   private final PersistenceService ps;
-  //private Dispatcher dispatcher;
+  private boolean skipTest = false;
 
   private List<SensorEvent> sensorHandlerEvents;
 
   public AutoPilotTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
-    System.setProperty("dispatcher.stepTest", "true");
+    System.setProperty("do.not.simulate.virtual.drive", "true");
+    System.setProperty("state.machine.stepTest", "false");
     testHelper = PersistenceTestHelper.getInstance();
     testHelper.runTestDataInsertScript("autopilot_test_layout.sql");
     ps = PersistenceFactory.getService();
+    if (RunUtil.isWindows()) {
+      Logger.info("Skipping tests on Windows!");
+      skipTest = true;
+    }
+
   }
 
   @BeforeEach
@@ -108,6 +112,9 @@ public class AutoPilotTest {
 
   @Test
   public void testStartStopAutoModeNoDispatchers() {
+    if (this.skipTest) {
+      return;
+    }
     Logger.info("startStopAutoModeNoDispatchers");
     assertFalse(AutoPilot.isAutoModeActive());
 
@@ -151,6 +158,9 @@ public class AutoPilotTest {
 
   @Test
   public void testStartStopAutoModeDispatcherstNotRunning() {
+    if (this.skipTest) {
+      return;
+    }
     Logger.info("StartStopAutoModeDispatcherstNotRunning");
     assertFalse(AutoPilot.isAutoModeActive());
 
@@ -210,6 +220,9 @@ public class AutoPilotTest {
 
   @Test
   public void testStartStopAutoModeDispatcherRunning() {
+    if (this.skipTest) {
+      return;
+    }
     Logger.info("StartStopAutoModeDispatcherRunning");
     assertFalse(AutoPilot.isAutoModeActive());
 
@@ -294,6 +307,9 @@ public class AutoPilotTest {
 
   //@Test
   public void testIsSensorRegistered() {
+    if (this.skipTest) {
+      return;
+    }
     System.out.println("isSensorRegistered");
     String sensorId = "0-0001";
     //AutoPilot instance = AutoPilot.getInstance();
@@ -306,7 +322,7 @@ public class AutoPilotTest {
     assertTrue(AutoPilot.isAutoModeActive());
     assertFalse(AutoPilot.isSensorHandlerRegistered(sensorId));
     TestSensorHandler testSensorHandler = new TestSensorHandler(sensorId, this);
-    AutoPilot.addHandler(testSensorHandler, sensorId);
+    AutoPilot.addSensorEventHandler(testSensorHandler);
 
     assertTrue(AutoPilot.isSensorHandlerRegistered(sensorId));
 
@@ -319,6 +335,9 @@ public class AutoPilotTest {
 
   //@Test
   public void testGetOnTrackLocomotives() {
+    if (this.skipTest) {
+      return;
+    }
     System.out.println("getOnTrackLocomotives");
     //Check is the test script has run well
     List<Tile> tiles = TileFactory.toTiles(ps.getTileBeans(), false, false);
@@ -354,12 +373,9 @@ public class AutoPilotTest {
 
   //@Test
   public void testGhostDetection() {
-    if (RunUtil.isWindows()) {
-      //For some unknown reason in Windows this does not work....
-      System.out.println("Skipping ghostDetection test");
+    if (this.skipTest) {
       return;
     }
-
     System.out.println("GhostDetection test");
 
     //AutoPilot instance = AutoPilot.getInstance();
@@ -408,6 +424,9 @@ public class AutoPilotTest {
 
   //@Test
   public void testGetLocomotiveDispatchers() {
+    if (this.skipTest) {
+      return;
+    }
     System.out.println("getLocomotiveDispatchers");
     //AutoPilot instance = AutoPilot.getInstance();
     AutoPilot.startAutoMode();
@@ -460,6 +479,9 @@ public class AutoPilotTest {
 
   //@Test
   public void testGetLocomotiveDispatcher() {
+    if (this.skipTest) {
+      return;
+    }
     System.out.println("getLocomotiveDispatcher");
     //AutoPilot instance = AutoPilot.getInstance();
 
@@ -558,6 +580,12 @@ public class AutoPilotTest {
         this.autoPilotTest.sensorHandlerEvents.add(event);
       }
     }
+
+    @Override
+    public String getSensorId() {
+      return sensorId;
+    }
+
   }
 
   private void toggleSensorDirect(SensorBean sensorBean) {

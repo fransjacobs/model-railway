@@ -23,14 +23,14 @@ import org.tinylog.Logger;
  * @author frans
  */
 class WaitState extends DispatcherState {
-
+  
   WaitState() {
     super();
   }
-
+  
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
-
+    
     BlockBean blockBean = dispatcher.getDepartureBlock();
     int minWait = blockBean.getMinWaitTime();
     int maxWait;
@@ -39,21 +39,21 @@ class WaitState extends DispatcherState {
     } else {
       maxWait = Integer.getInteger("default.max.waittime", 20);
     }
-
+    
     long waitTime;
     if (blockBean.isRandomWait()) {
       //Seed a bit....
       for (int i = 0; i < 10; i++) {
         dispatcher.getRandomNumber(minWait, maxWait);
       }
-
+      
       waitTime = dispatcher.getRandomNumber(minWait, maxWait);
     } else {
       waitTime = minWait;
     }
-
-    Logger.debug("Waiting for " + waitTime + " s.");
-
+    
+    Logger.debug("Waiting for " + waitTime + " s. Block Random "+blockBean.isRandomWait()+" Block max: "+blockBean.getMaxWaitTime());
+    
     for (; waitTime >= 0; waitTime--) {
       if (dispatcher.isLocomotiveAutomodeOn()) {
         String s = dispatcher.getStateName() + " (" + waitTime + ")";
@@ -61,23 +61,23 @@ class WaitState extends DispatcherState {
 
         //For manual testing the thread is not running, step mode
         if ("false".equals(System.getProperty("dispatcher.stepTest", "false"))) {
-          //synchronized (this) {
-          try {
-            //wait(1000);
-            Thread.sleep(1000L);
-          } catch (InterruptedException ex) {
-            Logger.trace("Wait loop interrupted");
+          synchronized (this) {
+            try {
+              wait(1000);
+            } catch (InterruptedException ex) {
+              Logger.trace("Wait loop interrupted");
+            }
           }
-          //}
         } else {
           Logger.trace("Test mode: " + s);
         }
       } else {
         //Locomotive automode is disabled break the loop
+        Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
         break;
       }
     }
-
+    
     DispatcherState newState;
     if (dispatcher.isLocomotiveAutomodeOn()) {
       newState = new PrepareRouteState();
@@ -86,5 +86,5 @@ class WaitState extends DispatcherState {
     }
     return newState;
   }
-
+  
 }

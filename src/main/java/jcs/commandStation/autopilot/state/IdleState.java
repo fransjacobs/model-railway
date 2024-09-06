@@ -47,17 +47,20 @@ class IdleState extends DispatcherState {
       DispatcherState newState = new PrepareRouteState();
       return newState;
     } else {
-      if (AutoPilot.isAutoModeActive() || dispatcher.isLocomotiveAutomodeOn()) {
-        Logger.trace(dispatcher.getName() + "is Waiting...");
-        try {
-          synchronized (this) {
-            wait(10000);
+      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+        Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
+      } else {
+        if (AutoPilot.isAutoModeActive() || dispatcher.isLocomotiveAutomodeOn()) {
+          Logger.trace(dispatcher.getName() + "is Waiting...");
+          try {
+            synchronized (this) {
+              wait(10000);
+            }
+          } catch (InterruptedException ex) {
+            Logger.trace("Interrupted: " + ex.getMessage());
           }
-        } catch (InterruptedException ex) {
-          Logger.trace("Interrupted: " + ex.getMessage());
         }
       }
-
       return this;
     }
   }

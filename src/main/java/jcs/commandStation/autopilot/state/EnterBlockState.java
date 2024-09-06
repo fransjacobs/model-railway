@@ -15,8 +15,10 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.commandStation.autopilot.ExpectedSensorEventHandler;
 import java.awt.Color;
 import jcs.JCS;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
@@ -44,6 +46,10 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
 
       inSensorId = dispatcher.getInSensorId();
 
+      //For the remaining states ignore events from the in sensor
+      ExpectedSensorEventHandler ish = new ExpectedSensorEventHandler(inSensorId, dispatcher);
+      AutoPilot.addSensorEventHandler(ish);
+
       dispatcher.setWaitForSensorid(inSensorId);
 
       //Register this state as a SensorEventListener
@@ -51,11 +57,10 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       JCS.getJcsCommandStation().addSensorEventListener(this);
       Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
-      locomotiveBraking = true;
-
       //Slowdown
       Logger.trace("Slowdown " + locomotive.getName() + "...");
       dispatcher.changeLocomotiveVelocity(locomotive, 100);
+      locomotiveBraking = true;
 
       //Change Block statuses 
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -82,18 +87,20 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       DispatcherState newState = new InBlockState();
       //Remove handler as the state will now change
       JCS.getJcsCommandStation().removeSensorEventListener(this);
-      //For the remaining states ignore events from the in sensor
-      dispatcher.registerIgnoreEventHandler(inSensorId);
+
       return newState;
     } else {
-      try {
-        synchronized (this) {
-          wait(10000);
+      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+        Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
+      } else {
+        try {
+          synchronized (this) {
+            wait(10000);
+          }
+        } catch (InterruptedException ex) {
+          Logger.trace("Interrupted: " + ex.getMessage());
         }
-      } catch (InterruptedException ex) {
-        Logger.trace("Interrupted: " + ex.getMessage());
       }
-
       return this;
     }
   }
@@ -104,8 +111,9 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       if (sensorEvent.isActive()) {
         this.canAdvanceToNextState = true;
         Logger.trace("In Event from Sensor " + sensorEvent.getId());
-
-        this.dispatcher.sensorUpdated(sensorEvent);
+        synchronized (this) {
+          this.notifyAll();
+        }
       }
     }
   }

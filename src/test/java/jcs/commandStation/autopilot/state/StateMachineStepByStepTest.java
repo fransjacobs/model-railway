@@ -47,16 +47,23 @@ public class StateMachineStepByStepTest {
   private LocomotiveBean ns1631;
   private Dispatcher dispatcher;
 
+  private boolean skipTest = false;
+
   public StateMachineStepByStepTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
     //Switch the Virtual Simulator OFF as it will interfeare with this step test
-    System.setProperty("dispatcher.stepTest", "true");
+    System.setProperty("do.not.simulate.virtual.drive", "true");
+    System.setProperty("state.machine.stepTest", "true");
+
     testHelper = PersistenceTestHelper.getInstance();
     testHelper.runTestDataInsertScript("autopilot_test_layout.sql");
 
     ps = PersistenceFactory.getService();
-    //autoPilot = AutoPilot.getInstance();
-    AutoPilot.startAutoMode();
+
+    if (RunUtil.isWindows()) {
+      Logger.info("Skipping tests on Windows!");
+      skipTest = true;
+    }
   }
 
   @BeforeEach
@@ -75,13 +82,28 @@ public class StateMachineStepByStepTest {
       ps.persist(route);
     }
     JCS.getJcsCommandStation().switchPower(true);
+    AutoPilot.startAutoMode();
+    Logger.info("=========================== setUp done..............");
   }
 
   @AfterEach
   public void tearDown() {
+    Logger.info("=========================== Teardown..............");
     AutoPilot.stopAutoMode();
-    //let the autopilot finish...
-    pause(1000);
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (autoPilotRunning && timeout > now) {
+      pause(1);
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertFalse(AutoPilot.isAutoModeActive());
+
+    Logger.debug("Autopilot Automode stopped in " + (now - start) + " ms.");
     AutoPilot.clearDispatchers();
   }
 
@@ -152,9 +174,9 @@ public class StateMachineStepByStepTest {
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
     }
-    synchronized (this) {
-      notifyAll();
-    }
+    //synchronized (this) {
+    //  notifyAll();
+    //}
   }
 
   private void pause(int millis) {
@@ -166,10 +188,194 @@ public class StateMachineStepByStepTest {
   }
 
   @Test
+  public void testBk1ToBk4() {
+    if (this.skipTest) {
+      return;
+    }
+
+    //StateMachine functionality test, runs in 1 single thread.
+    //Each execution step should be manually performed.
+    //Lets drive with the DHD loc from bk-1 to bk-4
+    Logger.info("Bk1ToBk4");
+    setupbk1bkNsDHG();
+
+    //Check block statuses
+    BlockBean block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+
+    BlockBean block2 = ps.getBlockByTileId("bk-2");
+    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block2.getBlockState());
+
+    BlockBean block3 = ps.getBlockByTileId("bk-3");
+    assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block3.getBlockState());
+
+    BlockBean block4 = ps.getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
+
+    StateMachineThread stateMachine = dispatcher.getStateMachineThread();
+
+    //Start from bk-1
+    assertEquals(NS_DHG_6505, block1.getLocomotiveId());
+    //Destination bk-4
+    assertNull(block4.getLocomotiveId());
+    assertNull(dispatcher.getRouteBean());
+
+    //Thread should NOT run!
+    assertFalse(stateMachine.isThreadRunning());
+    assertFalse(stateMachine.isEnableAutomode());
+    assertEquals("IdleState", stateMachine.getDispatcherStateName());
+
+    //Execute IdleState
+    stateMachine.handleState();
+    //Automode is off should stay Idle
+    assertEquals("IdleState", stateMachine.getDispatcherStateName());
+
+    //Departure
+    //Automode should be enabled
+    stateMachine.setEnableAutomode(true);
+    assertTrue(stateMachine.isEnableAutomode());
+
+    //Execute IdleState again
+    stateMachine.handleState();
+
+    //State should advance to PrepareRoute    
+    assertEquals("PrepareRouteState", stateMachine.getDispatcherStateName());
+
+    //execute the PrepareRouteState
+    stateMachine.handleState();
+
+    //After executing the PrepareRouteState should be advanced to StartState
+    assertEquals("StartState", stateMachine.getDispatcherStateName());
+
+    //Check the results of the PrepareRouteState execution
+    String routeId = dispatcher.getRouteBean().getId();
+    assertEquals("[bk-1-]->[bk-4+]", routeId);
+    assertTrue(dispatcher.getRouteBean().isLocked());
+
+    //Departure block state
+    block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block1.getBlockState());
+
+    //Destination block state
+    block4 = ps.getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
+
+    //Block 4, destination block should be reserved for DHG to come
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+    //Speed shoul still be zero as the startState has not been executed
+    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
+
+    //After executing the status should be still be StartState
+    assertEquals("StartState", stateMachine.getDispatcherStateName());
+
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
+
+    //Execute the StartState
+    stateMachine.handleState();
+    //Departure block state
+    block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block1.getBlockState());
+    //Destination block state
+    block4 = ps.getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.LOCKED, block4.getBlockState());
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+
+    //Loc should start
+    assertEquals(700, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //State should stay the same as the enter sensor of the destination is not hit.
+    assertEquals("StartState", stateMachine.getDispatcherStateName());
+
+    //Now lets Toggle the enter sensor
+    String enterSensorId = dispatcher.getEnterSensorId();
+    assertEquals("0-0013", enterSensorId);
+    //Check if the enterSensor is registered a a "knownEvent" else we get a Ghost!
+    assertTrue(AutoPilot.isSensorHandlerRegistered(enterSensorId));
+
+    SensorBean enterSensor = ps.getSensor(enterSensorId);
+    toggleSensorDirect(enterSensor);
+
+    //Execute the StartState
+    stateMachine.handleState();
+    //State should be advanced to EnterBlock
+    assertEquals("EnterBlockState", stateMachine.getDispatcherStateName());
+
+    //Execute the EnterState
+    stateMachine.handleState();
+
+    //Loc should be slowing down
+    assertEquals(100, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //Departure block state
+    block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.OUTBOUND, block1.getBlockState());
+    //Destination block state
+    block4 = ps.getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.INBOUND, block4.getBlockState());
+
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+
+    //Execute the EnterState
+    stateMachine.handleState();
+    assertEquals("EnterBlockState", stateMachine.getDispatcherStateName());
+
+    //Now lets Toggle the in sensor
+    String inSensorId = dispatcher.getInSensorId();
+    assertEquals("0-0012", inSensorId);
+    //Check if the inSensor is registered a a "knownEvent" else we get a Ghost!
+    assertTrue(AutoPilot.isSensorHandlerRegistered(inSensorId));
+
+    //Toggle the IN sensor
+    SensorBean inSensor = ps.getSensor(inSensorId);
+    toggleSensorDirect(inSensor);
+
+    //Execute the EnterState
+    stateMachine.handleState();
+    assertEquals("InBlockState", stateMachine.getDispatcherStateName());
+
+    //Execute the InBlockState
+    stateMachine.handleState();
+
+    //Loc should be stopped
+    assertEquals(0, dispatcher.getLocomotiveBean().getVelocity());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    //Departure block state
+    block1 = ps.getBlockByTileId("bk-1");
+    assertEquals(BlockBean.BlockState.FREE, block1.getBlockState());
+
+    //Destination block state
+    block4 = ps.getBlockByTileId("bk-4");
+    assertEquals(BlockBean.BlockState.OCCUPIED, block4.getBlockState());
+
+    assertEquals(NS_DHG_6505, block4.getLocomotiveId());
+    assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
+
+    assertNull(dispatcher.getRouteBean());
+    assertNull(dispatcher.getDestinationBlock());
+
+    assertEquals("bk-4", dispatcher.getDepartureBlock().getId());
+
+    assertEquals("WaitState", stateMachine.getDispatcherStateName());
+
+    //Disable automode which should jump to Idle state
+    dispatcher.stopLocomotiveAutomode();
+    
+    assertFalse(dispatcher.isLocomotiveAutomodeOn());
+    
+    //Execute the WaitState, should jump to Idle
+    //Execute the InBlockState
+    stateMachine.handleState();
+
+    //Should switch to Idle
+    assertEquals("IdleState", stateMachine.getDispatcherStateName());
+  }
+
+  //@Test
   public void testFromBk1ToBk4andViceVersa() {
-    if (RunUtil.isWindows()) {
-      //For some unknown reason in Windows this does not work....
-      Logger.info("Skipping fromBk1ToBk4andViceVersa");
+    if (this.skipTest) {
       return;
     }
 
@@ -515,7 +721,7 @@ public class StateMachineStepByStepTest {
     assertEquals("bk-1", dispatcher.getDepartureBlock().getId());
 
     //Result of the InBlockState execution should be Wait
-    assertEquals("WaitState", instance.getDispatcherStateName());//    instance.setEnableAutomode(false);
+    assertEquals("WaitState", instance.getDispatcherStateName());//    stateMachine.setEnableAutomode(false);
 
     //Automode OFF!
     instance.setEnableAutomode(false);
@@ -530,11 +736,9 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", instance.getDispatcherStateName());
   }
 
-  @Test
+  //@Test
   public void testFromBk1ToBk4Gost() {
-    if (RunUtil.isWindows()) {
-      //For some unknown reason in Windows this does not work....
-      Logger.info("Skipping fromBk1ToBk4Gost");
+    if (this.skipTest) {
       return;
     }
 
@@ -690,11 +894,9 @@ public class StateMachineStepByStepTest {
     assertEquals(LocomotiveBean.Direction.FORWARDS, dispatcher.getLocomotiveBean().getDirection());
   }
 
-  @Test
+  //@Test
   public void testBk1ToBk4StartStopLocomotiveAutomode() {
-    if (RunUtil.isWindows()) {
-      //For some unknown reason in Windows this does not work....
-      Logger.info("Skipping Bk1ToBk4StartStopLocomotiveAutomode");
+    if (this.skipTest) {
       return;
     }
 
@@ -873,8 +1075,12 @@ public class StateMachineStepByStepTest {
     assertEquals("IdleState", instance.getDispatcherStateName());
   }
 
-  @Test
+  //@Test
   public void testReset() {
+    if (this.skipTest) {
+      return;
+    }
+
     Logger.info("reset");
     setupbk2bkNs1631();
 

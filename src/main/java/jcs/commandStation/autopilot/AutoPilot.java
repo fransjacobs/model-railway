@@ -349,12 +349,12 @@ public final class AutoPilot {
       }
     }
 
-    if (Logger.isDebugEnabled()) {
-      Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
-      for (LocomotiveBean loc : activeLocomotives) {
-        Logger.trace(loc);
-      }
+    //if (Logger.isDebugEnabled()) {
+    //  Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
+    for (LocomotiveBean loc : activeLocomotives) {
+      Logger.trace(loc);
     }
+    //}
     return new ArrayList<>(activeLocomotives);
   }
 
@@ -403,15 +403,15 @@ public final class AutoPilot {
     }
   }
 
-  public static synchronized void addHandler(SensorEventHandler handler, String sensorId) {
-    sensorHandlers.put(sensorId, handler);
+  public static synchronized void addSensorEventHandler(SensorEventHandler handler) {
+    sensorHandlers.put(handler.getSensorId(), handler);
   }
 
-  public static synchronized boolean isSensorHandlerRegistered(String sensorId) {
+  public static boolean isSensorHandlerRegistered(String sensorId) {
     return sensorHandlers.containsKey(sensorId);
   }
 
-  public static void removeHandler(String sensorId) {
+  public static synchronized void removeHandler(String sensorId) {
     sensorHandlers.remove(sensorId);
   }
 

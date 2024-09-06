@@ -337,7 +337,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   //Find the route the locomotive is doing....
   void simulateDriving(int locUid, int speed, LocomotiveBean.Direction direction) {
-    if ("true".equals(System.getProperty("dispatcher.stepTest", "false"))) {
+    if ("true".equals(System.getProperty("do.not.simulate.virtual.drive", "false"))) {
       return;
     }
     //Check is the Dispatcher for the locomotive is running...

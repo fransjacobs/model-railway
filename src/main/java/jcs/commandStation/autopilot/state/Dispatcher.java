@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Random;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.SensorEventHandler;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
@@ -75,10 +74,6 @@ public class Dispatcher {
     this.locomotiveBean.setDispatcherDirection(locomotiveBean.getDirection());
     this.stateEventListeners = new LinkedList<>();
     this.stateMachineThread = new StateMachineThread(parent, this);
-  }
-
-  void startStateMachineThread() {
-    this.stateMachineThread.start();
   }
 
   StateMachineThread getStateMachineThread() {
@@ -159,10 +154,6 @@ public class Dispatcher {
     }
   }
 
-  void sensorUpdated(SensorEvent sensorEvent) {
-    this.stateMachineThread.sensorUpdated(sensorEvent);
-  }
-
   void resetDispatcher() {
     this.routeBean = null;
     this.departureBlockId = null;
@@ -173,7 +164,6 @@ public class Dispatcher {
     this.exitSensorId = null;
     this.stateEventListeners.clear();
     this.locomotiveBean.setDispatcherDirection(Direction.SWITCH);
-    //this.stateMachineThread = new StateMachineThread(this.parent,this);
   }
 
   public void reset() {
@@ -182,7 +172,6 @@ public class Dispatcher {
     resetDispatcher();
   }
 
-  ///????
   public boolean isRunning() {
     if (stateMachineThread != null) {
       return stateMachineThread.isThreadRunning();
@@ -216,30 +205,6 @@ public class Dispatcher {
     }
   }
 
-  String swapSuffix(String suffix) {
-    if ("+".equals(suffix)) {
-      return "-";
-    } else {
-      return "+";
-    }
-  }
-
-  String getDepartureArrivalSuffix() {
-    if (routeBean == null) {
-      return null;
-    }
-    String departureSuffix = routeBean.getFromSuffix();
-    return swapSuffix(departureSuffix);
-  }
-
-  String getDestinationArrivalSuffix() {
-    if (routeBean == null) {
-      return null;
-    }
-    String destinationArrivalSuffix = routeBean.getToSuffix();
-    return destinationArrivalSuffix;
-  }
-
   public String getStateName() {
     if (stateMachineThread != null) {
       return stateMachineThread.getDispatcherStateName();
@@ -249,7 +214,6 @@ public class Dispatcher {
   }
 
   void setWaitForSensorid(String sensorId) {
-    registerIgnoreEventHandler(sensorId);
     this.waitingForSensorId = sensorId;
   }
 
@@ -289,16 +253,6 @@ public class Dispatcher {
     this.exitSensorId = exitSensorId;
   }
 
-  void registerIgnoreEventHandler(String sensorId) {
-    if (!AutoPilot.isSensorHandlerRegistered(sensorId)) {
-      IgnoreSensorHandler ish = new IgnoreSensorHandler(sensorId, this);
-      AutoPilot.addHandler(ish, sensorId);
-      Logger.trace("Added sensor " + sensorId + " to the ignore handlers");
-    } else {
-      Logger.trace("Sensor " + sensorId + " is allready ignored");
-    }
-  }
-
   void clearDepartureIgnoreEventHandlers() {
     if (departureBlockId != null) {
       BlockBean departureBlock = getDepartureBlock();
@@ -309,7 +263,7 @@ public class Dispatcher {
     }
   }
 
-  synchronized void onIgnoreEvent(SensorEvent event) {
+  public void onIgnoreEvent(SensorEvent event) {
     //Only in Simulator mode
     if (JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
       if (this.waitingForSensorId != null && this.waitingForSensorId.equals(event.getId())) {
@@ -404,24 +358,6 @@ public class Dispatcher {
   int getRandomNumber(int min, int max) {
     Random random = new Random();
     return random.ints(min, max).findFirst().getAsInt();
-  }
-
-  private class IgnoreSensorHandler implements SensorEventHandler {
-
-    private final String sensorId;
-    private final Dispatcher trainDispatcher;
-
-    IgnoreSensorHandler(String sensorId, Dispatcher trainDispatcher) {
-      this.sensorId = sensorId;
-      this.trainDispatcher = trainDispatcher;
-    }
-
-    @Override
-    public void handleEvent(SensorEvent event) {
-      if (this.sensorId.equals(event.getId())) {
-        this.trainDispatcher.onIgnoreEvent(event);
-      }
-    }
   }
 
   @Override

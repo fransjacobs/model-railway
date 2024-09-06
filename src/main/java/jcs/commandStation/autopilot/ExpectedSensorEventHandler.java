@@ -15,15 +15,32 @@
  */
 package jcs.commandStation.autopilot;
 
+import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.SensorEvent;
 
 /**
- *
- * @author Frans Jacobs
+ * Handle Sensor event which are expected
  */
-public interface SensorEventHandler {
+public class ExpectedSensorEventHandler implements SensorEventHandler {
 
-  void handleEvent(SensorEvent event);
+  private final String sensorId;
+  private final Dispatcher dispatcher;
 
-  String getSensorId();
+  public ExpectedSensorEventHandler(String sensorId, Dispatcher dispatcher) {
+    this.sensorId = sensorId;
+    this.dispatcher = dispatcher;
+  }
+
+  @Override
+  public void handleEvent(SensorEvent event) {
+    if (this.sensorId.equals(event.getId())) {
+      this.dispatcher.onIgnoreEvent(event);
+    }
+  }
+
+  @Override
+  public String getSensorId() {
+    return this.sensorId;
+  }
+
 }
