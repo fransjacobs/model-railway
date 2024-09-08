@@ -13,7 +13,6 @@
 My Experiments have finally resulted in Software which is capable of running a
 Modeltrain layout Automatically!
 I created a [short video](https://youtu.be/xP6eUdScMY0) to demonstrate running trains.
-
 Also a [video of pysical locomotives running on the Test Layout](https://www.youtube.com/watch?v=CyLmGk6gfHA)
 
 ## Why?
@@ -90,7 +89,6 @@ Currently the following features are under active development:
 * Add more Unit tests
 * ...
 
-
 ## License
 [LICENSE](LICENSE.md)
 
@@ -112,7 +110,6 @@ Currently the following features are under active development:
     </td>
 </tr>
 </table>
-
 
 ** Copyright 2019 - 2024 Frans Jacobs **
 
