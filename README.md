@@ -12,8 +12,8 @@
 ## Model railway control with JCS
 My Experiments have finally resulted in Software which is capable of running a
 Modeltrain layout Automatically!
-I created a ![short video](https://www.youtube.com/watch?v=xP6eUdScMY0&t=9s) as proof ;)
-Also a [video of pysical locomotives running on my Test Layout](https://www.youtube.com/watch?v=CyLmGk6gfHA)
+I created a ![short video](https://youtu.be/xP6eUdScMY0) to demonstrate running trains.
+Also a ![video of pysical locomotives running on the Test Layout](https://www.youtube.com/watch?v=CyLmGk6gfHA)
 
 ## Why?
 Why did I start this project, as there are many out of the box working products on the market?
