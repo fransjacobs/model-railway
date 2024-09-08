@@ -453,11 +453,14 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         if (MouseEvent.BUTTON1 == evt.getButton() && tile == null) {
           //Only add a new tile when there is no tile on the selected snapPoint
           Logger.trace("Adding a new tile: " + tileType + " @ (" + snapPoint.x + ", " + snapPoint.y + ")");
-          Tile addedTile = addTile(snapPoint);
-          selectedTiles.addAll(addedTile.getAllPoints());
 
-          if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
-            this.saveTile(tile);
+          Tile addedTile = addTile(snapPoint);
+          if (addedTile != null) {
+            selectedTiles.addAll(addedTile.getAllPoints());
+
+            if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+              this.saveTile(tile);
+            }
           }
         } else {
           if (tile != null) {
@@ -882,26 +885,47 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
     Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
 
-    tiles.put(chkp, tile);
-    //Alternative point(s) to be able to find all points
+    //Can the tile be placed, keeping in mind the extra points
+    boolean canBeAdded = true;
     if (!tile.getAltPoints().isEmpty()) {
-      Set<Point> alt = tile.getAltPoints();
-      for (Point ap : alt) {
-        this.altTiles.put(ap, tile);
+      //Check if the extra point positions are not occupied
+      Set<Point> tilePoints = tile.getAllPoints();
+
+      for (Point tp : tilePoints) {
+        if (tiles.containsKey(tp) || altTiles.containsKey(tp)) {
+          Logger.trace("Point " + p + " occupied by " + findTile(p).getId() + " Can't add new Tile: " + tile);
+          canBeAdded = false;
+        }
       }
     }
 
-    if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
-      this.saveTile(tile);
-    }
+    if (canBeAdded) {
+      tiles.put(chkp, tile);
+      //Alternative point(s) to be able to find all points
+      if (!tile.getAltPoints().isEmpty()) {
+        Set<Point> alt = tile.getAltPoints();
+        for (Point ap : alt) {
+          this.altTiles.put(ap, tile);
+        }
+      }
 
-    Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
-    Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
+      if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+        this.saveTile(tile);
+      }
+
+      Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
+      Logger.trace("Added " + tile + " There are now " + this.tiles.size() + " tiles...");
+    }
 
     if (fullRepaint) {
       this.repaint();
     }
-    return tile;
+
+    if (canBeAdded) {
+      return tile;
+    } else {
+      return null;
+    }
   }
 
   void removeTiles() {

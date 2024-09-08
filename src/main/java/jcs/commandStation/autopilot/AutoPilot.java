@@ -369,6 +369,16 @@ public final class AutoPilot {
     return new ArrayList<>(activeLocomotives);
   }
 
+  public static boolean isGostDetected() {
+    List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    for (BlockBean bb : blocks) {
+      if (BlockBean.BlockState.GHOST == bb.getBlockState()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static void handleGhost(SensorEvent event) {
     Logger.warn("Ghost Detected! @ Sensor " + event.getId());
     //Switch power OFF!
@@ -552,7 +562,7 @@ public final class AutoPilot {
         now = System.currentTimeMillis();
       }
 
-      Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s. There are "+getRunningDispatcherCount()+" Still running...");
+      Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s. There are " + getRunningDispatcherCount() + " Still running...");
 
       if (dispatchersRunning) {
         for (Dispatcher ld : dispatchers.values()) {

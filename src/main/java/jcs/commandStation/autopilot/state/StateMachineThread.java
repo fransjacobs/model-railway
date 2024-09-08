@@ -17,7 +17,6 @@ package jcs.commandStation.autopilot.state;
 
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
