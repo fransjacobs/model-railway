@@ -59,13 +59,13 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   }
 
   private void initModel() {
-    AutoPilot.getInstance().addAutoPilotStatusListener(this);
-    statusChanged(AutoPilot.getInstance().isAutoModeActive());
+    AutoPilot.addAutoPilotStatusListener(this);
+    statusChanged(AutoPilot.isAutoModeActive());
   }
 
   @Override
   public void statusChanged(boolean running) {
-    List<Dispatcher> dispatchers = AutoPilot.getInstance().getLocomotiveDispatchers();
+    List<Dispatcher> dispatchers = AutoPilot.getLocomotiveDispatchers();
     Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
     this.locomotiveDispatcherTableModel.refresh();
   }
@@ -135,10 +135,10 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   public void setVisible(boolean aFlag) {
     super.setVisible(aFlag);
     if (aFlag) {
-      AutoPilot.getInstance().addAutoPilotStatusListener(this);
-      statusChanged(AutoPilot.getInstance().isAutoModeActive());
+      AutoPilot.addAutoPilotStatusListener(this);
+      statusChanged(AutoPilot.isAutoModeActive());
     } else {
-      AutoPilot.getInstance().removeAutoPilotStatusListener(this);
+      AutoPilot.removeAutoPilotStatusListener(this);
     }
   }
 
@@ -169,11 +169,11 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
 
     long now = System.currentTimeMillis();
     long maxtime = now + 5000L;
-    AutoPilot.getInstance().startAutoMode();
-    int dispcnt = AutoPilot.getInstance().getLocomotiveDispatchers().size();
+    AutoPilot.startAutoMode();
+    int dispcnt = AutoPilot.getLocomotiveDispatchers().size();
     while (dispcnt == 0 && now < maxtime) {
       now = System.currentTimeMillis();
-      dispcnt = AutoPilot.getInstance().getLocomotiveDispatchers().size();
+      dispcnt = AutoPilot.getLocomotiveDispatchers().size();
     }
 
     try {

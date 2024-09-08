@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
@@ -32,16 +33,34 @@ class IdleState extends DispatcherState {
     boolean canAdvanceToNextState = block != null && dispatcher.isLocomotiveAutomodeOn();
 
     //TODO Reduce the number of log lines....
-    if (block != null && dispatcher.autoPilot.isAutoModeActive()) {
+    if (block != null && AutoPilot.isAutoModeActive()) {
       Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is in block " + block.getDescription() + " [" + block.getId() + "] dir: " + locomotive.getDirection().getDirection() + " Can advance: " + canAdvanceToNextState);
     } else {
-      Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block. Can advance: " + canAdvanceToNextState);
+      if (AutoPilot.isAutoModeActive()) {
+        Logger.debug("Locomotive " + locomotive.getName() + " [" + locomotive.getId() + "] is not in a block!");
+      } else {
+        Logger.debug("State of " + dispatcher.getName() + " will not change as the AutoPilot Automode is Off");
+      }
     }
 
     if (canAdvanceToNextState) {
       DispatcherState newState = new PrepareRouteState();
       return newState;
     } else {
+      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+        Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
+      } else {
+        if (AutoPilot.isAutoModeActive() && dispatcher.isLocomotiveAutomodeOn()) {
+          Logger.trace(dispatcher.getName() + " is Idle...");
+          try {
+            synchronized (this) {
+              wait(10000);
+            }
+          } catch (InterruptedException ex) {
+            Logger.trace("Interrupted: " + ex.getMessage());
+          }
+        }
+      }
       return this;
     }
   }

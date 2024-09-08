@@ -63,11 +63,14 @@ class HSISerialConnection implements HSIConnection {
       commPort.setParity(0);
 
       portOpen = commPort.openPort();
-      commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
+      commPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 10000, 1000);
       writer = new BufferedWriter(new OutputStreamWriter(commPort.getOutputStream()));
 
       HSISerialPortListener listener = new HSISerialPortListener(this);
       commPort.addDataListener(listener);
+
+      Logger.trace("Manufacturer: " + commPort.getManufacturer() + " ProductId: " + commPort.getProductID());
+
     } catch (SerialPortInvalidPortException ioe) {
       Logger.error("Can't find com port: " + portName + "; " + ioe.getMessage());
     }

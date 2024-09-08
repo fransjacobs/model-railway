@@ -733,7 +733,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       return;
     }
     //Check if automode is on etc
-    boolean autoPilotEnabled = AutoPilot.getInstance().isAutoModeActive();
+    boolean autoPilotEnabled = AutoPilot.isAutoModeActive();
     boolean hasLoco = ((Block) tile).getBlockBean().getLocomotive() != null;
     boolean isGhost = ((Block) tile).getBlockBean().getBlockState() == BlockState.GHOST;
     this.startLocomotiveMI.setEnabled(autoPilotEnabled && hasLoco);
@@ -1353,7 +1353,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       Block block = (Block) selectedTile;
       LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
 
-      this.executor.execute(() -> AutoPilot.getInstance().startStopLocomotive(locomotive, true));
+      this.executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
       repaint();
     }
   }//GEN-LAST:event_startLocomotiveMIActionPerformed
@@ -1363,7 +1363,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       Block block = (Block) selectedTile;
       LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
 
-      this.executor.execute(() -> AutoPilot.getInstance().startStopLocomotive(locomotive, false));
+      this.executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, false));
       repaint();
     }
   }//GEN-LAST:event_stopLocomotiveMIActionPerformed
@@ -1373,7 +1373,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       Block block = (Block) selectedTile;
       LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
 
-      this.executor.execute(() -> AutoPilot.getInstance().resetDispatcher(locomotive));
+      this.executor.execute(() -> AutoPilot.resetDispatcher(locomotive));
       repaint();
     }
   }//GEN-LAST:event_resetDispatcherMIActionPerformed
@@ -1450,7 +1450,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
 
   private void updateDispatcherDirection(LocomotiveBean locomotive) {
-    Dispatcher dispatcher = AutoPilot.getInstance().getLocomotiveDispatcher(locomotive);
+    Dispatcher dispatcher = AutoPilot.getLocomotiveDispatcher(locomotive);
     if (dispatcher != null) {
       dispatcher.getLocomotiveBean().setDispatcherDirection(locomotive.getDispatcherDirection());
     }

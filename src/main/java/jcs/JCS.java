@@ -146,12 +146,13 @@ public class JCS extends Thread {
     Thread.currentThread().setName("JCS finalize thread");
     Logger.trace("Shutting Down...");
     ProcessFactory.getInstance().shutdown();
-    Logger.info("JCS "+VersionInfo.getVersion()+" session finished");
+    Logger.info("JCS " + VersionInfo.getVersion() + " session finished");
   }
 
   public static JCS getInstance() {
     if (instance == null) {
       instance = new JCS();
+
       // Prepare for shutdown...
       Runtime.getRuntime().addShutdownHook(instance);
     }
@@ -161,7 +162,7 @@ public class JCS extends Thread {
   public static void main(String[] args) {
     System.setProperty("fazecast.jSerialComm.appid", "JCS");
     version = VersionInfo.getVersion();
-    Logger.info("Starting JCS Version "+version+"...");
+    Logger.info("Starting JCS Version " + version + "...");
 
     if (GraphicsEnvironment.isHeadless()) {
       Logger.error("This JDK environment is headless, can't start a GUI!");
@@ -212,7 +213,7 @@ public class JCS extends Thread {
 
     if (persistentStore != null) {
       if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
-        if(jcsCommandStation != null) {
+        if (jcsCommandStation != null) {
           boolean connected = jcsCommandStation.connect();
           if (connected) {
             logProgress("Connected with Command Station...");
@@ -225,8 +226,8 @@ public class JCS extends Thread {
             logProgress("Could NOT connect with Command Station...");
           }
         } else {
-           logProgress("NO Default Command Station found...");
-        }  
+          logProgress("NO Default Command Station found...");
+        }
       }
 
       logProgress("Starting UI...");

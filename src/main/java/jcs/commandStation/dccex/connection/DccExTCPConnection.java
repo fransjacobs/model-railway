@@ -197,7 +197,7 @@ class DccExTCPConnection implements DccExConnection {
     @Override
     public void run() {
       this.quit = false;
-      Thread.currentThread().setName("DCC-EX-RX");
+      this.setName("DCC-EX-RX");
 
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + " ...");
 

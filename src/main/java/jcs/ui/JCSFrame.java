@@ -48,6 +48,7 @@ import jcs.ui.options.OptionDialog;
 import jcs.ui.util.FrameMonitor;
 import jcs.ui.util.UICallback;
 import jcs.util.RunUtil;
+import jcs.util.SerialPortUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
 
@@ -741,6 +742,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(false);
         dispose();
+
+        //Force close ports
+        SerialPortUtil.closeAllPorts();
         Logger.debug("Shutting down");
       }
     }//GEN-LAST:event_formWindowClosing

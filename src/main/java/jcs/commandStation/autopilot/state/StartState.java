@@ -15,12 +15,13 @@
  */
 package jcs.commandStation.autopilot.state;
 
+import jcs.commandStation.autopilot.ExpectedSensorEventHandler;
 import jcs.JCS;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.RouteBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 
@@ -32,6 +33,7 @@ class StartState extends DispatcherState implements SensorEventListener {
   private boolean locomotiveStarted = false;
   private boolean canAdvanceToNextState = false;
   private String enterSensorId;
+  private Dispatcher dispatcher;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -44,16 +46,27 @@ class StartState extends DispatcherState implements SensorEventListener {
       String exitSensorId = dispatcher.getExitSensorId();
 
       //Register them both to ignore event form these sensors.
-      dispatcher.registerIgnoreEventHandler(occupancySensorId);
-      dispatcher.registerIgnoreEventHandler(exitSensorId);
+      ExpectedSensorEventHandler osh = new ExpectedSensorEventHandler(occupancySensorId, dispatcher);
+      AutoPilot.addSensorEventHandler(osh);
+
+      ExpectedSensorEventHandler xsh = new ExpectedSensorEventHandler(exitSensorId, dispatcher);
+      AutoPilot.addSensorEventHandler(xsh);
+
       Logger.trace("Departure: " + departureBlock.getId() + " Ignoring Occupancy Sensor: " + occupancySensorId + " and Exit Sensor: " + exitSensorId);
 
       //The enter Sensor triggering will switch states.
       enterSensorId = dispatcher.getEnterSensorId();
       Logger.trace("Destination: " + destinationBlock.getId() + " Enter Sensor: " + enterSensorId + "...");
 
-      //Register this state as a SensorEventListener
+      //Register this state as a SensorEventListener, therefor a handle to the dispacher is needed
+      this.dispatcher = dispatcher;
       JCS.getJcsCommandStation().addSensorEventListener(this);
+
+      //Register the sensor also a an expected event
+      ExpectedSensorEventHandler esh = new ExpectedSensorEventHandler(enterSensorId, dispatcher);
+      AutoPilot.addSensorEventHandler(esh);
+
+      //TODO This is the simulator can be improved!
       dispatcher.setWaitForSensorid(enterSensorId);
 
       departureBlock.setBlockState(BlockBean.BlockState.OUTBOUND);
@@ -79,11 +92,20 @@ class StartState extends DispatcherState implements SensorEventListener {
       DispatcherState newState = new EnterBlockState();
       //Remove handler as the state will now change
       JCS.getJcsCommandStation().removeSensorEventListener(this);
-      //For the remaining states ignore events from the enter sensor
-      dispatcher.registerIgnoreEventHandler(enterSensorId);
 
       return newState;
     } else {
+      if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
+        Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
+      } else {
+        try {
+          synchronized (this) {
+            wait(10000);
+          }
+        } catch (InterruptedException ex) {
+          Logger.trace("Interrupted: " + ex.getMessage());
+        }
+      }
       return this;
     }
   }
@@ -95,7 +117,7 @@ class StartState extends DispatcherState implements SensorEventListener {
         canAdvanceToNextState = true;
         Logger.trace("Enter Event from Sensor " + sensorEvent.getId());
         synchronized (this) {
-          notify();
+          this.notifyAll();
         }
       }
     }

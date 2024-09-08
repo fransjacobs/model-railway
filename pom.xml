@@ -37,12 +37,12 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.2.224</version>
+            <version>2.3.232</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.16.0</version>
         </dependency>
         <dependency>
             <groupId>org.beryx</groupId>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
-            <version>2.0.12</version>
+            <version>2.0.16</version>
         </dependency>
         <dependency>
             <groupId>com.dieselpoint</groupId>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-batik</artifactId>
-            <version>3.10.1</version>
+            <version>3.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
@@ -93,31 +93,31 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.2</version>
+            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.10.2</version>
+            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>5.10.2</version>
+            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.25.3</version>
+            <version>3.26.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-            <version>2.2</version>
+            <version>3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -135,12 +135,12 @@
         <dependency>
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
-            <version>3.4</version>
+            <version>3.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.httprpc</groupId>
             <artifactId>sierra</artifactId>
-            <version>2.0.5</version>
+            <version>2.3</version>
         </dependency>     
         <dependency>
             <groupId>eu.hansolo</groupId>
@@ -160,14 +160,14 @@
         <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
-            <version>RELEASE210</version>
+            <version>RELEASE220</version>
         </dependency>
     </dependencies>
     <build>        
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.12.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <compilerArgs>--enable-preview</compilerArgs>
                     <release>21</release>
@@ -177,7 +177,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.7.1</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -224,7 +224,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.7.1</version>
                 <executions>
                     <execution>
                         <id>server</id>
@@ -252,15 +252,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.4.0</version>
                 <configuration>
+                <testFailureIgnore>false</testFailureIgnore>
                     <argLine>-Dfile.encoding=UTF-8</argLine>
+                    <configurationParameters>
+                        junit.jupiter.execution.parallel.enabled=false
+                    </configurationParameters>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.2</version>
                 <configuration>
                     <skipIfEmpty>true</skipIfEmpty>
                     <archive>
@@ -289,7 +293,7 @@
             <plugin>
                 <groupId>io.github.fvarrui</groupId>
                 <artifactId>javapackager</artifactId>
-                <version>1.7.5</version>
+                <version>1.7.6</version>
                 <configuration>
                     <mainClass>${exec.mainClass}</mainClass>
                     <bundleJre>false</bundleJre>

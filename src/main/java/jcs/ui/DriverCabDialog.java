@@ -51,6 +51,7 @@ public class DriverCabDialog extends javax.swing.JDialog implements LocomotiveDi
     if (locomotiveBean != null) {
       //Refresh settings
       LocomotiveBean locomotive = PersistenceFactory.getService().getLocomotive(locomotiveBean.getId());
+      this.setTitle(locomotive.getName());
       this.driverCabPanel.setLocomotiveBean(locomotive);
 
       if (locomotive.getLocIcon() != null) {

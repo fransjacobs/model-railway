@@ -34,6 +34,7 @@ class WaitState extends DispatcherState {
     BlockBean blockBean = dispatcher.getDepartureBlock();
     int minWait = blockBean.getMinWaitTime();
     int maxWait;
+
     if (blockBean.getMaxWaitTime() != null) {
       maxWait = blockBean.getMaxWaitTime();
     } else {
@@ -49,10 +50,18 @@ class WaitState extends DispatcherState {
 
       waitTime = dispatcher.getRandomNumber(minWait, maxWait);
     } else {
-      waitTime = minWait;
+      if (blockBean.getMaxWaitTime() != null && blockBean.getMinWaitTime() == null) {
+        waitTime = blockBean.getMaxWaitTime();
+      } else {
+        if (blockBean.getMinWaitTime() != null) {
+          waitTime = minWait;
+        } else {
+          waitTime = maxWait;
+        }
+      }
     }
 
-    Logger.debug("Waiting for " + waitTime + " s.");
+    Logger.debug("Waiting for " + waitTime + " s. Block Random " + blockBean.isRandomWait() + " Block max: " + blockBean.getMaxWaitTime());
 
     for (; waitTime >= 0; waitTime--) {
       if (dispatcher.isLocomotiveAutomodeOn()) {
@@ -73,6 +82,7 @@ class WaitState extends DispatcherState {
         }
       } else {
         //Locomotive automode is disabled break the loop
+        Logger.debug("Automode is disabled for " + dispatcher.getName() + " Exit " + dispatcher.getStateName());
         break;
       }
     }

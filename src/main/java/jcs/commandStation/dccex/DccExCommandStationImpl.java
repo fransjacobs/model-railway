@@ -698,7 +698,8 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
       //csb.setIpAddress("192.168.1.185");
       csb.setNetworkPort(2560);
       csb.setConnectVia("SERIAL");
-      csb.setSerialPort("cu.usbmodem14101");
+      //csb.setSerialPort("cu.usbmodem14101");
+      csb.setSerialPort("ttyACM0");
       //csb.setSerialPort("ttyACM0");
 
       csb.setDefault(true);

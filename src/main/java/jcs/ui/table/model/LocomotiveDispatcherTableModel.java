@@ -35,8 +35,8 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
 
   @Override
   public void refresh() {
-    if (AutoPilot.getInstance().isAutoModeActive()) {
-      setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
+    if (AutoPilot.isAutoModeActive()) {
+      setBeans(AutoPilot.getLocomotiveDispatchers());
       Logger.trace("There are " + this.beans.size() + " dispatchers");
 
       for (Dispatcher ld : this.beans) {
@@ -50,7 +50,7 @@ public class LocomotiveDispatcherTableModel extends AbstractBeanTableModel<Dispa
           Logger.trace("Remove Listen to dispatcher " + ld.getName());
         }
       }
-      setBeans(AutoPilot.getInstance().getLocomotiveDispatchers());
+      setBeans(AutoPilot.getLocomotiveDispatchers());
     }
   }
 

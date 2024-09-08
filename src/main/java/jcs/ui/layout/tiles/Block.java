@@ -42,7 +42,6 @@ import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
-import org.tinylog.Logger;
 
 public class Block extends AbstractTile implements Tile {
 
@@ -438,8 +437,7 @@ public class Block extends AbstractTile implements Tile {
 
     Color blockStateColor = getBlockStateColor();
 
-    Logger.trace("Block " + this.id + " State: " + this.getBlockBean().getBlockState().getState() + " Color: " + blockStateColor.toString());
-
+    //Logger.trace("Block " + this.id + " State: " + this.getBlockBean().getBlockState().getState() + " Color: " + blockStateColor.toString());
     g2.setPaint(blockStateColor);
     g2.fillRoundRect(xx, yy, rw, rh, 15, 15);
 

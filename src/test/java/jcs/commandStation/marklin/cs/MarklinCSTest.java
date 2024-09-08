@@ -15,10 +15,13 @@
  */
 package jcs.commandStation.marklin.cs;
 
+import jcs.JCS;
 import jcs.entities.CommandStationBean;
+import jcs.persistence.PersistenceFactory;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.jupiter.api.AfterAll;
 import org.tinylog.Logger;
 
 /**
@@ -32,6 +35,11 @@ public class MarklinCSTest {
 
   //controller.skip.init
   public MarklinCSTest() {
+
+    //JCS.getJcsCommandStation().disconnect();
+    //When running in a batch the default command station could be different..
+    //CommandStationBean marklinCs = PersistenceFactory.getService().getCommandStation("marklin.cs");
+    //PersistenceFactory.getService().changeDefaultCommandStation(marklinCs);
     try {
       if (instance == null) {
         CommandStationBean csb = new CommandStationBean();
@@ -57,6 +65,8 @@ public class MarklinCSTest {
 
         if (csAvailable) {
           instance.disconnect();
+        } else {
+          JCS.getJcsCommandStation().disconnect();
         }
       }
     } catch (Exception e) {
@@ -149,6 +159,14 @@ public class MarklinCSTest {
       String result = instance.getIp();
       assertEquals(expResult, result);
     }
+  }
+
+  @AfterAll
+  public static void setDefaultCommandStation() {
+    JCS.getJcsCommandStation().disconnect();
+
+    CommandStationBean virt = PersistenceFactory.getService().getCommandStation("virtual");
+    PersistenceFactory.getService().changeDefaultCommandStation(virt);
   }
 
 }
