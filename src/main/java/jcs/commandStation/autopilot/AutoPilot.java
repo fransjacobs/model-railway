@@ -85,7 +85,7 @@ public final class AutoPilot {
     }
   }
 
-  public synchronized static void stopAutoMode() {
+  public static void stopAutoMode() {
     if (autoPilotThread != null) {
       autoPilotThread.stopAutoMode();
 
@@ -141,6 +141,17 @@ public final class AutoPilot {
       }
     }
     return isRunning;
+  }
+
+  public static int getRunningDispatcherCount() {
+    Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
+    int runningDispatchers = 0;
+    for (Dispatcher ld : snapshot) {
+      if (ld.isRunning()) {
+        runningDispatchers++;
+      }
+    }
+    return runningDispatchers;
   }
 
   public static synchronized Dispatcher createDispatcher(LocomotiveBean locomotiveBean) {
@@ -453,6 +464,7 @@ public final class AutoPilot {
       this.running = false;
       synchronized (this) {
         this.notifyAll();
+        //this.interrupt();
       }
     }
 
@@ -508,11 +520,25 @@ public final class AutoPilot {
         }
       }
 
+      Logger.trace("Try to finish all dispatchers...");
+
       long now = System.currentTimeMillis();
       long start = now;
       long timeout = now + 30000;
       //Check if all dispachers are stopped
       boolean dispatchersRunning = areDispatchersRunning();
+
+      Logger.trace("Try to finish all dispatchers. There are " + getRunningDispatcherCount() + " Dispatchers running...");
+
+      if (dispatchersRunning) {
+        //Signal the dispatchers
+        Set<Dispatcher> snapshot = new HashSet<>(dispatchers.values());
+        for (Dispatcher ld : snapshot) {
+          synchronized (ld) {
+            ld.stopLocomotiveAutomode();
+          }
+        }
+      }
 
       while (dispatchersRunning && now < timeout) {
         dispatchersRunning = areDispatchersRunning();
@@ -526,7 +552,7 @@ public final class AutoPilot {
         now = System.currentTimeMillis();
       }
 
-      Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s");
+      Logger.trace((dispatchersRunning ? "Not " : "") + "All dispatchers stopped in " + ((now - start) / 1000) + " s. There are "+getRunningDispatcherCount()+" Still running...");
 
       if (dispatchersRunning) {
         for (Dispatcher ld : dispatchers.values()) {

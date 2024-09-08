@@ -50,8 +50,8 @@ class IdleState extends DispatcherState {
       if ("true".equals(System.getProperty("state.machine.stepTest", "false"))) {
         Logger.debug("StateMachine StepTest is enabled. Dispatcher: " + dispatcher.getName() + " State: " + dispatcher.getStateName());
       } else {
-        if (AutoPilot.isAutoModeActive() || dispatcher.isLocomotiveAutomodeOn()) {
-          Logger.trace(dispatcher.getName() + "is Waiting...");
+        if (AutoPilot.isAutoModeActive() && dispatcher.isLocomotiveAutomodeOn()) {
+          Logger.trace(dispatcher.getName() + " is Idle...");
           try {
             synchronized (this) {
               wait(10000);

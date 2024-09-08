@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.JCSCommandStation;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
@@ -32,10 +34,12 @@ import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileFactory;
 import jcs.util.RunUtil;
 import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.tinylog.Logger;
 
 /**
@@ -50,6 +54,7 @@ public class AutoPilotTest {
 
   private final PersistenceTestHelper testHelper;
   private final PersistenceService ps;
+  private final JCSCommandStation cs;
   private boolean skipTest = false;
 
   private List<SensorEvent> sensorHandlerEvents;
@@ -61,11 +66,16 @@ public class AutoPilotTest {
     testHelper = PersistenceTestHelper.getInstance();
     testHelper.runTestDataInsertScript("autopilot_test_layout.sql");
     ps = PersistenceFactory.getService();
+    cs = JCS.getJcsCommandStation();
+    cs.disconnect();
+    //When running in a batch the default command station could be different..
+    CommandStationBean virt = ps.getCommandStation("virtual");
+    ps.changeDefaultCommandStation(virt);
+    
     if (RunUtil.isWindows()) {
       Logger.info("Skipping tests on Windows!");
       skipTest = true;
     }
-
   }
 
   @BeforeEach
@@ -85,11 +95,18 @@ public class AutoPilotTest {
     }
 
     sensorHandlerEvents = new ArrayList<>();
-    JCS.getJcsCommandStation().switchPower(true);
+    if (!cs.isConnected()) {
+      cs.connect();
+    }
+    cs.switchPower(true);
+
+    assertTrue(cs.isPowerOn());
+    Logger.trace("====================== Setup done ========================");
   }
 
   @AfterEach
   public void tearDown() {
+    Logger.trace("====================== Teardown start ========================");
     AutoPilot.stopAutoMode();
 
     long now = System.currentTimeMillis();
@@ -272,7 +289,7 @@ public class AutoPilotTest {
 
     boolean dispatcherThreadRunning = dhgDisp.isRunning();
     while (!dispatcherThreadRunning && timeout > now) {
-      pause(10);
+      pause(1);
       dispatcherThreadRunning = dhgDisp.isRunning();
       now = System.currentTimeMillis();
     }
@@ -600,6 +617,33 @@ public class AutoPilotTest {
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
     }
+  }
+
+  @BeforeAll
+  public static void beforeAll() {
+    Logger.trace("####################### AutoPilot Test ##############################");
+
+  }
+
+  @AfterAll
+  public static void assertOutput() {
+    AutoPilot.stopAutoMode();
+
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (autoPilotRunning && timeout > now) {
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertFalse(AutoPilot.isAutoModeActive());
+    AutoPilot.clearDispatchers();
+
+    Logger.info("Autopilot Reset in " + (now - start) + " ms.");
+    Logger.trace("^^^^^^^^^^^^^^^^^^^^^^^^ AutoPilot Test ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
   }
 
 }

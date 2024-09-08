@@ -25,6 +25,7 @@ import jcs.commandStation.JCSCommandStation;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.BlockBean;
+import jcs.entities.CommandStationBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
@@ -32,10 +33,12 @@ import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.util.RunUtil;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.tinylog.Logger;
 
 public class StateMachineThreadTest {
@@ -67,6 +70,12 @@ public class StateMachineThreadTest {
 
     ps = PersistenceFactory.getService();
     cs = JCS.getJcsCommandStation();
+    cs.disconnect();
+    //When running in a batch the default command station could be different..
+    CommandStationBean virt = ps.getCommandStation("virtual");
+    ps.changeDefaultCommandStation(virt);
+
+    cs.connect();
 
     if (RunUtil.isWindows()) {
       Logger.info("Skipping tests on Windows!");
@@ -89,8 +98,26 @@ public class StateMachineThreadTest {
       route.setLocked(false);
       ps.persist(route);
     }
+
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
     JCS.getJcsCommandStation().switchPower(true);
+    //Wait for power on..
+    boolean powerOn = JCS.getJcsCommandStation().isPowerOn();
+    while (!powerOn && timeout > now) {
+      pause(1);
+      powerOn = JCS.getJcsCommandStation().isPowerOn();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertTrue(JCS.getJcsCommandStation().isPowerOn());
+
+    Logger.trace("Power on in " + (now - start) + "ms.");
+
     AutoPilot.startAutoMode();
+
     Logger.info("=========================== setUp done..............");
   }
 
@@ -250,7 +277,10 @@ public class StateMachineThreadTest {
     //Automode is off should stay Idle
     assertEquals("IdleState", dhgDisp.getStateName());
     assertTrue(AutoPilot.isOnTrack(dhg));
+
     assertTrue(AutoPilot.isAutoModeActive());
+
+    AutoPilot.startAutoMode();
 
     long now = System.currentTimeMillis();
     long timeout = now + 10000;
@@ -480,9 +510,6 @@ public class StateMachineThreadTest {
     assertNull(dhgDisp.getDestinationBlock());
 
     assertEquals("bk-4", dhgDisp.getDepartureBlock().getId());
-    
-    //Disable automode which should jump to Idle state
-    dhgDisp.stopLocomotiveAutomode();
 
     now = System.currentTimeMillis();
     timeout = now + 10000;
@@ -496,8 +523,27 @@ public class StateMachineThreadTest {
 
     assertTrue(timeout > now);
     dispatcherState = dhgDisp.getStateName();
-    assertEquals("IdleState", dispatcherState);
+
+    assertEquals("WaitState", dispatcherState);
     assertEquals(6, passedStates.size());
+
+    now = System.currentTimeMillis();
+    timeout = now + 10000;
+    //Disable automode which should jump to Idle state
+    dhgDisp.stopLocomotiveAutomode();
+
+    executedStates = statesListener.getEventCount();
+    while (executedStates < 7 && timeout > now) {
+      pause(1);
+      executedStates = statesListener.getEventCount();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    dispatcherState = dhgDisp.getStateName();
+
+    assertEquals("IdleState", dispatcherState);
+    assertEquals(7, passedStates.size());
   }
 
   //@Test
@@ -860,6 +906,33 @@ public class StateMachineThreadTest {
     public void resetEventCount() {
       this.eventCount = 0;
     }
+  }
+
+  @BeforeAll
+  public static void beforeAll() {
+    Logger.trace("####################### State Machine Thread Test ##############################");
+
+  }
+
+  @AfterAll
+  public static void assertOutput() {
+    AutoPilot.stopAutoMode();
+
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + 10000;
+    boolean autoPilotRunning = AutoPilot.isAutoModeActive();
+    while (autoPilotRunning && timeout > now) {
+      autoPilotRunning = AutoPilot.isAutoModeActive();
+      now = System.currentTimeMillis();
+    }
+
+    assertTrue(timeout > now);
+    assertFalse(AutoPilot.isAutoModeActive());
+    AutoPilot.clearDispatchers();
+
+    Logger.info("Autopilot Reset in " + (now - start) + " ms.");
+    Logger.trace("^^^^^^^^^^^^^^^^^^^^^^^^ State Machine Thread Test ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
   }
 
 }

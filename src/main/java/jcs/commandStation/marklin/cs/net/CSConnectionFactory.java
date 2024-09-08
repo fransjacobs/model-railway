@@ -41,7 +41,7 @@ public class CSConnectionFactory {
   private CSConnection controllerConnection;
   private HTTPConnection httpConnection;
   private InetAddress controllerHost;
-  
+
   private static final String BROADCAST_ADDRESS = "255.255.255.255";
 
   private static final String LAST_USED_IP_PROP_FILE = RunUtil.DEFAULT_PATH + "last-used-marklin-cs-ip.properties";
@@ -102,13 +102,16 @@ public class CSConnectionFactory {
   }
 
   public static void disconnectAll() {
-    try {
-      instance.controllerConnection.close();
-    } catch (Exception ex) {
-      Logger.trace("Error during disconnect " + ex);
+    if (instance.controllerConnection != null) {
+      try {
+        instance.controllerConnection.close();
+      } catch (Exception ex) {
+        Logger.trace("Error during disconnect " + ex);
+      }
     }
     instance.controllerConnection = null;
     instance.httpConnection = null;
+    instance.controllerHost = null;
   }
 
   HTTPConnection getHTTPConnectionImpl() {

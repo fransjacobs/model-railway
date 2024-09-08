@@ -109,10 +109,14 @@ class StateMachineThread extends Thread {
     }
     
     if (!AutoPilot.isAutoModeActive()) {
-      //Automode has stopped, let the Thread finish when WaitState is reached
+      //Automode has stopped, let the Thread finish when WaitState is reached or is Idle
       if (dispatcherState instanceof IdleState || dispatcherState instanceof WaitState) {
         Logger.trace(getName() + " Stopping thread as Autopilot automode is stopped");
         this.running = false;
+        //Just stop
+        synchronized(this) {
+          this.notifyAll();
+        }
       }
     }
     
