@@ -50,11 +50,9 @@ public class StateMachineThreadTest {
   private final PersistenceTestHelper testHelper;
   private final JCSCommandStation cs;
   private final PersistenceService ps;
-  //private final AutoPilot autoPilot;
   private LocomotiveBean dhg;
   private LocomotiveBean ns1631;
   private Dispatcher dispatcher;
-  private boolean skipTest = false;
 
   private final ExecutorService executor;
 
@@ -76,11 +74,6 @@ public class StateMachineThreadTest {
     ps.changeDefaultCommandStation(virt);
 
     cs.connect();
-
-    if (RunUtil.isWindows()) {
-      Logger.info("Skipping tests on Windows!");
-      skipTest = true;
-    }
   }
 
   @BeforeEach
@@ -230,10 +223,6 @@ public class StateMachineThreadTest {
 
   @Test
   public void testBk1ToBk4() {
-    if (this.skipTest) {
-      return;
-    }
-
     //StateMachine Threaded functionality test.
     //The Sate machine runs in its own Thread.
     //Each execution step are automatically.

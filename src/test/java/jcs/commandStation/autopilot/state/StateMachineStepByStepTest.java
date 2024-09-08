@@ -46,12 +46,9 @@ public class StateMachineStepByStepTest {
 
   private final PersistenceTestHelper testHelper;
   private final PersistenceService ps;
-  //private final AutoPilot autoPilot;
   private LocomotiveBean dhg;
   private LocomotiveBean ns1631;
   private Dispatcher dispatcher;
-
-  private boolean skipTest = false;
 
   public StateMachineStepByStepTest() {
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
@@ -63,11 +60,6 @@ public class StateMachineStepByStepTest {
     testHelper.runTestDataInsertScript("autopilot_test_layout.sql");
 
     ps = PersistenceFactory.getService();
-
-    if (RunUtil.isWindows()) {
-      Logger.info("Skipping tests on Windows!");
-      skipTest = true;
-    }
   }
 
   @BeforeEach
@@ -191,10 +183,6 @@ public class StateMachineStepByStepTest {
   @Test
   @Order(1) 
   public void testBk1ToBk4() {
-    if (this.skipTest) {
-      return;
-    }
-
     //StateMachine functionality test, runs in 1 single thread.
     //Each execution step should be manually performed.
     //Lets drive with the DHD loc from bk-1 to bk-4
@@ -377,10 +365,6 @@ public class StateMachineStepByStepTest {
 
   @Test
   public void testFromBk1ToBk4andViceVersa() {
-    if (this.skipTest) {
-      return;
-    }
-
     Logger.info("fromBk1ToBk4andViceVersa");
     setupbk1bkNsDHG();
 
@@ -721,10 +705,6 @@ public class StateMachineStepByStepTest {
 
   //@Test
   public void testFromBk1ToBk4Gost() {
-    if (this.skipTest) {
-      return;
-    }
-
     Logger.info("fromBk1ToBk4Gost");
     setupbk1bkNsDHG();
 
@@ -879,10 +859,6 @@ public class StateMachineStepByStepTest {
 
   //@Test
   public void testBk1ToBk4StartStopLocomotiveAutomode() {
-    if (this.skipTest) {
-      return;
-    }
-
     Logger.info("Bk1ToBk4StartStopLocomotiveAutomode");
     setupbk1bkNsDHG();
 
@@ -1060,10 +1036,6 @@ public class StateMachineStepByStepTest {
 
   //@Test
   public void testReset() {
-    if (this.skipTest) {
-      return;
-    }
-
     Logger.info("reset");
     setupbk2bkNs1631();
 
