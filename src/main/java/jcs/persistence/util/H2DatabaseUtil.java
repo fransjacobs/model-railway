@@ -50,7 +50,7 @@ public class H2DatabaseUtil {
   protected static final String JDBC_PRE = "jdbc:h2:";
 
   protected static final String DB_CREATE_DDL = "jcs-db.sql";
-  
+
   //Future use
   protected static final String CLOSE_ON_EXIT = ";DB_CLOSE_ON_EXIT=FALSE";
 
@@ -329,7 +329,7 @@ public class H2DatabaseUtil {
         Logger.error("Could not obtain a connection!");
       }
     } catch (SQLException ex) {
-      Logger.error(ex);
+      Logger.error("Can't obtain version!" + ex);
     }
     return version;
   }
@@ -374,7 +374,10 @@ public class H2DatabaseUtil {
 
   public static String updateDatabase() {
     String curVersion = getDataBaseVersion();
-
+    if (curVersion == null) {
+      Logger.warn("Assume version 0.0.1");
+      curVersion = "0.0.1";
+    }
     int fromVersion = Integer.parseInt(curVersion.replace(".", ""));
     int toVersion = Integer.parseInt(DB_VERSION.replace(".", ""));
 
@@ -396,6 +399,7 @@ public class H2DatabaseUtil {
         } catch (Exception ex) {
           Logger.error(ex);
         }
+        //Logger.info((test ? "TESTMODE " : "") + "Database updated to version: " + getDataBaseVersion());
         Logger.info((test ? "TESTMODE " : "") + "Database updated to version: " + getDataBaseVersion());
       }
     } else {
