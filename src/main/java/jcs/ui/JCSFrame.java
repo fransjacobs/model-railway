@@ -36,6 +36,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import jcs.JCS;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.PowerEvent;
@@ -97,7 +98,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
       //Initialize the Touchbar for MacOS
       if (RunUtil.isMacOSX()) {
-        //JCS.showTouchbar(this);
         this.setTitle("");
       }
 
@@ -179,9 +179,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }
 
   public void showDesignLayoutPanel() {
-    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(this.centerPanel, "designPanel");
-    this.layoutPanel.loadLayout();
+    if (!AutoPilot.isAutoModeActive()) {
+      CardLayout card = (CardLayout) this.centerPanel.getLayout();
+      card.show(this.centerPanel, "designPanel");
+      this.layoutPanel.loadLayout();
+    }
   }
 
   public void stop() {
