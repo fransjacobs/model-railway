@@ -8,35 +8,29 @@
 ![GitHub Gist last commit](https://img.shields.io/github/last-commit/fransjacobs/model-railway)
 ![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
 ![GitHub Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)
+***
+## About The Project
+JCS is a hobby project of me where I try to automate my Model Railway. The past year I have on and off worked on several aspects or modules of the software whic are needed to finally drive automatically. A short summary of the topics which are needed and used to finally be able to drive a train automatically:
+- Connectivety to the Command Station hardware. (DCC-EX,HSI-S88, Marklin CS2/3)
+- Edit and display graphically a layout
+- With the layout be able to route all the possible drive ways
+- Show the routes and driveways in the layout screen
+- Graphically feedback events on track to the layout screen
+- Input dialogs to setup Accessories, Locomotives, Command stations, etc
+- Locomotive Drive Cap so tha you can manually run you locomotive
+- Virtual Command Station, to ease testing and simulate automatic driving 
+- Monitor Sensor events
 
-## Model railway control with JCS
-My Experiments have finally resulted in Software which is capable of running a
-Modeltrain layout Automatically!
-I created a [short video](https://youtu.be/xP6eUdScMY0) to demonstrate running trains.
-Also a [video of pysical locomotives running on the Test Layout](https://www.youtube.com/watch?v=CyLmGk6gfHA)
+I created a [short video](https://youtu.be/xP6eUdScMY0) demonstrating automatic running of locomotives. Also a [video of pysical locomotives running on the Test Layout](https://www.youtube.com/watch?v=CyLmGk6gfHA)
 
 ## Why?
-Why did I start this project, as there are many out of the box working products on the market?
-To have fun!
-And to learn, as it is fascinating which stap you have to take until it really works.
-Hence this project is Open Source so anyone can benefit of this project.
+There are already many "out of the box" working products. I wanted to create my own to learn and to have FUN!
+
+As I am a great supporter of Open Source I have put the project on github with the purpose for others to use it, learn from it, or improve it.  
 
 So I hope you get inspired!
 
-## About The Project
-JCS is an application to automatically control a model railway. It is still in development.
-The Application is currently contains the following features:
-* Screen to draw the layout.
-* Locomotive Cab screen to manually drive Locomotives.
-* Screen to switch accessories based on there addres.
-* Router to calculate all the possible route on the layout.
-* Support for DCC-EX plus HSI-S88 for feedback sensors.
-* Support for Marklin Central Station 2 and 3.
-* Run Locomotives automatically.
-* [Virtual Command Station](https://youtu.be/xP6eUdScMY0) to virtually drive locomotives.
-
-I started this project 2019 as (and still is) a hobby to automate my model-rail layout.
-As I am trying to do this project beside my work, family and other hobbies it is a project with sometimes a very slow pace...
+Frans
 
 ## Screenshots
 So here are a few screenshots of the Project:
