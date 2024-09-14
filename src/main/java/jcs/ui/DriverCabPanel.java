@@ -459,7 +459,8 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
 
       max = this.speedGauge.getMaxValue();
       double gaugeValue = Math.round(max / 1000 * velocity);
-      this.speedGauge.setValue(gaugeValue);
+      //this.speedGauge.setValue(gaugeValue);
+      this.speedGauge.setValueAnimated(gaugeValue);
 
       this.speedGauge.setUserLedOn(this.power);
       this.speedGauge.setLedBlinking(!this.power);
