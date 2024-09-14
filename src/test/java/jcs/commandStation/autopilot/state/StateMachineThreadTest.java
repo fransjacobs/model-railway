@@ -201,15 +201,16 @@ public class StateMachineThreadTest {
     sensorBean.setActive((sensorBean.getStatus() == 1));
     SensorEvent sensorEvent = new SensorEvent(sensorBean);
     fireFeedbackEvent(sensorEvent);
-    synchronized (this) {
-      notifyAll();
-    }
   }
 
   private void fireFeedbackEvent(SensorEvent sensorEvent) {
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
+
+      synchronized (this) {
+        notifyAll();
+      }
     }
   }
 
@@ -267,8 +268,7 @@ public class StateMachineThreadTest {
     assertEquals("IdleState", dhgDisp.getStateName());
     assertTrue(AutoPilot.isOnTrack(dhg));
 
-    //assertTrue(AutoPilot.isAutoModeActive());
-
+    assertTrue(AutoPilot.isAutoModeActive());
     AutoPilot.startAutoMode();
 
     long now = System.currentTimeMillis();
