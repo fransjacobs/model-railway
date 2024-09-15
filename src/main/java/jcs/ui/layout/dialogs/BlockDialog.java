@@ -366,11 +366,16 @@ public class BlockDialog extends javax.swing.JDialog {
           //Can't be null and should be the same as the block
           bb.setId(this.block.getId());
         }
-        
-        if(bb.getStatus() == null) {
+
+        if (bb.getStatus() == null) {
           bb.setBlockState(BlockBean.BlockState.FREE);
         }
-        
+
+        if (bb.getMinWaitTime() == null) {
+          //The wait time cannot be null, put a default there
+          Integer minWait = Integer.getInteger("default.min.waittime", 10);
+          bb.setMinWaitTime(minWait);
+        }
 
         PersistenceFactory.getService().persist(bb);
       }
