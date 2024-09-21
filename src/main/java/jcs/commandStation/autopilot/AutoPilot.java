@@ -68,6 +68,14 @@ public final class AutoPilot {
   private AutoPilot() {
   }
 
+  public static void runAutoPilot(boolean flag) {
+    if (flag) {
+      executor.execute(() -> startAutoMode());
+    } else {
+      executor.execute(() -> stopAutoMode());
+    }
+  }
+
   public synchronized static void startAutoMode() {
     if (JCS.getJcsCommandStation().isPowerOn()) {
       if (autoPilotThread != null && autoPilotThread.isRunning()) {

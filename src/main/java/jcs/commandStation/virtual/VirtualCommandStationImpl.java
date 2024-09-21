@@ -202,14 +202,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
         if (AutoPilot.isAutoModeActive() && speed > 0) {
           simulateDriving(locUid, speed, direction);
         }
-
       });
-
-      //When a locomotive has a speed change (>0) check if Auto mode is on.
-      //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
-//      if (AutoPilot.getInstance().isAutoModeActive() && speed > 0) {
-//        this.executor.execute(() -> simulateDriving(locUid, speed, direction));
-//      }
     } else {
       if (!this.power) {
         Logger.warn("Can't change velocity locUid: " + locUid + " Power is OFF!");
