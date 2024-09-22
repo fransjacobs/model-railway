@@ -95,7 +95,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     feedbackControllers = new HashMap<>();
 
     anonymousSensorListeners = new LinkedList<>();
-    //sensorEventListeners = new HashMap<>();
     accessoryEventListeners = new LinkedList<>();
     LocomotiveFunctionEventListeners = new LinkedList<>();
     locomotiveDirectionEventListeners = new LinkedList<>();
