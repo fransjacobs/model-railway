@@ -151,9 +151,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
 
       String ipAddress = selectedCommandStation.getIpAddress();
-      //if (ipAddress != null) {
-        this.ipAddressTF.setText(this.selectedCommandStation.getIpAddress());
-      //} 
+      this.ipAddressTF.setText(ipAddress);
 
       Integer networkPort = selectedCommandStation.getNetworkPort();
       if (networkPort != null) {

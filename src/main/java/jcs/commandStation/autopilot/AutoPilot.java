@@ -491,7 +491,8 @@ public final class AutoPilot {
     }
 
     private void registerAllSensors() {
-      List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+      //Use only assigned sensors, ignore sensors which are not assigned to a Tile
+      List<SensorBean> sensors = PersistenceFactory.getService().getAssignedSensors();
       int cnt = 0;
       for (SensorBean sb : sensors) {
         String key = sb.getId();

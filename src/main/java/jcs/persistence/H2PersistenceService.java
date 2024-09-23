@@ -102,6 +102,19 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public List<SensorBean> getAssignedSensors() {
+    List<TileBean> sensorTiles = getTileBeansByTileType(TileBean.TileType.SENSOR);
+    List<SensorBean> assignedSensors = new ArrayList<>(sensorTiles.size());
+
+    for (TileBean s : sensorTiles) {
+      if (s.getSensorBean() != null) {
+        assignedSensors.add(s.getSensorBean());
+      }
+    }
+    return assignedSensors;
+  }
+
+  @Override
   public SensorBean getSensor(Integer deviceId, Integer contactId) {
     Object[] args = new Object[]{deviceId, contactId};
     SensorBean sensor

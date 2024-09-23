@@ -15,6 +15,8 @@
  */
 package jcs.ui.table.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 
@@ -33,7 +35,15 @@ public class LocomotiveBeanTableModel extends AbstractBeanTableModel<LocomotiveB
   @Override
   public void refresh() {
     if (PersistenceFactory.getService() != null) {
-      this.setBeans(PersistenceFactory.getService().getLocomotives());
+      List<LocomotiveBean> activeLocos = new ArrayList<>();
+      List<LocomotiveBean> allLocos = PersistenceFactory.getService().getLocomotives();
+      for (LocomotiveBean loco : allLocos) {
+        if (loco.isShow()) {
+          activeLocos.add(loco);
+        }
+      }
+
+      this.setBeans(activeLocos);
     }
   }
 

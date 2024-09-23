@@ -546,9 +546,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   }
 
-//  private void getLocomotiveSpeedEventListeners() {
-//    this.decoderController.
-//  }
   @Override
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.remove(listener);

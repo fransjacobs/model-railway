@@ -46,6 +46,8 @@ public interface PersistenceService {
   // Sensors
   List<SensorBean> getSensors();
 
+  List<SensorBean> getAssignedSensors();
+
   SensorBean getSensor(String id);
 
   SensorBean getSensor(Integer deviceId, Integer contactId);
@@ -66,7 +68,7 @@ public interface PersistenceService {
   List<LocomotiveBean> getLocomotivesByCommandStationId(String commandStationId, Boolean show);
 
   LocomotiveBean getLocomotive(Integer address, DecoderType decoderType, String commandStionId);
-  
+
   LocomotiveBean getLocomotive(Integer locUid, String commandStionId);
 
   LocomotiveBean getLocomotive(Long id);

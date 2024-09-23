@@ -19,6 +19,7 @@ import com.twelvemonkeys.image.ImageUtil;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -61,9 +62,16 @@ public class LocomotiveTablePanel extends javax.swing.JPanel {
 
   private void initModel() {
     if (PersistenceFactory.getService() != null) {
-      List<LocomotiveBean> locomotiveBeans = PersistenceFactory.getService().getLocomotives();
-      Logger.trace("Found " + locomotiveBeans.size() + " Locomotives");
-      locomotiveBeanTableModel.setBeans(locomotiveBeans);
+      List<LocomotiveBean> activeLocos = new ArrayList<>();
+      List<LocomotiveBean> allLocos = PersistenceFactory.getService().getLocomotives();
+      for (LocomotiveBean loco : allLocos) {
+        if (loco.isShow()) {
+          activeLocos.add(loco);
+        }
+      }
+
+      Logger.trace("In total there are " + allLocos.size() + " Locomotives of which there are " + activeLocos.size() + " shown");
+      locomotiveBeanTableModel.setBeans(activeLocos);
     }
   }
 
