@@ -1355,9 +1355,9 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Component class="jcs.ui.DispatcherStatusPanel" name="dispatcherStatusPanel1">
+                <Component class="jcs.ui.DispatcherStatusPanel" name="dispatcherStatusPanel">
                   <Properties>
-                    <Property name="name" type="java.lang.String" value="dispatcherStatusPanel1" noResource="true"/>
+                    <Property name="name" type="java.lang.String" value="dispatcherStatusPanel" noResource="true"/>
                   </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">

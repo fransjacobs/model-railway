@@ -19,11 +19,10 @@ import com.twelvemonkeys.image.ImageUtil;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -31,6 +30,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
+import jcs.commandStation.events.RefreshEvent;
+import jcs.commandStation.events.RefreshEventListener;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.DriverCabDialog;
@@ -41,7 +42,7 @@ import org.tinylog.Logger;
  *
  * @author frans
  */
-public class LocomotiveTablePanel extends javax.swing.JPanel {
+public class LocomotiveTablePanel extends JPanel implements RefreshEventListener {
 
   /**
    * Creates new form LocomotiveTablePanel
@@ -62,16 +63,24 @@ public class LocomotiveTablePanel extends javax.swing.JPanel {
 
   private void initModel() {
     if (PersistenceFactory.getService() != null) {
-      List<LocomotiveBean> activeLocos = new ArrayList<>();
-      List<LocomotiveBean> allLocos = PersistenceFactory.getService().getLocomotives();
-      for (LocomotiveBean loco : allLocos) {
-        if (loco.isShow()) {
-          activeLocos.add(loco);
-        }
-      }
+//      List<LocomotiveBean> activeLocos = new ArrayList<>();
+//      List<LocomotiveBean> allLocos = PersistenceFactory.getService().getLocomotives();
+//      for (LocomotiveBean loco : allLocos) {
+//        if (loco.isShow()) {
+//          activeLocos.add(loco);
+//        }
+//      }
+//
+//      Logger.trace("In total there are " + allLocos.size() + " Locomotives of which there are " + activeLocos.size() + " shown");
+//      locomotiveBeanTableModel.setBeans(activeLocos);
+      locomotiveBeanTableModel.refresh();
+    }
+  }
 
-      Logger.trace("In total there are " + allLocos.size() + " Locomotives of which there are " + activeLocos.size() + " shown");
-      locomotiveBeanTableModel.setBeans(activeLocos);
+  @Override
+  public void onChange(RefreshEvent event) {
+    if ("locomotives".equals(event.getSource())) {
+      locomotiveBeanTableModel.refresh();
     }
   }
 
