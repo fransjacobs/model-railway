@@ -72,8 +72,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import jcs.JCS;
 import jcs.commandStation.ControllerFactory;
 import jcs.commandStation.DecoderController;
+import jcs.commandStation.events.RefreshEvent;
 import jcs.entities.CommandStationBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
@@ -84,8 +86,6 @@ import org.tinylog.Logger;
 
 /**
  * Dialog panel for importing and editing locomotive settings
- *
- * @author Frans Jacobs
  */
 public class LocomotivePreferencesPanel extends JPanel implements PropertyChangeListener {
 
@@ -225,7 +225,8 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     this.vMinSpinner.setEnabled(enableFields);
     this.tachoMaxSpinner.setEnabled(enableFields);
 
-    this.saveBtn.setEnabled(!this.synchronizeCB.isSelected() && enable);
+    //this.saveBtn.setEnabled(!this.synchronizeCB.isSelected() && enable);
+    this.saveBtn.setEnabled(enable);
 
     this.showCB.setEnabled(enable);
     this.commuterCB.setEnabled(enable);
@@ -724,6 +725,9 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       selectedLocomotive = PersistenceFactory.getService().persist(selectedLocomotive);
       initModels();
       locomotiveList.setSelectedValue(selectedLocomotive, true);
+
+      JCS.settingsChanged(new RefreshEvent("locomotives"));
+
     }
   }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -831,7 +835,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
   }//GEN-LAST:event_synchronizeCBActionPerformed
 
   private void addressSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_addressSpinnerStateChanged
-    if(this.selectedLocomotive != null) {
+    if (this.selectedLocomotive != null) {
       this.selectedLocomotive.setAddress((Integer) this.addressSpinner.getValue());
       long uid = this.selectedLocomotive.getAddress();
       this.selectedLocomotive.setUid(uid);
@@ -839,8 +843,10 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
   }//GEN-LAST:event_addressSpinnerStateChanged
 
   private void decoderCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_decoderCBActionPerformed
-    this.selectedLocomotive.setDecoderTypeString(this.decoderCB.getSelectedItem().toString().toLowerCase());
-    Logger.trace("Protocol is " + this.decoderCB.getSelectedItem().toString());
+    if (this.decoderCB.getSelectedItem() != null) {
+      this.selectedLocomotive.setDecoderTypeString(this.decoderCB.getSelectedItem().toString().toLowerCase());
+      Logger.trace("Protocol is " + this.decoderCB.getSelectedItem().toString());
+    }
   }//GEN-LAST:event_decoderCBActionPerformed
 
   private void iconTFFocusLost(FocusEvent evt) {//GEN-FIRST:event_iconTFFocusLost
@@ -902,8 +908,8 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
           //Logger.trace("Function F" + i + " exists");
         } else {
           //Logger.trace("Function F" + i + " created");
-          int functionType = 50+ i;
-          FunctionBean fb = new FunctionBean(locomotiveId, i,functionType, 0);
+          int functionType = 50 + i;
+          FunctionBean fb = new FunctionBean(locomotiveId, i, functionType, 0);
           functions.put(i, fb);
         }
       }
@@ -1122,6 +1128,8 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         setProgress((int) progress);
       }
 
+      JCS.settingsChanged(new RefreshEvent("locomotives"));
+
       firePropertyChange("done", "", "Locomotives Synchronized");
 
       return null;
@@ -1135,7 +1143,6 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     }
   }
 
-  
   //Testing
   public static void main(String args[]) {
     try {

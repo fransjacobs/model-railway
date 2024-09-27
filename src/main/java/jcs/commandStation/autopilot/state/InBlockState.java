@@ -47,6 +47,11 @@ class InBlockState extends DispatcherState {
 
     boolean alwaysStop = destinationBlock.isAlwaysStop();
 
+    //Switch the departure block sensors on again
+    dispatcher.clearDepartureIgnoreEventHandlers();
+    dispatcher.setOccupationSensorId(null);
+    dispatcher.setExitSensorId(null);
+
     departureBlock.setBlockState(BlockBean.BlockState.FREE);
     departureBlock.setLocomotive(null);
     departureBlock.setReverseArrival(false);
@@ -65,10 +70,10 @@ class InBlockState extends DispatcherState {
     Dispatcher.resetRoute(route);
     dispatcher.setRouteBean(null);
 
-    //Swap the sensorId's?
-    
     //Wait a short while...
-    pause(250);
+    if (alwaysStop) {
+      pause(250);
+    }
 
     DispatcherState newState;
     if (dispatcher.isLocomotiveAutomodeOn()) {

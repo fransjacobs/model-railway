@@ -32,7 +32,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
   private boolean locomotiveBraking = false;
   private boolean canAdvanceToNextState = false;
   private String inSensorId;
-  private Dispatcher dispatcher;
+  //private Dispatcher dispatcher;
 
   @Override
   DispatcherState execute(Dispatcher dispatcher) {
@@ -53,7 +53,7 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       dispatcher.setWaitForSensorid(inSensorId);
 
       //Register this state as a SensorEventListener
-      this.dispatcher = dispatcher;
+      //this.dispatcher = dispatcher;
       JCS.getJcsCommandStation().addSensorEventListener(this);
       Logger.trace("Destination block " + destinationBlock.getId() + " In SensorId: " + inSensorId);
 
@@ -75,10 +75,10 @@ class EnterBlockState extends DispatcherState implements SensorEventListener {
       dispatcher.showBlockState(destinationBlock);
 
       //Switch the departure block sensors on again
-      dispatcher.clearDepartureIgnoreEventHandlers();
+     //dispatcher.clearDepartureIgnoreEventHandlers();
 
-      dispatcher.setOccupationSensorId(null);
-      dispatcher.setExitSensorId(null);
+     //dispatcher.setOccupationSensorId(null);
+      //dispatcher.setExitSensorId(null);
 
       Logger.trace("Now Waiting for the IN event from SensorId: " + this.inSensorId + " Running loco: " + locomotive.getName() + " [" + locomotive.getDecoderType().getDecoderType() + " (" + locomotive.getAddress() + ")] Direction: " + locomotive.getDirection().getDirection() + " current velocity: " + locomotive.getVelocity());
     }

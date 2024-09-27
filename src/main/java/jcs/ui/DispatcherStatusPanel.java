@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 FJA.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,25 @@
  */
 package jcs.ui;
 
+import javax.swing.JPanel;
+import jcs.commandStation.events.RefreshEvent;
+import jcs.commandStation.events.RefreshEventListener;
+
 /**
  *
- * @author FJA
  */
-public class DispatcherStatusPanel extends javax.swing.JPanel {
+public class DispatcherStatusPanel extends JPanel implements RefreshEventListener {
 
   /**
    * Creates new form DispatcherStatusPanel
    */
   public DispatcherStatusPanel() {
     initComponents();
+  }
+  
+  @Override
+  public void onChange(RefreshEvent event) {
+    this.locomotiveTablePanel.onChange(event);
   }
 
   /**
@@ -55,27 +63,4 @@ public class DispatcherStatusPanel extends javax.swing.JPanel {
   private javax.swing.JTabbedPane tabsPane;
   // End of variables declaration//GEN-END:variables
 
-//For standalone testing only
-//  public static void main(String args[]) {
-//    try {
-//      UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-//    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-//      Logger.error(ex);
-//    }
-//
-//    java.awt.EventQueue.invokeLater(() -> {
-//      JFrame f = new JFrame("DispatcherPanel Tester");
-//      DispatcherStatusPanel dispatcherTestPanel = new DispatcherStatusPanel();
-//      f.add(dispatcherTestPanel);
-//
-//      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//      f.pack();
-//
-//      Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-//      f.setLocation(dim.width / 2 - f.getSize().width / 2, dim.height / 2 - f.getSize().height / 2);
-//      f.setVisible(true);
-//    });
-//  }  
-  
-  
 }

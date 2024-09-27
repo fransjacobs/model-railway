@@ -62,7 +62,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
       List<LocomotiveBean> locos = new LinkedList<>();
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
-      locos.addAll(PersistenceFactory.getService().getLocomotives());
+      locos.addAll(PersistenceFactory.getService().getLocomotives(true));
+      //Only Loc's which should be shown
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
       this.locomotiveCB.setModel(locomotiveComboBoxModel);
       

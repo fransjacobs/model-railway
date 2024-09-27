@@ -53,6 +53,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import jcs.JCS;
 import jcs.commandStation.ControllerFactory;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
@@ -150,9 +151,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
 
       String ipAddress = selectedCommandStation.getIpAddress();
-      if (ipAddress != null) {
-        this.ipAddressTF.setText(this.selectedCommandStation.getIpAddress());
-      }
+      this.ipAddressTF.setText(ipAddress);
 
       Integer networkPort = selectedCommandStation.getNetworkPort();
       if (networkPort != null) {
@@ -1105,6 +1104,22 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   }//GEN-LAST:event_testConnectionBtnActionPerformed
 
   private void commandStationComboBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationComboBoxActionPerformed
+    //Switch power off and disconnect the the previous one!
+    CommandStationBean newSelectedCommandStation = (CommandStationBean) commandStationComboBoxModel.getSelectedItem();
+
+    if (!selectedCommandStation.getId().equals(newSelectedCommandStation.getId())) {
+      try {
+        if (JCS.getJcsCommandStation() != null) {
+          JCS.getJcsCommandStation().switchPower(false);
+        }
+        if (JCS.getParentFrame() != null) {
+          JCS.getParentFrame().connect(false);
+        }
+      } catch (Exception e) {
+        Logger.error(e.getMessage());
+      }
+    }
+
     selectedCommandStation = (CommandStationBean) commandStationComboBoxModel.getSelectedItem();
     defaultCommandStationChkBox.setSelected(selectedCommandStation.isDefault());
     setFieldValues();
@@ -1490,6 +1505,9 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
                 }
                 setProgress(90);
 
+                String ipaddress = commandStation.getIp();
+                ipAddressTF.setText(ipaddress);
+
                 commandStation.disconnect();
                 firePropertyChange("done", "", "Connection succeeded");
                 setProgress(100);
@@ -1531,7 +1549,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
           }
         }
       }
-      
+
       return null;
     }
 
