@@ -241,8 +241,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
    * From this JSON all devices are found.<br>
    * Most important is the GFP which is the heart of the CS 3 most CAN Commands need the GFP UID.<br>
    * This data can also be obtained using the CAN Member PING command, but The JSON gives a little more detail.
-   *
-   * @return
    */
   private void getAppDevicesCs3() {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
@@ -588,7 +586,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public void switchAccessory(Integer address, AccessoryValue value) {
-    switchAccessory(address, value, this.defaultSwitchTime);
+    switchAccessory(address, value, defaultSwitchTime);
   }
 
   @Override
@@ -597,9 +595,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       //make sure a time is set!
       int st;
       if (switchTime == null || switchTime == 0) {
-        st = this.defaultSwitchTime;
+        st = defaultSwitchTime / 10;
       } else {
-        st = switchTime;
+        st = switchTime / 10;
       }
       //CS Switchtime is in 10 ms increments
       st = st / 10;

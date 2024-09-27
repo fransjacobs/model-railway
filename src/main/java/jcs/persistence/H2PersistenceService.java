@@ -294,6 +294,12 @@ public class H2PersistenceService implements PersistenceService {
   }
 
   @Override
+  public List<LocomotiveBean> getLocomotives(boolean show) {
+    String commandStationId = getDefaultCommandStation().getId();
+    return getLocomotivesByCommandStationId(commandStationId, show);
+  }
+
+  @Override
   public List<LocomotiveBean> getLocomotives() {
     String commandStationId = getDefaultCommandStation().getId();
     return getLocomotivesByCommandStationId(commandStationId);

@@ -116,7 +116,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     if (PersistenceFactory.getService() != null) {
       this.setTitle(this.getTitleString());
 
-      //Initialize the Touchbar for MacOS
       if (RunUtil.isMacOSX()) {
         this.setTitle("");
       }
@@ -768,6 +767,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         setVisible(false);
         dispose();
 
+        //Disconnect Command stations
+        JCS.getJcsCommandStation().switchPower(false);
+        JCS.getJcsCommandStation().disconnect();
+        
         //Force close ports
         SerialPortUtil.closeAllPorts();
         Logger.debug("Shutting down");

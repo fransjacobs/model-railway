@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 fransjacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,11 +38,6 @@ public class FrameMonitor {
   public static void registerFrame(JFrame frame, String frameUniqueId) {
     frame.pack();
     frame.setLocationRelativeTo(null);
-    //int defaultX = frame.getX();
-    //int defaultY = frame.getY();
-    //int defaultW = frame.getWidth();
-    //int defaultH = frame.getHeight();
-
     Point location = frame.getLocation();
     int defaultX = location.x;
     int defaultY = location.y;
@@ -75,13 +70,13 @@ public class FrameMonitor {
   }
 
   private static void updatePref(JFrame frame, Preferences prefs) {
-    Logger.trace("Updating preferences for " + frame.getClass().getSimpleName());
     Point location = frame.getLocation();
     prefs.putInt("x", location.x);
     prefs.putInt("y", location.y);
     Dimension size = frame.getSize();
     prefs.putInt("w", size.width);
     prefs.putInt("h", size.height);
+    Logger.trace("Updated prefs for " + frame.getClass().getSimpleName()+" Pos: ("+location.x+","+location.y+") Size W: "+size.width+" H: "+size.height);
   }
 
   private static Dimension getFrameSize(Preferences pref, int defaultW, int defaultH) {
