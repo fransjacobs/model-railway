@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>jcs</groupId>
     <artifactId>jcs</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
     <packaging>jar</packaging>
     <name>JCS</name>
     <url>https://github.com/fransjacobs/model-railway</url>
@@ -254,7 +254,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.4.0</version>
                 <configuration>
-                <testFailureIgnore>false</testFailureIgnore>
+                    <testFailureIgnore>false</testFailureIgnore>
                     <argLine>-Dfile.encoding=UTF-8</argLine>
                     <configurationParameters>
                         junit.jupiter.execution.parallel.enabled=false
@@ -275,6 +275,14 @@
                             <Implementation-Version>${project.version}</Implementation-Version>
                         </manifestEntries>
                     </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.3</version>
+                <configuration>
+                    <packaging>jar</packaging>
                 </configuration>
             </plugin>
             <plugin>
@@ -306,6 +314,8 @@
                     <vmArgs>-Dtinylog.writer.level=trace -Xms256m -Xmx1024m --add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED -Dsun.java2d.metal=true</vmArgs> 
                     <additionalResources>
                         <additionalResource>${project.basedir}/README.md</additionalResource>
+                        <additionalResource>${project.basedir}/JCS_SETUP.md</additionalResource>
+                        <additionalResource>${project.basedir}/DRIVING.md</additionalResource>
                         <additionalResource>${project.build.directory}/generated-resources/licenses</additionalResource>
                         <!--
                         <additionalResource>${project.basedir}/DESIGN.md</additionalResource>
@@ -325,7 +335,7 @@
                         <configuration>
                             <assetsDir>${project.basedir}/assets</assetsDir>
                             <platform>auto</platform>
-                            <createZipball>true</createZipball>
+                            <createZipball>false</createZipball>
                             <createTarball>false</createTarball>
                             <winConfig>
                                 <headerType>gui</headerType>
@@ -350,8 +360,8 @@
                                 <volumeName>JCS</volumeName>
                                 <entitlements>entitlements.plist</entitlements>
                                 <macStartup>SCRIPT</macStartup>
-                                <codesignApp>true</codesignApp>
-                                <hardenedCodesign>true</hardenedCodesign>
+                                <codesignApp>false</codesignApp>
+                                <hardenedCodesign>false</hardenedCodesign>
                                 <notarizeApp>false</notarizeApp>
                             </macConfig>
                             <linuxConfig>
