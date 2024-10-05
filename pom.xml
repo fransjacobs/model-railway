@@ -158,6 +158,16 @@
             <version>2.11.0</version>
         </dependency>
         <dependency>
+            <groupId>com.shinyhut</groupId>
+            <artifactId>vernacular</artifactId>
+            <version>1.14</version>
+        </dependency>
+        <dependency>
+            <groupId>net.straylightlabs</groupId>
+            <artifactId>hola</artifactId>
+            <version>0.2.3</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>
             <version>RELEASE220</version>

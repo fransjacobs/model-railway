@@ -18,15 +18,21 @@ package jcs.commandStation.marklin.cs.net;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Set;
 import jcs.JCS;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.marklin.cs.can.CanMessageFactory;
 import jcs.util.NetworkUtil;
 import jcs.util.Ping;
 import jcs.util.RunUtil;
+import net.straylightlabs.hola.dns.Domain;
+import net.straylightlabs.hola.sd.Instance;
+import net.straylightlabs.hola.sd.Query;
+import net.straylightlabs.hola.sd.Service;
 import org.tinylog.Logger;
 
 /**
@@ -35,6 +41,8 @@ import org.tinylog.Logger;
  * @author Frans Jacobs
  */
 public class CSConnectionFactory {
+
+  private static final String MARKLIN_CS_SERVICE = "_workstation._tcp";
 
   private static CSConnectionFactory instance;
 
@@ -185,6 +193,46 @@ public class CSConnectionFactory {
 
   public static String getControllerIp() {
     return getInstance().getControllerIpImpl();
+  }
+
+  /**
+   * Try to Automatically discover the ESU ECoS IP Address on the local network.<br>
+   * mDNS is used to discover the ECoS
+   *
+   * @return the IP Address of the ECoS of null if not discovered.
+   */
+  public static InetAddress discoverCs() {
+    InetAddress csIp = null;
+
+    try {
+      Service marklinService = Service.fromName(MARKLIN_CS_SERVICE);
+      Query marklinQuery = Query.createFor(marklinService, Domain.LOCAL);
+
+      Set<Instance> marklinInstances = marklinQuery.runOnceOn(NetworkUtil.getIPv4HostAddress());
+
+      Logger.trace("Found " + marklinInstances.size());
+
+      if (marklinInstances.isEmpty()) {
+        Logger.warn("Could not find a Marklin Central Station host on the local network!");
+        return null;
+      }
+
+      Instance cs = marklinInstances.iterator().next();
+      Logger.trace("Marklin Central Station: " + cs);
+
+      Set<InetAddress> addresses = cs.getAddresses();
+
+      //Find the first ip4 address
+      for (InetAddress ia : addresses) {
+        if (ia instanceof Inet4Address) {
+          csIp = ia;
+          break;
+        }
+      }
+    } catch (IOException ex) {
+      Logger.error(ex.getMessage());
+    }
+    return csIp;
   }
 
 }
