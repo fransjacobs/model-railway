@@ -60,7 +60,7 @@ public class EcosConnectionFactory {
   EcosConnection getConnectionImpl() {
     if (controllerConnection == null) {
 
-      String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "ecos-ip-address");
+      String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "ip-address");
 
       if (lastUsedIp != null) {
         try {
@@ -75,13 +75,20 @@ public class EcosConnectionFactory {
           lastUsedIp = null;
         }
       }
+      
+      if (this.controllerHost == null) {
+        Logger.trace("Try to discover a ESU ECoS...");
+        JCS.logProgress("Discovering a ESU ECoS...");
+        controllerHost = discoverEcos();
+      }
+      
 
       if (controllerHost != null) {
         if (lastUsedIp == null) {
           //Write the last used IP Addres for faster discovery next time
-          RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "ecos-ip-address", controllerHost.getHostAddress());
+          RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "ip-address", controllerHost.getHostAddress());
         }
-        Logger.trace("CS ip: " + controllerHost.getHostName());
+        Logger.trace("ESU ECOS ip: " + controllerHost.getHostName());
 
         //controllerConnection = new TCPConnection(controllerHost);
       } else {

@@ -67,7 +67,7 @@ public class CSConnectionFactory {
   CSConnection getConnectionImpl() {
     if (controllerConnection == null) {
 
-      String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "cs-ip-address");
+      String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "ip-address");
 
       if (lastUsedIp != null) {
         try {
@@ -92,7 +92,7 @@ public class CSConnectionFactory {
       if (controllerHost != null) {
         if (lastUsedIp == null) {
           //Write the last used IP Addres for faster discovery next time
-          RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "cs-ip-address", controllerHost.getHostAddress());
+          RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "ip-address", controllerHost.getHostAddress());
         }
         Logger.trace("CS ip: " + controllerHost.getHostName());
 
