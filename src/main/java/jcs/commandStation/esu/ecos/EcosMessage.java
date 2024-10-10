@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,62 +21,73 @@ package jcs.commandStation.esu.ecos;
 public class EcosMessage implements Ecos {
 
   private final String message;
+  private String response;
 
-  public EcosMessage(byte[] message) {
-    this(new String(message).replace("\n", "").replace("\r", ""));
-  }
+  private static final String REPLY = "<REPLY ";
+  private static final String END = "<END ";
 
+//  public EcosMessage() {
+//    this(null);
+//  }
   public EcosMessage(String message) {
-    this.message = message;
+    if (message.startsWith(REPLY)) {
+      this.response = message;
+      this.message = null;
+    } else {
+      this.message = message;
+    }
   }
 
   public String getMessage() {
     return message;
   }
 
-  public String getOpcode() {
-    int start = message.indexOf("<") + 1;
-    return message.substring(start, start + 1);
+  public void setResponse(String response) {
+    this.response = response;
   }
 
-  public boolean isSystemMessage() {
-    String opcode = this.getOpcode();
+  public boolean isResponse() {
+    return response != null && response.startsWith(REPLY);
+  }
 
-//    if (opcode != null) {
-//      return SYSTEM_OPCODES.contains(opcode);
-//    }
+  public int getObjectId() {
+    if (response != null && response.startsWith(REPLY)) {
+      int idStart = response.indexOf("(") + 1;
+      int idEnd = response.indexOf(",");
+      int idLen = idEnd - idStart;
 
-    return false;
+      String id = response.substring(idStart, idLen + idStart);
+      return Integer.parseInt(id);
+    } else {
+      int idStart = message.indexOf("(") + 1;
+      int idEnd = message.indexOf(",");
+      int idLen = idEnd - idStart;
+
+      String id = message.substring(idStart, idLen + idStart);
+      return Integer.parseInt(id);
+    }
+  }
+
+  public String getCommand() {
+    if (response != null && response.startsWith(REPLY)) {
+      int cmdStart = response.indexOf(" ") + 1;
+      int cmdEnd = response.indexOf("(");
+      int cmdLen = cmdEnd - cmdStart;
+
+      String cmd = response.substring(cmdStart, cmdLen + cmdStart);
+      return cmd;
+    } else {
+      int cmdStart = 0;
+      int cmdEnd = message.indexOf("(");
+      int cmdLen = cmdEnd - cmdStart;
+
+      String cmd = message.substring(cmdStart, cmdLen + cmdStart);
+      return cmd;
+    }
   }
 
   public boolean isValid() {
-    return message.startsWith("<") && message.endsWith(">");
-  }
-
-  public boolean isNormalMessage() {
-    return this.message.substring(0, 1).equals("<") && !this.message.substring(1, 1).equals("*");
-  }
-
-  public boolean isInfoMessage() {
-    String start = this.message.substring(0, 2);
-    String lcd;
-    if (this.message.length() < 6) {
-      lcd = "LCD";
-    } else {
-      lcd = this.message.substring(3, 6);
-    }
-    return start.equals("<*") && !lcd.equals("LCD");
-  }
-
-  public boolean isLCDMessage() {
-    String start = this.message.substring(0, 2);
-    String lcd;
-    if (this.message.length() < 6) {
-      lcd = "";
-    } else {
-      lcd = this.message.substring(3, 6);
-    }
-    return start.equals("<*") && lcd.equals("LCD");
+    return response != null && response.startsWith("<") && response.endsWith(">");
   }
 
   @Override
@@ -87,22 +98,4 @@ public class EcosMessage implements Ecos {
     return sb.toString();
   }
 
-  public String getFilteredContent() {
-    if (message.length() > 1 && message.startsWith("<")) {
-      String opcode = message.substring(1, 2);
-      String content = message.replaceAll("<", "").replaceAll(">", "").replaceFirst(opcode, "");
-      return content.trim();
-    } else {
-      return message;
-    }
-  }
-
-  public String getFilteredDiagnosticMessage() {
-    if (message.length() > 2 && message.startsWith("<*")) {
-      String content = message.replaceAll("<*", "").replaceAll("\\*>", "");
-      return content.trim();
-    } else {
-      return message;
-    }
-  }
 }
