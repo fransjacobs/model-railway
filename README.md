@@ -9,6 +9,7 @@
 ![GitHub issues](https://img.shields.io/github/issues-raw/fransjacobs/model-railway)
 ![GitHub Release](https://img.shields.io/github/v/release/fransjacobs/model-railway)
 ***
+
 ## About the Project
 
 JCS is a hobby project of me where I try to automate my Model Railway. Over the past years I have worked on and off on several aspects and modules of the software which are needed to drive automatically.
@@ -82,9 +83,10 @@ To debug or easly setup your feedback sensors
 ## Supported Hardware
 
 - [DCC-EX](https://dcc-ex.com) can be connected either via serial port or network
-- [Marklin CS-2](https://www.marklin.nl/producten/details/article/60215)
+- [Marklin CS-2](https://www.marklin.nl/producten/details/article/60215) [Protocol Documentation](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)
 - [Marklin CS-3](https://www.marklin.nl/producten/details/article/60216)
 - [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino) for feedback
+- [ESO EcoS](https://www.esu.eu/) [Protocol Documentation](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)
 
 ## Current status
 

@@ -15,6 +15,10 @@
  */
 package jcs.commandStation.esu.ecos;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  */
@@ -22,15 +26,17 @@ public class EcosMessage implements Ecos {
 
   private final String message;
   private String response;
+  private Map<String, String> valueMap;
 
   private static final String REPLY = "<REPLY ";
   private static final String END = "<END ";
+  private static final String EVENT = "<EVENT ";
 
 //  public EcosMessage() {
 //    this(null);
 //  }
   public EcosMessage(String message) {
-    if (message.startsWith(REPLY)) {
+    if (message.startsWith(EVENT)) {
       this.response = message;
       this.message = null;
     } else {
@@ -48,6 +54,10 @@ public class EcosMessage implements Ecos {
 
   public boolean isResponse() {
     return response != null && response.startsWith(REPLY);
+  }
+
+  public boolean isEvent() {
+    return response != null && response.startsWith(EVENT);
   }
 
   public int getObjectId() {
@@ -86,8 +96,81 @@ public class EcosMessage implements Ecos {
     }
   }
 
+  public int getErrorCode() {
+    if (response != null && (response.startsWith(REPLY) || response.startsWith(EVENT))) {
+      int endStart = response.indexOf(END);
+      String endTag = response.substring(endStart);
+
+      endStart = endTag.indexOf(" ") + 1;
+      int errorCodeEnd = endTag.indexOf(" (");
+      int errorCodeLen = errorCodeEnd - endStart;
+
+      String errorCode = endTag.substring(endStart, errorCodeLen + endStart);
+      return Integer.parseInt(errorCode);
+    } else {
+      return -1;
+    }
+  }
+
+  public String getResponseCode() {
+    if (response != null && (response.startsWith(REPLY) || response.startsWith(EVENT))) {
+      int endStart = response.indexOf(END);
+      String endTag = response.substring(endStart);
+
+      endStart = endTag.indexOf(" (") + 2;
+      int errorCodeEnd = endTag.indexOf(")>");
+      int errorCodeLen = errorCodeEnd - endStart;
+
+      String responseCode = endTag.substring(endStart, errorCodeLen + endStart);
+      return responseCode;
+    } else {
+      return "ERROR!";
+    }
+  }
+
+  public String getResponseContent() {
+    if (response != null && (response.startsWith(REPLY) || response.startsWith(EVENT))) {
+      int contentStart = response.indexOf(")>\n");
+      String content = response.substring(contentStart + ")>\n".length());
+      int tagStart = content.indexOf(END);
+      String responseContent = content.substring(0, tagStart);
+      return responseContent;
+    } else {
+      return null;
+    }
+  }
+
+  public Map<String, String> getValueMap() {
+    String content = getResponseContent();
+    if (content != null) {
+      if (valueMap == null) {
+        valueMap = new HashMap<>();
+        String[] lines = content.split("\n");
+        for (String line : lines) {
+          int keyStart = line.indexOf(" ") + 1;
+          int valStart = line.indexOf("[");
+          int valEnd = line.indexOf("]");
+          int keyLen = valStart - keyStart;
+          int valLen = valEnd - valStart;
+
+          if (valStart >= 0 && valEnd > 0) {
+            String key = line.substring(keyStart, keyLen + keyStart);
+            String value = line.substring(valStart + 1, valLen + valStart);
+            valueMap.put(key, value);
+          } else {
+            String key = line.substring(keyStart);
+            valueMap.put(key, null);
+          }
+        }
+      }
+      return valueMap;
+    } else {
+      return Collections.EMPTY_MAP;
+    }
+  }
+
   public boolean isValid() {
-    return response != null && response.startsWith("<") && response.endsWith(">");
+    return getErrorCode() == 0;
   }
 
   @Override
