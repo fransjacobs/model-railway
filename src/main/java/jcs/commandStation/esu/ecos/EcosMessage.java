@@ -18,6 +18,7 @@ package jcs.commandStation.esu.ecos;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.tinylog.Logger;
 
 /**
  *
@@ -25,19 +26,20 @@ import java.util.Map;
 public class EcosMessage implements Ecos {
 
   private final String message;
-  private String response;
+  private StringBuilder response;
   private Map<String, String> valueMap;
 
-  private static final String REPLY = "<REPLY ";
-  private static final String END = "<END ";
-  private static final String EVENT = "<EVENT ";
+  public static final String REPLY = "<REPLY ";
+  public static final String END = "<END ";
+  public static final String EVENT = "<EVENT ";
 
 //  public EcosMessage() {
 //    this(null);
 //  }
   public EcosMessage(String message) {
+    this.response = new StringBuilder();
     if (message.startsWith(EVENT)) {
-      this.response = message;
+      this.response.append(message);
       this.message = null;
     } else {
       this.message = message;
@@ -48,38 +50,50 @@ public class EcosMessage implements Ecos {
     return message;
   }
 
-  public void setResponse(String response) {
-    this.response = response;
+  public void addResponse(String response) {
+    this.response.append(response);
   }
 
-  public boolean isResponse() {
-    return response != null && response.startsWith(REPLY);
+  public String getResponse() {
+    return this.response.toString();
+  }
+
+  public static boolean isReplyComplete(String reply) {
+    return reply != null && reply.startsWith(REPLY) && reply.contains(END);
+  }
+
+  public boolean isResponseComplete() {
+    return response != null && isReplyComplete(response.toString());
   }
 
   public boolean isEvent() {
-    return response != null && response.startsWith(EVENT);
+    return response != null && response.toString().startsWith(EVENT);
   }
 
-  public int getObjectId() {
-    if (response != null && response.startsWith(REPLY)) {
+  private String getId() {
+    if (response != null && response.toString().startsWith(REPLY)) {
       int idStart = response.indexOf("(") + 1;
       int idEnd = response.indexOf(",");
       int idLen = idEnd - idStart;
 
       String id = response.substring(idStart, idLen + idStart);
-      return Integer.parseInt(id);
+      return id;
     } else {
       int idStart = message.indexOf("(") + 1;
       int idEnd = message.indexOf(",");
       int idLen = idEnd - idStart;
 
       String id = message.substring(idStart, idLen + idStart);
-      return Integer.parseInt(id);
+      return id;
     }
   }
 
+  public int getObjectId() {
+    return Integer.parseInt(getId());
+  }
+
   public String getCommand() {
-    if (response != null && response.startsWith(REPLY)) {
+    if (response != null && response.toString().startsWith(REPLY)) {
       int cmdStart = response.indexOf(" ") + 1;
       int cmdEnd = response.indexOf("(");
       int cmdLen = cmdEnd - cmdStart;
@@ -97,7 +111,7 @@ public class EcosMessage implements Ecos {
   }
 
   public int getErrorCode() {
-    if (response != null && (response.startsWith(REPLY) || response.startsWith(EVENT))) {
+    if (response != null && (response.toString().startsWith(REPLY) || response.toString().startsWith(EVENT))) {
       int endStart = response.indexOf(END);
       String endTag = response.substring(endStart);
 
@@ -113,7 +127,7 @@ public class EcosMessage implements Ecos {
   }
 
   public String getResponseCode() {
-    if (response != null && (response.startsWith(REPLY) || response.startsWith(EVENT))) {
+    if (response != null && (response.toString().startsWith(REPLY) || response.toString().startsWith(EVENT))) {
       int endStart = response.indexOf(END);
       String endTag = response.substring(endStart);
 
@@ -129,12 +143,27 @@ public class EcosMessage implements Ecos {
   }
 
   public String getResponseContent() {
-    if (response != null && (response.startsWith(REPLY) || response.startsWith(EVENT))) {
-      int contentStart = response.indexOf(")>\n");
-      String content = response.substring(contentStart + ")>\n".length());
-      int tagStart = content.indexOf(END);
-      String responseContent = content.substring(0, tagStart);
-      return responseContent;
+    if (response != null && response.length() > 0) {
+      String reply = response.toString();
+      if (reply.startsWith(REPLY) || reply.startsWith(EVENT)) {
+        int contentStart = reply.indexOf(")>");
+        if (contentStart == -1) {
+          Logger.trace("Error, no content start tag: " + reply);
+          return null;
+        }
+
+        String content = response.substring(contentStart + ")>".length());
+        int tagStart = content.indexOf(END);
+        if (tagStart == -1) {
+          Logger.trace("Error, no tag: " + reply);
+          return null;
+        }
+
+        String responseContent = content.substring(0, tagStart);
+        return responseContent;
+      } else {
+        return null;
+      }
     } else {
       return null;
     }
@@ -145,6 +174,8 @@ public class EcosMessage implements Ecos {
     if (content != null) {
       if (valueMap == null) {
         valueMap = new HashMap<>();
+        String replacement = "]" + getId();
+        content = content.replace(replacement, "]\n" + getId());
         String[] lines = content.split("\n");
         for (String line : lines) {
           int keyStart = line.indexOf(" ") + 1;

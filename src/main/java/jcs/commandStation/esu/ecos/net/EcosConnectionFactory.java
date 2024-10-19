@@ -20,7 +20,6 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
-import java.util.logging.Level;
 import jcs.JCS;
 import jcs.util.NetworkUtil;
 import jcs.util.Ping;
@@ -33,8 +32,6 @@ import org.tinylog.Logger;
 
 /**
  * Try to connect with a ESU ECoS 50xxx.
- *
- * @author Frans Jacobs
  */
 public class EcosConnectionFactory {
 
@@ -59,9 +56,7 @@ public class EcosConnectionFactory {
 
   EcosConnection getConnectionImpl() {
     if (controllerConnection == null) {
-
       String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "ip-address");
-
       if (lastUsedIp != null) {
         try {
           if (Ping.IsReachable(lastUsedIp)) {
@@ -71,29 +66,28 @@ public class EcosConnectionFactory {
             Logger.trace("Last used IP Address: " + lastUsedIp + " is not reachable");
           }
         } catch (UnknownHostException ex) {
-          Logger.trace("Last used Esu Ecos IP: " + lastUsedIp + " is invalid!");
+          Logger.trace("Last used ESU ECoS IP: " + lastUsedIp + " is invalid!");
           lastUsedIp = null;
         }
       }
-      
+
       if (this.controllerHost == null) {
         Logger.trace("Try to discover a ESU ECoS...");
         JCS.logProgress("Discovering a ESU ECoS...");
         controllerHost = discoverEcos();
       }
-      
 
       if (controllerHost != null) {
         if (lastUsedIp == null) {
           //Write the last used IP Addres for faster discovery next time
-          RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "ip-address", controllerHost.getHostAddress());
+          writeLastUsedIpAddressProperty(controllerHost.getHostAddress());
         }
-        Logger.trace("ESU ECOS ip: " + controllerHost.getHostName());
+        Logger.trace("ESU ECoS ip: " + controllerHost.getHostName());
 
-        //controllerConnection = new TCPConnection(controllerHost);
+        controllerConnection = new EcosTCPConnection(controllerHost);
       } else {
-        Logger.warn("Can't find a Marklin Controller host!");
-        JCS.logProgress("Can't find a Marklin Central Station on the Network");
+        Logger.warn("Can't find a ESU ECoS Controller host!");
+        JCS.logProgress("Can't find a ESU ECoS Controller on the Network");
       }
     }
     return this.controllerConnection;
@@ -165,6 +159,12 @@ public class EcosConnectionFactory {
       Logger.error(ex.getMessage());
     }
     return ecosIp;
+  }
+
+  public static void writeLastUsedIpAddressProperty(String ipAddress) {
+    if (ipAddress != null) {
+      RunUtil.writeProperty(LAST_USED_IP_PROP_FILE, "ip-address", ipAddress);
+    }
   }
 
 }

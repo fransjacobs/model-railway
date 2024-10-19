@@ -47,81 +47,28 @@ public class EcosMessageTest {
     String expResult = tx;
     String result = instance.getMessage();
     assertEquals(expResult, result);
-    assertFalse(instance.isResponse());
+    assertFalse(instance.isResponseComplete());
 
     assertEquals(1, instance.getObjectId());
     assertEquals("get", instance.getCommand());
   }
 
   /**
-   * Test of setResponse method, of class EcosMessage.
+   * Test of addResponse method, of class EcosMessage.
    */
   @Test
   public void testSetResponse() {
     System.out.println("setResponse");
     String tx = "get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion,commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix,updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus,railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)";
-    String rx = "<REPLY get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion,commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix,updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus,railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)>\n"
-            + "1 objectclass[model]\n"
-            + "1 view[none]\n"
-            + "1 listview[none]\n"
-            + "1 control[none]\n"
-            + "1 list\n"
-            + "1 size[10]\n"
-            + "1 minarguments[64]\n"
-            + "1 protocolversion[0.5]\n"
-            + "1 commandstationtype[\"ECoS\"]\n"
-            + "1 name[\"ECoS-thuis\"]\n"
-            + "1 serialnumber[\"0x000480b5\"]\n"
-            + "1 hardwareversion[1.3]\n"
-            + "1 applicationversion[4.2.13]\n"
-            + "1 applicationversionsuffix[\"\"]\n"
-            + "1 updateonerror[0]\n"
-            + "1 status[GO]\n"
-            + "1 status2[ALL]\n"
-            + "1 prog-status[0]\n"
-            + "1 m4-status[none]\n"
-            + "1 railcomplus-status[none]\n"
-            + "1 watchdog[0,0]\n"
-            + "1 railcom[1]\n"
-            + "1 railcomplus[1]\n"
-            + "1 railcomplus-range[1000]\n"
-            + "1 railcomplus-mode[manual]\n"
-            + "1 allowlocotakeover[1]\n"
-            + "1 stoponlastdisconnect[0]\n"
-            + "<END 0 (OK)>\n";
-
-    String content = "1 objectclass[model]\n"
-            + "1 view[none]\n"
-            + "1 listview[none]\n"
-            + "1 control[none]\n"
-            + "1 list\n"
-            + "1 size[10]\n"
-            + "1 minarguments[64]\n"
-            + "1 protocolversion[0.5]\n"
-            + "1 commandstationtype[\"ECoS\"]\n"
-            + "1 name[\"ECoS-thuis\"]\n"
-            + "1 serialnumber[\"0x000480b5\"]\n"
-            + "1 hardwareversion[1.3]\n"
-            + "1 applicationversion[4.2.13]\n"
-            + "1 applicationversionsuffix[\"\"]\n"
-            + "1 updateonerror[0]\n"
-            + "1 status[GO]\n"
-            + "1 status2[ALL]\n"
-            + "1 prog-status[0]\n"
-            + "1 m4-status[none]\n"
-            + "1 railcomplus-status[none]\n"
-            + "1 watchdog[0,0]\n"
-            + "1 railcom[1]\n"
-            + "1 railcomplus[1]\n"
-            + "1 railcomplus-range[1000]\n"
-            + "1 railcomplus-mode[manual]\n"
-            + "1 allowlocotakeover[1]\n"
-            + "1 stoponlastdisconnect[0]\n";
-
+    
+    String rx = "<REPLY get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion,commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix,updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus,railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)>1 objectclass[model]1 view[none]1 listview[none]1 control[none]1 list1 size[10]1 minarguments[64]1 protocolversion[0.5]1 commandstationtype[\"ECoS\"]1 name[\"ECoS-50000\"]1 serialnumber[\"0x000480b5\"]1 hardwareversion[1.3]1 applicationversion[4.2.13]1 applicationversionsuffix[\"\"]1 updateonerror[0]1 status[GO]1 status2[ALL]1 prog-status[0]1 m4-status[none]1 railcomplus-status[none]1 watchdog[0,0]1 railcom[1]1 railcomplus[1]1 railcomplus-range[1000]1 railcomplus-mode[manual]1 allowlocotakeover[1]1 stoponlastdisconnect[0]<END 0 (OK)>";
+    String content = "1 objectclass[model]1 view[none]1 listview[none]1 control[none]1 list1 size[10]1 minarguments[64]1 protocolversion[0.5]1 commandstationtype[\"ECoS\"]1 name[\"ECoS-50000\"]1 serialnumber[\"0x000480b5\"]1 hardwareversion[1.3]1 applicationversion[4.2.13]1 applicationversionsuffix[\"\"]1 updateonerror[0]1 status[GO]1 status2[ALL]1 prog-status[0]1 m4-status[none]1 railcomplus-status[none]1 watchdog[0,0]1 railcom[1]1 railcomplus[1]1 railcomplus-range[1000]1 railcomplus-mode[manual]1 allowlocotakeover[1]1 stoponlastdisconnect[0]";
+ 
+ 
     EcosMessage instance = new EcosMessage(tx);
-    instance.setResponse(rx);
+    instance.addResponse(rx);
 
-    assertTrue(instance.isResponse());
+    assertTrue(instance.isResponseComplete());
 
     assertEquals(1, instance.getObjectId());
     assertEquals("get", instance.getCommand());
@@ -131,7 +78,9 @@ public class EcosMessageTest {
 
     Map<String, String> valueMap = instance.getValueMap();
 
-    assertEquals("10", valueMap.get("size"));
+    assertEquals(26, valueMap.size());
+
+    assertEquals("0.5", valueMap.get("protocolversion"));
     assertEquals("64", valueMap.get("minarguments"));
     assertEquals("\"0x000480b5\"", valueMap.get("serialnumber"));
     assertEquals("4.2.13", valueMap.get("applicationversion"));
@@ -147,7 +96,7 @@ public class EcosMessageTest {
 
     EcosMessage instance = null;
     boolean expResult = false;
-    boolean result = instance.isResponse();
+    boolean result = instance.isResponseComplete();
     assertEquals(expResult, result);
     // TODO review the generated test code and remove the default call to fail.
     fail("The test case is a prototype.");

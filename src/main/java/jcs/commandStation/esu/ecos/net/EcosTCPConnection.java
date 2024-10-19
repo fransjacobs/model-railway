@@ -24,7 +24,9 @@ import java.io.Writer;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import jcs.commandStation.dccex.DccExMessageFactory;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TransferQueue;
 import jcs.commandStation.esu.ecos.EcosMessage;
 import jcs.commandStation.events.DisconnectionEvent;
 import org.tinylog.Logger;
@@ -38,16 +40,17 @@ class EcosTCPConnection implements EcosConnection {
   private final InetAddress ecosAddress;
   private Socket clientSocket;
   private Writer writer;
-  private ResponseCallback responseCallback;
+
+  private final TransferQueue<String> transferQueue;
 
   private ClientMessageReceiver messageReceiver;
-
   private boolean debug = false;
   private static final long TIMEOUT = 3000L;
 
   EcosTCPConnection(InetAddress address) {
     ecosAddress = address;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    transferQueue = new LinkedTransferQueue<>();
     checkConnection();
   }
 
@@ -58,6 +61,7 @@ class EcosTCPConnection implements EcosConnection {
         clientSocket.setKeepAlive(true);
         clientSocket.setTcpNoDelay(true);
         writer = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
+
         messageReceiver = new ClientMessageReceiver(clientSocket);
         messageReceiver.setDaemon(true);
         messageReceiver.start();
@@ -71,8 +75,20 @@ class EcosTCPConnection implements EcosConnection {
 
   private void disconnect() {
     this.messageReceiver.quit();
+
     //wait until the messageReceiver has shut down
-    pause(50);
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout = now + TIMEOUT;
+    boolean finished = this.messageReceiver.isFinished();
+    while (!finished && now < timeout) {
+      finished = this.messageReceiver.isFinished();
+      now = System.currentTimeMillis();
+    }
+
+    if (!finished) {
+      Logger.warn("Message receiver thread not finished after " + (now - start) + " ms");
+    }
 
     if (writer != null) {
       try {
@@ -99,30 +115,31 @@ class EcosTCPConnection implements EcosConnection {
     }
   }
 
-  private void pause(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      Logger.trace(e.getMessage());
-    }
-  }
-
   @Override
-  public synchronized String sendMessage(String message) {
-    String response = message;
-    String rxOpcode = DccExMessageFactory.getResponseOpcodeFor(message);
-    if (rxOpcode != null) {
-      this.responseCallback = new ResponseCallback(message);
-    }
-
+  public synchronized EcosMessage sendMessage(EcosMessage message) {
     try {
-      writer.write(message);
+      writer.write(message.getMessage());
       writer.flush();
       if (debug) {
-        Logger.trace("TX:" + message);
+        Logger.trace("TX:" + message.getMessage());
       }
 
-    } catch (IOException ex) {
+      long now = System.currentTimeMillis();
+      long start = now;
+      String reply = this.transferQueue.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+
+      message.addResponse(reply);
+
+      now = System.currentTimeMillis();
+      if (debug) {
+        //if (true) {
+        if (message.isResponseComplete()) {
+          Logger.trace("Reply in " + (now - start) + " ms");
+        } else {
+          Logger.trace("No Reply for " + message + " in " + (now - start) + " ms");
+        }
+      }
+    } catch (IOException | InterruptedException ex) {
       Logger.error(ex);
       String msg = "Host " + ecosAddress.getHostName();
       DisconnectionEvent de = new DisconnectionEvent(msg);
@@ -130,31 +147,7 @@ class EcosTCPConnection implements EcosConnection {
       messageReceiver.messageListener.onDisconnect(de);
       messageReceiver.quit();
     }
-    if (responseCallback != null) {
-      long now = System.currentTimeMillis();
-      long start = now;
-      long timeout = now + TIMEOUT;
-
-      //Wait for the response
-      boolean responseComplete = responseCallback.isResponseComplete();
-      while (!responseComplete && now < timeout) {
-        pause(10);
-        responseComplete = responseCallback.isResponseComplete();
-        now = System.currentTimeMillis();
-      }
-
-      response = responseCallback.getResponse();
-      if (debug) {
-        if (responseComplete) {
-          Logger.trace("Got Response in " + (now - start) + " ms");
-        } else {
-          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
-        }
-      }
-    }
-
-    responseCallback = null;
-    return response;
+    return message;
   }
 
   @Override
@@ -169,6 +162,7 @@ class EcosTCPConnection implements EcosConnection {
 
   private class ClientMessageReceiver extends Thread {
 
+    private boolean stop = false;
     private boolean quit = true;
     private BufferedReader reader;
     private EcosMessageListener messageListener;
@@ -181,12 +175,22 @@ class EcosTCPConnection implements EcosConnection {
       }
     }
 
-    synchronized void quit() {
+    void quit() {
       this.quit = true;
+      //Shutdown the socket input otherwise the receving thread can't stop
+      try {
+        clientSocket.shutdownInput();
+      } catch (IOException ex) {
+        Logger.error(ex);
+      }
     }
 
-    synchronized boolean isRunning() {
+    boolean isRunning() {
       return !this.quit;
+    }
+
+    boolean isFinished() {
+      return this.stop;
     }
 
     void setMessageListener(EcosMessageListener messageListener) {
@@ -202,15 +206,36 @@ class EcosTCPConnection implements EcosConnection {
 
       while (isRunning()) {
         try {
-          String message = reader.readLine();
+          String rx = reader.readLine();
+          //Logger.trace("RX: " + message);
+          if (rx != null) {
+            if (rx.startsWith(EcosMessage.EVENT)) {
+              Logger.trace("Event: " + rx);
+              if (this.messageListener != null) {
+                EcosMessage msg = new EcosMessage(rx);
+                this.messageListener.onMessage(msg);
+              }
+            } else {
+              StringBuilder sb = new StringBuilder();
 
-          if (responseCallback != null && responseCallback.isSubscribedfor(message)) {
-            //a "synchroneous" response
-            responseCallback.setResponse(message);
-          } else {
-            //a "asynchroneous" response
-            EcosMessage msg = new EcosMessage(message);
-            this.messageListener.onMessage(msg);
+              long now = System.currentTimeMillis();
+              long start = now;
+              long timeout = now + TIMEOUT;
+
+              sb.append(rx);
+              boolean complete = EcosMessage.isReplyComplete(rx);
+
+              while (!complete && now < timeout) {
+                rx = reader.readLine();
+                sb.append(rx);
+                complete = EcosMessage.isReplyComplete(sb.toString());
+              }
+
+              if (!complete) {
+                Logger.trace("No reply " + sb.toString() + " in " + (now - start) + " ms");
+              }
+              transferQueue.transfer(sb.toString());
+            }
           }
         } catch (SocketException se) {
           Logger.error(se.getMessage());
@@ -218,8 +243,8 @@ class EcosTCPConnection implements EcosConnection {
           DisconnectionEvent de = new DisconnectionEvent(msg);
           this.messageListener.onDisconnect(de);
           quit();
-        } catch (IOException ioe) {
-          Logger.error(ioe);
+        } catch (IOException | InterruptedException ex) {
+          Logger.error(ex);
         }
       }
 
@@ -229,47 +254,13 @@ class EcosTCPConnection implements EcosConnection {
       } catch (IOException ex) {
         Logger.error(ex);
       }
+      stop = true;
     }
   }
 
   @Override
   public InetAddress getControllerAddress() {
     throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  private class ResponseCallback {
-
-    private final String tx;
-    private final String rxOpcode;
-    private String rx;
-
-    ResponseCallback(final String tx) {
-      this.tx = tx;
-      this.rxOpcode = null; //rDccExMessageFactory.getResponseOpcodeFor(tx);
-      //Logger.trace("Expected response opcode: " + this.rxOpcode);
-    }
-
-    boolean isSubscribedfor(final String response) {
-      String rsp = response.replaceAll("\n", "").replaceAll("\r", "");
-      String opcode = rsp.substring(1, 2);
-      return opcode.equals(rxOpcode);
-    }
-
-    void setResponse(String response) {
-      this.rx = response.replaceAll("\n", "").replaceAll("\r", "");
-    }
-
-    String getResponse() {
-      if (this.rx != null) {
-        return this.rx;
-      } else {
-        return tx;
-      }
-    }
-
-    boolean isResponseComplete() {
-      return rx != null && !rx.isBlank() && rx.startsWith("<") && rx.endsWith(">");
-    }
   }
 
 }

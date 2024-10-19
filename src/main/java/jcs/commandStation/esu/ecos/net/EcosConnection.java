@@ -16,6 +16,7 @@
 package jcs.commandStation.esu.ecos.net;
 
 import java.net.InetAddress;
+import jcs.commandStation.esu.ecos.EcosMessage;
 
 /**
  *
@@ -29,13 +30,12 @@ public interface EcosConnection extends AutoCloseable {
 
   static final int MAX_ERRORS = 15;
 
-  String sendMessage(String message);
+  EcosMessage sendMessage(EcosMessage message);
 
   void setMessageListener(EcosMessageListener messageListener);
+
   boolean isConnected();
 
-//  
-//  CanMessage sendCanMessage(CanMessage message);
 //
 //  void setCanPingListener(CanPingListener canPingListener);
 //

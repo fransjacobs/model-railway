@@ -100,7 +100,9 @@ public class BaseObject {
       this.applicationVersionSuffix = this.applicationVersionSuffix.replaceAll("\"", "");
     }
 
-    this.updateOnError = values.get("updateonerror").equals("1");
+    if (values.containsKey("updateonerror")) {
+      this.updateOnError = values.get("updateonerror").equals("1");
+    }
 
     this.status = values.get("status");
     this.status2 = values.get("status2");
@@ -108,8 +110,13 @@ public class BaseObject {
     this.m4Status = values.get("m4-status");
     this.railcomplusStatus = values.get("railcomplus-status");
     this.watchdog = values.get("watchdog");
-    this.railcom = values.get("railcom").equals("1");
-    this.railcomplus = values.get("railcomplus").equals("1");
+    if (values.containsKey("railcom")) {
+      this.railcom = values.get("railcom").equals("1");
+    }
+
+    if (values.containsKey("railcomplus")) {
+      this.railcomplus = values.get("railcomplus").equals("1");
+    }
 
     String vrailcomplusRange = values.get("railcomplus-range");
     if (vminarguments != null) {
@@ -117,8 +124,12 @@ public class BaseObject {
     }
 
     this.railcomplusMode = values.get("railcomplus-mode");
-    this.allowLocoTakeover = values.get("allowlocotakeover").equals("1");
-    this.stopOnLastDisconnect = values.get("stoponlastdisconnect").equals("1");
+    if (values.containsKey("allowlocotakeover")) {
+      this.allowLocoTakeover = values.get("allowlocotakeover").equals("1");
+    }
+    if (values.containsKey("stoponlastdisconnect")) {
+      this.stopOnLastDisconnect = values.get("stoponlastdisconnect").equals("1");
+    }
   }
 
   public String getObjectClass() {
