@@ -42,15 +42,17 @@ class EcosTCPConnection implements EcosConnection {
   private Writer writer;
 
   private final TransferQueue<String> transferQueue;
+  private final TransferQueue<EcosMessage> eventQueue;
 
   private ClientMessageReceiver messageReceiver;
   private boolean debug = false;
-  private static final long TIMEOUT = 3000L;
+  private static final long TIMEOUT = 500L;
 
   EcosTCPConnection(InetAddress address) {
     ecosAddress = address;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
     transferQueue = new LinkedTransferQueue<>();
+    eventQueue = new LinkedTransferQueue<>();
     checkConnection();
   }
 
@@ -151,13 +153,18 @@ class EcosTCPConnection implements EcosConnection {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     disconnect();
   }
 
   @Override
   public boolean isConnected() {
     return this.messageReceiver != null && this.messageReceiver.isRunning();
+  }
+
+  @Override
+  public TransferQueue<EcosMessage> getEventQueue() {
+    return this.eventQueue;
   }
 
   private class ClientMessageReceiver extends Thread {
@@ -207,35 +214,55 @@ class EcosTCPConnection implements EcosConnection {
       while (isRunning()) {
         try {
           String rx = reader.readLine();
-          //Logger.trace("RX: " + message);
-          if (rx != null) {
-            if (rx.startsWith(EcosMessage.EVENT)) {
-              Logger.trace("Event: " + rx);
-              if (this.messageListener != null) {
-                EcosMessage msg = new EcosMessage(rx);
-                this.messageListener.onMessage(msg);
-              }
-            } else {
-              StringBuilder sb = new StringBuilder();
+          Logger.trace("RX: " + rx);
+          if (rx.startsWith(EcosMessage.REPLY)) {
+            StringBuilder sb = new StringBuilder();
 
-              long now = System.currentTimeMillis();
-              long start = now;
-              long timeout = now + TIMEOUT;
+            long now = System.currentTimeMillis();
+            long start = now;
+            long timeout = now + TIMEOUT;
 
+            sb.append(rx);
+            boolean complete = EcosMessage.isComplete(rx);
+
+            while (!complete && now < timeout) {
+              rx = reader.readLine();
               sb.append(rx);
-              boolean complete = EcosMessage.isReplyComplete(rx);
-
-              while (!complete && now < timeout) {
-                rx = reader.readLine();
-                sb.append(rx);
-                complete = EcosMessage.isReplyComplete(sb.toString());
-              }
-
-              if (!complete) {
-                Logger.trace("No reply " + sb.toString() + " in " + (now - start) + " ms");
-              }
-              transferQueue.transfer(sb.toString());
+              complete = EcosMessage.isComplete(sb.toString());
             }
+
+            if (!complete) {
+              Logger.trace("No reply " + sb.toString() + " in " + (now - start) + " ms");
+            }
+            transferQueue.transfer(sb.toString());
+          } else {
+            //Logger.trace("RX Event: " + rx);
+
+            StringBuilder sb = new StringBuilder();
+
+            long now = System.currentTimeMillis();
+            long start = now;
+            long timeout = now + TIMEOUT;
+
+            sb.append(rx);
+            boolean complete = EcosMessage.isComplete(rx);
+
+            while (!complete && now < timeout) {
+              rx = reader.readLine();
+              sb.append(rx);
+              complete = EcosMessage.isComplete(sb.toString());
+            }
+
+            if (!complete) {
+              Logger.trace("Event has no END tag " + sb.toString() + " in " + (now - start) + " ms");
+            } else {
+              EcosMessage emsg = new EcosMessage(sb.toString());
+              Logger.trace("Complete: " + emsg.isResponseComplete() + "\n" + emsg.getMessage() + "\n" + emsg.getResponse());
+
+              eventQueue.put(emsg);
+
+            }
+
           }
         } catch (SocketException se) {
           Logger.error(se.getMessage());

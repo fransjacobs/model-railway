@@ -15,22 +15,32 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- *
- * @author frans
+ * Prepare Messages for the ESU ECoS
  */
 public class EcosMessageFactory {
 
-  private static final Map<String, String> txRx = new HashMap<>();
-
-  public static EcosMessage getBaseObjectMessage() {
+  public static EcosMessage getBaseObject() {
     return new EcosMessage("get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion"
             + ",commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix"
             + ",updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus"
             + ",railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)");
+  }
+
+  public static EcosMessage subscribeBaseObject() {
+    return new EcosMessage("request(1, view)");
+  }
+
+  public static EcosMessage unSubscribeBaseObject() {
+    return new EcosMessage("release(1, view)");
+  }
+
+  public static EcosMessage getPowerStatus() {
+    return new EcosMessage("get(1, status, status2)");
+  }
+
+  public static EcosMessage setPowerStatus(boolean on) {
+    return new EcosMessage("set(1, status[" + (on ? "GO" : "STOP") + "])");
   }
 
 //  Ecos commands

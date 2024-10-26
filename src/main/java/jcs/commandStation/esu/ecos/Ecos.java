@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.esu.ecos;
 
-interface Ecos {
+public interface Ecos {
 
   public static final int BASEOBJECT_ID = 1;
   public static final int LOCOMOTIVES_ID = 10;
@@ -26,7 +26,7 @@ interface Ecos {
   public static final int FEEDBACK_MANAGER_ID = 26;
   public static final int BOOSTER_ID = 26;
   public static final int CONTROL_PANEL_ID = 31;
-  
+
   public static final String CMD_QUERY = "queryObjects";
   public static final String CMD_SET = "set";
   public static final String CMD_GET = "get";

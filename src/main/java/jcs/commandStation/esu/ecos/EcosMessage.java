@@ -26,7 +26,7 @@ import org.tinylog.Logger;
 public class EcosMessage implements Ecos {
 
   private final String message;
-  private StringBuilder response;
+  private final StringBuilder response;
   private Map<String, String> valueMap;
 
   public static final String REPLY = "<REPLY ";
@@ -58,12 +58,19 @@ public class EcosMessage implements Ecos {
     return this.response.toString();
   }
 
-  public static boolean isReplyComplete(String reply) {
-    return reply != null && reply.startsWith(REPLY) && reply.contains(END);
+  public static boolean isComplete(String reply) {
+    if (reply == null) {
+      return false;
+    }
+    if (reply.startsWith(REPLY) && reply.contains(END)) {
+      return true;
+    } else {
+      return reply.startsWith(EVENT) && reply.contains(END);
+    }
   }
 
   public boolean isResponseComplete() {
-    return response != null && isReplyComplete(response.toString());
+    return response != null && isComplete(response.toString());
   }
 
   public boolean isEvent() {
@@ -79,11 +86,14 @@ public class EcosMessage implements Ecos {
       String id = response.substring(idStart, idLen + idStart);
       return id;
     } else {
-      int idStart = message.indexOf("(") + 1;
-      int idEnd = message.indexOf(",");
+      Logger.trace(response);
+      String msg = response.toString();
+
+      int idStart = msg.indexOf(" ") + 1;
+      int idEnd = msg.indexOf(">");
       int idLen = idEnd - idStart;
 
-      String id = message.substring(idStart, idLen + idStart);
+      String id = msg.substring(idStart, idLen + idStart);
       return id;
     }
   }
@@ -146,20 +156,28 @@ public class EcosMessage implements Ecos {
     if (response != null && response.length() > 0) {
       String reply = response.toString();
       if (reply.startsWith(REPLY) || reply.startsWith(EVENT)) {
-        int contentStart = reply.indexOf(")>");
-        if (contentStart == -1) {
+        int contentStart;
+        int offsetLen;
+        if (reply.startsWith(REPLY) ) {
+          contentStart = reply.indexOf(")>");
+          offsetLen =  ")>".length();
+        } else if(reply.startsWith(EVENT)) {
+          contentStart = reply.indexOf(">");
+          offsetLen =  ">".length();
+        } else {
+          //Should never happen!
           Logger.trace("Error, no content start tag: " + reply);
           return null;
         }
 
-        String content = response.substring(contentStart + ")>".length());
-        int tagStart = content.indexOf(END);
-        if (tagStart == -1) {
+        String content = response.substring(contentStart + offsetLen);
+        int endTagStart = content.indexOf(END);
+        if (endTagStart == -1) {
           Logger.trace("Error, no tag: " + reply);
           return null;
         }
 
-        String responseContent = content.substring(0, tagStart);
+        String responseContent = content.substring(0, endTagStart);
         return responseContent;
       } else {
         return null;

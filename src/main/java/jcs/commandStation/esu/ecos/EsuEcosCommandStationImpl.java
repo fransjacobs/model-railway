@@ -15,23 +15,41 @@
  */
 package jcs.commandStation.esu.ecos;
 
+import java.awt.Image;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TransferQueue;
 import jcs.JCS;
 import jcs.commandStation.AbstractController;
+import jcs.commandStation.AccessoryController;
+import jcs.commandStation.DecoderController;
+import jcs.commandStation.FeedbackController;
 import jcs.commandStation.esu.ecos.entities.BaseObject;
 import jcs.commandStation.esu.ecos.net.EcosConnection;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
+import jcs.commandStation.events.PowerEvent;
+import jcs.commandStation.events.PowerEventListener;
+import jcs.commandStation.events.SensorEvent;
+import jcs.entities.AccessoryBean;
+import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.DeviceBean;
+import jcs.entities.FeedbackModuleBean;
 import jcs.entities.InfoBean;
+import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
-public class EsuEcosCommandStationImpl extends AbstractController {
+public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
 
   private int defaultSwitchTime;
   private EcosConnection connection;
+  private EventHandler eventMessageHandler;
+
+  private BaseObject baseObject;
 
   public EsuEcosCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -40,12 +58,14 @@ public class EsuEcosCommandStationImpl extends AbstractController {
   public EsuEcosCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
-    this.executor = Executors.newCachedThreadPool();
+    autoConnect(autoConnect);
+  }
 
+  private void autoConnect(boolean autoConnect) {
     if (commandStationBean != null) {
       if (autoConnect) {
         Logger.trace("Perform auto connect");
-//        connect();
+        connect();
       }
     } else {
       Logger.error("Command Station NOT SET!");
@@ -101,12 +121,16 @@ public class EsuEcosCommandStationImpl extends AbstractController {
           }
 
           if (connected) {
-            //DccExMessageListener systemEventListener = new DccExCommandStationImpl.MessageListener(this);
-            //this.connection.setMessageListener(systemEventListener);
+            //Obtain some info about the ECoS
+            EcosMessage reply = connection.sendMessage(EcosMessageFactory.getBaseObject());
+            this.baseObject = new BaseObject(reply);
 
-            now = System.currentTimeMillis();
-            long start = now;
-            timeout = now + 200L;
+            //Start the EventHandler
+            eventMessageHandler = new EventHandler(this.connection);
+            eventMessageHandler.start();
+
+            reply = connection.sendMessage(EcosMessageFactory.subscribeBaseObject());
+            Logger.trace("BaseObjectSubscription reply: " + reply.getResponse());
 
 //            while (this.mainDevice == null && now < timeout) {
 //              pause(100);
@@ -170,27 +194,236 @@ public class EsuEcosCommandStationImpl extends AbstractController {
 
   @Override
   public void disconnect() {
+    try {
+      if (this.connected) {
+        this.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
+
+      }
+      this.eventMessageHandler.quit();
+      this.connection.close();
+    } catch (Exception ex) {
+      Logger.error(ex);
+    }
   }
 
   @Override
   public InfoBean getCommandStationInfo() {
-    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public DeviceBean getDevice() {
-    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public List<DeviceBean> getDevices() {
-    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public String getIp() {
-    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    if (this.connection != null && this.connection.isConnected()) {
+      return this.connection.getControllerAddress().getHostAddress();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Query the System Status
+   *
+   * @return true the track power is on else off.
+   */
+  @Override
+  public boolean isPower() {
+    if (this.connected) {
+      EcosMessage reply = this.connection.sendMessage(EcosMessageFactory.getPowerStatus());
+      this.baseObject.update(reply);
+      this.power = "GO".equals(this.baseObject.getStatus());
+    } else {
+      this.power = false;
+    }
+    return this.power;
+  }
+
+  /**
+   * System Stop and GO When on = true then the GO command is issued; <br>
+   * The command station activates the operation and supplies electrical energy.<br>
+   * Any speed levels/functions that may still exist or have been saved will be sent again.<br>
+   * When false the Stop command is issued;<br>
+   * The command station stops operation on main and programming track.<br>
+   * Electrical energy is no longer supplied.<br>
+   * All speed levels/function values and settings are retained.
+   *
+   * @param on true Track power On else Off
+   * @return true the Track power is On else Off
+   */
+  @Override
+  public boolean power(boolean on) {
+    if (this.connected) {
+      EcosMessage reply = this.connection.sendMessage(EcosMessageFactory.setPowerStatus(on));
+      this.baseObject.update(reply);
+      this.power = "GO".equals(this.baseObject.getStatus());
+
+      PowerEvent pe = new PowerEvent(this.power);
+      notifyPowerEventListeners(pe);
+
+      return power;
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public void changeDirection(int locUid, LocomotiveBean.Direction direction) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void changeVelocity(int locUid, int speed, LocomotiveBean.Direction direction) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public List<LocomotiveBean> getLocomotives() {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Image getLocomotiveImage(String icon) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Image getLocomotiveFunctionImage(String icon) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public boolean isSupportTrackMeasurements() {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Map<Integer, ChannelBean> getTrackMeasurements() {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public List<AccessoryBean> getAccessories() {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public DeviceBean getFeedbackDevice() {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public List<FeedbackModuleBean> getFeedbackModules() {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void fireSensorEventListeners(SensorEvent sensorEvent) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  private void notifyPowerEventListeners(final PowerEvent powerEvent) {
+    executor.execute(() -> fireAllPowerEventListeners(powerEvent));
+  }
+
+  private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
+    for (PowerEventListener listener : powerEventListeners) {
+      listener.onPowerChange(powerEvent);
+    }
+  }
+
+  private class EventHandler extends Thread {
+
+    private boolean stop = false;
+    private boolean quit = true;
+    private BufferedReader reader;
+
+    private final TransferQueue<EcosMessage> eventQueue;
+
+    public EventHandler(EcosConnection connection) {
+      eventQueue = connection.getEventQueue();
+    }
+
+    void quit() {
+      this.quit = true;
+    }
+
+    boolean isRunning() {
+      return !this.quit;
+    }
+
+    boolean isFinished() {
+      return this.stop;
+    }
+
+    @Override
+    public void run() {
+      this.quit = false;
+      this.setName("ESU-ECOS-EVENT-HANDLER");
+
+      Logger.trace("Event Handler Started...");
+
+      while (isRunning()) {
+        try {
+          EcosMessage eventMessage = eventQueue.take();
+          int id = eventMessage.getObjectId();
+
+          switch (id) {
+            case 1 -> {
+              String prevStatus = baseObject.getStatus();
+              baseObject.update(eventMessage);
+              Logger.trace(baseObject);
+
+              if (!baseObject.getStatus().equals(prevStatus)) {
+                power = "GO".equals(baseObject.getStatus());
+                Logger.trace("Power changed to: " + (power ? "On" : "Off"));
+                power = "GO".equals(baseObject.getStatus());
+                PowerEvent pe = new PowerEvent(power);
+                fireAllPowerEventListeners(pe);
+              }
+
+            }
+            default -> {
+              Logger.trace(eventMessage.getMessage());
+            }
+          }
+
+        } catch (InterruptedException ex) {
+          Logger.error(ex);
+        }
+      }
+
+      Logger.debug("Stop receiving");
+      try {
+        reader.close();
+      } catch (IOException ex) {
+        Logger.error(ex);
+      }
+      stop = true;
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////////////////  
@@ -231,16 +464,28 @@ public class EsuEcosCommandStationImpl extends AbstractController {
       //Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
 
       if (connected) {
-        EcosMessage baseObjectMessage = EcosMessageFactory.getBaseObjectMessage();
-        
-        EcosMessage reply = cs.connection.sendMessage(baseObjectMessage);
 
-        BaseObject baseObject = new BaseObject(reply);
+        Logger.trace(cs.baseObject);
 
-        Logger.trace("BaseObject: " + baseObject);
-        
-        Logger.trace("\n"+reply.getResponse());
+        //EcosMessage subscribePowerMessage = EcosMessageFactory.subscribeBaseObject();
+        //EcosMessage reply2 = cs.connection.sendMessage(subscribePowerMessage);
+        //Logger.trace("subscribe: " + reply2.getResponse());
+        boolean power = cs.isPower();
+        Logger.trace("1 Power is " + (power ? "On" : "Off"));
 
+        cs.pause(1000);
+
+        power = cs.power(true);
+        Logger.trace("2 Power is " + (power ? "On" : "Off"));
+
+        cs.pause(1000);
+
+        power = cs.power(false);
+        Logger.trace("3 Power is " + (power ? "On" : "Off"));
+
+        cs.pause(100000);
+
+        cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
       }
 
     }

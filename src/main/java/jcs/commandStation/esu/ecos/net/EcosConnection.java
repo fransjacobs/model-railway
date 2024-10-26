@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package jcs.commandStation.esu.ecos.net;
 
 import java.net.InetAddress;
+import java.util.concurrent.TransferQueue;
 import jcs.commandStation.esu.ecos.EcosMessage;
 
 /**
@@ -26,26 +27,14 @@ public interface EcosConnection extends AutoCloseable {
 
   static final int DEFAULT_NETWORK_PORT = 15471;
 
-  static final String MESSAGE_DELIMITER = "\n";
-
-  static final int MAX_ERRORS = 15;
-
   EcosMessage sendMessage(EcosMessage message);
+
+  TransferQueue<EcosMessage> getEventQueue();
 
   void setMessageListener(EcosMessageListener messageListener);
 
   boolean isConnected();
 
-//
-//  void setCanPingListener(CanPingListener canPingListener);
-//
-//  void setFeedbackListener(FeedbackListener feedbackListener);
-//
-//  void setSystemListener(SystemListener systemListener);
-//
-//  void setAccessoryListener(AccessoryListener accessoryListener);
-//
-//  void setLocomotiveListener(LocomotiveListener locomotiveListener);
   InetAddress getControllerAddress();
 
 }

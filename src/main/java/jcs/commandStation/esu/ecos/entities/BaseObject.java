@@ -17,6 +17,7 @@ package jcs.commandStation.esu.ecos.entities;
 
 import java.util.Map;
 import java.util.Objects;
+import jcs.commandStation.esu.ecos.Ecos;
 import jcs.commandStation.esu.ecos.EcosMessage;
 
 /**
@@ -59,76 +60,121 @@ public class BaseObject {
   }
 
   public BaseObject(EcosMessage msg) {
+    parse(msg);
+  }
 
+  public void update(EcosMessage msg) {
+    parse(msg);
+  }
+
+  private void parse(EcosMessage msg) {
+    if (msg == null) {
+      return;
+    }
     Map<String, String> values = msg.getValueMap();
 
-    this.objectClass = values.get("objectclass");
-    this.view = values.get("view");
-    this.listView = values.get("listview");
-    this.control = values.get("control");
-    this.list = values.get("list");
-    String vsize = values.get("size");
-    if (vsize != null) {
-      this.size = Integer.parseInt(vsize);
+    if (values.containsKey(Ecos.OBJECTCLASS)) {
+      this.objectClass = values.get(Ecos.OBJECTCLASS);
     }
-    String vminarguments = values.get("minarguments");
-    if (vminarguments != null) {
-      this.minArguments = Integer.parseInt(vminarguments);
+    if (values.containsKey(Ecos.VIEW)) {
+      this.view = values.get(Ecos.VIEW);
     }
-    this.protocolVersion = values.get("protocolversion");
-
-    this.commandStationType = values.get("commandstationtype");
-    if (this.commandStationType != null) {
-      this.commandStationType = this.commandStationType.replaceAll("\"", "");
+    if (values.containsKey(Ecos.LISTVIEW)) {
+      this.listView = values.get(Ecos.LISTVIEW);
     }
-
-    this.name = values.get("name");
-    if (this.name != null) {
-      this.name = this.name.replaceAll("\"", "");
+    if (values.containsKey(Ecos.CONTROL)) {
+      this.control = values.get(Ecos.CONTROL);
     }
-
-    this.serialNumber = values.get("serialnumber");
-    if (this.serialNumber != null) {
-      this.serialNumber = this.serialNumber.replaceAll("\"", "");
+    if (values.containsKey(Ecos.LIST)) {
+      this.list = values.get(Ecos.LIST);
     }
-
-    this.hardwareVersion = values.get("hardwareversion");
-    this.applicationVersion = values.get("applicationversion");
-
-    this.applicationVersionSuffix = values.get("applicationversionsuffix");
-    if (this.applicationVersionSuffix != null) {
-      this.applicationVersionSuffix = this.applicationVersionSuffix.replaceAll("\"", "");
+    if (values.containsKey(Ecos.SIZE)) {
+      String vsize = values.get(Ecos.SIZE);
+      if (vsize != null) {
+        this.size = Integer.parseInt(vsize);
+      }
     }
-
-    if (values.containsKey("updateonerror")) {
-      this.updateOnError = values.get("updateonerror").equals("1");
+    if (values.containsKey(Ecos.MINARGUMENTS)) {
+      String vminarguments = values.get(Ecos.MINARGUMENTS);
+      if (vminarguments != null) {
+        this.minArguments = Integer.parseInt(vminarguments);
+      }
     }
-
-    this.status = values.get("status");
-    this.status2 = values.get("status2");
-    this.progStatus = values.get("prog-status");
-    this.m4Status = values.get("m4-status");
-    this.railcomplusStatus = values.get("railcomplus-status");
-    this.watchdog = values.get("watchdog");
-    if (values.containsKey("railcom")) {
-      this.railcom = values.get("railcom").equals("1");
+    if (values.containsKey(Ecos.PROTOCOLVERSION)) {
+      this.protocolVersion = values.get(Ecos.PROTOCOLVERSION);
+    }
+    if (values.containsKey(Ecos.COMMANDSTATIONTYPE)) {
+      this.commandStationType = values.get(Ecos.COMMANDSTATIONTYPE);
+      if (this.commandStationType != null) {
+        this.commandStationType = this.commandStationType.replaceAll("\"", "");
+      }
+    }
+    if (values.containsKey(Ecos.NAME)) {
+      this.name = values.get(Ecos.NAME);
+      if (this.name != null) {
+        this.name = this.name.replaceAll("\"", "");
+      }
     }
 
-    if (values.containsKey("railcomplus")) {
-      this.railcomplus = values.get("railcomplus").equals("1");
+    if (values.containsKey(Ecos.SERIALNUMBER)) {
+      this.serialNumber = values.get(Ecos.SERIALNUMBER);
+      if (this.serialNumber != null) {
+        this.serialNumber = this.serialNumber.replaceAll("\"", "");
+      }
     }
-
-    String vrailcomplusRange = values.get("railcomplus-range");
-    if (vminarguments != null) {
-      this.railcomplusRange = Integer.parseInt(vrailcomplusRange);
+    if (values.containsKey(Ecos.HARDWAREVERSION)) {
+      this.hardwareVersion = values.get(Ecos.HARDWAREVERSION);
     }
-
-    this.railcomplusMode = values.get("railcomplus-mode");
-    if (values.containsKey("allowlocotakeover")) {
-      this.allowLocoTakeover = values.get("allowlocotakeover").equals("1");
+    if (values.containsKey(Ecos.APPLICATIONVERSION)) {
+      this.applicationVersion = values.get(Ecos.APPLICATIONVERSION);
     }
-    if (values.containsKey("stoponlastdisconnect")) {
-      this.stopOnLastDisconnect = values.get("stoponlastdisconnect").equals("1");
+    if (values.containsKey(Ecos.APPLICATIONVERSIONSUFFIX)) {
+      this.applicationVersionSuffix = values.get(Ecos.APPLICATIONVERSIONSUFFIX);
+      if (this.applicationVersionSuffix != null) {
+        this.applicationVersionSuffix = this.applicationVersionSuffix.replaceAll("\"", "");
+      }
+    }
+    if (values.containsKey(Ecos.UPDATEONERROR)) {
+      this.updateOnError = values.get(Ecos.UPDATEONERROR).equals("1");
+    }
+    if (values.containsKey(Ecos.STATUS)) {
+      this.status = values.get(Ecos.STATUS);
+    }
+    if (values.containsKey(Ecos.STATUS2)) {
+      this.status2 = values.get(Ecos.STATUS2);
+    }
+    if (values.containsKey(Ecos.PROG_STATUS)) {
+      this.progStatus = values.get(Ecos.PROG_STATUS);
+    }
+    if (values.containsKey(Ecos.M4_STATUS)) {
+      this.m4Status = values.get(Ecos.M4_STATUS);
+    }
+    if (values.containsKey(Ecos.RAILCOMPLUS_STATUS)) {
+      this.railcomplusStatus = values.get(Ecos.RAILCOMPLUS_STATUS);
+    }
+    if (values.containsKey(Ecos.WATCHDOG)) {
+      this.watchdog = values.get(Ecos.WATCHDOG);
+    }
+    if (values.containsKey(Ecos.RAILCOM)) {
+      this.railcom = values.get(Ecos.RAILCOM).equals("1");
+    }
+    if (values.containsKey(Ecos.RAILCOMPLUS)) {
+      this.railcomplus = values.get(Ecos.RAILCOMPLUS).equals("1");
+    }
+    if (values.containsKey(Ecos.RAILCOMPLUS_RANGE)) {
+      String vrailcomplusRange = values.get(Ecos.RAILCOMPLUS_RANGE);
+      if (vrailcomplusRange != null) {
+        this.railcomplusRange = Integer.parseInt(vrailcomplusRange);
+      }
+    }
+    if (values.containsKey(Ecos.RAILCOMPLUS_MODE)) {
+      this.railcomplusMode = values.get(Ecos.RAILCOMPLUS_MODE);
+    }
+    if (values.containsKey(Ecos.ALLOWLOCOTAKEOVER)) {
+      this.allowLocoTakeover = values.get(Ecos.ALLOWLOCOTAKEOVER).equals("1");
+    }
+    if (values.containsKey(Ecos.STOPONLASTCONNECT)) {
+      this.stopOnLastDisconnect = values.get(Ecos.STOPONLASTCONNECT).equals("1");
     }
   }
 
@@ -476,7 +522,7 @@ public class BaseObject {
 
   @Override
   public String toString() {
-    return "BaseObject{" + "commandStationType=" + commandStationType + ", name=" + name + ", serialNumber=" + serialNumber + ", hardwareVersion=" + hardwareVersion + ", applicationVersion=" + applicationVersion + ", status=" + status + '}';
+    return "BaseObject{" + "commandStationType=" + commandStationType + ", name=" + name + ", serialNumber=" + serialNumber + ", hardwareVersion=" + hardwareVersion + ", applicationVersion=" + applicationVersion + ", status=" + status + ", status2=" + status2 + "}";
   }
 
 }
