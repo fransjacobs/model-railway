@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
+@Deprecated
 public class TrackPowerBean extends ControllableDevice {
 
   public enum Status {

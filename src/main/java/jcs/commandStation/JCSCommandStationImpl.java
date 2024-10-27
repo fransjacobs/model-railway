@@ -55,7 +55,7 @@ import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;

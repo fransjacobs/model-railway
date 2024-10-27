@@ -60,7 +60,7 @@ import jcs.commandStation.FeedbackController;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.entities.CommandStationBean.Protocol;
-import jcs.entities.DeviceBean;
+import jcs.commandStation.entities.DeviceBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.swing.layout.VerticalFlowLayout;
 import jcs.util.Ping;

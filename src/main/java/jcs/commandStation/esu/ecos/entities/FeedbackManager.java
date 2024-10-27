@@ -21,4 +21,16 @@ package jcs.commandStation.esu.ecos.entities;
  */
 public class FeedbackManager {
   
+   public static final int ID = 26;
+
+//<EVENT 100>
+//100 state[0x0]
+//<END 0 (OK)>
+//
+// 
+//
+//cg<EVENT 100>
+//100 state[0x8000]
+//<END 0 (OK)>
+
 }

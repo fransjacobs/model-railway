@@ -18,8 +18,8 @@ package jcs.commandStation;
 import java.util.List;
 import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.entities.CommandStationBean;
-import jcs.entities.DeviceBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.entities.DeviceBean;
+import jcs.commandStation.entities.InfoBean;
 
 interface GenericController {
 

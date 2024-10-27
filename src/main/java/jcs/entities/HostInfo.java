@@ -26,6 +26,7 @@ import java.util.Objects;
  *
  * @author frans
  */
+@Deprecated
 public abstract class HostInfo implements Serializable {
 
   protected final String osName;

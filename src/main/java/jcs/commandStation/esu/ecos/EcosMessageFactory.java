@@ -43,6 +43,19 @@ public class EcosMessageFactory {
     return new EcosMessage("set(1, status[" + (on ? "GO" : "STOP") + "])");
   }
 
+  public static EcosMessage getNumberOfFeedbackModules() {
+    return new EcosMessage("get(26, size)");
+  }
+
+  public static EcosMessage subscribeFeedbackManager() {
+    return new EcosMessage("request(26, view)");
+  }
+
+  public static EcosMessage unSubscribeFeedbackManager() {
+    return new EcosMessage("release(26, view)");
+  }
+  
+  
 //  Ecos commands
 //  queryObjects
 //  set        

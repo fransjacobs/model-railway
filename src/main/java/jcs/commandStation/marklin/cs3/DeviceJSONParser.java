@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.ChannelBean;
-import jcs.entities.DeviceBean;
+import jcs.commandStation.entities.DeviceBean;
 import org.json.JSONObject;
 import org.tinylog.Logger;
 

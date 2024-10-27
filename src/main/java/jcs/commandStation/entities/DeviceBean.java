@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.entities;
+package jcs.commandStation.entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,16 +22,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import jcs.commandStation.marklin.cs.can.CanMessage;
+import jcs.entities.ChannelBean;
 import jcs.util.ByteUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.tinylog.Logger;
 
 /**
- * A Device is a Component which lives on the CAN Bus. It can be a Central Station or GFP or Link-S88, etc Devices respond to the Ping Request.
+ * A Device is a Component which "lives" in side a Command Station.<br>
+ * It can be a Central Station (Marklin) ECos (ESU) etc.
  */
 public class DeviceBean {
 
+  
+  
   public static final String MAIN = "MAIN";
   public static final String PROG = "PROG";
   public static final String VOLT = "VOLT";

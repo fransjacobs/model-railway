@@ -37,9 +37,9 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.entities.DeviceBean;
+import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
@@ -132,19 +132,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             reply = connection.sendMessage(EcosMessageFactory.subscribeBaseObject());
             Logger.trace("BaseObjectSubscription reply: " + reply.getResponse());
 
-//            while (this.mainDevice == null && now < timeout) {
-//              pause(100);
-//              now = System.currentTimeMillis();
-//            }
-//            if (mainDevice != null) {
-//              if (debug) {
-//                Logger.trace("Main Device found in " + (now - start) + " ms");
-//              }
-//            } else {
-//              if (debug && mainDevice == null) {
-//                Logger.trace("No Main Device found in " + (now - start) + " ms");
-//              }
-//            }
 //            //Create Info
 //            this.infoBean = new InfoBean();
 //            this.infoBean.setProductName(commandStationBean.getDescription());
@@ -208,7 +195,16 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public InfoBean getCommandStationInfo() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    InfoBean ib = new InfoBean(this.commandStationBean);
+
+    ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
+    ib.setDescription(this.baseObject.getName());
+    ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
+    ib.setSerialNumber(this.baseObject.getSerialNumber());
+    ib.setHardwareVersion(this.baseObject.getHardwareVersion());
+    ib.setSoftwareVersion(this.baseObject.getApplicationVersion());
+    ib.setHostname(this.getIp());
+    return ib;
   }
 
   @Override
@@ -389,6 +385,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       while (isRunning()) {
         try {
           EcosMessage eventMessage = eventQueue.take();
+          
+          Logger.trace("###-> "+eventMessage.getMessage()+" "+eventMessage.getResponse());
+          
           int id = eventMessage.getObjectId();
 
           switch (id) {
@@ -407,7 +406,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
             }
             default -> {
-              Logger.trace(eventMessage.getMessage());
+              Logger.trace(eventMessage.getMessage()+" "+eventMessage.getResponse());
             }
           }
 
@@ -482,10 +481,464 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
         power = cs.power(false);
         Logger.trace("3 Power is " + (power ? "On" : "Off"));
+        
+        
+//        request(40, view)
+//        request(10, view)
+//        request(11, view)
+//        request(31, view)
+//        request(26, view)
+//        request(27, view)
+//        request(7, view)
+//        request(5, view)
+        
+//         get(1, objectclass, name, commandstationtype, protocolversion, applicationversion, applicationversionsuffix, hardwareversion, serialnumber, status, status2, updateonerror, allowlocotakeover, stoponlastdisconnect, railcom, railcomplus, railcomplus-range, railcomplus-mode, railcomplus-status, m4-status, prog-status, watchdog)queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control)
+//         
+//         queryObjects(11, objectclass, name1, name2, name3)get(31, link[0])
+//         queryObjects(26, ports)
+//         queryObjects(27)
+//         
+//         get(40, type[IMAGE_TYPE_INT], name[IMAGE_TYPE_INT], type[IMAGE_TYPE_USER], name[IMAGE_TYPE_USER])
+        
+//<REPLY request(1, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(40, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(10, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(11, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(31, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(26, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(27, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(7, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(5, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY get(1, objectclass, name, commandstationtype, protocolversion, applicationversion, applicationversionsuffix, hardwareversion, serialnumber, status, status2, updateonerror, allowlocotakeover, stoponlastdisconnect, railcom, railcomplus, railcomplus-range, railcomplus-mode, railcomplus-status, m4-status, prog-status, watchdog)>
+//1 objectclass[model]
+//1 name["ECoS-50000"]
+//1 commandstationtype["ECoS"]
+//1 protocolversion[0.5]
+//1 applicationversion[4.2.13]
+//1 applicationversionsuffix[""]
+//1 hardwareversion[1.3]
+//1 serialnumber["0x000480b5"]
+//1 status[GO]
+//1 status2[ALL]
+//1 updateonerror[0]
+//1 allowlocotakeover[1]
+//1 stoponlastdisconnect[0]
+//1 railcom[1]
+//1 railcomplus[1]
+//1 railcomplus-range[1000]
+//1 railcomplus-mode[manual]
+//1 railcomplus-status[none]
+//1 m4-status[none]
+//1 prog-status[0]
+//1 watchdog[0,0]
+//<END 0 (OK, but no newline after packet)>
+
+//<REPLY queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control)>
+//1002 name["FS236-002"] addr[14] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,14] favorite[1] control[other]
+//1003 name["NS 6505"] addr[8] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,21] favorite[1] control[other]
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY queryObjects(11, objectclass, name1, name2, name3)>
+//20000 name1["W1"] name2["artikel"] name3[">0001<"] objectclass[accessory]
+//20001 name1["W2"] name2["artikel"] name3[">0001<"] objectclass[accessory]
+//<END 0 (OK, but no newline after packet)>
+
+//<REPLY get(31, link[0])>
+//31 link[0,0,20000,R0]
+//31 link[0,1,20001,R0]
+//31 link[0,2,0]
+//31 link[0,3,0]
+//31 link[0,4,0]
+//31 link[0,5,0]
+//31 link[0,6,0]
+//31 link[0,7,0]
+//31 link[0,8,0]
+//31 link[0,9,0]
+//31 link[0,10,0]
+//31 link[0,11,0]
+//31 link[0,12,0]
+//31 link[0,13,0]
+//31 link[0,14,0]
+//31 link[0,15,0]
+//<END 0 (OK, but no newline after packet)>
+
+//<REPLY queryObjects(26, ports)>
+//100 ports[16]
+//<END 0 (OK, but no newline after packet)>
+
+//<REPLY queryObjects(27)>
+//65000
+//<END 0 (OK, but no newline after packet)>
+
+//<REPLY get(40, type[IMAGE_TYPE_INT], name[IMAGE_TYPE_INT], type[IMAGE_TYPE_USER], name[IMAGE_TYPE_USER])>
+//40 type[IMAGE_TYPE_INT,0,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,1,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,2,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,3,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,4,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,5,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,6,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,7,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,8,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,9,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,10,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,11,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,12,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,13,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,14,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,15,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,16,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,17,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,18,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,19,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,20,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,21,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,22,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,23,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,24,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,25,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,26,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,27,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,28,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,29,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,30,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,31,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,32,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,33,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,34,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,35,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,36,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,37,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,38,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,39,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,40,LOCO_TYPE_DIESEL]
+//40 type[IMAGE_TYPE_INT,41,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,42,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,43,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,44,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,45,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,46,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,47,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,48,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,49,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,50,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,51,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,52,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,53,LOCO_TYPE_E]
+//40 type[IMAGE_TYPE_INT,54,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,55,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,56,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,57,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,58,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,59,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,60,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,61,LOCO_TYPE_MISC]
+//40 type[IMAGE_TYPE_INT,62,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,63,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,64,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,65,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,66,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,67,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,68,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,69,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,70,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,71,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,72,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,73,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,74,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,75,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,76,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,77,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,78,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,79,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,80,LOCO_TYPE_STEAM]
+//40 type[IMAGE_TYPE_INT,81,LOCO_TYPE_DIESEL]
+//40 name[IMAGE_TYPE_INT,0,"Symbol"]
+//40 name[IMAGE_TYPE_INT,1,"Symbol"]
+//40 name[IMAGE_TYPE_INT,2,"Symbol"]
+//40 name[IMAGE_TYPE_INT,3,"Symbol"]
+//40 name[IMAGE_TYPE_INT,4,"ABJ3"]
+//40 name[IMAGE_TYPE_INT,5,"ABJ4"]
+//40 name[IMAGE_TYPE_INT,6,"BB 66000 (SNCF)"]
+//40 name[IMAGE_TYPE_INT,7,"V 100 (DB)"]
+//40 name[IMAGE_TYPE_INT,8,"Baureihe 218 (DB)"]
+//40 name[IMAGE_TYPE_INT,9,"Baureihe 219 (DR)"]
+//40 name[IMAGE_TYPE_INT,10,"Baureihe 130 (DR)"]
+//40 name[IMAGE_TYPE_INT,11,"Baureihe 648 (DB) / Alstrom LINT 41"]
+//40 name[IMAGE_TYPE_INT,12,"CC 40100 (SNCF)"]
+//40 name[IMAGE_TYPE_INT,13,"CC 72000 (SNCF)"]
+//40 name[IMAGE_TYPE_INT,14,"Class 08 (British Rail)"]
+//40 name[IMAGE_TYPE_INT,15,"Baureihe 642 (DB) / Siemens Desiro"]
+//40 name[IMAGE_TYPE_INT,16,"Di 6 (NSB)"]
+//40 name[IMAGE_TYPE_INT,17,"X 3800 Picasso (SNCF)"]
+//40 name[IMAGE_TYPE_INT,18," RAm TEE (SBB)"]
+//40 name[IMAGE_TYPE_INT,19,"Schienenzeppelin"]
+//40 name[IMAGE_TYPE_INT,20,"SVT 137 (DRG)"]
+//40 name[IMAGE_TYPE_INT,21,"V 60 (DB)"]
+//40 name[IMAGE_TYPE_INT,22,"V 80 (DB)"]
+//40 name[IMAGE_TYPE_INT,23,"V 188 (DB)"]
+//40 name[IMAGE_TYPE_INT,24,"V 200.0 (DB)"]
+//40 name[IMAGE_TYPE_INT,25,"Baureihe 212 (DB)"]
+//40 name[IMAGE_TYPE_INT,26,"V 160 (DB)"]
+//40 name[IMAGE_TYPE_INT,27,"Di 3 (DSB) / NoHAB AA16"]
+//40 name[IMAGE_TYPE_INT,28,"V 320 (DB)"]
+//40 name[IMAGE_TYPE_INT,29,"VT 08 (DB)"]
+//40 name[IMAGE_TYPE_INT,30,"VT 11.5 (DB)"]
+//40 name[IMAGE_TYPE_INT,31,"VT 98 (DB)"]
+//40 name[IMAGE_TYPE_INT,32,"Baureihe 650 (DB) / Regio-Shuttle RS1"]
+//40 name[IMAGE_TYPE_INT,33,"E 03 (DB)"]
+//40 name[IMAGE_TYPE_INT,34,"Baureihe 103 (DB) neurot"]
+//40 name[IMAGE_TYPE_INT,35,"Baureihe 110 (DB) neurot"]
+//40 name[IMAGE_TYPE_INT,36,"Baureihe 111 (DB)"]
+//40 name[IMAGE_TYPE_INT,37,"Baureihe 143 (DB)"]
+//40 name[IMAGE_TYPE_INT,38,"Baureihe 151 (DB)"]
+//40 name[IMAGE_TYPE_INT,39,"Baureihe 151 neurot (DB)"]
+//40 name[IMAGE_TYPE_INT,40,"Baureihe 216 (DB)"]
+//40 name[IMAGE_TYPE_INT,41,"Baureihe 185 (DB)"]
+//40 name[IMAGE_TYPE_INT,42,"E 44 (DRG)"]
+//40 name[IMAGE_TYPE_INT,43,"E 69 (DRG)"]
+//40 name[IMAGE_TYPE_INT,44,"E 80 (DRG)"]
+//40 name[IMAGE_TYPE_INT,45,"E 91 (DRG)"]
+//40 name[IMAGE_TYPE_INT,46,"Baureihe 194 (DB)"]
+//40 name[IMAGE_TYPE_INT,47,"ET 65 (DRG)"]
+//40 name[IMAGE_TYPE_INT,48,"ET 87 (DRG)"]
+//40 name[IMAGE_TYPE_INT,49,"ICE 1 Baureihe 401 (DB)"]
+//40 name[IMAGE_TYPE_INT,50,"ICE 3 Baureihe 403 (DB)"]
+//40 name[IMAGE_TYPE_INT,51,"Ce 6/8 Krokodil (SBB)"]
+//40 name[IMAGE_TYPE_INT,52,"Reihe 1216 Taurus (BB)"]
+//40 name[IMAGE_TYPE_INT,53,"Thalys PBKA"]
+//40 name[IMAGE_TYPE_INT,54,"Di-21 (DRG)"]
+//40 name[IMAGE_TYPE_INT,55,"Personenwagen (DB)"]
+//40 name[IMAGE_TYPE_INT,56,"Symbol"]
+//40 name[IMAGE_TYPE_INT,57,"Symbol"]
+//40 name[IMAGE_TYPE_INT,58,"Symbol"]
+//40 name[IMAGE_TYPE_INT,59,"DBpbzf 765.5 (DB)"]
+//40 name[IMAGE_TYPE_INT,60,"DB Frankfurt 6808 (DB)"]
+//40 name[IMAGE_TYPE_INT,61,"n-Wagen Silberling (DB)"]
+//40 name[IMAGE_TYPE_INT,62,"Class 4000 Big Boy (UP)"]
+//40 name[IMAGE_TYPE_INT,63,"Baureihe 01 (DRG)"]
+//40 name[IMAGE_TYPE_INT,64,"Baureihe 05 schwarz (DRG)"]
+//40 name[IMAGE_TYPE_INT,65,"Baureihe 05 rot (DRG)"]
+//40 name[IMAGE_TYPE_INT,66,"Baureihe 24 (DRG)"]
+//40 name[IMAGE_TYPE_INT,67,"Baureihe 38 (DRG)"]
+//40 name[IMAGE_TYPE_INT,68,"Baureihe 44 (DRG)"]
+//40 name[IMAGE_TYPE_INT,69,"Baureihe 50 (DRG)"]
+//40 name[IMAGE_TYPE_INT,70,"Baureihe 52 (DRG)"]
+//40 name[IMAGE_TYPE_INT,71,"Baureihe 55 (DRG)"]
+//40 name[IMAGE_TYPE_INT,72,"Baureihe 64 (DRG)"]
+//40 name[IMAGE_TYPE_INT,73,"Baureihe 75 (DRG)"]
+//40 name[IMAGE_TYPE_INT,74,"Baureihe 78 (DRG)"]
+//40 name[IMAGE_TYPE_INT,75,"Baureihe 80 (DRG)"]
+//40 name[IMAGE_TYPE_INT,76,"Baureihe 85 (DRG)"]
+//40 name[IMAGE_TYPE_INT,77,"Baureihe 92 (DRG)"]
+//40 name[IMAGE_TYPE_INT,78,"Baureihe 96 (DRG)"]
+//40 name[IMAGE_TYPE_INT,79,"Baureihe 98 (DRG)"]
+//40 name[IMAGE_TYPE_INT,80,"Bayerische PtL 2/2 (Bayerische Staatsbahn)"]
+//40 name[IMAGE_TYPE_INT,81,"Baureihe 310 (DB)"]
+//<END 0 (OK)>
+
+
+
+//request(1002, view)
+//request(1002, view, attribute[realspeed])
+//get(1002, multi, addressconflict, speedindicator, speedstep, speed, dir, sniffer, realspeed, autoregister, active)
+//
+//request(1003, view)request(1003, view, attribute[realspeed])
+//get(1003, multi, addressconflict, speedindicator, speedstep, speed, dir, sniffer, realspeed, autoregister, active)
+//
+//request(20000, view)
+//get(20000, addr, addrext, protocol, symbol, mode, duration, gates, state, control)
+//
+//request(20001, view)
+//get(20001, addr, addrext, protocol, symbol, mode, duration, gates, state, control)
+                               
+//request(100, view)
+//get(100, ports, state, railcom, control)
+//get(100, railcom[0])
+//get(100, railcom[1])
+//get(100, railcom[2])
+//get(100, railcom[3])
+//get(100, railcom[4])
+//get(100, railcom[5])
+//get(100, railcom[6])
+//get(100, railcom[7])
+//get(100, railcom[8])
+//get(100, railcom[9])
+//get(100, railcom[10])
+//get(100, railcom[11])
+//get(100, railcom[12])
+//get(100, railcom[13])
+//get(100, railcom[14])
+//get(100, railcom[15])
+        
+//<REPLY request(100, view)>
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY get(100, ports, state, railcom, control)>
+//100 ports[16]
+//100 state[0x0]
+//100 control[none]
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY get(100, railcom[0])>
+//100 railcom[0,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//
+//<REPLY get(100, railcom[1])>
+//100 railcom[1,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//
+//<REPLY get(100, railcom[2])>
+//100 railcom[2,0,0]
+//
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[3])>
+//100 railcom[3,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//
+//<REPLY get(100, railcom[4])>
+//100 railcom[4,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[5])>
+//100 railcom[5,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[6])>
+//100 railcom[6,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[7])>
+//100 railcom[7,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[8])>
+//100 railcom[8,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[9])>
+//100 railcom[9,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[10])>
+//100 railcom[10,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[11])>
+//100 railcom[11,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[12])>
+//100 railcom[12,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[13])>
+//100 railcom[13,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[14])>
+//100 railcom[14,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//<REPLY get(100, railcom[15])>
+//100 railcom[15,0,0]
+//<END 0 (OK, but no RailCom port at 18)>
+//
+//<EVENT 100>
+//100 state[0x10]
+//<END 0 (OK)>
+
+//      
+//<REPLY get(1, status2)>
+//1 status2[ALL]
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY request(1002, view)>
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY request(1002, view, attribute[realspeed])>
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY get(1002, multi, addressconflict, speedindicator, speedstep, speed, dir, sniffer, realspeed, autoregister, active)>
+//1002 multi[0]
+//1002 addressconflict[0]
+//1002 speedindicator[0]
+//1002 speedstep[0]
+//1002 speed[0]
+//1002 dir[1]
+//1002 sniffer[0]
+//1002 realspeed[0]
+//1002 autoregister[railcomplus]
+//1002 active[0]
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(1003, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(1003, view, attribute[realspeed])>
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY get(1003, multi, addressconflict, speedindicator, speedstep, speed, dir, sniffer, realspeed, autoregister, active)>
+//1003 multi[0]
+//1003 addressconflict[0]
+//1003 speedindicator[0]
+//1003 speedstep[0]
+//1003 speed[0]
+//1003 dir[0]
+//1003 sniffer[0]
+//1003 realspeed[0]
+//1003 autoregister[railcomplus]
+//1003 active[0]
+//<END 0 (OK, but no newline after packet)>
+//<REPLY request(20000, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY get(20000, addr, addrext, protocol, symbol, mode, duration, gates, state, control)>
+//20000 addr[1]
+//20000 addrext[1g,1r]
+//20000 protocol[DCC]
+//20000 symbol[1]
+//20000 mode[SWITCH]
+//20000 duration[250]
+//20000 gates[2]
+//20000 state[0]
+//20000 control[none]
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY request(20001, view)>
+//<END 0 (OK, but no newline after packet)>
+//<REPLY get(20001, addr, addrext, protocol, symbol, mode, duration, gates, state, control)>
+//20001 addr[2]
+//20001 addrext[2g,2r]
+//20001 protocol[DCC]
+//20001 symbol[0]
+//20001 mode[SWITCH]
+//20001 duration[250]
+//20001 gates[2]
+//20001 state[0]
+//20001 control[none]
+//<END 0 (OK, but no newline after packet)>
+//
+//
+//<REPLY request(65000, view)>
+//<END 0 (OK, but no newline after packet)>
+//
+//<REPLY get(65000, limit, maxlimit, control)>
+//65000 limit[4000]
+//65000 maxlimit[4000]
+//65000 control[none]
+//<END 0 (OK)>
+       
+
+//request(65000, view)
+//get(65000, limit, maxlimit, control)        
+        
+        
+        cs.connection.sendMessage(EcosMessageFactory.subscribeFeedbackManager());
+        
+        
 
         cs.pause(100000);
 
         cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
+        cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
+        
+        cs.disconnect();
       }
 
     }

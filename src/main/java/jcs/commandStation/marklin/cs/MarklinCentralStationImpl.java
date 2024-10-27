@@ -62,9 +62,10 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.entities.DeviceBean;
+import jcs.commandStation.entities.DeviceBean;
+import jcs.commandStation.entities.InfoBean;
 import jcs.entities.FeedbackModuleBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.marklin.cs2.InfoBeanParser;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import static jcs.entities.LocomotiveBean.DecoderType.DCC;
@@ -224,12 +225,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private InfoBean getCSInfo() {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String geraet = httpCon.getInfoFile();
-    InfoBean ib = new InfoBean(geraet, true);
+    InfoBean ib = InfoBeanParser.parseFile(geraet);
 
     if ("60126".equals(ib.getArticleNumber()) || "60226".equals(ib.getArticleNumber())) {
       //CS3
       String json = httpCon.getInfoJSON();
-      ib = new InfoBean(json, false);
+      ib = InfoBeanParser.parseJson(json);
       httpCon.setCs3(true);
     }
     return ib;
