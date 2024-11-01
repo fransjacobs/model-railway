@@ -47,6 +47,18 @@ public class EcosMessageFactory {
     return new EcosMessage("get(26, size)");
   }
 
+  public static EcosMessage getFeedbackModuleInfo(int moduleId) {
+    return new EcosMessage("get(" + moduleId + ", state, ports)");
+  }
+
+  public static EcosMessage subscribeFeedbackModule(int moduleId) {
+    return new EcosMessage("request(" + moduleId + ", view)");
+  }
+
+  public static EcosMessage unSubscribeFeedbackModule(int moduleId) {
+    return new EcosMessage("release(" + moduleId + ", view)");
+  }
+
   public static EcosMessage subscribeFeedbackManager() {
     return new EcosMessage("request(26, view)");
   }
@@ -54,8 +66,7 @@ public class EcosMessageFactory {
   public static EcosMessage unSubscribeFeedbackManager() {
     return new EcosMessage("release(26, view)");
   }
-  
-  
+
 //  Ecos commands
 //  queryObjects
 //  set        

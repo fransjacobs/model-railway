@@ -110,13 +110,16 @@ public class EcosMessage implements Ecos {
 
       String cmd = response.substring(cmdStart, cmdLen + cmdStart);
       return cmd;
+    } else if (response != null && response.toString().startsWith(EVENT)) {
+      return null;
+//      int cmdStart = 0;
+//      int cmdEnd = message.indexOf("(");
+//      int cmdLen = cmdEnd - cmdStart;
+//
+//      String cmd = message.substring(cmdStart, cmdLen + cmdStart);
+//      return cmd;
     } else {
-      int cmdStart = 0;
-      int cmdEnd = message.indexOf("(");
-      int cmdLen = cmdEnd - cmdStart;
-
-      String cmd = message.substring(cmdStart, cmdLen + cmdStart);
-      return cmd;
+      return null;
     }
   }
 

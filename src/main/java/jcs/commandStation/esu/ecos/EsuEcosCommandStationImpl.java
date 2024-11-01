@@ -40,6 +40,7 @@ import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.esu.ecos.entities.FeedbackManager;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
@@ -50,6 +51,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   private EventHandler eventMessageHandler;
 
   private BaseObject baseObject;
+  private FeedbackManager feedbackManager;
 
   public EsuEcosCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -132,6 +134,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             reply = connection.sendMessage(EcosMessageFactory.subscribeBaseObject());
             Logger.trace("BaseObjectSubscription reply: " + reply.getResponse());
 
+            getFeedbackManager();
+
 //            //Create Info
 //            this.infoBean = new InfoBean();
 //            this.infoBean.setProductName(commandStationBean.getDescription());
@@ -177,6 +181,30 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
     return this.connected;
 
+  }
+
+  private void getFeedbackManager() {
+    //Get the number of feedback modules
+    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getNumberOfFeedbackModules());
+
+    feedbackManager = new FeedbackManager(reply);
+    for (int i = 0; i < feedbackManager.getSize(); i++) {
+      int moduleId = i + FeedbackManager.S88_OFFSET;
+      reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
+
+      Logger.trace("FeedbackModule inforeply: " + reply.getResponse());
+      
+      
+      String state = reply.getValueMap().get(Ecos.STATE);
+      String ports = reply.getValueMap().get(Ecos.PORTS);
+      
+      Logger.trace("state: "+state+" ports: "+ports);
+      
+      reply = connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
+      Logger.trace("r: "+reply.getResponse());
+      //TODO implement feedback events....
+
+    }
   }
 
   @Override
@@ -385,9 +413,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       while (isRunning()) {
         try {
           EcosMessage eventMessage = eventQueue.take();
-          
-          Logger.trace("###-> "+eventMessage.getMessage()+" "+eventMessage.getResponse());
-          
+
+          Logger.trace("###-> " + eventMessage.getMessage() + " " + eventMessage.getResponse());
+
           int id = eventMessage.getObjectId();
 
           switch (id) {
@@ -406,7 +434,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
             }
             default -> {
-              Logger.trace(eventMessage.getMessage()+" "+eventMessage.getResponse());
+              Logger.trace(eventMessage.getMessage() + " " + eventMessage.getResponse());
             }
           }
 
@@ -481,8 +509,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
         power = cs.power(false);
         Logger.trace("3 Power is " + (power ? "On" : "Off"));
-        
-        
+
 //        request(40, view)
 //        request(10, view)
 //        request(11, view)
@@ -491,7 +518,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //        request(27, view)
 //        request(7, view)
 //        request(5, view)
-        
 //         get(1, objectclass, name, commandstationtype, protocolversion, applicationversion, applicationversionsuffix, hardwareversion, serialnumber, status, status2, updateonerror, allowlocotakeover, stoponlastdisconnect, railcom, railcomplus, railcomplus-range, railcomplus-mode, railcomplus-status, m4-status, prog-status, watchdog)queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control)
 //         
 //         queryObjects(11, objectclass, name1, name2, name3)get(31, link[0])
@@ -499,7 +525,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //         queryObjects(27)
 //         
 //         get(40, type[IMAGE_TYPE_INT], name[IMAGE_TYPE_INT], type[IMAGE_TYPE_USER], name[IMAGE_TYPE_USER])
-        
 //<REPLY request(1, view)>
 //<END 0 (OK, but no newline after packet)>
 //<REPLY request(40, view)>
@@ -541,7 +566,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //1 prog-status[0]
 //1 watchdog[0,0]
 //<END 0 (OK, but no newline after packet)>
-
 //<REPLY queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control)>
 //1002 name["FS236-002"] addr[14] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,14] favorite[1] control[other]
 //1003 name["NS 6505"] addr[8] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,21] favorite[1] control[other]
@@ -551,7 +575,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //20000 name1["W1"] name2["artikel"] name3[">0001<"] objectclass[accessory]
 //20001 name1["W2"] name2["artikel"] name3[">0001<"] objectclass[accessory]
 //<END 0 (OK, but no newline after packet)>
-
 //<REPLY get(31, link[0])>
 //31 link[0,0,20000,R0]
 //31 link[0,1,20001,R0]
@@ -570,15 +593,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //31 link[0,14,0]
 //31 link[0,15,0]
 //<END 0 (OK, but no newline after packet)>
-
-//<REPLY queryObjects(26, ports)>
-//100 ports[16]
-//<END 0 (OK, but no newline after packet)>
-
 //<REPLY queryObjects(27)>
 //65000
 //<END 0 (OK, but no newline after packet)>
-
 //<REPLY get(40, type[IMAGE_TYPE_INT], name[IMAGE_TYPE_INT], type[IMAGE_TYPE_USER], name[IMAGE_TYPE_USER])>
 //40 type[IMAGE_TYPE_INT,0,LOCO_TYPE_STEAM]
 //40 type[IMAGE_TYPE_INT,1,LOCO_TYPE_DIESEL]
@@ -745,9 +762,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //40 name[IMAGE_TYPE_INT,80,"Bayerische PtL 2/2 (Bayerische Staatsbahn)"]
 //40 name[IMAGE_TYPE_INT,81,"Baureihe 310 (DB)"]
 //<END 0 (OK)>
-
-
-
 //request(1002, view)
 //request(1002, view, attribute[realspeed])
 //get(1002, multi, addressconflict, speedindicator, speedstep, speed, dir, sniffer, realspeed, autoregister, active)
@@ -760,7 +774,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //
 //request(20001, view)
 //get(20001, addr, addrext, protocol, symbol, mode, duration, gates, state, control)
-                               
+//<REPLY queryObjects(26, ports)>
+//100 ports[16]
+//<END 0 (OK, but no newline after packet)>
 //request(100, view)
 //get(100, ports, state, railcom, control)
 //get(100, railcom[0])
@@ -779,7 +795,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //get(100, railcom[13])
 //get(100, railcom[14])
 //get(100, railcom[15])
-        
 //<REPLY request(100, view)>
 //<END 0 (OK, but no newline after packet)>
 //
@@ -845,7 +860,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //<EVENT 100>
 //100 state[0x10]
 //<END 0 (OK)>
-
 //      
 //<REPLY get(1, status2)>
 //1 status2[ALL]
@@ -923,21 +937,23 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //65000 maxlimit[4000]
 //65000 control[none]
 //<END 0 (OK)>
-       
-
 //request(65000, view)
 //get(65000, limit, maxlimit, control)        
-        
-        
-        cs.connection.sendMessage(EcosMessageFactory.subscribeFeedbackManager());
-        
-        
+//<REPLY queryObjects(26, ports)>
+//100 ports[16]
+//<END 0 (OK, but no newline after packet)>
+//request(100, view)
+//get(100, ports, state, railcom, control)
+        //cs.connection.sendMessage(EcosMessageFactory.subscribeFeedbackManager());
+        //EcosMessage r = cs.connection.sendMessage(EcosMessageFactory.getNumberOfFeedbackModules());
+
+        //Logger.trace("R: " + r.getResponse() + " T: " + r.getMessage());
 
         cs.pause(100000);
 
-        cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
-        cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
-        
+        //cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
+        //cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
+
         cs.disconnect();
       }
 
