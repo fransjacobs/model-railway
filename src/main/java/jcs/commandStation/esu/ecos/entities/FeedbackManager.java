@@ -15,12 +15,14 @@
  */
 package jcs.commandStation.esu.ecos.entities;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import jcs.commandStation.esu.ecos.Ecos;
 import jcs.commandStation.esu.ecos.EcosMessage;
+import jcs.commandStation.events.SensorEvent;
 import jcs.entities.SensorBean;
-import org.tinylog.Logger;
 
 /**
  *
@@ -73,8 +75,11 @@ public class FeedbackManager {
     }
   }
 
-  public void update(EcosMessage message) {
+  public List<SensorEvent> update(EcosMessage message) {
     parse(message);
+    
+    //Stub
+    return Collections.EMPTY_LIST;
   }
 
   public int getSize() {
@@ -116,24 +121,17 @@ public class FeedbackManager {
         val = "0" + val;
       }
 
-      String lb = val.substring(2);
-      String hb = val.substring(0, 2);
-      int low = Integer.parseInt(lb, 16);
-      int high = Integer.parseInt(hb, 16);
-
-      for (int i = 0; i < 8; i++) {
+      int stateVal = Integer.parseInt(val, 16);
+      //Logger.trace(state + " -> " + stateVal);
+      for (int i = 0; i < ports.length; i++) {
         int m = ((int) Math.pow(2, i));
-        int lv = (low & m) > 0 ? 1 : 0;
-        int hv = (high & m) > 0 ? 1 : 0;
-        ports[i] = lv;
-        ports[(i + 8)] = hv;
+        int pv = (stateVal & m) > 0 ? 1 : 0;
+        ports[i] = pv;
       }
 
-      Logger.trace(state + " -> " + Integer.parseInt(val, 16));
-
-      String p = "16[" + ports[15] + "] 15[" + ports[14] + "] 14[" + ports[13] + "] 13[" + ports[12] + "] 12[" + ports[11] + "] 11[" + ports[10] + "] 10[" + ports[9] + "] 9[" + ports[8]
-              + "] 8[" + ports[7] + "] 7[" + ports[6] + "] 6[" + ports[5] + "] 5[" + ports[4] + "] 4[" + ports[3] + "] 3[" + ports[2] + "] 2[ " + ports[1] + "] 1[" + ports[0] + "]";
-      Logger.trace(p);
+      //String p = "16[" + ports[15] + "] 15[" + ports[14] + "] 14[" + ports[13] + "] 13[" + ports[12] + "] 12[" + ports[11] + "] 11[" + ports[10] + "] 10[" + ports[9] + "] 9[" + ports[8]
+      //        + "] 8[" + ports[7] + "] 7[" + ports[6] + "] 6[" + ports[5] + "] 5[" + ports[4] + "] 4[" + ports[3] + "] 3[" + ports[2] + "] 2[" + ports[1] + "] 1[" + ports[0] + "]";
+      //Logger.trace(p);
     }
 
     //0 based index
@@ -146,7 +144,6 @@ public class FeedbackManager {
       SensorBean sb = new SensorBean(id, port, ports[port]);
       return sb;
     }
-
   }
 
 }

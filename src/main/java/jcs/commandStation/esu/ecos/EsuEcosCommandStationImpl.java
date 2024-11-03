@@ -134,7 +134,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             reply = connection.sendMessage(EcosMessageFactory.subscribeBaseObject());
             Logger.trace("BaseObjectSubscription reply: " + reply.getResponse());
 
-            getFeedbackManager();
+            setupFeedbackManager();
+
+            Logger.trace("There are " + this.feedbackManager.getSize() + " feddback modules");
 
 //            //Create Info
 //            this.infoBean = new InfoBean();
@@ -183,27 +185,20 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   }
 
-  private void getFeedbackManager() {
-    //Get the number of feedback modules
+  private void setupFeedbackManager() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getNumberOfFeedbackModules());
-
     feedbackManager = new FeedbackManager(reply);
+
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
       reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
 
-      Logger.trace("FeedbackModule inforeply: " + reply.getResponse());
-      
-      
       String state = reply.getValueMap().get(Ecos.STATE);
       String ports = reply.getValueMap().get(Ecos.PORTS);
-      
-      Logger.trace("state: "+state+" ports: "+ports);
-      
-      reply = connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
-      Logger.trace("r: "+reply.getResponse());
-      //TODO implement feedback events....
 
+      //Logger.trace("state: "+state+" ports: "+ports);
+      reply = connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
+      //Logger.trace("r: "+reply.getResponse());
     }
   }
 
@@ -434,7 +429,13 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
             }
             default -> {
-              Logger.trace(eventMessage.getMessage() + " " + eventMessage.getResponse());
+              if (id >= 100) {
+                //Feedback event
+                feedbackManager.update(eventMessage);
+              } else {
+                Logger.trace(eventMessage.getMessage() + " " + eventMessage.getResponse());
+              }
+
             }
           }
 
@@ -946,14 +947,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //get(100, ports, state, railcom, control)
         //cs.connection.sendMessage(EcosMessageFactory.subscribeFeedbackManager());
         //EcosMessage r = cs.connection.sendMessage(EcosMessageFactory.getNumberOfFeedbackModules());
-
         //Logger.trace("R: " + r.getResponse() + " T: " + r.getMessage());
-
         cs.pause(100000);
 
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
-
         cs.disconnect();
       }
 

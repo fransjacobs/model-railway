@@ -66,6 +66,7 @@ import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.marklin.cs2.InfoBeanParser;
+import jcs.commandStation.marklin.cs2.SensorMessageParser;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import static jcs.entities.LocomotiveBean.DecoderType.DCC;
@@ -73,6 +74,7 @@ import static jcs.entities.LocomotiveBean.DecoderType.MFX;
 import static jcs.entities.LocomotiveBean.DecoderType.MFXP;
 import static jcs.entities.LocomotiveBean.DecoderType.SX1;
 import jcs.entities.LocomotiveBean.Direction;
+import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -809,7 +811,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       switch (cmd) {
         case CanMessage.S88_EVENT_RESPONSE -> {
           if (CanMessage.DLC_8 == message.getDlc()) {
-            SensorEvent sme = new SensorEvent(message, new Date());
+            SensorBean sb = SensorMessageParser.parseMessage(message, new Date());
+            SensorEvent sme = new SensorEvent(sb);
             if (sme.getSensorBean() != null) {
               controller.notifySensorEventListeners(sme);
             }
