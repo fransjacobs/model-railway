@@ -20,5 +20,11 @@ package jcs.commandStation.esu.ecos.entities;
  * LokManager (id=10)
  */
 public class LokManager {
+
+  public static final int ID = 10;
   
+  public static final int LOCO_OFFSET = 1000;
+
+  private int size;
+
 }
