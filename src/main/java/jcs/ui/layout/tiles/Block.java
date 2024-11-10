@@ -401,9 +401,9 @@ public class Block extends AbstractTile implements Tile {
         }
       } else {
         if (reverseArrival) {
-          return "-";
-        } else {
           return "+";
+        } else {
+          return "-";
         }
       }
     } else {
@@ -415,9 +415,9 @@ public class Block extends AbstractTile implements Tile {
         }
       } else {
         if (reverseArrival) {
-          return "+";
-        } else {
           return "-";
+        } else {
+          return "+";
         }
       }
     }
