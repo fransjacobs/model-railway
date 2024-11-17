@@ -159,6 +159,9 @@ public class AStar {
 
     for (Node block : blockNodes) {
       BlockBean bb = new BlockBean(block.getTile().getTileBean());
+      //Use a default
+      bb.setMinWaitTime(10);
+      bb.setAlwaysStop(true);
 
       PersistenceFactory.getService().persist(bb);
     }
