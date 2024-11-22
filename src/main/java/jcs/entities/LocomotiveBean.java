@@ -242,6 +242,15 @@ public class LocomotiveBean implements Serializable {
     }
   }
 
+  @Transient
+  public static Direction toggle(Direction direction) {
+    if (Direction.BACKWARDS == direction) {
+      return Direction.FORWARDS;
+    } else {
+      return Direction.BACKWARDS;
+    }
+  }
+
   @Column(name = "dispatcher_direction", length = 255, nullable = true)
   public Direction getDispatcherDirection() {
     if (dispatcherDirection != null) {

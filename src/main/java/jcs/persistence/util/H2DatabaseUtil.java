@@ -57,7 +57,7 @@ public class H2DatabaseUtil {
   /**
    * This is the latest database version
    */
-  public static String DB_VERSION = "0.0.2";
+  public static String DB_VERSION = "0.0.3";
 
   protected Database db;
 

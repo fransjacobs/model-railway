@@ -45,6 +45,8 @@ public class BlockBean {
   private boolean alwaysStop;
   private boolean allowCommuterOnly;
 
+  private String logicalDirection;
+
   private TileBean tileBean;
 
   private SensorBean plusSensorBean;
@@ -281,6 +283,15 @@ public class BlockBean {
 
   public void setAllowCommuterOnly(boolean allowCommuterOnly) {
     this.allowCommuterOnly = allowCommuterOnly;
+  }
+
+  @Column(name = "logical_direction", length = 255)
+  public String getLogicalDirection() {
+    return logicalDirection;
+  }
+
+  public void setLogicalDirection(String logicalDirection) {
+    this.logicalDirection = logicalDirection;
   }
 
   @Transient

@@ -3,5 +3,7 @@ insert into command_stations(id, description, short_name, class_name, connect_vi
 values('esu-ecos', 'ESU ECoS', 'ECoS', 'jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl', 'NETWORK', null, null, 15471, true, true, true, true, true, true, true, true, 'DCC,MFX,MM', true, true, '1', 'NETWORK', '0', 0, 0, 0, 0, 0);
 commit;
 
+alter table blocks add logical_direction varchar(255);
+
 update jcs_version set db_version = '0.0.3', app_version = '0.0.3';
 commit;
