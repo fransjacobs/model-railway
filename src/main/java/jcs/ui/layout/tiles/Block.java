@@ -465,28 +465,42 @@ public class Block extends AbstractTile implements Tile {
         if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
           if (reverseArrival) {
             g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+
           } else {
+            //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+
             g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
           }
         } else {
           if (reverseArrival) {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-          } else {
+            //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
             g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          } else {
+            //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
           }
         }
       } else {
         if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
           if (reverseArrival) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-          } else {
+            //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
             g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+
+          } else {
+            //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
           }
         } else {
           if (reverseArrival) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-          } else {
+            //g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
             g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+
+          } else {
+
+            //g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+
           }
         }
       }
