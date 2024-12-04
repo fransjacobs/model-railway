@@ -556,6 +556,32 @@ public class LocomotiveBean implements Serializable {
       return translate2DccExValue(this.direction);
     }
 
+    private static int translate2EcosValue(String value) {
+      return switch (value) {
+        case "Forwards" ->
+          0;
+        case "Backwards" ->
+          1;
+        default ->
+          0;
+      };
+    }
+
+    private static String translate2EcosDirectionString(String value) {
+      return switch (value) {
+        case "0" ->
+          "Forwards";
+        case "1" ->
+          "Backwards";
+        default ->
+          "Forwards";
+      };
+    }
+
+    public int getEcosValue() {
+      return translate2EcosValue(this.direction);
+    }
+
     private static String translate2MarklinDirectionString(int value) {
       return switch (value) {
         case 1 ->
@@ -578,6 +604,10 @@ public class LocomotiveBean implements Serializable {
       return ENUM_MAP.get(translate2DccExDirectionString(dccExValue));
     }
 
+    public static Direction getDirectionEcos(String ecosValue) {
+      return ENUM_MAP.get(translate2EcosDirectionString(ecosValue));
+    }
+
     public Direction toggle() {
       return switch (this.direction) {
         case "Forwards" ->
@@ -591,7 +621,22 @@ public class LocomotiveBean implements Serializable {
   }
 
   public enum DecoderType {
-    MM("mm"), MM_DIL("mm2_dil8"), MFX("mfx"), MFXP("mfx+"), DCC("dcc"), SX1("sx1"), MM_PRG("mm_prg"), MM2_PRG("mm2_prg");
+    //TODO: make more generic, incorporate the speedsteps
+    //Marklin types
+    MM("mm"),
+    MM_DIL("mm2_dil8"),
+    MFX("mfx"),
+    MFXP("mfx+"),
+    DCC("dcc"),
+    SX1("sx1"),
+    MM_PRG("mm_prg"),
+    MM2_PRG("mm2_prg"),
+    //ESU types
+    DCC14("dcc14"),
+    DCC28("dcc28"),
+    DCC128("dcc128"),
+    MM14("mm14"),
+    MM28("mm28"),;
 
     private final String decoderType;
 
@@ -617,7 +662,7 @@ public class LocomotiveBean implements Serializable {
       if (decoderType == null) {
         return null;
       }
-      return ENUM_MAP.get(decoderType);
+      return ENUM_MAP.get(decoderType.toLowerCase());
 
     }
   }

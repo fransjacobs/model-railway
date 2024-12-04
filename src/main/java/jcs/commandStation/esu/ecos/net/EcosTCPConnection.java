@@ -215,7 +215,7 @@ class EcosTCPConnection implements EcosConnection {
         try {
           String rx = reader.readLine();
           Logger.trace("RX: " + rx);
-          if (rx.startsWith(EcosMessage.REPLY)) {
+          if (rx != null && rx.startsWith(EcosMessage.REPLY)) {
             StringBuilder sb = new StringBuilder();
 
             long now = System.currentTimeMillis();

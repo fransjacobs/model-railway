@@ -18,7 +18,7 @@ package jcs.commandStation.esu.ecos;
 /**
  * Prepare Messages for the ESU ECoS
  */
-public class EcosMessageFactory {
+public class EcosMessageFactory implements Ecos {
 
   public static EcosMessage getBaseObject() {
     return new EcosMessage("get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion"
@@ -36,7 +36,7 @@ public class EcosMessageFactory {
   }
 
   public static EcosMessage getPowerStatus() {
-    return new EcosMessage("get(1, status, status2)");
+    return new EcosMessage("get(" + BASEOBJECT_ID + ", status, status2)");
   }
 
   public static EcosMessage setPowerStatus(boolean on) {
@@ -60,11 +60,39 @@ public class EcosMessageFactory {
   }
 
   public static EcosMessage subscribeFeedbackManager() {
-    return new EcosMessage("request(26, view)");
+    return new EcosMessage("request(" + FEEDBACK_MANAGER_ID + ", view)");
   }
 
   public static EcosMessage unSubscribeFeedbackManager() {
-    return new EcosMessage("release(26, view)");
+    return new EcosMessage("release(" + FEEDBACK_MANAGER_ID + ", view)");
+  }
+
+  public static EcosMessage getLocomotives() {
+    return new EcosMessage("queryObjects(" + LOCOMOTIVES_ID + ", name, addr, protocol)");
+  }
+
+  public static EcosMessage subscribeLokManager() {
+    return new EcosMessage("request(" + LOCOMOTIVES_ID + ", view)");
+  }
+
+  public static EcosMessage unSubscribeLokManager() {
+    return new EcosMessage("release(" + LOCOMOTIVES_ID + ", view)");
+  }
+
+  public static EcosMessage subscribeLocomotive(int lokId) {
+    return new EcosMessage("request(" + lokId + ", view)");
+  }
+
+  public static EcosMessage unSubscribeLocomotive(int lokId) {
+    return new EcosMessage("release(" + lokId + ", view)");
+  }
+
+  public static EcosMessage getLocomotiveDetails(long lokId) {
+    return getLocomotiveDetails("" + lokId);
+  }
+
+  public static EcosMessage getLocomotiveDetails(String lokId) {
+    return new EcosMessage("get(" + lokId + ", name, addr, protocol,dir,speed,speedstep,active,locodesc,func)");
   }
 
 //  Ecos commands

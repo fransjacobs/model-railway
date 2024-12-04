@@ -27,7 +27,7 @@ public class EcosMessage implements Ecos {
 
   private final String message;
   private final StringBuilder response;
-  private Map<String, String> valueMap;
+  private Map<String, Object> valueMap;
 
   public static final String REPLY = "<REPLY ";
   public static final String END = "<END ";
@@ -81,6 +81,9 @@ public class EcosMessage implements Ecos {
     if (response != null && response.toString().startsWith(REPLY)) {
       int idStart = response.indexOf("(") + 1;
       int idEnd = response.indexOf(",");
+      if (idEnd == -1) {
+        idEnd = response.indexOf(")");
+      }
       int idLen = idEnd - idStart;
 
       String id = response.substring(idStart, idLen + idStart);
@@ -161,12 +164,12 @@ public class EcosMessage implements Ecos {
       if (reply.startsWith(REPLY) || reply.startsWith(EVENT)) {
         int contentStart;
         int offsetLen;
-        if (reply.startsWith(REPLY) ) {
+        if (reply.startsWith(REPLY)) {
           contentStart = reply.indexOf(")>");
-          offsetLen =  ")>".length();
-        } else if(reply.startsWith(EVENT)) {
+          offsetLen = ")>".length();
+        } else if (reply.startsWith(EVENT)) {
           contentStart = reply.indexOf(">");
-          offsetLen =  ">".length();
+          offsetLen = ">".length();
         } else {
           //Should never happen!
           Logger.trace("Error, no content start tag: " + reply);
@@ -190,28 +193,82 @@ public class EcosMessage implements Ecos {
     }
   }
 
-  public Map<String, String> getValueMap() {
+  private int getIdLength(String objectId) {
+    return switch (objectId) {
+      case "1" ->
+        1;
+      case "10" ->
+        4;
+      case "26" ->
+        3;
+      default ->
+        0;
+    };
+  }
+
+  public Map<String, Object> getValueMap() {
     String content = getResponseContent();
+    Logger.trace(content);
     if (content != null) {
       if (valueMap == null) {
         valueMap = new HashMap<>();
-        String replacement = "]" + getId();
-        content = content.replace(replacement, "]\n" + getId());
-        String[] lines = content.split("\n");
-        for (String line : lines) {
-          int keyStart = line.indexOf(" ") + 1;
-          int valStart = line.indexOf("[");
-          int valEnd = line.indexOf("]");
-          int keyLen = valStart - keyStart;
-          int valLen = valEnd - valStart;
+        String id = getId();
+        int idLen = getIdLength(id);
+        if (!content.contains(" ") && !content.contains("]")) {
+          //List with ID's only. The ObjectIddetermines the individual ID length
+          for (int i = 0; i < content.length(); i = i + idLen) {
+            String key = content.substring(i, i + idLen);
+            //Value is same as valKey in this case
+            valueMap.put(key, key);
+          }
+        } else {
+          //The response consist out of a (dynamic) id with a one or more values.
+          //values are within "[ ]".
+          //Format is id<sp>attribute1[attibute1 value]id<sp>attribute2[attribute2 value].....
+          String replacement = "]";
+          content = content.replace(replacement, "]\n");
+          String[] lines = content.split("\n");
+          String dId = null;
 
-          if (valStart >= 0 && valEnd > 0) {
-            String key = line.substring(keyStart, keyLen + keyStart);
-            String value = line.substring(valStart + 1, valLen + valStart);
-            valueMap.put(key, value);
-          } else {
-            String key = line.substring(keyStart);
-            valueMap.put(key, null);
+          for (String line : lines) {
+            int idStart = 0;
+            int idEnd = line.indexOf(" ");
+            //boolean mapInMap = false;
+            if (idEnd - idStart > 0) {
+              //There is a ID
+              dId = line.substring(idStart, idEnd);
+              if (dId.equals(getId())) {
+                valueMap.put("id", dId);
+              } else {
+                //Multiple ID's in reply, add a map
+                Map<String, String> vm = new HashMap<>();
+                vm.put("id", dId);
+                valueMap.put(dId, vm);
+              }
+            }
+
+            int valKeyStart = idEnd + 1;
+            int valStart = line.indexOf("[");
+            int valEnd = line.indexOf("]");
+            int valKeyLen = valStart - valKeyStart;
+            int valLen = valEnd - valStart;
+
+            if (valStart >= 0 && valEnd > 0) {
+              String valKey = line.substring(valKeyStart, valKeyLen + valKeyStart);
+              String value = line.substring(valStart + 1, valLen + valStart);
+              //replace \"
+              value = value.replaceAll("\"","");
+              if (dId != null && !dId.equals(getId())) {
+                Map<String, String> vm = (Map<String, String>) valueMap.get(dId);
+                vm.put(valKey, value);
+                valueMap.put(dId, vm);
+              } else {
+                valueMap.put(valKey, value);
+              }
+            } else {
+              String key = line.substring(valKeyStart);
+              valueMap.put(key, null);
+            }
           }
         }
       }

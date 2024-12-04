@@ -41,6 +41,7 @@ import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.commandStation.esu.ecos.entities.FeedbackManager;
+import jcs.commandStation.esu.ecos.entities.LokManager;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
@@ -52,6 +53,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private BaseObject baseObject;
   private FeedbackManager feedbackManager;
+  private LokManager lokManager;
 
   public EsuEcosCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -135,8 +137,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             Logger.trace("BaseObjectSubscription reply: " + reply.getResponse());
 
             setupFeedbackManager();
+            Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
 
-            Logger.trace("There are " + this.feedbackManager.getSize() + " feddback modules");
+            setupLokManager();
+            Logger.trace("There are " + this.lokManager.getSize() + " locomotives");
 
 //            //Create Info
 //            this.infoBean = new InfoBean();
@@ -193,13 +197,41 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       int moduleId = i + FeedbackManager.S88_OFFSET;
       reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
 
-      String state = reply.getValueMap().get(Ecos.STATE);
-      String ports = reply.getValueMap().get(Ecos.PORTS);
+      String state = reply.getValueMap().get(Ecos.STATE).toString();
+      String ports = reply.getValueMap().get(Ecos.PORTS).toString();
+      //TODO: we now know the begin state so refect that in the feedback modules....
 
       //Logger.trace("state: "+state+" ports: "+ports);
-      reply = connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
+      connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
       //Logger.trace("r: "+reply.getResponse());
     }
+  }
+
+  private void setupLokManager() {
+    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getLocomotives());
+    lokManager = new LokManager(reply);
+
+    for (LocomotiveBean loc : this.lokManager.getLocomotives().values()) {
+      EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getLocomotiveDetails(loc.getId()));
+
+      //Logger.trace(detailsReply.getResponse());
+      
+      lokManager.update(detailsReply);
+      
+
+    }
+
+//    for (int i = 0; i < lokManager.getSize(); i++) {
+//      int moduleId = i + FeedbackManager.S88_OFFSET;
+//      reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
+//
+//      String state = reply.getValueMap().get(Ecos.STATE).toString();
+//      String ports = reply.getValueMap().get(Ecos.PORTS).toString();
+//
+//      //Logger.trace("state: "+state+" ports: "+ports);
+//      connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
+//      //Logger.trace("r: "+reply.getResponse());
+//    }
   }
 
   @Override
@@ -493,52 +525,70 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
       if (connected) {
 
-        Logger.trace(cs.baseObject);
-        boolean power = cs.isPower();
-        Logger.trace("1 Power is " + (power ? "On" : "Off"));
+//        Logger.trace(cs.baseObject);
+//        boolean power = cs.isPower();
+//        Logger.trace("1 Power is " + (power ? "On" : "Off"));
+//
+//        cs.pause(1000);
+//
+//        power = cs.power(true);
+//        Logger.trace("2 Power is " + (power ? "On" : "Off"));
+//
+//        cs.pause(1000);
+//
+//        power = cs.power(false);
+//        Logger.trace("3 Power is " + (power ? "On" : "Off"));
+//
+//        cs.pause(1000);
+//
+//        power = cs.power(true);
+//        Logger.trace("4 Power is " + (power ? "On" : "Off"));
+        //EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(26)"));
+        //Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        Map<String, Object> values = reply.getValueMap();
+//        for (String key : values.keySet()) {
+//          Logger.trace("Key: " + key+ " Value: "+values.get(key));
+//        }
+        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(10, name, addr, protocol)"));
+        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-        cs.pause(1000);
+        Map<String, Object> values = reply.getValueMap();
+        for (String key : values.keySet()) {
+          Logger.trace("Key: " + key + " Value: " + values.get(key));
+        }
 
-        power = cs.power(true);
-        Logger.trace("2 Power is " + (power ? "On" : "Off"));
-
-        cs.pause(1000);
-
-        power = cs.power(false);
-        Logger.trace("3 Power is " + (power ? "On" : "Off"));
-
-        cs.pause(1000);
-
-        power = cs.power(true);
-        Logger.trace("4 Power is " + (power ? "On" : "Off"));
-        
-        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(10, name, addr, protocol)"));       
-        Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
-        
-        reply = cs.connection.sendMessage(new EcosMessage("get(1002, name, addr, protocol, locodesc, dir,speed, speedstep, speedindicator,func)"));      
-        Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
-        
-        reply = cs.connection.sendMessage(new EcosMessage("request(10, view)"));      
-        Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
-
-        reply = cs.connection.sendMessage(new EcosMessage("request(1002, view)"));      
-        Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
-
-        reply = cs.connection.sendMessage(new EcosMessage("queryObjects(11, name1,name2,name3, addr, protocol, objectclass)"));       
-        Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
-        
-        
+//        reply = cs.connection.sendMessage(new EcosMessage("queryObjects(10, name)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        
+//        values = reply.getValueMap();
+//        for (String key : values.keySet()) {
+//          Logger.trace("Key: " + key+ " Value: "+values.get(key));
+//        }
+//        reply = cs.connection.sendMessage(new EcosMessage("queryObjects(10)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        values = reply.getValueMap();
+//        for (String key : values.keySet()) {
+//          Logger.trace("ID:" + key);
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("get(10, "+ key+")"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        }
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+        //reply = cs.connection.sendMessage(new EcosMessage("get(1002, name, addr, protocol, locodesc, dir,speed, speedstep, speedindicator,func)"));      
+        //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
+        //reply = cs.connection.sendMessage(new EcosMessage("request(10, view)"));      
+        //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
+        //reply = cs.connection.sendMessage(new EcosMessage("request(1002, view)"));      
+        //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
+        //reply = cs.connection.sendMessage(new EcosMessage("queryObjects(11, name1,name2,name3, addr, protocol, objectclass)"));       
+        //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
 //      queryObjects(10, name, addr, protocol, dir, speed,  locodesc, speedstep, func, funcset, favorite) ->
-
-
-        
 //        queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control) ->
 //<REPLY queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control)>
 //  1002 name["FS236-002"] addr[14] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,14] favorite[1] control[other]
 //  1003 name["NS 6505"] addr[8] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,21] favorite[1] control[other]
 //<END 0 (OK)>
-        
-
 //<REPLY get(31, link[0])>
 //31 link[0,0,20000,R0]
 //31 link[0,1,20001,R0]
@@ -560,7 +610,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //<REPLY queryObjects(27)>
 //65000
 //<END 0 (OK, but no newline after packet)>
-
 //<REPLY get(100, ports, state, railcom, control)>
 //100 ports[16]
 //100 state[0x0]
@@ -692,12 +741,12 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //<END 0 (OK, but no newline after packet)>
 //
 //
-     cs.pause(100000);
-
+        //cs.pause(100000);
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
         cs.disconnect();
       }
+      System.exit(0);
 
     }
 

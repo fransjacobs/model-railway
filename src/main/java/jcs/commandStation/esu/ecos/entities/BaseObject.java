@@ -71,65 +71,65 @@ public class BaseObject {
     if (msg == null) {
       return;
     }
-    Map<String, String> values = msg.getValueMap();
+    Map<String, Object> values = msg.getValueMap();
 
     if (values.containsKey(Ecos.OBJECTCLASS)) {
-      this.objectClass = values.get(Ecos.OBJECTCLASS);
+      this.objectClass = values.get(Ecos.OBJECTCLASS).toString();
     }
     if (values.containsKey(Ecos.VIEW)) {
-      this.view = values.get(Ecos.VIEW);
+      this.view = values.get(Ecos.VIEW).toString();
     }
     if (values.containsKey(Ecos.LISTVIEW)) {
-      this.listView = values.get(Ecos.LISTVIEW);
+      this.listView = values.get(Ecos.LISTVIEW).toString();
     }
     if (values.containsKey(Ecos.CONTROL)) {
-      this.control = values.get(Ecos.CONTROL);
+      this.control = values.get(Ecos.CONTROL).toString();
     }
     if (values.containsKey(Ecos.LIST)) {
-      this.list = values.get(Ecos.LIST);
+      this.list = values.get(Ecos.LIST).toString();
     }
     if (values.containsKey(Ecos.SIZE)) {
-      String vsize = values.get(Ecos.SIZE);
+      String vsize = values.get(Ecos.SIZE).toString();
       if (vsize != null) {
         this.size = Integer.parseInt(vsize);
       }
     }
     if (values.containsKey(Ecos.MINARGUMENTS)) {
-      String vminarguments = values.get(Ecos.MINARGUMENTS);
+      String vminarguments = values.get(Ecos.MINARGUMENTS).toString();
       if (vminarguments != null) {
         this.minArguments = Integer.parseInt(vminarguments);
       }
     }
     if (values.containsKey(Ecos.PROTOCOLVERSION)) {
-      this.protocolVersion = values.get(Ecos.PROTOCOLVERSION);
+      this.protocolVersion = values.get(Ecos.PROTOCOLVERSION).toString();
     }
     if (values.containsKey(Ecos.COMMANDSTATIONTYPE)) {
-      this.commandStationType = values.get(Ecos.COMMANDSTATIONTYPE);
+      this.commandStationType = values.get(Ecos.COMMANDSTATIONTYPE).toString();
       if (this.commandStationType != null) {
         this.commandStationType = this.commandStationType.replaceAll("\"", "");
       }
     }
     if (values.containsKey(Ecos.NAME)) {
-      this.name = values.get(Ecos.NAME);
+      this.name = values.get(Ecos.NAME).toString();
       if (this.name != null) {
         this.name = this.name.replaceAll("\"", "");
       }
     }
 
     if (values.containsKey(Ecos.SERIALNUMBER)) {
-      this.serialNumber = values.get(Ecos.SERIALNUMBER);
+      this.serialNumber = values.get(Ecos.SERIALNUMBER).toString();
       if (this.serialNumber != null) {
         this.serialNumber = this.serialNumber.replaceAll("\"", "");
       }
     }
     if (values.containsKey(Ecos.HARDWAREVERSION)) {
-      this.hardwareVersion = values.get(Ecos.HARDWAREVERSION);
+      this.hardwareVersion = values.get(Ecos.HARDWAREVERSION).toString();
     }
     if (values.containsKey(Ecos.APPLICATIONVERSION)) {
-      this.applicationVersion = values.get(Ecos.APPLICATIONVERSION);
+      this.applicationVersion = values.get(Ecos.APPLICATIONVERSION).toString();
     }
     if (values.containsKey(Ecos.APPLICATIONVERSIONSUFFIX)) {
-      this.applicationVersionSuffix = values.get(Ecos.APPLICATIONVERSIONSUFFIX);
+      this.applicationVersionSuffix = values.get(Ecos.APPLICATIONVERSIONSUFFIX).toString();
       if (this.applicationVersionSuffix != null) {
         this.applicationVersionSuffix = this.applicationVersionSuffix.replaceAll("\"", "");
       }
@@ -138,22 +138,22 @@ public class BaseObject {
       this.updateOnError = values.get(Ecos.UPDATEONERROR).equals("1");
     }
     if (values.containsKey(Ecos.STATUS)) {
-      this.status = values.get(Ecos.STATUS);
+      this.status = values.get(Ecos.STATUS).toString();
     }
     if (values.containsKey(Ecos.STATUS2)) {
-      this.status2 = values.get(Ecos.STATUS2);
+      this.status2 = values.get(Ecos.STATUS2).toString();
     }
     if (values.containsKey(Ecos.PROG_STATUS)) {
-      this.progStatus = values.get(Ecos.PROG_STATUS);
+      this.progStatus = values.get(Ecos.PROG_STATUS).toString();
     }
     if (values.containsKey(Ecos.M4_STATUS)) {
-      this.m4Status = values.get(Ecos.M4_STATUS);
+      this.m4Status = values.get(Ecos.M4_STATUS).toString();
     }
     if (values.containsKey(Ecos.RAILCOMPLUS_STATUS)) {
-      this.railcomplusStatus = values.get(Ecos.RAILCOMPLUS_STATUS);
+      this.railcomplusStatus = values.get(Ecos.RAILCOMPLUS_STATUS).toString();
     }
     if (values.containsKey(Ecos.WATCHDOG)) {
-      this.watchdog = values.get(Ecos.WATCHDOG);
+      this.watchdog = values.get(Ecos.WATCHDOG).toString();
     }
     if (values.containsKey(Ecos.RAILCOM)) {
       this.railcom = values.get(Ecos.RAILCOM).equals("1");
@@ -162,13 +162,13 @@ public class BaseObject {
       this.railcomplus = values.get(Ecos.RAILCOMPLUS).equals("1");
     }
     if (values.containsKey(Ecos.RAILCOMPLUS_RANGE)) {
-      String vrailcomplusRange = values.get(Ecos.RAILCOMPLUS_RANGE);
+      String vrailcomplusRange = values.get(Ecos.RAILCOMPLUS_RANGE).toString();
       if (vrailcomplusRange != null) {
         this.railcomplusRange = Integer.parseInt(vrailcomplusRange);
       }
     }
     if (values.containsKey(Ecos.RAILCOMPLUS_MODE)) {
-      this.railcomplusMode = values.get(Ecos.RAILCOMPLUS_MODE);
+      this.railcomplusMode = values.get(Ecos.RAILCOMPLUS_MODE).toString();
     }
     if (values.containsKey(Ecos.ALLOWLOCOTAKEOVER)) {
       this.allowLocoTakeover = values.get(Ecos.ALLOWLOCOTAKEOVER).equals("1");

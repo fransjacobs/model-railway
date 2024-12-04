@@ -35,6 +35,7 @@ public interface Ecos {
   public static final String CMD_REQUEST = "request";
   public static final String CMD_RELEASE = "release";
 
+  public static final String ID = "id";
   public static final String OBJECTCLASS = "objectclass";
   public static final String VIEW = "view";
   public static final String LISTVIEW = "listview";
@@ -62,6 +63,16 @@ public interface Ecos {
   public static final String RAILCOMPLUS_MODE = "railcomplus-mode";
   public static final String ALLOWLOCOTAKEOVER = "allowlocotakeover";
   public static final String STOPONLASTCONNECT = "stoponlastdisconnect";
+  
+  public static final String PROTOCOL = "protocol";
+  public static final String ADDRESS = "addr";
+  public static final String DIRECTION = "dir";
+  public static final String SPEED = "speed";
+  public static final String SPEEDSTEP = "speedstep";
+  public static final String ACTIVE = "active";
+  public static final String LOCODESC = "locodesc";
+  public static final String FUNCTION = "func";
+  
   
   public static final String STATE = "state";
   public static final String PORTS = "ports";

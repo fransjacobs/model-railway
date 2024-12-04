@@ -44,11 +44,11 @@ public class FeedbackManager {
 
   private void parse(EcosMessage message) {
     //Logger.trace("S: " + message.getMessage() + " R: " + message.getResponse());
-    Map<String, String> values = message.getValueMap();
+    Map<String, Object> values = message.getValueMap();
     int objectId = message.getObjectId();
     if (ID == objectId) {
       if (values.containsKey(Ecos.SIZE)) {
-        String vsize = values.get(Ecos.SIZE);
+        String vsize = values.get(Ecos.SIZE).toString();
         if (vsize != null) {
           this.size = Integer.parseInt(vsize);
         }
@@ -57,13 +57,13 @@ public class FeedbackManager {
       int ports = 0;
       String state = null;
       if (values.containsKey(Ecos.PORTS)) {
-        String vports = values.get(Ecos.PORTS);
+        String vports = values.get(Ecos.PORTS).toString();
         if (vports != null) {
           ports = Integer.parseInt(vports);
         }
       }
       if (values.containsKey(Ecos.STATE)) {
-        state = values.get(Ecos.STATE);
+        state = values.get(Ecos.STATE).toString();
       }
 
       if (this.modules.containsKey(objectId)) {
@@ -77,6 +77,8 @@ public class FeedbackManager {
 
   public List<SensorEvent> update(EcosMessage message) {
     parse(message);
+    
+    //TODO: sensor listeners
     
     //Stub
     return Collections.EMPTY_LIST;
