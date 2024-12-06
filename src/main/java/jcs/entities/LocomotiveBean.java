@@ -45,6 +45,7 @@ public class LocomotiveBean implements Serializable {
   private Integer richtung;
   private boolean commuter;
   private boolean show;
+  private boolean active;
 
   private String source;
   private String commandStationId;
@@ -373,6 +374,15 @@ public class LocomotiveBean implements Serializable {
   @Transient
   public FunctionBean getFunctionBean(Integer functionNumber) {
     return this.functions.get(functionNumber);
+  }
+
+  @Transient
+  public boolean isActive() {
+    return active;
+  }
+
+  public void setActive(boolean active) {
+    this.active = active;
   }
 
   @Override

@@ -49,7 +49,7 @@ public class LokManager {
   private void parse(EcosMessage message) {
     //Logger.trace(message.getMessage());
     //Logger.trace(message.getResponse());
-    
+
     boolean event = message.isEvent();
 
     Map<String, Object> values = message.getValueMap();
@@ -127,8 +127,8 @@ public class LokManager {
     if (values.containsKey(Ecos.DIRECTION)) {
       Direction d = Direction.getDirectionEcos(values.get(Ecos.DIRECTION).toString());
       locomotive.setDirection(d);
-      
-      if(event) {
+
+      if (event) {
         //Todo raise direction event
       }
     }
@@ -138,8 +138,8 @@ public class LokManager {
       //Scale the speed 0 == 0 1024 is max Ecos max = 128 so time 8
       velocity = velocity * 8;
       locomotive.setVelocity(velocity);
-      
-      if(event) {
+
+      if (event) {
         //Todo raise speed event
       }
     }
@@ -158,7 +158,7 @@ public class LokManager {
 
     if (values.containsKey(Ecos.ACTIVE)) {
       boolean active = "1".equals(values.get(Ecos.ACTIVE).toString());
-      //TODO: do we nee to know whether the loc is used in the ecos itself?
+      locomotive.setActive(active);
     }
 
     if (values.containsKey(Ecos.FUNCTION)) {
@@ -166,15 +166,14 @@ public class LokManager {
       List<FunctionBean> functions = parseFunctions(func);
       locomotive.setFunctions(functions);
 
-      if(event) {
+      if (event) {
         //Todo raise function event
       }
 
     }
-    
+
     //Tachomax is needed for display so use the full scale for now
     locomotive.setTachoMax(128);
-    
 
     return locomotive;
   }
@@ -189,7 +188,7 @@ public class LokManager {
       int value = Integer.parseInt(fu[1]);
       //TODO: The function type a used for Function iamages from Marklin Check the function index number from ECoS
       int functionType = 50 + number;
-      
+
       FunctionBean fb = new FunctionBean(null, number, value);
       fb.setFunctionType(functionType);
       functions.add(fb);

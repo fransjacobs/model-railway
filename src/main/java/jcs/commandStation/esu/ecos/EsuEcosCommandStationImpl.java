@@ -556,6 +556,22 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //
 //        }
+
+
+//          EcosMessage reply  = cs.connection.sendMessage(new EcosMessage("request(1005, control)"));
+//          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+          
+          EcosMessage reply  = cs.connection.sendMessage(new EcosMessage("set(1005, speed[100])"));
+          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+          cs.pause(2000);
+          
+          reply  = cs.connection.sendMessage(new EcosMessage("set(1005, speed[10])"));
+          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+          reply  = cs.connection.sendMessage(new EcosMessage("release(1005, control)"));
+          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+          
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
         //reply = cs.connection.sendMessage(new EcosMessage("get(1002, name, addr, protocol, locodesc, dir,speed, speedstep, speedindicator,func)"));      
         //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
@@ -723,7 +739,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //<END 0 (OK, but no newline after packet)>
 //
 //
-        cs.pause(100000);
+//        cs.pause(100000);
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
         cs.disconnect();
