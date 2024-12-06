@@ -15,10 +15,9 @@
  */
 package jcs.persistence.util;
 
+import jakarta.persistence.EnumType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import javax.persistence.EnumType;
 
 public class EntityAttribute {
 

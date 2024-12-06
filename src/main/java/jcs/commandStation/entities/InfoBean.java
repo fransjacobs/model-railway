@@ -15,7 +15,8 @@
  */
 package jcs.commandStation.entities;
 
-import javax.persistence.Transient;
+
+import jakarta.persistence.Transient;
 import jcs.entities.CommandStationBean;
 
 /**

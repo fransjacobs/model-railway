@@ -15,7 +15,13 @@
  */
 package jcs.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.awt.Color;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -23,11 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import org.beryx.awt.color.ColorFactory;
 
 @Table(name = "routes", indexes = {

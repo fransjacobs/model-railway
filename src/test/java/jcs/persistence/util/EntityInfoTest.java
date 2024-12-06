@@ -136,6 +136,10 @@ public class EntityInfoTest {
 
     String[] cols = new String[]{"dispatcher_direction", "id", "name", "address", "tacho_max", "v_min", "velocity", "locomotive_direction", "commuter", "show", "icon", "imported", "command_station_id", "synchronize", "uid", "decoder_type"};
 
+    //expected:<[dispatcher_direction, id, name, address, tacho_max, v_min, velocity, locomotive_direction, commuter, show, icon, imported, command_station_id, synchronize, uid, decoder_type]> 
+    //but was :<[commandStationBean, functions, functionCount, dispatcher_direction, id, image, name, address, decoder, tacho_max, v_min, velocity, locomotive_direction, commuter, show, icon, imported, command_station_id, synchronize, uid, richtung, decoder_type]>
+
+    
     List<String> expResult = Arrays.asList(cols);
 
     List<String> result = instance.getAllColumnNames();

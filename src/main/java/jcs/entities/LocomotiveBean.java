@@ -15,7 +15,12 @@
  */
 package jcs.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.awt.Image;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,10 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import jcs.persistence.util.ColumnPosition;
 
 @Table(name = "locomotives")
