@@ -287,7 +287,7 @@ class EcosTCPConnection implements EcosConnection {
 
   @Override
   public InetAddress getControllerAddress() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return ecosAddress;
   }
 
 }

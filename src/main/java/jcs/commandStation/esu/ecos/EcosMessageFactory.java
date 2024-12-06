@@ -79,11 +79,11 @@ public class EcosMessageFactory implements Ecos {
     return new EcosMessage("release(" + LOCOMOTIVES_ID + ", view)");
   }
 
-  public static EcosMessage subscribeLocomotive(int lokId) {
+  public static EcosMessage subscribeLocomotive(long lokId) {
     return new EcosMessage("request(" + lokId + ", view)");
   }
 
-  public static EcosMessage unSubscribeLocomotive(int lokId) {
+  public static EcosMessage unSubscribeLocomotive(long lokId) {
     return new EcosMessage("release(" + lokId + ", view)");
   }
 

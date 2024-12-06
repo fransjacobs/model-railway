@@ -33,9 +33,6 @@ public class EcosMessage implements Ecos {
   public static final String END = "<END ";
   public static final String EVENT = "<EVENT ";
 
-//  public EcosMessage() {
-//    this(null);
-//  }
   public EcosMessage(String message) {
     this.response = new StringBuilder();
     if (message.startsWith(EVENT)) {
@@ -89,7 +86,7 @@ public class EcosMessage implements Ecos {
       String id = response.substring(idStart, idLen + idStart);
       return id;
     } else {
-      Logger.trace(response);
+      //Logger.trace(response);
       String msg = response.toString();
 
       int idStart = msg.indexOf(" ") + 1;
@@ -241,7 +238,7 @@ public class EcosMessage implements Ecos {
                 valueMap.put("id", dId);
               } else {
                 //Multiple ID's in reply, add a map
-                Map<String, String> vm = new HashMap<>();
+                Map<String, Object> vm = new HashMap<>();
                 vm.put("id", dId);
                 valueMap.put(dId, vm);
               }
@@ -257,13 +254,27 @@ public class EcosMessage implements Ecos {
               String valKey = line.substring(valKeyStart, valKeyLen + valKeyStart);
               String value = line.substring(valStart + 1, valLen + valStart);
               //replace \"
-              value = value.replaceAll("\"","");
+              value = value.replaceAll("\"", "");
               if (dId != null && !dId.equals(getId())) {
                 Map<String, String> vm = (Map<String, String>) valueMap.get(dId);
                 vm.put(valKey, value);
                 valueMap.put(dId, vm);
               } else {
-                valueMap.put(valKey, value);
+                if (Ecos.FUNCTION.equals(valKey)) {
+                  //Functions; create an array [F #, value],[F#,value]...
+                  StringBuilder fb = new StringBuilder();
+                  if (valueMap.containsKey(valKey)) {
+                    fb.append(valueMap.get(valKey).toString());
+                  }
+                  String fVal = "[" + value + "]";
+                  if (fb.length() > 0) {
+                    fb.append(",");
+                  }
+                  fb.append(fVal);
+                  valueMap.put(valKey, fb.toString());
+                } else {
+                  valueMap.put(valKey, value);
+                }
               }
             } else {
               String key = line.substring(valKeyStart);

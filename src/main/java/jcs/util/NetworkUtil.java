@@ -45,6 +45,7 @@ public class NetworkUtil {
         //Get all networks
         Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
         for (InetAddress ia : Collections.list(inetAddresses)) {
+          //Logger.trace("Evaluate "+netint.getName()+" Displayname: "+netint.getDisplayName());
           if (ia instanceof Inet4Address) {
             //Got an ip4 address, which kind?
             if (netint.getDisplayName().contains("wlan") || netint.getName().contains("wlan")) {

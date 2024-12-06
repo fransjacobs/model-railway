@@ -82,65 +82,66 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.persistence.PersistenceFactory;
+import jcs.persistence.PersistenceService;
 import org.tinylog.Logger;
 
 /**
  * Dialog panel for importing and editing locomotive settings
  */
 public class LocomotivePreferencesPanel extends JPanel implements PropertyChangeListener {
-
+  
   private final LocomotiveBeanListModel locoListModel;
   private CommandStationBean commandStationBean;
   private LocomotiveBean selectedLocomotive;
   private final DefaultComboBoxModel<DecoderType> decoderTypes;
-
+  
   private SynchronizationTask task;
-
+  
   public LocomotivePreferencesPanel() {
     locoListModel = new LocomotiveBeanListModel();
     decoderTypes = new DefaultComboBoxModel(DecoderType.values());
-
+    
     initComponents();
     initModels();
   }
-
+  
   private void initModels() {
     if (PersistenceFactory.getService() != null) {
       commandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
       commandStationLbl.setText(commandStationBean.getDescription());
-
+      
       locoListModel.clear();
       List<LocomotiveBean> locos = PersistenceFactory.getService().getLocomotivesByCommandStationId(commandStationBean.getId());
       this.locoListModel.addAll(locos);
-
+      
       setFieldValues();
     }
   }
-
+  
   private void setFieldValues() {
     if (selectedLocomotive != null) {
       Long id = selectedLocomotive.getId();
       if (id != null) {
         this.idLbl.setText(id.toString());
       }
-
+      
       String name = selectedLocomotive.getName();
       this.nameTF.setText(name);
-
+      
       Long uid = selectedLocomotive.getUid();
       if (uid != null) {
         this.uidLbl.setText(uid.toString());
       }
-
+      
       Integer address = selectedLocomotive.getAddress();
       if (address == null) {
         address = 0;
       }
       this.addressSpinner.setValue(address);
-
+      
       String icon = selectedLocomotive.getIcon();
       this.iconTF.setText(icon);
-
+      
       Image locIcon = selectedLocomotive.getLocIcon();
       if (locIcon == null) {
         if (commandStationBean.isDecoderControlSupport() && commandStationBean.isLocomotiveImageSynchronizationSupport() && icon != null) {
@@ -150,7 +151,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
           }
         }
       }
-
+      
       if (locIcon != null) {
         this.imageLbl.setIcon(new ImageIcon(locIcon));
         this.imageLbl.setText("");
@@ -158,37 +159,37 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         this.imageLbl.setIcon(null);
         this.imageLbl.setText("");
       }
-
+      
       DecoderType decoderType = selectedLocomotive.getDecoderType();
       this.decoderTypes.setSelectedItem(decoderType);
-
+      
       Integer tachoMax = selectedLocomotive.getTachoMax();
       if (tachoMax == null) {
         tachoMax = 100;
       }
       this.tachoMaxSpinner.setValue(tachoMax);
-
+      
       Integer vMin = selectedLocomotive.getvMin();
       if (vMin == null) {
         vMin = 0;
       }
       this.vMinSpinner.setValue(vMin);
-
+      
       int functionCount = this.selectedLocomotive.getFunctionCount();
       this.functionCountSpinner.setValue(functionCount);
-
+      
       Integer velocity = selectedLocomotive.getVelocity();
       Integer richtung = selectedLocomotive.getRichtung();
-
+      
       boolean commuter = selectedLocomotive.isCommuter();
       this.commuterCB.setSelected(commuter);
-
+      
       boolean show = selectedLocomotive.isShow();
       this.showCB.setSelected(show);
-
+      
       boolean synch = selectedLocomotive.isSynchronize();
       this.synchronizeCB.setSelected(synch);
-
+      
       String commandStationId = selectedLocomotive.getCommandStationId();
     } else {
       //this.imageLbl.setText("ICON");
@@ -202,19 +203,19 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     }
     enableFields(selectedLocomotive != null);
   }
-
+  
   private void enableFields(boolean enable) {
     this.synchPB.setVisible(false);
-
+    
     this.synchronizeBtn.setEnabled(this.commandStationBean.isLocomotiveSynchronizationSupport());
     this.synchronizeBtn.setVisible(this.commandStationBean.isLocomotiveSynchronizationSupport());
-
+    
     this.synchronizeCB.setEnabled(this.commandStationBean.isLocomotiveSynchronizationSupport() && enable);
-
+    
     boolean showUid = selectedLocomotive != null && (DecoderType.MFX == selectedLocomotive.getDecoderType() || DecoderType.MFXP == selectedLocomotive.getDecoderType());
     this.uidNameLbl.setVisible(showUid);
     this.uidLbl.setVisible(showUid);
-
+    
     boolean enableFields = enable && !this.synchronizeCB.isSelected();
     this.nameTF.setEnabled(enableFields);
     this.addressSpinner.setEnabled(enableFields);
@@ -227,7 +228,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
     //this.saveBtn.setEnabled(!this.synchronizeCB.isSelected() && enable);
     this.saveBtn.setEnabled(enable);
-
+    
     this.showCB.setEnabled(enable);
     this.commuterCB.setEnabled(enable);
   }
@@ -681,53 +682,53 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     newLoco.setDirection(Direction.FORWARDS);
     newLoco.setVelocity(0);
     newLoco.setImported("Manual Inserted");
-
+    
     if (this.commandStationBean.getSupportedProtocols().size() == 1) {
       newLoco.setDecoderTypeString(this.commandStationBean.getProtocols().toLowerCase());
     }
-
+    
     newLoco.setShow(true);
     this.locoListModel.add(newLoco);
     this.locomotiveList.setSelectedValue(newLoco, true);
     this.selectedLocomotive = newLoco;
     enableFields(this.selectedLocomotive != null);
-
+    
     setFieldValues();
   }//GEN-LAST:event_newBtnActionPerformed
-
+  
   private LocomotiveBean setLocomotiveValues(LocomotiveBean locomotiveBean) {
     if (locomotiveBean.getId() == null) {
       long id = (long) locomotiveBean.getAddress();
       locomotiveBean.setId(id);
       locomotiveBean.setUid(id);
     }
-
+    
     if (locomotiveBean.getvMin() == null) {
       locomotiveBean.setvMin((Integer) vMinSpinner.getValue());
     }
-
+    
     if (locomotiveBean.getTachoMax() == null) {
       locomotiveBean.setTachoMax((Integer) tachoMaxSpinner.getValue());
     }
-
+    
     locomotiveBean.setImported("Manual Updated");
     locomotiveBean = crudFunctionBeans(locomotiveBean);
-
+    
     return locomotiveBean;
   }
 
   private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
     if (this.selectedLocomotive != null) {
       setLocomotiveValues(selectedLocomotive);
-
+      
       Logger.trace("Saving Loco: " + selectedLocomotive);
-
+      
       selectedLocomotive = PersistenceFactory.getService().persist(selectedLocomotive);
       initModels();
       locomotiveList.setSelectedValue(selectedLocomotive, true);
-
+      
       JCS.settingsChanged(new RefreshEvent("locomotives"));
-
+      
     }
   }//GEN-LAST:event_saveBtnActionPerformed
 
@@ -737,11 +738,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     this.selectedLocomotive = null;
     this.initModels();
   }//GEN-LAST:event_deleteBtnActionPerformed
-
+  
   private String storeImage(String imageName, Image image, boolean locomotive) {
     String csp = commandStationBean.getShortName().toLowerCase();
     String basePath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + csp;
-
+    
     Path path;
     if (locomotive) {
       path = Paths.get(basePath);
@@ -749,14 +750,14 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       path = Paths.get(basePath + File.separator + "zfunctions");
     }
     File imageFile = new File(path + File.separator + imageName.toLowerCase() + ".png");
-
+    
     try {
       if (!Files.exists(path)) {
         Files.createDirectories(path);
         Logger.trace("Created new directory " + path);
       }
       ImageIO.write((BufferedImage) image, "png", imageFile);
-
+      
       return imageFile.getAbsolutePath();
     } catch (IOException ex) {
       Logger.error("Can't store image " + imageFile + "! ", ex.getMessage());
@@ -772,11 +773,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       Logger.trace(evt.getActionCommand());
       this.synchronizeBtn.setEnabled(false);
       this.locomotiveList.setEnabled(true);
-
+      
       this.synchPB.setValue(0);
       this.synchPB.setIndeterminate(true);
       this.synchPB.setVisible(true);
-
+      
       task = new SynchronizationTask();
       task.addPropertyChangeListener(this);
       task.execute();
@@ -785,7 +786,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
   private void locomotiveListValueChanged(ListSelectionEvent evt) {//GEN-FIRST:event_locomotiveListValueChanged
     if (!evt.getValueIsAdjusting()) {
       Logger.trace(this.locomotiveList.getSelectedValue());
-
+      
       this.selectedLocomotive = this.locomotiveList.getSelectedValue();
       this.setFieldValues();
     }
@@ -796,7 +797,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     JFrame parentFrame = (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, this);
     IconFileChooser fileDialog = new IconFileChooser(parentFrame, true);
     fileDialog.setVisible(true);
-
+    
     File iconFile = fileDialog.getSelectedIconFile();
     if (iconFile != null) {
       iconTF.setText(iconFile.getPath());
@@ -878,17 +879,17 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
   private void functionCountSpinnerStateChanged(ChangeEvent evt) {//GEN-FIRST:event_functionCountSpinnerStateChanged
 
   }//GEN-LAST:event_functionCountSpinnerStateChanged
-
+  
   private LocomotiveBean crudFunctionBeans(LocomotiveBean locomotiveBean) {
     int functionCount = (int) this.functionCountSpinner.getValue();
-
+    
     long locomotiveId;
     if (locomotiveBean.getId() != null) {
       locomotiveId = locomotiveBean.getId();
     } else {
       locomotiveId = locomotiveBean.getAddress();
     }
-
+    
     Map<Integer, FunctionBean> functions = locomotiveBean.getFunctions();
     if (functionCount < functions.size()) {
       //Remove the function at the end so
@@ -900,7 +901,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         functions.remove(i);
       }
     }
-
+    
     if (functionCount > functions.size()) {
       for (int i = 0; i < functionCount; i++) {
         //Check if the function exists
@@ -916,9 +917,9 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     }
     return locomotiveBean;
   }
-
+  
   class LocomotiveBeanByNameSorter implements Comparator<LocomotiveBean> {
-
+    
     @Override
     public int compare(LocomotiveBean a, LocomotiveBean b) {
       //Avoid null pointers
@@ -930,61 +931,61 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       if (bb == null) {
         bb = "000";
       }
-
+      
       return aa.compareTo(bb);
     }
   }
-
+  
   class LocomotiveBeanListModel extends AbstractListModel<LocomotiveBean> {
-
+    
     private final List<LocomotiveBean> model;
-
+    
     public LocomotiveBeanListModel() {
       model = new ArrayList<>();
     }
-
+    
     @Override
     public int getSize() {
       return model.size();
     }
-
+    
     @Override
     public LocomotiveBean getElementAt(int index) {
       return (LocomotiveBean) model.toArray()[index];
     }
-
+    
     public void add(LocomotiveBean element) {
       if (model.add(element)) {
         Collections.sort(model, new LocomotiveBeanByNameSorter());
-
+        
         fireContentsChanged(this, 0, getSize());
       }
     }
-
+    
     public void addAll(LocomotiveBean elements[]) {
       Collection<LocomotiveBean> c = Arrays.asList(elements);
       model.addAll(c);
       Collections.sort(model, new LocomotiveBeanByNameSorter());
-
+      
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public void addAll(Collection<LocomotiveBean> elements) {
       model.addAll(elements);
       Collections.sort(model, new LocomotiveBeanByNameSorter());
-
+      
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public void clear() {
       model.clear();
       fireContentsChanged(this, 0, getSize());
     }
-
+    
     public boolean contains(LocomotiveBean element) {
       return model.contains(element);
     }
-
+    
     public LocomotiveBean firstElement() {
       if (!model.isEmpty()) {
         return model.get(0);
@@ -992,11 +993,11 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         return null;
       }
     }
-
+    
     public Iterator<LocomotiveBean> iterator() {
       return model.iterator();
     }
-
+    
     public LocomotiveBean lastElement() {
       if (!model.isEmpty()) {
         return model.get(model.size() - 1);
@@ -1004,7 +1005,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         return null;
       }
     }
-
+    
     public boolean removeElement(LocomotiveBean element) {
       boolean removed = model.remove(element);
       if (removed) {
@@ -1013,14 +1014,14 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       return removed;
     }
   }
-
+  
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("progress".equals(evt.getPropertyName())) {
       int progress = (Integer) evt.getNewValue();
       synchPB.setIndeterminate(progress < 20);
       synchPB.setValue(progress);
-
+      
       if (task.isDone()) {
         synchronizeBtn.setEnabled(commandStationBean.isLocomotiveSynchronizationSupport());
       }
@@ -1032,7 +1033,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       }
       this.locomotiveList.setSelectedValue(evt.getNewValue(), true);
     }
-
+    
     if ("done".equals(evt.getPropertyName())) {
       Logger.trace("Done: " + evt.getNewValue());
       //this.connectionTestResultLbl.setText((String) evt.getNewValue());
@@ -1041,28 +1042,31 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       locomotiveList.clearSelection();
     }
   }
-
+  
   class SynchronizationTask extends SwingWorker<Void, Void> {
-
+    
     @Override
     public Void doInBackground() {
       setProgress(0);
-
+      
       DecoderController decoderController = ControllerFactory.getDecoderController(commandStationBean, true);
       if (!decoderController.isConnected()) {
         decoderController.connect();
       }
-
+      
+      PersistenceService db = PersistenceFactory.getService();
+      
+      
       List<LocomotiveBean> fromController = decoderController.getLocomotives();
       String importedFrom = commandStationBean.getShortName();
       Set<String> functionImageNames = new HashSet<>();
-
+      
       int locCount = fromController.size();
       int processedCount = 0;
-
+      
       for (LocomotiveBean loco : fromController) {
         Long id = loco.getId();
-        LocomotiveBean dbLoco = PersistenceFactory.getService().getLocomotive(id);
+        LocomotiveBean dbLoco = db.getLocomotive(id);
         boolean store = true;
         if (dbLoco != null && loco.getId().equals(dbLoco.getId())) {
           if (dbLoco.isSynchronize()) {
@@ -1080,20 +1084,28 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
           loco.setSynchronize(true);
           loco.setImported(importedFrom);
           loco.setShow(true);
+          if(loco.getCommandStationBean() == null) {
+            Logger.warn("Command station ID NOT set. Using default!");
+            loco.setCommandStationId(commandStationBean.getId());
+          }  
         }
-
+        
         if (store && commandStationBean.isLocomotiveImageSynchronizationSupport()) {
           try {
             String icon = loco.getIcon();
             Image locImage = decoderController.getLocomotiveImage(icon);
-            String iconPath = storeImage(icon, locImage, true);
-            loco.setIcon(iconPath);
-            Logger.trace("Loc Image path: " + iconPath);
+            if (locImage != null) {
+              String iconPath = storeImage(icon, locImage, true);
+              loco.setIcon(iconPath);
+              Logger.trace("Loc Image path: " + iconPath);
+            } else {
+              Logger.trace("locImage" + icon + " not found");
+            }
           } catch (Exception e) {
             Logger.error(e);
           }
         }
-
+        
         if (store && commandStationBean.isLocomotiveFunctionSynchronizationSupport()) {
           try {
             //Function icons...
@@ -1107,7 +1119,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
           } catch (Exception e) {
             Logger.error(e);
           }
-
+          
           for (String functionImage : functionImageNames) {
             Image functionIcon = decoderController.getLocomotiveFunctionImage(functionImage);
             if (functionIcon != null) {
@@ -1117,29 +1129,36 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
             }
           }
         }
-
+        
         if (store) {
-          PersistenceFactory.getService().persist(loco);
-          firePropertyChange("updated", null, loco);
+          Logger.trace("Storing: "+loco);
+          
+          db.persist(loco);
+          
+          if(loco.getLocIcon() != null) {
+            firePropertyChange("updated", null, loco);
+          }  
         }
         processedCount++;
-
+        
+        Logger.trace("Processed "+processedCount+" of "+locCount);
+        
         double progress = (double) processedCount / locCount * 100;
         setProgress((int) progress);
       }
-
+      
       JCS.settingsChanged(new RefreshEvent("locomotives"));
-
+      
       firePropertyChange("done", "", "Locomotives Synchronized");
-
+      
       return null;
     }
-
+    
     @Override
     public void done() {
       initModels();
       synchronizeBtn.setEnabled(commandStationBean.isLocomotiveSynchronizationSupport());
-
+      
     }
   }
 
@@ -1151,13 +1170,13 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       Logger.error("Can't set the LookAndFeel: " + ex);
     }
     java.awt.EventQueue.invokeLater(() -> {
-
+      
       LocomotivePreferencesPanel testPanel = new LocomotivePreferencesPanel();
       JFrame testFrame = new JFrame();
       JDialog testDialog = new JDialog(testFrame, true);
-
+      
       testDialog.add(testPanel);
-
+      
       testDialog.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
@@ -1166,7 +1185,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       });
       testDialog.pack();
       testDialog.setLocationRelativeTo(null);
-
+      
       testDialog.setVisible(true);
     });
   }

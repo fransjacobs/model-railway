@@ -307,8 +307,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public Image getLocomotiveImage(String imageName
-  ) {
+  public Image getLocomotiveImage(String imageName) {
     Image image = null;
 
     if (decoderController != null) {
@@ -321,8 +320,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public Image getLocomotiveFunctionImage(String imageName
-  ) {
+  public Image getLocomotiveFunctionImage(String imageName) {
     Image image = null;
     if (decoderController != null) {
       image = decoderController.getLocomotiveFunctionImage(imageName);
@@ -430,7 +428,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     if (supportedProtocols.size() == 1) {
       address = locomotive.getAddress();
     } else {
-      address = locomotive.getUid().intValue();
+      if (locomotive.getUid() != null) {
+        address = locomotive.getUid().intValue();
+      } else {
+        address = locomotive.getId().intValue();
+      }
     }
     if (decoderController != null) {
       //Set the velocity to zero before changing the direction
@@ -448,7 +450,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     if (supportedProtocols.size() == 1) {
       address = locomotive.getAddress();
     } else {
-      address = locomotive.getUid().intValue();
+      if (locomotive.getUid() != null) {
+        address = locomotive.getUid().intValue();
+      } else {
+        address = locomotive.getId().intValue();
+      }
     }
     if (decoderController != null) {
       decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
@@ -462,7 +468,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     if (this.supportedProtocols.size() == 1) {
       address = locomotive.getAddress();
     } else {
-      address = locomotive.getUid().intValue();
+      if (locomotive.getUid() != null) {
+        address = locomotive.getUid().intValue();
+      } else {
+        address = locomotive.getId().intValue();
+      }
     }
     if (decoderController != null) {
       decoderController.changeFunctionValue(address, functionNumber, newValue);

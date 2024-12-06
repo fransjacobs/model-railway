@@ -326,6 +326,9 @@ public class LocomotiveBean implements Serializable {
 
   public void setCommandStationBean(CommandStationBean commandStationBean) {
     this.commandStationBean = commandStationBean;
+    if (commandStationBean != null) {
+      this.commandStationId = commandStationBean.getId();
+    }
   }
 
   @Column(name = "synchronize", nullable = false, columnDefinition = "synchronize bool default '0'")
@@ -361,6 +364,7 @@ public class LocomotiveBean implements Serializable {
   public void setFunctions(List<FunctionBean> functions) {
     this.functions.clear();
     for (FunctionBean function : functions) {
+      //function.setLocomotiveId(id);
       this.functions.put(function.getNumber(), function);
     }
   }

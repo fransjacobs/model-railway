@@ -63,6 +63,9 @@ public interface Ecos {
   public static final String RAILCOMPLUS_MODE = "railcomplus-mode";
   public static final String ALLOWLOCOTAKEOVER = "allowlocotakeover";
   public static final String STOPONLASTCONNECT = "stoponlastdisconnect";
+
+  public static final String GO = "GO";
+  public static final String STOP = "STOP";
   
   public static final String PROTOCOL = "protocol";
   public static final String ADDRESS = "addr";
@@ -76,6 +79,7 @@ public interface Ecos {
   
   public static final String STATE = "state";
   public static final String PORTS = "ports";
+  
   
   
 
