@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.esu.ecos.entities;
+package jcs.commandStation.esu.ecos;
 
+import jcs.commandStation.esu.ecos.FeedbackManager;
 import jcs.commandStation.esu.ecos.EcosMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

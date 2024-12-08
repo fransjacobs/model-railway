@@ -68,23 +68,23 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage getLocomotives() {
-    return new EcosMessage("queryObjects(" + LOCOMOTIVES_ID + ", name, addr, protocol)");
+    return new EcosMessage("queryObjects(" + LOCOMOTIVES_ID + ", name,addr,protocol)");
   }
 
   public static EcosMessage subscribeLokManager() {
-    return new EcosMessage("request(" + LOCOMOTIVES_ID + ", view)");
+    return new EcosMessage("request(" + LOCOMOTIVES_ID + ",view)");
   }
 
   public static EcosMessage unSubscribeLokManager() {
-    return new EcosMessage("release(" + LOCOMOTIVES_ID + ", view)");
+    return new EcosMessage("release(" + LOCOMOTIVES_ID + ",view)");
   }
 
   public static EcosMessage subscribeLocomotive(long lokId) {
-    return new EcosMessage("request(" + lokId + ", view)");
+    return new EcosMessage("request(" + lokId + ",view)");
   }
 
   public static EcosMessage unSubscribeLocomotive(long lokId) {
-    return new EcosMessage("release(" + lokId + ", view)");
+    return new EcosMessage("release(" + lokId + ",view)");
   }
 
   public static EcosMessage getLocomotiveDetails(long lokId) {
@@ -92,7 +92,23 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage getLocomotiveDetails(String lokId) {
-    return new EcosMessage("get(" + lokId + ", name, addr, protocol,dir,speed,speedstep,active,locodesc,func)");
+    return new EcosMessage("get(" + lokId + ",name,addr,protocol,dir,speed,speedstep,active,locodesc,func,funcdesc)");
+  }
+
+  public static EcosMessage getRequestLocomotiveControl(String lokId) {
+    return new EcosMessage("request(" + lokId + ",control,force)");
+  }
+
+  public static EcosMessage getReleaseLocomotiveControl(String lokId) {
+    return new EcosMessage("release(" + lokId + ",control)");
+  }
+
+  public static EcosMessage setLocomotiveSpeed(String lokId, int speed) {
+    return new EcosMessage("set(" + lokId + ",speed[" + speed + "])");
+  }
+
+  public static EcosMessage setLocomotiveDirection(String lokId, int dir) {
+    return new EcosMessage("set(" + lokId + ",dir[" + dir + "])");
   }
 
 //  Ecos commands

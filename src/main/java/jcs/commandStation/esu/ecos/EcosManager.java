@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.esu.ecos.entities;
+package jcs.commandStation.esu.ecos;
 
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +23,7 @@ import jcs.commandStation.esu.ecos.EcosMessage;
 /**
  * ECoS (id=1)
  */
-public class BaseObject {
+public class EcosManager {
 
   public static final int ID = 1;
 
@@ -55,11 +55,11 @@ public class BaseObject {
   private boolean allowLocoTakeover;
   private boolean stopOnLastDisconnect;
 
-  public BaseObject() {
+  public EcosManager() {
 
   }
 
-  public BaseObject(EcosMessage msg) {
+  public EcosManager(EcosMessage msg) {
     parse(msg);
   }
 
@@ -438,7 +438,7 @@ public class BaseObject {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final BaseObject other = (BaseObject) obj;
+    final EcosManager other = (EcosManager) obj;
     if (this.size != other.size) {
       return false;
     }

@@ -29,7 +29,6 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.esu.ecos.entities.BaseObject;
 import jcs.commandStation.esu.ecos.net.EcosConnection;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.events.PowerEvent;
@@ -41,8 +40,12 @@ import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
-import jcs.commandStation.esu.ecos.entities.FeedbackManager;
-import jcs.commandStation.esu.ecos.entities.LokManager;
+import jcs.commandStation.events.LocomotiveDirectionEvent;
+import jcs.commandStation.events.LocomotiveDirectionEventListener;
+import jcs.commandStation.events.LocomotiveFunctionEvent;
+import jcs.commandStation.events.LocomotiveFunctionEventListener;
+import jcs.commandStation.events.LocomotiveSpeedEvent;
+import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;
 
@@ -52,9 +55,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   private EcosConnection connection;
   private EventHandler eventMessageHandler;
 
-  private BaseObject baseObject;
+  private EcosManager baseObject;
   private FeedbackManager feedbackManager;
-  private LokManager lokManager;
+  private LocomotiveManager lokManager;
 
   public EsuEcosCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -160,7 +163,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private void setupBaseObject() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getBaseObject());
-    baseObject = new BaseObject(reply);
+    baseObject = new EcosManager(reply);
 
     //Start the EventHandler
     eventMessageHandler = new EventHandler(this.connection);
@@ -189,7 +192,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private void setupLokManager() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getLocomotives());
-    lokManager = new LokManager(reply);
+    lokManager = new LocomotiveManager(this, reply);
 
     for (LocomotiveBean loc : this.lokManager.getLocomotives().values()) {
       EcosMessage detailsReply = connection.sendMessage(EcosMessageFactory.getLocomotiveDetails(loc.getId()));
@@ -308,6 +311,15 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public void changeVelocity(int locUid, int speed, LocomotiveBean.Direction direction) {
     Logger.trace("Changing speed for " + locUid + " to " + speed + " Direction " + direction);
+
+    EcosMessage reply = connection.sendMessage(new EcosMessage("request(1005, control, force)"));
+    Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+    reply = connection.sendMessage(new EcosMessage("set(1005, speed[100])"));
+    Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+    reply = connection.sendMessage(new EcosMessage("release(1005, control)"));
+    Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
   }
 
   @Override
@@ -376,6 +388,30 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public void fireSensorEventListeners(SensorEvent sensorEvent) {
     Logger.trace("SensorEvent: " + sensorEvent);
+  }
+
+  void fireDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
+    if (directionEvent.isValid()) {
+      for (LocomotiveDirectionEventListener listener : this.locomotiveDirectionEventListeners) {
+        listener.onDirectionChange(directionEvent);
+      }
+    }
+  }
+
+  void fireLocomotiveSpeedEventListeners(final LocomotiveSpeedEvent speedEvent) {
+    if (speedEvent.isValid()) {
+      for (LocomotiveSpeedEventListener listener : this.locomotiveSpeedEventListeners) {
+        listener.onSpeedChange(speedEvent);
+      }
+    }
+  }
+
+  void fireFunctionEventListeners(final LocomotiveFunctionEvent functionEvent) {
+    if (functionEvent.isValid()) {
+      for (LocomotiveFunctionEventListener listener : this.locomotiveFunctionEventListeners) {
+        listener.onFunctionChange(functionEvent);
+      }
+    }
   }
 
 //  private void notifyPowerEventListeners(final PowerEvent powerEvent) {
@@ -556,22 +592,20 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //
 //        }
+        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("request(1005, control, force)"));
+        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
+        reply = cs.connection.sendMessage(new EcosMessage("set(1005, speed[100])"));
+        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-//          EcosMessage reply  = cs.connection.sendMessage(new EcosMessage("request(1005, control)"));
-//          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-          
-          EcosMessage reply  = cs.connection.sendMessage(new EcosMessage("set(1005, speed[100])"));
-          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+        cs.pause(2000);
 
-          cs.pause(2000);
-          
-          reply  = cs.connection.sendMessage(new EcosMessage("set(1005, speed[10])"));
-          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+        reply = cs.connection.sendMessage(new EcosMessage("set(1005, speed[10])"));
+        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-          reply  = cs.connection.sendMessage(new EcosMessage("release(1005, control)"));
-          Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-          
+        reply = cs.connection.sendMessage(new EcosMessage("release(1005, control)"));
+        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
         //reply = cs.connection.sendMessage(new EcosMessage("get(1002, name, addr, protocol, locodesc, dir,speed, speedstep, speedindicator,func)"));      
         //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());

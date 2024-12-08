@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.esu.ecos.entities;
+package jcs.commandStation.esu.ecos;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import jcs.commandStation.esu.ecos.Ecos;
 import jcs.commandStation.esu.ecos.EcosMessage;
+import jcs.commandStation.esu.ecos.EsuEcosCommandStationImpl;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
@@ -29,19 +30,21 @@ import org.tinylog.Logger;
 
 /**
  *
- * LokManager (id=10)
+ * LocomotiveManager (id=10)
  */
-public class LokManager {
+public class LocomotiveManager {
 
   public static final int ID = 10;
   public static final int LOCO_OFFSET = 1000;
 
   private int size;
+  private final EsuEcosCommandStationImpl esuEcosCommandStationImpl;
 
   //private final EsuEcosCommandStationImpl esuEcosCommandStationImpl;
   private final Map<Long, LocomotiveBean> locomotives;
 
-  public LokManager(EcosMessage message) {
+  public LocomotiveManager(EsuEcosCommandStationImpl esuEcosCommandStationImpl, EcosMessage message) {
+    this.esuEcosCommandStationImpl = esuEcosCommandStationImpl;
     locomotives = new HashMap<>();
     parse(message);
   }
@@ -129,7 +132,9 @@ public class LokManager {
       locomotive.setDirection(d);
 
       if (event) {
-        //Todo raise direction event
+        if(this.esuEcosCommandStationImpl != null) {
+          
+        }
       }
     }
 
@@ -141,6 +146,10 @@ public class LokManager {
 
       if (event) {
         //Todo raise speed event
+        if(this.esuEcosCommandStationImpl != null) {
+          
+        }
+        
       }
     }
 
@@ -167,7 +176,9 @@ public class LokManager {
       locomotive.setFunctions(functions);
 
       if (event) {
-        //Todo raise function event
+        if(this.esuEcosCommandStationImpl != null) {
+          
+        }
       }
 
     }
