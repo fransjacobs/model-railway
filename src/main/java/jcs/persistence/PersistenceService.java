@@ -16,6 +16,7 @@
 package jcs.persistence;
 
 import java.awt.Image;
+import java.util.HashMap;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
@@ -106,7 +107,7 @@ public interface PersistenceService {
 
   // Tile
   List<TileBean> getTileBeans();
-
+  
   List<TileBean> getTileBeansByTileType(TileBean.TileType tileType);
 
   TileBean getTileBean(String id);
