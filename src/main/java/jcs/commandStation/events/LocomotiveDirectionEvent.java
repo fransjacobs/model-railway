@@ -38,6 +38,7 @@ public class LocomotiveDirectionEvent implements Serializable {
     createLocomotiveBean(locomotiveBeanId, direction, commandStationId);
   }
 
+  //TODO: move Marklin code to the CS implementation
   public LocomotiveDirectionEvent(CanMessage message) {
     parseMessage(message);
   }

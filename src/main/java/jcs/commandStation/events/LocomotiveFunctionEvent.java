@@ -36,6 +36,7 @@ public class LocomotiveFunctionEvent implements Serializable {
     createLocomotiveFunctionBean(locomotiveBeanId, functionNumber, flag, commandStationId);
   }
 
+  //TODO: move Marklin code the the CS implementation
   public LocomotiveFunctionEvent(CanMessage message) {
     parseMessage(message);
   }

@@ -38,6 +38,7 @@ public class LocomotiveSpeedEvent implements Serializable {
     createLocomotiveBean(locomotiveBeanId, speed, commandStationId);
   }
 
+  //Todo: move Marklin specific code to CS implementation
   public LocomotiveSpeedEvent(CanMessage message) {
     parseMessage(message);
   }
@@ -137,5 +138,9 @@ public class LocomotiveSpeedEvent implements Serializable {
     } else {
       return false;
     }
+  }
+
+  public Long getId() {
+    return this.locomotiveBean.getId();
   }
 }

@@ -15,12 +15,10 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import jcs.commandStation.esu.ecos.LocomotiveManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Map;
-import jcs.commandStation.esu.ecos.EcosMessage;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
@@ -35,9 +33,9 @@ import org.junit.Test;
  *
  * @author frans
  */
-public class LokManagerTest {
+public class LocomotiveManagerTest {
 
-  public LokManagerTest() {
+  public LocomotiveManagerTest() {
   }
 
   @BeforeEach

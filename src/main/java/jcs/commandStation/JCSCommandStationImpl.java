@@ -794,8 +794,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       LocomotiveBean lb = directionEvent.getLocomotiveBean();
       if (lb != null) {
         LocomotiveBean dblb = null;
-        //For marklin use the ID 
-        if ("marklin.cs".equals(lb.getCommandStationId())) {
+        //For marklin and Ecos use the ID 
+        if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
           dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
         } else {
           Integer address;
@@ -853,8 +853,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       LocomotiveBean lb = speedEvent.getLocomotiveBean();
       if (lb != null) {
         LocomotiveBean dblb;
-        //For marklin use the ID 
-        if ("marklin.cs".equals(lb.getCommandStationId())) {
+        //For marklin and Ecos use the ID 
+        if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
           dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
         } else {
           Integer address;
