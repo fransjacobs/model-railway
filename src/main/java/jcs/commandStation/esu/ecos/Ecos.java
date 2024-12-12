@@ -17,6 +17,8 @@ package jcs.commandStation.esu.ecos;
 
 public interface Ecos {
 
+  public static final String ECOS_COMMANDSTATION_ID = "esu-ecos";
+
   public static final int BASEOBJECT_ID = 1;
   public static final int LOCOMOTIVES_ID = 10;
   public static final int ACCESSORIES_ID = 11;
@@ -66,7 +68,7 @@ public interface Ecos {
 
   public static final String GO = "GO";
   public static final String STOP = "STOP";
-  
+
   public static final String PROTOCOL = "protocol";
   public static final String ADDRESS = "addr";
   public static final String DIRECTION = "dir";
@@ -75,12 +77,8 @@ public interface Ecos {
   public static final String ACTIVE = "active";
   public static final String LOCODESC = "locodesc";
   public static final String FUNCTION = "func";
-  
-  
+
   public static final String STATE = "state";
   public static final String PORTS = "ports";
-  
-  
-  
 
 }

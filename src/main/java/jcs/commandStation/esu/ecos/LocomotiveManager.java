@@ -105,7 +105,11 @@ public class LocomotiveManager implements LocomotiveSpeedEventListener {
     } else {
       locomotive = new LocomotiveBean();
       locomotive.setId(id);
-      locomotive.setCommandStationBean(ecosCommandStation.getCommandStationBean());
+      if (ecosCommandStation != null) {
+        locomotive.setCommandStationBean(ecosCommandStation.getCommandStationBean());
+      } else {
+        locomotive.setCommandStationId(EcosMessage.ECOS_COMMANDSTATION_ID);
+      }
     }
     if (values.containsKey(Ecos.NAME)) {
       String name = values.get(Ecos.NAME).toString();
