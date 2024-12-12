@@ -16,11 +16,9 @@
 package jcs.commandStation.events;
 
 import java.io.Serializable;
-import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.AccessoryBean.SignalValue;
-import org.tinylog.Logger;
 
 public class AccessoryEvent implements Serializable {
 
@@ -30,35 +28,35 @@ public class AccessoryEvent implements Serializable {
     this.accessoryBean = accessoryBean;
   }
 
-  public AccessoryEvent(CanMessage message) {
-    parseMessage(message);
-  }
+//  public AccessoryEvent(CanMessage message) {
+//    parseMessage(message);
+//  }
 
-  private void parseMessage(CanMessage message) {
-    CanMessage resp;
-    if (!message.isResponseMessage()) {
-      resp = message.getResponse();
-    } else {
-      resp = message;
-    }
-
-    if (resp.isResponseMessage() && CanMessage.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
-      byte[] data = resp.getData();
-      int address = data[3];
-      int position = data[4];
-      //CS is zero based
-      address = address + 1;
-      String id = address+"";
-
-      this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null,null);
-      if (resp.getDlc() == CanMessage.DLC_8) {
-        int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
-        this.accessoryBean.setSwitchTime(switchTime);
-      }
-    } else {
-      Logger.warn("Can't parse message, not an Accessory Response! " + resp);
-    }
-  }
+//  private void parseMessage(CanMessage message) {
+//    CanMessage resp;
+//    if (!message.isResponseMessage()) {
+//      resp = message.getResponse();
+//    } else {
+//      resp = message;
+//    }
+//
+//    if (resp.isResponseMessage() && CanMessage.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
+//      byte[] data = resp.getData();
+//      int address = data[3];
+//      int position = data[4];
+//      //CS is zero based
+//      address = address + 1;
+//      String id = address+"";
+//
+//      this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null,null);
+//      if (resp.getDlc() == CanMessage.DLC_8) {
+//        int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
+//        this.accessoryBean.setSwitchTime(switchTime);
+//      }
+//    } else {
+//      Logger.warn("Can't parse message, not an Accessory Response! " + resp);
+//    }
+//  }
 
   public AccessoryBean getAccessoryBean() {
     return accessoryBean;

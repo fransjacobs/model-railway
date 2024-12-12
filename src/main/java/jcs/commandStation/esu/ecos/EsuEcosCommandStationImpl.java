@@ -340,10 +340,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public List<LocomotiveBean> getLocomotives() {
     List<LocomotiveBean> locomotives = new ArrayList<>(this.locomotiveManager.getLocomotives().values());
-    //for (LocomotiveBean lb : locomotives) {
-    //  lb.setCommandStationBean(commandStationBean);
-    //}
-    
     return locomotives;
   }
   

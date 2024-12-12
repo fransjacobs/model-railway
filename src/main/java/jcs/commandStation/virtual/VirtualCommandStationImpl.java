@@ -31,8 +31,6 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.commandStation.events.DisconnectionEvent;
-import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
 import jcs.commandStation.events.LocomotiveFunctionEvent;
@@ -224,7 +222,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
     if (this.power && connected) {
       Logger.debug("locUid " + locUid + " functionNumber " + functionNumber + " " + (flag ? "on" : "off"));
-      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, functionNumber, flag, commandStationBean.getId());
+      LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, functionNumber, flag);
       executor.execute(() -> fireAllFunctionEventListeners(lfe));
     } else {
       if (!this.power) {

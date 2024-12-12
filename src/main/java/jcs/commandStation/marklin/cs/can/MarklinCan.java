@@ -23,6 +23,8 @@ package jcs.commandStation.marklin.cs.can;
  */
 interface MarklinCan {
 
+  public static final String MARKLIN_COMMANDSTATION_ID = "marklin.cs";
+
   public static final int MESSAGE_SIZE = 13;
 
   public static final int HASH_SIZE = 2;
