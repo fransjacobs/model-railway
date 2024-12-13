@@ -237,7 +237,7 @@ public class VNCViewer extends JFrame {
         Graphics2D g2 = (Graphics2D) g;
         int width = getContentPane().getWidth();
         int height = getContentPane().getHeight();
-
+        Logger.trace("W: "+width+" H: "+height);
         if (lastFrame != null) {
           g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR);
           g2.drawImage(lastFrame, 0, 0, width, height, null);
@@ -290,9 +290,9 @@ public class VNCViewer extends JFrame {
 
     ButtonGroup colorDepths = new ButtonGroup();
 
-    bpp8IndexedColorMenuItem = new JRadioButtonMenuItem("8-bit Indexed Color", true);
+    bpp8IndexedColorMenuItem = new JRadioButtonMenuItem("8-bit Indexed Color", false);
     bpp16TrueColorMenuItem = new JRadioButtonMenuItem("16-bit True Color", false);
-    bpp24TrueColorMenuItem = new JRadioButtonMenuItem("24-bit True Color", false);
+    bpp24TrueColorMenuItem = new JRadioButtonMenuItem("24-bit True Color", true);
 
     colorDepths.add(bpp8IndexedColorMenuItem);
 
@@ -496,6 +496,8 @@ public class VNCViewer extends JFrame {
       //String host = "192.168.1.110";
       String host;
       InetAddress ia = EcosConnectionFactory.discoverEcos();
+      //InetAddress ia = CSConnectionFactory.discoverCs();
+      
       if (ia != null) {
         host = ia.getHostAddress();
       } else {
