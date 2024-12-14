@@ -85,21 +85,41 @@ public class EcosMessage implements Ecos {
 
       String id = response.substring(idStart, idLen + idStart);
       return id;
-    } else {
-      //Logger.trace(response);
-      String msg = response.toString();
-
-      int idStart = msg.indexOf(" ") + 1;
-      int idEnd = msg.indexOf(">");
+    } else if (response != null && response.toString().startsWith(EVENT)) {
+      int eventEnd = response.indexOf(">") + 1;
+      String replaceString = response.substring(0, eventEnd);
+      String content = response.toString().replaceFirst(replaceString, "");
+      int idStart = 0;
+      int idEnd = content.indexOf(" ");
       int idLen = idEnd - idStart;
 
-      String id = msg.substring(idStart, idLen + idStart);
+      String id = content.substring(idStart, idLen + idStart);
       return id;
+    } else {
+      //Logger.trace(response);
+      if (response.length() == 0) {
+        //use the message
+        int idStart = message.indexOf("(") + 1;
+        int idEnd = message.indexOf(",");
+        int idLen = idEnd - idStart;
+        String id = message.substring(idStart, idLen + idStart);
+        return id;
+      } else {
+        String msg = response.toString();
+
+        int idStart = msg.indexOf(" ") + 1;
+        int idEnd = msg.indexOf(">");
+        int idLen = idEnd - idStart;
+
+        String id = msg.substring(idStart, idLen + idStart);
+        return id;
+      }
     }
   }
 
   public int getObjectId() {
-    return Integer.parseInt(getId());
+    String s = getId();
+    return Integer.parseInt(s);
   }
 
   public String getCommand() {
@@ -112,14 +132,14 @@ public class EcosMessage implements Ecos {
       return cmd;
     } else if (response != null && response.toString().startsWith(EVENT)) {
       return null;
-//      int cmdStart = 0;
-//      int cmdEnd = message.indexOf("(");
-//      int cmdLen = cmdEnd - cmdStart;
-//
-//      String cmd = message.substring(cmdStart, cmdLen + cmdStart);
-//      return cmd;
     } else {
-      return null;
+      //use the message
+      int cmdStart = 0;
+      int cmdEnd = message.indexOf("(");
+      int cmdLen = cmdEnd - cmdStart;
+
+      String cmd = message.substring(cmdStart, cmdLen + cmdStart);
+      return cmd;
     }
   }
 
@@ -260,7 +280,7 @@ public class EcosMessage implements Ecos {
                 vm.put(valKey, value);
                 valueMap.put(dId, vm);
               } else {
-                if (Ecos.FUNCTION.equals(valKey)) {
+                if (Ecos.FUNCTION.equals(valKey) || Ecos.FUNCTION_DESC.equals(valKey)) {
                   //Functions; create an array [F #, value],[F#,value]...
                   StringBuilder fb = new StringBuilder();
                   if (valueMap.containsKey(valKey)) {

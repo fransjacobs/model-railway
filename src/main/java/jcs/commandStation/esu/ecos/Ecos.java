@@ -77,6 +77,7 @@ public interface Ecos {
   public static final String ACTIVE = "active";
   public static final String LOCODESC = "locodesc";
   public static final String FUNCTION = "func";
+  public static final String FUNCTION_DESC = "funcdesc";
 
   public static final String STATE = "state";
   public static final String PORTS = "ports";

@@ -88,26 +88,26 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage getLocomotiveDetails(long lokId) {
-    return getLocomotiveDetails("" + lokId);
-  }
-
-  public static EcosMessage getLocomotiveDetails(String lokId) {
     return new EcosMessage("get(" + lokId + ",name,addr,protocol,dir,speed,speedstep,active,locodesc,func,funcdesc)");
   }
 
-  public static EcosMessage getRequestLocomotiveControl(String lokId) {
+  public static EcosMessage getRequestLocomotiveControl(long lokId) {
     return new EcosMessage("request(" + lokId + ",control,force)");
   }
 
-  public static EcosMessage getReleaseLocomotiveControl(String lokId) {
+  public static EcosMessage getReleaseLocomotiveControl(long lokId) {
     return new EcosMessage("release(" + lokId + ",control)");
   }
 
-  public static EcosMessage setLocomotiveSpeed(String lokId, int speed) {
+  public static EcosMessage setLocomotiveSpeed(long lokId, int speed) {
     return new EcosMessage("set(" + lokId + ",speed[" + speed + "])");
   }
 
-  public static EcosMessage setLocomotiveDirection(String lokId, int dir) {
+  public static EcosMessage setLocomotiveFunction(long lokId, int function, boolean active) {
+    return new EcosMessage("set(" + lokId + ",func[" + function + "," + (active ? "1" : "0") + "])");
+  }
+
+  public static EcosMessage setLocomotiveDirection(long lokId, int dir) {
     return new EcosMessage("set(" + lokId + ",dir[" + dir + "])");
   }
 

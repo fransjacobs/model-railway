@@ -38,7 +38,6 @@ import static java.awt.BorderLayout.CENTER;
 import static java.awt.Color.DARK_GRAY;
 import static java.awt.Color.LIGHT_GRAY;
 import static java.awt.Cursor.getDefaultCursor;
-import static java.awt.EventQueue.invokeLater;
 import static java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment;
 import static java.awt.RenderingHints.KEY_INTERPOLATION;
 import static java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
@@ -60,19 +59,18 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.lang.System.exit;
 import static java.lang.Thread.sleep;
-import java.net.InetAddress;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static javax.swing.JOptionPane.OK_CANCEL_OPTION;
 import static javax.swing.JOptionPane.OK_OPTION;
 import static javax.swing.JOptionPane.WARNING_MESSAGE;
 import static javax.swing.JOptionPane.showConfirmDialog;
 import static javax.swing.JOptionPane.showMessageDialog;
-import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import org.tinylog.Logger;
 
 /**
  * Inspired on the work of https://github.com/shinyhut/vernacular-vnc My ESU Ecos 50000 has a defect in the screen. This Java viewer is helping the development
  */
+@Deprecated
 public class VNCViewer extends JFrame {
 
   private VernacularConfig config;
@@ -489,27 +487,27 @@ public class VNCViewer extends JFrame {
     return (int) (y * ((double) lastFrame.getHeight(null) / getContentPane().getHeight()));
   }
 
-  public static void main(String[] args) {
-    invokeLater(() -> {
-      VNCViewer viewer = new VNCViewer();
-
-      //String host = "192.168.1.110";
-      String host;
-      InetAddress ia = EcosConnectionFactory.discoverEcos();
-      //InetAddress ia = CSConnectionFactory.discoverCs();
-      
-      if (ia != null) {
-        host = ia.getHostAddress();
-      } else {
-        Logger.warn("Use a default host ip.....");
-        host = "192.168.1.110";
-      }
-
-      int port = 5900;
-      viewer.connect(host, port);
-      viewer.setVisible(true);
-
-    });
-  }
+//  public static void main(String[] args) {
+//    invokeLater(() -> {
+//      VNCViewer viewer = new VNCViewer();
+//
+//      //String host = "192.168.1.110";
+//      String host;
+//      InetAddress ia = EcosConnectionFactory.discoverEcos();
+//      //InetAddress ia = CSConnectionFactory.discoverCs();
+//      
+//      if (ia != null) {
+//        host = ia.getHostAddress();
+//      } else {
+//        Logger.warn("Use a default host ip.....");
+//        host = "192.168.1.110";
+//      }
+//
+//      int port = 5900;
+//      viewer.connect(host, port);
+//      viewer.setVisible(true);
+//
+//    });
+//  }
 
 }

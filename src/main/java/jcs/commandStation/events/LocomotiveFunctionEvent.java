@@ -53,4 +53,16 @@ public class LocomotiveFunctionEvent implements Serializable {
     }
   }
 
+  public Long getLocomotiveId() {
+    return this.function.getLocomotiveId();
+  }
+
+  public Integer getNumber() {
+    return this.function.getNumber();
+  }
+
+  public boolean isOn() {
+    return this.function.isOn();
+  }
+
 }

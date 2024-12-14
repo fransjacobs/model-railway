@@ -44,6 +44,8 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   private final ExecutorService executor;
   private boolean initButtons = false;
 
+  private boolean enableEvent = true;
+
   public FunctionsPanel() {
     buttons = new HashMap<>();
     executor = Executors.newCachedThreadPool();
@@ -107,7 +109,14 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
   public void onFunctionChange(LocomotiveFunctionEvent event) {
     if (this.locomotive != null && this.locomotive.getId().equals(event.getFunctionBean().getLocomotiveId())) {
       FunctionBean fb = event.getFunctionBean();
-      this.buttons.get(fb.getNumber()).setSelected(fb.isOn());
+      //this.buttons.get(fb.getNumber()).setSelected(fb.isOn());
+      JToggleButton tbtn = this.buttons.get(fb.getNumber());
+
+      //Temp disable the event handling as this is an external event...
+      enableEvent = false;
+      tbtn.doClick();
+      enableEvent = true;
+
     } else {
       Logger.trace("Function button for LocomotiveId " + event.getFunctionBean().getLocomotiveId() + " and number " + event.getFunctionBean().getNumber() + " not found");
     }
@@ -193,7 +202,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
 
     FunctionBean fb = this.locomotive.getFunctionBean(functionNumber);
 
-    if (!initButtons) {
+    if (!initButtons && enableEvent) {
       Logger.trace("Function " + fb.getNumber() + " Value: " + fb.isOn() + " Momentary: " + fb.isMomentary());
       executor.execute(() -> changeFunction(value, functionNumber, locomotive));
     }
@@ -960,7 +969,7 @@ public class FunctionsPanel extends javax.swing.JPanel implements LocomotiveFunc
       if (JCS.getJcsCommandStation() != null) {
 
         //LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(49189L);
-        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(39L);
+        LocomotiveBean loc = PersistenceFactory.getService().getLocomotive(1001L);
         Logger.debug(loc);
 
         testPanel.setLocomotive(loc);

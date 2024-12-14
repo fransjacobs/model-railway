@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 frans.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,8 @@ import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_INTERPOLATION;
 import static java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
 import static java.awt.Toolkit.getDefaultToolkit;
-import java.awt.datatransfer.Clipboard;
-import static java.awt.datatransfer.DataFlavor.stringFlavor;
 import java.awt.datatransfer.StringSelection;
 import static java.lang.Math.min;
-import static java.lang.Thread.sleep;
 import java.net.InetAddress;
 import java.net.URL;
 import javax.swing.ImageIcon;
@@ -50,6 +47,11 @@ import org.tinylog.Logger;
 
 /**
  *
+ * Inspired on the work of https://github.com/shinyhut/vernacular-vnc<br>
+ * My ESU Ecos 50000 has a defect in the screen.<br>
+ * This Java viewer is helping the development.
+ * In hind site I thin is a welcome addition to add to the main frame in due time
+ *
  * @author frans
  */
 public class VNCPanel extends javax.swing.JPanel {
@@ -57,6 +59,7 @@ public class VNCPanel extends javax.swing.JPanel {
   private Image lastFrame;
   private VernacularConfig config;
   private VernacularClient client;
+  private static final int DEFAULT_VNC_PORT = 5900;
 
   /**
    * Creates new form VNCPanel
@@ -154,19 +157,14 @@ public class VNCPanel extends javax.swing.JPanel {
       int scaledHeight = (int) (remoteHeight * scale);
       setWindowSize(scaledWidth, scaledHeight);
     }
-    //setLocationRelativeTo(null);
   }
 
   private void setWindowSize(int width, int height) {
     this.viewerPanel.setPreferredSize(new Dimension(width, height));
-    //pack();
   }
 
   private void resetUI() {
-    //setMenuState(false);
     setCursor(getDefaultCursor());
-    //setSize(800, 600);
-    //setLocationRelativeTo(null);
     lastFrame = null;
     repaint();
   }
@@ -176,7 +174,6 @@ public class VNCPanel extends javax.swing.JPanel {
   }
 
   private void connect(String host, int port) {
-    //setMenuState(true);
     lastFrame = null;
     client.start(host, port);
   }
@@ -185,7 +182,7 @@ public class VNCPanel extends javax.swing.JPanel {
     if (connected()) {
       client.stop();
     }
-    //resetUI();
+    resetUI();
   }
 
   private int scaleMouseX(int x) {
@@ -210,10 +207,10 @@ public class VNCPanel extends javax.swing.JPanel {
   private void initComponents() {
 
     menuPanel = new javax.swing.JPanel();
-    jToolBar1 = new javax.swing.JToolBar();
-    jButton1 = new javax.swing.JButton();
-    jButton2 = new javax.swing.JButton();
-    jComboBox1 = new javax.swing.JComboBox<>();
+    toolBar = new javax.swing.JToolBar();
+    commandStationCB = new javax.swing.JComboBox<>();
+    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 32767));
+    connectBtn = new javax.swing.JToggleButton();
     viewerPanel = new javax.swing.JPanel();
 
     setPreferredSize(new java.awt.Dimension(1024, 700));
@@ -224,21 +221,32 @@ public class VNCPanel extends javax.swing.JPanel {
     flowLayout1.setAlignOnBaseline(true);
     menuPanel.setLayout(flowLayout1);
 
-    jToolBar1.setRollover(true);
+    toolBar.setRollover(true);
 
-    jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/connect-24.png"))); // NOI18N
-    jButton1.setFocusable(false);
-    jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    jToolBar1.add(jButton1);
+    commandStationCB.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ESU ECoS", "Marklin CS3" }));
+    commandStationCB.setMinimumSize(new java.awt.Dimension(150, 35));
+    commandStationCB.setPreferredSize(new java.awt.Dimension(150, 35));
+    toolBar.add(commandStationCB);
+    toolBar.add(filler1);
 
-    menuPanel.add(jToolBar1);
+    connectBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/media/connect-24.png"))); // NOI18N
+    connectBtn.setDoubleBuffered(true);
+    connectBtn.setFocusable(false);
+    connectBtn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    connectBtn.setMargin(new java.awt.Insets(2, 2, 2, 2));
+    connectBtn.setMaximumSize(new java.awt.Dimension(35, 35));
+    connectBtn.setMinimumSize(new java.awt.Dimension(35, 35));
+    connectBtn.setPreferredSize(new java.awt.Dimension(35, 35));
+    connectBtn.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/media/connect-24-y.png"))); // NOI18N
+    connectBtn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    connectBtn.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        connectBtnActionPerformed(evt);
+      }
+    });
+    toolBar.add(connectBtn);
 
-    jButton2.setText("jButton2");
-    menuPanel.add(jButton2);
-
-    jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-    menuPanel.add(jComboBox1);
+    menuPanel.add(toolBar);
 
     add(menuPanel, java.awt.BorderLayout.NORTH);
 
@@ -314,33 +322,36 @@ public class VNCPanel extends javax.swing.JPanel {
     evt.getComponent().requestFocusInWindow();
   }//GEN-LAST:event_viewerPanelAncestorAdded
 
-  private volatile boolean shutdown = false;
-  private final Thread clipboardMonitor = new Thread(() -> {
-    Clipboard clipboard = getDefaultToolkit().getSystemClipboard();
+  private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_connectBtnActionPerformed
 
-    String lastText = null;
-    while (!shutdown) {
-      try {
-        if (connected()) {
-          String text = (String) clipboard.getData(stringFlavor);
-          if (text != null && !text.equals(lastText)) {
-            client.copyText(text);
-            lastText = text;
-          }
-        }
-        sleep(100L);
-      } catch (Exception ignored) {
-      }
-    }
-  });
-
+//  private volatile boolean shutdown = false;
+//  private final Thread clipboardMonitor = new Thread(() -> {
+//    Clipboard clipboard = getDefaultToolkit().getSystemClipboard();
+//
+//    String lastText = null;
+//    while (!shutdown) {
+//      try {
+//        if (connected()) {
+//          String text = (String) clipboard.getData(stringFlavor);
+//          if (text != null && !text.equals(lastText)) {
+//            client.copyText(text);
+//            lastText = text;
+//          }
+//        }
+//        sleep(100L);
+//      } catch (Exception ignored) {
+//      }
+//    }
+//  });
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JButton jButton1;
-  private javax.swing.JButton jButton2;
-  private javax.swing.JComboBox<String> jComboBox1;
-  private javax.swing.JToolBar jToolBar1;
+  private javax.swing.JComboBox<String> commandStationCB;
+  private javax.swing.JToggleButton connectBtn;
+  private javax.swing.Box.Filler filler1;
   private javax.swing.JPanel menuPanel;
+  private javax.swing.JToolBar toolBar;
   private javax.swing.JPanel viewerPanel;
   // End of variables declaration//GEN-END:variables
 
@@ -373,6 +384,9 @@ public class VNCPanel extends javax.swing.JPanel {
         }
       });
 
+      //For now disable the connections possibilities
+      vncPanel.menuPanel.setVisible(false);
+
       //String host = "192.168.1.110";
       String host;
       InetAddress ia = EcosConnectionFactory.discoverEcos();
@@ -385,7 +399,7 @@ public class VNCPanel extends javax.swing.JPanel {
         host = "192.168.1.110";
       }
 
-      int port = 5900;
+      int port = DEFAULT_VNC_PORT;
       vncPanel.connect(host, port);
 
       testFrame.pack();

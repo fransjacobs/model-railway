@@ -83,4 +83,9 @@ public class LocomotiveDirectionEvent implements Serializable {
       return false;
     }
   }
+
+  public Long getId() {
+    return this.locomotiveBean.getId();
+  }
+
 }

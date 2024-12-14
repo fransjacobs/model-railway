@@ -552,14 +552,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   @Override
   public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.add(listener);
-    //this.decoderController.addLocomotiveSpeedEventListener(listener);
-
   }
 
   @Override
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.remove(listener);
-    //this.decoderController.addLocomotiveSpeedEventListener(listener);
   }
 
   @Override
@@ -748,24 +745,19 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       FunctionBean fb = functionEvent.getFunctionBean();
 
       FunctionBean dbfb = null;
-      if ("marklin.cs".equals(trackService.getDecoderController().getCommandStationBean().getId())) {
+      String commandStationId = trackService.getDecoderController().getCommandStationBean().getId();
+
+      if ("marklin.cs".equals(commandStationId) || "esu-ecos".equals(commandStationId)) {
         dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
       } else {
         Integer address = fb.getLocomotiveId().intValue();
+
         LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
         if (dblb != null) {
           dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
         }
       }
 
-//      if (dbfb == null) {
-//        //try via loc address and decoder type
-//        Integer address = fb.getLocomotiveId().intValue();
-//        LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
-//        if (dblb != null) {
-//          dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
-//        }
-//      }
       if (dbfb != null) {
         if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
           dbfb.setValue(fb.getValue());

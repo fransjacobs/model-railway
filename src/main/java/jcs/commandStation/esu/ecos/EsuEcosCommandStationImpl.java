@@ -203,7 +203,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
       //Also start listening for Event for this locomotive
     }
-    this.addLocomotiveSpeedEventListener(locomotiveManager);
+    addLocomotiveSpeedEventListener(locomotiveManager);
+    addLocomotiveDirectionEventListener(locomotiveManager);
+    addLocomotiveFunctionEventListener(locomotiveManager);
   }
 
   @Override
@@ -310,21 +312,24 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   public void changeDirection(int locUid, LocomotiveBean.Direction direction) {
     Logger.trace("Changing Direction for " + locUid + " to " + direction);
 
-    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getRequestLocomotiveControl(locUid + ""));
+    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getRequestLocomotiveControl(locUid));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-    reply = connection.sendMessage(EcosMessageFactory.setLocomotiveSpeed(locUid + "", 0));
+    reply = connection.sendMessage(EcosMessageFactory.setLocomotiveSpeed(locUid, 0));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-    reply = connection.sendMessage(EcosMessageFactory.setLocomotiveDirection(locUid + "", direction.getEcosValue()));
+    reply = connection.sendMessage(EcosMessageFactory.setLocomotiveDirection(locUid, direction.getEcosValue()));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-    reply = connection.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(locUid + ""));
+    reply = connection.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(locUid));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
+    LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(locUid, 0, this.commandStationBean.getId());
     LocomotiveDirectionEvent dce = new LocomotiveDirectionEvent(locUid, direction, this.commandStationBean.getId());
+
     //TODO: think about threading....
     fireDirectionEventListeners(dce);
+    fireLocomotiveSpeedEventListeners(vme);
   }
 
   @Override
@@ -333,16 +338,17 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     //Scale the speedstep
     int speedstep = speed / 8;
 
-    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getRequestLocomotiveControl(locUid + ""));
+    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getRequestLocomotiveControl(locUid));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-    reply = connection.sendMessage(EcosMessageFactory.setLocomotiveSpeed(locUid + "", speedstep));
+    reply = connection.sendMessage(EcosMessageFactory.setLocomotiveSpeed(locUid, speedstep));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-    reply = connection.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(locUid + ""));
+    reply = connection.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(locUid));
     Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
     LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(locUid, speed, this.commandStationBean.getId());
+
     //TODO: think about threading....
     Logger.trace("Speed changed to: " + speed + " speedstep: " + speedstep + " for loco ID: " + locUid);
     fireLocomotiveSpeedEventListeners(vme);
@@ -351,8 +357,21 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
     Logger.trace("Changing Function " + functionNumber + " for " + locUid + " to " + flag);
-    
-    //Event 1005 func[0,1]1005 funcset[100]
+
+    EcosMessage reply = connection.sendMessage(EcosMessageFactory.getRequestLocomotiveControl(locUid));
+    Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+    reply = connection.sendMessage(EcosMessageFactory.setLocomotiveFunction(locUid, functionNumber, flag));
+    Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+    reply = connection.sendMessage(EcosMessageFactory.getReleaseLocomotiveControl(locUid));
+    Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+    //TODO: think about threading....
+    Logger.trace("Function " + functionNumber + " changed to: " + (flag ? "On" : "Off") + " for loco ID: " + locUid);
+
+    LocomotiveFunctionEvent lfe = new LocomotiveFunctionEvent(locUid, functionNumber, flag);
+    fireFunctionEventListeners(lfe);
   }
 
   @Override
