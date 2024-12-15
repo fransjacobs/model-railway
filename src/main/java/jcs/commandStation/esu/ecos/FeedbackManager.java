@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import jcs.commandStation.esu.ecos.Ecos;
-import jcs.commandStation.esu.ecos.EcosMessage;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.SensorBean;
 
@@ -28,7 +26,7 @@ import jcs.entities.SensorBean;
  *
  * Feedback-Manager (id=26)
  */
-public class FeedbackManager {
+class FeedbackManager {
 
   public static final int ID = 26;
   public static final int S88_OFFSET = 100;
@@ -37,7 +35,7 @@ public class FeedbackManager {
 
   private final Map<Integer, S88> modules;
 
-  public FeedbackManager(EcosMessage message) {
+  FeedbackManager(EcosMessage message) {
     modules = new HashMap<>();
     parse(message);
   }
@@ -75,7 +73,7 @@ public class FeedbackManager {
     }
   }
 
-  public List<SensorEvent> update(EcosMessage message) {
+  List<SensorEvent> update(EcosMessage message) {
     parse(message);
     
     //TODO: sensor listeners
@@ -116,7 +114,7 @@ public class FeedbackManager {
       return id;
     }
 
-    public final void updateState(String state) {
+    final void updateState(String state) {
       String val = state.replace("0x", "");
       int l = 4 - val.length();
       for (int i = 0; i < l; i++) {
@@ -137,12 +135,12 @@ public class FeedbackManager {
     }
 
     //0 based index
-    public boolean isPort(int port) {
+    boolean isPort(int port) {
       return ports[port] == 1;
     }
 
     //0 based index
-    public SensorBean getSensor(int port) {
+    SensorBean getSensor(int port) {
       SensorBean sb = new SensorBean(id, port, ports[port]);
       return sb;
     }

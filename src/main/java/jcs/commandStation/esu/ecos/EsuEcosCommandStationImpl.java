@@ -163,7 +163,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private void setupBaseObject() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getBaseObject());
-    baseObject = new EcosManager(reply);
+    baseObject = new EcosManager(this, reply);
 
     //Start the EventHandler
     eventMessageHandler = new EventHandler(this.connection);
@@ -382,6 +382,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public Image getLocomotiveImage(String icon) {
+     //locodesc[LOCO_TYPE_E,IMAGE_TYPE_USER,2]
+    
+    ////http://192.168.1.110/loco/image?type=internal&index=0
     return null;
   }
 
@@ -637,19 +640,33 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //
 //        }
-        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("request(1005, control, force)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("request(1005, control, force)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("set(1005, speed[100])"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        cs.pause(2000);
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("set(1005, speed[10])"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("release(1005, control)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-        reply = cs.connection.sendMessage(new EcosMessage("set(1005, speed[100])"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-        cs.pause(2000);
-
-        reply = cs.connection.sendMessage(new EcosMessage("set(1005, speed[10])"));
+        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(11, name1,name2,name3, addr, protocol,mode,symbol)"));
         Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        Map<String, Object> values = reply.getValueMap();
+//        for (String key : values.keySet()) {
+//        Logger.trace("Key: " + key + " Value: " + values.get(key));
+//        }
+//        reply = cs.connection.sendMessage(new EcosMessage("queryObjects(10, name)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 
-        reply = cs.connection.sendMessage(new EcosMessage("release(1005, control)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+
+
+
 
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
         //reply = cs.connection.sendMessage(new EcosMessage("get(1002, name, addr, protocol, locodesc, dir,speed, speedstep, speedindicator,func)"));      

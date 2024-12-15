@@ -16,8 +16,6 @@
 package jcs.commandStation.esu.ecos;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
 import jcs.commandStation.events.LocomotiveDirectionEventListener;
@@ -35,7 +33,7 @@ import org.tinylog.Logger;
  *
  * LocomotiveManager (id=10)
  */
-public class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirectionEventListener, LocomotiveFunctionEventListener {
+class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirectionEventListener, LocomotiveFunctionEventListener {
 
   public static final int ID = 10;
   public static final int LOCO_OFFSET = 1000;
@@ -45,7 +43,7 @@ public class LocomotiveManager implements LocomotiveSpeedEventListener, Locomoti
 
   private final Map<Long, LocomotiveBean> locomotives;
 
-  public LocomotiveManager(EsuEcosCommandStationImpl esuEcosCommandStationImpl, EcosMessage message) {
+  LocomotiveManager(EsuEcosCommandStationImpl esuEcosCommandStationImpl, EcosMessage message) {
     this.ecosCommandStation = esuEcosCommandStationImpl;
     locomotives = new HashMap<>();
     parse(message);
@@ -88,15 +86,15 @@ public class LocomotiveManager implements LocomotiveSpeedEventListener, Locomoti
     }
   }
 
-  public void update(EcosMessage message) {
+  void update(EcosMessage message) {
     parse(message);
   }
 
-  public int getSize() {
+  int getSize() {
     return this.size;
   }
 
-  public Map<Long, LocomotiveBean> getLocomotives() {
+  Map<Long, LocomotiveBean> getLocomotives() {
     return locomotives;
   }
 
@@ -169,6 +167,8 @@ public class LocomotiveManager implements LocomotiveSpeedEventListener, Locomoti
       String locodesc = values.get(Ecos.LOCODESC).toString();
       //TODO: parse the locodesc for the image;
       //locodesc[LOCO_TYPE_E,IMAGE_TYPE_USER,2]
+
+      //http://192.168.1.110/loco/image?type=internal&index=0
       locomotive.setIcon(locodesc);
     }
 
@@ -263,7 +263,7 @@ public class LocomotiveManager implements LocomotiveSpeedEventListener, Locomoti
 
       fb.setFunctionType(functionType);
       fb.setMomentary(momentary);
-      fb.setIcon(functionType+"");
+      fb.setIcon(functionType + "");
       functions.put(number, fb);
     }
 

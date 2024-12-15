@@ -84,7 +84,7 @@ public class VNCPanel extends javax.swing.JPanel {
         Graphics2D g2 = (Graphics2D) g;
         int width = viewerPanel.getWidth();
         int height = viewerPanel.getHeight();
-        Logger.trace("W: " + width + " H: " + height);
+        //Logger.trace("W: " + width + " H: " + height);
         if (lastFrame != null) {
           g2.setRenderingHint(KEY_INTERPOLATION, VALUE_INTERPOLATION_BILINEAR);
           g2.drawImage(lastFrame, 0, 0, width, height, null);

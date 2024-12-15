@@ -82,4 +82,15 @@ public interface Ecos {
   public static final String STATE = "state";
   public static final String PORTS = "ports";
 
+  public static final String TYPE = "type";
+  public static final String ADDREXT = "addrext";
+  public static final String MODE = "mode";
+  public static final String DURATION = "duration";
+  public static final String SYMBOL = "symbol";
+  public static final String GATES = "gates";
+  public static final String NAME1 = "name1";
+  public static final String NAME2 = "name2";
+  public static final String NAME3 = "name3";
+  public static final String POSITION = "position";
+  public static final String SWITCHING = "switching";
 }

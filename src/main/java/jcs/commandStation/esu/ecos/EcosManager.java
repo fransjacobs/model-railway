@@ -17,15 +17,15 @@ package jcs.commandStation.esu.ecos;
 
 import java.util.Map;
 import java.util.Objects;
-import jcs.commandStation.esu.ecos.Ecos;
-import jcs.commandStation.esu.ecos.EcosMessage;
 
 /**
  * ECoS (id=1)
  */
-public class EcosManager {
+class EcosManager {
 
   public static final int ID = 1;
+
+  private final EsuEcosCommandStationImpl ecosCommandStation;
 
   private String objectClass;
   private String view;
@@ -55,15 +55,12 @@ public class EcosManager {
   private boolean allowLocoTakeover;
   private boolean stopOnLastDisconnect;
 
-  public EcosManager() {
-
-  }
-
-  public EcosManager(EcosMessage msg) {
+  EcosManager(EsuEcosCommandStationImpl ecosCommandStation, EcosMessage msg) {
+    this.ecosCommandStation = ecosCommandStation;
     parse(msg);
   }
 
-  public void update(EcosMessage msg) {
+  void update(EcosMessage msg) {
     parse(msg);
   }
 
@@ -178,219 +175,219 @@ public class EcosManager {
     }
   }
 
-  public String getObjectClass() {
+  String getObjectClass() {
     return objectClass;
   }
 
-  public void setObjectClass(String objectClass) {
+  void setObjectClass(String objectClass) {
     this.objectClass = objectClass;
   }
 
-  public String getView() {
+  String getView() {
     return view;
   }
 
-  public void setView(String view) {
+  void setView(String view) {
     this.view = view;
   }
 
-  public String getListView() {
+  String getListView() {
     return listView;
   }
 
-  public void setListView(String listView) {
+  void setListView(String listView) {
     this.listView = listView;
   }
 
-  public String getControl() {
+  String getControl() {
     return control;
   }
 
-  public void setControl(String control) {
+  void setControl(String control) {
     this.control = control;
   }
 
-  public String getList() {
+  String getList() {
     return list;
   }
 
-  public void setList(String list) {
+  void setList(String list) {
     this.list = list;
   }
 
-  public int getSize() {
+  int getSize() {
     return size;
   }
 
-  public void setSize(int size) {
+  void setSize(int size) {
     this.size = size;
   }
 
-  public int getMinArguments() {
+  int getMinArguments() {
     return minArguments;
   }
 
-  public void setMinArguments(int minArguments) {
+  void setMinArguments(int minArguments) {
     this.minArguments = minArguments;
   }
 
-  public String getProtocolVersion() {
+  String getProtocolVersion() {
     return protocolVersion;
   }
 
-  public void setProtocolVersion(String protocolVersion) {
+  void setProtocolVersion(String protocolVersion) {
     this.protocolVersion = protocolVersion;
   }
 
-  public String getCommandStationType() {
+  String getCommandStationType() {
     return commandStationType;
   }
 
-  public void setCommandStationType(String commandStationType) {
+  void setCommandStationType(String commandStationType) {
     this.commandStationType = commandStationType;
   }
 
-  public String getName() {
+  String getName() {
     return name;
   }
 
-  public void setName(String name) {
+  void setName(String name) {
     this.name = name;
   }
 
-  public String getSerialNumber() {
+  String getSerialNumber() {
     return serialNumber;
   }
 
-  public void setSerialNumber(String serialNumber) {
+  void setSerialNumber(String serialNumber) {
     this.serialNumber = serialNumber;
   }
 
-  public String getHardwareVersion() {
+  String getHardwareVersion() {
     return hardwareVersion;
   }
 
-  public void setHardwareVersion(String hardwareVersion) {
+  void setHardwareVersion(String hardwareVersion) {
     this.hardwareVersion = hardwareVersion;
   }
 
-  public String getApplicationVersion() {
+  String getApplicationVersion() {
     return applicationVersion;
   }
 
-  public void setApplicationVersion(String applicationVersion) {
+  void setApplicationVersion(String applicationVersion) {
     this.applicationVersion = applicationVersion;
   }
 
-  public String getApplicationVersionSuffix() {
+  String getApplicationVersionSuffix() {
     return applicationVersionSuffix;
   }
 
-  public void setApplicationVersionSuffix(String applicationVersionSuffix) {
+  void setApplicationVersionSuffix(String applicationVersionSuffix) {
     this.applicationVersionSuffix = applicationVersionSuffix;
   }
 
-  public boolean isUpdateOnError() {
+  boolean isUpdateOnError() {
     return updateOnError;
   }
 
-  public void setUpdateOnError(boolean updateOnError) {
+  void setUpdateOnError(boolean updateOnError) {
     this.updateOnError = updateOnError;
   }
 
-  public String getStatus() {
+  String getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  void setStatus(String status) {
     this.status = status;
   }
 
-  public String getStatus2() {
+  String getStatus2() {
     return status2;
   }
 
-  public void setStatus2(String status2) {
+  void setStatus2(String status2) {
     this.status2 = status2;
   }
 
-  public String getProgStatus() {
+  String getProgStatus() {
     return progStatus;
   }
 
-  public void setProgStatus(String progStatus) {
+  void setProgStatus(String progStatus) {
     this.progStatus = progStatus;
   }
 
-  public String getM4Status() {
+  String getM4Status() {
     return m4Status;
   }
 
-  public void setM4Status(String m4Status) {
+  void setM4Status(String m4Status) {
     this.m4Status = m4Status;
   }
 
-  public String getRailcomplusStatus() {
+  String getRailcomplusStatus() {
     return railcomplusStatus;
   }
 
-  public void setRailcomplusStatus(String railcomplusStatus) {
+  void setRailcomplusStatus(String railcomplusStatus) {
     this.railcomplusStatus = railcomplusStatus;
   }
 
-  public String getWatchdog() {
+  String getWatchdog() {
     return watchdog;
   }
 
-  public void setWatchdog(String watchdog) {
+  void setWatchdog(String watchdog) {
     this.watchdog = watchdog;
   }
 
-  public boolean isRailcom() {
+  boolean isRailcom() {
     return railcom;
   }
 
-  public void setRailcom(boolean railcom) {
+  void setRailcom(boolean railcom) {
     this.railcom = railcom;
   }
 
-  public boolean isRailcomplus() {
+  boolean isRailcomplus() {
     return railcomplus;
   }
 
-  public void setRailcomplus(boolean railcomplus) {
+  void setRailcomplus(boolean railcomplus) {
     this.railcomplus = railcomplus;
   }
 
-  public int getRailcomplusRange() {
+  int getRailcomplusRange() {
     return railcomplusRange;
   }
 
-  public void setRailcomplusRange(int railcomplusRange) {
+  void setRailcomplusRange(int railcomplusRange) {
     this.railcomplusRange = railcomplusRange;
   }
 
-  public String getRailcomplusMode() {
+  String getRailcomplusMode() {
     return railcomplusMode;
   }
 
-  public void setRailcomplusMode(String railcomplusMode) {
+  void setRailcomplusMode(String railcomplusMode) {
     this.railcomplusMode = railcomplusMode;
   }
 
-  public boolean isAllowLocoTakeover() {
+  boolean isAllowLocoTakeover() {
     return allowLocoTakeover;
   }
 
-  public void setAllowLocoTakeover(boolean allowLocoTakeover) {
+  void setAllowLocoTakeover(boolean allowLocoTakeover) {
     this.allowLocoTakeover = allowLocoTakeover;
   }
 
-  public boolean isStopOnLastDisconnect() {
+  boolean isStopOnLastDisconnect() {
     return stopOnLastDisconnect;
   }
 
-  public void setStopOnLastDisconnect(boolean stopOnLastDisconnect) {
+  void setStopOnLastDisconnect(boolean stopOnLastDisconnect) {
     this.stopOnLastDisconnect = stopOnLastDisconnect;
   }
 
