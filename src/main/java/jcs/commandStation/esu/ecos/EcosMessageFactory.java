@@ -15,6 +15,8 @@
  */
 package jcs.commandStation.esu.ecos;
 
+import org.tinylog.Logger;
+
 /**
  * Prepare Messages for the ESU ECoS
  */
@@ -79,36 +81,44 @@ public class EcosMessageFactory implements Ecos {
     return new EcosMessage("release(" + LOCOMOTIVES_ID + ",view)");
   }
 
-  public static EcosMessage subscribeLocomotive(long lokId) {
-    return new EcosMessage("request(" + lokId + ",view)");
+  public static EcosMessage subscribeLocomotive(long locomotiveId) {
+    return new EcosMessage("request(" + locomotiveId + ",view)");
   }
 
-  public static EcosMessage unSubscribeLocomotive(long lokId) {
-    return new EcosMessage("release(" + lokId + ",view)");
+  public static EcosMessage unSubscribeLocomotive(long locomotiveId) {
+    return new EcosMessage("release(" + locomotiveId + ",view)");
   }
 
-  public static EcosMessage getLocomotiveDetails(long lokId) {
-    return new EcosMessage("get(" + lokId + ",name,addr,protocol,dir,speed,speedstep,active,locodesc,func,funcdesc)");
+  public static EcosMessage getLocomotiveDetails(long locomotiveId) {
+    return new EcosMessage("get(" + locomotiveId + ",name,addr,protocol,dir,speed,speedstep,active,locodesc,func,funcdesc)");
   }
 
-  public static EcosMessage getRequestLocomotiveControl(long lokId) {
-    return new EcosMessage("request(" + lokId + ",control,force)");
+  public static EcosMessage getRequestLocomotiveControl(long locomotiveId) {
+    return new EcosMessage("request(" + locomotiveId + ",control,force)");
   }
 
-  public static EcosMessage getReleaseLocomotiveControl(long lokId) {
-    return new EcosMessage("release(" + lokId + ",control)");
+  public static EcosMessage getReleaseLocomotiveControl(long locomotiveId) {
+    return new EcosMessage("release(" + locomotiveId + ",control)");
   }
 
-  public static EcosMessage setLocomotiveSpeed(long lokId, int speed) {
-    return new EcosMessage("set(" + lokId + ",speed[" + speed + "])");
+  public static EcosMessage setLocomotiveSpeed(long locomotiveId, int speedSteps) {
+    return new EcosMessage("set(" + locomotiveId + ",speed[" + speedSteps + "])");
   }
 
-  public static EcosMessage setLocomotiveFunction(long lokId, int function, boolean active) {
-    return new EcosMessage("set(" + lokId + ",func[" + function + "," + (active ? "1" : "0") + "])");
+  public static EcosMessage setLocomotiveFunction(long locomotiveId, int functionNumber, boolean active) {
+    return new EcosMessage("set(" + locomotiveId + ",func[" + functionNumber + "," + (active ? "1" : "0") + "])");
   }
 
-  public static EcosMessage setLocomotiveDirection(long lokId, int dir) {
-    return new EcosMessage("set(" + lokId + ",dir[" + dir + "])");
+  public static EcosMessage setLocomotiveDirection(long locomotiveId, int ecosDirection) {
+    return new EcosMessage("set(" + locomotiveId + ",dir[" + ecosDirection + "])");
+  }
+
+  public static EcosMessage getAccessories() {
+    return new EcosMessage("queryObjects(" + ACCESSORIES_ID + ", name1,name2,name3,addr,protocol,mode,symbol)");
+  }
+
+  public static EcosMessage getAccessoryDetails(String accessoryId) {
+    return new EcosMessage("get(" + ACCESSORIES_ID + ", name1,name2,name3,addr,protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)");
   }
 
 //  Ecos commands

@@ -82,7 +82,6 @@ public interface Ecos {
   public static final String STATE = "state";
   public static final String PORTS = "ports";
 
-  public static final String TYPE = "type";
   public static final String ADDREXT = "addrext";
   public static final String MODE = "mode";
   public static final String DURATION = "duration";
@@ -93,4 +92,5 @@ public interface Ecos {
   public static final String NAME3 = "name3";
   public static final String POSITION = "position";
   public static final String SWITCHING = "switching";
+  public static final String VARIANT = "variant";
 }
