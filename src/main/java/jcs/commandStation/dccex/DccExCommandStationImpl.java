@@ -369,6 +369,11 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   }
 
   @Override
+  public void switchAccessory(String id, AccessoryValue value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
   public List<LocomotiveBean> getLocomotives() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -572,9 +577,9 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   }
 
   private void handleTrackMessage(String opcode, String content) {
-    Logger.trace(opcode+" -> "+content);
+    Logger.trace(opcode + " -> " + content);
   }
-  
+
   private class MessageListener implements DccExMessageListener {
 
     private final DccExCommandStationImpl commandStation;

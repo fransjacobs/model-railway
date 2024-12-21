@@ -93,4 +93,6 @@ public interface Ecos {
   public static final String POSITION = "position";
   public static final String SWITCHING = "switching";
   public static final String VARIANT = "variant";
+  public static final String MSG ="msg";
+  
 }

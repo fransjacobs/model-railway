@@ -86,7 +86,8 @@ To debug or easly setup your feedback sensors
 - [Marklin CS-2](https://www.marklin.nl/producten/details/article/60215) [Protocol Documentation](http://streaming.maerklin.de/public-media/cs2/cs2CAN-Protokoll-2_0.pdf)
 - [Marklin CS-3](https://www.marklin.nl/producten/details/article/60216)
 - [HSI-S88](https://www.ldt-infocenter.com/dokuwiki/doku.php?id=en:hsi-88-usb) or the [DIY version](https://mobatron.4lima.de/2020/05/s88-scanner-mit-arduino) for feedback
-- [ESO EcoS](https://www.esu.eu/) [Protocol Documentation](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)
+- [ESO EcoS](https://www.esu.eu/) [Protocol Documentation ESU](https://github.com/cbries/railessentials/blob/master/ecoslibNet48/Documentation/ecos_pc_interface3.pdf) [Community Version](https://github.com/TabalugaDrache/TCPEcos/files/13458970/Netzwerkspezifikation_2023.pdf)
+
 
 ## Current status
 

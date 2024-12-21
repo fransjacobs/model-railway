@@ -74,7 +74,7 @@ public class EcosMessage implements Ecos {
     return response != null && response.toString().startsWith(EVENT);
   }
 
-  private String getId() {
+  public String getId() {
     if (response != null && response.toString().startsWith(REPLY)) {
       int idStart = response.indexOf("(") + 1;
       int idEnd = response.indexOf(",");

@@ -22,52 +22,25 @@ import jcs.entities.AccessoryBean.SignalValue;
 
 public class AccessoryEvent implements Serializable {
 
-  private AccessoryBean accessoryBean;
+  private final AccessoryBean accessoryBean;
 
   public AccessoryEvent(AccessoryBean accessoryBean) {
     this.accessoryBean = accessoryBean;
   }
-
-//  public AccessoryEvent(CanMessage message) {
-//    parseMessage(message);
-//  }
-
-//  private void parseMessage(CanMessage message) {
-//    CanMessage resp;
-//    if (!message.isResponseMessage()) {
-//      resp = message.getResponse();
-//    } else {
-//      resp = message;
-//    }
-//
-//    if (resp.isResponseMessage() && CanMessage.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
-//      byte[] data = resp.getData();
-//      int address = data[3];
-//      int position = data[4];
-//      //CS is zero based
-//      address = address + 1;
-//      String id = address+"";
-//
-//      this.accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null,null);
-//      if (resp.getDlc() == CanMessage.DLC_8) {
-//        int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
-//        this.accessoryBean.setSwitchTime(switchTime);
-//      }
-//    } else {
-//      Logger.warn("Can't parse message, not an Accessory Response! " + resp);
-//    }
-//  }
 
   public AccessoryBean getAccessoryBean() {
     return accessoryBean;
   }
 
   public boolean isKnownAccessory() {
-    return this.accessoryBean != null && this.accessoryBean.getAddress() != null;
+    return this.accessoryBean != null && (this.accessoryBean.getAddress() != null || this.accessoryBean.getId() != null);
   }
 
   public boolean isEventFor(AccessoryBean accessory) {
-    return this.accessoryBean.getAddress().equals(accessory.getAddress());
+    boolean addressEquals = this.accessoryBean.getAddress().equals(accessory.getAddress());
+    boolean idEquals = this.accessoryBean.getId().equals(accessory.getId());
+
+    return addressEquals || idEquals;
   }
 
   public SignalValue getSignalValue() {
@@ -76,6 +49,10 @@ public class AccessoryEvent implements Serializable {
 
   public AccessoryValue getValue() {
     return this.accessoryBean.getAccessoryValue();
+  }
+
+  public String getId() {
+    return this.accessoryBean.getId();
   }
 
 }

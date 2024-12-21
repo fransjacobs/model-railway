@@ -619,6 +619,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
+  @Override
+  public void switchAccessory(String id, AccessoryValue value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
   private void sendJCSUID() {
     executor.execute(() -> sendJCSUIDMessage());
   }

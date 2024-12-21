@@ -118,7 +118,31 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage getAccessoryDetails(String accessoryId) {
-    return new EcosMessage("get(" + ACCESSORIES_ID + ", name1,name2,name3,addr,protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)");
+    return new EcosMessage("get(" + accessoryId + ", name1,name2,name3,addr,protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)");
+  }
+
+  public static EcosMessage subscribeAccessoryManager() {
+    return new EcosMessage("request(" + ACCESSORIES_ID + ",view)");
+  }
+
+  public static EcosMessage unSubscribeAccessoryManager() {
+    return new EcosMessage("release(" + ACCESSORIES_ID + ",view)");
+  }
+
+  public static EcosMessage subscribeAccessory(String accessoryId) {
+    return new EcosMessage("request(" + accessoryId + ",view)");
+  }
+
+  public static EcosMessage unSubscribeAccessory(String accessoryId) {
+    return new EcosMessage("release(" + accessoryId + ",view)");
+  }
+
+  public static EcosMessage setAccessory(String accessoryId, int state) {
+    return new EcosMessage("set(" + accessoryId + ",state[" + state + "])");
+  }
+
+  public static EcosMessage setAccessory(String accessoryId, int state, int duration) {
+    return new EcosMessage("set(" + accessoryId + ",state[" + state + "],duration[" + duration + "])");
   }
 
 //  Ecos commands

@@ -270,6 +270,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
+  public void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
+    throw new UnsupportedOperationException("Not supported yet."); 
+  }
+
+  @Override
   public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
     if (this.power && connected) {
       AccessoryBean ab = new AccessoryBean();

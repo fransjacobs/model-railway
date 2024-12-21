@@ -50,9 +50,6 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
   }
 
   private void parse(EcosMessage message) {
-    //Logger.trace(message.getMessage());
-    //Logger.trace(message.getResponse());
-
     boolean event = message.isEvent();
 
     Map<String, Object> values = message.getValueMap();

@@ -196,6 +196,15 @@ public class EcosMessageTest {
 
   }
 
+  @Test
+  public void testGetId() {
+    System.out.println("getId");
+    EcosMessage instance = new EcosMessage("get(11, name1,name2,name3,addr,protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)");
+    String expResult = "11";
+    String result = instance.getId();
+    assertEquals(expResult, result);
+  }
+
   /**
    * Test of isValid method, of class EcosMessage.
    */

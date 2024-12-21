@@ -398,7 +398,7 @@ public class AccessoryBean {
   }
 
   public enum AccessoryValue {
-    RED("Red"), GREEN("Green"), OFF("Off");
+    RED("Red"), GREEN("Green"), WHITE("White"), YELLOW("Yellow"), OFF("Off");
 
     private final String value;
     private static final Map<String, AccessoryValue> ENUM_MAP;
