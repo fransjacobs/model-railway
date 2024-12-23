@@ -134,6 +134,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
           }
 
           if (connected) {
+            //Start the EventHandler
+            eventMessageHandler = new EventHandler(this.connection);
+            eventMessageHandler.start();
+
             //Obtain some info about the ECoS
             initBaseObject();
 
@@ -173,11 +177,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getBaseObject());
     baseObject = new EcosManager(this, reply);
 
-    //Start the EventHandler
-    eventMessageHandler = new EventHandler(this.connection);
-    eventMessageHandler.start();
-
     connection.sendMessage(EcosMessageFactory.subscribeBaseObject());
+    addPowerEventListener(baseObject);
   }
 
   private void initLocomotiveManager() {
@@ -320,12 +321,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       EcosMessage reply = this.connection.sendMessage(EcosMessageFactory.setPowerStatus(on));
       baseObject.update(reply);
 
-      this.power = on; //Ecos.GO.equals(baseObject.getStatus());
-
+      this.power = Ecos.GO.equals(baseObject.getStatus());
       PowerEvent pe = new PowerEvent(this.power);
-      //notifyPowerEventListeners(pe);
-      fireAllPowerEventListeners(pe);
-
       return power;
     } else {
       return false;
@@ -406,7 +403,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public Image getLocomotiveImage(String icon) {
-    //locodesc[LOCO_TYPE_E,IMAGE_TYPE_USER,2]
+//TODO download the icons    
+//locodesc[LOCO_TYPE_E,IMAGE_TYPE_USER,2]
 
     ////http://192.168.1.110/loco/image?type=internal&index=0
     return null;
@@ -544,19 +542,14 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
-//  private void notifyAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
-//    executor.execute(() -> fireAllAccessoryEventListeners(accessoryEvent));
-//  }
-//  private void notifyPowerEventListeners(final PowerEvent powerEvent) {
-//    executor.execute(() -> fireAllPowerEventListeners(powerEvent));
-//  }
-  private void fireAllPowerEventListeners(final PowerEvent powerEvent) {
+  void firePowerEventListeners(final PowerEvent powerEvent) {
     Logger.trace("Notify " + powerEventListeners.size() + " Power is " + (powerEvent.isPower() ? "On" : "Off"));
     for (PowerEventListener listener : powerEventListeners) {
       listener.onPowerChange(powerEvent);
     }
   }
 
+  //Communication from Ecos reply messages to JCS
   private class EventHandler extends Thread {
 
     private boolean stop = false;
@@ -591,31 +584,21 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       while (isRunning()) {
         try {
           EcosMessage eventMessage = eventQueue.take();
-
-          Logger.trace("###-> " + eventMessage.getMessage() + " " + eventMessage.getResponse());
+          Logger.trace("# " + (eventMessage.isEvent() ? "-> " + eventMessage.getResponse() : eventMessage.getMessage() + " -> " + eventMessage.getResponse()));
 
           int id = eventMessage.getObjectId();
-
           switch (id) {
             case 1 -> {
-              String prevStatus = baseObject.getStatus();
               baseObject.update(eventMessage);
-              Logger.trace(baseObject);
-
-              if (!baseObject.getStatus().equals(prevStatus)) {
-                power = "GO".equals(baseObject.getStatus());
-                Logger.trace("Power changed to: " + (power ? "On" : "Off"));
-                power = "GO".equals(baseObject.getStatus());
-                PowerEvent pe = new PowerEvent(power);
-                fireAllPowerEventListeners(pe);
-              }
+            }
+            case 10 -> {
+              //Locomotive list changed
             }
             case 11 -> {
               //Accessory Manager change
               accessoryManager.updateManager(eventMessage);
 
             }
-
             default -> {
               //Events
               if (id >= 100 && id < 1000) {
@@ -628,11 +611,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
               } else {
                 Logger.trace(eventMessage.getMessage() + " " + eventMessage.getResponse());
               }
-
             }
-
           }
-
         } catch (InterruptedException ex) {
           Logger.error(ex);
         }

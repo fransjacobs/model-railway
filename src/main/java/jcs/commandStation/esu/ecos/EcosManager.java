@@ -17,11 +17,14 @@ package jcs.commandStation.esu.ecos;
 
 import java.util.Map;
 import java.util.Objects;
+import jcs.commandStation.events.PowerEvent;
+import jcs.commandStation.events.PowerEventListener;
+import org.tinylog.Logger;
 
 /**
  * ECoS (id=1)
  */
-class EcosManager {
+class EcosManager implements PowerEventListener {
 
   public static final int ID = 1;
 
@@ -68,6 +71,7 @@ class EcosManager {
     if (msg == null) {
       return;
     }
+    boolean event = msg.isEvent();
     Map<String, Object> values = msg.getValueMap();
 
     if (values.containsKey(Ecos.OBJECTCLASS)) {
@@ -135,7 +139,16 @@ class EcosManager {
       this.updateOnError = values.get(Ecos.UPDATEONERROR).equals("1");
     }
     if (values.containsKey(Ecos.STATUS)) {
+      String prevStatus = this.status;
       this.status = values.get(Ecos.STATUS).toString();
+
+      if (event && !status.equals(prevStatus)) {
+        boolean power = Ecos.GO.equals(status);
+        Logger.trace("Power changed to: " + (power ? "On" : "Off"));
+        PowerEvent pe = new PowerEvent(power);
+        this.ecosCommandStation.firePowerEventListeners(pe);
+      }
+
     }
     if (values.containsKey(Ecos.STATUS2)) {
       this.status2 = values.get(Ecos.STATUS2).toString();
@@ -172,6 +185,15 @@ class EcosManager {
     }
     if (values.containsKey(Ecos.STOPONLASTCONNECT)) {
       this.stopOnLastDisconnect = values.get(Ecos.STOPONLASTCONNECT).equals("1");
+    }
+  }
+
+  @Override
+  public void onPowerChange(PowerEvent event) {
+    if (event.isPower()) {
+      this.status = Ecos.GO;
+    } else {
+      this.status = Ecos.STOP;
     }
   }
 

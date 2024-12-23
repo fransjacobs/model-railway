@@ -20,10 +20,6 @@ import java.util.Map;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.AccessoryBean;
-import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
-import static jcs.entities.AccessoryBean.AccessoryValue.RED;
-import static jcs.entities.AccessoryBean.AccessoryValue.WHITE;
-import static jcs.entities.AccessoryBean.AccessoryValue.YELLOW;
 import org.tinylog.Logger;
 
 /**

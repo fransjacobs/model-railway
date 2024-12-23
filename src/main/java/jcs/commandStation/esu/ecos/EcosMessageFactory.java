@@ -15,26 +15,24 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import org.tinylog.Logger;
-
 /**
  * Prepare Messages for the ESU ECoS
  */
 public class EcosMessageFactory implements Ecos {
 
   public static EcosMessage getBaseObject() {
-    return new EcosMessage("get(1,objectclass,view,listview,control,list,size,minarguments,protocolversion"
+    return new EcosMessage("get(" + BASEOBJECT_ID + ",objectclass,view,listview,control,list,size,minarguments,protocolversion"
             + ",commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix"
             + ",updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus"
             + ",railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)");
   }
 
   public static EcosMessage subscribeBaseObject() {
-    return new EcosMessage("request(1, view)");
+    return new EcosMessage("request(" + BASEOBJECT_ID + ", view)");
   }
 
   public static EcosMessage unSubscribeBaseObject() {
-    return new EcosMessage("release(1, view)");
+    return new EcosMessage("release(" + BASEOBJECT_ID + ", view)");
   }
 
   public static EcosMessage getPowerStatus() {
@@ -42,11 +40,11 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage setPowerStatus(boolean on) {
-    return new EcosMessage("set(1, status[" + (on ? "GO" : "STOP") + "])");
+    return new EcosMessage("set(" + BASEOBJECT_ID + ", status[" + (on ? GO : STOP) + "])");
   }
 
   public static EcosMessage getNumberOfFeedbackModules() {
-    return new EcosMessage("get(26, size)");
+    return new EcosMessage("get(" + FEEDBACK_MANAGER_ID + ", size)");
   }
 
   public static EcosMessage getFeedbackModuleInfo(int moduleId) {

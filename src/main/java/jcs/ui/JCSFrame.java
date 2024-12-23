@@ -78,7 +78,7 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class JCSFrame extends JFrame implements UICallback, DisconnectionEventListener {
-  
+
   private final Map<KeyStroke, Action> actionMap;
   private FeedbackMonitor feedbackMonitor;
 
@@ -88,30 +88,30 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   public JCSFrame() {
     actionMap = new HashMap<>();
     initComponents();
-    
+
     if (RunUtil.isMacOSX()) {
       this.quitMI.setVisible(false);
       this.optionsMI.setVisible(false);
       this.toolsMenu.setVisible(false);
-      
+
       if (SystemInfo.isMacFullWindowContentSupported) {
         this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
         this.getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
         this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
         //this.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
       }
-      
+
       initJCS();
-      
+
       if (SystemInfo.isMacFullWindowContentSupported) {
         //avoid overlap of the red/orange/green buttons and the window title
         this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
       }
-      
+
       initKeyStrokes();
     }
   }
-  
+
   private void initJCS() {
     if (PersistenceFactory.getService() != null) {
       this.setTitle(this.getTitleString());
@@ -119,29 +119,29 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       if (RunUtil.isMacOSX()) {
         this.setTitle("");
       }
-      
+
       if (JCS.getJcsCommandStation().isConnected()) {
         setControllerProperties();
       }
 
       //Show the default panel
       showOverviewPanel();
-      
+
       JCS.addRefreshListener(dispatcherStatusPanel);
-      
+
     }
   }
-  
+
   private void initKeyStrokes() {
     KeyStroke key0 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-    
+
     actionMap.put(key0, new AbstractAction("stopAction") {
       @Override
       public void actionPerformed(ActionEvent e) {
         stop();
       }
     });
-    
+
     KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
     kfm.addKeyEventDispatcher((KeyEvent e) -> {
       KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
@@ -156,50 +156,50 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       return false;
     });
   }
-  
+
   public void showExtraToolbar(JToolBar toolbar) {
     this.jcsToolBar.add(toolbar);
     jcsToolBar.doLayout();
     this.repaint();
   }
-  
+
   public void hideExtraToolbar(JToolBar toolbar) {
     this.jcsToolBar.remove(toolbar);
     jcsToolBar.doLayout();
     this.repaint();
   }
-  
+
   public void showOverviewPanel() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "overviewPanel");
     this.overviewPanel.loadLayout();
   }
-  
+
   public void showLocomotives() {
     Logger.debug("Show Locomotives");
     handlePreferences();
   }
-  
+
   public void showTurnouts() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "turnoutsPanel");
   }
-  
+
   public void showSignals() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "signalsPanel");
   }
-  
+
   public void showKeyboards() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "diagnosticPanel");
   }
-  
+
   public void showSettings() {
     CardLayout card = (CardLayout) this.centerPanel.getLayout();
     card.show(this.centerPanel, "settingsPanel");
   }
-  
+
   public void showDesignLayoutPanel() {
     if (!AutoPilot.isAutoModeActive()) {
       CardLayout card = (CardLayout) this.centerPanel.getLayout();
@@ -207,13 +207,13 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       this.layoutPanel.loadLayout();
     }
   }
-  
+
   public void stop() {
     if (JCS.getJcsCommandStation() != null) {
       JCS.getJcsCommandStation().switchPower(false);
     }
   }
-  
+
   private void setControllerProperties() {
     if (JCS.getJcsCommandStation() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
@@ -231,7 +231,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       }
     }
   }
-  
+
   private void showSensorMonitor() {
     if (this.feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
@@ -770,7 +770,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         //Disconnect Command stations
         JCS.getJcsCommandStation().switchPower(false);
         JCS.getJcsCommandStation().disconnect();
-        
+
         //Force close ports
         SerialPortUtil.closeAllPorts();
         Logger.debug("Shutting down");
@@ -800,12 +800,12 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     private void showFeedbackMonitorBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorBtnActionPerformed
       showSensorMonitor();
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
-  
+
   public void connect(boolean connect) {
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
         JCS.getJcsCommandStation().connect();
-        
+
         InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
         if (info != null) {
           this.connectButton.setSelected(true);
@@ -815,7 +815,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
           this.controllerHostNameLbl.setText(info.getHostname());
           this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
           this.connectMI.setText("Disconnect");
-          
+
         }
       } else {
         JCS.getJcsCommandStation().disconnect();
@@ -823,12 +823,12 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         this.controllerCatalogNumberLbl.setText("-");
         this.controllerSerialNumberLbl.setText("-");
         this.controllerHostNameLbl.setText("Disconnected");
-        
+
         this.connectMI.setText("Connect");
       }
     }
     JCS.getJcsCommandStation().addDisconnectionEventListener(this);
-    
+
     this.powerButton.setEnabled(connect);
     this.showFeedbackMonitorBtn.setEnabled(connect);
     this.setControllerProperties();
@@ -877,13 +877,13 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     AboutDialog dialog = new AboutDialog(this, true);
     dialog.pack();
     dialog.setLocationRelativeTo(null);
-    
+
     dialog.setVisible(true);
   }//GEN-LAST:event_aboutMIActionPerformed
-  
+
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
-    
+
     if (JCS.getJcsCommandStation() != null && JCS.getJcsCommandStation().getCommandStationInfo() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
       return "JCS " + "Connected to " + info.getProductName();
@@ -891,27 +891,27 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       return "JCS " + jcsVersion + " - NOT Connected!";
     }
   }
-  
+
   @Override
   public void openFiles(List<File> files) {
     Logger.trace("Open Files...");
   }
-  
+
   @Override
   public void onDisconnect(DisconnectionEvent event) {
     JOptionPane.showMessageDialog(this, "CommandStation " + event.getSource() + " is disconnected.", "Disconnection error", JOptionPane.ERROR_MESSAGE);
-    
+
     this.controllerHostNameLbl.setText("Disconnected");
     this.connectMI.setText("Connect");
     this.connectButton.setSelected(false);
   }
-  
+
   @Override
   public boolean handleQuitRequest() {
     int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
     return result == JOptionPane.YES_OPTION;
   }
-  
+
   @Override
   public void handleAbout() {
     //ImageIcon jcsIcon = new ImageIcon(JCSFrame.class.getResource("/media/jcs-train-64.png"));
@@ -922,20 +922,20 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     dialog.setLocationRelativeTo(null);
     dialog.setVisible(true);
   }
-  
+
   @Override
   public void handlePreferences() {
     Logger.trace("handlePreferences");
-    
+
     OptionDialog preferencesDialog = new OptionDialog(this, false);
     preferencesDialog.setVisible(true);
-    
+
     Logger.debug("refresh data...");
     //this.diagnosticPanel.refreshPanel();
     //this.overviewPanel.refreshPanel();
 
   }
-  
+
   public void powerChanged(PowerEvent event) {
     this.powerButton.setSelected(event.isPower());
   }

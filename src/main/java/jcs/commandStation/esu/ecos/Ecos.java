@@ -68,6 +68,8 @@ public interface Ecos {
 
   public static final String GO = "GO";
   public static final String STOP = "STOP";
+  public static final String ALL = "ALL";
+  public static final String NONE = "NONE";
 
   public static final String PROTOCOL = "protocol";
   public static final String ADDRESS = "addr";
@@ -93,6 +95,6 @@ public interface Ecos {
   public static final String POSITION = "position";
   public static final String SWITCHING = "switching";
   public static final String VARIANT = "variant";
-  public static final String MSG ="msg";
-  
+  public static final String MSG = "msg";
+
 }
