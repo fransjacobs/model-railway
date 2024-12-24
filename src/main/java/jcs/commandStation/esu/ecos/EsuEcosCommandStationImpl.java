@@ -40,6 +40,9 @@ import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.esu.ecos.Ecos;
+import jcs.commandStation.esu.ecos.EcosMessage;
+import jcs.commandStation.esu.ecos.EcosMessageFactory;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
@@ -48,6 +51,7 @@ import jcs.commandStation.events.LocomotiveFunctionEvent;
 import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
+import jcs.commandStation.events.SensorEventListener;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
@@ -216,7 +220,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private void initFeedbackManager() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getNumberOfFeedbackModules());
-    feedbackManager = new FeedbackManager(reply);
+    feedbackManager = new FeedbackManager(this, reply);
 
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
@@ -510,6 +514,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public void fireSensorEventListeners(SensorEvent sensorEvent) {
     Logger.trace("SensorEvent: " + sensorEvent);
+    for (SensorEventListener listener : sensorEventListeners) {
+      listener.onSensorChange(sensorEvent);
+    }
   }
 
   void fireDirectionEventListeners(final LocomotiveDirectionEvent directionEvent) {
@@ -727,30 +734,41 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //
 //        reply = cs.connection.sendMessage(new EcosMessage("release(1005, control)"));
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(11, name1,name2,name3, addr, protocol,mode,symbol)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(11, name1,name2,name3, addr, protocol,mode,symbol)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //        Map<String, Object> values = reply.getValueMap();
 //        for (String key : values.keySet()) {
 //        Logger.trace("Key: " + key + " Value: " + values.get(key));
 //        }
-        reply = cs.connection.sendMessage(new EcosMessage("get(20000, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-
-        reply = cs.connection.sendMessage(new EcosMessage("get(20001, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-
-        reply = cs.connection.sendMessage(new EcosMessage("get(20002, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-
-        reply = cs.connection.sendMessage(new EcosMessage("get(20003, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-
-        reply = cs.connection.sendMessage(new EcosMessage("get(20004, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-
-        reply = cs.connection.sendMessage(new EcosMessage("get(20005, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
-        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
-
+//        reply = cs.connection.sendMessage(new EcosMessage("get(20000, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("get(20001, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("get(20002, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("get(20003, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("get(20004, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("get(20005, name1,name2,name3, addr, protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        EcosMessage reply = cs.connection.sendMessage(new EcosMessage("queryObjects(27,size)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//        reply = cs.connection.sendMessage(new EcosMessage("get(65000, maxlimit,limit)"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//
+//         //reply = cs.connection.sendMessage(new EcosMessage("help(65000,attribute)"));
+//        //Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
+//        
+//        
+//        reply = cs.connection.sendMessage(new EcosMessage("request(65000,volt"));
+//        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
 //        Logger.trace(reply.getMessage() + " ->\n" + reply.getResponse());
         //reply = cs.connection.sendMessage(new EcosMessage("get(1002, name, addr, protocol, locodesc, dir,speed, speedstep, speedindicator,func)"));      
         //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
@@ -918,7 +936,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //<END 0 (OK, but no newline after packet)>
 //
 //
-//        cs.pause(100000);
+        cs.pause(100000);
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
         cs.disconnect();

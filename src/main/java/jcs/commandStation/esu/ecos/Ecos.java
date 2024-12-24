@@ -26,7 +26,7 @@ public interface Ecos {
   public static final int DEVICE_MANAGER_ID = 20;
   public static final int SNIFFER_ID = 25;
   public static final int FEEDBACK_MANAGER_ID = 26;
-  public static final int BOOSTER_ID = 26;
+  public static final int BOOSTER_ID = 27;
   public static final int CONTROL_PANEL_ID = 31;
 
   public static final String CMD_QUERY = "queryObjects";

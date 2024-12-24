@@ -43,11 +43,10 @@ class AccessoryManager implements AccessoryEventListener {
   }
 
   private void parse(EcosMessage message) {
-    Logger.trace(message.getMessage());
-    Logger.trace(message.getResponse());
+    //Logger.trace(message.getMessage());
+    //Logger.trace(message.getResponse());
 
     boolean event = message.isEvent();
-
     Map<String, Object> values = message.getValueMap();
     int objectId = message.getObjectId();
     if (ID == objectId) {

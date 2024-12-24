@@ -15,8 +15,6 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import jcs.commandStation.esu.ecos.FeedbackManager;
-import jcs.commandStation.esu.ecos.EcosMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +49,7 @@ public class FeedbackManagerTest {
     EcosMessage m1 = new EcosMessage("get(100, state, ports)");
     m1.addResponse("<REPLY get(100, state, ports)>100 state[0x0]100 ports[16]<END 0 (OK)>");
     
-    FeedbackManager instance = new FeedbackManager(info);
+    FeedbackManager instance = new FeedbackManager(null,info);
     instance.update(m1);
 
     int expResult = 1;
@@ -138,7 +136,7 @@ public class FeedbackManagerTest {
     EcosMessage m1 = new EcosMessage("get(100, state, ports)");
     m1.addResponse("<REPLY get(100, state, ports)>100 state[0x0]100 ports[16]<END 0 (OK)>");
 
-    FeedbackManager instance = new FeedbackManager(info);
+    FeedbackManager instance = new FeedbackManager(null,info);
     instance.update(m1);
 
     int expResult = 1;
@@ -156,7 +154,6 @@ public class FeedbackManagerTest {
     instance.update(new EcosMessage("<EVENT 100>100 state[0x3]<END 0 (OK)>"));
     assertEquals(true, instance.getS88(100).isPort(0));
     assertEquals(true, instance.getS88(100).isPort(1));
-
   }
 
 }
