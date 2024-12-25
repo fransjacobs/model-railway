@@ -30,12 +30,10 @@ import org.tinylog.Logger;
 
 /**
  * A Device is a Component which "lives" in side a Command Station.<br>
- * It can be a Central Station (Marklin) ECos (ESU) etc.
+ * It can be a Central Station (Marklin) ECos (ESU) etc. TODO: move away Command station specific code
  */
 public class DeviceBean {
 
-  
-  
   public static final String MAIN = "MAIN";
   public static final String PROG = "PROG";
   public static final String VOLT = "VOLT";
@@ -424,6 +422,10 @@ public class DeviceBean {
     return channels;
   }
 
+  public void addChannel(ChannelBean channel) {
+    this.channels.add(channel);
+  }
+
   public Map<String, ChannelBean> getAnalogChannels() {
     return analogChannels;
   }
@@ -448,6 +450,10 @@ public class DeviceBean {
 
   public Map<Integer, ChannelBean> getSensorBuses() {
     return this.sensorBuses;
+  }
+
+  public void addSensorBus(Integer busNr, ChannelBean sensorBus) {
+    this.sensorBuses.put(busNr, sensorBus);
   }
 
   public int getBusLength(Integer busNr) {

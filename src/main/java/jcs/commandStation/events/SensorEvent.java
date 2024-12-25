@@ -60,4 +60,9 @@ public class SensorEvent {
     return sensorBean.isActive();
   }
 
+  @Override
+  public String toString() {
+    return "SensorEvent{" + "id=" + getId() + ", active=" + (isActive() ? "1" : "0") + "}";
+  }
+
 }

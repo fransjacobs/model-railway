@@ -500,14 +500,26 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public DeviceBean getFeedbackDevice() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    DeviceBean db = new DeviceBean();
+    db.setArticleNumber(this.baseObject.getName());
+    db.setIdentifier("0x0");
+    db.getBusLength(this.feedbackManager.getSize());
+    db.setVersion(this.baseObject.getApplicationVersion());
+    db.setSerial(this.baseObject.getSerialNumber());
+    db.setTypeName("Link S88");
+
+    ChannelBean cb = new ChannelBean();
+    cb.setName(DeviceBean.BUS0);
+    cb.setNumber(0);
+
+    db.addSensorBus(0, cb);
+
+    return db;
   }
 
   @Override
   public List<FeedbackModuleBean> getFeedbackModules() {
-    List<FeedbackModuleBean> feedbackModules = new ArrayList<>();
-    //this.feedbackManager.getModules()
-
+    List<FeedbackModuleBean> feedbackModules = new ArrayList<>(this.feedbackManager.getModules().values());
     return feedbackModules;
   }
 

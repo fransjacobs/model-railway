@@ -15,13 +15,12 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jcs.commandStation.events.SensorEvent;
-import jcs.entities.SensorBean;
+import jcs.entities.FeedbackModuleBean;
 import org.tinylog.Logger;
 
 /**
@@ -30,13 +29,12 @@ import org.tinylog.Logger;
  */
 class FeedbackManager {
 
-  public static final int ID = 26;
+  public static final int ID = Ecos.FEEDBACK_MANAGER_ID;
   public static final int S88_OFFSET = 100;
 
-  private int size;
-
+//  private int size;
   private final EsuEcosCommandStationImpl ecosCommandStation;
-  private final Map<Integer, S88> modules;
+  private final Map<Integer, FeedbackModuleBean> modules;
 
   FeedbackManager(EsuEcosCommandStationImpl ecosCommandStation, EcosMessage message) {
     this.ecosCommandStation = ecosCommandStation;
@@ -48,48 +46,58 @@ class FeedbackManager {
     Logger.trace(message.getMessage());
     Logger.trace(message.getResponse());
 
-    List<SensorEvent> changedSensors = null;
+    List<SensorEvent> changedSensors;
     boolean event = message.isEvent();
     Map<String, Object> values = message.getValueMap();
     int objectId = message.getObjectId();
-    if (ID == objectId) {
-      if (values.containsKey(Ecos.SIZE)) {
-        String vsize = values.get(Ecos.SIZE).toString();
-        if (vsize != null) {
-          this.size = Integer.parseInt(vsize);
-        }
+
+    if (ID != objectId) {
+      FeedbackModuleBean s88;
+      if (this.modules.containsKey(objectId)) {
+        s88 = this.modules.get(objectId);
+      } else {
+        s88 = new FeedbackModuleBean();
+        s88.setId(objectId);
+        s88.setAddressOffset(S88_OFFSET);
+        s88.setModuleNumber(objectId);
       }
-      changedSensors = Collections.EMPTY_LIST;
-    } else {
-      int ports = 0;
+
       if (values.containsKey(Ecos.PORTS)) {
         String vports = values.get(Ecos.PORTS).toString();
         if (vports != null) {
-          ports = Integer.parseInt(vports);
+          int ports = Integer.parseInt(vports);
+          s88.setPortCount(ports);
         }
       }
+
       if (values.containsKey(Ecos.STATE)) {
         String state = values.get(Ecos.STATE).toString();
+        updatePorts(state, s88);
+      }
+      this.modules.put(objectId, s88);
+      changedSensors = s88.getChangedSensors();
 
-        S88 s88;
-        if (this.modules.containsKey(objectId)) {
-          s88 = this.modules.get(objectId);
-        } else {
-          s88 = new S88(objectId, ports, state);
-          this.modules.put(objectId, s88);
-        }
-        changedSensors = s88.updateState(state);
-
-        if (event) {
-          if (this.ecosCommandStation != null) {
-            for (SensorEvent sensorEvent : changedSensors) {
-              this.ecosCommandStation.fireSensorEventListeners(sensorEvent);
-            }
+      if (event) {
+        if (this.ecosCommandStation != null) {
+          for (SensorEvent sensorEvent : changedSensors) {
+            this.ecosCommandStation.fireSensorEventListeners(sensorEvent);
           }
         }
       }
-    }
-    if (changedSensors == null) {
+    } else {
+      if (Ecos.FEEDBACK_MANAGER_ID == objectId) {
+        if (values.containsKey(Ecos.SIZE)) {
+          int size = Integer.parseInt(values.get(Ecos.SIZE).toString());
+          for (int i = 0; i < size; i++) {
+            FeedbackModuleBean fbmb = new FeedbackModuleBean();
+            fbmb.setAddressOffset(S88_OFFSET);
+            fbmb.setModuleNumber(S88_OFFSET + i);
+            fbmb.setId(S88_OFFSET + i);
+            this.modules.put(fbmb.getId(), fbmb);
+          }
+        }
+
+      }
       changedSensors = Collections.EMPTY_LIST;
     }
     return changedSensors;
@@ -101,93 +109,42 @@ class FeedbackManager {
   }
 
   public int getSize() {
-    return this.size;
+    return this.modules.size();
   }
 
-  public Map<Integer, S88> getModules() {
+  void updatePorts(String state, FeedbackModuleBean s88) {
+    String val = state.replace("0x", "");
+    int l = 4 - val.length();
+    for (int i = 0; i < l; i++) {
+      val = "0" + val;
+    }
+
+    int[] ports = s88.getPorts();
+    int[] prevPorts = s88.getPrevPorts();
+
+    if (ports == null) {
+      ports = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
+      prevPorts = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
+    }
+    //Set the previous ports State
+    System.arraycopy(ports, 0, prevPorts, 0, ports.length);
+    s88.setPrevPorts(prevPorts);
+
+    int stateVal = Integer.parseInt(val, 16);
+    //Logger.trace(state + " -> " + stateVal);
+    for (int i = 0; i < ports.length; i++) {
+      int m = ((int) Math.pow(2, i));
+      int pv = (stateVal & m) > 0 ? 1 : 0;
+      ports[i] = pv;
+    }
+    s88.setPorts(ports);
+  }
+
+  public Map<Integer, FeedbackModuleBean> getModules() {
     return modules;
   }
 
-  public S88 getS88(int id) {
+  public FeedbackModuleBean getFeedbackModule(int id) {
     return this.modules.get(id);
   }
-
-  public class S88 {
-
-    private String state;
-    private String prevState;
-    private final int id;
-    private final int[] ports;
-    private final int[] prevPorts;
-
-    S88(int id, int ports, String state) {
-      this.id = id;
-      this.state = state;
-      if (ports == 0) {
-        //use default 16
-        this.ports = new int[16];
-        this.prevPorts = new int[16];
-      } else {
-        this.ports = new int[ports];
-        this.prevPorts = new int[ports];
-      }
-      updateState(state);
-    }
-
-    public int getId() {
-      return id;
-    }
-
-    final List<SensorEvent> updateState(String state) {
-      this.prevState = this.state;
-      this.state = state;
-      String val = state.replace("0x", "");
-      int l = 4 - val.length();
-      for (int i = 0; i < l; i++) {
-        val = "0" + val;
-      }
-
-      //Set the previous ports State
-      System.arraycopy(ports, 0, this.prevPorts, 0, ports.length);
-
-      int stateVal = Integer.parseInt(val, 16);
-      //Logger.trace(state + " -> " + stateVal);
-      for (int i = 0; i < ports.length; i++) {
-        int m = ((int) Math.pow(2, i));
-        int pv = (stateVal & m) > 0 ? 1 : 0;
-        ports[i] = pv;
-      }
-
-      //String p = "16[" + ports[15] + "] 15[" + ports[14] + "] 14[" + ports[13] + "] 13[" + ports[12] + "] 12[" + ports[11] + "] 11[" + ports[10] + "] 10[" + ports[9] + "] 9[" + ports[8]
-      //        + "] 8[" + ports[7] + "] 7[" + ports[6] + "] 6[" + ports[5] + "] 5[" + ports[4] + "] 4[" + ports[3] + "] 3[" + ports[2] + "] 2[" + ports[1] + "] 1[" + ports[0] + "]";
-      //Logger.trace(p);
-      return getChangedSensors();
-    }
-
-    //0 based index
-    boolean isPort(int port) {
-      return ports[port] == 1;
-    }
-
-    //0 based index
-    SensorBean getSensor(int port) {
-      SensorBean sb = new SensorBean(id, port, ports[port]);
-      return sb;
-    }
-
-    List<SensorEvent> getChangedSensors() {
-      List<SensorEvent> changedSensors = new ArrayList<>(ports.length);
-
-      for (int i = 0; i < ports.length; i++) {
-        if (ports[i] != prevPorts[i]) {
-          SensorBean sb = new SensorBean(id, i, ports[i]);
-          SensorEvent se = new SensorEvent(sb);
-          changedSensors.add(se);
-        }
-      }
-      return changedSensors;
-    }
-
-  }
-
 }
