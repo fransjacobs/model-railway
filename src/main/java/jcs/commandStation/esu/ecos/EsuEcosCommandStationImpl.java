@@ -40,9 +40,6 @@ import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
-import jcs.commandStation.esu.ecos.Ecos;
-import jcs.commandStation.esu.ecos.EcosMessage;
-import jcs.commandStation.esu.ecos.EcosMessageFactory;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
@@ -214,8 +211,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       //Subscribe
       connection.sendMessage(EcosMessageFactory.subscribeAccessory(accessory.getId()));
     }
-
-    //connection.sendMessage(EcosMessageFactory.subscribeAccessoryManager());
   }
 
   private void initFeedbackManager() {

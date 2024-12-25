@@ -32,7 +32,6 @@ class FeedbackManager {
   public static final int ID = Ecos.FEEDBACK_MANAGER_ID;
   public static final int S88_OFFSET = 100;
 
-//  private int size;
   private final EsuEcosCommandStationImpl ecosCommandStation;
   private final Map<Integer, FeedbackModuleBean> modules;
 
@@ -52,30 +51,30 @@ class FeedbackManager {
     int objectId = message.getObjectId();
 
     if (ID != objectId) {
-      FeedbackModuleBean s88;
+      FeedbackModuleBean feedbackModule;
       if (this.modules.containsKey(objectId)) {
-        s88 = this.modules.get(objectId);
+        feedbackModule = this.modules.get(objectId);
       } else {
-        s88 = new FeedbackModuleBean();
-        s88.setId(objectId);
-        s88.setAddressOffset(S88_OFFSET);
-        s88.setModuleNumber(objectId);
+        feedbackModule = new FeedbackModuleBean();
+        feedbackModule.setId(objectId);
+        feedbackModule.setAddressOffset(S88_OFFSET);
+        feedbackModule.setModuleNumber(objectId - S88_OFFSET);
       }
 
       if (values.containsKey(Ecos.PORTS)) {
         String vports = values.get(Ecos.PORTS).toString();
         if (vports != null) {
           int ports = Integer.parseInt(vports);
-          s88.setPortCount(ports);
+          feedbackModule.setPortCount(ports);
         }
       }
 
       if (values.containsKey(Ecos.STATE)) {
         String state = values.get(Ecos.STATE).toString();
-        updatePorts(state, s88);
+        updatePorts(state, feedbackModule);
       }
-      this.modules.put(objectId, s88);
-      changedSensors = s88.getChangedSensors();
+      this.modules.put(objectId, feedbackModule);
+      changedSensors = feedbackModule.getChangedSensors();
 
       if (event) {
         if (this.ecosCommandStation != null) {
@@ -91,8 +90,8 @@ class FeedbackManager {
           for (int i = 0; i < size; i++) {
             FeedbackModuleBean fbmb = new FeedbackModuleBean();
             fbmb.setAddressOffset(S88_OFFSET);
-            fbmb.setModuleNumber(S88_OFFSET + i);
-            fbmb.setId(S88_OFFSET + i);
+            fbmb.setModuleNumber(i);
+            fbmb.setId(S88_OFFSET+i);
             this.modules.put(fbmb.getId(), fbmb);
           }
         }

@@ -81,7 +81,7 @@ public class SensorBean implements Serializable {
   private String generateId() {
     //Format the id start with the device then "-"
     //than a 4 char contact id
-    if(contactId == null) {
+    if (contactId == null) {
       return null;
     }
     String cn = contactId.toString();
@@ -200,7 +200,11 @@ public class SensorBean implements Serializable {
 
   @Transient
   public boolean isPreviousActive() {
-    return this.previousStatus > 0;
+    if (this.previousStatus != null) {
+      return this.previousStatus > 0;
+    } else {
+      return false;
+    }
   }
 
   @Override

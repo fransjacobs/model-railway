@@ -123,7 +123,7 @@ public class FeedbackModuleBean {
 
     for (int i = 0; i < ports.length; i++) {
       if (ports[i] != prevPorts[i]) {
-        SensorBean sb = new SensorBean(moduleNumber + i, i, ports[i]);
+        SensorBean sb = new SensorBean(moduleNumber, i+1, ports[i]);
         SensorEvent se = new SensorEvent(sb);
         changedSensors.add(se);
       }
@@ -136,7 +136,7 @@ public class FeedbackModuleBean {
 
     for (int i = 0; i < ports.length; i++) {
       if (ports[i] != prevPorts[i]) {
-        SensorBean sb = new SensorBean(moduleNumber, i, ports[i]);
+        SensorBean sb = new SensorBean(moduleNumber, i+1, ports[i]);
         sensors.add(sb);
       }
     }

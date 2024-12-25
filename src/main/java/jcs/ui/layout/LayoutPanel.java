@@ -148,7 +148,9 @@ public class LayoutPanel extends JPanel {
       this.rotateBtn.setEnabled(!readonly);
       this.rotateBtn.setVisible(!readonly);
 
-      this.autoPilotBtn.setEnabled(readonly && JCS.getJcsCommandStation().isPowerOn());
+      //Todo listen to power events?
+      //this.autoPilotBtn.setEnabled(readonly && JCS.getJcsCommandStation().isPowerOn());
+      this.autoPilotBtn.setEnabled(readonly);
       this.autoPilotBtn.setVisible(readonly);
 
       this.resetAutopilotBtn.setEnabled(readonly);

@@ -1495,7 +1495,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
                       firePropertyChange("bus2", selectedCommandStation.getFeedbackBus2ModuleCount(), bus2);
 
                       Integer bus3 = fbDevice.getBusLength(3);
-                      firePropertyChange("bus3", selectedCommandStation.getFeedbackBus3ModuleCount(), bus0);
+                      firePropertyChange("bus3", selectedCommandStation.getFeedbackBus3ModuleCount(), bus3);
 
                       Logger.trace("ID: " + id + " Node: " + node + " Bus 0: " + bus0 + " Bus 1: " + bus1 + " Bus 2: " + bus2 + " Bus 3: " + bus3);
                     }
