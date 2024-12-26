@@ -100,9 +100,13 @@ class LocomotiveManager implements LocomotiveSpeedEventListener, LocomotiveDirec
     LocomotiveBean locomotive;
     if (locomotives.containsKey(id)) {
       locomotive = this.locomotives.get(id);
+      if (locomotive.getUid() == null || !locomotive.getUid().equals(id)) {
+        locomotive.setUid(id);
+      }
     } else {
       locomotive = new LocomotiveBean();
       locomotive.setId(id);
+      locomotive.setUid(id);
       if (ecosCommandStation != null) {
         locomotive.setCommandStationBean(ecosCommandStation.getCommandStationBean());
       } else {
