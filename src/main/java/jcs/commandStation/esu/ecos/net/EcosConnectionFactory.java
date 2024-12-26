@@ -40,6 +40,7 @@ public class EcosConnectionFactory {
   private static EcosConnectionFactory instance;
 
   private EcosConnection controllerConnection;
+  private EcosHTTPConnection httpConnection;
   private InetAddress controllerHost;
 
   private static final String LAST_USED_IP_PROP_FILE = RunUtil.DEFAULT_PATH + "last-used-esu-ecos-ip.properties";
@@ -95,6 +96,17 @@ public class EcosConnectionFactory {
 
   public static EcosConnection getConnection() {
     return getInstance().getConnectionImpl();
+  }
+
+  EcosHTTPConnection getHttpConnectionImpl() {
+    if (httpConnection == null) {
+      httpConnection = new EcosHTTPConnection(controllerHost);
+    }
+    return httpConnection;
+  }
+
+  public static EcosHTTPConnection getHttpConnection() {
+    return getInstance().getHttpConnectionImpl();
   }
 
   public static void disconnectAll() {

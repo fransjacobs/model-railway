@@ -26,16 +26,12 @@ import javax.imageio.ImageIO;
 import org.tinylog.Logger;
 
 /**
- *
- * @author Frans Jacobs
+ * HTTP Connection for downloading locomotive Icons from the Ecos
  */
 public class EcosHTTPConnection {
 
   private final InetAddress ecosAddress;
   private final static String HTTP = "http://";
-
-  //http://192.168.1.110/loco/image?type=internal&index=0
-  private final static String LOCOMOTIVE = "loco";
   private final static String IMAGE_FOLDER_ECOS = "/loco/image";
 
   EcosHTTPConnection(InetAddress csAddress) {
@@ -50,11 +46,16 @@ public class EcosHTTPConnection {
     return url.replace(" ", "%20");
   }
 
-  public Image getLocomotiveImage(String imageName) {
+  /**
+   *
+   * @param type internal or external
+   * @param index index number of the icon
+   * @return the select Locomotive Icon
+   */
+  public Image getLocomotiveImage(String type, String index) {
     BufferedImage image = null;
     try {
-      URL url = URI.create(fixURL(HTTP + ecosAddress.getHostAddress() + IMAGE_FOLDER_ECOS + imageName + ".png")).toURL();
-
+      URL url = URI.create(fixURL(HTTP + ecosAddress.getHostAddress() + IMAGE_FOLDER_ECOS + "?type=" + type + "&index=" + index)).toURL();
       Logger.trace("image URL: " + url);
       image = ImageIO.read(url);
     } catch (MalformedURLException ex) {

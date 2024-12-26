@@ -40,6 +40,7 @@ import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.esu.ecos.net.EcosHTTPConnection;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
 import jcs.commandStation.events.LocomotiveDirectionEvent;
@@ -402,11 +403,27 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public Image getLocomotiveImage(String icon) {
-//TODO download the icons    
-//locodesc[LOCO_TYPE_E,IMAGE_TYPE_USER,2]
-
-    ////http://192.168.1.110/loco/image?type=internal&index=0
-    return null;
+    if (icon.startsWith("LOCO_TYPE")) {
+      String[] urlParts = icon.split(","); //locodesc[LOCO_TYPE_E,IMAGE_TYPE_USER,2]
+      if (urlParts.length == 3) {
+        EcosHTTPConnection httpCon = EcosConnectionFactory.getHttpConnection();
+        String type;
+        if ("IMAGE_TYPE_INT".equals(urlParts[1])) {
+          type = "internal";
+        } else {
+          type = "external";
+        }
+        String index = urlParts[2].toLowerCase();
+        Image locImage = httpCon.getLocomotiveImage(type, index);
+        return locImage;
+      } else {
+        Logger.trace("Unknown Ecos path: " + icon);
+        return null;
+      }
+    } else {
+      Logger.trace("Image already processed: " + icon);
+      return null;
+    }
   }
 
   @Override
