@@ -322,7 +322,7 @@ public class CommandStationBean {
     this.feedbackBus3ModuleCount = feedbackBus3ModuleCount;
   }
 
-  @Transient
+  @Column(name = "virtual", nullable = false, columnDefinition = "virtual bool default '0'")
   public boolean isVirtual() {
     return virtual;
   }

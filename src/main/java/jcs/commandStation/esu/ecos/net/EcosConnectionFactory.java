@@ -55,47 +55,56 @@ public class EcosConnectionFactory {
     return instance;
   }
 
-  EcosConnection getConnectionImpl() {
-    if (controllerConnection == null) {
-      String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "ip-address");
-      if (lastUsedIp != null) {
-        try {
-          if (Ping.IsReachable(lastUsedIp)) {
-            this.controllerHost = InetAddress.getByName(lastUsedIp);
-            Logger.trace("Using last used IP Address: " + lastUsedIp);
-          } else {
-            Logger.trace("Last used IP Address: " + lastUsedIp + " is not reachable");
+  EcosConnection getConnectionImpl(boolean virtual) {
+    if (!virtual) {
+      if (controllerConnection == null) {
+        String lastUsedIp = RunUtil.readProperty(LAST_USED_IP_PROP_FILE, "ip-address");
+        if (lastUsedIp != null) {
+          try {
+            if (Ping.IsReachable(lastUsedIp)) {
+              this.controllerHost = InetAddress.getByName(lastUsedIp);
+              Logger.trace("Using last used IP Address: " + lastUsedIp);
+            } else {
+              Logger.trace("Last used IP Address: " + lastUsedIp + " is not reachable");
+            }
+          } catch (UnknownHostException ex) {
+            Logger.trace("Last used ESU ECoS IP: " + lastUsedIp + " is invalid!");
+            lastUsedIp = null;
           }
-        } catch (UnknownHostException ex) {
-          Logger.trace("Last used ESU ECoS IP: " + lastUsedIp + " is invalid!");
-          lastUsedIp = null;
+        }
+
+        if (this.controllerHost == null) {
+          Logger.trace("Try to discover a ESU ECoS...");
+          JCS.logProgress("Discovering a ESU ECoS...");
+          controllerHost = discoverEcos();
+        }
+
+        if (controllerHost != null) {
+          if (lastUsedIp == null) {
+            //Write the last used IP Addres for faster discovery next time
+            writeLastUsedIpAddressProperty(controllerHost.getHostAddress());
+          }
+          Logger.trace("ESU ECoS ip: " + controllerHost.getHostName());
+
+          controllerConnection = new EcosTCPConnection(controllerHost);
+        } else {
+          Logger.warn("Can't find a ESU ECoS Controller host!");
+          JCS.logProgress("Can't find a ESU ECoS Controller on the Network");
         }
       }
-
-      if (this.controllerHost == null) {
-        Logger.trace("Try to discover a ESU ECoS...");
-        JCS.logProgress("Discovering a ESU ECoS...");
-        controllerHost = discoverEcos();
-      }
-
-      if (controllerHost != null) {
-        if (lastUsedIp == null) {
-          //Write the last used IP Addres for faster discovery next time
-          writeLastUsedIpAddressProperty(controllerHost.getHostAddress());
-        }
-        Logger.trace("ESU ECoS ip: " + controllerHost.getHostName());
-
-        controllerConnection = new EcosTCPConnection(controllerHost);
-      } else {
-        Logger.warn("Can't find a ESU ECoS Controller host!");
-        JCS.logProgress("Can't find a ESU ECoS Controller on the Network");
-      }
+    } else {
+      //Virtual connection
+      controllerConnection = new EcosVirtualConnection(NetworkUtil.getIPv4HostAddress());
     }
     return this.controllerConnection;
   }
 
   public static EcosConnection getConnection() {
-    return getInstance().getConnectionImpl();
+    return getInstance().getConnectionImpl(false);
+  }
+
+  public static EcosConnection getConnection(boolean virtual) {
+    return getInstance().getConnectionImpl(virtual);
   }
 
   EcosHTTPConnection getHttpConnectionImpl() {

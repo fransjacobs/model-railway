@@ -113,6 +113,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   }
 
   @Override
+  public boolean isVirtual() {
+    return true;
+  }
+
+  @Override
   public InfoBean getCommandStationInfo() {
     return this.infoBean;
   }
@@ -271,7 +276,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
-    throw new UnsupportedOperationException("Not supported yet."); 
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override

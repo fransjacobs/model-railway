@@ -1019,7 +1019,7 @@ public class PersistenceServiceTest {
 
   @Test
   public void testCommandStations() {
-    System.out.println("commandSations");
+    System.out.println("commandStations");
     PersistenceService instance = PersistenceFactory.getService();
 
     List<CommandStationBean> commandStations = instance.getCommandStations();

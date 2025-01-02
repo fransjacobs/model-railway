@@ -57,7 +57,6 @@ import org.tinylog.Logger;
 
 public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
 
-  private int defaultSwitchTime;
   private EcosConnection connection;
   private EventHandler eventMessageHandler;
 
@@ -72,7 +71,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   public EsuEcosCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
-    defaultSwitchTime = Integer.getInteger("default.switchtime", 250);
     autoConnect(autoConnect);
   }
 
@@ -90,19 +88,20 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public boolean connect() {
     if (!connected) {
-      Logger.trace("Connecting to a ESU ECoS Command Station...");
+      Logger.trace("Connecting to a "+(this.virtual?"Virtual ":"")+"ESU ECoS Command Station...");
       if (executor == null || executor.isShutdown()) {
         executor = Executors.newCachedThreadPool();
       }
 
       if (commandStationBean == null) {
-        Logger.error("No ESU ECoS Command Station Configuration set!");
+        Logger.error("ESU ECoS Command Station Configuration NOT set!");
         return false;
       } else {
         Logger.trace("Connect using " + commandStationBean.getConnectionType());
       }
 
       CommandStationBean.ConnectionType conType = commandStationBean.getConnectionType();
+
       boolean canConnect = true;
       if (conType == CommandStationBean.ConnectionType.NETWORK) {
         if (commandStationBean.getIpAddress() != null) {
@@ -121,7 +120,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
       }
 
       if (canConnect) {
-        connection = EcosConnectionFactory.getConnection();
+        connection = EcosConnectionFactory.getConnection(commandStationBean.isVirtual());
 
         if (connection != null) {
           long now = System.currentTimeMillis();
@@ -152,18 +151,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             initFeedbackManager();
             Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
 
-//            //Create Info
-//            this.infoBean = new InfoBean();
-//            this.infoBean.setProductName(commandStationBean.getDescription());
-//            this.infoBean.setArticleNumber(commandStationBean.getShortName());
-//
-//              JCS.logProgress("Try to switch Power ON...");
-//              //Switch one the power
-//              String response = connection.sendMessage(DccExMessageFactory.changePowerRequest(true));
-//              Logger.trace(response);
-//            }
-//            Logger.trace("Connected with: " + (this.mainDevice != null ? this.mainDevice.getName() : "Unknown"));
-//            JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
           } else {
             Logger.warn("Can't connect with a ESU ECoS Command Station!");
             JCS.logProgress("Can't connect with ESU ECoS Command Station!");
@@ -171,6 +158,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         }
       }
     }
+//            Logger.trace("Connected with: " + (this.mainDevice != null ? this.mainDevice.getName() : "Unknown"));
+//            JCS.logProgress("Power is " + (this.power ? "On" : "Off"));
     return this.connected;
 
   }
@@ -240,8 +229,13 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         //TODO unsubscribe from all locomotives, accessories and sensors
 
       }
-      this.eventMessageHandler.quit();
-      this.connection.close();
+      if (this.eventMessageHandler != null) {
+        this.eventMessageHandler.quit();
+      }
+      if (this.connected) {
+        this.connection.close();
+        this.connected = false;
+      }
     } catch (Exception ex) {
       Logger.error(ex);
     }
@@ -250,14 +244,19 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public InfoBean getCommandStationInfo() {
     InfoBean ib = new InfoBean(this.commandStationBean);
+    if (this.baseObject != null) {
 
-    ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
-    ib.setDescription(this.baseObject.getName());
-    ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
-    ib.setSerialNumber(this.baseObject.getSerialNumber());
-    ib.setHardwareVersion(this.baseObject.getHardwareVersion());
-    ib.setSoftwareVersion(this.baseObject.getApplicationVersion());
-    ib.setHostname(this.getIp());
+      ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
+      ib.setDescription(this.baseObject.getName());
+      ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
+      ib.setSerialNumber(this.baseObject.getSerialNumber());
+      ib.setHardwareVersion(this.baseObject.getHardwareVersion());
+      ib.setSoftwareVersion(this.baseObject.getApplicationVersion());
+      ib.setHostname(this.getIp());
+    } else {
+      ib.setDescription("Not Connected");
+      ib.setHostname("Not Connected");
+    }
     return ib;
   }
 
@@ -265,10 +264,14 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public DeviceBean getDevice() {
     DeviceBean d = new DeviceBean();
-    d.setName(baseObject.getName());
-    d.setVersion(baseObject.getHardwareVersion());
-    d.setTypeName(baseObject.getCommandStationType());
-    d.setSerial(baseObject.getSerialNumber());
+    if (baseObject != null) {
+      d.setName(baseObject.getName());
+      d.setVersion(baseObject.getHardwareVersion());
+      d.setTypeName(baseObject.getCommandStationType());
+      d.setSerial(baseObject.getSerialNumber());
+    } else {
+      d.setName("Not Connected");
+    }
     return d;
   }
 

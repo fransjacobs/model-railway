@@ -307,6 +307,17 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
+  public void setVirtual(boolean flag) {
+    Logger.info("Switch Virtual Mode "+(flag?"On":"Off"));
+
+  }
+
+  @Override
+  public boolean isVirtual() {
+    return false;
+  }
+
+  @Override
   public Image getLocomotiveImage(String imageName) {
     Image image = null;
 

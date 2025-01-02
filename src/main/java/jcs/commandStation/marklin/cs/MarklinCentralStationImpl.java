@@ -99,8 +99,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   Map<Integer, ChannelBean> analogChannels;
 
-  private int defaultSwitchTime;
-
   public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -109,7 +107,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     super(autoConnect, commandStationBean);
     devices = new HashMap<>();
     analogChannels = new HashMap<>();
-    defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
 
     if (commandStationBean != null) {
       if (autoConnect) {

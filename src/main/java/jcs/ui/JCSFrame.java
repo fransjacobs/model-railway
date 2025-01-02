@@ -40,6 +40,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -54,6 +55,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.LineBorder;
 import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.events.DisconnectionEvent;
@@ -200,6 +202,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     card.show(this.centerPanel, "settingsPanel");
   }
 
+  public void showVNCConsole() {
+    CardLayout card = (CardLayout) this.centerPanel.getLayout();
+    card.show(this.centerPanel, "vncPanel");
+  }
+
   public void showDesignLayoutPanel() {
     if (!AutoPilot.isAutoModeActive()) {
       CardLayout card = (CardLayout) this.centerPanel.getLayout();
@@ -217,18 +224,20 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private void setControllerProperties() {
     if (JCS.getJcsCommandStation() != null) {
       InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
+      boolean connected = JCS.getJcsCommandStation().isConnected();
       if (info != null) {
-        this.connectButton.setSelected(true);
+        this.connectButton.setSelected(connected);
         this.controllerDescriptionLbl.setText(info.getProductName());
         this.controllerCatalogNumberLbl.setText(info.getArticleNumber());
         this.controllerSerialNumberLbl.setText(info.getSerialNumber());
         this.controllerHostNameLbl.setText(info.getHostname());
         this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
       } else {
-        this.connectButton.setSelected(false);
+        this.connectButton.setSelected(connected);
         this.controllerHostNameLbl.setText("Not Connected");
-        this.powerButton.setSelected(false);
+        this.powerButton.setSelected(connected);
       }
+      this.virtualCB.setSelected(JCS.getJcsCommandStation().isVirtual());
     }
   }
 
@@ -252,18 +261,24 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     toolbarPanel = new JPanel();
     jcsToolBar = new JToolBar();
     connectButton = new JToggleButton();
-    filler1 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    filler1 = new Box.Filler(new Dimension(5, 0), new Dimension(5, 0), new Dimension(5, 32767));
+    virtualCB = new JCheckBox();
+    filler2 = new Box.Filler(new Dimension(5, 0), new Dimension(5, 0), new Dimension(5, 32767));
     powerButton = new JToggleButton();
-    filler2 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    showOverviewBtn = new JButton();
-    showEditDesignBtn = new JButton();
     filler3 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    showOverviewBtn = new JButton();
+    filler4 = new Box.Filler(new Dimension(5, 0), new Dimension(5, 0), new Dimension(5, 32767));
+    showEditDesignBtn = new JButton();
+    showVNCBtn = new JButton();
     showKeyboardBtn = new JButton();
     filler5 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    showSettingsBtn = new JButton();
-    filler9 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     showFeedbackMonitorBtn = new JButton();
     filler8 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    autoPilotBtn = new JToggleButton();
+    startAllLocomotivesBtn = new JToggleButton();
+    resetAutoPilotBtn = new JButton();
+    filler9 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
+    showSettingsBtn = new JButton();
     statusPanel = new StatusPanel();
     mainPanel = new JPanel();
     locoDisplaySP = new JSplitPane();
@@ -273,6 +288,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     overviewPanel = new LayoutPanel(true);
     settingsPanel = new JPanel();
     commandStationPanel = new CommandStationPanel();
+    vncPanel = new VNCPanel();
     leftPanel = new JPanel();
     bottomLeftPanel = new JPanel();
     filler7 = new Box.Filler(new Dimension(0, 10), new Dimension(0, 10), new Dimension(32767, 35));
@@ -355,6 +371,25 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     filler1.setName("filler1"); // NOI18N
     jcsToolBar.add(filler1);
 
+    virtualCB.setText("Virtual");
+    virtualCB.setToolTipText("Enable Virtual Mode");
+    virtualCB.setActionCommand("Virtual");
+    virtualCB.setFocusable(false);
+    virtualCB.setHorizontalTextPosition(SwingConstants.LEFT);
+    virtualCB.setMaximumSize(new Dimension(65, 30));
+    virtualCB.setMinimumSize(new Dimension(65, 30));
+    virtualCB.setName("virtualCB"); // NOI18N
+    virtualCB.setPreferredSize(new Dimension(65, 30));
+    virtualCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        virtualCBActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(virtualCB);
+
+    filler2.setName("filler2"); // NOI18N
+    jcsToolBar.add(filler2);
+
     powerButton.setIcon(new ImageIcon(getClass().getResource("/media/power-red-24.png"))); // NOI18N
     powerButton.setToolTipText("Switch Track power On/Off");
     powerButton.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
@@ -376,8 +411,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     jcsToolBar.add(powerButton);
     powerButton.getAccessibleContext().setAccessibleName("Power");
 
-    filler2.setName("filler2"); // NOI18N
-    jcsToolBar.add(filler2);
+    filler3.setName("filler3"); // NOI18N
+    jcsToolBar.add(filler3);
 
     showOverviewBtn.setIcon(new ImageIcon(getClass().getResource("/media/home-24.png"))); // NOI18N
     showOverviewBtn.setToolTipText("Overview");
@@ -398,6 +433,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     jcsToolBar.add(showOverviewBtn);
     showOverviewBtn.getAccessibleContext().setAccessibleName("Home");
 
+    filler4.setName("filler4"); // NOI18N
+    jcsToolBar.add(filler4);
+
     showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/paintbrush-24.png"))); // NOI18N
     showEditDesignBtn.setToolTipText("Design Layout");
     showEditDesignBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
@@ -417,8 +455,23 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     jcsToolBar.add(showEditDesignBtn);
     showEditDesignBtn.getAccessibleContext().setAccessibleName("Design");
 
-    filler3.setName("filler3"); // NOI18N
-    jcsToolBar.add(filler3);
+    showVNCBtn.setIcon(new ImageIcon(getClass().getResource("/media/vnc-icon-bk-24.png"))); // NOI18N
+    showVNCBtn.setToolTipText("Open VNC Console");
+    showVNCBtn.setBorder(new LineBorder(new Color(204, 204, 204), 1, true));
+    showVNCBtn.setFocusable(false);
+    showVNCBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    showVNCBtn.setMargin(new Insets(2, 2, 2, 2));
+    showVNCBtn.setMaximumSize(new Dimension(40, 40));
+    showVNCBtn.setMinimumSize(new Dimension(40, 40));
+    showVNCBtn.setName("showVNCBtn"); // NOI18N
+    showVNCBtn.setPreferredSize(new Dimension(40, 40));
+    showVNCBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    showVNCBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showVNCBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(showVNCBtn);
 
     showKeyboardBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
     showKeyboardBtn.setToolTipText("Diagnostics");
@@ -443,25 +496,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     filler5.setName("filler5"); // NOI18N
     jcsToolBar.add(filler5);
 
-    showSettingsBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
-    showSettingsBtn.setFocusable(false);
-    showSettingsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    showSettingsBtn.setMaximumSize(new Dimension(40, 40));
-    showSettingsBtn.setMinimumSize(new Dimension(40, 40));
-    showSettingsBtn.setName("showSettingsBtn"); // NOI18N
-    showSettingsBtn.setPreferredSize(new Dimension(40, 40));
-    showSettingsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    showSettingsBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        showSettingsBtnActionPerformed(evt);
-      }
-    });
-    jcsToolBar.add(showSettingsBtn);
-
-    filler9.setName("filler9"); // NOI18N
-    jcsToolBar.add(filler9);
-
     showFeedbackMonitorBtn.setIcon(new ImageIcon(getClass().getResource("/media/monitor-24.png"))); // NOI18N
+    showFeedbackMonitorBtn.setToolTipText("Show Sensor Monitor");
+    showFeedbackMonitorBtn.setBorder(new LineBorder(new Color(204, 204, 204), 1, true));
     showFeedbackMonitorBtn.setFocusable(false);
     showFeedbackMonitorBtn.setHorizontalTextPosition(SwingConstants.CENTER);
     showFeedbackMonitorBtn.setMaximumSize(new Dimension(40, 40));
@@ -478,6 +515,83 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     filler8.setName("filler8"); // NOI18N
     jcsToolBar.add(filler8);
+
+    autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
+    autoPilotBtn.setToolTipText("Connect/Disconnect with Central Station");
+    autoPilotBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+    autoPilotBtn.setDoubleBuffered(true);
+    autoPilotBtn.setFocusable(false);
+    autoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    autoPilotBtn.setMargin(new Insets(0, 0, 0, 0));
+    autoPilotBtn.setMaximumSize(new Dimension(40, 40));
+    autoPilotBtn.setMinimumSize(new Dimension(40, 40));
+    autoPilotBtn.setName("autoPilotBtn"); // NOI18N
+    autoPilotBtn.setPreferredSize(new Dimension(40, 40));
+    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/monitor-on-24.png"))); // NOI18N
+    autoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    autoPilotBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        autoPilotBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(autoPilotBtn);
+
+    startAllLocomotivesBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
+    startAllLocomotivesBtn.setToolTipText("Connect/Disconnect with Central Station");
+    startAllLocomotivesBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+    startAllLocomotivesBtn.setDoubleBuffered(true);
+    startAllLocomotivesBtn.setEnabled(false);
+    startAllLocomotivesBtn.setFocusable(false);
+    startAllLocomotivesBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    startAllLocomotivesBtn.setMargin(new Insets(0, 0, 0, 0));
+    startAllLocomotivesBtn.setMaximumSize(new Dimension(40, 40));
+    startAllLocomotivesBtn.setMinimumSize(new Dimension(40, 40));
+    startAllLocomotivesBtn.setName("startAllLocomotivesBtn"); // NOI18N
+    startAllLocomotivesBtn.setPreferredSize(new Dimension(40, 40));
+    startAllLocomotivesBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/monitor-on-24.png"))); // NOI18N
+    startAllLocomotivesBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    startAllLocomotivesBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        startAllLocomotivesBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(startAllLocomotivesBtn);
+
+    resetAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/director-red.png"))); // NOI18N
+    resetAutoPilotBtn.setToolTipText("Design Layout");
+    resetAutoPilotBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+    resetAutoPilotBtn.setFocusable(false);
+    resetAutoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    resetAutoPilotBtn.setMargin(new Insets(0, 0, 0, 0));
+    resetAutoPilotBtn.setMaximumSize(new Dimension(40, 40));
+    resetAutoPilotBtn.setMinimumSize(new Dimension(40, 40));
+    resetAutoPilotBtn.setName("resetAutoPilotBtn"); // NOI18N
+    resetAutoPilotBtn.setPreferredSize(new Dimension(40, 40));
+    resetAutoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    resetAutoPilotBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        resetAutoPilotBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(resetAutoPilotBtn);
+
+    filler9.setName("filler9"); // NOI18N
+    jcsToolBar.add(filler9);
+
+    showSettingsBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
+    showSettingsBtn.setFocusable(false);
+    showSettingsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    showSettingsBtn.setMaximumSize(new Dimension(40, 40));
+    showSettingsBtn.setMinimumSize(new Dimension(40, 40));
+    showSettingsBtn.setName("showSettingsBtn"); // NOI18N
+    showSettingsBtn.setPreferredSize(new Dimension(40, 40));
+    showSettingsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    showSettingsBtn.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showSettingsBtnActionPerformed(evt);
+      }
+    });
+    jcsToolBar.add(showSettingsBtn);
 
     toolbarPanel.add(jcsToolBar);
 
@@ -523,6 +637,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     settingsPanel.add(commandStationPanel);
 
     centerPanel.add(settingsPanel, "settingsPanel");
+
+    vncPanel.setName("vncPanel"); // NOI18N
+    centerPanel.add(vncPanel, "vncPanel");
 
     locoDisplaySP.setRightComponent(centerPanel);
 
@@ -802,12 +919,15 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
 
   public void connect(boolean connect) {
+    boolean connected = false;
     if (JCS.getJcsCommandStation() != null) {
       if (connect) {
         JCS.getJcsCommandStation().connect();
 
         InfoBean info = JCS.getJcsCommandStation().getCommandStationInfo();
-        if (info != null) {
+        connected = JCS.getJcsCommandStation().isConnected();
+
+        if (info != null && connected) {
           this.connectButton.setSelected(true);
           this.controllerDescriptionLbl.setText(info.getProductName());
           this.controllerCatalogNumberLbl.setText(info.getArticleNumber());
@@ -815,7 +935,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
           this.controllerHostNameLbl.setText(info.getHostname());
           this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
           this.connectMI.setText("Disconnect");
-
+        } else {
+          this.connectButton.setSelected(false);
+          this.controllerHostNameLbl.setText("Disconnected");
+          this.powerButton.setSelected(JCS.getJcsCommandStation().isPowerOn());
         }
       } else {
         JCS.getJcsCommandStation().disconnect();
@@ -829,8 +952,12 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }
     JCS.getJcsCommandStation().addDisconnectionEventListener(this);
 
-    this.powerButton.setEnabled(connect);
-    this.showFeedbackMonitorBtn.setEnabled(connect);
+    this.powerButton.setEnabled(connect && connected);
+    this.showFeedbackMonitorBtn.setEnabled(connect && connected);
+
+    //TODO Connect the VNCPanel to the Command station and support VNC property
+    this.showVNCBtn.setEnabled(connect && connected);
+
     this.setControllerProperties();
   }
 
@@ -881,6 +1008,45 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     dialog.setVisible(true);
   }//GEN-LAST:event_aboutMIActionPerformed
 
+  private void showVNCBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showVNCBtnActionPerformed
+    showVNCConsole();
+  }//GEN-LAST:event_showVNCBtnActionPerformed
+
+  private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
+    Logger.trace(evt.getActionCommand() + (this.autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
+
+    if (this.autoPilotBtn.isSelected()) {
+      this.startAllLocomotivesBtn.setEnabled(true);
+    } else {
+      if (this.startAllLocomotivesBtn.isSelected()) {
+        startAllLocomotivesBtn.doClick();
+      }
+      this.startAllLocomotivesBtn.setEnabled(false);
+    }
+
+    AutoPilot.runAutoPilot(this.autoPilotBtn.isSelected());
+  }//GEN-LAST:event_autoPilotBtnActionPerformed
+
+  private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
+    Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
+    if (this.startAllLocomotivesBtn.isSelected()) {
+      AutoPilot.startAllLocomotives();
+    } else {
+      AutoPilot.stopAllLocomotives();
+    }
+  }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
+
+  private void resetAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutoPilotBtnActionPerformed
+    AutoPilot.resetStates();
+  }//GEN-LAST:event_resetAutoPilotBtnActionPerformed
+
+  private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
+    Logger.trace(evt.getActionCommand() + " Switch Virtual Mode " + (this.virtualCB.isSelected() ? "On" : "Off"));
+    if (JCS.getJcsCommandStation() != null) {
+      JCS.getJcsCommandStation().setVirtual(this.virtualCB.isSelected());
+    }
+  }//GEN-LAST:event_virtualCBActionPerformed
+
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
 
@@ -904,6 +1070,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     this.controllerHostNameLbl.setText("Disconnected");
     this.connectMI.setText("Connect");
     this.connectButton.setSelected(false);
+    this.showVNCBtn.setEnabled(false);
   }
 
   @Override
@@ -943,6 +1110,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;
+  private JToggleButton autoPilotBtn;
   private JPanel bottomLeftPanel;
   private JPanel centerPanel;
   private CommandStationPanel commandStationPanel;
@@ -963,6 +1131,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private Box.Filler filler1;
   private Box.Filler filler2;
   private Box.Filler filler3;
+  private Box.Filler filler4;
   private Box.Filler filler5;
   private Box.Filler filler6;
   private Box.Filler filler7;
@@ -984,6 +1153,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private LayoutPanel overviewPanel;
   private JToggleButton powerButton;
   private JMenuItem quitMI;
+  private JButton resetAutoPilotBtn;
   private JPanel settingsPanel;
   private JButton showEditDesignBtn;
   private JButton showFeedbackMonitorBtn;
@@ -994,9 +1164,13 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JButton showOverviewBtn;
   private JMenuItem showSensorMonitor;
   private JButton showSettingsBtn;
+  private JButton showVNCBtn;
+  private JToggleButton startAllLocomotivesBtn;
   private StatusPanel statusPanel;
   private JPanel toolbarPanel;
   private JMenu toolsMenu;
   private JMenu viewMenu;
+  private JCheckBox virtualCB;
+  private VNCPanel vncPanel;
   // End of variables declaration//GEN-END:variables
 }

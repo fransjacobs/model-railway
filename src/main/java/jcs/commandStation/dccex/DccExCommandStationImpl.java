@@ -64,8 +64,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   Map<Integer, ChannelBean> measurementChannels;
 
-  private int defaultSwitchTime;
-
   public DccExCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -73,7 +71,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   public DccExCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     measurementChannels = new HashMap<>();
-    defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
     this.executor = Executors.newCachedThreadPool();
 
     if (commandStationBean != null) {

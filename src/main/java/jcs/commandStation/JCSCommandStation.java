@@ -49,6 +49,10 @@ public interface JCSCommandStation {
 
   void disconnect();
 
+  void setVirtual(boolean flag);
+
+  boolean isVirtual();
+
   void addDisconnectionEventListener(DisconnectionEventListener listener);
 
   void addPowerEventListener(PowerEventListener listener);

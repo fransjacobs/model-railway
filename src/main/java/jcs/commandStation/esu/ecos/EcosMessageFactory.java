@@ -20,23 +20,34 @@ package jcs.commandStation.esu.ecos;
  */
 public class EcosMessageFactory implements Ecos {
 
+  public static final String BASE_OBJECT = "get(" + BASEOBJECT_ID + ",objectclass,view,listview,control,list,size,minarguments,protocolversion"
+          + ",commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix"
+          + ",updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus"
+          + ",railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)";
+  public static final String BASE_OBJECT_SUBSCRIBE_VIEW = "request(" + BASEOBJECT_ID + ",view)";
+  public static final String BASE_OBJECT_RELEASE_VIEW = "release(" + BASEOBJECT_ID + ",view)";
+  public static final String POWER_STATUS = "get(" + BASEOBJECT_ID + ", status, status2)";
+
+  public final static String QUERY_LOCOMOTIVES = "queryObjects(" + LOCOMOTIVES_ID + ",name,addr,protocol)";
+  public final static String LOCO_MANAGER_SUBSCRIBE_VIEW = "request(" + LOCOMOTIVES_ID + ",view)";
+  public final static String LOCO_MANAGER_RELEASE_VIEW = "release(" + LOCOMOTIVES_ID + ",view)";
+
+  public static final String FEEDBACK_MODULES_SIZE = "get(" + FEEDBACK_MANAGER_ID + ", size)";
+
   public static EcosMessage getBaseObject() {
-    return new EcosMessage("get(" + BASEOBJECT_ID + ",objectclass,view,listview,control,list,size,minarguments,protocolversion"
-            + ",commandstationtype,name,serialnumber,hardwareversion,applicationversion,applicationversionsuffix"
-            + ",updateonerror,status,status2,prog-status,m4-status,railcomplus-status,watchdog,railcom,railcomplus"
-            + ",railcomplus-range,railcomplus-mode,allowlocotakeover,stoponlastdisconnect)");
+    return new EcosMessage(BASE_OBJECT);
   }
 
   public static EcosMessage subscribeBaseObject() {
-    return new EcosMessage("request(" + BASEOBJECT_ID + ", view)");
+    return new EcosMessage(BASE_OBJECT_SUBSCRIBE_VIEW);
   }
 
   public static EcosMessage unSubscribeBaseObject() {
-    return new EcosMessage("release(" + BASEOBJECT_ID + ", view)");
+    return new EcosMessage(BASE_OBJECT_RELEASE_VIEW);
   }
 
   public static EcosMessage getPowerStatus() {
-    return new EcosMessage("get(" + BASEOBJECT_ID + ", status, status2)");
+    return new EcosMessage(POWER_STATUS);
   }
 
   public static EcosMessage setPowerStatus(boolean on) {
@@ -44,7 +55,7 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage getNumberOfFeedbackModules() {
-    return new EcosMessage("get(" + FEEDBACK_MANAGER_ID + ", size)");
+    return new EcosMessage(FEEDBACK_MODULES_SIZE);
   }
 
   public static EcosMessage getFeedbackModuleInfo(int moduleId) {
@@ -68,15 +79,15 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage getLocomotives() {
-    return new EcosMessage("queryObjects(" + LOCOMOTIVES_ID + ", name,addr,protocol)");
+    return new EcosMessage(QUERY_LOCOMOTIVES);
   }
 
   public static EcosMessage subscribeLokManager() {
-    return new EcosMessage("request(" + LOCOMOTIVES_ID + ",view)");
+    return new EcosMessage(LOCO_MANAGER_SUBSCRIBE_VIEW);
   }
 
   public static EcosMessage unSubscribeLokManager() {
-    return new EcosMessage("release(" + LOCOMOTIVES_ID + ",view)");
+    return new EcosMessage(LOCO_MANAGER_RELEASE_VIEW);
   }
 
   public static EcosMessage subscribeLocomotive(long locomotiveId) {

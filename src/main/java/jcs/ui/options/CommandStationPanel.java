@@ -351,6 +351,7 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     filler6 = new Box.Filler(new Dimension(10, 0), new Dimension(10, 0), new Dimension(10, 32767));
     csPropertiesPanel = new JPanel();
     enabledCB = new JCheckBox();
+    virtualCB = new JCheckBox();
     filler4 = new Box.Filler(new Dimension(100, 0), new Dimension(100, 0), new Dimension(100, 32767));
     lastUsedSerialLbl = new JLabel();
     centerPanel = new JPanel();
@@ -507,6 +508,18 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
       }
     });
     csPropertiesPanel.add(enabledCB);
+
+    virtualCB.setText("Virtual");
+    virtualCB.setToolTipText("Enable Virtual Mode");
+    virtualCB.setHorizontalAlignment(SwingConstants.CENTER);
+    virtualCB.setHorizontalTextPosition(SwingConstants.LEFT);
+    virtualCB.setName("virtualCB"); // NOI18N
+    virtualCB.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        virtualCBActionPerformed(evt);
+      }
+    });
+    csPropertiesPanel.add(virtualCB);
 
     filler4.setName("filler4"); // NOI18N
     csPropertiesPanel.add(filler4);
@@ -1353,6 +1366,11 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
     recreateSensors();
   }//GEN-LAST:event_recreateSensorsBtnActionPerformed
 
+  private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
+    this.selectedCommandStation.setVirtual(this.virtualCB.isSelected());
+    PersistenceFactory.getService().persist(this.selectedCommandStation);
+  }//GEN-LAST:event_virtualCBActionPerformed
+
   private void recreateSensors() {
     int deviceId = Integer.parseInt(this.selectedCommandStation.getFeedbackModuleIdentifier());
     Integer bus0 = this.selectedCommandStation.getFeedbackBus0ModuleCount();
@@ -1682,5 +1700,6 @@ public class CommandStationPanel extends JPanel implements PropertyChangeListene
   JRadioButton sxRB;
   JButton testConnectionBtn;
   JPanel topPanel;
+  JCheckBox virtualCB;
   // End of variables declaration//GEN-END:variables
 }

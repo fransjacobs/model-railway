@@ -31,6 +31,10 @@ interface GenericController {
 
   void disconnect();
 
+  void setVirtual(boolean flag);
+
+  boolean isVirtual();
+
   void addDisconnectionEventListener(DisconnectionEventListener listener);
 
   void removeDisconnectionEventListener(DisconnectionEventListener listener);
