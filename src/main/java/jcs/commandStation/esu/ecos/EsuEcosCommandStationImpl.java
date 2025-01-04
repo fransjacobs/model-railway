@@ -60,7 +60,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   private EcosConnection connection;
   private EventHandler eventMessageHandler;
 
-  private EcosManager baseObject;
+  private EcosManager ecosManager;
   private LocomotiveManager locomotiveManager;
   private AccessoryManager accessoryManager;
   private FeedbackManager feedbackManager;
@@ -88,7 +88,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public boolean connect() {
     if (!connected) {
-      Logger.trace("Connecting to a "+(this.virtual?"Virtual ":"")+"ESU ECoS Command Station...");
+      Logger.trace("Connecting to a " + (this.virtual ? "Virtual " : "") + "ESU ECoS Command Station...");
       if (executor == null || executor.isShutdown()) {
         executor = Executors.newCachedThreadPool();
       }
@@ -166,10 +166,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
   private void initBaseObject() {
     EcosMessage reply = connection.sendMessage(EcosMessageFactory.getBaseObject());
-    baseObject = new EcosManager(this, reply);
+    ecosManager = new EcosManager(this, reply);
 
     connection.sendMessage(EcosMessageFactory.subscribeBaseObject());
-    addPowerEventListener(baseObject);
+    addPowerEventListener(ecosManager);
   }
 
   private void initLocomotiveManager() {
@@ -210,10 +210,17 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
       reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
+      //feedbackManager.update(reply);
 
-      String state = reply.getValueMap().get(Ecos.STATE).toString();
-      String ports = reply.getValueMap().get(Ecos.PORTS).toString();
       //TODO: we now know the begin state so refect that in the feedback modules....
+//      Map<String, Object> values = reply.getValueMap();
+//      if (values.containsKey(Ecos.STATE)) {
+//        String state = values.get(Ecos.STATE).toString();
+//      }
+//
+//      if (values.containsKey(Ecos.PORTS)) {
+//        String ports = reply.getValueMap().get(Ecos.PORTS).toString();
+//      }
 
       //Logger.trace("state: "+state+" ports: "+ports);
       connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
@@ -244,14 +251,14 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public InfoBean getCommandStationInfo() {
     InfoBean ib = new InfoBean(this.commandStationBean);
-    if (this.baseObject != null) {
+    if (this.ecosManager != null) {
 
-      ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
-      ib.setDescription(this.baseObject.getName());
-      ib.setArticleNumber(this.baseObject.getName().replace(this.baseObject.getCommandStationType() + "-", ""));
-      ib.setSerialNumber(this.baseObject.getSerialNumber());
-      ib.setHardwareVersion(this.baseObject.getHardwareVersion());
-      ib.setSoftwareVersion(this.baseObject.getApplicationVersion());
+      ib.setArticleNumber(this.ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
+      ib.setDescription(this.ecosManager.getName());
+      ib.setArticleNumber(this.ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
+      ib.setSerialNumber(this.ecosManager.getSerialNumber());
+      ib.setHardwareVersion(this.ecosManager.getHardwareVersion());
+      ib.setSoftwareVersion(this.ecosManager.getApplicationVersion());
       ib.setHostname(this.getIp());
     } else {
       ib.setDescription("Not Connected");
@@ -264,11 +271,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public DeviceBean getDevice() {
     DeviceBean d = new DeviceBean();
-    if (baseObject != null) {
-      d.setName(baseObject.getName());
-      d.setVersion(baseObject.getHardwareVersion());
-      d.setTypeName(baseObject.getCommandStationType());
-      d.setSerial(baseObject.getSerialNumber());
+    if (ecosManager != null) {
+      d.setName(ecosManager.getName());
+      d.setVersion(ecosManager.getHardwareVersion());
+      d.setTypeName(ecosManager.getCommandStationType());
+      d.setSerial(ecosManager.getSerialNumber());
     } else {
       d.setName("Not Connected");
     }
@@ -298,8 +305,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   public boolean isPower() {
     if (this.connected) {
       EcosMessage reply = this.connection.sendMessage(EcosMessageFactory.getPowerStatus());
-      this.baseObject.update(reply);
-      this.power = "GO".equals(this.baseObject.getStatus());
+      this.ecosManager.update(reply);
+      this.power = "GO".equals(this.ecosManager.getStatus());
     } else {
       this.power = false;
     }
@@ -322,10 +329,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   public boolean power(boolean on) {
     if (this.connected) {
       EcosMessage reply = this.connection.sendMessage(EcosMessageFactory.setPowerStatus(on));
-      baseObject.update(reply);
-
-      this.power = Ecos.GO.equals(baseObject.getStatus());
-      PowerEvent pe = new PowerEvent(this.power);
+      ecosManager.update(reply);
+      this.power = Ecos.GO.equals(ecosManager.getStatus());
       return power;
     } else {
       return false;
@@ -516,11 +521,11 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public DeviceBean getFeedbackDevice() {
     DeviceBean db = new DeviceBean();
-    db.setArticleNumber(this.baseObject.getName());
+    db.setArticleNumber(this.ecosManager.getName());
     db.setIdentifier("0x0");
     db.getBusLength(this.feedbackManager.getSize());
-    db.setVersion(this.baseObject.getApplicationVersion());
-    db.setSerial(this.baseObject.getSerialNumber());
+    db.setVersion(this.ecosManager.getApplicationVersion());
+    db.setSerial(this.ecosManager.getSerialNumber());
     db.setTypeName("Link S88");
 
     ChannelBean cb = new ChannelBean();
@@ -623,7 +628,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
           int id = eventMessage.getObjectId();
           switch (id) {
             case 1 -> {
-              baseObject.update(eventMessage);
+              ecosManager.update(eventMessage);
             }
             case 10 -> {
               //Locomotive list changed
@@ -701,7 +706,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
       if (connected) {
 
-//        Logger.trace(cs.baseObject);
+//        Logger.trace(cs.ecosManager);
 //        boolean power = cs.isPower();
 //        Logger.trace("1 Power is " + (power ? "On" : "Off"));
 //

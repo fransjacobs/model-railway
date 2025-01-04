@@ -363,3 +363,35 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1007,30,0,0,'0',false);
 
 commit;
+
+INSERT INTO jcs.accessories (id,address,name,"type",state,states,switch_time,protocol,decoder,accessory_group,icon,icon_file,imported,command_station_id,synchronize) VALUES
+	 ('20005',16,'Sein mini','lichtsignal_SH01',1,2,500,'mm',NULL,NULL,'13',NULL,'ECoS','esu-ecos',true),
+	 ('20004',14,'Sein 4','lichtsignal_HP012_SH01',1,4,250,'mm',NULL,NULL,'12',NULL,'ECoS','esu-ecos',true),
+	 ('20003',12,'Sein 3','lichtsignal_HP012',1,3,250,'mm',NULL,NULL,'11',NULL,'ECoS','esu-ecos',true),
+	 ('20002',10,'Sein','lichtsignal_HP01',1,2,250,'mm',NULL,NULL,'9',NULL,'ECoS','esu-ecos',true),
+	 ('20001',2,'W2','linksweiche',1,2,250,'dcc',NULL,NULL,'0',NULL,NULL,'esu-ecos',false),
+	 ('20000',1,'W1','rechtsweiche',1,2,250,'dcc',NULL,NULL,'1',NULL,NULL,'esu-ecos',false),
+	 ('20006',5,'Symbol','lichtsignal_HP01',1,2,250,'dcc',NULL,NULL,'9',NULL,'ECoS','esu-ecos',true);
+
+commit;
+
+INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) VALUES
+	 ('0-0011','B0-S-11',0,11,0,NULL,NULL,NULL),
+	 ('0-0010','B0-S-10',0,10,1,NULL,NULL,NULL),
+	 ('0-0002','B0-S-2',0,2,0,NULL,NULL,NULL),
+	 ('0-0013','B0-S-13',0,13,0,1,NULL,NULL),
+	 ('0-0001','B0-S-1',0,1,0,NULL,NULL,NULL),
+	 ('0-0012','B0-S-12',0,12,0,NULL,NULL,NULL),
+	 ('0-0004','B0-S-4',0,4,0,NULL,NULL,NULL),
+	 ('0-0015','B0-S-15',0,15,0,1,NULL,NULL),
+	 ('0-0003','B0-S-3',0,3,0,NULL,NULL,NULL),
+	 ('0-0014','B0-S-14',0,14,0,1,NULL,NULL);
+INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) VALUES
+	 ('0-0006','B0-S-6',0,6,0,1,NULL,NULL),
+	 ('0-0005','B0-S-5',0,5,0,1,NULL,NULL),
+	 ('0-0016','B0-S-16',0,16,0,1,NULL,NULL),
+	 ('0-0008','B0-S-8',0,8,0,1,NULL,NULL),
+	 ('0-0007','B0-S-7',0,7,0,1,NULL,NULL),
+	 ('0-0009','B0-S-9',0,9,0,NULL,NULL,NULL);
+
+commit;

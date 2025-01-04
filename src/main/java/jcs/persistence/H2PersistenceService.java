@@ -426,7 +426,7 @@ public class H2PersistenceService implements PersistenceService {
   public Image readImage(String imageName, boolean function) {
     Image image = null;
     if (imageName != null) {
-      String path = null;
+      String path;
       if (imageName.contains(File.separator)) {
         //Contains path seperators so assume it is a manual selected image
         path = imageName;
@@ -465,6 +465,12 @@ public class H2PersistenceService implements PersistenceService {
       }
     }
     return image;
+  }
+
+  @Override
+  public List<AccessoryBean> getAccessories() {
+    String commandStationId = getDefaultCommandStation().getId();
+    return getAccessoriesByCommandStationId(commandStationId);
   }
 
   @Override

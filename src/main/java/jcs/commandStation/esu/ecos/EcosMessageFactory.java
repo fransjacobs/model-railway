@@ -32,6 +32,8 @@ public class EcosMessageFactory implements Ecos {
   public final static String LOCO_MANAGER_SUBSCRIBE_VIEW = "request(" + LOCOMOTIVES_ID + ",view)";
   public final static String LOCO_MANAGER_RELEASE_VIEW = "release(" + LOCOMOTIVES_ID + ",view)";
 
+  public final static String QUERY_ACCESSORIES = "queryObjects(" + ACCESSORIES_ID + ",name1,name2,name3,addr,protocol,mode,symbol)";
+
   public static final String FEEDBACK_MODULES_SIZE = "get(" + FEEDBACK_MANAGER_ID + ", size)";
 
   public static EcosMessage getBaseObject() {
@@ -123,11 +125,11 @@ public class EcosMessageFactory implements Ecos {
   }
 
   public static EcosMessage getAccessories() {
-    return new EcosMessage("queryObjects(" + ACCESSORIES_ID + ", name1,name2,name3,addr,protocol,mode,symbol)");
+    return new EcosMessage(QUERY_ACCESSORIES);
   }
 
   public static EcosMessage getAccessoryDetails(String accessoryId) {
-    return new EcosMessage("get(" + accessoryId + ", name1,name2,name3,addr,protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)");
+    return new EcosMessage("get(" + accessoryId + ",name1,name2,name3,addr,protocol,mode,symbol,state,addrext,duration,gates,variant,position,switching)");
   }
 
   public static EcosMessage subscribeAccessoryManager() {

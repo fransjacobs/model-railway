@@ -23,8 +23,11 @@ import java.util.concurrent.TransferQueue;
 import jcs.commandStation.esu.ecos.Ecos;
 import jcs.commandStation.esu.ecos.EcosMessage;
 import jcs.commandStation.esu.ecos.EcosMessageFactory;
+import jcs.entities.AccessoryBean;
+import jcs.entities.FeedbackModuleBean;
 import jcs.entities.FunctionBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
@@ -133,14 +136,68 @@ class EcosVirtualConnection implements EcosConnection {
       case EcosMessageFactory.LOCO_MANAGER_RELEASE_VIEW -> {
 
       }
+      case EcosMessageFactory.QUERY_ACCESSORIES -> {
+        List<AccessoryBean> accessories = PersistenceFactory.getService().getAccessories();
+        for (AccessoryBean accessory : accessories) {
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" name1[");
+          replyBuilder.append(accessory.getName());
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" addr[");
+          replyBuilder.append(accessory.getAddress());
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" protocol[");
+          String protocol = accessory.getProtocol().getValue();
+          switch (protocol) {
+            case "mm" ->
+              replyBuilder.append("MOT");
+            default ->
+              replyBuilder.append("DCC");
+          }
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" symbol[");
+          replyBuilder.append(getSymbol(accessory.getType()));
+          replyBuilder.append("]");
+        }
+      }
+      case EcosMessageFactory.FEEDBACK_MODULES_SIZE -> {
+        List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+        int size = sensors.size() / 16;
+        replyBuilder.append(" size[");
+        replyBuilder.append(size);
+        replyBuilder.append("]");
+      }
       default -> {
         //Interpret the message
         Logger.trace(msg);
         Logger.trace(message.getId() + ": " + message.getCommand());
         String cmd = message.getCommand();
+        String id = message.getId();
         int objId = message.getObjectId();
 
-        if (objId >= 1000 && objId < 9999) {
+        if (objId < 100) {
+          if (objId == Ecos.BASEOBJECT_ID && Ecos.CMD_SET.equals(cmd)) {
+            replyBuilder.append(" status[");
+            if (msg.contains(Ecos.GO)) {
+              replyBuilder.append(Ecos.GO);
+            } else {
+              replyBuilder.append(Ecos.STOP);
+            }
+            replyBuilder.append("]");
+          }
+        } else if (objId >= 100 && objId < 999) {
+          if (Ecos.CMD_GET.equals(cmd)) {
+            //TODO: get(" + moduleId + ", state, ports)"
+            FeedbackModuleBean module = getFeedbackModule(objId);
+
+          }
+        } else if (objId >= 1000 && objId < 9999) {
           switch (cmd) {
             case Ecos.CMD_GET -> {
               //Locomotive details
@@ -215,6 +272,60 @@ class EcosVirtualConnection implements EcosConnection {
             }
 
           }
+        } else if (objId >= 20000 && objId < 20999) {
+          AccessoryBean accessory = PersistenceFactory.getService().getAccessory(id);
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" name1[");
+          replyBuilder.append(accessory.getName());
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" addr[");
+          replyBuilder.append(accessory.getAddress());
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" protocol[");
+          String protocol = accessory.getProtocol().getValue();
+          switch (protocol) {
+            case "mm" ->
+              replyBuilder.append("MOT");
+            default ->
+              replyBuilder.append("DCC");
+          }
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" symbol[");
+          replyBuilder.append(getSymbol(accessory.getType()));
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" state[");
+          AccessoryBean.AccessoryValue value = accessory.getAccessoryValue();
+          switch (value) {
+            case AccessoryBean.AccessoryValue.GREEN ->
+              replyBuilder.append("0");
+            case AccessoryBean.AccessoryValue.RED ->
+              replyBuilder.append("1");
+            case AccessoryBean.AccessoryValue.WHITE ->
+              replyBuilder.append("2");
+            case AccessoryBean.AccessoryValue.YELLOW ->
+              replyBuilder.append("3");
+            default ->
+              replyBuilder.append("0");
+          }
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" duration[");
+          replyBuilder.append(accessory.getSwitchTime());
+          replyBuilder.append("]");
+
+          replyBuilder.append(accessory.getId());
+          replyBuilder.append(" gates[");
+          replyBuilder.append(accessory.getStates());
+          replyBuilder.append("]");
         }
       }
     }
@@ -248,6 +359,105 @@ class EcosVirtualConnection implements EcosConnection {
   @Override
   public InetAddress getControllerAddress() {
     return NetworkUtil.getIPv4HostAddress();
+  }
+
+  static String getSymbol(String type) {
+    return switch (type) {
+      case "linksweiche" ->
+        "0";
+      case "rechtsweiche" ->
+        "1";
+      case "dreiwegweiche" ->
+        "2";
+      case "y_weiche" ->
+        "3";
+      case "formsignal_HP01" ->
+        "5";
+      case "formsignal_HP02" ->
+        "6";
+      case "formsignal_HP012" ->
+        "7";
+      case "formsignal_SH01" ->
+        "8";
+      case "lichtsignal_HP01" ->
+        "9";
+      case "lichtsignal_HP02" ->
+        "10";
+      case "lichtsignal_HP012" ->
+        "11";
+      case "lichtsignal_HP012_SH01" ->
+        "12";
+      case "lichtsignal_SH01" ->
+        "13";
+      case "entkupplungsgleis" ->
+        "17";
+      default ->
+        "0";
+    };
+  }
+
+  FeedbackModuleBean getFeedbackModule(int moduleId) {
+    int id = moduleId;
+    int moduleNr = id - 100;
+    FeedbackModuleBean module = new FeedbackModuleBean();
+    module.setId(id);
+    module.setModuleNumber(moduleNr);
+    module.setPortCount(16);
+    module.setAddressOffset(100);
+    return module;
+  }
+
+  List<FeedbackModuleBean> getFeedbackModules() {
+    List<FeedbackModuleBean> modules = new ArrayList<>();
+    List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
+
+    //The default module contains 16 Sensors
+    //The ECoS id offset is 100
+    int moduleNumber = -1;
+    for (int i = 0; i < sensors.size(); i++) {
+      SensorBean s = sensors.get(i);
+      if (moduleNumber != s.getDeviceId()) {
+        moduleNumber = s.getDeviceId();
+        FeedbackModuleBean module = new FeedbackModuleBean();
+        module.setId(moduleNumber + 100);
+        module.setModuleNumber(moduleNumber);
+        module.setPortCount(16);
+        module.setAddressOffset(100);
+        modules.add(module);
+      } else {
+        //Skip this sensor as it belongs to the same module
+      }
+    }
+
+    return modules;
+  }
+
+  void updatePorts(String state, FeedbackModuleBean s88) {
+    String val = state.replace("0x", "");
+    int l = 4 - val.length();
+    for (int i = 0; i < l; i++) {
+      val = "0" + val;
+    }
+
+    int[] ports = s88.getPorts();
+    int[] prevPorts = s88.getPrevPorts();
+
+    if (ports == null) {
+      ports = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
+      prevPorts = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
+    }
+    //Set the previous ports State
+    System.arraycopy(ports, 0, prevPorts, 0, ports.length);
+    s88.setPrevPorts(prevPorts);
+
+    int stateVal = Integer.parseInt(val, 16);
+    //Logger.trace(state + " -> " + stateVal);
+    for (int i = 0; i < ports.length; i++) {
+      int m = ((int) Math.pow(2, i));
+      int pv = (stateVal & m) > 0 ? 1 : 0;
+      ports[i] = pv;
+    }
+    s88.setPorts(ports);
   }
 
 }

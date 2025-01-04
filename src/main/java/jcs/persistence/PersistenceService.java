@@ -16,7 +16,6 @@
 package jcs.persistence;
 
 import java.awt.Image;
-import java.util.HashMap;
 import java.util.List;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
@@ -87,6 +86,8 @@ public interface PersistenceService {
   void remove(LocomotiveBean locomotiveBean);
 
   // Accessories
+  List<AccessoryBean> getAccessories();
+
   List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
 
   boolean isAccessoryLocked(String accessoryId);
@@ -107,7 +108,7 @@ public interface PersistenceService {
 
   // Tile
   List<TileBean> getTileBeans();
-  
+
   List<TileBean> getTileBeansByTileType(TileBean.TileType tileType);
 
   TileBean getTileBean(String id);

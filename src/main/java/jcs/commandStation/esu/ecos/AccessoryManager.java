@@ -80,7 +80,6 @@ class AccessoryManager implements AccessoryEventListener {
   }
 
   private AccessoryBean parseValues(Map<String, Object> values, boolean event) {
-    boolean hasKey = values.containsKey(Ecos.ID);
     String id = values.get(Ecos.ID).toString();
     AccessoryBean accessory;
     if (accessories.containsKey(id)) {

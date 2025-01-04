@@ -68,7 +68,7 @@ public class EsuEcosCommandStationImplTest {
 
   @BeforeEach
   public void setUp() {
-    testHelper.runTestDataInsertScript("locomotives_ecos.sql");
+    testHelper.runTestDataInsertScript("ecos_test_data.sql");
   }
 
   @AfterEach
@@ -172,17 +172,15 @@ public class EsuEcosCommandStationImplTest {
   /**
    * Test of power method, of class EsuEcosCommandStationImpl.
    */
-  //@Test
+  @Test
   public void testPower() {
     System.out.println("power");
-    boolean on = false;
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
-    boolean expResult = false;
-    boolean result = instance.power(on);
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    boolean result = instance.power(true);
+    assertTrue(result);
+    result = instance.power(false);
+    assertFalse(result);
   }
 
   /**
@@ -245,7 +243,7 @@ public class EsuEcosCommandStationImplTest {
     int expResult = 12;
     instance.connect();
     List<LocomotiveBean> result = instance.getLocomotives();
-    assertEquals(12, result.size());
+    assertEquals(expResult, result.size());
   }
 
   /**
@@ -343,17 +341,15 @@ public class EsuEcosCommandStationImplTest {
   /**
    * Test of getAccessories method, of class EsuEcosCommandStationImpl.
    */
-  //@Test
+  @Test
   public void testGetAccessories() {
     System.out.println("getAccessories");
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
 
-    List<AccessoryBean> expResult = null;
+    int expResult = 7;
     List<AccessoryBean> result = instance.getAccessories();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertEquals(expResult, result.size());
   }
 
   /**
@@ -374,16 +370,14 @@ public class EsuEcosCommandStationImplTest {
   /**
    * Test of getFeedbackModules method, of class EsuEcosCommandStationImpl.
    */
-  //@Test
+  @Test
   public void testGetFeedbackModules() {
     System.out.println("getFeedbackModules");
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
-    List<FeedbackModuleBean> expResult = null;
+    int expResult = 1;
     List<FeedbackModuleBean> result = instance.getFeedbackModules();
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+    assertEquals(expResult, result.size());
   }
 
   /**
