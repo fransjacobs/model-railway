@@ -260,7 +260,6 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Virtual"/>
                 <Property name="toolTipText" type="java.lang.String" value="Enable Virtual Mode"/>
-                <Property name="actionCommand" type="java.lang.String" value="Virtual"/>
                 <Property name="focusable" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="2"/>
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -611,7 +610,7 @@
                   <Dimension value="[40, 40]"/>
                 </Property>
                 <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/monitor-on-24.png"/>
+                  <Image iconType="3" name="/media/pilot-green.png"/>
                 </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>
@@ -650,7 +649,7 @@
                   <Dimension value="[40, 40]"/>
                 </Property>
                 <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/media/monitor-on-24.png"/>
+                  <Image iconType="3" name="/media/cruise-control-on-green.png"/>
                 </Property>
                 <Property name="verticalTextPosition" type="int" value="3"/>
               </Properties>

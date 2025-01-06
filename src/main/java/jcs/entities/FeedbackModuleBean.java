@@ -97,6 +97,22 @@ public class FeedbackModuleBean {
     this.ports = ports;
   }
 
+  public void setPortValue(int port, boolean active) {
+    this.ports[port] = active ? 1 : 0;
+  }
+
+  public int getAccumulatedPortsValue() {
+    int val = 0;
+    for (int i = 0; i < ports.length; i++) {
+      int portVal = 0;
+      if (ports[i] == 1) {
+        portVal = (int) Math.pow(2, i);
+      }
+      val = val + portVal;
+    }
+    return val;
+  }
+
   public int[] getPrevPorts() {
     return prevPorts;
   }
@@ -123,7 +139,7 @@ public class FeedbackModuleBean {
 
     for (int i = 0; i < ports.length; i++) {
       if (ports[i] != prevPorts[i]) {
-        SensorBean sb = new SensorBean(moduleNumber, i+1, ports[i]);
+        SensorBean sb = new SensorBean(moduleNumber, i + 1, ports[i]);
         SensorEvent se = new SensorEvent(sb);
         changedSensors.add(se);
       }
@@ -136,11 +152,24 @@ public class FeedbackModuleBean {
 
     for (int i = 0; i < ports.length; i++) {
       if (ports[i] != prevPorts[i]) {
-        SensorBean sb = new SensorBean(moduleNumber, i+1, ports[i]);
+        SensorBean sb = new SensorBean(moduleNumber, i + 1, ports[i]);
         sensors.add(sb);
       }
     }
     return sensors;
+  }
+
+  public String portToString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(" {");
+    for (int i = 0; i < ports.length; i++) {
+      sb.append(i + 1);
+      sb.append("[");
+      sb.append(ports[i]);
+      sb.append("] ");
+    }
+    sb.append("}");
+    return sb.toString();
   }
 
   @Override

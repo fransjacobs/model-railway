@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation;
+package jcs.commandStation.virtual;
 
-import java.util.List;
 import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.events.SensorEventListener;
-import jcs.commandStation.entities.DeviceBean;
-import jcs.entities.FeedbackModuleBean;
 
-public interface FeedbackController extends GenericController {
+/**
+ *
+ * @author Frans Jacobs
+ */
+public interface VirtualConnection {
 
-  void addSensorEventListener(SensorEventListener listener);
-
-  void removeSensorEventListener(SensorEventListener listener);
-
-  DeviceBean getFeedbackDevice();
-
-  List<FeedbackModuleBean> getFeedbackModules();
-
-  void fireSensorEventListeners(SensorEvent sensorEvent);
-
-  void simulateSensor(SensorEvent sensorEvent);
+  void sendEvent(SensorEvent sensorEvent);
 }

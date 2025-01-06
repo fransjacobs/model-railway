@@ -72,6 +72,7 @@ import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveSpeedEventParser;
 import jcs.commandStation.marklin.cs2.PowerEventParser;
 import jcs.commandStation.marklin.cs2.SensorMessageParser;
+import jcs.commandStation.virtual.VirtualConnection;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import static jcs.entities.LocomotiveBean.DecoderType.DCC;
@@ -751,6 +752,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   public void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
       listener.onSensorChange(sensorEvent);
+    }
+  }
+
+  @Override
+  public void simulateSensor(SensorEvent sensorEvent) {
+    if (this.connection instanceof VirtualConnection virtualConnection) {
+      virtualConnection.sendEvent(sensorEvent);
     }
   }
 

@@ -373,7 +373,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     virtualCB.setText("Virtual");
     virtualCB.setToolTipText("Enable Virtual Mode");
-    virtualCB.setActionCommand("Virtual");
     virtualCB.setFocusable(false);
     virtualCB.setHorizontalTextPosition(SwingConstants.LEFT);
     virtualCB.setMaximumSize(new Dimension(65, 30));
@@ -527,7 +526,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     autoPilotBtn.setMinimumSize(new Dimension(40, 40));
     autoPilotBtn.setName("autoPilotBtn"); // NOI18N
     autoPilotBtn.setPreferredSize(new Dimension(40, 40));
-    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/monitor-on-24.png"))); // NOI18N
+    autoPilotBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/pilot-green.png"))); // NOI18N
     autoPilotBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     autoPilotBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -548,7 +547,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     startAllLocomotivesBtn.setMinimumSize(new Dimension(40, 40));
     startAllLocomotivesBtn.setName("startAllLocomotivesBtn"); // NOI18N
     startAllLocomotivesBtn.setPreferredSize(new Dimension(40, 40));
-    startAllLocomotivesBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/monitor-on-24.png"))); // NOI18N
+    startAllLocomotivesBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
     startAllLocomotivesBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
     startAllLocomotivesBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {

@@ -15,17 +15,12 @@
  */
 package jcs.commandStation.esu.ecos;
 
-import java.awt.Image;
+import java.util.ArrayList;
 import java.util.List;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
-import jcs.commandStation.events.AccessoryEvent;
-import jcs.commandStation.events.LocomotiveDirectionEvent;
-import jcs.commandStation.events.LocomotiveFunctionEvent;
-import jcs.commandStation.events.LocomotiveSpeedEvent;
-import jcs.commandStation.events.PowerEvent;
-import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
+import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.entities.LocomotiveBean;
@@ -104,43 +99,61 @@ public class EsuEcosCommandStationImplTest {
   /**
    * Test of getCommandStationInfo method, of class EsuEcosCommandStationImpl.
    */
-  //@Test
+  @Test
   public void testGetCommandStationInfo() {
     System.out.println("getCommandStationInfo");
-    EsuEcosCommandStationImpl instance = null;
-    InfoBean expResult = null;
+    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+    instance.connect();
+    InfoBean expResult = new InfoBean(this.commandStationBean);
+    expResult.setArticleNumber("Virtual-ECoS");
+    expResult.setDescription("ECoS-Virtual");
+    expResult.setArticleNumber("Virtual");
+    expResult.setSerialNumber("0x00000000");
+    expResult.setHardwareVersion("1.3");
+    expResult.setSoftwareVersion("4.2.13");
+    expResult.setHostname(NetworkUtil.getIPv4HostAddress().getHostAddress());
+
     InfoBean result = instance.getCommandStationInfo();
     assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
 
   /**
    * Test of getDevice method, of class EsuEcosCommandStationImpl.
    */
-  //@Test
+  @Test
   public void testGetDevice() {
     System.out.println("getDevice");
-    EsuEcosCommandStationImpl instance = null;
-    DeviceBean expResult = null;
+    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+    instance.connect();
+    DeviceBean expResult = new DeviceBean();
+    expResult.setName("ECoS-Virtual");
+    expResult.setVersion("1.3");
+    expResult.setTypeName("ECoS");
+    expResult.setSerial("0x00000000");
+
     DeviceBean result = instance.getDevice();
     assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
 
   /**
    * Test of getDevices method, of class EsuEcosCommandStationImpl.
    */
-  //@Test
+  @Test
   public void testGetDevices() {
     System.out.println("getDevices");
-    EsuEcosCommandStationImpl instance = null;
-    List<DeviceBean> expResult = null;
+    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+    instance.connect();
+    DeviceBean db = new DeviceBean();
+    db.setName("ECoS-Virtual");
+    db.setVersion("1.3");
+    db.setTypeName("ECoS");
+    db.setSerial("0x00000000");
+
+    List<DeviceBean> expResult = new ArrayList<>();
+    expResult.add(db);
+
     List<DeviceBean> result = instance.getDevices();
     assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
 
   /**
@@ -247,38 +260,6 @@ public class EsuEcosCommandStationImplTest {
   }
 
   /**
-   * Test of getLocomotiveImage method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testGetLocomotiveImage() {
-    System.out.println("getLocomotiveImage");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-
-    String icon = "";
-    Image expResult = null;
-    Image result = instance.getLocomotiveImage(icon);
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of getLocomotiveFunctionImage method, of class EsuEcosCommandStationImpl.
-   */
-  //Test
-  public void testGetLocomotiveFunctionImage() {
-    System.out.println("getLocomotiveFunctionImage");
-    String icon = "";
-    EsuEcosCommandStationImpl instance = null;
-    Image expResult = null;
-    Image result = instance.getLocomotiveFunctionImage(icon);
-    assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
    * Test of isSupportTrackMeasurements method, of class EsuEcosCommandStationImpl.
    */
   @Test
@@ -355,16 +336,28 @@ public class EsuEcosCommandStationImplTest {
   /**
    * Test of getFeedbackDevice method, of class EsuEcosCommandStationImpl.
    */
-  //@Test
+  @Test
   public void testGetFeedbackDevice() {
     System.out.println("getFeedbackDevice");
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
-    DeviceBean expResult = null;
+
+    DeviceBean expResult = new DeviceBean();
+    expResult.setArticleNumber("ECoS-Virtual");
+    expResult.setIdentifier("0x0");
+    expResult.getBusLength(1);
+    expResult.setVersion("4.2.13");
+    expResult.setSerial("0x00000000");
+    expResult.setTypeName("Link S88");
+
+    ChannelBean cb = new ChannelBean();
+    cb.setName(DeviceBean.BUS0);
+    cb.setNumber(0);
+
+    expResult.addSensorBus(0, cb);
+
     DeviceBean result = instance.getFeedbackDevice();
     assertEquals(expResult, result);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
 
   /**
@@ -378,84 +371,6 @@ public class EsuEcosCommandStationImplTest {
     int expResult = 1;
     List<FeedbackModuleBean> result = instance.getFeedbackModules();
     assertEquals(expResult, result.size());
-  }
-
-  /**
-   * Test of fireSensorEventListeners method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testFireSensorEventListeners() {
-    System.out.println("fireSensorEventListeners");
-    SensorEvent sensorEvent = null;
-    EsuEcosCommandStationImpl instance = null;
-    instance.fireSensorEventListeners(sensorEvent);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of fireDirectionEventListeners method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testFireDirectionEventListeners() {
-    System.out.println("fireDirectionEventListeners");
-    LocomotiveDirectionEvent directionEvent = null;
-    EsuEcosCommandStationImpl instance = null;
-    instance.fireDirectionEventListeners(directionEvent);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of fireLocomotiveSpeedEventListeners method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testFireLocomotiveSpeedEventListeners() {
-    System.out.println("fireLocomotiveSpeedEventListeners");
-    LocomotiveSpeedEvent speedEvent = null;
-    EsuEcosCommandStationImpl instance = null;
-    instance.fireLocomotiveSpeedEventListeners(speedEvent);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of fireFunctionEventListeners method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testFireFunctionEventListeners() {
-    System.out.println("fireFunctionEventListeners");
-    LocomotiveFunctionEvent functionEvent = null;
-    EsuEcosCommandStationImpl instance = null;
-    instance.fireFunctionEventListeners(functionEvent);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of fireAccessoryEventListeners method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testFireAccessoryEventListeners() {
-    System.out.println("fireAccessoryEventListeners");
-    AccessoryEvent accessoryEvent = null;
-    EsuEcosCommandStationImpl instance = null;
-    instance.fireAccessoryEventListeners(accessoryEvent);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
-  }
-
-  /**
-   * Test of firePowerEventListeners method, of class EsuEcosCommandStationImpl.
-   */
-  //@Test
-  public void testFirePowerEventListeners() {
-    System.out.println("firePowerEventListeners");
-    PowerEvent powerEvent = null;
-    EsuEcosCommandStationImpl instance = null;
-    instance.firePowerEventListeners(powerEvent);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
   }
 
 }

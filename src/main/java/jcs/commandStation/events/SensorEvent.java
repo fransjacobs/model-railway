@@ -50,6 +50,14 @@ public class SensorEvent {
     }
   }
 
+  public Integer getDeviceId() {
+    return this.sensorBean.getDeviceId();
+  }
+
+  public Integer getContactId() {
+    return this.sensorBean.getContactId();
+  }
+
   public boolean isChanged() {
     boolean active = sensorBean.isActive();
     boolean prevActive = sensorBean.isPreviousActive();

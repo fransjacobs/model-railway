@@ -23,6 +23,8 @@ import java.util.concurrent.TransferQueue;
 import jcs.commandStation.esu.ecos.Ecos;
 import jcs.commandStation.esu.ecos.EcosMessage;
 import jcs.commandStation.esu.ecos.EcosMessageFactory;
+import jcs.commandStation.events.SensorEvent;
+import jcs.commandStation.virtual.VirtualConnection;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.entities.FunctionBean;
@@ -36,7 +38,7 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-class EcosVirtualConnection implements EcosConnection {
+class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
   private boolean connected;
 
@@ -193,9 +195,11 @@ class EcosVirtualConnection implements EcosConnection {
           }
         } else if (objId >= 100 && objId < 999) {
           if (Ecos.CMD_GET.equals(cmd)) {
-            //TODO: get(" + moduleId + ", state, ports)"
             FeedbackModuleBean module = getFeedbackModule(objId);
-
+            replyBuilder.append(module.getAddressOffset() + module.getModuleNumber());
+            replyBuilder.append(" state[0x");
+            replyBuilder.append(module.getAccumulatedPortsValue());
+            replyBuilder.append("]");
           }
         } else if (objId >= 1000 && objId < 9999) {
           switch (cmd) {
@@ -334,9 +338,9 @@ class EcosVirtualConnection implements EcosConnection {
     reply = replyBuilder.toString();
     message.addResponse(reply);
 
-    if (debug) {
-      Logger.trace("TX:" + message.getMessage() + " :->\n" + message.getMessage());
-    }
+    //if (debug) {
+    Logger.trace("TX:" + message.getMessage() + " :->\n" + message.getResponse());
+    //}
 
     return message;
   }
@@ -397,6 +401,7 @@ class EcosVirtualConnection implements EcosConnection {
   }
 
   FeedbackModuleBean getFeedbackModule(int moduleId) {
+    List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
     int id = moduleId;
     int moduleNr = id - 100;
     FeedbackModuleBean module = new FeedbackModuleBean();
@@ -404,60 +409,55 @@ class EcosVirtualConnection implements EcosConnection {
     module.setModuleNumber(moduleNr);
     module.setPortCount(16);
     module.setAddressOffset(100);
-    return module;
-  }
 
-  List<FeedbackModuleBean> getFeedbackModules() {
-    List<FeedbackModuleBean> modules = new ArrayList<>();
-    List<SensorBean> sensors = PersistenceFactory.getService().getSensors();
-
-    //The default module contains 16 Sensors
-    //The ECoS id offset is 100
-    int moduleNumber = -1;
-    for (int i = 0; i < sensors.size(); i++) {
-      SensorBean s = sensors.get(i);
-      if (moduleNumber != s.getDeviceId()) {
-        moduleNumber = s.getDeviceId();
-        FeedbackModuleBean module = new FeedbackModuleBean();
-        module.setId(moduleNumber + 100);
-        module.setModuleNumber(moduleNumber);
-        module.setPortCount(16);
-        module.setAddressOffset(100);
-        modules.add(module);
-      } else {
-        //Skip this sensor as it belongs to the same module
+    for (SensorBean sb : sensors) {
+      if (sb.getDeviceId() == moduleNr) {
+        int port = sb.getContactId() - 1;
+        boolean value = sb.isActive();
+        module.setPortValue(port, value);
       }
     }
 
-    return modules;
+    return module;
   }
 
-  void updatePorts(String state, FeedbackModuleBean s88) {
-    String val = state.replace("0x", "");
-    int l = 4 - val.length();
-    for (int i = 0; i < l; i++) {
-      val = "0" + val;
-    }
+  @Override
+  public void sendEvent(SensorEvent sensorEvent) {
+    Logger.trace("Device: " + sensorEvent.getDeviceId() + " contact: " + sensorEvent.getContactId() + " -> " + sensorEvent.isActive());
+    
+    FeedbackModuleBean fbm = getFeedbackModule(100 + sensorEvent.getDeviceId());
 
-    int[] ports = s88.getPorts();
-    int[] prevPorts = s88.getPrevPorts();
+    Logger.trace(fbm.getId()+" nr: "+fbm.getModuleNumber() + " Current ports: " + fbm.portToString());
 
-    if (ports == null) {
-      ports = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
-      prevPorts = new int[FeedbackModuleBean.DEFAULT_PORT_COUNT];
-    }
-    //Set the previous ports State
-    System.arraycopy(ports, 0, prevPorts, 0, ports.length);
-    s88.setPrevPorts(prevPorts);
+    int port = sensorEvent.getContactId() - 1;
 
-    int stateVal = Integer.parseInt(val, 16);
-    //Logger.trace(state + " -> " + stateVal);
-    for (int i = 0; i < ports.length; i++) {
-      int m = ((int) Math.pow(2, i));
-      int pv = (stateVal & m) > 0 ? 1 : 0;
-      ports[i] = pv;
+    fbm.setPortValue(port, sensorEvent.isActive());
+    Logger.trace(100 + fbm.getModuleNumber() + " changed ports: " + fbm.portToString());
+
+    StringBuilder sb = new StringBuilder();
+    int id = sensorEvent.getDeviceId() + 100;
+    sb.append("<EVENT ");
+    sb.append(id);
+    sb.append(">");
+    sb.append(id);
+    sb.append(" state[0x");
+    String state = Integer.toHexString(fbm.getAccumulatedPortsValue());
+    sb.append(state);
+    sb.append("]<END 0 (OK)>");
+
+    EcosMessage eventMessage = new EcosMessage(sb.toString());
+
+    Logger.trace("Sensor " + eventMessage);
+
+    try {
+      this.eventQueue.put(eventMessage);
+    } catch (InterruptedException ex) {
+      Logger.error(ex);
     }
-    s88.setPorts(ports);
   }
 
+  public static String toHexString(int b) {
+    String h = Integer.toHexString((b));
+    return h;
+  }
 }

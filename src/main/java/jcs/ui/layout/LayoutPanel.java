@@ -1064,7 +1064,6 @@ public class LayoutPanel extends JPanel {
         addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
       }
       default -> {
-        Logger.warn("Mode setting which should not ever happen " + mode);
         selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
         addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
         deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));

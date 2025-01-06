@@ -29,6 +29,7 @@ import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
+import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.esu.ecos.net.EcosConnection;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import jcs.commandStation.events.PowerEvent;
@@ -50,6 +51,8 @@ import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.SensorEventListener;
+import jcs.commandStation.virtual.DriveSimulator;
+import jcs.commandStation.virtual.VirtualConnection;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
@@ -64,6 +67,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   private LocomotiveManager locomotiveManager;
   private AccessoryManager accessoryManager;
   private FeedbackManager feedbackManager;
+
+  private DriveSimulator simulator;
 
   public EsuEcosCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -151,6 +156,12 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             initFeedbackManager();
             Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
 
+            if (isVirtual()) {
+              simulator = new DriveSimulator(this, this, this);
+              Logger.info("ECoS Virtual Mode Enabled!");
+
+            }
+
           } else {
             Logger.warn("Can't connect with a ESU ECoS Command Station!");
             JCS.logProgress("Can't connect with ESU ECoS Command Station!");
@@ -221,7 +232,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 //      if (values.containsKey(Ecos.PORTS)) {
 //        String ports = reply.getValueMap().get(Ecos.PORTS).toString();
 //      }
-
       //Logger.trace("state: "+state+" ports: "+ports);
       connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
       //Logger.trace("r: "+reply.getResponse());
@@ -267,7 +277,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     return ib;
   }
 
-  //TODO: is the device in the form it is now really necessary?
+  //TODO: is the device in this form it is now really necessary?
   @Override
   public DeviceBean getDevice() {
     DeviceBean d = new DeviceBean();
@@ -282,9 +292,12 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     return d;
   }
 
+  //TODO: is the device in this form it is now really necessary?
   @Override
   public List<DeviceBean> getDevices() {
-    throw new UnsupportedOperationException("Not supported yet.");
+    List<DeviceBean> devices = new ArrayList<>();
+    devices.add(getDevice());
+    return devices;
   }
 
   @Override
@@ -381,6 +394,15 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     //TODO: think about threading....
     Logger.trace("Speed changed to: " + speed + " speedstep: " + speedstep + " for loco ID: " + locUid);
     fireLocomotiveSpeedEventListeners(vme);
+
+    if (isVirtual()) {
+      //When a locomotive has a speed change (>0) check if Auto mode is on.
+      //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
+      if (AutoPilot.isAutoModeActive() && speed > 0) {
+        //simulateDriving(locUid, speed, direction);
+        this.simulator.simulateDriving(locUid, speed, direction);
+      }
+    }
   }
 
   @Override
@@ -548,6 +570,13 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     Logger.trace("SensorEvent: " + sensorEvent);
     for (SensorEventListener listener : sensorEventListeners) {
       listener.onSensorChange(sensorEvent);
+    }
+  }
+
+  @Override
+  public void simulateSensor(SensorEvent sensorEvent) {
+    if (this.connection instanceof VirtualConnection virtualConnection) {
+      virtualConnection.sendEvent(sensorEvent);
     }
   }
 
@@ -810,164 +839,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
         //reply = cs.connection.sendMessage(new EcosMessage("queryObjects(11, name1,name2,name3, addr, protocol, objectclass)"));       
         //Logger.trace(reply.getMessage()+" ->\n"+reply.getResponse());
-//      queryObjects(10, name, addr, protocol, dir, speed,  locodesc, speedstep, func, funcset, favorite) ->
-//        queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control) ->
-//<REPLY queryObjects(10, objectclass, addr, name, protocol, locodesc, favorite, control)>
-//  1002 name["FS236-002"] addr[14] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,14] favorite[1] control[other]
-//  1003 name["NS 6505"] addr[8] protocol[DCC28] objectclass[loco] locodesc[LOCO_TYPE_DIESEL,IMAGE_TYPE_INT,21] favorite[1] control[other]
-//<END 0 (OK)>
-//<REPLY get(31, link[0])>
-//31 link[0,0,20000,R0]
-//31 link[0,1,20001,R0]
-//31 link[0,2,0]
-//31 link[0,3,0]
-//31 link[0,4,0]
-//31 link[0,5,0]
-//31 link[0,6,0]
-//31 link[0,7,0]
-//31 link[0,8,0]
-//31 link[0,9,0]
-//31 link[0,10,0]
-//31 link[0,11,0]
-//31 link[0,12,0]
-//31 link[0,13,0]
-//31 link[0,14,0]
-//31 link[0,15,0]
-//<END 0 (OK, but no newline after packet)>
-//<REPLY queryObjects(27)>
-//65000
-//<END 0 (OK, but no newline after packet)>
-//<REPLY get(100, ports, state, railcom, control)>
-//100 ports[16]
-//100 state[0x0]
-//100 control[none]
-//<END 0 (OK, but no newline after packet)>
-//
-//<REPLY get(100, railcom[0])>
-//100 railcom[0,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//
-//<REPLY get(100, railcom[1])>
-//100 railcom[1,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//
-//<REPLY get(100, railcom[2])>
-//100 railcom[2,0,0]
-//
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[3])>
-//100 railcom[3,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//
-//<REPLY get(100, railcom[4])>
-//100 railcom[4,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[5])>
-//100 railcom[5,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[6])>
-//100 railcom[6,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[7])>
-//100 railcom[7,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[8])>
-//100 railcom[8,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[9])>
-//100 railcom[9,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[10])>
-//100 railcom[10,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[11])>
-//100 railcom[11,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[12])>
-//100 railcom[12,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[13])>
-//100 railcom[13,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[14])>
-//100 railcom[14,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//<REPLY get(100, railcom[15])>
-//100 railcom[15,0,0]
-//<END 0 (OK, but no RailCom port at 18)>
-//
-//<EVENT 100>
-//100 state[0x10]
-//<END 0 (OK)>
-//      
-//<REPLY get(1, status2)>
-//1 status2[ALL]
-//<END 0 (OK, but no newline after packet)>
-//
-//<REPLY request(1002, view)>
-//<END 0 (OK, but no newline after packet)>
-//
-//<REPLY request(1002, view, attribute[realspeed])>
-//<END 0 (OK, but no newline after packet)>
-//
-//<REPLY get(1002, multi, addressconflict, speedindicator, speedstep, speed, dir, sniffer, realspeed, autoregister, active)>
-//1002 multi[0]
-//1002 addressconflict[0]
-//1002 speedindicator[0]
-//1002 speedstep[0]
-//1002 speed[0]
-//1002 dir[1]
-//1002 sniffer[0]
-//1002 realspeed[0]
-//1002 autoregister[railcomplus]
-//1002 active[0]
-//<END 0 (OK, but no newline after packet)>
-//<REPLY request(1003, view)>
-//<END 0 (OK, but no newline after packet)>
-//<REPLY request(1003, view, attribute[realspeed])>
-//<END 0 (OK, but no newline after packet)>
-//
-//<REPLY get(1003, multi, addressconflict, speedindicator, speedstep, speed, dir, sniffer, realspeed, autoregister, active)>
-//1003 multi[0]
-//1003 addressconflict[0]
-//1003 speedindicator[0]
-//1003 speedstep[0]
-//1003 speed[0]
-//1003 dir[0]
-//1003 sniffer[0]
-//1003 realspeed[0]
-//1003 autoregister[railcomplus]
-//1003 active[0]
-//<END 0 (OK, but no newline after packet)>
-//<REPLY request(20000, view)>
-//<END 0 (OK, but no newline after packet)>
-//<REPLY get(20000, addr, addrext, protocol, symbol, mode, duration, gates, state, control)>
-//20000 addr[1]
-//20000 addrext[1g,1r]
-//20000 protocol[DCC]
-//20000 symbol[1]
-//20000 mode[SWITCH]
-//20000 duration[250]
-//20000 gates[2]
-//20000 state[0]
-//20000 control[none]
-//<END 0 (OK, but no newline after packet)>
-//
-//<REPLY request(20001, view)>
-//<END 0 (OK, but no newline after packet)>
-//<REPLY get(20001, addr, addrext, protocol, symbol, mode, duration, gates, state, control)>
-//20001 addr[2]
-//20001 addrext[2g,2r]
-//20001 protocol[DCC]
-//20001 symbol[0]
-//20001 mode[SWITCH]
-//20001 duration[250]
-//20001 gates[2]
-//20001 state[0]
-//20001 control[none]
-//<END 0 (OK, but no newline after packet)>
-//
-//
         cs.pause(100000);
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeBaseObject());
         //cs.connection.sendMessage(EcosMessageFactory.unSubscribeFeedbackManager());
