@@ -46,9 +46,9 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
-import jcs.entities.DeviceBean;
+import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FunctionBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.util.KeyValuePair;
@@ -64,8 +64,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   Map<Integer, ChannelBean> measurementChannels;
 
-  private int defaultSwitchTime;
-
   public DccExCommandStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -73,7 +71,6 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   public DccExCommandStationImpl(CommandStationBean commandStationBean, boolean autoConnect) {
     super(autoConnect, commandStationBean);
     measurementChannels = new HashMap<>();
-    defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
     this.executor = Executors.newCachedThreadPool();
 
     if (commandStationBean != null) {
@@ -369,6 +366,11 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   }
 
   @Override
+  public void switchAccessory(String id, AccessoryValue value) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
   public List<LocomotiveBean> getLocomotives() {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -572,9 +574,9 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
   }
 
   private void handleTrackMessage(String opcode, String content) {
-    Logger.trace(opcode+" -> "+content);
+    Logger.trace(opcode + " -> " + content);
   }
-  
+
   private class MessageListener implements DccExMessageListener {
 
     private final DccExCommandStationImpl commandStation;

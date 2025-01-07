@@ -26,6 +26,8 @@ public interface AccessoryController extends GenericController {
 
   void switchAccessory(Integer address, AccessoryValue value, Integer switchTime);
 
+  void switchAccessory(String id, AccessoryBean.AccessoryValue value);
+
   void addAccessoryEventListener(AccessoryEventListener listener);
 
   void removeAccessoryEventListener(AccessoryEventListener listener);
@@ -33,7 +35,5 @@ public interface AccessoryController extends GenericController {
   List<AccessoryBean> getAccessories();
 
   //List<AccessoryBean> getSwitches();
-
   //List<AccessoryBean> getSignals();
-
 }

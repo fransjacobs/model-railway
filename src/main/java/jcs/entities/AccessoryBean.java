@@ -15,14 +15,15 @@
  */
 package jcs.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Table(name = "accessories")
 public class AccessoryBean {
@@ -397,7 +398,7 @@ public class AccessoryBean {
   }
 
   public enum AccessoryValue {
-    RED("Red"), GREEN("Green"), OFF("Off");
+    RED("Red"), GREEN("Green"), WHITE("White"), YELLOW("Yellow"), OFF("Off");
 
     private final String value;
     private static final Map<String, AccessoryValue> ENUM_MAP;
@@ -461,36 +462,13 @@ public class AccessoryBean {
       };
     }
 
-//    private static int translate2CS3Value(String value) {
-//      return switch (value) {
-//        case "Red" ->
-//          0;
-//        case "Green" ->
-//          1;
-//        default ->
-//          -1;
-//      };
-//    }
     public Integer getState() {
-      //return translate2CS3Value(this.value);
       return AccessoryValue.GREEN.getValue().equals(this.value) ? 1 : 0;
     }
 
     public static AccessoryValue get(Integer state) {
       return 1 == state ? GREEN : RED;
-      //return ENUM_MAP.get(translateCS3Value(cs2Value));
     }
-
-//    private static String translateCS3Value(int value) {
-//      return switch (value) {
-//        case 0 ->
-//          "Red";
-//        case 1 ->
-//          "Green";
-//        default ->
-//          "Off";
-//      };
-//    }
   }
 
   public enum SignalValue {
@@ -591,6 +569,7 @@ public class AccessoryBean {
       }
     }
 
+    //TODO move this to Markil Command station as it is Marklin specific
     public static SignalType getSignalType(String marklinType) {
       return ENUM_MAP.get(translateSignalString(marklinType));
     }

@@ -1179,8 +1179,15 @@ public class AccessoryPreferencesPanel extends JPanel implements PropertyChangeL
         }
 
         if (store) {
-          PersistenceFactory.getService().persist(accessory);
-          firePropertyChange("updated", null, accessory);
+          try {
+            PersistenceFactory.getService().persist(accessory);
+
+            firePropertyChange("updated", null, accessory);
+
+          } catch (Exception e) {
+            Logger.error(e);
+          }
+
         }
         processedCount++;
 

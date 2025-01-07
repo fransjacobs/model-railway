@@ -86,6 +86,8 @@ public interface PersistenceService {
   void remove(LocomotiveBean locomotiveBean);
 
   // Accessories
+  List<AccessoryBean> getAccessories();
+
   List<AccessoryBean> getAccessoriesByCommandStationId(String commandStationId);
 
   boolean isAccessoryLocked(String accessoryId);

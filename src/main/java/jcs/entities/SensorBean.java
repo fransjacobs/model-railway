@@ -15,14 +15,15 @@
  */
 package jcs.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Table(name = "sensors", indexes = {
   @Index(name = "sens_devi_cont_idx", columnList = "device_id, contact_id", unique = true)})
@@ -80,7 +81,7 @@ public class SensorBean implements Serializable {
   private String generateId() {
     //Format the id start with the device then "-"
     //than a 4 char contact id
-    if(contactId == null) {
+    if (contactId == null) {
       return null;
     }
     String cn = contactId.toString();
@@ -199,7 +200,11 @@ public class SensorBean implements Serializable {
 
   @Transient
   public boolean isPreviousActive() {
-    return this.previousStatus > 0;
+    if (this.previousStatus != null) {
+      return this.previousStatus > 0;
+    } else {
+      return false;
+    }
   }
 
   @Override

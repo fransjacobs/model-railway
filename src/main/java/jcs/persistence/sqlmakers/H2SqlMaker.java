@@ -17,7 +17,7 @@ package jcs.persistence.sqlmakers;
 import com.dieselpoint.norm.sqlmakers.Property;
 import com.dieselpoint.norm.sqlmakers.StandardSqlMaker;
 import com.dieselpoint.norm.sqlmakers.StandardPojoInfo;
-import javax.persistence.Column;
+import jakarta.persistence.Column;
 
 /**
  * Due to a bug in the current SQLMaker: https://github.com/dieselpoint/norm/issues/52 I created this this class to work around the issue

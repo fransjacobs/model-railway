@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Frans Jacobs.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,10 @@
 package jcs.commandStation.events;
 
 import java.io.Serializable;
-import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.FunctionBean;
-import org.tinylog.Logger;
 
 /**
  *
- * @author Frans Jacobs
  */
 public class LocomotiveFunctionEvent implements Serializable {
 
@@ -32,44 +29,12 @@ public class LocomotiveFunctionEvent implements Serializable {
     this.function = changedFunction;
   }
 
-  public LocomotiveFunctionEvent(long locomotiveBeanId, int functionNumber, boolean flag, String commandStationId) {
-    createLocomotiveFunctionBean(locomotiveBeanId, functionNumber, flag, commandStationId);
-  }
-
-  public LocomotiveFunctionEvent(CanMessage message) {
-    parseMessage(message);
-  }
-
-  private void createLocomotiveFunctionBean(long locomotiveBeanId, int functionNumber, boolean flag, String commandStationId) {
-    function = new FunctionBean(locomotiveBeanId, functionNumber, flag ? 1 : 0);
-  }
-
-  private void parseMessage(CanMessage message) {
-    CanMessage resp;
-    if (!message.isResponseMessage()) {
-      resp = message.getResponse();
-    } else {
-      resp = message;
-    }
-
-    if (resp.isResponseMessage() && CanMessage.LOC_FUNCTION_RESP == resp.getCommand()) {
-      byte[] data = resp.getData();
-      long locomotiveId = CanMessage.toInt(new byte[]{data[0], data[1], data[2], data[3]});
-
-      int functionNumber = data[4];
-      int functionValue = data[5];
-
-      FunctionBean fb = new FunctionBean(functionNumber, locomotiveId);
-      fb.setValue(functionValue);
-
-      this.function = fb;
-    } else {
-      Logger.warn("Can't parse message, not an Locomotive Function Message! " + resp);
-    }
-  }
-
   public FunctionBean getFunctionBean() {
     return this.function;
+  }
+
+  public LocomotiveFunctionEvent(long locomotiveBeanId, int functionNumber, boolean flag) {
+    function = new FunctionBean(locomotiveBeanId, functionNumber, flag ? 1 : 0);
   }
 
   public void setFunctionBean(FunctionBean function) {
@@ -86,6 +51,18 @@ public class LocomotiveFunctionEvent implements Serializable {
     } else {
       return false;
     }
+  }
+
+  public Long getLocomotiveId() {
+    return this.function.getLocomotiveId();
+  }
+
+  public Integer getNumber() {
+    return this.function.getNumber();
+  }
+
+  public boolean isOn() {
+    return this.function.isOn();
   }
 
 }

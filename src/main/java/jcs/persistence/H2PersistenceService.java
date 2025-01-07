@@ -353,9 +353,10 @@ public class H2PersistenceService implements PersistenceService {
     return functionBean;
   }
 
-  private List<FunctionBean> persistFunctionBeans(List<FunctionBean> functionsBeans) {
+  private List<FunctionBean> persistFunctionBeans(List<FunctionBean> functionsBeans, Long locoMotiveId) {
     List<FunctionBean> functions = new LinkedList<>();
     for (FunctionBean fb : functionsBeans) {
+      fb.setLocomotiveId(locoMotiveId);
       fb = persist(fb);
       functions.add(fb);
     }
@@ -364,16 +365,21 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized LocomotiveBean persist(LocomotiveBean locomotive) {
-    if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
-      database.update(locomotive);
-    } else {
-      database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
-      database.insert(locomotive);
+    try {
+      if (database.where("id=?", locomotive.getId()).first(LocomotiveBean.class) != null) {
+        database.update(locomotive);
+      } else {
+        database.sql("delete from locomotive_functions where locomotive_id =?", locomotive.getId()).execute();
+        database.insert(locomotive);
+      }
+    } catch (Exception e) {
+      Logger.error(e);
     }
+
     List<FunctionBean> functions = new LinkedList<>();
     functions.addAll(locomotive.getFunctions().values());
 
-    persistFunctionBeans(functions);
+    persistFunctionBeans(functions, locomotive.getId());
     locomotive.setFunctions(functions);
 
     return locomotive;
@@ -420,7 +426,7 @@ public class H2PersistenceService implements PersistenceService {
   public Image readImage(String imageName, boolean function) {
     Image image = null;
     if (imageName != null) {
-      String path = null;
+      String path;
       if (imageName.contains(File.separator)) {
         //Contains path seperators so assume it is a manual selected image
         path = imageName;
@@ -459,6 +465,12 @@ public class H2PersistenceService implements PersistenceService {
       }
     }
     return image;
+  }
+
+  @Override
+  public List<AccessoryBean> getAccessories() {
+    String commandStationId = getDefaultCommandStation().getId();
+    return getAccessoriesByCommandStationId(commandStationId);
   }
 
   @Override

@@ -82,6 +82,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.persistence.PersistenceFactory;
+import jcs.persistence.PersistenceService;
 import org.tinylog.Logger;
 
 /**
@@ -220,8 +221,8 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     this.addressSpinner.setEnabled(enableFields);
     this.decoderCB.setEnabled(enableFields);
     this.functionCountSpinner.setEnabled(enableFields);
-    this.iconTF.setEnabled(enableFields);
-    this.iconFileDialogBtn.setEnabled(enableFields);
+    this.iconTF.setEnabled(enable);
+    this.iconFileDialogBtn.setEnabled(enable);
     this.vMinSpinner.setEnabled(enableFields);
     this.tachoMaxSpinner.setEnabled(enableFields);
 
@@ -748,6 +749,8 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
     } else {
       path = Paths.get(basePath + File.separator + "zfunctions");
     }
+
+    imageName = imageName.replace(",", "-");
     File imageFile = new File(path + File.separator + imageName.toLowerCase() + ".png");
 
     try {
@@ -1053,6 +1056,8 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         decoderController.connect();
       }
 
+      PersistenceService db = PersistenceFactory.getService();
+
       List<LocomotiveBean> fromController = decoderController.getLocomotives();
       String importedFrom = commandStationBean.getShortName();
       Set<String> functionImageNames = new HashSet<>();
@@ -1062,7 +1067,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
       for (LocomotiveBean loco : fromController) {
         Long id = loco.getId();
-        LocomotiveBean dbLoco = PersistenceFactory.getService().getLocomotive(id);
+        LocomotiveBean dbLoco = db.getLocomotive(id);
         boolean store = true;
         if (dbLoco != null && loco.getId().equals(dbLoco.getId())) {
           if (dbLoco.isSynchronize()) {
@@ -1080,15 +1085,23 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
           loco.setSynchronize(true);
           loco.setImported(importedFrom);
           loco.setShow(true);
+          if (loco.getCommandStationBean() == null) {
+            Logger.warn("Command station ID NOT set. Using default!");
+            loco.setCommandStationId(commandStationBean.getId());
+          }
         }
 
         if (store && commandStationBean.isLocomotiveImageSynchronizationSupport()) {
           try {
             String icon = loco.getIcon();
             Image locImage = decoderController.getLocomotiveImage(icon);
-            String iconPath = storeImage(icon, locImage, true);
-            loco.setIcon(iconPath);
-            Logger.trace("Loc Image path: " + iconPath);
+            if (locImage != null) {
+              String iconPath = storeImage(icon, locImage, true);
+              loco.setIcon(iconPath);
+              Logger.trace("Loc Image path: " + iconPath);
+            } else {
+              Logger.trace("locImage" + icon + " not found");
+            }
           } catch (Exception e) {
             Logger.error(e);
           }
@@ -1119,10 +1132,17 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         }
 
         if (store) {
-          PersistenceFactory.getService().persist(loco);
-          firePropertyChange("updated", null, loco);
+          Logger.trace("Storing: " + loco);
+
+          db.persist(loco);
+
+          if (loco.getLocIcon() != null) {
+            firePropertyChange("updated", null, loco);
+          }
         }
         processedCount++;
+
+        Logger.trace("Processed " + processedCount + " of " + locCount);
 
         double progress = (double) processedCount / locCount * 100;
         setProgress((int) progress);

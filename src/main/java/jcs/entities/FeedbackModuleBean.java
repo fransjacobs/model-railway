@@ -15,86 +15,168 @@
  */
 package jcs.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+import jcs.commandStation.events.SensorEvent;
+
 /**
- *
- * @author frans
+ * Represents 1 Feedback Module (S88) with a number of ports (usually 16)
  */
 public class FeedbackModuleBean {
 
-  private int moduleNumber;
-  private int portCount;
-  private int addressOffset;
-  private int identifier;
+  private Integer id;
+  private Integer moduleNumber;
+  private Integer portCount;
+  private Integer addressOffset;
+  private Integer identifier;
 
-  public int getModuleNumber() {
+  private int[] ports;
+  private int[] prevPorts;
+
+  public static int DEFAULT_PORT_COUNT = 16;
+
+  public FeedbackModuleBean() {
+  }
+
+  public Integer getId() {
+    return id;
+  }
+
+  public void setId(Integer id) {
+    this.id = id;
+  }
+
+  public Integer getModuleNumber() {
     return moduleNumber;
   }
 
-  public void setModuleNumber(int moduleNumber) {
+  public void setModuleNumber(Integer moduleNumber) {
     this.moduleNumber = moduleNumber;
   }
 
-  public int getPortCount() {
+  public Integer getPortCount() {
     return portCount;
   }
 
-  public void setPortCount(int portCount) {
+  public void setPortCount(Integer portCount) {
     this.portCount = portCount;
+    if (portCount != null) {
+      if (this.ports == null) {
+        ports = new int[portCount];
+        prevPorts = new int[portCount];
+      } else {
+        if (ports.length != portCount) {
+          ports = new int[portCount];
+          prevPorts = new int[portCount];
+        }
+      }
+    }
   }
 
-  public int getAddressOffset() {
+  public Integer getAddressOffset() {
     return addressOffset;
   }
 
-  public void setAddressOffset(int addressOffset) {
+  public void setAddressOffset(Integer addressOffset) {
     this.addressOffset = addressOffset;
   }
 
-  public int getIdentifier() {
+  public Integer getIdentifier() {
     return identifier;
   }
 
-  public void setIdentifier(int identifier) {
+  public void setIdentifier(Integer identifier) {
     this.identifier = identifier;
   }
 
-  @Override
-  public int hashCode() {
-    int hash = 7;
-    hash = 97 * hash + this.moduleNumber;
-    hash = 97 * hash + this.portCount;
-    hash = 97 * hash + this.addressOffset;
-    hash = 97 * hash + this.identifier;
-    return hash;
+  public int[] getPorts() {
+    return ports;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
+  public void setPorts(int[] ports) {
+    this.ports = ports;
+  }
+
+  public void setPortValue(int port, boolean active) {
+    //save current values
+    System.arraycopy(this.ports, 0, this.prevPorts, 0, this.ports.length);
+    this.ports[port] = active ? 1 : 0;
+  }
+
+  public int getAccumulatedPortsValue() {
+    int val = 0;
+    for (int i = 0; i < ports.length; i++) {
+      int portVal = 0;
+      if (ports[i] == 1) {
+        portVal = (int) Math.pow(2, i);
+      }
+      val = val + portVal;
     }
-    if (obj == null) {
+    return val;
+  }
+
+  public int[] getPrevPorts() {
+    return prevPorts;
+  }
+
+  public void setPrevPorts(int[] prevPorts) {
+    this.prevPorts = prevPorts;
+  }
+
+  public SensorBean getSensor(int port) {
+    SensorBean sb = new SensorBean(id, port, ports[port]);
+    return sb;
+  }
+
+  public boolean isPort(int port) {
+    if (ports != null && port < ports.length) {
+      return this.ports[port] == 1;
+    } else {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
+  }
+
+  public List<SensorEvent> getChangedSensors() {
+    List<SensorEvent> changedSensors = new ArrayList<>(ports.length);
+
+    for (int i = 0; i < ports.length; i++) {
+      if (ports[i] != prevPorts[i]) {
+        SensorBean sb = new SensorBean(moduleNumber, i + 1, ports[i]);
+        SensorEvent se = new SensorEvent(sb);
+        changedSensors.add(se);
+      }
     }
-    final FeedbackModuleBean other = (FeedbackModuleBean) obj;
-    if (this.moduleNumber != other.moduleNumber) {
-      return false;
+    return changedSensors;
+  }
+
+  public List<SensorBean> getSensors() {
+    List<SensorBean> sensors = new ArrayList<>(ports.length);
+
+    for (int i = 0; i < ports.length; i++) {
+      if (ports[i] != prevPorts[i]) {
+        SensorBean sb = new SensorBean(moduleNumber, i + 1, ports[i]);
+        sensors.add(sb);
+      }
     }
-    if (this.portCount != other.portCount) {
-      return false;
+    return sensors;
+  }
+
+  public String portToString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(" {");
+    for (int i = 0; i < ports.length; i++) {
+      sb.append(i + 1);
+      sb.append("[");
+      sb.append(ports[i]);
+      sb.append("] ");
     }
-    if (this.addressOffset != other.addressOffset) {
-      return false;
-    }
-    return this.identifier == other.identifier;
+    sb.append("}");
+    return sb.toString();
   }
 
   @Override
   public String toString() {
-    return "FeedbackModuleBean{" + "moduleNumber=" + moduleNumber + ", portCount=" + portCount + ", addressOffset=" + addressOffset + ", identifier=" + identifier + "}";
+    return "FeedbackModuleBean{" + "id=" + id + ", moduleNumber=" + moduleNumber + ", portCount=" + portCount + ", addressOffset=" + addressOffset + ", identifier=" + identifier + "}";
   }
 
 }

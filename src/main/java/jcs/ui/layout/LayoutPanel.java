@@ -148,14 +148,14 @@ public class LayoutPanel extends JPanel {
       this.rotateBtn.setEnabled(!readonly);
       this.rotateBtn.setVisible(!readonly);
 
-      this.autoPilotBtn.setEnabled(readonly && JCS.getJcsCommandStation().isPowerOn());
-      this.autoPilotBtn.setVisible(readonly);
-
-      this.resetAutopilotBtn.setEnabled(readonly);
-      this.resetAutopilotBtn.setVisible(readonly);
-
-      this.startAllLocomotivesBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
-      this.startAllLocomotivesBtn.setVisible(readonly);
+      //Todo Remove the Autopilot related things from this panel
+      //this.autoPilotBtn.setEnabled(readonly && JCS.getJcsCommandStation().isPowerOn());
+//      this.autoPilotBtn.setEnabled(readonly);
+//      this.autoPilotBtn.setVisible(readonly);
+//      this.resetAutopilotBtn.setEnabled(readonly);
+//      this.resetAutopilotBtn.setVisible(readonly);
+//      this.startAllLocomotivesBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
+//      this.startAllLocomotivesBtn.setVisible(readonly);
     } else {
       if ("true".equals(System.getProperty("batch.tile.persist", "true"))) {
         this.saveBtn.setEnabled(true);
@@ -166,17 +166,20 @@ public class LayoutPanel extends JPanel {
         this.toolBar.remove(this.saveBtn);
       }
 
-      this.toolBar.remove(this.autoPilotBtn);
-      this.autoPilotBtn.setEnabled(readonly);
-      this.autoPilotBtn.setVisible(readonly);
-      this.toolBar.remove(this.resetAutopilotBtn);
-      this.resetAutopilotBtn.setEnabled(readonly);
-      this.resetAutopilotBtn.setVisible(readonly);
-
-      this.toolBar.remove(this.startAllLocomotivesBtn);
-      this.startAllLocomotivesBtn.setEnabled(readonly);
-      this.startAllLocomotivesBtn.setVisible(readonly);
+//      this.toolBar.remove(this.autoPilotBtn);
+//      this.autoPilotBtn.setEnabled(readonly);
+//      this.autoPilotBtn.setVisible(readonly);
+//      this.toolBar.remove(this.resetAutopilotBtn);
+//      this.resetAutopilotBtn.setEnabled(readonly);
+//      this.resetAutopilotBtn.setVisible(readonly);
+//      this.toolBar.remove(this.startAllLocomotivesBtn);
+//      this.startAllLocomotivesBtn.setEnabled(readonly);
+//      this.startAllLocomotivesBtn.setVisible(readonly);
     }
+
+    this.toolBar.remove(this.autoPilotBtn);
+    this.toolBar.remove(this.resetAutopilotBtn);
+    this.toolBar.remove(this.startAllLocomotivesBtn);
 
     if (readonly) {
       loadLayout();
@@ -1013,9 +1016,9 @@ public class LayoutPanel extends JPanel {
       }
       this.startAllLocomotivesBtn.setEnabled(false);
     }
-    
+
     AutoPilot.runAutoPilot(this.autoPilotBtn.isSelected());
-    
+
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
@@ -1061,7 +1064,6 @@ public class LayoutPanel extends JPanel {
         addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
       }
       default -> {
-        Logger.warn("Mode setting which should not ever happen " + mode);
         selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24.png")));
         addBtn.setIcon(new ImageIcon(getClass().getResource("/media/add-24.png")));
         deleteBtn.setIcon(new ImageIcon(getClass().getResource("/media/delete-24.png")));

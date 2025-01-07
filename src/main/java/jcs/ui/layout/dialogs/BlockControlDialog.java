@@ -479,13 +479,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
   }//GEN-LAST:event_reverseArrivalBtnActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
-    LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
-    loc.setDirection(LocomotiveBean.Direction.BACKWARDS);
+    block.getBlockBean().setLogicalDirection(LocomotiveBean.Direction.BACKWARDS.getDirection());
   }//GEN-LAST:event_backwardsRBActionPerformed
 
   private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
-    LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
-    loc.setDirection(LocomotiveBean.Direction.FORWARDS);
+    block.getBlockBean().setLogicalDirection(LocomotiveBean.Direction.FORWARDS.getDirection());
   }//GEN-LAST:event_forwardsRBActionPerformed
 
   private void alwaysStopCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alwaysStopCBActionPerformed

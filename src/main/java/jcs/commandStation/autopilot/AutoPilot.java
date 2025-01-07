@@ -388,29 +388,33 @@ public final class AutoPilot {
   }
 
   private static void handleGhost(SensorEvent event) {
-    Logger.warn("Ghost Detected! @ Sensor " + event.getId());
-    //Switch power OFF!
-    JCS.getJcsCommandStation().switchPower(false);
-
-    //Show the Ghost block
-    String gostSensorId = event.getId();
-    //to which block does the sensor belong?
+    Logger.trace("Check for possible Ghost! @ Sensor " + event.getId());
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
+    String sensorId = event.getId();
     for (BlockBean block : blocks) {
-      if (block.getMinSensorId().equals(gostSensorId) || block.getPlusSensorId().equals(gostSensorId)) {
+      if ((block.getMinSensorId().equals(sensorId) || block.getPlusSensorId().equals(sensorId)) && block.getLocomotiveId() == null) {
         if (event.getSensorBean().isActive()) {
           block.setBlockState(BlockBean.BlockState.GHOST);
           //Also persist
           PersistenceFactory.getService().persist(block);
-        } else {
-          block.setBlockState(BlockBean.BlockState.FREE);
-        }
-        TileEvent tileEvent = new TileEvent(block);
-        TileFactory.fireTileEventListener(tileEvent);
 
+          Logger.warn("Ghost Detected! @ Sensor " + sensorId + " in block " + block.getId());
+          //Switch power OFF!
+          JCS.getJcsCommandStation().switchPower(false);
+
+          TileEvent tileEvent = new TileEvent(block);
+          TileFactory.fireTileEventListener(tileEvent);
+        } else {
+          if (block.getLocomotiveId() != null) {
+            //keep state as is
+          } else {
+            block.setBlockState(BlockBean.BlockState.FREE);
+          }
+        }
         break;
       }
     }
+
   }
 
   static void handleSensorEvent(SensorEvent event) {

@@ -47,7 +47,6 @@ import javax.swing.SwingUtilities;
 import jcs.JCS;
 import jcs.commandStation.FeedbackController;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
@@ -1406,7 +1405,6 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.selectedTile != null) {
       Block block = (Block) selectedTile;
       LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
-      //if(locomotive)
       locomotive.setDispatcherDirection(null);
 
       block.getBlockBean().setLocomotive(null);
@@ -1452,34 +1450,22 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     if (this.selectedTile != null) {
       Block block = (Block) selectedTile;
       LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
-      LocomotiveBean.Direction curDir = locomotive.getDispatcherDirection();
-      LocomotiveBean.Direction newDir;
-
-      if (curDir == null) {
-        curDir = locomotive.getDirection();
-        newDir = locomotive.toggleDirection();
+      LocomotiveBean.Direction curDir;
+      if (block.getBlockBean().getLogicalDirection() != null) {
+        curDir = LocomotiveBean.Direction.get(block.getBlockBean().getLogicalDirection());
       } else {
-        newDir = locomotive.toggleDispatcherDirection();
+        curDir = locomotive.getDirection();
       }
-
-      locomotive.setDispatcherDirection(newDir);
-      Logger.trace("Dispatcher Direction changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
+      LocomotiveBean.Direction newDir = LocomotiveBean.toggle(curDir);
+      block.getBlockBean().setLogicalDirection(newDir.getDirection());
+      Logger.trace(block.getId() + " Logical changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
 
       this.executor.execute(() -> {
-        updateDispatcherDirection(locomotive);
-        PersistenceFactory.getService().persist(locomotive);
+        PersistenceFactory.getService().persist(block);
+        block.repaintTile();
       });
-      this.repaint();
     }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
-
-  private void updateDispatcherDirection(LocomotiveBean locomotive) {
-    Dispatcher dispatcher = AutoPilot.getLocomotiveDispatcher(locomotive);
-    if (dispatcher != null) {
-      dispatcher.getLocomotiveBean().setDispatcherDirection(locomotive.getDispatcherDirection());
-    }
-  }
-
 
   private void toggleOutOfOrderMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleOutOfOrderMIActionPerformed
     if (this.selectedTile != null) {

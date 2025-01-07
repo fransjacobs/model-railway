@@ -15,6 +15,11 @@
  */
 package jcs.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,10 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
  *
@@ -36,35 +37,35 @@ import javax.persistence.Transient;
 @Table(name = "command_stations")
 public class CommandStationBean {
 
-  private String id;
-  private String description;
-  private String shortName;
-  private String className;
-  private String connectVia;
-  private String serialPort;
-  private String ipAddress;
-  private Integer networkPort;
-  private boolean ipAutoConfiguration;
-  private boolean decoderControlSupport;
-  private boolean accessoryControlSupport;
-  private boolean feedbackSupport;
-  private boolean locomotiveSynchronizationSupport;
-  private boolean accessorySynchronizationSupport;
-  private boolean locomotiveImageSynchronizationSupport;
-  private boolean locomotiveFunctionSynchronizationSupport;
-  private String protocols;
-  private boolean defaultCs;
-  private boolean enabled;
-  private String lastUsedSerial;
-  private String supConnTypesStr;
-  private boolean virtual;
+  protected String id;
+  protected String description;
+  protected String shortName;
+  protected String className;
+  protected String connectVia;
+  protected String serialPort;
+  protected String ipAddress;
+  protected Integer networkPort;
+  protected boolean ipAutoConfiguration;
+  protected boolean decoderControlSupport;
+  protected boolean accessoryControlSupport;
+  protected boolean feedbackSupport;
+  protected boolean locomotiveSynchronizationSupport;
+  protected boolean accessorySynchronizationSupport;
+  protected boolean locomotiveImageSynchronizationSupport;
+  protected boolean locomotiveFunctionSynchronizationSupport;
+  protected String protocols;
+  protected boolean defaultCs;
+  protected boolean enabled;
+  protected String lastUsedSerial;
+  protected String supConnTypesStr;
+  protected boolean virtual;
 
-  private String feedbackModuleIdentifier;
-  private Integer feedbackChannelCount;
-  private Integer feedbackBus0ModuleCount;
-  private Integer feedbackBus1ModuleCount;
-  private Integer feedbackBus2ModuleCount;
-  private Integer feedbackBus3ModuleCount;
+  protected String feedbackModuleIdentifier;
+  protected Integer feedbackChannelCount;
+  protected Integer feedbackBus0ModuleCount;
+  protected Integer feedbackBus1ModuleCount;
+  protected Integer feedbackBus2ModuleCount;
+  protected Integer feedbackBus3ModuleCount;
 
   @Id
   @Column(name = "id")
@@ -321,7 +322,7 @@ public class CommandStationBean {
     this.feedbackBus3ModuleCount = feedbackBus3ModuleCount;
   }
 
-  @Transient
+  @Column(name = "virtual", nullable = false, columnDefinition = "virtual bool default '0'")
   public boolean isVirtual() {
     return virtual;
   }

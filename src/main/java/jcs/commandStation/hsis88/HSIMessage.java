@@ -16,7 +16,6 @@
 package jcs.commandStation.hsis88;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.tinylog.Logger;
 

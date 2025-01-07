@@ -45,8 +45,12 @@ public abstract class AbstractController implements GenericController {
   protected final List<DisconnectionEventListener> disconnectionEventListeners;
 
   protected ExecutorService executor;
+
+  protected int defaultSwitchTime;
+
   protected boolean power;
   protected boolean debug = false;
+  protected boolean virtual = false;
 
   public AbstractController(CommandStationBean commandStationBean) {
     this(System.getProperty("skip.commandStation.autoconnect", "true").equalsIgnoreCase("true"), commandStationBean);
@@ -56,6 +60,8 @@ public abstract class AbstractController implements GenericController {
     this.commandStationBean = commandStation;
 
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    defaultSwitchTime = Integer.getInteger("default.switchtime", 250);
+
     powerEventListeners = new LinkedList<>();
     sensorEventListeners = new LinkedList<>();
     accessoryEventListeners = new LinkedList<>();
@@ -65,6 +71,10 @@ public abstract class AbstractController implements GenericController {
     locomotiveSpeedEventListeners = new LinkedList<>();
 
     disconnectionEventListeners = new LinkedList<>();
+
+    if (this.commandStationBean != null) {
+      this.virtual = commandStationBean.isVirtual();
+    }
 
     executor = Executors.newCachedThreadPool();
   }
@@ -77,6 +87,17 @@ public abstract class AbstractController implements GenericController {
   @Override
   public boolean isConnected() {
     return connected;
+  }
+
+  @Override
+  public void setVirtual(boolean flag) {
+    this.virtual = flag;
+    Logger.debug("Switching Virtual Mode " + (flag ? "On" : "Off"));
+  }
+
+  @Override
+  public boolean isVirtual() {
+    return this.virtual;
   }
 
   @Override

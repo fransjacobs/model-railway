@@ -78,7 +78,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private LocomotiveBean createLocomotiveBean() {
     LocomotiveBean lb = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
-    String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "cache" + File.separator + "dcc-ex" + File.separator + "ns dhg 6505.png";
+    String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "images" + File.separator + "DHG 6505.png";
     lb.setIcon(imgPath);
     Image locImage = ImageUtil.readImage(imgPath);
     //Image is sized by default so
@@ -352,6 +352,8 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   }//GEN-LAST:event_stateCBActionPerformed
 
   private void showCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCenterCBActionPerformed
+    //Reset the logical direction
+    ((Block) blockTile).getBlockBean().setLogicalDirection(null);
     repaint();
   }//GEN-LAST:event_showCenterCBActionPerformed
 
@@ -378,14 +380,16 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
     if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      ((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.BACKWARDS);
+      //((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.BACKWARDS);
+      ((Block) blockTile).getBlockBean().setLogicalDirection(LocomotiveBean.Direction.BACKWARDS.getDirection());
       repaint();
     }
   }//GEN-LAST:event_backwardsRBActionPerformed
 
   private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
     if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      ((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.FORWARDS);
+      //((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.FORWARDS);
+      ((Block) blockTile).getBlockBean().setLogicalDirection(LocomotiveBean.Direction.FORWARDS.getDirection());
       repaint();
     }
   }//GEN-LAST:event_forwardsRBActionPerformed

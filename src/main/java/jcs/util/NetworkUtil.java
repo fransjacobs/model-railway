@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Frans Jacobs.
+ * Copyright (C) 2024 Frans Jacobs.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,10 +18,12 @@
  */
 package jcs.util;
 
+import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Enumeration;
 import org.tinylog.Logger;
@@ -43,16 +45,16 @@ public class NetworkUtil {
         //Get all networks
         Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
         for (InetAddress ia : Collections.list(inetAddresses)) {
+          //Logger.trace("Evaluate "+netint.getName()+" Displayname: "+netint.getDisplayName());
           if (ia instanceof Inet4Address) {
             //Got an ip4 address, which kind?
-            if (netint.getDisplayName().contains("wlan") ||  netint.getName().contains("wlan")) {
+            if (netint.getDisplayName().contains("wlan") || netint.getName().contains("wlan")) {
               wlan = ia;
             } else if (netint.getDisplayName().contains("eth") || netint.getName().contains("eth")) {
               eth = ia;
             } else if (netint.getDisplayName().contains("lo") || netint.getName().contains("lo")) {
               lo = ia;
             }
-            
           }
         }
       }
@@ -63,8 +65,23 @@ public class NetworkUtil {
         Logger.trace("Interface wlan: " + wlan.getHostAddress());
         return wlan;
       } else {
-        Logger.trace("Interface lo: " + (lo != null ? lo.getHostAddress() : ""));
-        return lo;
+        //Only localhost, usually on Mac OS Wifi.
+        //Perform an ultimate attempt to get the host ip address by calling something...
+        InetAddress la = null;
+        try (final DatagramSocket socket = new DatagramSocket()) {
+          socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+          la = socket.getLocalAddress();
+          Logger.trace("Local address : " + socket.getLocalAddress().getHostAddress());
+          socket.close();
+        } catch (UnknownHostException ex) {
+          Logger.error(ex.getMessage());
+        }
+        if (la != null) {
+          return la;
+        } else {
+          Logger.trace("Interface lo: " + (lo != null ? lo.getHostAddress() : ""));
+          return lo;
+        }
       }
     } catch (SocketException se) {
       Logger.error(se);

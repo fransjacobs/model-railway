@@ -17,6 +17,8 @@ package jcs.commandStation.dccex;
 
 interface DccEx {
 
+  public static final String DCC_EX_COMMANDSTATION_ID = "dcc-ex";
+  
   public static final String REQ_TRACK_CURRENT = "<c>";
 
   public static final String REQ_VERSION_HARDWARE_TURNOUTS = "<s>";

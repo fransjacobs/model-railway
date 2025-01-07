@@ -30,9 +30,10 @@ import jcs.commandStation.events.SensorEventListener;
 import static jcs.commandStation.hsis88.HSIConnection.COMMAND_VERSION;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.ConnectionType;
-import jcs.entities.DeviceBean;
+import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.VirtualConnection;
 import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
@@ -212,6 +213,13 @@ public class HSIImpl extends AbstractController implements FeedbackController {
   public void fireSensorEventListeners(final SensorEvent sensorEvent) {
     for (SensorEventListener listener : sensorEventListeners) {
       listener.onSensorChange(sensorEvent);
+    }
+  }
+
+  @Override
+  public void simulateSensor(SensorEvent sensorEvent) {
+    if (this.connection instanceof VirtualConnection virtualConnection) {
+      virtualConnection.sendEvent(sensorEvent);
     }
   }
 

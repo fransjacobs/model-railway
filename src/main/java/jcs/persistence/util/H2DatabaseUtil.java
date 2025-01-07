@@ -57,7 +57,7 @@ public class H2DatabaseUtil {
   /**
    * This is the latest database version
    */
-  public static String DB_VERSION = "0.0.2";
+  public static String DB_VERSION = "0.0.3";
 
   protected Database db;
 
@@ -132,7 +132,7 @@ public class H2DatabaseUtil {
   }
 
   protected static void createDatabase(Connection connection) {
-    executeSQLScript(DB_CREATE_DDL, connection);
+    executeSQLScript(DB_CREATE_DDL, connection, true);
   }
 
   public static void createDatabaseUsers() {
@@ -164,10 +164,14 @@ public class H2DatabaseUtil {
   }
 
   protected static void executeSQLScript(String filename) {
-    executeSQLScript(filename, null);
+    executeSQLScript(filename, null, true);
   }
 
-  protected static void executeSQLScript(String filename, Connection connection) {
+  protected static void executeSQLScript(String filename, boolean closeConnection) {
+    executeSQLScript(filename, null, closeConnection);
+  }
+
+  protected static void executeSQLScript(String filename, Connection connection, boolean closeConnection) {
     try {
       URL url = H2DatabaseUtil.class.getClassLoader().getResource(filename);
       File file;
@@ -186,13 +190,13 @@ public class H2DatabaseUtil {
       } else {
         script = readFromJARFile(filename);
       }
-      executeSQLScript(script, connection, filename);
+      executeSQLScript(script, connection, filename, closeConnection);
     } catch (IOException ex) {
       Logger.error("Error: " + ex.getMessage());
     }
   }
 
-  protected static void executeSQLScript(String script, Connection connection, String scriptName) {
+  protected static void executeSQLScript(String script, Connection connection, String scriptName, boolean closeConnection) {
     Connection conn = connection;
     try {
       if (conn == null) {
@@ -234,7 +238,7 @@ public class H2DatabaseUtil {
       Logger.error("Can't execute ddl script!");
       Logger.error("Cause: " + e.getMessage(), e);
     } finally {
-      if (conn != null) {
+      if (closeConnection && conn != null) {
         try {
           conn.close();
         } catch (SQLException ex) {
@@ -382,13 +386,13 @@ public class H2DatabaseUtil {
     int toVersion = Integer.parseInt(DB_VERSION.replace(".", ""));
 
     if (fromVersion != toVersion) {
-      for (int i = fromVersion; i < toVersion; i++) {
-        String updateFile = "update-jcs-db-" + String.format("%03d", i) + ".sql";
-        Logger.trace((test ? "TESTMODE " : "") + "updateFile: " + updateFile);
-        try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true)) {
+      try (Connection c = jdbcConnect(JCS_USER, JCS_PWD, true)) {
+        for (int i = fromVersion; i < toVersion; i++) {
+          String updateFile = "update-jcs-db-" + String.format("%03d", i) + ".sql";
+          Logger.trace((test ? "TESTMODE " : "") + "updateFile: " + updateFile);
           if (c != null) {
             try {
-              executeSQLScript(updateFile, c);
+              executeSQLScript(updateFile, c, false);
             } catch (Exception ex) {
               Logger.error("Can't update to version " + getVersionNumber(i) + "Script file " + updateFile + " not found!");
             }
@@ -396,11 +400,10 @@ public class H2DatabaseUtil {
             Logger.error("Can't update to version " + getVersionNumber(i) + " Connection to DB is not available!");
             break;
           }
-        } catch (Exception ex) {
-          Logger.error(ex);
+          Logger.info((test ? "TESTMODE " : "") + "Database updated to version: " + getDataBaseVersion());
         }
-        //Logger.info((test ? "TESTMODE " : "") + "Database updated to version: " + getDataBaseVersion());
-        Logger.info((test ? "TESTMODE " : "") + "Database updated to version: " + getDataBaseVersion());
+      } catch (Exception ex) {
+        Logger.error(ex);
       }
     } else {
       Logger.info((test ? "TESTMODE " : "") + "Database update not needed. Version " + DB_VERSION);

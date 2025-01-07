@@ -15,14 +15,15 @@
  */
 package jcs.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Table(name = "blocks")
 public class BlockBean {
@@ -44,6 +45,8 @@ public class BlockBean {
   private boolean randomWait;
   private boolean alwaysStop;
   private boolean allowCommuterOnly;
+
+  private String logicalDirection;
 
   private TileBean tileBean;
 
@@ -281,6 +284,15 @@ public class BlockBean {
 
   public void setAllowCommuterOnly(boolean allowCommuterOnly) {
     this.allowCommuterOnly = allowCommuterOnly;
+  }
+
+  @Column(name = "logical_direction", length = 255)
+  public String getLogicalDirection() {
+    return logicalDirection;
+  }
+
+  public void setLogicalDirection(String logicalDirection) {
+    this.logicalDirection = logicalDirection;
   }
 
   @Transient

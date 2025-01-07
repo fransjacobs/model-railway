@@ -55,7 +55,7 @@ import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.entities.CommandStationBean.Protocol;
 import jcs.entities.FunctionBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import jcs.entities.LocomotiveBean.Direction;
@@ -307,8 +307,22 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public Image getLocomotiveImage(String imageName
-  ) {
+  public void setVirtual(boolean flag) {
+    Logger.info("Switch Virtual Mode " + (flag ? "On" : "Off"));
+    this.decoderController.setVirtual(flag);
+  }
+
+  @Override
+  public boolean isVirtual() {
+    if (this.decoderController != null) {
+      return this.decoderController.isVirtual();
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public Image getLocomotiveImage(String imageName) {
     Image image = null;
 
     if (decoderController != null) {
@@ -321,8 +335,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   }
 
   @Override
-  public Image getLocomotiveFunctionImage(String imageName
-  ) {
+  public Image getLocomotiveFunctionImage(String imageName) {
     Image image = null;
     if (decoderController != null) {
       image = decoderController.getLocomotiveFunctionImage(imageName);
@@ -430,7 +443,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     if (supportedProtocols.size() == 1) {
       address = locomotive.getAddress();
     } else {
-      address = locomotive.getUid().intValue();
+      if (locomotive.getUid() != null) {
+        address = locomotive.getUid().intValue();
+      } else {
+        address = locomotive.getId().intValue();
+      }
     }
     if (decoderController != null) {
       //Set the velocity to zero before changing the direction
@@ -448,7 +465,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     if (supportedProtocols.size() == 1) {
       address = locomotive.getAddress();
     } else {
-      address = locomotive.getUid().intValue();
+      if (locomotive.getUid() != null) {
+        address = locomotive.getUid().intValue();
+      } else {
+        address = locomotive.getId().intValue();
+      }
     }
     if (decoderController != null) {
       decoderController.changeVelocity(address, newVelocity, locomotive.getDirection());
@@ -462,7 +483,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     if (this.supportedProtocols.size() == 1) {
       address = locomotive.getAddress();
     } else {
-      address = locomotive.getUid().intValue();
+      if (locomotive.getUid() != null) {
+        address = locomotive.getUid().intValue();
+      } else {
+        address = locomotive.getId().intValue();
+      }
     }
     if (decoderController != null) {
       decoderController.changeFunctionValue(address, functionNumber, newValue);
@@ -542,14 +567,11 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   @Override
   public void addLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.add(listener);
-    //this.decoderController.addLocomotiveSpeedEventListener(listener);
-
   }
 
   @Override
   public void removeLocomotiveSpeedEventListener(LocomotiveSpeedEventListener listener) {
     this.locomotiveSpeedEventListeners.remove(listener);
-    //this.decoderController.addLocomotiveSpeedEventListener(listener);
   }
 
   @Override
@@ -738,24 +760,19 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       FunctionBean fb = functionEvent.getFunctionBean();
 
       FunctionBean dbfb = null;
-      if ("marklin.cs".equals(trackService.getDecoderController().getCommandStationBean().getId())) {
+      String commandStationId = trackService.getDecoderController().getCommandStationBean().getId();
+
+      if ("marklin.cs".equals(commandStationId) || "esu-ecos".equals(commandStationId)) {
         dbfb = PersistenceFactory.getService().getLocomotiveFunction(fb.getLocomotiveId(), fb.getNumber());
       } else {
         Integer address = fb.getLocomotiveId().intValue();
+
         LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
         if (dblb != null) {
           dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
         }
       }
 
-//      if (dbfb == null) {
-//        //try via loc address and decoder type
-//        Integer address = fb.getLocomotiveId().intValue();
-//        LocomotiveBean dblb = PersistenceFactory.getService().getLocomotive(address, DecoderType.get(fb.getDecoderTypeString()), fb.getCommandStationId());
-//        if (dblb != null) {
-//          dbfb = PersistenceFactory.getService().getLocomotiveFunction(dblb.getId(), fb.getNumber());
-//        }
-//      }
       if (dbfb != null) {
         if (!Objects.equals(dbfb.getValue(), fb.getValue())) {
           dbfb.setValue(fb.getValue());
@@ -784,8 +801,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       LocomotiveBean lb = directionEvent.getLocomotiveBean();
       if (lb != null) {
         LocomotiveBean dblb = null;
-        //For marklin use the ID 
-        if ("marklin.cs".equals(lb.getCommandStationId())) {
+        //For marklin and Ecos use the ID 
+        if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
           dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
         } else {
           Integer address;
@@ -843,8 +860,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       LocomotiveBean lb = speedEvent.getLocomotiveBean();
       if (lb != null) {
         LocomotiveBean dblb;
-        //For marklin use the ID 
-        if ("marklin.cs".equals(lb.getCommandStationId())) {
+        //For marklin and Ecos use the ID 
+        if ("marklin.cs".equals(lb.getCommandStationId()) || "esu-ecos".equals(lb.getCommandStationId())) {
           dblb = PersistenceFactory.getService().getLocomotive(lb.getId());
         } else {
           Integer address;

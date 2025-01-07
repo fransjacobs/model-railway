@@ -15,15 +15,16 @@
  */
 package jcs.entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.awt.Image;
+
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
  * Represents a locomotive function
@@ -162,7 +163,7 @@ public class FunctionBean implements Serializable {
     this.momentary = momentary;
   }
 
-  @Column(name = "momentary", nullable = false, columnDefinition = "momentary bool default '1'")
+  @Column(name = "momentary", nullable = false, columnDefinition = "momentary bool default '0'")
   public boolean isMomentary() {
     return momentary;
   }
@@ -194,6 +195,7 @@ public class FunctionBean implements Serializable {
     return getIconName(this.isOn());
   }
 
+  //TODO: This is very Marklin specific, refactor to the Marklin CS part
   @Transient
   public String getIconName(boolean active) {
     if (this.icon == null) {

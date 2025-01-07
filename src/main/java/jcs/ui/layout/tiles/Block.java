@@ -401,9 +401,9 @@ public class Block extends AbstractTile implements Tile {
         }
       } else {
         if (reverseArrival) {
-          return "-";
-        } else {
           return "+";
+        } else {
+          return "-";
         }
       }
     } else {
@@ -415,9 +415,9 @@ public class Block extends AbstractTile implements Tile {
         }
       } else {
         if (reverseArrival) {
-          return "+";
-        } else {
           return "-";
+        } else {
+          return "+";
         }
       }
     }
@@ -436,7 +436,6 @@ public class Block extends AbstractTile implements Tile {
     g2.drawRoundRect(xx, yy, rw, rh, 15, 15);
 
     Color blockStateColor = getBlockStateColor();
-
     //Logger.trace("Block " + this.id + " State: " + this.getBlockBean().getBlockState().getState() + " Color: " + blockStateColor.toString());
     g2.setPaint(blockStateColor);
     g2.fillRoundRect(xx, yy, rw, rh, 15, 15);
@@ -448,51 +447,115 @@ public class Block extends AbstractTile implements Tile {
     //When there is a locomotive in the block mark the direction of travel.
     //The default, forwards is in the direction of the block orientation, i.e. the +
     if (getBlockBean() != null && getBlockBean().getLocomotive() != null && getBlockBean().getLocomotive().getName() != null) {
-      boolean reverseArrival = getBlockBean().isReverseArrival();
-      LocomotiveBean.Direction locDir = getBlockBean().getLocomotive().getDispatcherDirection();
-      if (locDir == null) {
-        locDir = getBlockBean().getLocomotive().getDirection();
-      }
-      Orientation orientation = this.getOrientation();
+      renderDirectionArrow(g2);
+    }
 
-      String departureSuffix = getBlockBean().getDepartureSuffix();
-      if (departureSuffix == null) {
-        departureSuffix = Block.getDepartureSuffix(orientation, reverseArrival, locDir);
-      }
+    drawName(g2);
+  }
 
-      //Logger.trace("LocDir: " + locDir.getDirection() + " Orientation: " + orientation.getOrientation() + " departureSuffix: " + departureSuffix);
-      if ("+".equals(departureSuffix)) {
-        if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
-          if (reverseArrival) {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-          } else {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+  private void renderDirectionArrow(Graphics2D g2) {
+    //The default, forwards is in the direction of the block orientation, i.e. the +
+    Orientation orientation = this.getOrientation();
+    BlockBean bb = this.getBlockBean();
+    boolean reverseArrival = bb.isReverseArrival();
+
+    LocomotiveBean.Direction logicalDirection;
+    if (bb.getLogicalDirection() != null) {
+      logicalDirection = LocomotiveBean.Direction.get(bb.getLogicalDirection());
+    } else {
+      logicalDirection = bb.getLocomotive().getDirection();
+    }
+
+    String departureSuffix = bb.getDepartureSuffix();
+    if (departureSuffix == null) {
+      departureSuffix = Block.getDepartureSuffix(orientation, reverseArrival, logicalDirection);
+    }
+
+    //Logger.trace(this.getId()+" LogicalDirection is " + (bb.getLogicalDirection() != null ? "Set" : "Not Set") + " Dir: " + logicalDirection.getDirection() + " Orientation: " + orientation.getOrientation() + " departureSuffix: " + departureSuffix);
+    if ("+".equals(departureSuffix)) {
+      if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
+        switch (logicalDirection) {
+          case LocomotiveBean.Direction.FORWARDS -> {
+            if (reverseArrival) {
+              renderLeftArrow(g2);
+            } else {
+              renderRightArrow(g2);
+            }
           }
-        } else {
-          if (reverseArrival) {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
-          } else {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
+          case LocomotiveBean.Direction.BACKWARDS -> {
+            if (reverseArrival) {
+              renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
+            }
           }
         }
       } else {
-        if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
-          if (reverseArrival) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-          } else {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+        switch (logicalDirection) {
+          case LocomotiveBean.Direction.BACKWARDS -> {
+            if (reverseArrival) {
+              renderLeftArrow(g2);
+            } else {
+              renderRightArrow(g2);
+            }
           }
-        } else {
-          if (reverseArrival) {
-            g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
-          } else {
-            g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+          case LocomotiveBean.Direction.FORWARDS -> {
+            if (reverseArrival) {
+              renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
+            }
+          }
+        }
+      }
+    } else {
+      if (Orientation.EAST == orientation || Orientation.SOUTH == orientation) {
+        switch (logicalDirection) {
+          case LocomotiveBean.Direction.FORWARDS -> {
+            if (reverseArrival) {
+              renderLeftArrow(g2);
+            } else {
+              renderRightArrow(g2);
+            }
+          }
+          case LocomotiveBean.Direction.BACKWARDS -> {
+            if (reverseArrival) {
+              renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
+            }
+          }
+        }
+      } else {
+        switch (logicalDirection) {
+          case LocomotiveBean.Direction.BACKWARDS -> {
+            if (reverseArrival) {
+              renderLeftArrow(g2);
+            } else {
+              renderRightArrow(g2);
+            }
+          }
+          case LocomotiveBean.Direction.FORWARDS -> {
+            if (reverseArrival) {
+              renderRightArrow(g2);
+            } else {
+              renderLeftArrow(g2);
+            }
           }
         }
       }
     }
 
-    drawName(g2);
+  }
+
+  private void renderLeftArrow(Graphics2D g2) {
+    //Logger.trace(this.getId()+" LogicalDirection is " + this.getBlockBean().getLogicalDirection() + " Orientation: " + this.getOrientation() + " departureSuffix: " + this.getBlockBean().getDepartureSuffix());
+    g2.fillPolygon(new int[]{0, 50, 50,}, new int[]{200, 150, 250}, 3);
+  }
+
+  private void renderRightArrow(Graphics2D g2) {
+    //Logger.trace(this.getId()+" LogicalDirection is " + this.getBlockBean().getLogicalDirection() + " Orientation: " + this.getOrientation() + " departureSuffix: " + this.getBlockBean().getDepartureSuffix());
+    g2.fillPolygon(new int[]{1180, 1130, 1130,}, new int[]{200, 150, 250}, 3);
   }
 
   @Override

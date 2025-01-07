@@ -194,7 +194,6 @@ public class PersistenceServiceTest {
 
     TileBean bk1 = new TileBean("bk-1", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 320, 140, null, null, null);
     tiles.add(bk1);
-
     TileBean bk2 = new TileBean("bk-2", TileBean.TileType.BLOCK, Orientation.EAST, Direction.CENTER, 420, 140, null, null, null);
     tiles.add(bk2);
     TileBean ct2 = new TileBean("ct-2", TileBean.TileType.CURVED, Orientation.EAST, Direction.CENTER, 260, 140, null, null, null);
@@ -205,22 +204,12 @@ public class PersistenceServiceTest {
     tiles.add(se5);
     TileBean se6 = new TileBean("se-6", TileBean.TileType.SENSOR, Orientation.WEST, Direction.CENTER, 500, 380, null, null, "65-1");
     tiles.add(se6);
-    TileBean si3 = new TileBean(
-            "si-3",
-            TileBean.TileType.SIGNAL,
-            Orientation.EAST,
-            Direction.CENTER,
-            300,
-            140,
-            null,
-            "15",
-            null);
+    TileBean si3 = new TileBean("si-3", TileBean.TileType.SIGNAL, Orientation.EAST, Direction.CENTER, 300, 140, null, "15", null);
     tiles.add(si3);
     TileBean st1 = new TileBean("st-1", TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 300, 180, null, null, null);
     tiles.add(st1);
     TileBean sw1 = new TileBean("sw-1", TileBean.TileType.SWITCH, Orientation.WEST, Direction.LEFT, 260, 180, null, "2", null);
     tiles.add(sw1);
-
     TileBean sw2 = new TileBean("sw-2", TileBean.TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 580, 180, null, null, null);
     tiles.add(sw2);
 
@@ -731,17 +720,7 @@ public class PersistenceServiceTest {
   @Test
   public void testPersist_TileBean() {
     System.out.println("persist");
-    TileBean sw12
-            = new TileBean(
-                    "sw-12",
-                    TileBean.TileType.SWITCH,
-                    Orientation.EAST,
-                    Direction.RIGHT,
-                    50,
-                    50,
-                    null,
-                    null,
-                    null);
+    TileBean sw12 = new TileBean("sw-12", TileBean.TileType.SWITCH, Orientation.EAST, Direction.RIGHT, 50, 50, null, null, null);
 
     PersistenceService instance = PersistenceFactory.getService();
     TileBean result = instance.persist(sw12);
@@ -924,12 +903,8 @@ public class PersistenceServiceTest {
 
     relr = rb.getRouteElements();
     assertEquals(rel, relr);
-
-    //expected:<[RouteElement{id=5, routeId=[ct-2]->[ct-5], nodeId=ct-2, tileId=ct-2, accessoryValue=null, elementOrder=0, incomingSide=null}, RouteElement{id=6, routeId=[ct-2]->[ct-5], nodeId=si-3, tileId=si-3, accessoryValue=G, elementOrder=1, incomingSide=null}]> 
-    // but was:<[RouteElement{id=6, routeId=[ct-2]->[ct-5], nodeId=ct-2, tileId=ct-2, accessoryValue=null, elementOrder=0, incomingSide=null}, RouteElement{id=7, routeId=[ct-2]->[ct-5], nodeId=si-3, tileId=si-3, accessoryValue=G, elementOrder=1, incomingSide=null}]>
     RouteBean rb1 = instance.getRoute("[ct-2]->[ct-5]");
     assertEquals(route, rb1);
-
   }
 
   @Test
@@ -1044,11 +1019,11 @@ public class PersistenceServiceTest {
 
   @Test
   public void testCommandStations() {
-    System.out.println("commandSations");
+    System.out.println("commandStations");
     PersistenceService instance = PersistenceFactory.getService();
 
     List<CommandStationBean> commandStations = instance.getCommandStations();
-    assertEquals(4, commandStations.size());
+    assertEquals(5, commandStations.size());
 
     for (CommandStationBean cs : commandStations) {
       Logger.trace("## -> " + cs + " default: " + cs.isDefault() + " id: " + cs.getId());

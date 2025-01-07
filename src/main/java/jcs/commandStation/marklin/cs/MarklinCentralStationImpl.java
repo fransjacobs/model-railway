@@ -62,9 +62,17 @@ import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
-import jcs.entities.DeviceBean;
+import jcs.commandStation.entities.DeviceBean;
+import jcs.commandStation.entities.InfoBean;
+import jcs.commandStation.marklin.cs2.AccessoryEventParser;
 import jcs.entities.FeedbackModuleBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.marklin.cs2.InfoBeanParser;
+import jcs.commandStation.marklin.cs2.LocomotiveDirectionEventParser;
+import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
+import jcs.commandStation.marklin.cs2.LocomotiveSpeedEventParser;
+import jcs.commandStation.marklin.cs2.PowerEventParser;
+import jcs.commandStation.marklin.cs2.SensorMessageParser;
+import jcs.commandStation.VirtualConnection;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import static jcs.entities.LocomotiveBean.DecoderType.DCC;
@@ -72,6 +80,7 @@ import static jcs.entities.LocomotiveBean.DecoderType.MFX;
 import static jcs.entities.LocomotiveBean.DecoderType.MFXP;
 import static jcs.entities.LocomotiveBean.DecoderType.SX1;
 import jcs.entities.LocomotiveBean.Direction;
+import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -91,8 +100,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   Map<Integer, ChannelBean> analogChannels;
 
-  private int defaultSwitchTime;
-
   public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
   }
@@ -101,7 +108,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     super(autoConnect, commandStationBean);
     devices = new HashMap<>();
     analogChannels = new HashMap<>();
-    defaultSwitchTime = Integer.getInteger("default.switchtime", 300);
 
     if (commandStationBean != null) {
       if (autoConnect) {
@@ -224,12 +230,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private InfoBean getCSInfo() {
     HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String geraet = httpCon.getInfoFile();
-    InfoBean ib = new InfoBean(geraet, true);
+    InfoBean ib = InfoBeanParser.parseFile(geraet);
 
     if ("60126".equals(ib.getArticleNumber()) || "60226".equals(ib.getArticleNumber())) {
       //CS3
       String json = httpCon.getInfoJSON();
-      ib = new InfoBean(json, false);
+      ib = InfoBeanParser.parseJson(json);
       httpCon.setCs3(true);
     }
     return ib;
@@ -562,7 +568,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   public void changeDirection(int locUid, Direction direction) {
     if (this.power && this.connected) {
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
-      LocomotiveDirectionEvent dme = new LocomotiveDirectionEvent(message);
+      LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parseMessage(message);
       this.notifyLocomotiveDirectionEventListeners(dme);
     }
   }
@@ -571,7 +577,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   public void changeVelocity(int locUid, int speed, Direction direction) {
     if (this.power && this.connected) {
       CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(locUid, speed, this.csUid));
-      LocomotiveSpeedEvent vme = new LocomotiveSpeedEvent(message);
+      LocomotiveSpeedEvent vme = LocomotiveSpeedEventParser.parseMessage(message);
       this.notifyLocomotiveSpeedEventListeners(vme);
     }
   }
@@ -580,7 +586,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   public void changeFunctionValue(int locUid, int functionNumber, boolean flag) {
     if (this.power && this.connected) {
       CanMessage message = sendMessage(CanMessageFactory.setFunction(locUid, functionNumber, flag, this.csUid));
-      this.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
+      this.notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(message));
     }
   }
 
@@ -603,12 +609,17 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       st = st / 10;
       CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, true, st, this.csUid));
       //Notify listeners
-      AccessoryEvent ae = new AccessoryEvent(message);
+      AccessoryEvent ae = AccessoryEventParser.parseMessage(message);
 
       notifyAccessoryEventListeners(ae);
     } else {
       Logger.trace("Trackpower is OFF! Can't switch Accessory: " + address + " to: " + value + "!");
     }
+  }
+
+  @Override
+  public void switchAccessory(String id, AccessoryValue value) {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   private void sendJCSUID() {
@@ -744,6 +755,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
+  @Override
+  public void simulateSensor(SensorEvent sensorEvent) {
+    if (this.connection instanceof VirtualConnection virtualConnection) {
+      virtualConnection.sendEvent(sensorEvent);
+    }
+  }
+
   private void notifySensorEventListeners(final SensorEvent sensorEvent) {
     executor.execute(() -> fireSensorEventListeners(sensorEvent));
   }
@@ -808,7 +826,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       switch (cmd) {
         case CanMessage.S88_EVENT_RESPONSE -> {
           if (CanMessage.DLC_8 == message.getDlc()) {
-            SensorEvent sme = new SensorEvent(message, new Date());
+            SensorBean sb = SensorMessageParser.parseMessage(message, new Date());
+            SensorEvent sme = new SensorEvent(sb);
             if (sme.getSensorBean() != null) {
               controller.notifySensorEventListeners(sme);
             }
@@ -889,23 +908,23 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         case CanMessage.SYSTEM_COMMAND_RESP -> {
           switch (subcmd) {
             case CanMessage.STOP_SUB_CMD -> {
-              PowerEvent spe = new PowerEvent(message);
+              PowerEvent spe = PowerEventParser.parseMessage(message);
               controller.notifyPowerEventListeners(spe);
             }
             case CanMessage.GO_SUB_CMD -> {
-              PowerEvent gpe = new PowerEvent(message);
+              PowerEvent gpe = PowerEventParser.parseMessage(message);
               controller.notifyPowerEventListeners(gpe);
             }
             case CanMessage.HALT_SUB_CMD -> {
-              PowerEvent gpe = new PowerEvent(message);
+              PowerEvent gpe = PowerEventParser.parseMessage(message);
               controller.notifyPowerEventListeners(gpe);
             }
             case CanMessage.LOC_STOP_SUB_CMD -> {
-              PowerEvent gpe = new PowerEvent(message);
+              PowerEvent gpe = PowerEventParser.parseMessage(message);
               controller.notifyPowerEventListeners(gpe);
             }
             case CanMessage.OVERLOAD_SUB_CMD -> {
-              PowerEvent gpe = new PowerEvent(message);
+              PowerEvent gpe = PowerEventParser.parseMessage(message);
               controller.notifyPowerEventListeners(gpe);
             }
             default -> {
@@ -929,7 +948,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       int cmd = message.getCommand();
       switch (cmd) {
         case CanMessage.ACCESSORY_SWITCHING_RESP -> {
-          AccessoryEvent ae = new AccessoryEvent(message);
+          AccessoryEvent ae = AccessoryEventParser.parseMessage(message);
           if (ae.isKnownAccessory()) {
             controller.notifyAccessoryEventListeners(ae);
           }
@@ -951,16 +970,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       int cmd = message.getCommand();
       switch (cmd) {
         case CanMessage.LOC_FUNCTION_RESP ->
-          controller.notifyLocomotiveFunctionEventListeners(new LocomotiveFunctionEvent(message));
+          controller.notifyLocomotiveFunctionEventListeners(LocomotiveFunctionEventParser.parseMessage(message));
         case CanMessage.LOC_DIRECTION_RESP ->
-          controller.notifyLocomotiveDirectionEventListeners(new LocomotiveDirectionEvent(message));
+          controller.notifyLocomotiveDirectionEventListeners(LocomotiveDirectionEventParser.parseMessage(message));
         case CanMessage.LOC_VELOCITY_RESP ->
-          controller.notifyLocomotiveSpeedEventListeners(new LocomotiveSpeedEvent(message));
+          controller.notifyLocomotiveSpeedEventListeners(LocomotiveSpeedEventParser.parseMessage(message));
       }
     }
   }
 
-//  
+//////////// For Testing only.....//////  
   public static void main(String[] a) {
     RunUtil.loadExternalProperties();
 

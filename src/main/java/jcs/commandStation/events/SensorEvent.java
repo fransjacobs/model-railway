@@ -15,11 +15,7 @@
  */
 package jcs.commandStation.events;
 
-import java.util.Date;
-import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.SensorBean;
-import jcs.util.ByteUtil;
-import org.tinylog.Logger;
 
 /**
  *
@@ -27,39 +23,10 @@ import org.tinylog.Logger;
  */
 public class SensorEvent {
 
-  private SensorBean sensorBean;
+  private final SensorBean sensorBean;
 
   public SensorEvent(SensorBean sensorBean) {
     this.sensorBean = sensorBean;
-  }
-
-  public SensorEvent(CanMessage message, Date eventDate) {
-    parseMessage(message, eventDate);
-  }
-
-  //TODO move away the Marklin CS2/3 specific message parsing
-  private void parseMessage(CanMessage message, Date eventDate) {
-    CanMessage resp;
-    if (!message.isResponseMessage()) {
-      resp = message.getResponse();
-    } else {
-      resp = message;
-    }
-
-    if (resp.isResponseMessage() && CanMessage.S88_EVENT_RESPONSE == resp.getCommand()) {
-      byte[] data = resp.getData();
-
-      Integer deviceId = ByteUtil.toInt(new byte[]{data[0], data[1]});
-      Integer contactId = ByteUtil.toInt(new byte[]{data[2], data[3]});
-
-      int previousStatus = data[4];
-      int status = data[5];
-
-      Integer millis = ByteUtil.toInt(new byte[]{data[6], data[7]}) * 10;
-      sensorBean = new SensorBean(deviceId, contactId, status, previousStatus, millis, eventDate);
-    } else {
-      Logger.warn("Can't parse message, not a Sensor Response! " + resp);
-    }
   }
 
   public SensorBean getSensorBean() {
@@ -83,6 +50,14 @@ public class SensorEvent {
     }
   }
 
+  public Integer getDeviceId() {
+    return this.sensorBean.getDeviceId();
+  }
+
+  public Integer getContactId() {
+    return this.sensorBean.getContactId();
+  }
+
   public boolean isChanged() {
     boolean active = sensorBean.isActive();
     boolean prevActive = sensorBean.isPreviousActive();
@@ -91,6 +66,11 @@ public class SensorEvent {
 
   public boolean isActive() {
     return sensorBean.isActive();
+  }
+
+  @Override
+  public String toString() {
+    return "SensorEvent{" + "id=" + getId() + ", active=" + (isActive() ? "1" : "0") + "}";
   }
 
 }

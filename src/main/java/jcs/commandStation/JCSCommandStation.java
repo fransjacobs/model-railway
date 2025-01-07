@@ -28,7 +28,7 @@ import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.CommandStationBean;
-import jcs.entities.InfoBean;
+import jcs.commandStation.entities.InfoBean;
 import jcs.entities.LocomotiveBean;
 
 /**
@@ -48,6 +48,10 @@ public interface JCSCommandStation {
   boolean isConnected();
 
   void disconnect();
+
+  void setVirtual(boolean flag);
+
+  boolean isVirtual();
 
   void addDisconnectionEventListener(DisconnectionEventListener listener);
 
