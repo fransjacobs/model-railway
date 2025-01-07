@@ -15,10 +15,12 @@
  */
 package jcs.commandStation.virtual;
 
+import jcs.commandStation.autopilot.DriveSimulator;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import jcs.JCS;
 import jcs.commandStation.AbstractController;
 import jcs.commandStation.AccessoryController;
 import jcs.commandStation.DecoderController;
@@ -56,8 +58,6 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
   private DeviceBean mainDevice;
   private InfoBean infoBean;
 
-  //private final ScheduledExecutorService scheduledExecutor;
-  
   private DriveSimulator simulator;
 
   public VirtualCommandStationImpl(CommandStationBean commandStationBean) {
@@ -68,7 +68,7 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
     super(autoConnect, commandStationBean);
     //scheduledExecutor = new ScheduledThreadPoolExecutor(30);
 
-    simulator = new DriveSimulator(this,this,this);
+    simulator = new DriveSimulator();
     if (autoConnect) {
       autoConnect();
     }
@@ -331,63 +331,11 @@ public class VirtualCommandStationImpl extends AbstractController implements Dec
 
   @Override
   public void simulateSensor(SensorEvent sensorEvent) {
-//    if (this.connection instanceof VirtualConnection virtualConnection) {
-//      virtualConnection.sendEvent(sensorEvent);
-//    }
+    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+
+    for (FeedbackController fbc : acl) {
+      fbc.fireSensorEventListeners(sensorEvent);
+    }
   }
-
-//  //Find the route the locomotive is doing....
-//  void simulateDriving(int locUid, int speed, LocomotiveBean.Direction direction) {
-//    if ("true".equals(System.getProperty("do.not.simulate.virtual.drive", "false"))) {
-//      return;
-//    }
-//    //Check is the Dispatcher for the locomotive is running...
-//    Dispatcher dispatcher = AutoPilot.getLocomotiveDispatcher(locUid);
-//
-//    if (dispatcher.isLocomotiveAutomodeOn()) {
-//      Logger.trace("Try to simulate the next sensor of " + dispatcher.getName());
-//
-//      String occupationSensorId = dispatcher.getOccupationSensorId();
-//      if (occupationSensorId != null) {
-//        //Start a timer which execute a worker thread which fires the sensor
-//        scheduledExecutor.schedule(() -> toggleSensor(occupationSensorId), 500, TimeUnit.MILLISECONDS);
-//      }
-//
-//      String exitSensorId = dispatcher.getExitSensorId();
-//      if (exitSensorId != null) {
-//        //Start a time which execute a worker thread which fires the sensor
-//        scheduledExecutor.schedule(() -> toggleSensor(exitSensorId), 1500, TimeUnit.MILLISECONDS);
-//      }
-//
-//      String enterSensorId = dispatcher.getEnterSensorId();
-//      String inSensorId = dispatcher.getInSensorId();
-//
-//      String sensorId = dispatcher.getWaitingForSensorId();
-//
-//      int time = 3000;
-//      if (sensorId != null && sensorId.equals(inSensorId)) {
-//        time = 1000;
-//      }
-//
-//      if (sensorId != null) {
-//        //Start a time which execute a worker thread which fires the sensor
-//        scheduledExecutor.schedule(() -> toggleSensor(sensorId), time, TimeUnit.MILLISECONDS);
-//      }
-//    }
-//  }
-
-//  private void toggleSensor(String sensorId) {
-//    SensorBean sensor = PersistenceFactory.getService().getSensor(sensorId);
-//    sensor.toggle();
-//    sensor.setActive((sensor.getStatus() == 1));
-//
-//    SensorEvent sensorEvent = new SensorEvent(sensor);
-//    Logger.trace("Fire Sensor " + sensorId);
-//
-//    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-//    for (FeedbackController fbc : acl) {
-//      fbc.fireSensorEventListeners(sensorEvent);
-//    }
-//  }
 
 }

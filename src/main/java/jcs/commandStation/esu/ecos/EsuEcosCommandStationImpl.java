@@ -51,8 +51,8 @@ import jcs.commandStation.events.LocomotiveFunctionEventListener;
 import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.events.LocomotiveSpeedEventListener;
 import jcs.commandStation.events.SensorEventListener;
-import jcs.commandStation.virtual.DriveSimulator;
-import jcs.commandStation.virtual.VirtualConnection;
+import jcs.commandStation.autopilot.DriveSimulator;
+import jcs.commandStation.VirtualConnection;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
@@ -90,6 +90,16 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
+  @Override
+  public void setVirtual(boolean flag) {
+    this.virtual = flag;
+    Logger.info("Switching Virtual Mode " + (flag ? "On" : "Off"));
+    disconnect();
+    connect();
+  }
+
+  
+  
   @Override
   public boolean connect() {
     if (!connected) {
@@ -157,7 +167,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
             Logger.trace("There are " + this.feedbackManager.getSize() + " feedback modules");
 
             if (isVirtual()) {
-              simulator = new DriveSimulator(this, this, this);
+              simulator = new DriveSimulator();
               Logger.info("ECoS Virtual Mode Enabled!");
 
             }
@@ -221,18 +231,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
       reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
+      
+      //TODO: Start of day...
       //feedbackManager.update(reply);
 
-      //TODO: we now know the begin state so refect that in the feedback modules....
-//      Map<String, Object> values = reply.getValueMap();
-//      if (values.containsKey(Ecos.STATE)) {
-//        String state = values.get(Ecos.STATE).toString();
-//      }
-//
-//      if (values.containsKey(Ecos.PORTS)) {
-//        String ports = reply.getValueMap().get(Ecos.PORTS).toString();
-//      }
-      //Logger.trace("state: "+state+" ports: "+ports);
       connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
       //Logger.trace("r: "+reply.getResponse());
     }

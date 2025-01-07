@@ -237,7 +237,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         this.controllerHostNameLbl.setText("Not Connected");
         this.powerButton.setSelected(connected);
       }
-      this.virtualCB.setSelected(JCS.getJcsCommandStation().isVirtual());
+      boolean virt = JCS.getJcsCommandStation().isVirtual();
+      this.virtualCB.setSelected(virt);
     }
   }
 

@@ -24,7 +24,7 @@ import jcs.commandStation.esu.ecos.Ecos;
 import jcs.commandStation.esu.ecos.EcosMessage;
 import jcs.commandStation.esu.ecos.EcosMessageFactory;
 import jcs.commandStation.events.SensorEvent;
-import jcs.commandStation.virtual.VirtualConnection;
+import jcs.commandStation.VirtualConnection;
 import jcs.entities.AccessoryBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.entities.FunctionBean;
@@ -177,8 +177,8 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
       }
       default -> {
         //Interpret the message
-        Logger.trace(msg);
-        Logger.trace(message.getId() + ": " + message.getCommand());
+        //Logger.trace(msg);
+        //Logger.trace(message.getId() + ": " + message.getCommand());
         String cmd = message.getCommand();
         String id = message.getId();
         int objId = message.getObjectId();
@@ -338,9 +338,9 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
     reply = replyBuilder.toString();
     message.addResponse(reply);
 
-    //if (debug) {
-    Logger.trace("TX:" + message.getMessage() + " :->\n" + message.getResponse());
-    //}
+    if (debug) {
+      Logger.trace("TX:" + message.getMessage() + " :->\n" + message.getResponse());
+    }
 
     return message;
   }
@@ -424,15 +424,11 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
   @Override
   public void sendEvent(SensorEvent sensorEvent) {
     Logger.trace("Device: " + sensorEvent.getDeviceId() + " contact: " + sensorEvent.getContactId() + " -> " + sensorEvent.isActive());
-    
     FeedbackModuleBean fbm = getFeedbackModule(100 + sensorEvent.getDeviceId());
-
-    Logger.trace(fbm.getId()+" nr: "+fbm.getModuleNumber() + " Current ports: " + fbm.portToString());
-
+    //Logger.trace(fbm.getId()+" nr: "+fbm.getModuleNumber() + " Current ports: " + fbm.portToString());
     int port = sensorEvent.getContactId() - 1;
-
     fbm.setPortValue(port, sensorEvent.isActive());
-    Logger.trace(100 + fbm.getModuleNumber() + " changed ports: " + fbm.portToString());
+    //Logger.trace(100 + fbm.getModuleNumber() + " changed ports: " + fbm.portToString());
 
     StringBuilder sb = new StringBuilder();
     int id = sensorEvent.getDeviceId() + 100;
@@ -447,17 +443,11 @@ class EcosVirtualConnection implements EcosConnection, VirtualConnection {
 
     EcosMessage eventMessage = new EcosMessage(sb.toString());
 
-    Logger.trace("Sensor " + eventMessage);
-
+    //Logger.trace("Sensor " + eventMessage);
     try {
       this.eventQueue.put(eventMessage);
     } catch (InterruptedException ex) {
       Logger.error(ex);
     }
-  }
-
-  public static String toHexString(int b) {
-    String h = Integer.toHexString((b));
-    return h;
   }
 }

@@ -33,7 +33,7 @@ import jcs.entities.CommandStationBean.ConnectionType;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.entities.InfoBean;
-import jcs.commandStation.virtual.VirtualConnection;
+import jcs.commandStation.VirtualConnection;
 import jcs.entities.SensorBean;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;

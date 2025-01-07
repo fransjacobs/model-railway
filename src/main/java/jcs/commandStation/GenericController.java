@@ -21,7 +21,7 @@ import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
 
-interface GenericController {
+public interface GenericController {
 
   CommandStationBean getCommandStationBean();
 

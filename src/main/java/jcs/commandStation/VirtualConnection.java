@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.virtual;
+package jcs.commandStation;
 
 import jcs.commandStation.events.SensorEvent;
 
 /**
- *
- * @author Frans Jacobs
+ * Virtual Connection is used to 'mock' a 'vendor' connection implementation<br>
+ * to enable Virtual mode on a CommandStation.
  */
 public interface VirtualConnection {
 

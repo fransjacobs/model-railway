@@ -72,7 +72,7 @@ import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveSpeedEventParser;
 import jcs.commandStation.marklin.cs2.PowerEventParser;
 import jcs.commandStation.marklin.cs2.SensorMessageParser;
-import jcs.commandStation.virtual.VirtualConnection;
+import jcs.commandStation.VirtualConnection;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.DecoderType;
 import static jcs.entities.LocomotiveBean.DecoderType.DCC;

@@ -142,7 +142,7 @@ class EcosManager implements PowerEventListener {
       String prevStatus = this.status;
       this.status = values.get(Ecos.STATUS).toString();
 
-      if (event && !status.equals(prevStatus)) {
+      if (!status.equals(prevStatus)) {
         boolean power = Ecos.GO.equals(status);
         Logger.trace("Power changed to: " + (power ? "On" : "Off"));
         PowerEvent pe = new PowerEvent(power);

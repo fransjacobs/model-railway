@@ -308,13 +308,17 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void setVirtual(boolean flag) {
-    Logger.info("Switch Virtual Mode "+(flag?"On":"Off"));
-
+    Logger.info("Switch Virtual Mode " + (flag ? "On" : "Off"));
+    this.decoderController.setVirtual(flag);
   }
 
   @Override
   public boolean isVirtual() {
-    return false;
+    if (this.decoderController != null) {
+      return this.decoderController.isVirtual();
+    } else {
+      return false;
+    }
   }
 
   @Override

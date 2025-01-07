@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.virtual;
+package jcs.commandStation.autopilot;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import jcs.JCS;
 import jcs.commandStation.AccessoryController;
-import jcs.commandStation.DecoderController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.GenericController;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.LocomotiveBean;
@@ -38,15 +38,9 @@ import org.tinylog.Logger;
 public class DriveSimulator {
 
   private final ScheduledExecutorService scheduledExecutor;
-  private DecoderController decoderController;
-  private AccessoryController accessoryController;
-  private FeedbackController feedbackController;
 
-  public DriveSimulator(DecoderController decoderController, AccessoryController accessoryController, FeedbackController feedbackController) {
+  public DriveSimulator() {
     this.scheduledExecutor = new ScheduledThreadPoolExecutor(30);
-    this.decoderController = decoderController;
-    this.accessoryController = accessoryController;
-    this.feedbackController = feedbackController;
   }
 
   //Find the route the locomotive is doing....
@@ -63,13 +57,13 @@ public class DriveSimulator {
       String occupationSensorId = dispatcher.getOccupationSensorId();
       if (occupationSensorId != null) {
         //Start a timer which execute a worker thread which fires the sensor
-        scheduledExecutor.schedule(() -> toggleSensor(occupationSensorId), 500, TimeUnit.MILLISECONDS);
+        scheduledExecutor.schedule(() -> setSensorValue(occupationSensorId, false), 500, TimeUnit.MILLISECONDS);
       }
 
       String exitSensorId = dispatcher.getExitSensorId();
       if (exitSensorId != null) {
         //Start a time which execute a worker thread which fires the sensor
-        scheduledExecutor.schedule(() -> toggleSensor(exitSensorId), 1500, TimeUnit.MILLISECONDS);
+        scheduledExecutor.schedule(() -> setSensorValue(exitSensorId, false), 1500, TimeUnit.MILLISECONDS);
       }
 
       String enterSensorId = dispatcher.getEnterSensorId();
@@ -77,32 +71,32 @@ public class DriveSimulator {
 
       String sensorId = dispatcher.getWaitingForSensorId();
 
-      int time = 3000;
+      int time = 5000;
+      if (sensorId != null && sensorId.equals(enterSensorId)) {
+        time = 3000;
+        Logger.debug("Waiting " + time + "ms for Enter Sensor " + sensorId);
+      }
+
       if (sensorId != null && sensorId.equals(inSensorId)) {
         time = 1000;
+        Logger.debug("Waiting " + time + "ms for In Sensor " + sensorId);
       }
 
       if (sensorId != null) {
         //Start a time which execute a worker thread which fires the sensor
-        scheduledExecutor.schedule(() -> toggleSensor(sensorId), time, TimeUnit.MILLISECONDS);
+        scheduledExecutor.schedule(() -> setSensorValue(sensorId, true), time, TimeUnit.MILLISECONDS);
       }
     }
   }
 
-  private void toggleSensor(String sensorId) {
+  private void setSensorValue(String sensorId, boolean active) {
     SensorBean sensor = PersistenceFactory.getService().getSensor(sensorId);
-    
-    //TODO why toggle and then set active?
-    sensor.toggle();
-    sensor.setActive((sensor.getStatus() == 1));
-
+    sensor.setActive(active);
     SensorEvent sensorEvent = new SensorEvent(sensor);
-    Logger.trace("Fire Sensor " + sensorId);
+    Logger.trace("Fire Sensor " + sensorId+" to "+active);
 
     List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
     for (FeedbackController fbc : acl) {
-      //fbc.fireSensorEventListeners(sensorEvent);
-      
       fbc.simulateSensor(sensorEvent);
     }
   }

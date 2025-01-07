@@ -98,6 +98,8 @@ public class FeedbackModuleBean {
   }
 
   public void setPortValue(int port, boolean active) {
+    //save current values
+    System.arraycopy(this.ports, 0, this.prevPorts, 0, this.ports.length);
     this.ports[port] = active ? 1 : 0;
   }
 
