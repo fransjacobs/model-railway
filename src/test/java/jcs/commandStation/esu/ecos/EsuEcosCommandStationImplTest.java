@@ -40,14 +40,13 @@ public class EsuEcosCommandStationImplTest {
 
   private final PersistenceTestHelper testHelper;
 
-  private final CommandStationBean commandStationBean;
+  private CommandStationBean commandStationBean;
 
   public EsuEcosCommandStationImplTest() {
     System.setProperty("message.debug", "true");
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
 
     testHelper = PersistenceTestHelper.getInstance();
-    this.commandStationBean = getEcosAsDefaultCommandStationBean();
   }
 
   private CommandStationBean getEcosAsDefaultCommandStationBean() {
@@ -64,6 +63,7 @@ public class EsuEcosCommandStationImplTest {
   @BeforeEach
   public void setUp() {
     testHelper.runTestDataInsertScript("ecos_test_data.sql");
+    this.commandStationBean = getEcosAsDefaultCommandStationBean();
   }
 
   @AfterEach
