@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.tinylog.Logger;
 
 /**
  *
@@ -45,16 +46,16 @@ public class EsuEcosCommandStationImplTest {
   public EsuEcosCommandStationImplTest() {
     System.setProperty("message.debug", "true");
     System.setProperty("persistenceService", "jcs.persistence.H2PersistenceService");
-
     testHelper = PersistenceTestHelper.getInstance();
   }
 
   private CommandStationBean getEcosAsDefaultCommandStationBean() {
-    CommandStationBean ecosCommandStationBean = new CommandStationBean();
-    ecosCommandStationBean.setId("esu-ecos");
-    PersistenceFactory.getService().changeDefaultCommandStation(ecosCommandStationBean);
-    ecosCommandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
-
+    CommandStationBean ecosCommandStationBean = PersistenceFactory.getService().getDefaultCommandStation();
+    
+    if(ecosCommandStationBean == null) {
+      Logger.error("ESU ECoS Command Sation is NULL!");
+    }
+    
     ecosCommandStationBean.setIpAddress(NetworkUtil.getIPv4HostAddress().getHostAddress());
     PersistenceFactory.getService().persist(ecosCommandStationBean);
     return ecosCommandStationBean;
@@ -63,6 +64,7 @@ public class EsuEcosCommandStationImplTest {
   @BeforeEach
   public void setUp() {
     testHelper.runTestDataInsertScript("ecos_test_data.sql");
+    
     this.commandStationBean = getEcosAsDefaultCommandStationBean();
   }
 
