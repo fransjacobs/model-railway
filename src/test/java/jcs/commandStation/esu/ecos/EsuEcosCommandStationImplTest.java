@@ -17,6 +17,7 @@ package jcs.commandStation.esu.ecos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.AccessoryBean;
@@ -40,6 +41,7 @@ import org.tinylog.Logger;
  */
 public class EsuEcosCommandStationImplTest {
 
+  private boolean skip = false;
   private final PersistenceTestHelper testHelper;
 
   private CommandStationBean commandStationBean;
@@ -50,6 +52,36 @@ public class EsuEcosCommandStationImplTest {
     System.setProperty("connection.always.virtual", "true");
     testHelper = PersistenceTestHelper.getInstance();
 
+  }
+
+  @BeforeEach
+  public void setUp() {
+    testHelper.runTestDataInsertScript("ecos_test_data.sql");
+    Logger.info("ECoS Testdate initialized");
+
+    this.commandStationBean = getEcosAsDefaultCommandStationBean();
+
+    if (this.commandStationBean == null) {
+      for (int i = 0; i < 5; i++) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ex) {
+        }
+        Logger.info("Attempt " + i);
+        this.commandStationBean = getEcosAsDefaultCommandStationBean();
+        if (this.commandStationBean != null) {
+          break;
+        }
+      }
+    }
+
+    if (this.commandStationBean == null) {
+      Logger.error("Can't obtain a Command Station! Skipping tests...");
+    }
+  }
+
+  @AfterEach
+  public void tearDown() {
   }
 
   private CommandStationBean getEcosAsDefaultCommandStationBean() {
@@ -67,20 +99,11 @@ public class EsuEcosCommandStationImplTest {
       ecosCommandStationBean.setIpAddress(NetworkUtil.getIPv4HostAddress().getHostAddress());
     }
 
-    PersistenceFactory.getService().persist(ecosCommandStationBean);
+    if (ecosCommandStationBean != null) {
+      PersistenceFactory.getService().persist(ecosCommandStationBean);
+    }
+
     return ecosCommandStationBean;
-  }
-
-  @BeforeEach
-  public void setUp() {
-    testHelper.runTestDataInsertScript("ecos_test_data.sql");
-    Logger.info("ECoS Testdate initialized");
-
-    this.commandStationBean = getEcosAsDefaultCommandStationBean();
-  }
-
-  @AfterEach
-  public void tearDown() {
   }
 
   /**
@@ -88,11 +111,13 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testConnect() {
-    System.out.println("connect");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    boolean expResult = true;
-    boolean result = instance.connect();
-    assertEquals(expResult, result);
+    if (!skip) {
+      System.out.println("connect");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      boolean expResult = true;
+      boolean result = instance.connect();
+      assertEquals(expResult, result);
+    }
   }
 
   /**
@@ -100,13 +125,15 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testDisconnect() {
-    System.out.println("disconnect");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    boolean connected = instance.connect();
-    assertTrue(connected);
-    assertTrue(instance.isConnected());
-    instance.disconnect();
-    assertFalse(instance.isConnected());
+    if (!skip) {
+      System.out.println("disconnect");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      boolean connected = instance.connect();
+      assertTrue(connected);
+      assertTrue(instance.isConnected());
+      instance.disconnect();
+      assertFalse(instance.isConnected());
+    }
   }
 
   /**
@@ -114,20 +141,22 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetCommandStationInfo() {
-    System.out.println("getCommandStationInfo");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-    InfoBean expResult = new InfoBean(this.commandStationBean);
-    expResult.setArticleNumber("Virtual-ECoS");
-    expResult.setDescription("ECoS-Virtual");
-    expResult.setArticleNumber("Virtual");
-    expResult.setSerialNumber("0x00000000");
-    expResult.setHardwareVersion("1.3");
-    expResult.setSoftwareVersion("4.2.13");
-    expResult.setHostname(NetworkUtil.getIPv4HostAddress().getHostAddress());
+    if (!skip) {
+      System.out.println("getCommandStationInfo");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+      InfoBean expResult = new InfoBean(this.commandStationBean);
+      expResult.setArticleNumber("Virtual-ECoS");
+      expResult.setDescription("ECoS-Virtual");
+      expResult.setArticleNumber("Virtual");
+      expResult.setSerialNumber("0x00000000");
+      expResult.setHardwareVersion("1.3");
+      expResult.setSoftwareVersion("4.2.13");
+      expResult.setHostname(NetworkUtil.getIPv4HostAddress().getHostAddress());
 
-    InfoBean result = instance.getCommandStationInfo();
-    assertEquals(expResult, result);
+      InfoBean result = instance.getCommandStationInfo();
+      assertEquals(expResult, result);
+    }
   }
 
   /**
@@ -135,17 +164,20 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetDevice() {
-    System.out.println("getDevice");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-    DeviceBean expResult = new DeviceBean();
-    expResult.setName("ECoS-Virtual");
-    expResult.setVersion("1.3");
-    expResult.setTypeName("ECoS");
-    expResult.setSerial("0x00000000");
+    if (!skip) {
 
-    DeviceBean result = instance.getDevice();
-    assertEquals(expResult, result);
+      System.out.println("getDevice");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+      DeviceBean expResult = new DeviceBean();
+      expResult.setName("ECoS-Virtual");
+      expResult.setVersion("1.3");
+      expResult.setTypeName("ECoS");
+      expResult.setSerial("0x00000000");
+
+      DeviceBean result = instance.getDevice();
+      assertEquals(expResult, result);
+    }
   }
 
   /**
@@ -153,20 +185,22 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetDevices() {
-    System.out.println("getDevices");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-    DeviceBean db = new DeviceBean();
-    db.setName("ECoS-Virtual");
-    db.setVersion("1.3");
-    db.setTypeName("ECoS");
-    db.setSerial("0x00000000");
+    if (!skip) {
+      System.out.println("getDevices");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+      DeviceBean db = new DeviceBean();
+      db.setName("ECoS-Virtual");
+      db.setVersion("1.3");
+      db.setTypeName("ECoS");
+      db.setSerial("0x00000000");
 
-    List<DeviceBean> expResult = new ArrayList<>();
-    expResult.add(db);
+      List<DeviceBean> expResult = new ArrayList<>();
+      expResult.add(db);
 
-    List<DeviceBean> result = instance.getDevices();
-    assertEquals(expResult, result);
+      List<DeviceBean> result = instance.getDevices();
+      assertEquals(expResult, result);
+    }
   }
 
   /**
@@ -174,13 +208,15 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetIp() {
-    System.out.println("getIp");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    assertNull(instance.getIp());
-    instance.connect();
-    String expResult = NetworkUtil.getIPv4HostAddress().getHostAddress();
-    String result = instance.getIp();
-    assertEquals(expResult, result);
+    if (!skip) {
+      System.out.println("getIp");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      assertNull(instance.getIp());
+      instance.connect();
+      String expResult = NetworkUtil.getIPv4HostAddress().getHostAddress();
+      String result = instance.getIp();
+      assertEquals(expResult, result);
+    }
   }
 
   /**
@@ -188,11 +224,13 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testIsPower() {
-    System.out.println("isPower");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    assertFalse(instance.isPower());
-    instance.connect();
-    assertTrue(instance.isPower());
+    if (!skip) {
+      System.out.println("isPower");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      assertFalse(instance.isPower());
+      instance.connect();
+      assertTrue(instance.isPower());
+    }
   }
 
   /**
@@ -200,13 +238,15 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testPower() {
-    System.out.println("power");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-    boolean result = instance.power(true);
-    assertTrue(result);
-    result = instance.power(false);
-    assertFalse(result);
+    if (!skip) {
+      System.out.println("power");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+      boolean result = instance.power(true);
+      assertTrue(result);
+      result = instance.power(false);
+      assertFalse(result);
+    }
   }
 
   /**
@@ -214,15 +254,15 @@ public class EsuEcosCommandStationImplTest {
    */
   //@Test
   public void testChangeDirection() {
-    System.out.println("changeDirection");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
+    if (!skip) {
+      System.out.println("changeDirection");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
 
-    int locUid = 0;
-    LocomotiveBean.Direction direction = null;
-    instance.changeDirection(locUid, direction);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+      int locUid = 0;
+      LocomotiveBean.Direction direction = null;
+      instance.changeDirection(locUid, direction);
+    }
   }
 
   /**
@@ -230,16 +270,17 @@ public class EsuEcosCommandStationImplTest {
    */
   //@Test
   public void testChangeVelocity() {
-    System.out.println("changeVelocity");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
+    if (!skip) {
 
-    int locUid = 0;
-    int speed = 0;
-    LocomotiveBean.Direction direction = null;
-    instance.changeVelocity(locUid, speed, direction);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+      System.out.println("changeVelocity");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+
+      int locUid = 0;
+      int speed = 0;
+      LocomotiveBean.Direction direction = null;
+      instance.changeVelocity(locUid, speed, direction);
+    }
   }
 
   /**
@@ -247,16 +288,19 @@ public class EsuEcosCommandStationImplTest {
    */
   //@Test
   public void testChangeFunctionValue() {
-    System.out.println("changeFunctionValue");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
+    if (!skip) {
 
-    int locUid = 0;
-    int functionNumber = 0;
-    boolean flag = false;
-    instance.changeFunctionValue(locUid, functionNumber, flag);
-    // TODO review the generated test code and remove the default call to fail.
-    fail("The test case is a prototype.");
+      System.out.println("changeFunctionValue");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+
+      int locUid = 0;
+      int functionNumber = 0;
+      boolean flag = false;
+      instance.changeFunctionValue(locUid, functionNumber, flag);
+      // TODO review the generated test code and remove the default call to fail.
+      fail("The test case is a prototype.");
+    }
   }
 
   /**
@@ -264,12 +308,14 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetLocomotives() {
-    System.out.println("getLocomotives");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    int expResult = 12;
-    instance.connect();
-    List<LocomotiveBean> result = instance.getLocomotives();
-    assertEquals(expResult, result.size());
+    if (!skip) {
+      System.out.println("getLocomotives");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      int expResult = 12;
+      instance.connect();
+      List<LocomotiveBean> result = instance.getLocomotives();
+      assertEquals(expResult, result.size());
+    }
   }
 
   /**
@@ -277,10 +323,12 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testIsSupportTrackMeasurements() {
-    System.out.println("isSupportTrackMeasurements");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-    assertFalse(instance.isSupportTrackMeasurements());
+    if (!skip) {
+      System.out.println("isSupportTrackMeasurements");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+      assertFalse(instance.isSupportTrackMeasurements());
+    }
   }
 
   /**
@@ -337,13 +385,15 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetAccessories() {
-    System.out.println("getAccessories");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
+    if (!skip) {
+      System.out.println("getAccessories");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
 
-    int expResult = 7;
-    List<AccessoryBean> result = instance.getAccessories();
-    assertEquals(expResult, result.size());
+      int expResult = 7;
+      List<AccessoryBean> result = instance.getAccessories();
+      assertEquals(expResult, result.size());
+    }
   }
 
   /**
@@ -351,26 +401,28 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetFeedbackDevice() {
-    System.out.println("getFeedbackDevice");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
+    if (!skip) {
+      System.out.println("getFeedbackDevice");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
 
-    DeviceBean expResult = new DeviceBean();
-    expResult.setArticleNumber("ECoS-Virtual");
-    expResult.setIdentifier("0x0");
-    expResult.getBusLength(1);
-    expResult.setVersion("4.2.13");
-    expResult.setSerial("0x00000000");
-    expResult.setTypeName("Link S88");
+      DeviceBean expResult = new DeviceBean();
+      expResult.setArticleNumber("ECoS-Virtual");
+      expResult.setIdentifier("0x0");
+      expResult.getBusLength(1);
+      expResult.setVersion("4.2.13");
+      expResult.setSerial("0x00000000");
+      expResult.setTypeName("Link S88");
 
-    ChannelBean cb = new ChannelBean();
-    cb.setName(DeviceBean.BUS0);
-    cb.setNumber(0);
+      ChannelBean cb = new ChannelBean();
+      cb.setName(DeviceBean.BUS0);
+      cb.setNumber(0);
 
-    expResult.addSensorBus(0, cb);
+      expResult.addSensorBus(0, cb);
 
-    DeviceBean result = instance.getFeedbackDevice();
-    assertEquals(expResult, result);
+      DeviceBean result = instance.getFeedbackDevice();
+      assertEquals(expResult, result);
+    }
   }
 
   /**
@@ -378,12 +430,14 @@ public class EsuEcosCommandStationImplTest {
    */
   @Test
   public void testGetFeedbackModules() {
-    System.out.println("getFeedbackModules");
-    EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
-    instance.connect();
-    int expResult = 1;
-    List<FeedbackModuleBean> result = instance.getFeedbackModules();
-    assertEquals(expResult, result.size());
+    if (!skip) {
+      System.out.println("getFeedbackModules");
+      EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
+      instance.connect();
+      int expResult = 1;
+      List<FeedbackModuleBean> result = instance.getFeedbackModules();
+      assertEquals(expResult, result.size());
+    }
   }
 
 }
