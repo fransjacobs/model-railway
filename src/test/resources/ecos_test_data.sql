@@ -1,13 +1,18 @@
+delete from route_elements;
+delete from routes;
 delete from blocks;
+delete from tiles;
 delete from locomotive_functions;
 delete from locomotives;
+delete from accessories;
+delete from sensors;
 commit;
 
 update command_stations set default_cs = false, enabled = false;
 update command_stations set default_cs = true, enabled = true, virtual = true where id = 'esu-ecos';
 commit;
 
-INSERT INTO jcs.locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_min,velocity,synchronize,imported,commuter,show,command_station_id,dispatcher_direction,locomotive_direction) VALUES
+INSERT INTO locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_min,velocity,synchronize,imported,commuter,show,command_station_id,dispatcher_direction,locomotive_direction) VALUES
 	 (1000,'193 304-3 DB AG',1000,0,'/Users/fransjacobs/jcs/cache/ecos/loco_type_e-image_type_int-36.png','mfx',126,NULL,0,true,'ECoS',false,true,'esu-ecos',NULL,'BACKWARDS'),
 	 (1001,'SNCB/NMBS HLE 27',1001,3,'/Users/fransjacobs/jcs/cache/ecos/loco_type_e-image_type_int-2.png','dcc128',126,NULL,0,true,'ECoS',false,true,'esu-ecos',NULL,'FORWARDS'),
 	 (1002,'FS236-002',1002,14,'/Users/fransjacobs/jcs/cache/ecos/loco_type_diesel-image_type_int-14.png','dcc28',126,0,0,true,'Manual Updated',true,true,'esu-ecos',NULL,'FORWARDS'),
@@ -18,13 +23,13 @@ INSERT INTO jcs.locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_m
 	 (1007,'NS 1139',1007,5,'/Users/fransjacobs/jcs/cache/ecos/loco_type_e-image_type_int-37.png','dcc14',126,NULL,0,true,'ECoS',false,true,'esu-ecos',NULL,'BACKWARDS'),
 	 (1008,'NS 1309',1008,68,'/Users/fransjacobs/jcs/cache/ecos/loco_type_e-image_type_int-35.png','dcc28',126,NULL,0,true,'ECoS',false,true,'esu-ecos',NULL,'FORWARDS'),
 	 (1009,'Plan V',1009,7,'/Users/fransjacobs/jcs/cache/ecos/loco_type_e-image_type_int-53.png','dcc28',126,NULL,0,true,'ECoS',false,true,'esu-ecos',NULL,'BACKWARDS');
-INSERT INTO jcs.locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_min,velocity,synchronize,imported,commuter,show,command_station_id,dispatcher_direction,locomotive_direction) VALUES
+INSERT INTO locomotives (id,name,uid,address,icon,decoder_type,tacho_max,v_min,velocity,synchronize,imported,commuter,show,command_station_id,dispatcher_direction,locomotive_direction) VALUES
 	 (1010,'BR 18.4 / Bayr. ',1010,9,'/Users/fransjacobs/jcs/cache/ecos/loco_type_steam-image_type_int-0.png','dcc28',126,NULL,0,true,'ECoS',false,true,'esu-ecos',NULL,'FORWARDS'),
 	 (1011,'ice',1011,60,'/Users/fransjacobs/jcs/cache/ecos/loco_type_steam-image_type_int-63.png','mm14',126,NULL,0,true,'ECoS',false,true,'esu-ecos',NULL,'BACKWARDS');
 
 commit;
 
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1008,0,3,0,'3',false),
 	 (1008,1,0,0,'0',false),
 	 (1008,2,0,0,'0',false),
@@ -35,7 +40,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1008,7,0,0,'0',false),
 	 (1008,8,0,0,'0',false),
 	 (1008,9,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1008,10,0,0,'0',false),
 	 (1008,11,0,0,'0',false),
 	 (1008,12,0,0,'0',false),
@@ -46,7 +51,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1008,17,0,0,'0',false),
 	 (1008,18,0,0,'0',false),
 	 (1008,19,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1008,20,0,0,'0',false),
 	 (1008,21,0,0,'0',false),
 	 (1008,22,0,0,'0',false),
@@ -57,7 +62,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1008,27,0,0,'0',false),
 	 (1008,28,0,0,'0',false),
 	 (1008,29,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1008,30,0,0,'0',false),
 	 (1009,0,3,0,'3',false),
 	 (1009,1,4,0,'4',false),
@@ -68,7 +73,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1009,6,0,0,'0',false),
 	 (1009,7,0,0,'0',false),
 	 (1009,8,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1009,9,0,0,'0',false),
 	 (1009,10,0,0,'0',false),
 	 (1009,11,0,0,'0',false),
@@ -79,7 +84,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1009,16,0,0,'0',false),
 	 (1009,17,0,0,'0',false),
 	 (1009,18,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1009,19,0,0,'0',false),
 	 (1009,20,0,0,'0',false),
 	 (1009,21,0,0,'0',false),
@@ -90,7 +95,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1009,26,0,0,'0',false),
 	 (1009,27,0,0,'0',false),
 	 (1009,28,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1009,29,0,0,'0',false),
 	 (1009,30,0,0,'0',false),
 	 (1010,0,3,0,'3',false),
@@ -101,7 +106,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1010,5,2,0,'2',false),
 	 (1010,6,10,0,'10',false),
 	 (1010,7,11015,0,'11015',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1010,8,6,0,'6',false),
 	 (1010,9,1031,0,'1031',false),
 	 (1010,10,2055,0,'2055',true),
@@ -112,7 +117,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1010,15,33,0,'33',false),
 	 (1010,16,1031,0,'1031',true),
 	 (1010,17,1543,0,'1543',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1010,18,11783,0,'11783',false),
 	 (1010,19,1321,0,'1321',false),
 	 (1010,20,8,0,'8',false),
@@ -123,7 +128,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1010,25,7,0,'7',false),
 	 (1010,26,263,0,'263',false),
 	 (1010,27,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1010,28,0,0,'0',false),
 	 (1010,29,0,0,'0',false),
 	 (1010,30,0,0,'0',false),
@@ -134,7 +139,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1011,4,6,0,'6',false),
 	 (1011,5,6,0,'6',false),
 	 (1011,6,6,0,'6',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1011,7,6,0,'6',false),
 	 (1011,8,6,0,'6',false),
 	 (1000,0,3,0,'3',false),
@@ -145,7 +150,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1000,5,263,0,'263',false),
 	 (1000,6,16387,0,'16387',false),
 	 (1000,7,37,0,'37',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1000,8,32771,0,'32771',false),
 	 (1000,9,1287,0,'1287',true),
 	 (1000,10,1287,0,'1287',true),
@@ -156,7 +161,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1000,15,37,0,'37',true),
 	 (1000,16,0,0,'0',false),
 	 (1000,17,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1000,18,0,0,'0',false),
 	 (1000,19,0,0,'0',false),
 	 (1000,20,0,0,'0',false),
@@ -167,7 +172,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1000,25,0,0,'0',false),
 	 (1000,26,0,0,'0',false),
 	 (1000,27,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1000,28,0,0,'0',false),
 	 (1000,29,0,0,'0',false),
 	 (1000,30,0,0,'0',false),
@@ -178,7 +183,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1001,4,34,0,'34',false),
 	 (1001,5,260,0,'260',false),
 	 (1001,6,10,0,'10',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1001,7,4,0,'4',false),
 	 (1001,8,5,0,'5',false),
 	 (1001,9,3,0,'3',false),
@@ -189,7 +194,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1001,14,9,0,'9',true),
 	 (1001,15,40,0,'40',false),
 	 (1001,16,39,0,'39',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1001,17,12039,0,'12039',false),
 	 (1001,18,9,0,'9',true),
 	 (1001,19,11527,0,'11527',true),
@@ -200,7 +205,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1001,24,809,0,'809',false),
 	 (1001,25,11783,0,'11783',true),
 	 (1001,26,300,0,'300',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1001,27,263,0,'263',false),
 	 (1001,28,12039,0,'12039',false),
 	 (1001,29,1033,0,'1033',true),
@@ -211,7 +216,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1002,3,10,0,'10',false),
 	 (1002,4,11,0,'11',false),
 	 (1002,5,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1002,6,0,0,'0',false),
 	 (1002,7,0,0,'0',false),
 	 (1002,8,0,0,'0',false),
@@ -222,7 +227,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1002,13,0,0,'0',false),
 	 (1002,14,0,0,'0',false),
 	 (1002,15,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1002,16,0,0,'0',false),
 	 (1002,17,0,0,'0',false),
 	 (1002,18,0,0,'0',false),
@@ -233,7 +238,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1002,23,0,0,'0',false),
 	 (1002,24,0,0,'0',false),
 	 (1002,25,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1002,26,0,0,'0',false),
 	 (1002,27,0,0,'0',false),
 	 (1002,28,0,0,'0',false),
@@ -244,7 +249,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1003,2,1029,0,'1029',false),
 	 (1003,3,10,0,'10',false),
 	 (1003,4,11,0,'11',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1003,5,0,0,'0',false),
 	 (1003,6,0,0,'0',false),
 	 (1003,7,0,0,'0',false),
@@ -255,7 +260,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1003,12,0,0,'0',false),
 	 (1003,13,0,0,'0',false),
 	 (1003,14,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1003,15,0,0,'0',false),
 	 (1003,16,0,0,'0',false),
 	 (1003,17,0,0,'0',false),
@@ -266,7 +271,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1003,22,0,0,'0',false),
 	 (1003,23,0,0,'0',false),
 	 (1003,24,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1003,25,0,0,'0',false),
 	 (1003,26,0,0,'0',false),
 	 (1003,27,0,0,'0',false),
@@ -277,7 +282,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1004,1,1029,0,'1029',false),
 	 (1004,2,1541,0,'1541',false),
 	 (1004,3,10,0,'10',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1004,4,11,0,'11',false),
 	 (1004,5,32771,0,'32771',false),
 	 (1004,6,16387,0,'16387',false),
@@ -288,7 +293,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1004,11,0,0,'0',false),
 	 (1004,12,0,0,'0',false),
 	 (1004,13,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1004,14,0,0,'0',false),
 	 (1004,15,0,0,'0',false),
 	 (1004,16,0,0,'0',false),
@@ -299,7 +304,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1004,21,0,0,'0',false),
 	 (1004,22,0,0,'0',false),
 	 (1004,23,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1004,24,0,0,'0',false),
 	 (1004,25,0,0,'0',false),
 	 (1004,26,0,0,'0',false),
@@ -310,7 +315,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1005,0,3,0,'3',false),
 	 (1005,1,0,0,'0',false),
 	 (1005,2,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1005,3,10,0,'10',false),
 	 (1005,4,11,0,'11',false),
 	 (1005,5,0,0,'0',false),
@@ -321,7 +326,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1006,1,0,0,'0',false),
 	 (1006,2,0,0,'0',false),
 	 (1006,3,10,0,'10',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1006,4,11,0,'11',false),
 	 (1006,5,0,0,'0',false),
 	 (1006,6,0,0,'0',false),
@@ -343,7 +348,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1007,12,0,0,'0',false),
 	 (1007,13,0,0,'0',false),
 	 (1007,14,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1007,15,0,0,'0',false),
 	 (1007,16,0,0,'0',false),
 	 (1007,17,0,0,'0',false),
@@ -354,7 +359,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 	 (1007,22,0,0,'0',false),
 	 (1007,23,0,0,'0',false),
 	 (1007,24,0,0,'0',false);
-INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
+INSERT INTO locomotive_functions (locomotive_id,f_number,f_type,f_value,f_icon,momentary) VALUES
 	 (1007,25,0,0,'0',false),
 	 (1007,26,0,0,'0',false),
 	 (1007,27,0,0,'0',false),
@@ -364,7 +369,7 @@ INSERT INTO jcs.locomotive_functions (locomotive_id,f_number,f_type,f_value,f_ic
 
 commit;
 
-INSERT INTO jcs.accessories (id,address,name,"type",state,states,switch_time,protocol,decoder,accessory_group,icon,icon_file,imported,command_station_id,synchronize) VALUES
+INSERT INTO accessories (id,address,name,"type",state,states,switch_time,protocol,decoder,accessory_group,icon,icon_file,imported,command_station_id,synchronize) VALUES
 	 ('20005',16,'Sein mini','lichtsignal_SH01',1,2,500,'mm',NULL,NULL,'13',NULL,'ECoS','esu-ecos',true),
 	 ('20004',14,'Sein 4','lichtsignal_HP012_SH01',1,4,250,'mm',NULL,NULL,'12',NULL,'ECoS','esu-ecos',true),
 	 ('20003',12,'Sein 3','lichtsignal_HP012',1,3,250,'mm',NULL,NULL,'11',NULL,'ECoS','esu-ecos',true),
@@ -375,7 +380,7 @@ INSERT INTO jcs.accessories (id,address,name,"type",state,states,switch_time,pro
 
 commit;
 
-INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) VALUES
+INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) VALUES
 	 ('0-0011','B0-S-11',0,11,0,NULL,NULL,NULL),
 	 ('0-0010','B0-S-10',0,10,1,NULL,NULL,NULL),
 	 ('0-0002','B0-S-2',0,2,0,NULL,NULL,NULL),
@@ -386,7 +391,7 @@ INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,mil
 	 ('0-0015','B0-S-15',0,15,0,1,NULL,NULL),
 	 ('0-0003','B0-S-3',0,3,0,NULL,NULL,NULL),
 	 ('0-0014','B0-S-14',0,14,0,1,NULL,NULL);
-INSERT INTO jcs.sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) VALUES
+INSERT INTO sensors (id,name,device_id,contact_id,status,previous_status,millis,last_updated) VALUES
 	 ('0-0006','B0-S-6',0,6,0,1,NULL,NULL),
 	 ('0-0005','B0-S-5',0,5,0,1,NULL,NULL),
 	 ('0-0016','B0-S-16',0,16,0,1,NULL,NULL),
