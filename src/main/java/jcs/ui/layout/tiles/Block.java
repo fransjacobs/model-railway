@@ -17,10 +17,13 @@ package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.geom.Ellipse2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,7 +32,6 @@ import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
-import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.EAST;
 import static jcs.entities.TileBean.Orientation.NORTH;
@@ -42,56 +44,106 @@ import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
+import org.tinylog.Logger;
 
-public class Block extends AbstractTile implements Tile {
+public class Block extends Tile {
 
   public static final int BLOCK_WIDTH = DEFAULT_WIDTH * 3;
   public static final int BLOCK_HEIGHT = DEFAULT_HEIGHT * 3;
 
   protected BlockState routeBlockState;
 
-  Block(TileBean tileBean) {
-    super(tileBean);
-    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-      this.width = BLOCK_WIDTH;
-      this.renderWidth = RENDER_WIDTH * 3;
-      this.height = DEFAULT_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT;
+  private static int blockWidth(Orientation orientation) {
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      return BLOCK_WIDTH;
     } else {
-      this.width = DEFAULT_WIDTH;
-      this.renderWidth = RENDER_WIDTH;
-      this.height = BLOCK_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT * 3;
+      return DEFAULT_WIDTH;
     }
-    this.blockBean = tileBean.getBlockBean();
-    this.type = tileBean.getType();
   }
 
-  Block(Orientation orientation, Point center) {
+  private static int blockHeight(Orientation orientation) {
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      return DEFAULT_HEIGHT;
+    } else {
+      return BLOCK_HEIGHT;
+    }
+  }
+
+  public Block(TileBean tileBean) {
+    super(tileBean, blockWidth(tileBean.getOrientation()), blockHeight(tileBean.getOrientation()));
+    setModel(new DefaultTileModel());
+
+    if (Orientation.EAST == tileBean.getOrientation() || Orientation.WEST == tileBean.getOrientation()) {
+      this.renderWidth = RENDER_WIDTH * 3;
+      this.renderHeight = RENDER_HEIGHT;
+    } else {
+      this.renderWidth = RENDER_WIDTH;
+      this.renderHeight = RENDER_HEIGHT * 3;
+    }
+  }
+
+  public Block(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
 
-  Block(Orientation orientation, int x, int y) {
-    super(orientation, Direction.CENTER, x, y);
-
-    if (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) {
-      this.width = BLOCK_WIDTH;
-      this.renderWidth = RENDER_WIDTH * 3;
-      this.height = DEFAULT_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT;
-    } else {
-      this.width = DEFAULT_WIDTH;
-      this.renderWidth = RENDER_WIDTH;
-      this.height = BLOCK_HEIGHT;
-      this.renderHeight = RENDER_HEIGHT * 3;
-    }
-    this.type = TileType.BLOCK.getTileType();
+  public Block(Orientation orientation, int x, int y) {
+    this(orientation, x, y, blockWidth(orientation), blockHeight(orientation));
   }
 
+  public Block(Orientation orientation, int x, int y, int width, int height) {
+    super(TileType.BLOCK, orientation, x, y, width, height);
+    setModel(new DefaultTileModel());
+
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      this.renderWidth = RENDER_WIDTH * 3;
+      this.renderHeight = RENDER_HEIGHT;
+    } else {
+      this.renderWidth = RENDER_WIDTH;
+      this.renderHeight = RENDER_HEIGHT * 3;
+    }
+  }
+
+//  Block(TileBean tileBean) {
+//    super(tileBean);
+//    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+//      this.width = BLOCK_WIDTH;
+//      this.renderWidth = RENDER_WIDTH * 3;
+//      this.height = DEFAULT_HEIGHT;
+//      this.renderHeight = RENDER_HEIGHT;
+//    } else {
+//      this.width = DEFAULT_WIDTH;
+//      this.renderWidth = RENDER_WIDTH;
+//      this.height = BLOCK_HEIGHT;
+//      this.renderHeight = RENDER_HEIGHT * 3;
+//    }
+//    this.blockBean = tileBean.getBlockBean();
+//    this.tileType = tileBean.getTileType();
+//    this.setLayout(null);
+//  }
+//  Block(Orientation orientation, Point center) {
+//    this(orientation, center.x, center.y);
+//  }
+//  Block(Orientation orientation, int x, int y) {
+//    super(orientation, Direction.CENTER, x, y);
+//
+//    if (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) {
+//      this.width = BLOCK_WIDTH;
+//      this.renderWidth = RENDER_WIDTH * 3;
+//      this.height = DEFAULT_HEIGHT;
+//      this.renderHeight = RENDER_HEIGHT;
+//    } else {
+//      this.width = DEFAULT_WIDTH;
+//      this.renderWidth = RENDER_WIDTH;
+//      this.height = BLOCK_HEIGHT;
+//      this.renderHeight = RENDER_HEIGHT * 3;
+//    }
+//    this.tileType = TileType.BLOCK;
+//    this.setLayout(null);
+//  }
   @Override
   public Set<Point> getAltPoints() {
-    int xx = this.x;
-    int yy = this.y;
+    int xx = this.tileX;
+    int yy = this.tileY;
     Set<Point> alternatives = new HashSet<>();
 
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
@@ -291,43 +343,24 @@ public class Block extends AbstractTile implements Tile {
   @Override
   public void rotate() {
     super.rotate();
+    Dimension d;
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-      this.width = DEFAULT_WIDTH * 3;
-      this.height = DEFAULT_HEIGHT;
+      d = new Dimension(DEFAULT_WIDTH * 3, DEFAULT_HEIGHT);
+      //this.width = DEFAULT_WIDTH * 3;
+      //this.height = DEFAULT_HEIGHT;
 
       this.renderWidth = RENDER_WIDTH * 3;
       this.renderHeight = RENDER_HEIGHT;
     } else {
-      this.width = DEFAULT_WIDTH;
-      this.height = DEFAULT_HEIGHT * 3;
+      d = new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT * 3);
+      //this.width = DEFAULT_WIDTH;
+      //this.height = DEFAULT_HEIGHT * 3;
 
       this.renderWidth = RENDER_WIDTH;
       this.renderHeight = RENDER_HEIGHT * 3;
     }
-  }
-
-  public void setWidth(int width) {
-    this.width = width;
-  }
-
-  public void setHeight(int height) {
-    this.height = height;
-  }
-
-  public void setRenderWidth(int renderWidth) {
-    this.renderWidth = renderWidth;
-  }
-
-  public void setRenderHeight(int renderHeight) {
-    this.renderHeight = renderHeight;
-  }
-
-  public void setRenderOffsetX(int renderOffsetX) {
-    this.renderOffsetX = renderOffsetX;
-  }
-
-  public void setRenderOffsetY(int renderOffsetY) {
-    this.renderOffsetY = renderOffsetY;
+    setSize(d);
+    setPreferredSize(d);
   }
 
   /**
@@ -340,16 +373,11 @@ public class Block extends AbstractTile implements Tile {
    *
    * @return the Color which belong with the current Block State
    */
-  public Color getBlockStateColor() {
-    if (blockBean != null) {
-      BlockState blockState = blockBean.getBlockState();
-      return getBlockStateColor(blockState);
-    } else {
-      return Color.white;
-    }
+  Color getBlockStateColor() {
+    return getBlockStateColor(this.model.getBlockState());
   }
 
-  public Color getBlockStateColor(BlockState blockState) {
+  protected Color getBlockStateColor(BlockState blockState) {
     return switch (blockState) {
       case GHOST ->
         new Color(250, 0, 0);
@@ -374,21 +402,6 @@ public class Block extends AbstractTile implements Tile {
 
   public BlockState getRouteBlockState() {
     return routeBlockState;
-  }
-
-  public BlockState getBlockState() {
-    if (blockBean != null) {
-      return blockBean.getBlockState();
-    } else {
-      return BlockState.FREE;
-    }
-  }
-
-  public void setBlockState(BlockState blockState) {
-    if (blockBean == null) {
-      this.blockBean = new BlockBean((TileBean) this);
-    }
-    blockBean.setBlockState(blockState);
   }
 
   public static String getDepartureSuffix(Orientation tileOrientation, boolean reverseArrival, LocomotiveBean.Direction direction) {
@@ -545,7 +558,6 @@ public class Block extends AbstractTile implements Tile {
         }
       }
     }
-
   }
 
   private void renderLeftArrow(Graphics2D g2) {
@@ -594,18 +606,18 @@ public class Block extends AbstractTile implements Tile {
           int h = locImage.getHeight(null);
 
           if (null == departureSuffix) {
-            xx = x - width / 2 + w;
+            xx = tileX - getWidth() / 2 + w;
           } else {
             switch (departureSuffix) {
               case "+" -> {
-                xx = x - width / 2 + w - 25;
+                xx = tileX - getWidth() / 2 + w - 25;
               }
               default -> {
-                xx = x - width / 2 + w + 10;
+                xx = tileX - getWidth() / 2 + w + 10;
               }
             }
           }
-          int yy = y - h / 2;
+          int yy = tileY - h / 2;
 
           if (reverseImage) {
             locImage = ImageUtil.flipVertically(locImage);
@@ -619,17 +631,17 @@ public class Block extends AbstractTile implements Tile {
           int w = locImage.getWidth(null);
           int h = locImage.getHeight(null);
 
-          int xx = x - w / 2;
+          int xx = tileX - w / 2;
           int yy;
           if (null == departureSuffix) {
-            yy = y - height / 2 + h;
+            yy = tileY - getHeight() / 2 + h;
           } else {
             switch (departureSuffix) {
               case "-" -> {
-                yy = y - height / 2 + h - 25;
+                yy = tileY - getHeight() / 2 + h - 25;
               }
               default -> {
-                yy = y - height / 2 + h + 10;
+                yy = tileY - getHeight() / 2 + h + 10;
               }
             }
           }
@@ -645,18 +657,18 @@ public class Block extends AbstractTile implements Tile {
           int w = locImage.getWidth(null);
           int h = locImage.getHeight(null);
 
-          int xx = x - w / 2;
+          int xx = tileX - w / 2;
           int yy;
           if (null == departureSuffix) {
-            int minY = y - height / 2 + h;
+            int minY = tileY - getHeight() / 2 + h;
             yy = minY;
           } else {
             switch (departureSuffix) {
               case "+" -> {
-                yy = y - height / 2 + h - 25;
+                yy = tileY - getHeight() / 2 + h - 25;
               }
               default -> {
-                yy = y - height / 2 + h + 10;
+                yy = tileY - getHeight() / 2 + h + 10;
               }
             }
           }
@@ -672,18 +684,18 @@ public class Block extends AbstractTile implements Tile {
           int h = locImage.getHeight(null);
 
           if (null == departureSuffix) {
-            xx = x - width / 2 + w;
+            xx = tileX - getWidth() / 2 + w;
           } else {
             switch (departureSuffix) {
               case "-" -> {
-                xx = x - width / 2 + w - 25;
+                xx = tileX - getWidth() / 2 + w - 25;
               }
               default -> {
-                xx = x - width / 2 + w + 10;
+                xx = tileX - getWidth() / 2 + w + 10;
               }
             }
           }
-          int yy = y - h / 2;
+          int yy = tileY - h / 2;
 
           if (reverseImage) {
             locImage = ImageUtil.flipVertically(locImage);
@@ -698,11 +710,10 @@ public class Block extends AbstractTile implements Tile {
    * Overridden to overlay a locomotive Icon
    *
    * @param g2d The graphics handle
-   * @param drawOutline
    */
   @Override
-  public void drawTile(Graphics2D g2d, boolean drawOutline) {
-    super.drawTile(g2d, drawOutline);
+  public void drawTile(Graphics2D g2d) {
+    super.drawTile(g2d);
     if (getLocImage() != null) {
       overlayLocImage(g2d);
     }
@@ -714,7 +725,7 @@ public class Block extends AbstractTile implements Tile {
     Color pb = this.backgroundColor;
     super.onTileChange(tileEvent);
     if (!pb.equals(backgroundColor)) {
-      repaintTile();
+      repaint();
     }
   }
 
@@ -735,7 +746,7 @@ public class Block extends AbstractTile implements Tile {
 
   public String getBlockText() {
     String blockText;
-    if (!drawOutline && getBlockBean() != null && getBlockBean().getDescription() != null) {
+    if (getBlockBean() != null && getBlockBean().getDescription() != null) {
       if (blockBean.getLocomotive() != null && blockBean.getLocomotive().getName() != null && BlockState.GHOST != blockBean.getBlockState()) {
         blockText = getBlockBean().getLocomotive().getName();
       } else {
@@ -800,4 +811,71 @@ public class Block extends AbstractTile implements Tile {
       g2d.setFont(newFont);
     }
   }
+
+  @Override
+  protected void paintComponent(Graphics g) {
+    long started = System.currentTimeMillis();
+    super.paintComponent(g);
+
+    if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
+      setBounds(this.tileX - GRID - GRID * 2, this.tileY - GRID, this.getWidth(), this.getHeight());
+    } else {
+      setBounds(this.tileX - GRID, this.tileY - GRID - GRID * 2, this.getWidth(), this.getHeight());
+    }
+
+    Graphics2D g2 = (Graphics2D) g.create();
+    drawTile(g2);
+    g2.dispose();
+
+    g.drawImage(tileImage, 0, 0, null);
+
+    Logger.trace(id + ": W: " + getWidth() + " H: " + getHeight() + " oX: " + renderOffsetX + " oY: " + renderOffsetY);
+
+    long now = System.currentTimeMillis();
+    Logger.trace(id + " Duration: " + (now - started) + " ms.");
+  }
+
+  @Override
+  protected void drawCenterPoint(Graphics2D g2d, Color color, double size) {
+    //super.drawCenterPoint(g2d, color, size);
+
+    //A block has 2 alternate points
+    //1st square 
+    //2nd square holds the centerpoint
+    //3rd square
+    double dX1, dX2, dX3, dY1, dY2, dY3;
+    if (Orientation.EAST == this.tileOrientation || Orientation.WEST == tileOrientation) {
+      dX1 = (renderWidth / 3 / 2 - size / 2 / 2);
+      dX2 = (renderWidth / 2 - size / 2);
+      dX3 = (renderWidth / 3 / 2 + renderWidth / 3 * 2 - size / 2);
+      dY1 = (renderHeight / 2 - size / 2 / 2);
+      dY2 = (renderHeight / 2 - size / 2 / 2);
+      dY3 = (renderHeight / 2 - size / 2 / 2);
+    } else {
+      dY1 = (renderWidth / 2 - size / 2 / 2);
+      
+      dY2 = (renderWidth / 2 - size / 2 / 2);
+      
+      dY3 = (renderWidth / 2 - size / 2 / 2);
+
+      dX1 = (renderHeight / 3 / 2 - size / 2 / 2);
+      
+      dX2 = (renderHeight / 2 - size / 2);
+      
+      dX3 = (renderHeight / 3 / 2 + renderHeight / 3 * 2 - size / 2);
+
+    }
+
+    g2d.setColor(color);
+
+    g2d.fill(new Ellipse2D.Double(dX1, dY1, size / 2, size / 2));
+    g2d.fill(new Ellipse2D.Double(dX2, dY2, size, size));
+    g2d.fill(new Ellipse2D.Double(dX3, dY3, size / 2, size / 2));
+
+    Logger.trace(id + " dX2: " + dX2 + " dY2: " + dY2 + " O: " + tileOrientation + " rW: " + renderWidth + " rH:" + renderHeight);
+    Logger.trace(id + " dX1: " + dX1 + " dY1: " + dY1);
+    Logger.trace(id + " dX3: " + dX3 + " dY3: " + dY3);
+
+  }
+
 }

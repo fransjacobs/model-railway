@@ -27,14 +27,17 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
+import jcs.entities.TileBean.Orientation;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.Tile.GRID;
 
-public class Cross extends Switch implements Tile {
+public class Cross extends Switch {
 
   public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
   public static final int CROSS_HEIGHT = DEFAULT_HEIGHT * 2;
@@ -47,18 +50,38 @@ public class Cross extends Switch implements Tile {
   public static final Color LIGHT_GREEN = new Color(0, 255, 51);
   public static final Color DARK_GREEN = new Color(0, 153, 0);
 
-  Cross(TileBean tileBean) {
-    super(tileBean);
+  private static int crossWidth(Orientation orientation) {
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      return DEFAULT_WIDTH * 2;
+    } else {
+      return DEFAULT_WIDTH;
+    }
+  }
+
+  private static int crossHeight(Orientation orientation) {
+    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
+      return DEFAULT_HEIGHT;
+    } else {
+      return DEFAULT_HEIGHT * 2;
+    }
+  }
+
+  public Cross(TileBean tileBean) {
+    super(tileBean, crossWidth(tileBean.getOrientation()), crossHeight(tileBean.getOrientation()));
     setWidthHeightAndOffsets();
   }
 
-  Cross(Orientation orientation, Direction direction, int x, int y) {
-    this(orientation, direction, new Point(x, y));
+  public Cross(Orientation orientation, Direction direction, Point center) {
+    this(orientation, direction, center.x, center.y);
   }
 
-  public Cross(Orientation orientation, Direction direction, Point center) {
-    super(orientation, direction, center);
-    this.type = TileType.CROSS.getTileType();
+  public Cross(Orientation orientation, Direction direction, int x, int y) {
+    this(orientation, direction, x, y, crossWidth(orientation), crossHeight(orientation));
+  }
+
+  public Cross(Orientation orientation, Direction direction, int x, int y, int width, int height) {
+    super(orientation, direction, x, y, width, height);
+    this.tileType = TileType.CROSS;
     setWidthHeightAndOffsets();
   }
 
@@ -69,8 +92,8 @@ public class Cross extends Switch implements Tile {
    */
   @Override
   public Set<Point> getAltPoints() {
-    int xx = this.x;
-    int yy = this.y;
+    int xx = this.tileX;
+    int yy = this.tileY;
     Set<Point> alternatives = new HashSet<>();
 
     switch (getOrientation()) {
@@ -88,7 +111,7 @@ public class Cross extends Switch implements Tile {
       }
       default -> {
         //East so default 
-        Point ep = new Point((x + DEFAULT_WIDTH), yy);
+        Point ep = new Point((tileX + DEFAULT_WIDTH), yy);
         alternatives.add(ep);
       }
     }
@@ -225,7 +248,7 @@ public class Cross extends Switch implements Tile {
     setWidthHeightAndOffsets();
   }
 
-  void setWidthHeightAndOffsets() {
+  final void setWidthHeightAndOffsets() {
     //Reset offsets
     this.offsetY = 0;
     this.renderOffsetY = 0;
@@ -233,16 +256,16 @@ public class Cross extends Switch implements Tile {
     this.renderOffsetX = 0;
 
     if (isHorizontal()) {
-      this.width = DEFAULT_WIDTH * 2;
-      this.height = DEFAULT_HEIGHT;
+      //this.width = DEFAULT_WIDTH * 2;
+      //this.height = DEFAULT_HEIGHT;
       this.renderWidth = RENDER_GRID * 4;
       this.renderHeight = RENDER_GRID * 2;
 
       this.offsetY = 0;
       this.renderOffsetY = 0;
     } else {
-      this.width = DEFAULT_WIDTH;
-      this.height = DEFAULT_HEIGHT * 2;
+      //this.width = DEFAULT_WIDTH;
+      //this.height = DEFAULT_HEIGHT * 2;
       this.renderWidth = RENDER_GRID * 2;
       this.renderHeight = RENDER_GRID * 4;
 

@@ -17,6 +17,7 @@ package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
@@ -29,30 +30,39 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Direction;
 import static jcs.entities.TileBean.Direction.LEFT;
 import static jcs.entities.TileBean.Direction.RIGHT;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
+import org.tinylog.Logger;
 
-public class Switch extends AbstractTile implements Tile, AccessoryEventListener {
+public class Switch extends Tile implements AccessoryEventListener {
 
-  protected AccessoryValue accessoryValue;
-  protected AccessoryValue routeValue;
-  protected Color routeColor;
-
-  Switch(TileBean tileBean) {
-    super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public Switch(TileBean tileBean) {
+    this(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
   }
 
-  Switch(Orientation orientation, Direction direction, int x, int y) {
-    this(orientation, direction, new Point(x, y));
+  protected Switch(TileBean tileBean, int width, int height) {
+    super(tileBean, width, height);
+    setModel(new DefaultTileModel());
   }
 
-  Switch(Orientation orientation, Direction direction, Point center) {
-    super(orientation, direction, center.x, center.y);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
-    this.type = TileType.SWITCH.getTileType();
+  public Switch(Orientation orientation, Direction direction, Point center) {
+    this(orientation, direction, center.x, center.y);
+  }
+
+  public Switch(Orientation orientation, Direction direction, int x, int y) {
+    this(orientation, direction, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  public Switch(Orientation orientation, Direction direction, int x, int y, int width, int height) {
+    super(TileType.SWITCH, orientation, direction, x, y, width, height);
+
+    setModel(new DefaultTileModel());
   }
 
   @Override
@@ -162,30 +172,6 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     return aps;
   }
 
-  public AccessoryValue getAccessoryValue() {
-    if (this.accessoryValue == null) {
-      return AccessoryValue.OFF;
-    } else {
-      return accessoryValue;
-    }
-  }
-
-  public void setValue(AccessoryValue value) {
-    this.accessoryValue = value;
-  }
-
-  public AccessoryValue getRouteValue() {
-    if (routeValue == null) {
-      return AccessoryValue.OFF;
-    } else {
-      return routeValue;
-    }
-  }
-
-  public void setRouteValue(AccessoryValue value) {
-    this.routeValue = value;
-  }
-
   protected void renderStraight(Graphics2D g2, Color color) {
     int xx, yy, w, h;
     xx = 0;
@@ -284,9 +270,8 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
 
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
-      setValue(event.getAccessoryBean().getAccessoryValue());
-      repaintTile();
+    if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
+      setAccessoryValue(event.getAccessoryBean().getAccessoryValue());
     }
   }
 
@@ -354,5 +339,22 @@ public class Switch extends AbstractTile implements Tile, AccessoryEventListener
     } else {
       return AccessoryValue.OFF;
     }
+  }
+
+  @Override
+  protected void paintComponent(Graphics g) {
+    long started = System.currentTimeMillis();
+    super.paintComponent(g);
+
+    setBounds(this.tileX - GRID, this.tileY - GRID, this.getWidth(), this.getHeight());
+
+    Graphics2D g2 = (Graphics2D) g.create();
+    drawTile(g2);
+    g2.dispose();
+
+    g.drawImage(this.tileImage, 0, 0, null);
+
+    long now = System.currentTimeMillis();
+    Logger.trace(this.id + " Duration: " + (now - started) + " ms.");
   }
 }

@@ -22,24 +22,26 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
 
-public class Crossing extends Straight implements Tile {
+public class Crossing extends Straight {
 
-  Crossing(TileBean tileBean) {
+  public Crossing(TileBean tileBean) {
     super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
   }
 
-  Crossing(Orientation orientation, Point center) {
+  public Crossing(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
   }
 
-  Crossing(Orientation orientation, int x, int y) {
-    super(orientation, x, y);
-    this.type = TileType.CROSSING.getTileType();
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public Crossing(Orientation orientation, int x, int y) {
+    this(orientation, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  public Crossing(Orientation orientation, int x, int y, int width, int height) {
+    super(orientation, x, y, width, height);
+    this.tileType = TileType.CROSSING;
   }
 
   @Override

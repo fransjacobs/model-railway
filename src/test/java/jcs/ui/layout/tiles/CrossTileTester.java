@@ -61,41 +61,41 @@ public class CrossTileTester extends JFrame {
   public void paint(Graphics g) {
     Graphics2D g2d = (Graphics2D) g;
 
-    switchEastR.drawTile(g2d, true);
-    switchEastR.drawBounds(g2d);
+//    switchEastR.drawTile(g2d, true);
+//    switchEastR.drawBounds(g2d);
     switchEastR.drawCenterPoint(g2d, Color.red);
-    ((Switch) switchEastR).setValue(AccessoryValue.RED);
+    ((Switch) switchEastR).setAccessoryValue(AccessoryValue.RED);
 
-    switchSouthR.drawTile(g2d, false);
-    switchSouthR.drawBounds(g2d);
+//    switchSouthR.drawTile(g2d, false);
+//    switchSouthR.drawBounds(g2d);
     switchSouthR.drawCenterPoint(g2d, Color.blue);
 
-    switchWestR.drawTile(g2d, true);
-    switchWestR.drawBounds(g2d);
+//    switchWestR.drawTile(g2d, true);
+//    switchWestR.drawBounds(g2d);
     switchWestR.drawCenterPoint(g2d, Color.red);
-    ((Switch) switchWestR).setValue(AccessoryValue.GREEN);
+    ((Switch) switchWestR).setAccessoryValue(AccessoryValue.GREEN);
 
-    switchNorthR.drawTile(g2d, false);
-    switchNorthR.drawBounds(g2d);
+//    switchNorthR.drawTile(g2d, false);
+//    switchNorthR.drawBounds(g2d);
     switchNorthR.drawCenterPoint(g2d, Color.cyan);
     //
-    switchEastL.drawTile(g2d, false);
-    switchEastL.drawBounds(g2d);
+//    switchEastL.drawTile(g2d, false);
+//    switchEastL.drawBounds(g2d);
     switchEastL.drawCenterPoint(g2d, Color.red);
 
-    switchSouthL.drawTile(g2d, true);
-    switchSouthL.drawBounds(g2d);
+//    switchSouthL.drawTile(g2d, true);
+//    switchSouthL.drawBounds(g2d);
     switchSouthL.drawCenterPoint(g2d, Color.blue);
-    ((Switch) switchSouthL).setValue(AccessoryValue.GREEN);
+    ((Switch) switchSouthL).setAccessoryValue(AccessoryValue.GREEN);
 
-    switchWestL.drawTile(g2d, false);
-    switchWestL.drawBounds(g2d);
+//    switchWestL.drawTile(g2d, false);
+//    switchWestL.drawBounds(g2d);
     switchWestL.drawCenterPoint(g2d, Color.red);
 
-    switchNorthL.drawTile(g2d, true);
-    switchNorthL.drawBounds(g2d);
+//    switchNorthL.drawTile(g2d, true);
+//    switchNorthL.drawBounds(g2d);
     switchNorthL.drawCenterPoint(g2d, Color.cyan);
-    ((Switch) switchNorthL).setValue(AccessoryValue.RED);
+    ((Switch) switchNorthL).setAccessoryValue(AccessoryValue.RED);
 
   }
 

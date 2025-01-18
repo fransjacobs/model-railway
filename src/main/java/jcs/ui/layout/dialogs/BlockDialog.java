@@ -27,6 +27,7 @@ import jcs.entities.BlockBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutCanvas;
+import jcs.ui.layout.TileCache;
 import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;
@@ -100,7 +101,7 @@ public class BlockDialog extends javax.swing.JDialog {
       if (bb == null) {
         Logger.tags("bb is null for " + this.block.getId());
         bb = new BlockBean();
-        bb.setTile(block);
+        bb.setTile(block.getTileBean());
         bb.setTileId(this.block.getId());
         bb.setBlockState(BlockBean.BlockState.FREE);
         this.block.setBlockBean(bb);
@@ -161,8 +162,10 @@ public class BlockDialog extends javax.swing.JDialog {
 
     Logger.trace("Neighbor point +: " + pnp + " -: " + mnp);
 
-    Tile neighborPlus = this.layoutCanvas.findTile(pnp);
-    Tile neighborMin = this.layoutCanvas.findTile(mnp);
+    //Tile neighborPlus = this.layoutCanvas.findTile(pnp);
+    Tile neighborPlus = TileCache.findTile(pnp);
+    //Tile neighborMin = this.layoutCanvas.findTile(mnp);
+    Tile neighborMin = TileCache.findTile(mnp);
 
     if (neighborPlus != null && neighborPlus instanceof Sensor) {
       Sensor ps = (Sensor) neighborPlus;

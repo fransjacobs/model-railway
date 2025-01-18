@@ -35,7 +35,6 @@ public class LayoutPanelTester {
     //System.setProperty("trackServiceAlwaysUseDemo", "true");
     try {
       UIManager.setLookAndFeel("com.formdev.flatlaf.FlatLightLaf");
-      //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
       Logger.error(ex);
     }
@@ -51,7 +50,7 @@ public class LayoutPanelTester {
       }
 
       f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      layoutPanel.loadTiles();
+      layoutPanel.loadLayout();
       f.pack();
 
       Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

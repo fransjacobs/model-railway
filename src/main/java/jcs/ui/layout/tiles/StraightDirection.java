@@ -21,20 +21,23 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.Collection;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
 
 public class StraightDirection extends Straight {
 
-  StraightDirection(TileBean tileBean) {
+  public StraightDirection(TileBean tileBean) {
     super(tileBean);
+    this.tileType = TileType.STRAIGHT_DIR;
   }
 
-  StraightDirection(Orientation orientation, int x, int y) {
+  public StraightDirection(Orientation orientation, int x, int y) {
     this(orientation, new Point(x, y));
   }
 
-  StraightDirection(Orientation orientation, Point center) {
+  public StraightDirection(Orientation orientation, Point center) {
     super(orientation, center);
-    this.type = TileType.STRAIGHT_DIR.getTileType();
+    this.tileType = TileType.STRAIGHT_DIR;
   }
 
   @Override
@@ -71,18 +74,9 @@ public class StraightDirection extends Straight {
   }
 
   @Override
-  public void renderTile(Graphics2D g2) {
-    Graphics2D g2d = (Graphics2D) g2.create();
-
+  public void renderTile(Graphics2D g2d) {
     renderStraight(g2d);
-
     renderDirectionArrow(g2d);
-
-    if (drawRoute) {
-      renderTileRoute(g2);
-    }
-
-    g2d.dispose();
   }
 
 }

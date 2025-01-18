@@ -33,7 +33,6 @@ import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.events.TileEvent;
-import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -120,7 +119,7 @@ public class RoutesDialog extends javax.swing.JDialog {
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
       TileEvent tileEvent = new TileEvent(tileId, false);
-      TileFactory.fireTileEventListener(tileEvent);
+      TileCache.fireTileEventListener(tileEvent);
     }
   }
 
@@ -145,7 +144,7 @@ public class RoutesDialog extends javax.swing.JDialog {
       } else {
         tileEvent = new TileEvent(tileId, true, incomingSide);
       }
-      TileFactory.fireTileEventListener(tileEvent);
+      TileCache.fireTileEventListener(tileEvent);
     }
   }
 

@@ -189,12 +189,12 @@ public class SwitchDialog extends javax.swing.JDialog {
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
       if (this.turnout != null && this.turnout.getAccessoryBean() != null) {
         if (this.turnout.getAccessoryBean().getName() != null) {
-          PersistenceFactory.getService().persist((turnout));
+          PersistenceFactory.getService().persist((turnout.getTileBean()));
 
           JCS.getJcsCommandStation().addAccessoryEventListener(turnout);
         } else {
           this.turnout.setAccessoryBean(null);
-          PersistenceFactory.getService().persist((turnout));
+          PersistenceFactory.getService().persist((turnout.getTileBean()));
         }
       }
       this.setVisible(false);

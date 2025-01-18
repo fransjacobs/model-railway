@@ -17,7 +17,6 @@ package jcs.ui.layout.tiles;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -39,6 +38,7 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
 
   public void addTile(Tile block) {
     this.tiles.add(block);
+    this.add(block);
   }
 
   public boolean isShowCenter() {
@@ -57,7 +57,7 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
 
     for (Tile tile : this.tiles) {
       Point tc = tile.getCenter();
-      boolean expand = !((AbstractTile) tile).isScaleImage();
+      boolean expand = !tile.isScaleImage();
       int tw = tile.getWidth() * (expand ? 10 : 1);
       int th = tile.getHeight() * (expand ? 10 : 1);
 
@@ -131,9 +131,9 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
     g2d.clearRect(0, 0, canvasSize.width, canvasSize.height);
 
     for (Tile tile : tiles) {
-      tile.setDrawOutline(showCenter);
+//      tile.setDrawOutline(showCenter);
 
-      tile.drawTile(g2d, true);
+      //tile.drawTile(g2d, true);
  
       if (showCenter) {
         tile.drawCenterPoint(g2d, Color.red);
@@ -144,38 +144,38 @@ public class UnscaledBlockCanvas extends JComponent implements PropertyChangeLis
     return canvasImage;
   }
 
-  @Override
-  protected void paintComponent(Graphics g) {
-    Graphics2D g2d = (Graphics2D) g;
-    BufferedImage canvasImage = paintTiles();
-
-    //paint the image in the middle so
-    int w = this.getSize().width;
-    int h = this.getSize().height;
-
-    int cx = w / 2;
-    int cy = h / 2;
-
-    int bw = canvasImage.getWidth();
-    int bh = canvasImage.getHeight();
-
-    int pw = w;
-    int ph = h;
-    
-    if(bw > w) {
-       pw = w;
-    }
-    if(bh > h) {
-      ph = h;
-    }
-    
-    setPreferredSize(new Dimension(bw, bh));
-    //setPreferredSize(new Dimension(pw, ph));
-
-    int x = cx - (bw / 2);
-    int y = cy - (bh / 2);
-    g2d.drawImage(canvasImage, null, x, y);
-  }
+//  @Override
+//  protected void paintComponent(Graphics g) {
+//    Graphics2D g2d = (Graphics2D) g;
+//    BufferedImage canvasImage = paintTiles();
+//
+//    //paint the image in the middle so
+//    int w = this.getSize().width;
+//    int h = this.getSize().height;
+//
+//    int cx = w / 2;
+//    int cy = h / 2;
+//
+//    int bw = canvasImage.getWidth();
+//    int bh = canvasImage.getHeight();
+//
+//    int pw = w;
+//    int ph = h;
+//    
+//    if(bw > w) {
+//       pw = w;
+//    }
+//    if(bh > h) {
+//      ph = h;
+//    }
+//    
+//    setPreferredSize(new Dimension(bw, bh));
+//    //setPreferredSize(new Dimension(pw, ph));
+//
+//    int x = cx - (bw / 2);
+//    int y = cy - (bh / 2);
+//    g2d.drawImage(canvasImage, null, x, y);
+//  }
 
   @Override
   public void propertyChange(PropertyChangeEvent evt) {

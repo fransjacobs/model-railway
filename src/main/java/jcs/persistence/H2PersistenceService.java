@@ -611,12 +611,13 @@ public class H2PersistenceService implements PersistenceService {
     if (tileBean == null) {
       return null;
     }
-    TileBean tb;
-    if (tileBean instanceof Tile tile) {
-      tb = tile.getTileBean();
-    } else {
-      tb = tileBean;
-    }
+//    //TODO
+    TileBean tb = null;
+//    if (tileBean instanceof Tile tile) {
+//      tb = tile.getTileBean();
+//    } else {
+//      tb = tileBean;
+//    }
 
     if (tb != null && tb.getId() != null) {
       if (database.where("id=?", tb.getId()).first(TileBean.class) != null) {

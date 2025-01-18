@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 FJA.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package jcs.ui.layout.tiles;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.AccessoryBean;
@@ -41,7 +39,7 @@ import org.tinylog.Logger;
  *
  * @author FJA
  */
-public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyChangeListener {
+public class UnscaledTileFrame extends javax.swing.JFrame {
 
   private Tile tile;
 
@@ -54,7 +52,9 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
     this.orientationCB.setModel(createOrientationComboBoxModel());
     this.incomingSideCB.setModel(createOrientationComboBoxModel());
     this.directionCB.setModel(createDirectionComboBoxModel(true));
-    drawTile();
+    //drawTile();
+
+    addTile();
   }
 
   private ComboBoxModel<TileType> createTileTypeComboBoxModel() {
@@ -97,7 +97,13 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
     return directionModel;
   }
 
-  private void drawTile() {
+  private void addTile() {
+    if (this.tile != null) {
+      Logger.trace("Removing tile " + this.tile.getId());
+      this.cPanel.remove((JComponent) this.tile);
+      this.tile = null;
+    }
+
     TileType tileType = (TileType) this.tileCB.getSelectedItem();
     Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
 
@@ -135,8 +141,8 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
         }
       }
     } else {
-      x = w / 2;
-      y = h / 2 + 50;
+      x = w / 2 - 200;
+      y = h / 2 - 200;
     }
 
     Point center;
@@ -146,18 +152,21 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
       center = new Point(x, y);
     }
 
-    tile = TileFactory.createTile(tileType, orientation, direction, center, showOutline);
-    tile.setPropertyChangeListener(this);
+    Tile newTile = TileFactory.createTile(tileType, orientation, direction, center, showOutline);
+    newTile.setScaleImage(false);
 
+    //tile.setPropertyChangeListener(this);
     Orientation incomingSide = (Orientation) this.incomingSideCB.getSelectedItem();
-    tile.setIncomingSide(incomingSide);
+    newTile.setIncomingSide(incomingSide);
 
-    tile.setDrawRoute(this.displayRouteCB.isSelected());
-    tile.setTrackRouteColor(Color.blue);
+    newTile.setDrawRoute(this.displayRouteCB.isSelected());
+    newTile.setTrackRouteColor(Color.blue);
 
-    ((AbstractTile) tile).setScaleImage(false);
+    Logger.trace("Adding tile " + newTile.getId() + " " + newTile.xyToString());
 
-    this.repaint();
+    //this.cPanel.add((JComponent) newTile);
+    this.cPanel.add(newTile);
+    this.tile = newTile;
   }
 
   private AccessoryValue getAccessoryState() {
@@ -178,7 +187,7 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
       if (this.displayRouteCB.isSelected()) {
         aSwitch.setRouteValue(getAccessoryState());
       } else {
-        aSwitch.setValue(getAccessoryState());
+        aSwitch.setAccessoryValue(getAccessoryState());
       }
     }
 
@@ -192,32 +201,39 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
       }
     }
 
-    repaint();
+    this.tile.repaint();
   }
 
-  @Override
-  public void propertyChange(PropertyChangeEvent evt) {
-    if ("repaintTile".equals(evt.getPropertyName())) {
-      Tile t = (Tile) evt.getNewValue();
-      Logger.trace("Tile: " + t);
-      this.repaint();
-    }
-  }
-
+//  @Override
+//  public void propertyChange(PropertyChangeEvent evt) {
+//    if ("repaintTile".equals(evt.getPropertyName())) {
+//      Tile t = (Tile) evt.getNewValue();
+//      Logger.trace("Tile: " + t);
+//      //this.repaint();
+//    }
+//  }
+//  @Override
+//  public void paint(Graphics g) {
+//    super.paint(g);
+//    Graphics2D g2d = (Graphics2D) g;
+//    boolean outline = this.drawOutlineCB.isSelected();
+//    boolean showRoute = this.displayRouteCB.isSelected();
+//    tile.setDrawRoute(showRoute);
+//
+//    tile.drawTile(g2d, outline);
+//
+//    if (outline) {
+//      tile.drawBounds(g2d);
+//      tile.drawCenterPoint(g2d, Color.red);
+//    }
+//  }
   @Override
   public void paint(Graphics g) {
+    long started = System.currentTimeMillis();
     super.paint(g);
-    Graphics2D g2d = (Graphics2D) g;
-    boolean outline = this.drawOutlineCB.isSelected();
-    boolean showRoute = this.displayRouteCB.isSelected();
-    tile.setDrawRoute(showRoute);
 
-    tile.drawTile(g2d, outline);
-
-    if (outline) {
-      tile.drawBounds(g2d);
-      tile.drawCenterPoint(g2d, Color.red);
-    }
+    long now = System.currentTimeMillis();
+    Logger.trace("Duration: " + (now - started) + " ms.");
   }
 
   private void changeDirection() {
@@ -227,7 +243,7 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
     if (TileType.CROSS == tile.getTileType()) {
       ((Cross) tile).setWidthHeightAndOffsets();
     }
-    this.repaint();
+    //this.repaint();
   }
 
   private void rotateTile() {
@@ -263,7 +279,7 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
 
     this.orientationCB.setSelectedItem(tile.getOrientation());
 
-    this.repaint();
+    //this.repaint();
   }
 
   private void changeOrientation() {
@@ -300,10 +316,13 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
       tile.setCenter(new Point(x, y));
     }
 
-    this.repaint();
+    //this.repaint();
   }
 
   private void showRoute() {
+
+    Logger.trace("Show route on tile " + tile.getId());
+
     String tileId = tile.getId();
     Orientation incomingSide = (Orientation) this.incomingSideCB.getSelectedItem();
 
@@ -314,20 +333,21 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
     } else {
       tileEvent = new TileEvent(tileId, true, incomingSide);
     }
-    TileFactory.fireTileEventListener(tileEvent);
+    //TileCache.fireTileEventListener(tileEvent);
 
-    //tile.setDrawRoute(displayRouteCB.isSelected());
+    // ((JComponent) this.tile).repaint();
+    tile.setDrawRoute(displayRouteCB.isSelected());
     //repaint();
   }
 
   private void showOutline() {
-    repaint();
+    //repaint();
   }
 
   private void changeIncomingSide() {
     Orientation incomingSide = (Orientation) this.incomingSideCB.getSelectedItem();
     tile.setIncomingSide(incomingSide);
-    this.repaint();
+    //this.repaint();
   }
 
   /**
@@ -450,9 +470,10 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
-    cPanel.setPreferredSize(new java.awt.Dimension(1000, 1000));
+    cPanel.setPreferredSize(new java.awt.Dimension(800, 800));
     cPanel.setLayout(null);
     getContentPane().add(cPanel, java.awt.BorderLayout.CENTER);
+    cPanel.getAccessibleContext().setAccessibleDescription("");
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -462,7 +483,10 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
   }//GEN-LAST:event_rotateButtonActionPerformed
 
   private void tileCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tileCBActionPerformed
-    drawTile();
+    addTile();
+    //this.tile.repaint();
+    
+    this.repaint();
   }//GEN-LAST:event_tileCBActionPerformed
 
   private void orientationCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orientationCBActionPerformed
@@ -511,7 +535,7 @@ public class UnscaledTileFrame extends javax.swing.JFrame implements PropertyCha
     java.awt.EventQueue.invokeLater(() -> {
       UnscaledTileFrame app = new UnscaledTileFrame();
       app.setTitle("Unscaled Tile Tester");
-      app.pack();
+      //app.pack();
       app.setLocationRelativeTo(null);
       app.setVisible(true);
     });

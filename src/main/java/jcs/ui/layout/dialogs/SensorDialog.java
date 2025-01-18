@@ -263,7 +263,7 @@ public class SensorDialog extends javax.swing.JDialog {
         if (PersistenceFactory.getService() != null) {
           PersistenceFactory.getService().persist(sensorBean);
 
-          PersistenceFactory.getService().persist((sensor));
+          PersistenceFactory.getService().persist((sensor.getTileBean()));
           JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
       } else if (this.sensor != null && this.sensor.getSensorBean() == null) {
@@ -274,7 +274,7 @@ public class SensorDialog extends javax.swing.JDialog {
           sensor.setSensorBean(sensorBean);
           Logger.trace("Created " + sensorBean);
 
-          PersistenceFactory.getService().persist((sensor));
+          PersistenceFactory.getService().persist((sensor.getTileBean()));
           JCS.getJcsCommandStation().addSensorEventListener(sensor);
         }
       }

@@ -25,30 +25,26 @@ import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
 
 public class Sensor extends Straight implements SensorEventListener {
 
-  private boolean active;
-
-  Sensor(TileBean tileBean) {
+  public Sensor(TileBean tileBean) {
     super(tileBean);
   }
 
-  Sensor(Orientation orientation, int x, int y) {
-    this(orientation, new Point(x, y));
+  public Sensor(Orientation orientation, Point center) {
+    this(orientation, center.x, center.y);
   }
 
-  Sensor(Orientation orientation, Point center) {
-    super(orientation, center);
-    this.type = TileType.SENSOR.getTileType();
+  public Sensor(Orientation orientation, int x, int y) {
+    this(orientation, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
   }
 
-  public boolean isActive() {
-    return this.active;
-  }
-
-  public void setActive(boolean active) {
-    this.active = active;
+  public Sensor(Orientation orientation, int x, int y, int width, int height) {
+    super(orientation, x, y, width, height);
+    this.tileType = TileType.SENSOR;
   }
 
   private void renderSensor(Graphics2D g2) {
@@ -60,7 +56,7 @@ public class Sensor extends Straight implements SensorEventListener {
     float radius = 300;
     float[] dist = {0.0f, 0.6f};
 
-    if (this.active) {
+    if (model.isSensorActive()) {
       Color[] colors = {Color.red.brighter(), Color.red.darker()};
       RadialGradientPaint foreground = new RadialGradientPaint(c, radius, dist, colors, CycleMethod.REFLECT);
       g2.setPaint(foreground);
@@ -74,31 +70,24 @@ public class Sensor extends Straight implements SensorEventListener {
   }
 
   @Override
-  public void renderTile(Graphics2D g2) {
-    Graphics2D g2d = (Graphics2D) g2.create();
-
+  public void renderTile(Graphics2D g2d) {
     renderStraight(g2d);
-
-    if (drawRoute) {
-      renderTileRoute(g2);
-    }
-
     renderSensor(g2d);
-
-    g2d.dispose();
   }
 
   @Override
   public void onSensorChange(SensorEvent event) {
     SensorBean sensor = event.getSensorBean();
     if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
-      this.setActive(sensor.isActive());
-      repaintTile();
+      setActive(sensor.isActive());
+      repaint();
     }
   }
 
+  //Sensor must also listen to the mouse now it is a component....
+  //in UI Delegate TODO!
   @Override
   public String toString() {
-    return this.getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", active: " + active + ", center: (" + x + "," + y + ")}";
+    return getClass().getSimpleName() + " {id: " + id + ", orientation: " + getOrientation() + ", direction: " + getDirection() + ", active: " + model.isSensorActive() + ", center: (" + tileX + "," + tileY + ")}";
   }
 }

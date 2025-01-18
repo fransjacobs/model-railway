@@ -37,8 +37,8 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.TileCache;
 import jcs.ui.layout.events.TileEvent;
-import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -322,7 +322,7 @@ public final class AutoPilot {
       }
       PersistenceFactory.getService().persist(block);
       TileEvent tileEvent = new TileEvent(block);
-      TileFactory.fireTileEventListener(tileEvent);
+      TileCache.fireTileEventListener(tileEvent);
     }
 
     JCS.getJcsCommandStation().switchPower(true);
@@ -403,7 +403,7 @@ public final class AutoPilot {
           JCS.getJcsCommandStation().switchPower(false);
 
           TileEvent tileEvent = new TileEvent(block);
-          TileFactory.fireTileEventListener(tileEvent);
+          TileCache.fireTileEventListener(tileEvent);
         } else {
           if (block.getLocomotiveId() != null) {
             //keep state as is

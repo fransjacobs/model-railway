@@ -52,6 +52,8 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     this.stateCB.setModel(createStateComboBoxModel());
 
     initTile();
+    
+    setVisible(true);
   }
 
   private ComboBoxModel<Orientation> createOrientationComboBoxModel() {
@@ -119,9 +121,9 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
     ((Block) blockTile).setBlockBean(bbe);
 
     if (this.scaleCB.isSelected()) {
-      ((AbstractTile) blockTile).setScaleImage(false);
+      blockTile.setScaleImage(false);
     } else {
-      ((AbstractTile) blockTile).setScaleImage(true);
+      blockTile.setScaleImage(true);
     }
 
     blockTileCanvas.addTile(blockTile);
@@ -131,21 +133,21 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
   private void changeOrientation() {
     Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
     blockTile.setOrientation(orientation);
-    if (Orientation.EAST.equals(blockTile.getOrientation()) || Orientation.WEST.equals(blockTile.getOrientation())) {
-      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH * 3);
-      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT);
-
-      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH * 3);
-      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT);
-    } else {
-      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH);
-      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT * 3);
-
-      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH);
-      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT * 3);
-    }
-
-    blockTile.drawTile((Graphics2D) getGraphics(), this.showCenterCB.isSelected());
+//    if (Orientation.EAST.equals(blockTile.getOrientation()) || Orientation.WEST.equals(blockTile.getOrientation())) {
+//      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH * 3);
+//      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT);
+//
+//      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH * 3);
+//      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT);
+//    } else {
+//      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH);
+//      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT * 3);
+//
+//      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH);
+//      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT * 3);
+//    }
+//
+//    blockTile.drawTile((Graphics2D) getGraphics(), this.showCenterCB.isSelected());
     Dimension vps = this.blockTileCanvas.getPreferredSize();
 
     Point cc = new Point(Math.abs(vps.width / 2), Math.abs(vps.height / 2));
@@ -396,9 +398,9 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
 
   private void scaleCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleCBActionPerformed
     if (this.scaleCB.isSelected()) {
-      ((AbstractTile) blockTile).setScaleImage(false);
+      blockTile.setScaleImage(false);
     } else {
-      ((AbstractTile) blockTile).setScaleImage(true);
+      blockTile.setScaleImage(true);
     }
     repaint();
   }//GEN-LAST:event_scaleCBActionPerformed
@@ -454,7 +456,7 @@ public class UnscaledBlockTileFrame extends javax.swing.JFrame implements Proper
       app.setTitle("Unscaled Tile Tester");
       app.pack();
       app.setLocationRelativeTo(null);
-      app.setVisible(true);
+      //app.setVisible(true);
     });
   }
 

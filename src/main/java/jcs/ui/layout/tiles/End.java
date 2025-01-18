@@ -17,6 +17,7 @@ package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
@@ -24,25 +25,32 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.NORTH;
+import static jcs.entities.TileBean.Orientation.SOUTH;
+import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.entities.TileBean.TileType;
+import org.tinylog.Logger;
 
-public class End extends AbstractTile implements Tile {
+public class End extends Tile {
 
-  End(TileBean tileBean) {
-    super(tileBean);
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public End(TileBean tileBean) {
+    super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    setModel(new DefaultTileModel());
   }
 
-  End(Orientation orientation, Point center) {
+  public End(Orientation orientation, Point center) {
     this(orientation, center.x, center.y);
-
   }
 
-  End(Orientation orientation, int x, int y) {
-    super(orientation, x, y);
-    this.type = TileType.END.getTileType();
-    this.width = DEFAULT_WIDTH;
-    this.height = DEFAULT_HEIGHT;
+  public End(Orientation orientation, int x, int y) {
+    this(orientation, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  public End(Orientation orientation, int x, int y, int width, int height) {
+    super(TileType.END, orientation, x, y, width, height);
+
+    setModel(new DefaultTileModel());
   }
 
   @Override
@@ -121,6 +129,23 @@ public class End extends AbstractTile implements Tile {
 
   @Override
   public void renderTileRoute(Graphics2D g2d) {
+  }
+
+  @Override
+  protected void paintComponent(Graphics g) {
+    long started = System.currentTimeMillis();
+    super.paintComponent(g);
+
+    setBounds(this.tileX - GRID, this.tileY - GRID, this.getWidth(), this.getHeight());
+
+    Graphics2D g2 = (Graphics2D) g.create();
+    drawTile(g2);
+    g2.dispose();
+
+    g.drawImage(this.tileImage, 0, 0, null);
+
+    long now = System.currentTimeMillis();
+    Logger.trace(this.id + " Duration: " + (now - started) + " ms.");
   }
 
 }

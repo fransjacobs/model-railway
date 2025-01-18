@@ -191,16 +191,12 @@ public class LayoutPanel extends JPanel {
 
   }
 
-  public void saveLayout() {
-    this.canvas.saveLayout();
-  }
+//  void saveLayout() {
+//    this.canvas.saveLayout();
+//  }
 
   public void loadLayout() {
     this.canvas.loadLayoutInBackground();
-  }
-
-  public void loadTiles() {
-    this.canvas.loadTiles();
   }
 
   /**
@@ -885,7 +881,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_propertiesMIActionPerformed
 
     private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
-      this.saveLayout();
+      this.canvas.saveLayout();
     }//GEN-LAST:event_saveBtnActionPerformed
 
     private void loadBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loadBtnActionPerformed

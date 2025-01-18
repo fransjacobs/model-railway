@@ -24,9 +24,9 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.TileCache;
 import jcs.ui.layout.events.TileEvent;
 import jcs.ui.layout.tiles.Block;
-import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -74,7 +74,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
           Logger.warn("Block has no BlockBean. Creating one...");
           bb = new BlockBean();
           bb.setId(block.getId());
-          bb.setTile(block);
+          bb.setTile(block.getTileBean());
           bb.setTileId(block.getId());
           bb.setBlockState(BlockBean.BlockState.FREE);
           bb.setMaxWaitTime(0);
@@ -421,7 +421,9 @@ public class BlockControlDialog extends javax.swing.JDialog {
           PersistenceFactory.getService().persist(loc);
         }
         TileEvent tileEvent = new TileEvent(bb);
-        TileFactory.fireTileEventListener(tileEvent);
+        //TileFactory.fireTileEventListener(tileEvent);
+        TileCache.fireTileEventListener(tileEvent);
+        
       }
       
       this.setVisible(false);

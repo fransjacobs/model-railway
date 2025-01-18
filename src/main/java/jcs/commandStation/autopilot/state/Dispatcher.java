@@ -32,8 +32,8 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.TileCache;
 import jcs.ui.layout.events.TileEvent;
-import jcs.ui.layout.tiles.TileFactory;
 import org.tinylog.Logger;
 
 /**
@@ -327,14 +327,14 @@ public class Dispatcher {
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
       TileEvent tileEvent = new TileEvent(tileId, false);
-      TileFactory.fireTileEventListener(tileEvent);
+      TileCache.fireTileEventListener(tileEvent);
     }
   }
 
   void showBlockState(BlockBean blockBean) {
     Logger.trace("Show block " + blockBean);
     TileEvent tileEvent = new TileEvent(blockBean);
-    TileFactory.fireTileEventListener(tileEvent);
+    TileCache.fireTileEventListener(tileEvent);
   }
 
   void showRoute(RouteBean routeBean, Color routeColor) {
@@ -351,7 +351,7 @@ public class Dispatcher {
       } else {
         tileEvent = new TileEvent(tileId, true, incomingSide, routeColor);
       }
-      TileFactory.fireTileEventListener(tileEvent);
+      TileCache.fireTileEventListener(tileEvent);
     }
   }
 

@@ -22,7 +22,6 @@ import java.awt.Point;
 import java.awt.Polygon;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.AccessoryEventListener;
-import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.SignalType;
 import static jcs.entities.AccessoryBean.SignalType.HP012;
 import static jcs.entities.AccessoryBean.SignalType.HP012SH1;
@@ -33,19 +32,14 @@ import static jcs.entities.AccessoryBean.SignalValue.Hp0Sh1;
 import static jcs.entities.AccessoryBean.SignalValue.Hp1;
 import static jcs.entities.AccessoryBean.SignalValue.Hp2;
 import jcs.entities.TileBean;
+import jcs.entities.TileBean.Orientation;
+import jcs.entities.TileBean.TileType;
 import static jcs.ui.layout.tiles.Tile.RENDER_GRID;
 
-public class Signal extends Straight implements Tile, AccessoryEventListener {
-
-  private SignalValue signalValue;
-  private SignalType signalType;
+public class Signal extends Straight implements AccessoryEventListener {
 
   Signal(TileBean tileBean) {
     super(tileBean);
-    if (tileBean.getAccessoryBean() != null) {
-      AccessoryBean ab = tileBean.getAccessoryBean();
-      this.signalType = SignalType.getSignalType(ab.getType());
-    }
   }
 
   Signal(Orientation orientation, int x, int y, SignalType signalType) {
@@ -58,36 +52,9 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
 
   Signal(Orientation orientation, Point center, SignalType signalType) {
     super(orientation, center);
+    this.tileType = TileType.SIGNAL;
     this.signalType = signalType;
     this.signalValue = SignalValue.OFF;
-    this.type = TileType.SIGNAL.getTileType();
-  }
-
-  public SignalValue getSignalValue() {
-    return signalValue;
-  }
-
-  @Override
-  public SignalType getSignalType() {
-    return signalType;
-  }
-
-  public void setSignalValue(SignalValue signalValue) {
-    this.signalValue = signalValue;
-  }
-
-  @Override
-  public void setAccessoryBean(AccessoryBean accessoryBean) {
-    this.accessoryBean = accessoryBean;
-    if (accessoryBean != null) {
-      this.accessoryId = accessoryBean.getId();
-      this.signalValue = accessoryBean.getSignalValue();
-      this.signalType = SignalType.getSignalType(accessoryBean.getType());
-    } else {
-      this.accessoryId = null;
-      this.signalType = SignalType.NONE;
-      this.signalValue = SignalValue.OFF;
-    }
   }
 
   /**
@@ -364,18 +331,14 @@ public class Signal extends Straight implements Tile, AccessoryEventListener {
         renderSignal2(g2d);
     }
 
-    if (drawRoute) {
-      renderTileRoute(g2);
-    }
-
     g2d.dispose();
   }
 
+  //TODO move to UI delegate
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
-    if (this.getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
-      this.setSignalValue(event.getAccessoryBean().getSignalValue());
-      repaintTile();
+    if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {
+      setSignalValue(event.getAccessoryBean().getSignalValue());
     }
   }
 }
