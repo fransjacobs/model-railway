@@ -49,8 +49,7 @@ import org.tinylog.Logger;
  *
  * Inspired on the work of https://github.com/shinyhut/vernacular-vnc<br>
  * My ESU Ecos 50000 has a defect in the screen.<br>
- * This Java viewer is helping the development.
- * In hind site I thin is a welcome addition to add to the main frame in due time
+ * This Java viewer is helping the development. In hind site I thin is a welcome addition to add to the main frame in due time
  *
  * @author frans
  */
@@ -71,8 +70,23 @@ public class VNCPanel extends javax.swing.JPanel {
 
   private void initVnc() {
     addDrawingSurface();
-    initialiseVernacularClient();
     //clipboardMonitor.start();
+    initialiseVernacularClient();
+    
+    
+    String host;
+      InetAddress ia = EcosConnectionFactory.discoverEcos();
+      //InetAddress ia = CSConnectionFactory.discoverCs();
+
+      if (ia != null) {
+        host = ia.getHostAddress();
+      } else {
+        Logger.warn("Use a default host ip.....");
+        host = "192.168.1.110";
+      }
+
+      int port = DEFAULT_VNC_PORT;
+      this.connect(host, port);
 
   }
 
@@ -388,19 +402,19 @@ public class VNCPanel extends javax.swing.JPanel {
       vncPanel.menuPanel.setVisible(false);
 
       //String host = "192.168.1.110";
-      String host;
-      InetAddress ia = EcosConnectionFactory.discoverEcos();
-      //InetAddress ia = CSConnectionFactory.discoverCs();
-
-      if (ia != null) {
-        host = ia.getHostAddress();
-      } else {
-        Logger.warn("Use a default host ip.....");
-        host = "192.168.1.110";
-      }
-
-      int port = DEFAULT_VNC_PORT;
-      vncPanel.connect(host, port);
+//      String host;
+//      InetAddress ia = EcosConnectionFactory.discoverEcos();
+//      //InetAddress ia = CSConnectionFactory.discoverCs();
+//
+//      if (ia != null) {
+//        host = ia.getHostAddress();
+//      } else {
+//        Logger.warn("Use a default host ip.....");
+//        host = "192.168.1.110";
+//      }
+//
+//      int port = DEFAULT_VNC_PORT;
+//      vncPanel.connect(host, port);
 
       testFrame.pack();
       testFrame.setLocationRelativeTo(null);

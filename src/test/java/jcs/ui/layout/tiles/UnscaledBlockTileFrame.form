@@ -52,6 +52,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scaleCBActionPerformed"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JButton" name="rotateButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Rotate"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rotateButtonActionPerformed"/>
+          </Events>
+        </Component>
         <Component class="javax.swing.JLabel" name="orientationLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="Orientation"/>
@@ -71,6 +79,22 @@
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Orientation&gt;"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="stateCB">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="0"/>
+            </Property>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[150, 22]"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stateCBActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;BlockState&gt;"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="incomingSuffix">
@@ -98,36 +122,12 @@
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JComboBox" name="stateCB">
-          <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="0"/>
-            </Property>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[150, 22]"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stateCBActionPerformed"/>
-          </Events>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;BlockState&gt;"/>
-          </AuxValues>
-        </Component>
         <Component class="javax.swing.JCheckBox" name="reverseArrivalCB">
           <Properties>
             <Property name="text" type="java.lang.String" value="Reverse Arrival Side"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reverseArrivalCBActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="rotateButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Rotate"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rotateButtonActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JCheckBox" name="showLocCB">
@@ -182,7 +182,7 @@
           <Dimension value="[1250, 440]"/>
         </Property>
         <Property name="viewportView" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="blockTileCanvas"/>
+          <ComponentRef name="canvas"/>
         </Property>
       </Properties>
       <Events>
@@ -196,7 +196,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Container class="jcs.ui.layout.tiles.UnscaledBlockCanvas" name="blockTileCanvas">
+        <Container class="jcs.ui.layout.tiles.UnscaledBlockCanvas" name="canvas">
           <Properties>
             <Property name="autoscrolls" type="boolean" value="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -204,7 +204,7 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="blockTileCanvasComponentResized"/>
+            <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="canvasComponentResized"/>
           </Events>
 
           <Layout>

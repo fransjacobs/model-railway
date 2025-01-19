@@ -40,7 +40,6 @@ import jcs.entities.RouteElementBean;
 import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.persistence.sqlmakers.H2SqlMaker;
-import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 public class H2PersistenceService implements PersistenceService {
@@ -611,20 +610,13 @@ public class H2PersistenceService implements PersistenceService {
     if (tileBean == null) {
       return null;
     }
-//    //TODO
-    TileBean tb = null;
-//    if (tileBean instanceof Tile tile) {
-//      tb = tile.getTileBean();
-//    } else {
-//      tb = tileBean;
-//    }
 
-    if (tb != null && tb.getId() != null) {
-      if (database.where("id=?", tb.getId()).first(TileBean.class) != null) {
-        database.update(tb).getRowsAffected();
+    if (tileBean.getId() != null) {
+      if (database.where("id=?", tileBean.getId()).first(TileBean.class) != null) {
+        database.update(tileBean).getRowsAffected();
         //Logger.trace("Updated " + tileBean);
       } else {
-        database.insert(tb);
+        database.insert(tileBean);
       }
     }
 
