@@ -29,8 +29,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
+import jcs.ui.layout.LayoutUtil;
 import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
@@ -38,20 +38,24 @@ import org.tinylog.Logger;
  *
  * @author FJA
  */
-public class UnscaledBlockTileFrame extends JFrame { //implements PropertyChangeListener {
+public class UnscaledBlockTester extends JFrame { //implements PropertyChangeListener {
 
   private Tile blockTile;
 
   /**
    * Creates new form UnscaledBlockTileFrame
    */
-  public UnscaledBlockTileFrame() {
+  public UnscaledBlockTester() {
     initComponents();
+
     this.orientationCB.setModel(createOrientationComboBoxModel());
     this.departureSideCB.setSelectedItem("");
     this.stateCB.setModel(createStateComboBoxModel());
 
-    initBlock();
+    this.blockTile = initBlock();
+
+    canvas.add(blockTile);
+    centerSP.getViewport().validate();
 
     setVisible(true);
   }
@@ -96,64 +100,43 @@ public class UnscaledBlockTileFrame extends JFrame { //implements PropertyChange
     return lb;
   }
 
-  private void initBlock() {
-    Dimension vps = this.canvas.getPreferredSize();
-    Logger.trace("Canvas size w: " + canvas.getWidth() + " h: " + canvas.getHeight());
-    blockTile = new Block(TileBean.Orientation.EAST, vps.width / 2, vps.height / 2);
+  private Block initBlock() {
+    Point center = LayoutUtil.snapToGrid(canvas.getWidth() / 2, canvas.getHeight() / 2);
+    int cX = center.x;
+    int cY = center.y;
 
-    blockTile.setId("bk-1");
+    Logger.trace("Center X: " + cX + " Y: " + cY);
+
+    Block block = new Block(Orientation.EAST, cX, cY);
+    block.setId("bk-1");
+    block.setScaleImage(!scaleCB.isSelected());
+    canvas.setExpanded(scaleCB.isSelected());
 
     BlockBean blockBean = new BlockBean();
-    blockBean.setId(blockTile.getId());
-    blockBean.setTileId(blockTile.getId());
+    blockBean.setId(block.getId());
+    blockBean.setTileId(block.getId());
     blockBean.setDescription("Blok 1");
 
     //bbe.setArrivalSuffix((String) this.incomingSideCB.getSelectedItem());
     blockBean.setDepartureSuffix(null);
 
-    blockBean.setBlockState((BlockState) this.stateCB.getSelectedItem());
-    blockBean.setReverseArrival(this.reverseArrivalCB.isSelected());
+    blockBean.setBlockState((BlockState) stateCB.getSelectedItem());
+    blockBean.setReverseArrival(reverseArrivalCB.isSelected());
 
-    if (this.showLocCB.isSelected()) {
+    if (showLocCB.isSelected()) {
       blockBean.setLocomotive(createLocomotiveBean());
     } else {
       blockBean.setLocomotive(null);
     }
 
-    blockTile.setBlockBean(blockBean);
+    block.setBlockBean(blockBean);
 
-    blockTile.setScaleImage(!scaleCB.isSelected());
-    canvas.setExpanded(scaleCB.isSelected());
-
-    canvas.add(blockTile);
-    centerSP.getViewport().validate();
+    return block;
   }
 
   private void changeOrientation() {
     Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
     blockTile.setOrientation(orientation);
-//    if (Orientation.EAST.equals(blockTile.getOrientation()) || Orientation.WEST.equals(blockTile.getOrientation())) {
-//      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH * 3);
-//      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT);
-//
-//      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH * 3);
-//      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT);
-//    } else {
-//      ((Block) blockTile).setWidth(Tile.DEFAULT_WIDTH);
-//      ((Block) blockTile).setHeight(Tile.DEFAULT_HEIGHT * 3);
-//
-//      ((Block) blockTile).setRenderWidth(Tile.RENDER_WIDTH);
-//      ((Block) blockTile).setRenderHeight(Tile.RENDER_HEIGHT * 3);
-//    }
-//
-//    blockTile.drawTile((Graphics2D) getGraphics(), this.showCenterCB.isSelected());
-    Dimension vps = this.canvas.getPreferredSize();
-
-    Point cc = new Point(Math.abs(vps.width / 2), Math.abs(vps.height / 2));
-    blockTile.setCenter(cc);
-
-    this.centerSP.getViewport().revalidate();
-    repaint();
   }
 
   /**
@@ -289,7 +272,6 @@ public class UnscaledBlockTileFrame extends JFrame { //implements PropertyChange
     });
 
     canvas.setAutoscrolls(true);
-    canvas.setPreferredSize(null);
     canvas.addComponentListener(new java.awt.event.ComponentAdapter() {
       public void componentResized(java.awt.event.ComponentEvent evt) {
         canvasComponentResized(evt);
@@ -315,12 +297,9 @@ public class UnscaledBlockTileFrame extends JFrame { //implements PropertyChange
   }// </editor-fold>//GEN-END:initComponents
 
   private void rotateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateButtonActionPerformed
-    this.blockTile.rotate();
-
-    Orientation orientation = blockTile.getOrientation();
+    Orientation orientation  = blockTile.rotate();
     this.orientationCB.setSelectedItem(orientation);
-    Logger.trace("Blok is rotated to " + blockTile.getOrientation());
-    repaint();
+    Logger.trace("Blok is rotated to " + orientation);
   }//GEN-LAST:event_rotateButtonActionPerformed
 
   private void showLocCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLocCBActionPerformed
@@ -436,7 +415,7 @@ public class UnscaledBlockTileFrame extends JFrame { //implements PropertyChange
     //JViewport vp = scrollpane.getViewport();
     //vp.setViewSize(newsize);
 //    revalidate();
-//jcs.ui.layout.tiles.UnscaledBlockTileFrame.GridCanvas
+//jcs.ui.layout.tiles.UnscaledBlockTester.GridCanvas
 
   }//GEN-LAST:event_canvasComponentResized
 
@@ -452,10 +431,10 @@ public class UnscaledBlockTileFrame extends JFrame { //implements PropertyChange
 
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(() -> {
-      UnscaledBlockTileFrame app = new UnscaledBlockTileFrame();
+      UnscaledBlockTester app = new UnscaledBlockTester();
       app.setTitle("Unscaled Tile Tester");
-      app.pack();
       app.setLocationRelativeTo(null);
+      app.pack();
 
     });
   }

@@ -28,8 +28,8 @@ public class UnscaledBlockCanvas extends JPanel { //implements PropertyChangeLis
 
   public UnscaledBlockCanvas() {
     setLayout(null);
-    setOpaque(true);
-    setDoubleBuffered(false);
+    setOpaque(false);
+    setDoubleBuffered(true);
   }
 
   @Override

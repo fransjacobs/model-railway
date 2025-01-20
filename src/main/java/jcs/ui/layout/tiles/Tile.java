@@ -167,18 +167,18 @@ public abstract class Tile extends JComponent implements TileEventListener { //,
   }
 
   protected Tile(TileType tileType, Orientation orientation, Direction direction, int x, int y, int width, int height, Color backgroundColor, Color selectedColor) {
-    this.setLayout(null);
     this.tileType = tileType;
-
     this.tileOrientation = orientation;
     this.tileDirection = direction;
-
     this.tileX = x;
     this.tileY = y;
 
     Dimension d = new Dimension(width, height);
-    this.setSize(d);
-    this.setPreferredSize(d);
+    super.setPreferredSize(d);
+    super.setSize(d);
+
+    int w = getWidth();
+    int h = getHeight();
 
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
@@ -193,6 +193,7 @@ public abstract class Tile extends JComponent implements TileEventListener { //,
     if (this.selectedColor == null) {
       this.selectedColor = DEFAULT_SELECTED_COLOR;
     }
+    this.setLayout(null);
   }
 
   protected Tile(Object tileBean) {
@@ -531,9 +532,8 @@ public abstract class Tile extends JComponent implements TileEventListener { //,
   //@Override
   public void drawTile(Graphics2D g2d) {
     // by default and image is rendered in the EAST orientation
-    Orientation o = getOrientation();
-    if (o == null) {
-      o = Orientation.EAST;
+    if (tileOrientation == null) {
+      tileOrientation = Orientation.EAST;
     }
 
     tileImage = createImage();
@@ -554,7 +554,7 @@ public abstract class Tile extends JComponent implements TileEventListener { //,
     int ox = 0, oy = 0;
 
     AffineTransform trans = new AffineTransform();
-    switch (o) {
+    switch (tileOrientation) {
       case SOUTH -> {
         trans.rotate(Math.PI / 2, renderWidth / 2, renderHeight / 2);
         ox = (renderHeight - renderWidth) / 2;
@@ -590,7 +590,7 @@ public abstract class Tile extends JComponent implements TileEventListener { //,
     }
 
     // Scale the image back...
-    if (this.model.isScaleImage()) {
+    if (model.isScaleImage()) {
       tileImage = Scalr.resize(tileImage, Method.AUTOMATIC, Mode.FIT_EXACT, getWidth(), getHeight(), Scalr.OP_ANTIALIAS);
     }
 
@@ -637,17 +637,21 @@ public abstract class Tile extends JComponent implements TileEventListener { //,
 
   /**
    * Rotate the tile clockwise 90 deg
+   *
+   * @return
    */
-  public void rotate() {
-    rotate(true);
+  public Orientation rotate() {
+    return rotate(true);
   }
 
   /**
    * Rotate the tile clockwise 90 deg
+   *
+   * @param repaint
+   * @return 
    */
-  void rotate(boolean repaint) {
-
-    switch (getOrientation()) {
+  protected Orientation rotate(boolean repaint) {
+    switch (tileOrientation) {
       case EAST ->
         setOrientation(Orientation.SOUTH);
       case SOUTH ->
@@ -660,6 +664,7 @@ public abstract class Tile extends JComponent implements TileEventListener { //,
     if (repaint) {
       repaint();
     }
+    return tileOrientation;
   }
 
   public void flipHorizontal() {
