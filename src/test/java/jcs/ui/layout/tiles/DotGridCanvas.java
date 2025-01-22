@@ -22,10 +22,6 @@ import java.awt.Paint;
 import javax.swing.JPanel;
 import org.tinylog.Logger;
 
-/**
- *
- * @author fransjacobs
- */
 public class DotGridCanvas extends JPanel {
   
   public DotGridCanvas() {

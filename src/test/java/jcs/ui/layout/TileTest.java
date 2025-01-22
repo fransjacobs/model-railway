@@ -56,31 +56,33 @@ public class TileTest {
     assertEquals(expResult, result);
   }
 
+//  public int getGridX() {
+//    return (getCenterX() - Tile.GRID) / (Tile.GRID * 2);
+//  }
+//  public int getGridY() {
+//    return (getCenterY() - Tile.GRID) / (Tile.GRID * 2);
+//  }  
   @Test
   public void testGetGridX() {
     System.out.println("getGridX");
     Tile instance
-            = TileFactory.createTile(
-                    TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100, false);
+            = TileFactory.createTile(TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 100, 100, false);
     int expResult = 2;
-    int result = instance.getGridX();
+    int result = (instance.getTileX() - Tile.GRID) / (Tile.GRID * 2);
+
     assertEquals(expResult, result);
 
-    instance
-            = TileFactory.createTile(
-                    TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220, false);
+    instance = TileFactory.createTile(TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 220, 220, false);
 
     expResult = 5;
-    result = instance.getGridX();
+    result = (instance.getTileX() - Tile.GRID) / (Tile.GRID * 2);
     assertEquals(expResult, result);
   }
 
   @Test
   public void testgetCenterY() {
     System.out.println("getCenterY");
-    Tile instance
-            = TileFactory.createTile(
-                    TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 180, 100, false);
+    Tile instance = TileFactory.createTile(TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 180, 100, false);
     int expResult = 100;
     int result = instance.getCenterY();
     assertEquals(expResult, result);
@@ -89,9 +91,7 @@ public class TileTest {
   @Test
   public void testgetCenterYZero() {
     System.out.println("getCenterY");
-    Tile instance
-            = TileFactory.createTile(
-                    TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, false);
+    Tile instance = TileFactory.createTile(TileBean.TileType.STRAIGHT, Orientation.EAST, Direction.CENTER, 0, 0, false);
     int expResult = 20;
     int result = instance.getCenterY();
     assertEquals(expResult, result);
@@ -100,11 +100,9 @@ public class TileTest {
   @Test
   public void testGetGridY() {
     System.out.println("getGridY");
-    Tile instance
-            = TileFactory.createTile(
-                    TileBean.TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 100, 140, false);
+    Tile instance = TileFactory.createTile(TileBean.TileType.STRAIGHT, Orientation.WEST, Direction.CENTER, 100, 140, false);
     int expResult = 3;
-    int result = instance.getGridY();
+    int result = (instance.getTileY() - Tile.GRID) / (Tile.GRID * 2);
     assertEquals(expResult, result);
   }
 

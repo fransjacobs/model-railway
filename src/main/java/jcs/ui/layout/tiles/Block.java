@@ -38,6 +38,9 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.LayoutUtil;
+import static jcs.ui.layout.LayoutUtil.blockHeight;
+import static jcs.ui.layout.LayoutUtil.blockWidth;
 import jcs.ui.layout.events.TileEvent;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
@@ -53,24 +56,8 @@ public class Block extends Tile {
 
   protected BlockState routeBlockState;
 
-  private static int blockWidth(Orientation orientation) {
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      return BLOCK_WIDTH;
-    } else {
-      return DEFAULT_WIDTH;
-    }
-  }
-
-  private static int blockHeight(Orientation orientation) {
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      return DEFAULT_HEIGHT;
-    } else {
-      return BLOCK_HEIGHT;
-    }
-  }
-
   public Block(TileBean tileBean) {
-    super(tileBean, blockWidth(tileBean.getOrientation()), blockHeight(tileBean.getOrientation()));
+    super(tileBean, LayoutUtil.blockWidth(tileBean.getOrientation()), LayoutUtil.blockHeight(tileBean.getOrientation()));
     setModel(new DefaultTileModel());
     changeRenderSize();
   }
@@ -80,7 +67,7 @@ public class Block extends Tile {
   }
 
   public Block(Orientation orientation, int x, int y) {
-    this(orientation, x, y, blockWidth(orientation), blockHeight(orientation));
+    this(orientation, x, y, LayoutUtil.blockWidth(orientation), LayoutUtil.blockHeight(orientation));
   }
 
   public Block(Orientation orientation, int x, int y, int width, int height) {
@@ -99,43 +86,6 @@ public class Block extends Tile {
     }
   }
 
-//  Block(TileBean tileBean) {
-//    super(tileBean);
-//    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-//      this.width = BLOCK_WIDTH;
-//      this.renderWidth = RENDER_WIDTH * 3;
-//      this.height = DEFAULT_HEIGHT;
-//      this.renderHeight = RENDER_HEIGHT;
-//    } else {
-//      this.width = DEFAULT_WIDTH;
-//      this.renderWidth = RENDER_WIDTH;
-//      this.height = BLOCK_HEIGHT;
-//      this.renderHeight = RENDER_HEIGHT * 3;
-//    }
-//    this.blockBean = tileBean.getBlockBean();
-//    this.tileType = tileBean.getTileType();
-//    this.setLayout(null);
-//  }
-//  Block(Orientation orientation, Point center) {
-//    this(orientation, center.x, center.y);
-//  }
-//  Block(Orientation orientation, int x, int y) {
-//    super(orientation, Direction.CENTER, x, y);
-//
-//    if (Orientation.EAST == getOrientation() || Orientation.WEST == getOrientation()) {
-//      this.width = BLOCK_WIDTH;
-//      this.renderWidth = RENDER_WIDTH * 3;
-//      this.height = DEFAULT_HEIGHT;
-//      this.renderHeight = RENDER_HEIGHT;
-//    } else {
-//      this.width = DEFAULT_WIDTH;
-//      this.renderWidth = RENDER_WIDTH;
-//      this.height = BLOCK_HEIGHT;
-//      this.renderHeight = RENDER_HEIGHT * 3;
-//    }
-//    this.tileType = TileType.BLOCK;
-//    this.setLayout(null);
-//  }
   @Override
   public Set<Point> getAltPoints() {
     int xx = this.tileX;
@@ -339,16 +289,10 @@ public class Block extends Tile {
   @Override
   public Orientation rotate() {
     rotate(false);
-    int w = blockWidth(tileOrientation);
-    int h = blockHeight(tileOrientation);
+    int w = LayoutUtil.blockWidth(tileOrientation);
+    int h = LayoutUtil.blockHeight(tileOrientation);
 
     Dimension d = new Dimension(w, h);
-
-//    if (Orientation.EAST == tileOrientation || Orientation.WEST == tileOrientation) {
-//      d = new Dimension(w, h);
-//    } else {
-//      d = new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT * 3);
-//    }
     setPreferredSize(d);
     setSize(d);
     changeRenderSize();
@@ -810,41 +754,26 @@ public class Block extends Tile {
     long started = System.currentTimeMillis();
     super.paintComponent(g);
 
-    int w = getWidth();
-    int h = getHeight();
-    //upon firts initializatien the width and height could still be wrong for reasons unknow to me...
-    //reset widh or height
-    boolean reset = false;
-    if (w != blockWidth(tileOrientation)) {
-      w = blockWidth(tileOrientation);
-      reset = true;
-    }
-    if (h != blockHeight(tileOrientation)) {
-      h = blockHeight(tileOrientation);
-      reset = true;
-    }
-
-    if (reset) {
-      Logger.trace(id + " Resetting size... ");
-      Dimension d = new Dimension(w, h);
-      setPreferredSize(d);
-      setSize(d);
-    }
-
+    int multiplier = (model.isScaleImage() ? 1 : 10);
     int xx, yy;
     if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
-      xx = tileX - GRID - GRID * 2;
-      yy = tileY - GRID;
-      setBounds(xx, yy, w, h);
+      xx = tileX - GRID * multiplier - GRID * multiplier * 2;
+      yy = tileY - GRID * multiplier;
     } else {
-      xx = tileX - GRID;
-      yy = tileY - GRID - GRID * 2;
-      setBounds(xx, yy, w, h);
+      xx = tileX - GRID * multiplier;
+      yy = tileY - GRID * multiplier - GRID * multiplier * 2;
     }
 
-    Logger.trace(id + ": " + tileOrientation + " W: " + getWidth() + " H: " + getHeight() + " tX: " + tileX + ", tY: " + tileY + " xx: " + xx + " yy: " + yy);
+    if (model.isScaleImage()) {
+      setBounds(xx, yy, LayoutUtil.blockWidth(tileOrientation), LayoutUtil.blockHeight(tileOrientation));
+    } else {
+      setBounds(xx, yy, renderWidth, renderHeight);
+    }
+
+    Logger.trace(id + ": " + tileOrientation + " W: " + getWidth() + " H: " + getHeight() + " tX: " + tileX + ", tY: " + tileY + " xx: " + xx + " yy: " + yy + " Scale factor: " + multiplier);
 
     Graphics2D g2 = (Graphics2D) g.create();
+    //Graphics2D g2 = (Graphics2D) g;
     drawTile(g2);
     g2.dispose();
 
@@ -856,45 +785,39 @@ public class Block extends Tile {
 
   @Override
   protected void drawCenterPoint(Graphics2D g2d, Color color, double size) {
-    //super.drawCenterPoint(g2d, color, size);
-
     //A block has 2 alternate points
     //1st square 
     //2nd square holds the centerpoint
     //3rd square
     double dX1, dX2, dX3, dY1, dY2, dY3;
-    if (Orientation.EAST == this.tileOrientation || Orientation.WEST == tileOrientation) {
-      dX1 = (renderWidth / 3 / 2 - size / 2 / 2);
-      dX2 = (renderWidth / 2 - size / 2);
-      dX3 = (renderWidth / 3 / 2 + renderWidth / 3 * 2 - size / 2);
-      dY1 = (renderHeight / 2 - size / 2 / 2);
-      dY2 = (renderHeight / 2 - size / 2 / 2);
-      dY3 = (renderHeight / 2 - size / 2 / 2);
+    if (Orientation.EAST == tileOrientation || Orientation.WEST == tileOrientation) {
+      dX1 = renderWidth / 3 / 2 - size / 2 / 2;
+      dY1 = renderHeight / 2 - size / 2 / 2;
+      dX2 = renderWidth / 2 - size / 2;
+      dY2 = renderHeight / 2 - size / 2;
+      dX3 = renderWidth - renderWidth / 3 / 2 - size / 2 / 2;
+      dY3 = renderHeight / 2 - size / 2 / 2;
     } else {
-      dY1 = (renderWidth / 2 - size / 2 / 2);
-
-      dY2 = (renderWidth / 2 - size / 2 / 2);
-
-      dY3 = (renderWidth / 2 - size / 2 / 2);
-
-      dX1 = (renderHeight / 3 / 2 - size / 2 / 2);
-
-      dX2 = (renderHeight / 2 - size / 2);
-
-      dX3 = (renderHeight / 3 / 2 + renderHeight / 3 * 2 - size / 2);
-
+      dX1 = renderWidth / 2 - size / 2 / 2;
+      dY1 = renderHeight / 3 / 2 - size / 2 / 2;
+      dX2 = renderHeight / 2 - size / 2;
+      dY2 = renderWidth / 2 - size / 2;
+      dY3 = renderWidth / 2 - size / 2 / 2;
+      dX3 = renderHeight - renderHeight / 3 / 2 - size / 2 / 2;
     }
 
     g2d.setColor(color);
-
     g2d.fill(new Ellipse2D.Double(dX1, dY1, size / 2, size / 2));
     g2d.fill(new Ellipse2D.Double(dX2, dY2, size, size));
     g2d.fill(new Ellipse2D.Double(dX3, dY3, size / 2, size / 2));
 
-    Logger.trace(id + " dX2: " + dX2 + " dY2: " + dY2 + " O: " + tileOrientation + " rW: " + renderWidth + " rH:" + renderHeight);
+//    g2d.setPaint(Color.black);
+//    g2d.setStroke(new BasicStroke(2, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND));
+//    g2d.drawOval(renderWidth / 2 - 5, renderHeight / 2 - 5, 10, 10);
+
+    Logger.trace(id + " dX2: " + dX2 + " dY2: " + dY2 + " O: " + tileOrientation + " rW: " + renderWidth + " rH:" + renderHeight + " Size: " + size);
     Logger.trace(id + " dX1: " + dX1 + " dY1: " + dY1);
     Logger.trace(id + " dX3: " + dX3 + " dY3: " + dY3);
-
   }
 
 }

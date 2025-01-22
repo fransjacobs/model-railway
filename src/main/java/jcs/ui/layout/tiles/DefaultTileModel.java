@@ -22,6 +22,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import jcs.entities.BlockBean.BlockState;
+import jcs.entities.LocomotiveBean;
 
 /**
  *
@@ -49,6 +50,10 @@ public class DefaultTileModel implements TileModel {
   protected boolean showOutline = false;
 
   protected BlockState blockState;
+  protected boolean reverseArrival;
+  protected String arrivalSuffix;
+  protected LocomotiveBean.Direction logicalDirection;
+  protected LocomotiveBean locomotive;
 
   public DefaultTileModel() {
 
@@ -167,6 +172,81 @@ public class DefaultTileModel implements TileModel {
     fireStateChanged();
   }
 
+  @Override
+  public String getArrivalSuffix() {
+    return arrivalSuffix;
+  }
+
+  @Override
+  public void setArrivalSuffix(String arrivalSuffix) {
+    this.arrivalSuffix = arrivalSuffix;
+    fireStateChanged();
+  }
+
+  @Override
+  public void setDepartureSuffix(String suffix) {
+    if (null == suffix) {
+      setArrivalSuffix(null);
+    } else {
+      switch (suffix) {
+        case "-" ->
+          setArrivalSuffix("+");
+        default ->
+          setArrivalSuffix("-");
+      }
+    }
+  }
+
+  @Override
+  public String getDepartureSuffix() {
+    String departureSuffix = null;
+    if (arrivalSuffix != null) {
+      if ("-".equals(arrivalSuffix)) {
+        departureSuffix = "+";
+      } else {
+        departureSuffix = "-";
+      }
+    }
+
+    return departureSuffix;
+  }
+
+  @Override
+  public boolean isReverseArrival() {
+    return reverseArrival;
+  }
+
+  @Override
+  public void setReverseArrival(boolean reverseArrival) {
+    this.reverseArrival = reverseArrival;
+    fireStateChanged();
+  }
+
+  @Override
+  public LocomotiveBean.Direction getLogicalDirection() {
+    return logicalDirection;
+  }
+
+  @Override
+  public void setLogicalDirection(LocomotiveBean.Direction logicalDirection) {
+    this.logicalDirection = logicalDirection;
+    fireStateChanged();
+  }
+
+  @Override
+  public LocomotiveBean getLocomotive() {
+    return locomotive;
+  }
+
+  @Override
+  public void setLocomotive(LocomotiveBean locomotive) {
+    this.locomotive = locomotive;
+    fireStateChanged();
+  }
+
+  
+  
+  
   @Override
   public void addChangeListener(ChangeListener l) {
     listenerList.add(ChangeListener.class, l);

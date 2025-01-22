@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.io.Serializable;
 import javax.swing.event.ChangeListener;
 import jcs.entities.BlockBean;
+import jcs.entities.LocomotiveBean;
 
 /**
  *
@@ -66,12 +67,27 @@ public interface TileModel extends Serializable {
 
   public void setBlockState(BlockBean.BlockState blockState);
 
-  //boolean isShowOutline();
-  //public void setShowOutline(boolean showOutline);
-  //@Override
-  //void addItemListener(ItemListener l);
-  //@Override
-  //void removeItemListener(ItemListener l);
+  String getArrivalSuffix();
+
+  public void setArrivalSuffix(String arrivalSuffix);
+
+  String getDepartureSuffix();
+
+  public void setDepartureSuffix(String suffix);
+
+  boolean isReverseArrival();
+
+  public void setReverseArrival(boolean reverseArrival);
+
+  LocomotiveBean.Direction getLogicalDirection();
+
+  public void setLogicalDirection(LocomotiveBean.Direction logicalDirection);
+
+  LocomotiveBean getLocomotive();
+
+  public void setLocomotive(LocomotiveBean locomotive);
+
+  //
   void addChangeListener(ChangeListener l);
 
   void removeChangeListener(ChangeListener l);

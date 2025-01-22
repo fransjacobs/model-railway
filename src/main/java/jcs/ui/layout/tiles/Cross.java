@@ -242,11 +242,11 @@ public class Cross extends Switch {
     return edgeConnections;
   }
 
-  @Override
-  public void rotate() {
-    super.rotate();
-    setWidthHeightAndOffsets();
-  }
+//  @Override
+//  public void rotate() {
+//    super.rotate();
+//    setWidthHeightAndOffsets();
+//  }
 
   final void setWidthHeightAndOffsets() {
     //Reset offsets

@@ -25,20 +25,24 @@ import org.tinylog.Logger;
 public class UnscaledBlockCanvas extends JPanel { //implements PropertyChangeListener {
 
   private boolean expanded;
+  private int paintCount = 0;
 
   public UnscaledBlockCanvas() {
     setLayout(null);
-    setOpaque(false);
+    setOpaque(true);
     setDoubleBuffered(true);
   }
 
   @Override
   public void paint(Graphics g) {
     long started = System.currentTimeMillis();
+    paintCount++;
 
     //Rectangle r = g.getClipBounds();    
     //Logger.trace("Rx: " + r.x + " Ry: " + r.y + " Rw: " + r.width + " Rh: " + r.height);
-    super.paint(g);
+    if (paintCount > 2) {
+      super.paint(g);
+    }
 
     paintGrid(g);
     long now = System.currentTimeMillis();
@@ -59,7 +63,7 @@ public class UnscaledBlockCanvas extends JPanel { //implements PropertyChangeLis
 
     int grid;
     if (expanded) {
-      grid = 200;
+      grid = 20;
     } else {
       grid = 20;
     }
@@ -72,8 +76,6 @@ public class UnscaledBlockCanvas extends JPanel { //implements PropertyChangeLis
     gc.setPaint(p);
   }
 
-  
-  
   //private boolean showCenter;
   //private final List<Tile> tiles;
 //  public UnscaledBlockCanvas() {
@@ -228,12 +230,12 @@ public class UnscaledBlockCanvas extends JPanel { //implements PropertyChangeLis
 //      return this.getSize();
 //    }
 //  }
-
   public boolean isExpanded() {
     return expanded;
   }
 
   public void setExpanded(boolean expanded) {
     this.expanded = expanded;
+    this.repaint();
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 FJA.
+ * Copyright 2024 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package jcs.ui.layout.tiles;
 
-import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.swing.ComboBoxModel;
@@ -30,17 +28,12 @@ import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
-import jcs.ui.layout.LayoutUtil;
 import jcs.ui.util.ImageUtil;
 import org.tinylog.Logger;
 
-/**
- *
- * @author FJA
- */
 public class UnscaledBlockTester extends JFrame { //implements PropertyChangeListener {
 
-  private Tile blockTile;
+  private final Tile blockTile;
 
   /**
    * Creates new form UnscaledBlockTileFrame
@@ -52,11 +45,12 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     this.departureSideCB.setSelectedItem("");
     this.stateCB.setModel(createStateComboBoxModel());
 
-    this.blockTile = initBlock();
+    blockTile = createBlock();
 
     canvas.add(blockTile);
-    centerSP.getViewport().validate();
 
+    centerSP.getViewport().validate();
+    pack();
     setVisible(true);
   }
 
@@ -79,6 +73,7 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     blockStateModel.addElement(BlockState.LOCKED);
     blockStateModel.addElement(BlockState.OUT_OF_ORDER);
 
+    blockStateModel.setSelectedItem(BlockState.FREE);
     return blockStateModel;
   }
 
@@ -100,28 +95,20 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     return lb;
   }
 
-  private Block initBlock() {
-    Point center = LayoutUtil.snapToGrid(canvas.getWidth() / 2, canvas.getHeight() / 2);
-    int cX = center.x;
-    int cY = center.y;
+  private Block createBlock() {
+    Block block = new Block(Orientation.EAST, 640, 280);
 
-    Logger.trace("Center X: " + cX + " Y: " + cY);
-
-    Block block = new Block(Orientation.EAST, cX, cY);
     block.setId("bk-1");
+    block.setBlockState((BlockState) stateCB.getSelectedItem());
     block.setScaleImage(!scaleCB.isSelected());
-    canvas.setExpanded(scaleCB.isSelected());
+    //canvas.setExpanded(scaleCB.isSelected());
 
     BlockBean blockBean = new BlockBean();
     blockBean.setId(block.getId());
     blockBean.setTileId(block.getId());
     blockBean.setDescription("Blok 1");
-
-    //bbe.setArrivalSuffix((String) this.incomingSideCB.getSelectedItem());
     blockBean.setDepartureSuffix(null);
-
-    blockBean.setBlockState((BlockState) stateCB.getSelectedItem());
-    blockBean.setReverseArrival(reverseArrivalCB.isSelected());
+    blockBean.setDepartureSuffix((String) this.departureSideCB.getSelectedItem());
 
     if (showLocCB.isSelected()) {
       blockBean.setLocomotive(createLocomotiveBean());
@@ -130,7 +117,6 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     }
 
     block.setBlockBean(blockBean);
-
     return block;
   }
 
@@ -272,6 +258,7 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     });
 
     canvas.setAutoscrolls(true);
+    canvas.setPreferredSize(new java.awt.Dimension(1220, 410));
     canvas.addComponentListener(new java.awt.event.ComponentAdapter() {
       public void componentResized(java.awt.event.ComponentEvent evt) {
         canvasComponentResized(evt);
@@ -286,7 +273,7 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     );
     canvasLayout.setVerticalGroup(
       canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 498, Short.MAX_VALUE)
+      .addGap(0, 445, Short.MAX_VALUE)
     );
 
     centerSP.setViewportView(canvas);
@@ -297,18 +284,17 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
   }// </editor-fold>//GEN-END:initComponents
 
   private void rotateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateButtonActionPerformed
-    Orientation orientation  = blockTile.rotate();
+    Orientation orientation = blockTile.rotate();
     this.orientationCB.setSelectedItem(orientation);
-    Logger.trace("Blok is rotated to " + orientation);
+    Logger.trace("\nBlok is rotated to " + orientation);
   }//GEN-LAST:event_rotateButtonActionPerformed
 
   private void showLocCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLocCBActionPerformed
     if (this.showLocCB.isSelected()) {
-      ((Block) blockTile).getBlockBean().setLocomotive(this.createLocomotiveBean());
+      blockTile.setLocomotive(createLocomotiveBean());
     } else {
-      ((Block) blockTile).getBlockBean().setLocomotive(null);
+      blockTile.setLocomotive(null);
     }
-    repaint();
   }//GEN-LAST:event_showLocCBActionPerformed
 
   private void orientationCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orientationCBActionPerformed
@@ -316,71 +302,49 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
   }//GEN-LAST:event_orientationCBActionPerformed
 
   private void departureSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departureSideCBActionPerformed
-    if (blockTile != null && ((Block) blockTile).getBlockBean() != null) {
-      if ("".equals(this.departureSideCB.getSelectedItem())) {
-        ((Block) blockTile).getBlockBean().setDepartureSuffix(null);
-      } else {
-        ((Block) blockTile).getBlockBean().setDepartureSuffix((String) this.departureSideCB.getSelectedItem());
-      }
-      repaint();
+    if ("".equals(departureSideCB.getSelectedItem())) {
+      blockTile.setDepartureSuffix(null);
+    } else {
+      blockTile.setDepartureSuffix(departureSideCB.getSelectedItem().toString());
     }
   }//GEN-LAST:event_departureSideCBActionPerformed
 
   private void stateCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stateCBActionPerformed
-    ((Block) blockTile).getBlockBean().setBlockState((BlockState) this.stateCB.getSelectedItem());
-    repaint();
+    blockTile.setBlockState((BlockState) stateCB.getSelectedItem());
   }//GEN-LAST:event_stateCBActionPerformed
 
   private void showCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCenterCBActionPerformed
-    //Reset the logical direction
-    ((Block) blockTile).getBlockBean().setLogicalDirection(null);
-    repaint();
+    blockTile.setDrawCenterPoint(this.showCenterCB.isSelected());
   }//GEN-LAST:event_showCenterCBActionPerformed
 
-  private String getDepartureSuffix() {
-    if (((Block) blockTile).getBlockBean() != null && ((Block) blockTile).getBlockBean().getDepartureSuffix() != null && !"".equals(((Block) blockTile).getBlockBean().getDepartureSuffix())) {
-      return ((Block) blockTile).getBlockBean().getDepartureSuffix();
-    } else {
-      return "+";
-    }
-  }
+//  private String getDepartureSuffix() {
+//    return this.blockTile.getDepartureSuffix();
+//  }
 
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
-    ((Block) blockTile).getBlockBean().setReverseArrival(this.reverseArrivalCB.isSelected());
-
-    //The Suffix is orientation dependent!
-//    if ("+".equals(((Block) blockTile).getBlockBean().getArrivalSuffix())) {
-//      ((Block) blockTile).getBlockBean().setArrivalSuffix("-");
-//    } else {
-//      ((Block) blockTile).getBlockBean().setArrivalSuffix("+");
-//    }
-//    this.departureSideCB.setSelectedItem(((Block) blockTile).getBlockBean().getArrivalSuffix());
-    repaint();
+    blockTile.setReverseArrival(reverseArrivalCB.isSelected());
   }//GEN-LAST:event_reverseArrivalCBActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
-    if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      //((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.BACKWARDS);
-      ((Block) blockTile).getBlockBean().setLogicalDirection(LocomotiveBean.Direction.BACKWARDS.getDirection());
-      repaint();
-    }
+    blockTile.setLogicalDirection(LocomotiveBean.Direction.BACKWARDS);
   }//GEN-LAST:event_backwardsRBActionPerformed
 
   private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
-    if (((Block) blockTile).getBlockBean().getLocomotive() != null) {
-      //((Block) blockTile).getBlockBean().getLocomotive().setDispatcherDirection(LocomotiveBean.Direction.FORWARDS);
-      ((Block) blockTile).getBlockBean().setLogicalDirection(LocomotiveBean.Direction.FORWARDS.getDirection());
-      repaint();
-    }
+    blockTile.setLogicalDirection(LocomotiveBean.Direction.FORWARDS);
   }//GEN-LAST:event_forwardsRBActionPerformed
 
   private void scaleCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleCBActionPerformed
-    if (this.scaleCB.isSelected()) {
-      blockTile.setScaleImage(false);
-    } else {
-      blockTile.setScaleImage(true);
-    }
-    repaint();
+    Logger.trace("\nBlok is expanded " + this.scaleCB.isSelected());
+    blockTile.setScaleImage(!scaleCB.isSelected());
+    canvas.setExpanded(scaleCB.isSelected());
+
+    //Shift the tile a bit to fit on the canvas
+//    if(!scaleCB.isSelected()) {
+//      blockTile.setCenter(new Point(620, 180));
+//    } else {
+//      blockTile.setCenter(new Point(620, 140));
+//    }
+
   }//GEN-LAST:event_scaleCBActionPerformed
 
   private void centerSPComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_centerSPComponentResized
@@ -434,8 +398,8 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
       UnscaledBlockTester app = new UnscaledBlockTester();
       app.setTitle("Unscaled Tile Tester");
       app.setLocationRelativeTo(null);
-      app.pack();
 
+      //app.pack();
     });
   }
 
