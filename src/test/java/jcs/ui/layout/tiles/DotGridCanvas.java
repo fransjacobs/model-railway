@@ -28,6 +28,7 @@ public class DotGridCanvas extends JPanel {
     setLayout(null);
     setOpaque(true);
     setDoubleBuffered(false);
+    setBackground(Color.white);
   }
   
   @Override

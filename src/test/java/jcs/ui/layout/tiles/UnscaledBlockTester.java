@@ -22,6 +22,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.BlockBean;
@@ -48,6 +49,17 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
     blockTile = createBlock();
 
     canvas.add(blockTile);
+    //String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "images" + File.separator + "DHG 6505.png";
+    //ImageIcon locIcon = new ImageIcon(getClass().getResource("/images/DHG 6505.png"));
+    //Image locImage = new BufferedImage(locIcon.getIconWidth(), locIcon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+
+    //String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "images" + File.separator + "DHG 6505.png";
+    //Image locImage = ImageUtil.readImage(imgPath);
+
+    //locImage = ImageUtil.scaleImage(locImage, 100);
+    //JLabel c = new JLabel(new ImageIcon(locImage));
+
+    //canvas.add(c);
 
     centerSP.getViewport().validate();
     pack();
@@ -79,17 +91,18 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
 
   private LocomotiveBean createLocomotiveBean() {
     LocomotiveBean lb = new LocomotiveBean(8L, "NS DHG 6505", 8L, 8, "", "dcc", 100, 0, 0, 1, true, true);
-    String imgPath = System.getProperty("user.home") + File.separator + "jcs" + File.separator + "images" + File.separator + "DHG 6505.png";
+    String imgPath = getClass().getResource("/images/DHG 6505.png").getFile().replaceAll("%20"," ");
     lb.setIcon(imgPath);
-    ImageIcon locIcon = new ImageIcon(getClass().getResource("/images/DHG 6505.png"));
-    Image locImage = new BufferedImage(locIcon.getIconWidth(), locIcon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+    Image locImage = ImageUtil.readImage(imgPath);
     locImage = ImageUtil.scaleImage(locImage, 100);
     lb.setLocIcon(locImage);
 
-    if (this.backwardsRB.isSelected()) {
+    if (backwardsRB.isSelected()) {
       lb.setDirection(LocomotiveBean.Direction.BACKWARDS);
+      this.blockTile.setLogicalDirection(LocomotiveBean.Direction.BACKWARDS);
     } else {
       lb.setDirection(LocomotiveBean.Direction.FORWARDS);
+      this.blockTile.setLogicalDirection(LocomotiveBean.Direction.FORWARDS);
     }
 
     return lb;
@@ -290,7 +303,7 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
   }//GEN-LAST:event_rotateButtonActionPerformed
 
   private void showLocCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showLocCBActionPerformed
-    if (this.showLocCB.isSelected()) {
+    if (showLocCB.isSelected()) {
       blockTile.setLocomotive(createLocomotiveBean());
     } else {
       blockTile.setLocomotive(null);
@@ -302,10 +315,12 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
   }//GEN-LAST:event_orientationCBActionPerformed
 
   private void departureSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departureSideCBActionPerformed
-    if ("".equals(departureSideCB.getSelectedItem())) {
-      blockTile.setDepartureSuffix(null);
-    } else {
-      blockTile.setDepartureSuffix(departureSideCB.getSelectedItem().toString());
+    if (blockTile != null) {
+      if ("".equals(departureSideCB.getSelectedItem())) {
+        blockTile.setDepartureSuffix(null);
+      } else {
+        blockTile.setDepartureSuffix(departureSideCB.getSelectedItem().toString());
+      }
     }
   }//GEN-LAST:event_departureSideCBActionPerformed
 
@@ -316,10 +331,6 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
   private void showCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCenterCBActionPerformed
     blockTile.setDrawCenterPoint(this.showCenterCB.isSelected());
   }//GEN-LAST:event_showCenterCBActionPerformed
-
-//  private String getDepartureSuffix() {
-//    return this.blockTile.getDepartureSuffix();
-//  }
 
   private void reverseArrivalCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalCBActionPerformed
     blockTile.setReverseArrival(reverseArrivalCB.isSelected());
@@ -402,15 +413,6 @@ public class UnscaledBlockTester extends JFrame { //implements PropertyChangeLis
       //app.pack();
     });
   }
-
-//  @Override
-//  public void propertyChange(PropertyChangeEvent evt) {
-//    if ("repaintTile".equals(evt.getPropertyName())) {
-//      Tile t = (Tile) evt.getNewValue();
-//      Logger.trace("Tile: " + t);
-//      this.repaint();
-//    }
-//  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JRadioButton backwardsRB;

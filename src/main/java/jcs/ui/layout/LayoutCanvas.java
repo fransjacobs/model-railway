@@ -21,6 +21,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.DebugGraphics;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -80,7 +82,7 @@ import org.tinylog.Logger;
  * This canvas / Panel is used to draw the layout
  *
  */
-public class LayoutCanvas extends JPanel implements PropertyChangeListener {
+public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   public enum Mode {
     SELECT,
@@ -123,6 +125,10 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   public LayoutCanvas(boolean readonly) {
+    setLayout(null);
+    setOpaque(true);
+    setDoubleBuffered(true);
+
     this.readonly = readonly;
 //    this.tiles = new HashMap<>();
 //    this.altTiles = new HashMap<>();
@@ -147,64 +153,85 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   @Override
-  protected void paintComponent(Graphics g) {
+  public void paint(Graphics g) {
     long started = System.currentTimeMillis();
-    super.paintComponent(g);
 
-    Graphics2D g2 = (Graphics2D) g.create();
-    Set<Tile> snapshot = new HashSet<>(TileCache.tiles.values());
+    //for (Tile tile : TileCache.tiles.values()) {
+    //  tile.setSelected(selectedTiles.contains(tile.getCenter()));
+    //}
 
-    if (this.drawGrid) {
-      if (lineGrid) {
-        paintLineGrid(g);
-      } else {
-        paintDotGrid(g);
-      }
-    } else {
-      paintNullGrid(g);
+    //paintNullGrid(g);
+    super.paint(g);
+
+    if (drawGrid) {
+      //if (lineGrid) {
+      //  paintLineGrid(g);
+      //} else {
+      paintDotGrid(g);
+      //}
     }
-
-    for (Tile tile : snapshot) {
-      //for (Tile tile : TileCache.tiles.values()) {
-      //tile.setDrawOutline(drawGrid);
-
-      if (Mode.CONTROL != mode) {
-        if (selectedTiles.contains(tile.getCenter())) {
-          //tile.setBackgroundColor(Color.yellow);
-          tile.setBackgroundColor(Color.orange);
-        } else {
-          tile.setBackgroundColor(Color.white);
-        }
-      }
-
-      tile.drawTile(g2);
-      //debug
-//      if (!this.readonly) {
-//        tile.drawCenterPoint(g2, Color.magenta, 3);
-//      }
-    }
-
-    if (this.movingTileCenterPoint != null && this.movingTileImage != null) {
-      int x = movingTileCenterPoint.x;
-      int y = movingTileCenterPoint.y;
-      int w = movingTileImage.getWidth();
-      int h = movingTileImage.getHeight();
-      g2.drawImage(movingTileImage, (x - w / 2), (y - h / 2), null);
-    }
-
-    g2.dispose();
 
     long now = System.currentTimeMillis();
     Logger.trace("Duration: " + (now - started) + " ms.");
   }
 
   @Override
+  protected void paintComponent(Graphics g) {
+    long started = System.currentTimeMillis();
+    super.paintComponent(g);
+
+//    Graphics2D g2 = (Graphics2D) g.create();
+//    Set<Tile> snapshot = new HashSet<>(TileCache.tiles.values());
+//
+//    if (this.drawGrid) {
+//      if (lineGrid) {
+//        paintLineGrid(g);
+//      } else {
+//        paintDotGrid(g);
+//      }
+//    } else {
+//      paintNullGrid(g);
+//    }
+//
+//    for (Tile tile : snapshot) {
+//      //for (Tile tile : TileCache.tiles.values()) {
+//      //tile.setDrawOutline(drawGrid);
+//
+//      if (Mode.CONTROL != mode) {
+//        if (selectedTiles.contains(tile.getCenter())) {
+//          //tile.setBackgroundColor(Color.yellow);
+//          tile.setBackgroundColor(Color.orange);
+//        } else {
+//          tile.setBackgroundColor(Color.white);
+//        }
+//      }
+//
+//      //tile.drawTile(g2);
+//      //debug
+////      if (!this.readonly) {
+////        tile.drawCenterPoint(g2, Color.magenta, 3);
+////      }
+//    }
+//    if (this.movingTileCenterPoint != null && this.movingTileImage != null) {
+//      int x = movingTileCenterPoint.x;
+//      int y = movingTileCenterPoint.y;
+//      int w = movingTileImage.getWidth();
+//      int h = movingTileImage.getHeight();
+//      g2.drawImage(movingTileImage, (x - w / 2), (y - h / 2), null);
+//    }
+//
+//    g2.dispose();
+    long now = System.currentTimeMillis();
+    Logger.trace("Duration: " + (now - started) + " ms.");
+  }
+
+  //@Override
   public void propertyChange(PropertyChangeEvent evt) {
     if ("repaintTile".equals(evt.getPropertyName())) {
       Tile tile = (Tile) evt.getNewValue();
 
       Logger.trace("Repainting Tile: " + tile.getId());
-      repaint(tile.getBounds());
+//      repaint(tile.getBounds());
     }
   }
 
@@ -239,40 +266,58 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   }
 
   private void paintDotGrid(Graphics g) {
-    if (this.grid != null) {
-      int pw = this.getWidth();
-      int ph = this.getHeight();
+    int width = this.getWidth();
+    int height = this.getHeight();
 
-      int gw = grid.getWidth();
-      int gh = grid.getHeight();
+    int xOffset = 0;
+    int yOffset = 0;
 
-      if (pw != gw || ph != gh) {
-        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
-        this.grid = null;
-      } else {
+    //Logger.trace("W: " + width + " H: " + height + " X: " + this.getX() + " Y: " + this.getY());
+    Graphics2D gc = (Graphics2D) g;
+    Paint p = gc.getPaint();
+    gc.setPaint(Color.black);
+
+    for (int r = 0; r < width; r++) {
+      for (int c = 0; c < height; c++) {
+        gc.drawOval((r * 20 * 2) + xOffset - 2, (c * 20 * 2) + yOffset - 2, 4, 4);
       }
     }
+    gc.setPaint(p);
 
-    if (this.grid == null) {
-      int width = getSize().width;
-      int height = getSize().height;
-      grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-      Graphics2D gc = grid.createGraphics();
-
-      gc.setBackground(Color.white);
-      gc.clearRect(0, 0, width, height);
-
-      gc.setPaint(Color.black);
-
-      for (int r = 0; r < width; r++) {
-        for (int c = 0; c < height; c++) {
-          gc.drawOval(r * Tile.GRID * 2, c * Tile.GRID * 2, 1, 1);
-        }
-      }
-      gc.dispose();
-    }
-    Graphics2D g2 = (Graphics2D) g;
-    g2.drawImage(grid, null, 0, 0);
+//    if (this.grid != null) {
+//      int pw = this.getWidth();
+//      int ph = this.getHeight();
+//
+//      int gw = grid.getWidth();
+//      int gh = grid.getHeight();
+//
+//      if (pw != gw || ph != gh) {
+//        //Logger.trace("Changed Canvas: " + pw + " x " + ph + " Grid: " + gw + " x " + gh);
+//        this.grid = null;
+//      } else {
+//      }
+//    }
+//
+//    if (this.grid == null) {
+//      int width = getSize().width;
+//      int height = getSize().height;
+//      grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+//      Graphics2D gc = grid.createGraphics();
+//
+//      gc.setBackground(Color.white);
+//      gc.clearRect(0, 0, width, height);
+//
+//      gc.setPaint(Color.black);
+//
+//      for (int r = 0; r < width; r++) {
+//        for (int c = 0; c < height; c++) {
+//          gc.drawOval(r * Tile.GRID * 2, c * Tile.GRID * 2, 1, 1);
+//        }
+//      }
+//      gc.dispose();
+//    }
+//    Graphics2D g2 = (Graphics2D) g;
+//    g2.drawImage(grid, null, 0, 0);
   }
 
   private void paintLineGrid(Graphics g) {
@@ -347,7 +392,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void loadTiles() {
     boolean showValues = Mode.CONTROL.equals(mode);
-    TileCache.loadTiles(this);
+    TileCache.loadTiles();
     TileCache.setShowValues(showValues);
     //TileCache.setDrawOutline(drawGrid);
     TileCache.setDrawCenterPoint(!this.readonly);
@@ -450,12 +495,21 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
   private void mousePressedAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    Tile tile = TileCache.findTile(snapPoint);
 
     //Clear any previous selection
+    for(Point p : selectedTiles) {
+      if(TileCache.containsPoint(p)) {
+        Tile st = TileCache.findTile(p);
+        st.setSelected(false);
+      }  
+    }
+   
     selectedTiles.clear();
+    Tile tile = TileCache.findTile(snapPoint);
+    
     if (tile != null) {
       selectedTiles.addAll(tile.getAllPoints());
+      tile.setSelected(true);
     }
 
     switch (mode) {
@@ -481,9 +535,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
           if (addedTile != null) {
             selectedTiles.addAll(addedTile.getAllPoints());
 
-            if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
-              this.saveTile(tile);
-            }
+            //if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
+            //this.saveTile(tile);
+            this.add(addedTile);
+            repaint();
+            //}
           }
         } else {
           if (tile != null) {
@@ -495,11 +551,17 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         if (MouseEvent.BUTTON3 == evt.getButton() && tile != null) {
           showOperationsPopupMenu(tile, snapPoint);
         }
-        repaint();
+
       }
       case DELETE -> {
         //removeTiles(selectedTiles);
-        TileCache.removeTiles(selectedTiles);
+        //TileCache.removeTiles(selectedTiles);
+        Tile t = (Tile) this.getComponentAt(snapPoint);
+        if (t != null) {
+          this.remove(t);
+          TileCache.deleteTile(t);
+        }
+
         this.selectedTiles.clear();
         repaint();
       }
@@ -911,34 +973,11 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
 
     //Can the tile be placed, keeping in mind the extra points
-    boolean canBeAdded = TileCache.checkTileOccupation(tile);
+    boolean canBeAdded = !TileCache.checkTileOccupation(tile);
 
-//    if (!tile.getAltPoints().isEmpty()) {
-//      //Check if the extra point positions are not occupied
-//      Set<Point> tilePoints = tile.getAllPoints();
-//
-//      for (Point tp : tilePoints) {
-//        if (TileCache.containsPoint(tp)) {
-//          Logger.trace("Point " + p + " occupied by " + TileCache.findTile(p).getId() + " Can't add new Tile: " + tile);
-//          canBeAdded = false;
-//        }
-//      }
-//    }
     if (canBeAdded) {
       TileCache.addTile(tile);
 
-//      TileCache.tiles.put(chkp, tile);
-//      //Alternative point(s) to be able to find all points
-//      if (!tile.getAltPoints().isEmpty()) {
-//        Set<Point> alt = tile.getAltPoints();
-//        for (Point ap : alt) {
-//          TileCache.altTiles.put(ap, tile);
-//        }
-//      }
-//
-//      if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
-//        this.saveTile(tile);
-//      }
       Logger.trace("Added Tile " + tile.getClass().getSimpleName() + " " + tile.getOrientation() + " @ " + tile.getCenter() + " Full repaint: " + fullRepaint);
     }
 
@@ -1306,10 +1345,8 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
     });
     blockPopupMenu.add(blockPropertiesMI);
 
-    setBackground(new Color(250, 250, 250));
-    setAutoscrolls(true);
+    setBackground(new Color(255, 255, 255));
     setMinimumSize(new Dimension(1398, 848));
-    setOpaque(false);
     setPreferredSize(new Dimension(1398, 848));
     addMouseMotionListener(new MouseMotionAdapter() {
       public void mouseDragged(MouseEvent evt) {
@@ -1483,7 +1520,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
       block.getBlockBean().setReverseArrival(!block.getBlockBean().isReverseArrival());
       this.executor.execute(() -> {
         PersistenceFactory.getService().persist(block.getBlockBean());
-        block.repaintTile();
+        //block.repaintTile();
       });
     }
   }//GEN-LAST:event_reverseArrivalSideMIActionPerformed
@@ -1504,7 +1541,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
 
       this.executor.execute(() -> {
         PersistenceFactory.getService().persist(block.getTileBean());
-        block.repaintTile();
+        //block.repaintTile();
       });
     }
   }//GEN-LAST:event_toggleLocomotiveDirectionMIActionPerformed
@@ -1512,17 +1549,18 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
   private void toggleOutOfOrderMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleOutOfOrderMIActionPerformed
     if (this.selectedTile != null) {
       Block block = (Block) selectedTile;
-      BlockBean.BlockState currentState = block.getBlockState();
-      if (BlockBean.BlockState.FREE == currentState) {
-        block.setBlockState(BlockBean.BlockState.OUT_OF_ORDER);
-      } else if (BlockBean.BlockState.OUT_OF_ORDER == currentState) {
-        block.setBlockState(BlockBean.BlockState.FREE);
+      BlockState currentState = block.getBlockState();
+      if (BlockState.FREE == currentState) {
+        block.setBlockState(BlockState.OUT_OF_ORDER);
+      } else if (BlockState.OUT_OF_ORDER == currentState) {
+        block.setBlockState(BlockState.FREE);
       }
 
-      if (currentState != block.getRouteBlockState()) {
+      if (currentState != block.getBlockState()) { //getRouteBlockState()) {
         this.executor.execute(() -> {
           PersistenceFactory.getService().persist(block.getBlockBean());
-          block.repaintTile();
+          //block.repaintTile();
+
         });
       }
     }
@@ -1540,7 +1578,7 @@ public class LayoutCanvas extends JPanel implements PropertyChangeListener {
         }
         this.executor.execute(() -> {
           PersistenceFactory.getService().persist(block.getBlockBean());
-          block.repaintTile();
+          //block.repaintTile();
         });
       }
     }

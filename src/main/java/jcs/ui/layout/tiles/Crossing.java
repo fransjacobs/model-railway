@@ -129,21 +129,21 @@ public class Crossing extends Straight {
     g2.fillRect(xxs, yys, w, h);
   }
 
-  @Override
-  public void renderTileRoute(Graphics2D g2) {
-    if (isHorizontal()) {
-      if (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide) {
-        renderRouteStraight(g2);
-      } else {
-        renderRouteVertical(g2);
-      }
-    } else {
-      if (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide) {
-        renderRouteStraight(g2);
-      } else {
-        renderRouteVertical(g2);
-      }
-    }
-  }
+//  @Override
+//  public void renderTileRoute(Graphics2D g2) {
+//    if (isHorizontal()) {
+//      if (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide) {
+//        renderRouteStraight(g2);
+//      } else {
+//        renderRouteVertical(g2);
+//      }
+//    } else {
+//      if (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide) {
+//        renderRouteStraight(g2);
+//      } else {
+//        renderRouteVertical(g2);
+//      }
+//    }
+//  }
 
 }

@@ -525,7 +525,11 @@ public class LocomotiveBean implements Serializable {
     }
 
     public static Direction get(String direction) {
-      return ENUM_MAP.get(direction);
+      if (direction != null) {
+        return ENUM_MAP.get(direction);
+      } else {
+        return null;
+      }
     }
 
     private static int translate2MarklinValue(String value) {

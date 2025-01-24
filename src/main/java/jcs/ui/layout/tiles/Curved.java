@@ -144,21 +144,21 @@ public class Curved extends Tile {
     g2.fillPolygon(xPoints, yPoints, xPoints.length);
   }
 
-  @Override
-  protected void paintComponent(Graphics g) {
-    long started = System.currentTimeMillis();
-    super.paintComponent(g);
-
-    setBounds(this.tileX - GRID, this.tileY - GRID, this.getWidth(), this.getHeight());
-
-    Graphics2D g2 = (Graphics2D) g.create();
-    drawTile(g2);
-    g2.dispose();
-
-    g.drawImage(this.tileImage, 0, 0, null);
-
-    long now = System.currentTimeMillis();
-    Logger.trace(this.id + " Duration: " + (now - started) + " ms.");
-  }
+//  @Override
+//  protected void paintComponent(Graphics g) {
+//    long started = System.currentTimeMillis();
+//    super.paintComponent(g);
+//
+//    setBounds(this.tileX - GRID, this.tileY - GRID, this.getWidth(), this.getHeight());
+//
+//    Graphics2D g2 = (Graphics2D) g.create();
+//    drawTile(g2);
+//    g2.dispose();
+//
+//    g.drawImage(this.tileImage, 0, 0, null);
+//
+//    long now = System.currentTimeMillis();
+//    Logger.trace(this.id + " Duration: " + (now - started) + " ms.");
+//  }
 
 }

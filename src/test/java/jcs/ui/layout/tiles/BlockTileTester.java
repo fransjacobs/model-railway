@@ -57,9 +57,9 @@ public class BlockTileTester extends javax.swing.JFrame {
 
   private void createTiles() {
 
-    blockEast = new Block(TileBean.Orientation.EAST, 200, 40);
+    blockEast = new Block(TileBean.Orientation.EAST, 220, 60);
     blockEast.setId("east");
-    blockEast.setBlockState(blockStates.get(blockStateIndex));
+    //blockEast.setBlockState(blockStates.get(blockStateIndex));
     //blockEast.setBlockBean(createBlockBean(blockEast));
     blockEast.setTrackRouteColor(Color.MAGENTA);
 
@@ -81,9 +81,9 @@ public class BlockTileTester extends javax.swing.JFrame {
 
     dotGridCanvas.add(blockEast);
 
-    dotGridCanvas.add(blockSouth);
-    dotGridCanvas.add(blockWest);
-    dotGridCanvas.add(blockNorth);
+    //dotGridCanvas.add(blockSouth);
+    //dotGridCanvas.add(blockWest);
+    //dotGridCanvas.add(blockNorth);
   }
 
   private BlockBean createBlockBean(Tile tile) {

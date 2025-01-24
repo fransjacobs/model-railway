@@ -87,6 +87,10 @@ public interface TileModel extends Serializable {
 
   public void setLocomotive(LocomotiveBean locomotive);
 
+  boolean isOverlayImage();
+
+  public void setOverlayImage(boolean overlayImage);
+
   //
   void addChangeListener(ChangeListener l);
 

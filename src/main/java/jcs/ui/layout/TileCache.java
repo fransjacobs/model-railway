@@ -113,7 +113,7 @@ public class TileCache {
     }
   }
 
-  static void loadTiles(PropertyChangeListener listener) {
+  static void loadTiles() {
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
     tileEventListeners.clear();
@@ -124,7 +124,7 @@ public class TileCache {
       Tile tile = TileFactory.createTile(tb, showValues);
       //tile.setPropertyChangeListener(listener);
       tiles.put(tile.getCenter(), tile);
-      addTileEventListener((TileEventListener) tile);
+      //addTileEventListener((TileEventListener) tile);
 
       //Alternative point(s) to be able to find all points
       if (!tile.getAltPoints().isEmpty()) {
@@ -145,7 +145,7 @@ public class TileCache {
   static void addTile(Tile tile) {
     tiles.put(tile.getCenter(), tile);
 
-    addTileEventListener((TileEventListener) tile);
+    //addTileEventListener((TileEventListener) tile);
 
     //Alternative point(s) to be able to find all points
     if (!tile.getAltPoints().isEmpty()) {

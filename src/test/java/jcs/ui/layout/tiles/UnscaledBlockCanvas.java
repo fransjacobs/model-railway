@@ -25,7 +25,6 @@ import org.tinylog.Logger;
 public class UnscaledBlockCanvas extends JPanel { //implements PropertyChangeListener {
 
   private boolean expanded;
-  private int paintCount = 0;
 
   public UnscaledBlockCanvas() {
     setLayout(null);
@@ -36,13 +35,10 @@ public class UnscaledBlockCanvas extends JPanel { //implements PropertyChangeLis
   @Override
   public void paint(Graphics g) {
     long started = System.currentTimeMillis();
-    paintCount++;
 
     //Rectangle r = g.getClipBounds();    
     //Logger.trace("Rx: " + r.x + " Ry: " + r.y + " Rw: " + r.width + " Rh: " + r.height);
-    if (paintCount > 2) {
-      super.paint(g);
-    }
+    super.paint(g);
 
     paintGrid(g);
     long now = System.currentTimeMillis();

@@ -17,11 +17,6 @@ package jcs.ui.layout;
 
 import jcs.ui.layout.tiles.Tile;
 import java.awt.Point;
-import jcs.entities.TileBean.Orientation;
-import static jcs.ui.layout.tiles.Block.BLOCK_HEIGHT;
-import static jcs.ui.layout.tiles.Block.BLOCK_WIDTH;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
-import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 
 public class LayoutUtil {
 
@@ -75,22 +70,6 @@ public class LayoutUtil {
     double b = (p2.y - p1.y);
     double d = Math.hypot(a, b);
     return d;
-  }
-
-  public static int blockWidth(Orientation orientation) {
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      return BLOCK_WIDTH;
-    } else {
-      return DEFAULT_WIDTH;
-    }
-  }
-
-  public static int blockHeight(Orientation orientation) {
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      return DEFAULT_HEIGHT;
-    } else {
-      return BLOCK_HEIGHT;
-    }
   }
 
 }

@@ -52,6 +52,7 @@ public class DefaultTileModel implements TileModel {
   protected BlockState blockState;
   protected boolean reverseArrival;
   protected String arrivalSuffix;
+  protected boolean overlayImage = false;
   protected LocomotiveBean.Direction logicalDirection;
   protected LocomotiveBean locomotive;
 
@@ -244,9 +245,16 @@ public class DefaultTileModel implements TileModel {
     fireStateChanged();
   }
 
-  
-  
-  
+  @Override
+  public boolean isOverlayImage() {
+    return overlayImage;
+  }
+
+  @Override
+  public void setOverlayImage(boolean overlayImage) {
+    this.overlayImage = overlayImage;
+  }
+
   @Override
   public void addChangeListener(ChangeListener l) {
     listenerList.add(ChangeListener.class, l);

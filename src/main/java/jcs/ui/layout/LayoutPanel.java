@@ -811,8 +811,9 @@ public class LayoutPanel extends JPanel {
     canvasScrollPane.setPreferredSize(new Dimension(1024, 850));
     canvasScrollPane.setViewportView(canvas);
 
+    canvas.setMinimumSize(new Dimension(800, 700));
     canvas.setName(""); // NOI18N
-    canvas.setLayout(new BorderLayout());
+    canvas.setPreferredSize(new Dimension(800, 700));
     canvasScrollPane.setViewportView(canvas);
 
     add(canvasScrollPane, BorderLayout.CENTER);
