@@ -45,7 +45,6 @@ public class TileCache {
 
   private static final Map<String, TileEventListener> tileEventListeners = new HashMap<>();
 
-  private static boolean drawOutline;
   private static boolean drawCenterPoint;
   private static boolean showValues;
 
@@ -55,13 +54,6 @@ public class TileCache {
   private TileCache() {
   }
 
-//  static void setDrawOutline(boolean drawOutline) {
-//    TileCache.drawOutline = drawOutline;
-//
-//    for (Tile tile : tiles.values()) {
-//      tile.setDrawOutline(drawOutline);
-//    }
-//  }
   static void setDrawCenterPoint(boolean drawCenterPoint) {
     TileCache.drawCenterPoint = drawCenterPoint;
 
@@ -146,7 +138,6 @@ public class TileCache {
     tiles.put(tile.getCenter(), tile);
 
     //addTileEventListener((TileEventListener) tile);
-
     //Alternative point(s) to be able to find all points
     if (!tile.getAltPoints().isEmpty()) {
       Set<Point> alt = tile.getAltPoints();
@@ -159,28 +150,22 @@ public class TileCache {
     Logger.trace("Added " + tile + " There are now " + TileCache.tiles.size() + " tiles...");
   }
 
-  static void removeTiles(Set<Point> pointsToRemove) {
-    for (Point p : pointsToRemove) {
-      Tile removed = tiles.remove(p);
-      removeTileEventListener(removed);
-
-      deleteTile(removed);
-
-      if (removed != null && removed.getAllPoints() != null) {
-        Set<Point> rps = removed.getAltPoints();
+  static void deleteTile(final Tile tile) {
+    if (tile != null) {
+      if (tiles.containsKey(tile.getCenter())) {
+        tiles.remove(tile.getCenter());
+        Set<Point> rps = tile.getAltPoints();
         //Also remove alt points
         for (Point ap : rps) {
           altTiles.remove(ap);
         }
 
+        TileBean tb = tile.getTileBean();
+        PersistenceFactory.getService().remove(tb);
+        Logger.trace("Deleted " + tile.getId());
+      } else {
+        Logger.warn("Tile " + tile.getId() + " not found in cache");
       }
-    }
-  }
-
-  static void deleteTile(final Tile tile) {
-    if (tile != null) {
-      TileBean tb = tile.getTileBean();
-      PersistenceFactory.getService().remove(tb);
     } else {
       Logger.warn("Tile is null?");
     }
@@ -266,61 +251,59 @@ public class TileCache {
     }
   }
 
-  static void rotateTile(Set<Point> centerPoints) {
-    for (Point p : centerPoints) {
-      if (tiles.containsKey(p)) {
-        Tile t = tiles.get(p);
-        //Remove the alternative or extra points...
-        for (Point ep : t.getAltPoints()) {
-          altTiles.remove(ep);
-        }
-
-        t.rotate();
-
-        //update
-        tiles.put(p, t);
-        for (Point ep : t.getAltPoints()) {
-          altTiles.put(ep, t);
-        }
-
-        saveTile(t);
-      }
+  static Tile rotateTile(Tile tile) {
+    if (!tiles.containsKey(tile.getCenter())) {
+      Logger.warn("Tile " + tile.getId() + " NOT in cache!");
     }
-  }
 
-  public static void flipHorizontal(Set<Point> points) {
-    flipTile(points, true);
-  }
-
-  public static void flipVertical(Set<Point> points) {
-    flipTile(points, false);
-  }
-
-  private static void flipTile(Set<Point> points, boolean horizontal) {
-    for (Point p : points) {
-      if (tiles.containsKey(p)) {
-        Tile t = tiles.get(p);
-        //Remove the alternative or extra points...
-        for (Point ep : t.getAltPoints()) {
-          altTiles.remove(ep);
-        }
-
-        if (horizontal) {
-          t.flipHorizontal();
-        } else {
-          t.flipVertical();
-        }
-        //Update
-        tiles.put(p, t);
-        for (Point ep : t.getAltPoints()) {
-          altTiles.put(ep, t);
-        }
-
-        if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
-          saveTile(t);
-        }
-      }
+    //Remove the alternative or extra points...
+    for (Point ep : tile.getAltPoints()) {
+      altTiles.remove(ep);
     }
+
+    tile.rotate();
+
+    //update
+    tiles.put(tile.getCenter(), tile);
+    for (Point ep : tile.getAltPoints()) {
+      altTiles.put(ep, tile);
+    }
+
+    saveTile(tile);
+    return tile;
+  }
+
+  static Tile flipHorizontal(Tile tile) {
+    return flipTile(tile, true);
+  }
+
+  public static Tile flipVertical(Tile tile) {
+    return flipTile(tile, false);
+  }
+
+  private static Tile flipTile(Tile tile, boolean horizontal) {
+    if (!tiles.containsKey(tile.getCenter())) {
+      Logger.warn("Tile " + tile.getId() + " NOT in cache!");
+    }
+
+    //Remove the alternative or extra points...
+    for (Point ep : tile.getAltPoints()) {
+      altTiles.remove(ep);
+    }
+
+    if (horizontal) {
+      tile.flipHorizontal();
+    } else {
+      tile.flipVertical();
+    }
+    //update
+    tiles.put(tile.getCenter(), tile);
+    for (Point ep : tile.getAltPoints()) {
+      altTiles.put(ep, tile);
+    }
+
+    saveTile(tile);
+    return tile;
   }
 
   static void moveTile(Point snapPoint, Tile tile) {

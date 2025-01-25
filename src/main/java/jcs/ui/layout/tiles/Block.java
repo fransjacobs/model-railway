@@ -23,6 +23,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
+import static jcs.ui.layout.tiles.Tile.GRID;
 import static jcs.ui.layout.tiles.Tile.RENDER_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.RENDER_WIDTH;
 import jcs.ui.util.ImageUtil;
@@ -286,7 +288,8 @@ public class Block extends Tile {
 
   @Override
   public Orientation rotate() {
-    rotate(false);
+    super.rotate();
+
     int w = tileWidth(tileOrientation, TileType.BLOCK);
     int h = tileHeight(tileOrientation, TileType.BLOCK);
 
@@ -295,7 +298,9 @@ public class Block extends Tile {
     setSize(d);
     changeRenderSize();
 
-    repaint();
+    setBounds(getTileBounds());
+
+    repaint(getTileBounds());
     return tileOrientation;
   }
 
@@ -705,11 +710,8 @@ public class Block extends Tile {
   }
 
   @Override
-  protected void paintComponent(Graphics g) {
-    long started = System.currentTimeMillis();
-    super.paintComponent(g);
-
-    int multiplier = 1; //(model.isScaleImage() ? 1 : 10);
+  public Rectangle getTileBounds() {
+    int multiplier = (model.isScaleImage() ? 1 : 10);
     int xx, yy;
     if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
       xx = tileX - GRID * multiplier - GRID * multiplier * 2;
@@ -719,21 +721,16 @@ public class Block extends Tile {
       yy = tileY - GRID * multiplier - GRID * multiplier * 2;
     }
 
-    //if (model.isScaleImage()) {
-      setBounds(xx, yy, tileWidth(tileOrientation, TileType.BLOCK), tileHeight(tileOrientation, TileType.BLOCK));
-      //setBounds(tileX - 60, tileY - 20, tileWidth(tileOrientation, TileType.BLOCK), tileHeight(tileOrientation, TileType.BLOCK));
-   //} else {
-      //setBounds(xx, yy, renderWidth, renderHeight);
-    //}
-    
-    
-    //setBounds(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    if (model.isScaleImage()) {
+      return new Rectangle(xx, yy, tileWidth(tileOrientation, TileType.BLOCK), tileHeight(tileOrientation, TileType.BLOCK));
+    } else {
+      return new Rectangle(xx, yy, renderWidth, renderHeight);
+    }
+  }
 
-    //Graphics2D g2 = (Graphics2D) g.create();
-    //Graphics2D g2 = (Graphics2D) g.create(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    
-
-    //Logger.trace(id + ": " + tileOrientation + " W: " + getWidth() + " H: " + getHeight() + " tX: " + tileX + ", tY: " + tileY + " xx: " + xx + " yy: " + yy + " Scale factor: " + multiplier);
+  @Override
+  protected void paintComponent(Graphics g) {
+    long started = System.currentTimeMillis();
 
     Graphics2D g2 = (Graphics2D) g.create();
     drawTile(g2);
@@ -744,9 +741,6 @@ public class Block extends Tile {
     }
 
     g.drawImage(tileImage, 0, 0, null);
-
-    //new Exception().printStackTrace() ;
-    
     long now = System.currentTimeMillis();
     Logger.trace(id + " Duration: " + (now - started) + " ms.");
   }

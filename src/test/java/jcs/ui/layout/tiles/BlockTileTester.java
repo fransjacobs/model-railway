@@ -59,8 +59,8 @@ public class BlockTileTester extends javax.swing.JFrame {
 
     blockEast = new Block(TileBean.Orientation.EAST, 220, 60);
     blockEast.setId("east");
-    //blockEast.setBlockState(blockStates.get(blockStateIndex));
-    //blockEast.setBlockBean(createBlockBean(blockEast));
+    blockEast.setBlockState(blockStates.get(blockStateIndex));
+    blockEast.setBlockBean(createBlockBean(blockEast));
     blockEast.setTrackRouteColor(Color.MAGENTA);
 
     blockSouth = new Block(TileBean.Orientation.SOUTH, 360, 80);
@@ -69,21 +69,21 @@ public class BlockTileTester extends javax.swing.JFrame {
 
     blockSouth.setTrackRouteColor(Color.YELLOW);
 
-    blockWest = new Block(TileBean.Orientation.WEST, 200, 120);
+    blockWest = new Block(TileBean.Orientation.WEST, 180, 140);
     blockWest.setId("west");
     blockSouth.setBlockState(blockStates.get(blockStateIndex+1));
     blockWest.setTrackRouteColor(Color.CYAN);
 
-    blockNorth = new Block(TileBean.Orientation.NORTH, 40, 80);
+    blockNorth = new Block(TileBean.Orientation.NORTH, 60, 100);
     blockNorth.setId("north");
     blockSouth.setBlockState(blockStates.get(blockStateIndex+1));
     blockNorth.setTrackRouteColor(Color.blue);
 
     dotGridCanvas.add(blockEast);
 
-    //dotGridCanvas.add(blockSouth);
-    //dotGridCanvas.add(blockWest);
-    //dotGridCanvas.add(blockNorth);
+    dotGridCanvas.add(blockSouth);
+    dotGridCanvas.add(blockWest);
+    dotGridCanvas.add(blockNorth);
   }
 
   private BlockBean createBlockBean(Tile tile) {

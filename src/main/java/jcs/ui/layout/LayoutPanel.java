@@ -874,7 +874,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_moveMIActionPerformed
 
     private void deleteMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteMIActionPerformed
-      this.canvas.removeTiles();
+      //this.canvas.removeTiles();
     }//GEN-LAST:event_deleteMIActionPerformed
 
     private void propertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_propertiesMIActionPerformed
@@ -882,7 +882,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_propertiesMIActionPerformed
 
     private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
-      this.canvas.saveLayout();
+      //this.canvas.saveLayout();
     }//GEN-LAST:event_saveBtnActionPerformed
 
     private void loadBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loadBtnActionPerformed
@@ -899,7 +899,7 @@ public class LayoutPanel extends JPanel {
 
     private void deleteBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
       setMode(LayoutCanvas.Mode.DELETE);
-      this.canvas.removeTiles();
+      //this.canvas.removeTiles();
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void repaintBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_repaintBtnActionPerformed

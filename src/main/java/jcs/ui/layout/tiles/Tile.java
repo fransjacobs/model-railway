@@ -20,12 +20,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.PathIterator;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
@@ -344,8 +343,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 
   public void setOrientation(Orientation orientation) {
     this.tileOrientation = orientation;
-    if (this.tileBean != null) {
-      this.tileBean.setOrientation(orientation);
+    if (tileBean != null) {
+      tileBean.setOrientation(orientation);
     }
   }
 
@@ -714,19 +713,9 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   /**
    * Rotate the tile clockwise 90 deg
    *
-   * @return
+   * @return the new Orientation
    */
   public Orientation rotate() {
-    return rotate(true);
-  }
-
-  /**
-   * Rotate the tile clockwise 90 deg
-   *
-   * @param repaint
-   * @return
-   */
-  protected Orientation rotate(boolean repaint) {
     switch (tileOrientation) {
       case EAST ->
         setOrientation(Orientation.SOUTH);
@@ -737,23 +726,20 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
       default ->
         setOrientation(Orientation.EAST);
     }
-    if (repaint) {
-      repaint();
-    }
     return tileOrientation;
   }
 
   public void flipHorizontal() {
-    if (Orientation.NORTH.equals(getOrientation()) || Orientation.SOUTH.equals(getOrientation())) {
-      rotate(false);
-      rotate(true);
+    if (Orientation.NORTH == tileOrientation || Orientation.SOUTH == tileOrientation) {
+      rotate();
+      rotate();
     }
   }
 
   public void flipVertical() {
     if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
-      rotate(false);
-      rotate(true);
+      rotate();
+      rotate();
     }
   }
 
@@ -910,11 +896,9 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 //    int lty = cy - h / 2;
 //    return new Rectangle(ltx, lty, w, h);
 //  }
-
 //  public Rectangle2D getBounds2D() {
 //    return getBounds().getBounds2D();
 //  }
-
 //  public boolean contains(double x, double y) {
 //    int w, h, cx, cy, tlx, tly;
 //    if (this.getWidth() > 0 & this.getHeight() > 0) {
@@ -945,7 +929,6 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 //    // Check if X and Y range is ok
 //    return !(x < tlx || x > (tlx + w) || y < tly || y > (tly + h));
 //  }
-
   public String xyToString() {
     return "(" + this.tileX + "," + this.tileY + ")";
   }
@@ -953,31 +936,24 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 //  public boolean contains(Point2D p) {
 //    return this.contains(p.getX(), p.getY());
 //  }
-
 //  public boolean intersects(double x, double y, double w, double h) {
 //    return getBounds().intersects(x, y, w, h);
 //  }
-
 //  public boolean intersects(Rectangle2D r2d) {
 //    return getBounds().intersects(r2d);
 //  }
-
 //  public boolean contains(double x, double y, double w, double h) {
 //    return getBounds().contains(x, y, w, h);
 //  }
-
 //  public boolean contains(Rectangle2D r2d) {
 //    return getBounds().contains(r2d);
 //  }
-
 //  public PathIterator getPathIterator(AffineTransform at) {
 //    return getBounds().getPathIterator(at);
 //  }
-
 //  public PathIterator getPathIterator(AffineTransform at, double flatness) {
 //    return getBounds().getPathIterator(at, flatness);
 //  }
-
 //  @Deprecated
 //  public PropertyChangeListener getPropertyChangeListener() {
 //    return this.propertyChangeListener;
@@ -1244,12 +1220,13 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
     }
   }
 
+  public Rectangle getTileBounds() {
+    return new Rectangle(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
   @Override
   protected void paintComponent(Graphics g) {
     long started = System.currentTimeMillis();
-    super.paintComponent(g);
-
-    setBounds(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
     Graphics2D g2 = (Graphics2D) g.create();
     //Graphics2D g2 = (Graphics2D) g.create(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
