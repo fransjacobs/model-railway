@@ -20,6 +20,7 @@ import java.io.Serializable;
 import javax.swing.event.ChangeListener;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.TileBean;
 
 /**
  *
@@ -38,6 +39,10 @@ public interface TileModel extends Serializable {
   boolean isShowCenter();
 
   public void setShowCenter(boolean showCenter);
+
+  public TileBean.Orientation getTileOrienation();
+
+  void setTileOrienation(TileBean.Orientation tileOrienation);
 
   boolean isShowRoute();
 

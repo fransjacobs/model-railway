@@ -16,11 +16,9 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Point;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import jcs.entities.AccessoryBean;
@@ -32,29 +30,26 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
+import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.events.TileEvent;
 import org.tinylog.Logger;
 
-/**
- *
- * @author FJA
- */
-public class UnscaledTileFrame extends javax.swing.JFrame {
+public class TileTesterFrame extends javax.swing.JFrame {
 
   private Tile tile;
 
-  /**
-   * Creates new form UnscaledBlockTileFrame
-   */
-  public UnscaledTileFrame() {
+  public TileTesterFrame() {
     initComponents();
     this.tileCB.setModel(createTileTypeComboBoxModel());
     this.orientationCB.setModel(createOrientationComboBoxModel());
     this.incomingSideCB.setModel(createOrientationComboBoxModel());
     this.directionCB.setModel(createDirectionComboBoxModel(true));
-    //drawTile();
 
-    addTile();
+    createTile();
+
+    pack();
+
+    setVisible(true);
   }
 
   private ComboBoxModel<TileType> createTileTypeComboBoxModel() {
@@ -97,75 +92,78 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     return directionModel;
   }
 
-  private void addTile() {
-    if (this.tile != null) {
-      Logger.trace("Removing tile " + this.tile.getId());
-      this.cPanel.remove((JComponent) this.tile);
-      this.tile = null;
+  private void createTile() {
+    if (tile != null) {
+      Logger.trace("Removing tile " + tile.getId());
+      canvas.remove(tile);
+      tile = null;
     }
 
-    TileType tileType = (TileType) this.tileCB.getSelectedItem();
-    Orientation orientation = (Orientation) this.orientationCB.getSelectedItem();
+    TileType tileType = (TileType) tileCB.getSelectedItem();
+    Orientation orientation = (Orientation) orientationCB.getSelectedItem();
 
     if (TileType.SWITCH == tileType || TileType.CROSS == tileType) {
-      this.directionCB.setModel(createDirectionComboBoxModel(false));
+      directionCB.setModel(createDirectionComboBoxModel(false));
     } else {
-      this.directionCB.setModel(createDirectionComboBoxModel(true));
+      directionCB.setModel(createDirectionComboBoxModel(true));
     }
 
     Direction direction = (Direction) this.directionCB.getSelectedItem();
-    boolean showOutline = this.drawOutlineCB.isSelected();
+    boolean scale = !scaleCB.isSelected();
+    boolean showCenter = showCenterCB.isSelected();
 
-    int w = this.cPanel.getWidth();
-    int h = this.cPanel.getHeight();
+    int w = canvas.getWidth();
+    int h = canvas.getHeight();
 
-    int x;
-    int y;
-    if (TileType.CROSS == tileType) {
-      switch (orientation) {
-        case SOUTH -> {
-          x = w / 2 + 200;
-          y = h / 2 - 150;
-        }
-        case WEST -> {
-          x = w / 2 + 400;
-          y = h / 2 + 50;
-        }
-        case NORTH -> {
-          x = w / 2 + 200;
-          y = h / 2 + 250;
-        }
-        default -> {
-          x = w / 2;
-          y = h / 2 + 50;
-        }
-      }
-    } else {
-      x = w / 2 - 200;
-      y = h / 2 - 200;
-    }
+    int x = w / 2;
+    int y = h / 2;
+    Point tileCenter = new Point(x, y);
+    tileCenter = LayoutUtil.snapToGrid(tileCenter);
 
-    Point center;
-    if (TileType.CROSS.equals(tileType)) {
-      center = new Point(x - 200, y);
-    } else {
-      center = new Point(x, y);
-    }
-
-    Tile newTile = TileFactory.createTile(tileType, orientation, direction, center, showOutline);
-    newTile.setScaleImage(false);
+//    if (TileType.CROSS == tileType) {
+//      switch (orientation) {
+//        case SOUTH -> {
+//          x = w / 2 + 200;
+//          y = h / 2 - 150;
+//        }
+//        case WEST -> {
+//          x = w / 2 + 400;
+//          y = h / 2 + 50;
+//        }
+//        case NORTH -> {
+//          x = w / 2 + 200;
+//          y = h / 2 + 250;
+//        }
+//        default -> {
+//          x = w / 2;
+//          y = h / 2 + 50;
+//        }
+//      }
+//    } else {
+//      x = w / 2 - 200;
+//      y = h / 2 - 200;
+//    }
+//    Point center;
+//    if (TileType.CROSS.equals(tileType)) {
+//      center = new Point(x - 200, y);
+//    } else {
+//      center = new Point(x, y);
+//    }
+    Tile newTile = TileFactory.createTile(tileType, orientation, direction, tileCenter);
+    newTile.setScaleImage(scale);
+    newTile.setDrawCenterPoint(showCenter);
 
     //tile.setPropertyChangeListener(this);
     Orientation incomingSide = (Orientation) this.incomingSideCB.getSelectedItem();
     newTile.setIncomingSide(incomingSide);
 
-    newTile.setDrawRoute(this.displayRouteCB.isSelected());
+    newTile.setDrawRoute(displayRouteCB.isSelected());
     newTile.setTrackRouteColor(Color.blue);
 
     Logger.trace("Adding tile " + newTile.getId() + " " + newTile.xyToString());
 
     //this.cPanel.add((JComponent) newTile);
-    this.cPanel.add(newTile);
+    this.canvas.add(newTile);
     this.tile = newTile;
   }
 
@@ -183,6 +181,10 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
   }
 
   private void changeAccesoryState() {
+    if(tile instanceof Sensor) {
+      tile.setActive(this.redRB.isSelected());
+    }
+    
     if (tile instanceof Switch aSwitch) {
       if (this.displayRouteCB.isSelected()) {
         aSwitch.setRouteValue(getAccessoryState());
@@ -201,7 +203,7 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
       }
     }
 
-    this.tile.repaint();
+    //this.tile.repaint();
   }
 
 //  @Override
@@ -227,15 +229,14 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
 //      tile.drawCenterPoint(g2d, Color.red);
 //    }
 //  }
-  @Override
-  public void paint(Graphics g) {
-    long started = System.currentTimeMillis();
-    super.paint(g);
-
-    long now = System.currentTimeMillis();
-    Logger.trace("Duration: " + (now - started) + " ms.");
-  }
-
+//  @Override
+//  public void paint(Graphics g) {
+//    long started = System.currentTimeMillis();
+//    super.paint(g);
+//
+//    long now = System.currentTimeMillis();
+//    Logger.trace("Duration: " + (now - started) + " ms.");
+//  }
   private void changeDirection() {
     Direction direction = (Direction) this.directionCB.getSelectedItem();
     this.tile.setDirection(direction);
@@ -247,39 +248,38 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
   }
 
   private void rotateTile() {
-    this.tile.rotate();
+    Orientation newOrientation = tile.rotate();
+    orientationCB.setSelectedItem(newOrientation);
 
-    if (TileType.CROSS == tile.getTileType()) {
-      int x = tile.getCenterX();
-      int y = tile.getCenterY();
-      int w = tile.getWidth() * 10;
-      int h = tile.getHeight() * 10;
-
-      //calculate a new centerpoint for cross
-      switch (tile.getOrientation()) {
-        case SOUTH -> {
-          x = x + w / 2;
-          y = y - h / 4;
-        }
-        case WEST -> {
-          x = x + w / 4;
-          y = y + h / 2;
-        }
-        case NORTH -> {
-          x = x - w / 2;
-          y = y + h / 4;
-        }
-        default -> {
-          x = x - w / 4;
-          y = y - h / 2;
-        }
-      }
-      tile.setCenter(new Point(x, y));
-    }
-
-    this.orientationCB.setSelectedItem(tile.getOrientation());
-
-    //this.repaint();
+//    if (TileType.CROSS == tile.getTileType()) {
+//      int x = tile.getCenterX();
+//      int y = tile.getCenterY();
+//      int w = tile.getWidth() * 10;
+//      int h = tile.getHeight() * 10;
+//
+//      //calculate a new centerpoint for cross
+//      switch (tile.getOrientation()) {
+//        case SOUTH -> {
+//          x = x + w / 2;
+//          y = y - h / 4;
+//        }
+//        case WEST -> {
+//          x = x + w / 4;
+//          y = y + h / 2;
+//        }
+//        case NORTH -> {
+//          x = x - w / 2;
+//          y = y + h / 4;
+//        }
+//        default -> {
+//          x = x - w / 4;
+//          y = y - h / 2;
+//        }
+//      }
+//      tile.setCenter(new Point(x, y));
+//    }
+    //this.canvas.repaint(this.tile.getTileBounds());
+    //tile.repaint();
   }
 
   private void changeOrientation() {
@@ -326,12 +326,12 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     String tileId = tile.getId();
     Orientation incomingSide = (Orientation) this.incomingSideCB.getSelectedItem();
 
-    TileEvent tileEvent;
+    //TileEvent tileEvent;
     if (tile.isJunction()) {
       AccessoryValue routeState = getAccessoryState();
-      tileEvent = new TileEvent(tileId, true, incomingSide, routeState);
+      //tileEvent = new TileEvent(tileId, true, incomingSide, routeState);
     } else {
-      tileEvent = new TileEvent(tileId, true, incomingSide);
+      //tileEvent = new TileEvent(tileId, true, incomingSide);
     }
     //TileCache.fireTileEventListener(tileEvent);
 
@@ -340,9 +340,9 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     //repaint();
   }
 
-  private void showOutline() {
-    //repaint();
-  }
+//  private void showOutline() {
+//    //repaint();
+//  }
 
   private void changeIncomingSide() {
     Orientation incomingSide = (Orientation) this.incomingSideCB.getSelectedItem();
@@ -369,11 +369,14 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     greenRB = new javax.swing.JRadioButton();
     redRB = new javax.swing.JRadioButton();
     displayRouteCB = new javax.swing.JCheckBox();
-    drawOutlineCB = new javax.swing.JCheckBox();
-    cPanel = new javax.swing.JPanel();
+    scaleCB = new javax.swing.JCheckBox();
+    showCenterCB = new javax.swing.JCheckBox();
+    canvas = new jcs.ui.layout.tiles.DotGridCanvas();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+    nPanel.setMinimumSize(new java.awt.Dimension(860, 36));
+    nPanel.setPreferredSize(new java.awt.Dimension(1020, 36));
     java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     nPanel.setLayout(flowLayout1);
@@ -460,20 +463,26 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     });
     nPanel.add(displayRouteCB);
 
-    drawOutlineCB.setText("Outline");
-    drawOutlineCB.addActionListener(new java.awt.event.ActionListener() {
+    scaleCB.setText("Scale");
+    scaleCB.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        drawOutlineCBActionPerformed(evt);
+        scaleCBActionPerformed(evt);
       }
     });
-    nPanel.add(drawOutlineCB);
+    nPanel.add(scaleCB);
+
+    showCenterCB.setText("Center");
+    showCenterCB.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        showCenterCBActionPerformed(evt);
+      }
+    });
+    nPanel.add(showCenterCB);
 
     getContentPane().add(nPanel, java.awt.BorderLayout.NORTH);
 
-    cPanel.setPreferredSize(new java.awt.Dimension(800, 800));
-    cPanel.setLayout(null);
-    getContentPane().add(cPanel, java.awt.BorderLayout.CENTER);
-    cPanel.getAccessibleContext().setAccessibleDescription("");
+    canvas.setPreferredSize(new java.awt.Dimension(600, 600));
+    getContentPane().add(canvas, java.awt.BorderLayout.CENTER);
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
@@ -483,10 +492,7 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
   }//GEN-LAST:event_rotateButtonActionPerformed
 
   private void tileCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tileCBActionPerformed
-    addTile();
-    //this.tile.repaint();
-    
-    this.repaint();
+    createTile();
   }//GEN-LAST:event_tileCBActionPerformed
 
   private void orientationCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_orientationCBActionPerformed
@@ -513,13 +519,18 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     showRoute();
   }//GEN-LAST:event_displayRouteCBActionPerformed
 
-  private void drawOutlineCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawOutlineCBActionPerformed
-    showOutline();
-  }//GEN-LAST:event_drawOutlineCBActionPerformed
+  private void scaleCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleCBActionPerformed
+    this.tile.setScaleImage(!this.scaleCB.isSelected());
+    this.tile.setBounds(this.tile.getTileBounds());
+  }//GEN-LAST:event_scaleCBActionPerformed
 
   private void incomingSideCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_incomingSideCBActionPerformed
     changeIncomingSide();
   }//GEN-LAST:event_incomingSideCBActionPerformed
+
+  private void showCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCenterCBActionPerformed
+    this.tile.setDrawCenterPoint(this.showCenterCB.isSelected());
+  }//GEN-LAST:event_showCenterCBActionPerformed
 
   /**
    * @param args the command line arguments
@@ -533,20 +544,17 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
 
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(() -> {
-      UnscaledTileFrame app = new UnscaledTileFrame();
-      app.setTitle("Unscaled Tile Tester");
-      //app.pack();
+      TileTesterFrame app = new TileTesterFrame();
+      app.setTitle("Tile Tester");
       app.setLocationRelativeTo(null);
-      app.setVisible(true);
     });
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.ButtonGroup accessoryBG;
-  private javax.swing.JPanel cPanel;
+  private jcs.ui.layout.tiles.DotGridCanvas canvas;
   private javax.swing.JComboBox<Direction> directionCB;
   private javax.swing.JCheckBox displayRouteCB;
-  private javax.swing.JCheckBox drawOutlineCB;
   private javax.swing.JRadioButton greenRB;
   private javax.swing.JLabel inComingLbl;
   private javax.swing.JComboBox<Orientation> incomingSideCB;
@@ -555,6 +563,8 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
   private javax.swing.JComboBox<Orientation> orientationCB;
   private javax.swing.JRadioButton redRB;
   private javax.swing.JButton rotateButton;
+  private javax.swing.JCheckBox scaleCB;
+  private javax.swing.JCheckBox showCenterCB;
   private javax.swing.JComboBox<TileBean.TileType> tileCB;
   // End of variables declaration//GEN-END:variables
 }

@@ -23,23 +23,18 @@ import java.awt.Paint;
 import javax.swing.JPanel;
 import org.tinylog.Logger;
 
+
+//  jcs.ui.layout.tiles.DotGridCanvas
+
 public class DotGridCanvas extends JPanel {
+
+  private boolean expanded;
 
   public DotGridCanvas() {
     super(null, false);
     setOpaque(true);
-    setBackground(Color.white);
+    //setBackground(Color.white);
   }
-
-//  @Override
-//  protected void paintComponent(Graphics g) {
-//    long started = System.currentTimeMillis();
-//    super.paintComponent(g);
-//
-//    paintDotGrid(g);
-//    long now = System.currentTimeMillis();
-//    Logger.trace("Duration: " + (now - started) + " ms.");
-//  }
 
   @Override
   public void paint(Graphics g) {
@@ -50,9 +45,7 @@ public class DotGridCanvas extends JPanel {
     long now = System.currentTimeMillis();
     Logger.trace("Duration: " + (now - started) + " ms.");
   }
-  
-  
-  
+
   @Override
   public Component add(Component component) {
     super.add(component);
@@ -66,20 +59,33 @@ public class DotGridCanvas extends JPanel {
     int width = this.getWidth();
     int height = this.getHeight();
 
-    int xOffset = 0;
-    int yOffset = 0;
+    int grid;
+    if (expanded) {
+      grid = 20;
+    } else {
+      grid = 20;
+    }
 
-    //Logger.trace("W: " + width + " H: " + height + " X: " + this.getX() + " Y: " + this.getY());
     Graphics2D gc = (Graphics2D) g;
     Paint p = gc.getPaint();
     gc.setPaint(Color.black);
 
     for (int r = 0; r < width; r++) {
       for (int c = 0; c < height; c++) {
-        gc.drawOval((r * 20 * 2) + xOffset - 2, (c * 20 * 2) + yOffset - 2, 4, 4);
+        gc.drawOval((r * grid * 2) - 2, (c * grid * 2) - 2, 4, 4);
       }
     }
     gc.setPaint(p);
+
+  }
+
+  public boolean isExpanded() {
+    return expanded;
+  }
+
+  public void setExpanded(boolean expanded) {
+    this.expanded = expanded;
+    this.repaint();
   }
 
 }

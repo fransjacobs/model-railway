@@ -30,7 +30,7 @@ public class Straight extends Tile {
 
   public Straight(TileBean tileBean) {
     super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    setModel(new DefaultTileModel());
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
   }
 
   public Straight(Orientation orientation, Point center) {
@@ -43,7 +43,7 @@ public class Straight extends Tile {
 
   public Straight(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.STRAIGHT, orientation, x, y, width, height);
-    setModel(new DefaultTileModel());
+    setModel(new DefaultTileModel(orientation));
   }
 
   @Override

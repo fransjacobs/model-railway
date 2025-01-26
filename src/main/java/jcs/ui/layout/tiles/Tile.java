@@ -104,7 +104,7 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   protected int renderWidth;
   protected int renderHeight;
 
-  protected Orientation tileOrientation;
+  //protected Orientation tileOrientation;
   protected Direction tileDirection;
 
   protected TileType tileType;
@@ -163,7 +163,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 
   protected Tile(TileType tileType, Orientation orientation, Direction direction, int x, int y, int width, int height, Color backgroundColor, Color selectedColor) {
     this.tileType = tileType;
-    this.tileOrientation = orientation;
+    //this.tileOrientation = orientation;
+    //model.setTileOrienation(orientation);
     this.tileDirection = direction;
     this.tileX = x;
     this.tileY = y;
@@ -197,7 +198,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
     //Quick properties
     this.id = tileBean.getId();
     this.tileType = tileBean.getTileType();
-    this.tileOrientation = tileBean.getOrientation();
+    //this.tileOrientation = tileBean.getOrientation();
+    //this.model.setTileOrienation(tileBean.getOrientation());
     this.tileDirection = tileBean.getDirection();
     this.tileX = tileBean.getX();
     this.tileY = tileBean.getY();
@@ -276,7 +278,9 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
       tileBean.setX(this.tileX);
       tileBean.setY(this.tileY);
       tileBean.setTileType(this.tileType);
-      tileBean.setTileOrientation(this.tileOrientation.getOrientation());
+      //tileBean.setTileOrientation(this.tileOrientation.getOrientation());
+      tileBean.setTileOrientation(this.model.getTileOrienation().getOrientation());
+
       tileBean.setTileDirection(this.tileDirection.getDirection());
       tileBean.setSignalType(this.signalType);
       tileBean.setAccessoryId(this.accessoryId);
@@ -334,11 +338,13 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   }
 
   public Orientation getOrientation() {
-    return tileOrientation;
+    //return tileOrientation;
+    return model.getTileOrienation();
   }
 
   public void setOrientation(Orientation orientation) {
-    this.tileOrientation = orientation;
+    //this.tileOrientation = orientation;
+    model.setTileOrienation(orientation);
     if (tileBean != null) {
       tileBean.setOrientation(orientation);
     }
@@ -615,9 +621,10 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
    */
   public void drawTile(Graphics2D g2d) {
     // by default and image is rendered in the EAST orientation
-    if (tileOrientation == null) {
-      tileOrientation = Orientation.EAST;
-    }
+    Orientation tileOrientation = model.getTileOrienation();
+//    if (tileOrientation == null) {
+//      tileOrientation = Orientation.EAST;
+//    }
 
     BufferedImage bf = createImage();
     Graphics2D g2di = bf.createGraphics();
@@ -718,6 +725,7 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
    * @return the new Orientation
    */
   public Orientation rotate() {
+    Orientation tileOrientation = model.getTileOrienation();
     switch (tileOrientation) {
       case EAST ->
         setOrientation(Orientation.SOUTH);
@@ -728,10 +736,11 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
       default ->
         setOrientation(Orientation.EAST);
     }
-    return tileOrientation;
+    return model.getTileOrienation();
   }
 
   public void flipHorizontal() {
+    Orientation tileOrientation = model.getTileOrienation();
     if (Orientation.NORTH == tileOrientation || Orientation.SOUTH == tileOrientation) {
       rotate();
       rotate();
@@ -739,7 +748,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   }
 
   public void flipVertical() {
-    if (Orientation.EAST.equals(getOrientation()) || Orientation.WEST.equals(getOrientation())) {
+    Orientation tileOrientation = model.getTileOrienation();
+    if (Orientation.EAST == tileOrientation || Orientation.WEST == tileOrientation) {
       rotate();
       rotate();
     }
@@ -881,6 +891,7 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
    * @return true when main route goes from East to West or vv
    */
   public boolean isHorizontal() {
+    Orientation tileOrientation = model.getTileOrienation();
     return (Orientation.EAST == tileOrientation || Orientation.WEST == tileOrientation) && TileType.CURVED != tileType;
   }
 
@@ -890,6 +901,7 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
    * @return true when main route goes from North to South or vv
    */
   public boolean isVertical() {
+    Orientation tileOrientation = model.getTileOrienation();
     return (Orientation.NORTH == tileOrientation || Orientation.SOUTH == tileOrientation) && TileType.CURVED != tileType;
   }
 
@@ -1091,7 +1103,14 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   }
 
   public Rectangle getTileBounds() {
-    return new Rectangle(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    //return new Rectangle(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+
+    if (model.isScaleImage()) {
+      return new Rectangle(tileX - GRID, tileY - GRID, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    } else {
+      return new Rectangle(tileX - renderWidth / 2, tileY - renderHeight / 2, renderWidth, renderHeight);
+    }
+
   }
 
   @Override

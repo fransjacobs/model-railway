@@ -17,7 +17,6 @@ package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
@@ -30,13 +29,12 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
-import org.tinylog.Logger;
 
 public class End extends Tile {
 
   public End(TileBean tileBean) {
     super(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    setModel(new DefaultTileModel());
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
   }
 
   public End(Orientation orientation, Point center) {
@@ -49,8 +47,7 @@ public class End extends Tile {
 
   public End(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.END, orientation, x, y, width, height);
-
-    setModel(new DefaultTileModel());
+    setModel(new DefaultTileModel(orientation));
   }
 
   @Override
@@ -147,5 +144,4 @@ public class End extends Tile {
 //    long now = System.currentTimeMillis();
 //    Logger.trace(this.id + " Duration: " + (now - started) + " ms.");
 //  }
-
 }

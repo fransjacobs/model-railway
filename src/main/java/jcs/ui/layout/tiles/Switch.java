@@ -54,7 +54,7 @@ public class Switch extends Tile implements AccessoryEventListener {
 
   protected Switch(TileType tileType, Orientation orientation, Direction direction, int x, int y, int width, int height) {
     super(tileType, orientation, direction, x, y, width, height);
-    setModel(new DefaultTileModel());
+    setModel(new DefaultTileModel(orientation));
   }
 
   public Switch(TileBean tileBean) {
@@ -63,7 +63,7 @@ public class Switch extends Tile implements AccessoryEventListener {
 
   protected Switch(TileBean tileBean, int width, int height) {
     super(tileBean, width, height);
-    setModel(new DefaultTileModel());
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
   }
 
   @Override

@@ -585,6 +585,7 @@ public class Cross extends Switch {
     //1st square holds the centerpoint
     //2nd square 
     double dX1, dX2, dY1, dY2;
+    Orientation tileOrientation = model.getTileOrienation();
     switch (tileOrientation) {
       case SOUTH -> {
         dX1 = renderWidth / 2 - size / 2;
@@ -623,6 +624,7 @@ public class Cross extends Switch {
     int multiplier = (model.isScaleImage() ? 1 : 10);
     int xx, yy;
     //Centerpoint is inbalanced
+    Orientation tileOrientation = model.getTileOrienation();
     switch (tileOrientation) {
       case SOUTH -> {
         xx = tileX - GRID * multiplier;

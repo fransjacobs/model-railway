@@ -55,10 +55,8 @@ public class Block extends Tile {
 
   public Block(TileBean tileBean) {
     super(tileBean);
-    setModel(new DefaultTileModel());
-
+    setModel(new DefaultTileModel(tileBean.getOrientation()));
     changeRenderSize();
-
     populateModel();
   }
 
@@ -72,11 +70,12 @@ public class Block extends Tile {
 
   public Block(Orientation orientation, int x, int y, int width, int height) {
     super(TileType.BLOCK, orientation, x, y, width, height);
-    setModel(new DefaultTileModel());
+    setModel(new DefaultTileModel(orientation));
     changeRenderSize();
   }
 
   private void changeRenderSize() {
+    Orientation tileOrientation = model.getTileOrienation();
     if (Orientation.EAST == tileOrientation || Orientation.WEST == tileOrientation) {
       this.renderWidth = RENDER_WIDTH * 3;
       this.renderHeight = RENDER_HEIGHT;
@@ -257,6 +256,7 @@ public class Block extends Tile {
       }
     }
 
+    Orientation tileOrientation = model.getTileOrienation();
     if (match != null) {
       if (Orientation.EAST == tileOrientation && Orientation.EAST == match) {
         suffix = "+";
@@ -288,6 +288,7 @@ public class Block extends Tile {
 
   @Override
   public Orientation rotate() {
+    Orientation tileOrientation = model.getTileOrienation();
     super.rotate();
 
     int w = tileWidth(tileOrientation, TileType.BLOCK);
@@ -300,7 +301,7 @@ public class Block extends Tile {
 
     setBounds(getTileBounds());
 
-    repaint(getTileBounds());
+    //repaint(getTileBounds());
     return tileOrientation;
   }
 
@@ -401,6 +402,7 @@ public class Block extends Tile {
 
   private void renderDirectionArrow(Graphics2D g2) {
     //The default, forwards is in the direction of the block orientation, i.e. the +
+    Orientation tileOrientation = model.getTileOrienation();
     BlockBean bb = this.getBlockBean();
     boolean reverseArrival = model.isReverseArrival();
 
@@ -512,6 +514,7 @@ public class Block extends Tile {
   protected void overlayLocImage() {
     int ww = tileImage.getWidth();
     int hh = tileImage.getHeight();
+    Orientation tileOrientation = model.getTileOrienation();
 
     BufferedImage overlay = new BufferedImage(ww, hh, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g2i = overlay.createGraphics();
@@ -632,7 +635,6 @@ public class Block extends Tile {
       g2i.dispose();
       tileImage = overlay;
     }
-
   }
 
   private Image getLocImage() {
@@ -688,6 +690,7 @@ public class Block extends Tile {
       }
 
       int textHeight = g2d.getFontMetrics().getHeight();
+      Orientation tileOrientation = model.getTileOrienation();
 
       switch (tileOrientation) {
         case EAST -> {
@@ -712,6 +715,8 @@ public class Block extends Tile {
   @Override
   public Rectangle getTileBounds() {
     int multiplier = (model.isScaleImage() ? 1 : 10);
+    Orientation tileOrientation = model.getTileOrienation();
+
     int xx, yy;
     if (tileOrientation == Orientation.EAST || tileOrientation == Orientation.WEST) {
       xx = tileX - GRID * multiplier - GRID * multiplier * 2;
@@ -751,6 +756,7 @@ public class Block extends Tile {
     //1st square 
     //2nd square holds the centerpoint
     //3rd square
+    Orientation tileOrientation = model.getTileOrienation();
     double dX1, dX2, dX3, dY1, dY2, dY3;
     if (Orientation.EAST == tileOrientation || Orientation.WEST == tileOrientation) {
       dX1 = renderWidth / 3 / 2 - size / 2 / 2;
@@ -772,10 +778,6 @@ public class Block extends Tile {
     g2d.fill(new Ellipse2D.Double(dX1, dY1, size / 2, size / 2));
     g2d.fill(new Ellipse2D.Double(dX2, dY2, size, size));
     g2d.fill(new Ellipse2D.Double(dX3, dY3, size / 2, size / 2));
-
-    //Logger.trace(id + " dX2: " + dX2 + " dY2: " + dY2 + " O: " + tileOrientation + " rW: " + renderWidth + " rH:" + renderHeight + " Size: " + size);
-    //Logger.trace(id + " dX1: " + dX1 + " dY1: " + dY1);
-    //Logger.trace(id + " dX3: " + dX3 + " dY3: " + dY3);
   }
 
 }

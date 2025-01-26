@@ -23,6 +23,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
+import jcs.entities.TileBean.Orientation;
 
 /**
  *
@@ -41,6 +42,7 @@ public class DefaultTileModel implements TileModel {
   protected boolean selected = false;
   protected boolean scaleImage = true;
   protected boolean showCenter = false;
+  protected Orientation tileOrienation;
   protected boolean showRoute = false;
   protected boolean showBlockState = false;
   protected boolean showLocomotiveImage = false;
@@ -57,7 +59,11 @@ public class DefaultTileModel implements TileModel {
   protected LocomotiveBean locomotive;
 
   public DefaultTileModel() {
+    this(Orientation.EAST);
+  }
 
+  public DefaultTileModel(Orientation orientation) {
+    this.tileOrienation = orientation;
   }
 
   @Override
@@ -90,6 +96,17 @@ public class DefaultTileModel implements TileModel {
   @Override
   public void setShowCenter(boolean showCenter) {
     this.showCenter = showCenter;
+    fireStateChanged();
+  }
+
+  @Override
+  public Orientation getTileOrienation() {
+    return tileOrienation;
+  }
+
+  @Override
+  public void setTileOrienation(Orientation tileOrienation) {
+    this.tileOrienation = tileOrienation;
     fireStateChanged();
   }
 

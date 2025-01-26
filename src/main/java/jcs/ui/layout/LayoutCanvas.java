@@ -380,7 +380,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     Logger.trace("Adding: " + tileType + " @ " + p + " O: " + orientation + " D: " + direction);
     Point chkp = TileCache.checkAvailable(p, orientation);
 
-    Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp, drawGrid);
+    Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp);
     tile.setSelected(selected);
     tile.setDrawCenterPoint(showCenter);
 
@@ -734,7 +734,9 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     Logger.trace("Selected Tile " + selectedTile.getId());
     selectedTile = TileCache.rotateTile(selectedTile);
     selectedTile.setBounds(selectedTile.getTileBounds());
-    selectedTile.repaint();
+    //selectedTile.repaint();
+    
+    repaint(selectedTile.getTileBounds());
   }
 
   public void flipSelectedTileHorizontal() {

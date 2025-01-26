@@ -228,8 +228,8 @@ public class TileFactory {
    * @param drawOutline whether the outline of the tile must be rendered
    * @return a Tile object
    */
-  public static Tile createTile(TileBean.TileType tileType, Orientation orientation, int x, int y, boolean drawOutline) {
-    return createTile(tileType, orientation, Direction.CENTER, x, y, drawOutline);
+  public static Tile createTile(TileBean.TileType tileType, Orientation orientation, int x, int y) {
+    return createTile(tileType, orientation, Direction.CENTER, x, y);
   }
 
   /**
@@ -238,14 +238,13 @@ public class TileFactory {
    * @param direction direction plays a role with Turnout tiles whether it goes to the Left or Right
    * @param x the tile center X
    * @param y the tile center Y
-   * @param drawOutline whether the outline of the tile must be rendered
    * @return a Tile object
    */
-  public static Tile createTile(TileBean.TileType tileType, Orientation orientation, Direction direction, int x, int y, boolean drawOutline) {
-    return createTile(tileType, orientation, direction, new Point(x, y), drawOutline);
+  public static Tile createTile(TileBean.TileType tileType, Orientation orientation, Direction direction, int x, int y) {
+    return createTile(tileType, orientation, direction, new Point(x, y));
   }
 
-  public static Tile createTile(TileBean.TileType tileType, Orientation orientation, Direction direction, Point center, boolean drawOutline) {
+  public static Tile createTile(TileBean.TileType tileType, Orientation orientation, Direction direction, Point center) {
     Tile tile = null;
     switch (tileType) {
       case STRAIGHT -> {
@@ -275,11 +274,9 @@ public class TileFactory {
     }
 
     if (tile != null) {
-      //tile.setDrawOutline(drawOutline);
       tile.setId(nextTileId(tileType));
     }
 
-//    addTileEventListener((TileEventListener) tile);
     return (Tile) tile;
   }
 
