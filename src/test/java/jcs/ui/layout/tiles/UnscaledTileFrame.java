@@ -240,9 +240,9 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     Direction direction = (Direction) this.directionCB.getSelectedItem();
     this.tile.setDirection(direction);
 
-    if (TileType.CROSS == tile.getTileType()) {
-      ((Cross) tile).setWidthHeightAndOffsets();
-    }
+    //if (TileType.CROSS == tile.getTileType()) {
+    //  ((Cross) tile).setWidthHeightAndOffsets();
+    //}
     //this.repaint();
   }
 
@@ -287,7 +287,7 @@ public class UnscaledTileFrame extends javax.swing.JFrame {
     tile.setOrientation(orientation);
 
     if (TileType.CROSS == tile.getTileType()) {
-      ((Cross) tile).setWidthHeightAndOffsets();
+      //((Cross) tile).setWidthHeightAndOffsets();
 
       int x = tile.getCenterX();
       int y = tile.getCenterY();

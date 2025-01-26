@@ -173,8 +173,6 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
     setSize(d);
     setPreferredSize(d);
 
-    //int w = getWidth();
-    //int h = getHeight();
     this.renderWidth = RENDER_WIDTH;
     this.renderHeight = RENDER_HEIGHT;
 
@@ -191,7 +189,6 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   }
 
   protected Tile(TileBean tileBean) {
-    //this(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     this(tileBean, tileWidth(tileBean.getOrientation(), tileBean.getTileType()), tileHeight(tileBean.getOrientation(), tileBean.getTileType()));
   }
 
@@ -300,7 +297,6 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
     model.setSelected(b);
   }
 
-  //@Override
   public String getId() {
     return id;
   }
@@ -332,8 +328,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   public void setCenter(Point center) {
     tileX = center.x;
     tileY = center.y;
-    if (this.tileBean != null) {
-      this.tileBean.setCenter(center);
+    if (tileBean != null) {
+      tileBean.setCenter(center);
     }
   }
 
@@ -354,8 +350,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 
   public void setDirection(Direction direction) {
     this.tileDirection = direction;
-    if (this.tileBean != null) {
-      this.tileBean.setDirection(direction);
+    if (tileBean != null) {
+      tileBean.setDirection(direction);
     }
   }
 
@@ -365,8 +361,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 
   public void setAccessoryId(String accessoryId) {
     this.accessoryId = accessoryId;
-    if (this.tileBean != null) {
-      this.tileBean.setAccessoryId(accessoryId);
+    if (tileBean != null) {
+      tileBean.setAccessoryId(accessoryId);
     }
   }
 
@@ -453,13 +449,13 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
     this.accessoryBean = accessoryBean;
 
     if (accessoryBean != null) {
-      this.accessoryId = accessoryBean.getId();
-      this.signalValue = accessoryBean.getSignalValue();
-      this.signalType = SignalType.getSignalType(accessoryBean.getType());
+      accessoryId = accessoryBean.getId();
+      signalValue = accessoryBean.getSignalValue();
+      signalType = SignalType.getSignalType(accessoryBean.getType());
     } else {
-      this.accessoryId = null;
-      this.signalType = SignalType.NONE;
-      this.signalValue = AccessoryBean.SignalValue.OFF;
+      accessoryId = null;
+      signalType = SignalType.NONE;
+      signalValue = AccessoryBean.SignalValue.OFF;
     }
   }
 
@@ -495,7 +491,7 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 
   public void setSignalValue(AccessoryBean.SignalValue signalValue) {
     this.signalValue = signalValue;
-    this.repaint();
+    repaint();
   }
 
   public SensorBean getSensorBean() {
@@ -605,6 +601,12 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
   abstract void renderTile(Graphics2D g2d);
 
   abstract void renderTileRoute(Graphics2D g2d);
+
+  public abstract Map<Orientation, Point> getNeighborPoints();
+
+  public abstract Map<Orientation, Point> getEdgePoints();
+
+  public abstract Set<Point> getAllPoints();
 
   /**
    * Draw the Tile
@@ -869,136 +871,10 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
             + "}";
   }
 
-//  @Override
-//  public Rectangle getBounds() {
-//    int w, h, cx, cy;
-//    //TODO: Check this may by the componet does this already
-//    if (this.getWidth() > 0 & this.getHeight() > 0) {
-//      //if (this.width > 0 & this.height > 0) {
-//      //w = this.width;
-//      w = this.getPreferredSize().width;
-//      //h = this.height;
-//      h = this.getPreferredSize().height;
-//    } else {
-//      w = DEFAULT_WIDTH;
-//      h = DEFAULT_HEIGHT;
-//    }
-//
-//    if (this.tileX > 0 && this.tileY > 0) {
-//      cx = this.tileX + this.offsetX;
-//      cy = this.tileY + this.offsetY;
-//    } else {
-//      cx = w / 2;
-//      cy = h / 2;
-//    }
-//
-//    int ltx = cx - w / 2;
-//    int lty = cy - h / 2;
-//    return new Rectangle(ltx, lty, w, h);
-//  }
-//  public Rectangle2D getBounds2D() {
-//    return getBounds().getBounds2D();
-//  }
-//  public boolean contains(double x, double y) {
-//    int w, h, cx, cy, tlx, tly;
-//    if (this.getWidth() > 0 & this.getHeight() > 0) {
-//      //if (this.width > 0 & this.height > 0) {
-////      w = this.width;
-////      h = this.height;
-//      w = this.getPreferredSize().width;
-//      h = this.getPreferredSize().height;
-//
-//    } else {
-//      w = DEFAULT_WIDTH;
-//      h = DEFAULT_HEIGHT;
-//    }
-//
-//    if (this.getWidth() > 0 & this.getHeight() > 0) {
-//      //if (this.width > 0 & this.height > 0) {
-//      cx = this.tileX;
-//      cy = this.tileY;
-//    } else {
-//      cx = w / 2;
-//      cy = h / 2;
-//    }
-//
-//    // top left dX and dY
-//    tlx = cx - w / 2;
-//    tly = cy - h / 2;
-//
-//    // Check if X and Y range is ok
-//    return !(x < tlx || x > (tlx + w) || y < tly || y > (tly + h));
-//  }
   public String xyToString() {
     return "(" + this.tileX + "," + this.tileY + ")";
   }
 
-//  public boolean contains(Point2D p) {
-//    return this.contains(p.getX(), p.getY());
-//  }
-//  public boolean intersects(double x, double y, double w, double h) {
-//    return getBounds().intersects(x, y, w, h);
-//  }
-//  public boolean intersects(Rectangle2D r2d) {
-//    return getBounds().intersects(r2d);
-//  }
-//  public boolean contains(double x, double y, double w, double h) {
-//    return getBounds().contains(x, y, w, h);
-//  }
-//  public boolean contains(Rectangle2D r2d) {
-//    return getBounds().contains(r2d);
-//  }
-//  public PathIterator getPathIterator(AffineTransform at) {
-//    return getBounds().getPathIterator(at);
-//  }
-//  public PathIterator getPathIterator(AffineTransform at, double flatness) {
-//    return getBounds().getPathIterator(at, flatness);
-//  }
-//  @Deprecated
-//  public PropertyChangeListener getPropertyChangeListener() {
-//    return this.propertyChangeListener;
-//  }
-//  @Deprecated
-//  public void setPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
-//    this.propertyChangeListener = propertyChangeListener;
-//  }
-  //@Override
-//  @Deprecated
-//  public void onTileChange(TileEvent tileEvent) {
-//    Logger.warn("Deprecated! " + tileEvent.getTileId());
-//    if (tileEvent.isEventFor(this)) {
-//      boolean drawRoute = tileEvent.isShowRoute();
-//      setIncomingSide(tileEvent.getIncomingSide());
-//
-//      if (isJunction()) {
-//        //       setRouteValue(tileEvent.getRouteState());
-//      }
-//
-//      if (tileEvent.getBlockBean() != null) {
-//        this.setBlockBean(tileEvent.getBlockBean());
-//      }
-//
-//      //if (tileEvent.getTileBean() != null) {
-//      //  TileBean other = tileEvent.getTileBean();
-//      //  this.copyInto(other);
-//      //}
-//      if (isBlock()) {
-//        //      ((Block) this).setRouteBlockState(tileEvent.getBlockState());
-//        if (!drawRoute) {
-//          //        ((Block) this).setRouteBlockState(null);
-//        }
-//      }
-//
-//      setBackgroundColor(tileEvent.getBackgroundColor());
-//      setTrackColor(tileEvent.getTrackColor());
-//      setTrackRouteColor(tileEvent.getTrackRouteColor());
-//
-////      if (tileEvent.getBlockBean() != null) {
-////        setBlockBean(tileEvent.getBlockBean());
-////      }
-////      repaintTile();
-//    }
-//  }
   /**
    * The main route of the tile is horizontal
    *
@@ -1109,12 +985,6 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
     return AccessoryValue.OFF;
   }
 
-  public abstract Map<Orientation, Point> getNeighborPoints();
-
-  public abstract Map<Orientation, Point> getEdgePoints();
-
-  public abstract Set<Point> getAllPoints();
-
   public TileModel getModel() {
     return model;
   }
@@ -1175,7 +1045,7 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-      Object source = e.getSource();
+      //Object source = e.getSource();
 
       fireStateChanged();
       repaint();

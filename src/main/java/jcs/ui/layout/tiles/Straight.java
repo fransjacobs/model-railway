@@ -16,7 +16,6 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
@@ -26,7 +25,6 @@ import java.util.Set;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
-import org.tinylog.Logger;
 
 public class Straight extends Tile {
 

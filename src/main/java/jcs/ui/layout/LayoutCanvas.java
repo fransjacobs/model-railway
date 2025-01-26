@@ -17,6 +17,7 @@ package jcs.ui.layout;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -165,94 +166,34 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     Logger.trace("Duration: " + (now - started) + " ms.");
   }
 
-  @Override
-  protected void paintComponent(Graphics g) {
-    long started = System.currentTimeMillis();
-    super.paintComponent(g);
+//  @Override
+//  protected void paintComponent(Graphics g) {
+//    long started = System.currentTimeMillis();
+//    super.paintComponent(g);
+//    long now = System.currentTimeMillis();
+//    Logger.trace("Duration: " + (now - started) + " ms.");
+//  }
 
-//    Graphics2D g2 = (Graphics2D) g.create();
-//    Set<Tile> snapshot = new HashSet<>(TileCache.tiles.values());
-//
-//    if (this.drawGrid) {
-//      if (lineGrid) {
-//        paintLineGrid(g);
-//      } else {
-//        paintDotGrid(g);
-//      }
-//    } else {
-//      paintNullGrid(g);
-//    }
-//
-//    for (Tile tile : snapshot) {
-//      //for (Tile tile : TileCache.tiles.values()) {
-//      //tile.setDrawOutline(drawGrid);
-//
-//      if (Mode.CONTROL != mode) {
-//        if (selectedTiles.contains(tile.getCenter())) {
-//          //tile.setBackgroundColor(Color.yellow);
-//          tile.setBackgroundColor(Color.orange);
-//        } else {
-//          tile.setBackgroundColor(Color.white);
-//        }
-//      }
-//
-//      //tile.drawTile(g2);
-//      //debug
-////      if (!this.readonly) {
-////        tile.drawCenterPoint(g2, Color.magenta, 3);
-////      }
-//    }
-//    if (this.movingTileCenterPoint != null && this.movingTileImage != null) {
-//      int x = movingTileCenterPoint.x;
-//      int y = movingTileCenterPoint.y;
-//      int w = movingTileImage.getWidth();
-//      int h = movingTileImage.getHeight();
-//      g2.drawImage(movingTileImage, (x - w / 2), (y - h / 2), null);
-//    }
-//
-//    g2.dispose();
-    long now = System.currentTimeMillis();
-    Logger.trace("Duration: " + (now - started) + " ms.");
+  @Override
+  public Component add(Component component) {
+    super.add(component);
+    if (component instanceof Tile tile) {
+      tile.setBounds(tile.getTileBounds());
+    }
+    return component;
   }
 
-  //@Override
-//  public void propertyChange(PropertyChangeEvent evt) {
-//    if ("repaintTile".equals(evt.getPropertyName())) {
-//      Tile tile = (Tile) evt.getNewValue();
-//
-//      Logger.trace("Repainting Tile: " + tile.getId());
-////      repaint(tile.getBounds());
-//    }
-//  }
-//  private void paintNullGrid(Graphics g) {
-//    if (this.grid != null) {
-//      int pw = this.getWidth();
-//      int ph = this.getHeight();
-//      int gw = grid.getWidth();
-//      int gh = grid.getHeight();
-//
-//      if (pw != gw || ph != gh) {
-//        this.grid = null;
-//      }
-//    }
-//
-//    if (this.grid == null) {
-//      int width = getSize().width;
-//      int height = getSize().height;
-//      grid = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-//      Graphics2D gc = grid.createGraphics();
-//
-//      gc.setBackground(Color.white);
-//      gc.clearRect(0, 0, width, height);
-//
-//      gc.setPaint(Color.black);
-//
-//      gc.dispose();
-//    }
-//    Graphics2D g2 = (Graphics2D) g;
-//    //Draw grid from pre computed image
-//    g2.drawImage(grid, null, 0, 0);
-//  }
+  @Override
+  public Component add(String name, Component component) {
+    if (component instanceof Tile tile) {
+      super.add(tile.getId(), tile);
+      tile.setBounds(tile.getTileBounds());
+    } else {
+      super.add(component);
+    }
+    return component;
+  }
+
   private void paintDotGrid(Graphics g) {
     int width = getWidth();
     int height = getHeight();
@@ -330,7 +271,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     for (Tile tile : TileCache.tiles.values()) {
       this.add(tile);
       tile.setDrawCenterPoint(!readonly);
-      tile.setBounds(tile.getTileBounds());
+      //tile.setBounds(tile.getTileBounds());
     }
 
     repaint();
@@ -448,9 +389,9 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
     if (canBeAdded) {
       add(tile);
-      tile.setBounds(tile.getTileBounds());
+      //tile.setBounds(tile.getTileBounds());
 
-      TileCache.addTile(tile);
+      TileCache.addAndSaveTile(tile);
       return tile;
     } else {
       return null;

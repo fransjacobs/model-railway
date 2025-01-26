@@ -17,7 +17,6 @@ package jcs.ui.layout.tiles;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.HashMap;
@@ -38,18 +37,8 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.entities.TileBean.TileType;
-import org.tinylog.Logger;
 
 public class Switch extends Tile implements AccessoryEventListener {
-
-  public Switch(TileBean tileBean) {
-    this(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-  }
-
-  protected Switch(TileBean tileBean, int width, int height) {
-    super(tileBean, width, height);
-    setModel(new DefaultTileModel());
-  }
 
   public Switch(Orientation orientation, Direction direction, Point center) {
     this(orientation, direction, center.x, center.y);
@@ -60,8 +49,20 @@ public class Switch extends Tile implements AccessoryEventListener {
   }
 
   public Switch(Orientation orientation, Direction direction, int x, int y, int width, int height) {
-    super(TileType.SWITCH, orientation, direction, x, y, width, height);
+    this(TileType.SWITCH, orientation, direction, x, y, width, height);
+  }
 
+  protected Switch(TileType tileType, Orientation orientation, Direction direction, int x, int y, int width, int height) {
+    super(tileType, orientation, direction, x, y, width, height);
+    setModel(new DefaultTileModel());
+  }
+
+  public Switch(TileBean tileBean) {
+    this(tileBean, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  }
+
+  protected Switch(TileBean tileBean, int width, int height) {
+    super(tileBean, width, height);
     setModel(new DefaultTileModel());
   }
 

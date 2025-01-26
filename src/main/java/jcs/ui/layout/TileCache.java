@@ -17,7 +17,6 @@ package jcs.ui.layout;
 
 import jcs.ui.layout.tiles.*;
 import java.awt.Point;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,7 @@ public class TileCache {
   private static boolean showValues;
 
   static final Map<Point, Tile> tiles = new HashMap<>();
+  static final Map<String, Point> points = new HashMap<>();
   static final Map<Point, Tile> altTiles = new HashMap<>();
 
   private TileCache() {
@@ -116,8 +116,9 @@ public class TileCache {
       Tile tile = TileFactory.createTile(tb, showValues);
       //tile.setPropertyChangeListener(listener);
       tiles.put(tile.getCenter(), tile);
-      //addTileEventListener((TileEventListener) tile);
+      points.put(tile.getId(), tile.getCenter());
 
+      //addTileEventListener((TileEventListener) tile);
       //Alternative point(s) to be able to find all points
       if (!tile.getAltPoints().isEmpty()) {
         Set<Point> alt = tile.getAltPoints();
@@ -134,8 +135,9 @@ public class TileCache {
     return tiles.values().stream().collect(Collectors.toList());
   }
 
-  static void addTile(Tile tile) {
+  static void addAndSaveTile(Tile tile) {
     tiles.put(tile.getCenter(), tile);
+    points.put(tile.getId(), tile.getCenter());
 
     //addTileEventListener((TileEventListener) tile);
     //Alternative point(s) to be able to find all points
@@ -154,6 +156,7 @@ public class TileCache {
     if (tile != null) {
       if (tiles.containsKey(tile.getCenter())) {
         tiles.remove(tile.getCenter());
+        points.remove(tile.getId());
         Set<Point> rps = tile.getAltPoints();
         //Also remove alt points
         for (Point ap : rps) {
@@ -194,6 +197,15 @@ public class TileCache {
       }
     }
     return result;
+  }
+
+  public static Tile findTile(String id) {
+    Point p = points.get(id);
+    if (p != null) {
+      return findTile(p);
+    } else {
+      return null;
+    }
   }
 
   static boolean checkTileOccupation(Tile tile) {

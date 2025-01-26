@@ -16,6 +16,7 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -23,31 +24,48 @@ import javax.swing.JPanel;
 import org.tinylog.Logger;
 
 public class DotGridCanvas extends JPanel {
-  
+
   public DotGridCanvas() {
-    setLayout(null);
+    super(null, false);
     setOpaque(true);
-    setDoubleBuffered(false);
     setBackground(Color.white);
   }
-  
+
+//  @Override
+//  protected void paintComponent(Graphics g) {
+//    long started = System.currentTimeMillis();
+//    super.paintComponent(g);
+//
+//    paintDotGrid(g);
+//    long now = System.currentTimeMillis();
+//    Logger.trace("Duration: " + (now - started) + " ms.");
+//  }
+
   @Override
   public void paint(Graphics g) {
     long started = System.currentTimeMillis();
-    
-    //Rectangle r = g.getClipBounds();    
-    //Logger.trace("Rx: " + r.x + " Ry: " + r.y + " Rw: " + r.width + " Rh: " + r.height);
     super.paint(g);
-    
+
     paintDotGrid(g);
     long now = System.currentTimeMillis();
     Logger.trace("Duration: " + (now - started) + " ms.");
   }
   
+  
+  
+  @Override
+  public Component add(Component component) {
+    super.add(component);
+    if (component instanceof Tile tile) {
+      tile.setBounds(tile.getTileBounds());
+    }
+    return component;
+  }
+
   private void paintDotGrid(Graphics g) {
     int width = this.getWidth();
     int height = this.getHeight();
-    
+
     int xOffset = 0;
     int yOffset = 0;
 
@@ -55,7 +73,7 @@ public class DotGridCanvas extends JPanel {
     Graphics2D gc = (Graphics2D) g;
     Paint p = gc.getPaint();
     gc.setPaint(Color.black);
-    
+
     for (int r = 0; r < width; r++) {
       for (int c = 0; c < height; c++) {
         gc.drawOval((r * 20 * 2) + xOffset - 2, (c * 20 * 2) + yOffset - 2, 4, 4);
@@ -63,5 +81,5 @@ public class DotGridCanvas extends JPanel {
     }
     gc.setPaint(p);
   }
-  
+
 }

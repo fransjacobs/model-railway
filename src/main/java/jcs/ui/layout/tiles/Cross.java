@@ -19,6 +19,8 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Ellipse2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,6 +38,9 @@ import jcs.entities.TileBean.TileType;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_HEIGHT;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_WIDTH;
 import static jcs.ui.layout.tiles.Tile.GRID;
+import static jcs.ui.layout.tiles.Tile.tileHeight;
+import static jcs.ui.layout.tiles.Tile.tileWidth;
+import org.tinylog.Logger;
 
 public class Cross extends Switch {
 
@@ -50,68 +55,106 @@ public class Cross extends Switch {
   public static final Color LIGHT_GREEN = new Color(0, 255, 51);
   public static final Color DARK_GREEN = new Color(0, 153, 0);
 
-  private static int crossWidth(Orientation orientation) {
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      return DEFAULT_WIDTH * 2;
-    } else {
-      return DEFAULT_WIDTH;
-    }
-  }
-
-  private static int crossHeight(Orientation orientation) {
-    if (Orientation.EAST == orientation || Orientation.WEST == orientation) {
-      return DEFAULT_HEIGHT;
-    } else {
-      return DEFAULT_HEIGHT * 2;
-    }
-  }
-
-  public Cross(TileBean tileBean) {
-    super(tileBean, crossWidth(tileBean.getOrientation()), crossHeight(tileBean.getOrientation()));
-    setWidthHeightAndOffsets();
-  }
-
   public Cross(Orientation orientation, Direction direction, Point center) {
     this(orientation, direction, center.x, center.y);
   }
 
   public Cross(Orientation orientation, Direction direction, int x, int y) {
-    this(orientation, direction, x, y, crossWidth(orientation), crossHeight(orientation));
+    this(orientation, direction, x, y, tileWidth(orientation, TileType.CROSS), tileHeight(orientation, TileType.CROSS));
   }
 
   public Cross(Orientation orientation, Direction direction, int x, int y, int width, int height) {
-    super(orientation, direction, x, y, width, height);
-    this.tileType = TileType.CROSS;
-    setWidthHeightAndOffsets();
+    super(TileType.CROSS, orientation, direction, x, y, width, height);
+    changeRenderSizeAndOffsets();
   }
 
+  public Cross(TileBean tileBean) {
+    super(tileBean, tileWidth(tileBean.getOrientation(), TileType.CROSS), tileHeight(tileBean.getOrientation(), TileType.CROSS));
+    changeRenderSizeAndOffsets();
+  }
+
+  private void changeRenderSizeAndOffsets() {
+    //Reset offsets
+    this.offsetY = 0;
+    this.renderOffsetY = 0;
+    this.offsetX = 0;
+    this.renderOffsetX = 0;
+
+    if (isHorizontal()) {
+      //this.width = DEFAULT_WIDTH * 2;
+      //this.height = DEFAULT_HEIGHT;
+      this.renderWidth = RENDER_GRID * 4;
+      this.renderHeight = RENDER_GRID * 2;
+
+      this.offsetY = 0;
+      this.renderOffsetY = 0;
+    } else {
+      //this.width = DEFAULT_WIDTH;
+      //this.height = DEFAULT_HEIGHT * 2;
+      this.renderWidth = RENDER_GRID * 2;
+      this.renderHeight = RENDER_GRID * 4;
+
+      this.offsetX = 0;
+      this.renderOffsetX = 0;
+    }
+
+    //Due to the asymetical shape (center is on the left)
+    //the offset has to be changed with the rotation
+    switch (getOrientation()) {
+      case SOUTH -> {
+        this.offsetY = +GRID;
+        this.renderOffsetY = RENDER_GRID;
+      }
+      case WEST -> {
+        this.offsetX = -GRID;
+        this.renderOffsetX = -RENDER_GRID;
+      }
+      case NORTH -> {
+        this.offsetY = -GRID;
+        this.renderOffsetY = -RENDER_GRID;
+      }
+      default -> {
+        //East so default 
+        this.offsetX = +GRID;
+        this.renderOffsetX = +RENDER_GRID;
+      }
+    }
+  }
+
+//  private void changeRenderSize() {
+//    if (Orientation.EAST == tileOrientation || Orientation.WEST == tileOrientation) {
+//      this.renderWidth = RENDER_WIDTH * 2;
+//      this.renderHeight = RENDER_HEIGHT;
+//    } else {
+//      this.renderWidth = RENDER_WIDTH;
+//      this.renderHeight = RENDER_HEIGHT * 2;
+//    }
+//  }
   /**
-   * A Cross has a width in horizontal position of 2 tiles and a height of 1 tile in Vertical position a width of 1 tile and a height of 2 tiles.
+   * A Cross has a width in horizontal position of 2 tiles and a height of 1 tile in Vertical position.<br>
    *
    * @return the set of center point which mark the position of the Cross
    */
   @Override
   public Set<Point> getAltPoints() {
-    int xx = this.tileX;
-    int yy = this.tileY;
     Set<Point> alternatives = new HashSet<>();
 
     switch (getOrientation()) {
       case SOUTH -> {
-        Point sp = new Point(xx, (yy + DEFAULT_HEIGHT));
+        Point sp = new Point(tileX, (tileY + DEFAULT_HEIGHT));
         alternatives.add(sp);
       }
       case WEST -> {
-        Point wp = new Point((xx - DEFAULT_WIDTH), yy);
+        Point wp = new Point((tileX - DEFAULT_WIDTH), tileY);
         alternatives.add(wp);
       }
       case NORTH -> {
-        Point np = new Point(xx, (yy - DEFAULT_HEIGHT));
+        Point np = new Point(tileX, (tileY - DEFAULT_HEIGHT));
         alternatives.add(np);
       }
       default -> {
         //East so default 
-        Point ep = new Point((tileX + DEFAULT_WIDTH), yy);
+        Point ep = new Point((tileX + DEFAULT_WIDTH), tileY);
         alternatives.add(ep);
       }
     }
@@ -240,60 +283,6 @@ public class Cross extends Switch {
       }
     }
     return edgeConnections;
-  }
-
-//  @Override
-//  public void rotate() {
-//    super.rotate();
-//    setWidthHeightAndOffsets();
-//  }
-
-  final void setWidthHeightAndOffsets() {
-    //Reset offsets
-    this.offsetY = 0;
-    this.renderOffsetY = 0;
-    this.offsetX = 0;
-    this.renderOffsetX = 0;
-
-    if (isHorizontal()) {
-      //this.width = DEFAULT_WIDTH * 2;
-      //this.height = DEFAULT_HEIGHT;
-      this.renderWidth = RENDER_GRID * 4;
-      this.renderHeight = RENDER_GRID * 2;
-
-      this.offsetY = 0;
-      this.renderOffsetY = 0;
-    } else {
-      //this.width = DEFAULT_WIDTH;
-      //this.height = DEFAULT_HEIGHT * 2;
-      this.renderWidth = RENDER_GRID * 2;
-      this.renderHeight = RENDER_GRID * 4;
-
-      this.offsetX = 0;
-      this.renderOffsetX = 0;
-    }
-
-    //Due to the asymetical shape (center is on the left)
-    //the offset has to be changed with the rotation
-    switch (getOrientation()) {
-      case SOUTH -> {
-        this.offsetY = +GRID;
-        this.renderOffsetY = RENDER_GRID;
-      }
-      case WEST -> {
-        this.offsetX = -GRID;
-        this.renderOffsetX = -RENDER_GRID;
-      }
-      case NORTH -> {
-        this.offsetY = -GRID;
-        this.renderOffsetY = -RENDER_GRID;
-      }
-      default -> {
-        //East so default 
-        this.offsetX = +GRID;
-        this.renderOffsetX = +RENDER_GRID;
-      }
-    }
   }
 
   @Override
@@ -589,4 +578,76 @@ public class Cross extends Switch {
       return AccessoryValue.OFF;
     }
   }
+
+  @Override
+  protected void drawCenterPoint(Graphics2D g2d, Color color, double size) {
+    //A Cross has 1 alternate point
+    //1st square holds the centerpoint
+    //2nd square 
+    double dX1, dX2, dY1, dY2;
+    switch (tileOrientation) {
+      case SOUTH -> {
+        dX1 = renderWidth / 2 - size / 2;
+        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
+        dX2 = renderWidth / 2 + renderWidth - size / 4;
+        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
+      }
+      case WEST -> {
+        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
+        dY1 = renderHeight / 2 - size / 2;
+        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
+        dY2 = renderHeight / 2 - size / 4;
+      }
+      case NORTH -> {
+        dX1 = renderWidth / 2 - size / 2;
+        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
+        dX2 = renderWidth / 2 + renderWidth - size / 4;
+        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
+      }
+      default -> {
+        //East
+        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
+        dY1 = renderHeight / 2 - size / 2;
+        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
+        dY2 = renderHeight / 2 - size / 4;
+      }
+    }
+
+    g2d.setColor(color);
+    g2d.fill(new Ellipse2D.Double(dX1, dY1, size, size));
+    g2d.fill(new Ellipse2D.Double(dX2, dY2, size / 2, size / 2));
+  }
+
+  @Override
+  public Rectangle getTileBounds() {
+    int multiplier = (model.isScaleImage() ? 1 : 10);
+    int xx, yy;
+    //Centerpoint is inbalanced
+    switch (tileOrientation) {
+      case SOUTH -> {
+        xx = tileX - GRID * multiplier;
+        yy = tileY - GRID * multiplier;
+      }
+      case WEST -> {
+        xx = tileX - GRID * multiplier - GRID * 2 * multiplier;
+        yy = tileY - GRID * multiplier;
+      }
+      case NORTH -> {
+        xx = tileX - GRID * multiplier;
+        yy = tileY - GRID * multiplier - GRID * 2 * multiplier;
+      }
+      default -> {
+        //East
+        xx = tileX - GRID * multiplier;
+        yy = tileY - GRID * multiplier;
+      }
+    }
+
+    if (model.isScaleImage()) {
+      return new Rectangle(xx, yy, tileWidth(tileOrientation, TileType.CROSS), tileHeight(tileOrientation, TileType.CROSS));
+    } else {
+      return new Rectangle(xx, yy, renderWidth, renderHeight);
+    }
+  }
+
 }

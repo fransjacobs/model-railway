@@ -64,7 +64,6 @@ public class StraightTileTester extends javax.swing.JFrame {
     trackNorth.setTrackRouteColor(Color.blue);
 
     dotGridCanvas.add(trackEast);
-
     dotGridCanvas.add(trackSouth);
     dotGridCanvas.add(trackWest);
     dotGridCanvas.add(trackNorth);
