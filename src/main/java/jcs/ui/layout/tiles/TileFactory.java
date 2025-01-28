@@ -225,7 +225,6 @@ public class TileFactory {
    * @param orientation whether the orientation of the Tile is EAST, WEST, NORTH or SOUTH
    * @param x the tile center X
    * @param y the tile center Y
-   * @param drawOutline whether the outline of the tile must be rendered
    * @return a Tile object
    */
   public static Tile createTile(TileBean.TileType tileType, Orientation orientation, int x, int y) {

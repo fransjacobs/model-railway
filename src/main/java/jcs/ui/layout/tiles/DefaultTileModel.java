@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.tiles;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
@@ -40,6 +41,7 @@ public class DefaultTileModel implements TileModel {
   protected EventListenerList listenerList = new EventListenerList();
 
   protected boolean selected = false;
+  protected Color selectedColor;
   protected boolean scaleImage = true;
   protected boolean showCenter = false;
   protected Orientation tileOrienation;
@@ -64,6 +66,7 @@ public class DefaultTileModel implements TileModel {
 
   public DefaultTileModel(Orientation orientation) {
     this.tileOrienation = orientation;
+    this.selectedColor = Tile.DEFAULT_SELECTED_COLOR;
   }
 
   @Override
@@ -75,6 +78,25 @@ public class DefaultTileModel implements TileModel {
   public void setSelected(boolean selected) {
     this.selected = selected;
     fireStateChanged();
+  }
+
+  @Override
+  public Color getSelectedColor() {
+    return selectedColor;
+  }
+
+  @Override
+  public void setSelectedColor(Color selectedColor) {
+    Color prevColor = selectedColor;
+    if (selectedColor != null) {
+      this.selectedColor = selectedColor;
+    } else {
+      this.selectedColor = Tile.DEFAULT_SELECTED_COLOR;
+    }
+    
+    if (!this.selectedColor.equals(prevColor)) {
+      fireStateChanged();
+    }
   }
 
   @Override

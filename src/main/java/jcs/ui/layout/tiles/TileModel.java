@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.tiles;
 
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import javax.swing.event.ChangeListener;
@@ -31,6 +32,10 @@ public interface TileModel extends Serializable {
   boolean isSelected();
 
   public void setSelected(boolean selected);
+
+  Color getSelectedColor();
+
+  public void setSelectedColor(Color selectedColor);
 
   boolean isScaleImage();
 

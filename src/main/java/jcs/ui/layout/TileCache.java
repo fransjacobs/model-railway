@@ -54,16 +54,15 @@ public class TileCache {
   private TileCache() {
   }
 
-  static void setDrawCenterPoint(boolean drawCenterPoint) {
-    TileCache.drawCenterPoint = drawCenterPoint;
-
-    for (Tile tile : tiles.values()) {
-      //if (tile instanceof AbstractTile abstractTile) {
-      tile.setDrawCenterPoint(drawCenterPoint);
-      //}
-    }
-  }
-
+//  static void setDrawCenterPoint(boolean drawCenterPoint) {
+//    TileCache.drawCenterPoint = drawCenterPoint;
+//
+//    for (Tile tile : tiles.values()) {
+//      //if (tile instanceof AbstractTile abstractTile) {
+//      tile.setDrawCenterPoint(drawCenterPoint);
+//      //}
+//    }
+//  }
   public static void setShowValues(boolean showValues) {
     TileCache.showValues = showValues;
 
@@ -225,6 +224,14 @@ public class TileCache {
     return false;
   }
 
+  static boolean containsPoints(Set<Point> points) {
+    for (Point p : points) {
+      return tiles.containsKey(p) || altTiles.containsKey(p);
+    }
+    return false;
+
+  }
+
   static boolean containsPoint(Point point) {
     return tiles.containsKey(point) || altTiles.containsKey(point);
   }
@@ -322,54 +329,44 @@ public class TileCache {
     Point tp = tile.getCenter();
     if (!tp.equals(snapPoint)) {
       //Check if new position is free
-      boolean canMove = true;
-      if (tiles.containsKey(snapPoint) || altTiles.containsKey(snapPoint)) {
-        Tile t = findTile(snapPoint);
-        if (tile.getId().equals(t.getId())) {
-          //same tile so we can move
-          canMove = true;
-        } else {
-          Logger.trace("Position " + snapPoint + " is occupied with tile: " + t + ", can't move tile " + tile.getId());
-          canMove = false;
-        }
+      boolean canMove = !TileCache.containsPoint(snapPoint);
 
-        if (canMove) {
-          //Remove the original tile center from the tiles
-          Tile movingTile = tiles.remove(tp);
-          if (movingTile != null) {
-            //Also remove from the alt points
-            Point oldCenter = movingTile.getCenter();
-            Set<Point> oldAltPoints = movingTile.getAltPoints();
-            //Logger.trace("Removing " + oldAltPoints.size() + " alt tile points");
-            for (Point ep : oldAltPoints) {
-              altTiles.remove(ep);
-              tiles.remove(ep);
+      if (canMove) {
+        Logger.trace("Moving from tile " + tile.getId() + " from " + tile.xyToString() + " to (" + snapPoint.x + "," + snapPoint.y + ")");
+        //Remove the original tile center from the tiles
+        Tile movingTile = tiles.remove(tp);
+        if (movingTile != null) {
+          //Also remove from the alt points
+          Point oldCenter = movingTile.getCenter();
+          Set<Point> oldAltPoints = movingTile.getAltPoints();
+          //Logger.trace("Removing " + oldAltPoints.size() + " alt tile points");
+          for (Point ep : oldAltPoints) {
+            altTiles.remove(ep);
+            tiles.remove(ep);
+          }
+
+          //Set the new center position
+          movingTile.setCenter(snapPoint);
+          //Check again, needed for tiles which are longer then 1 square, like a block
+          if (!checkTileOccupation(movingTile)) {
+            Logger.trace("Moved Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint + "...");
+            tiles.put(snapPoint, movingTile);
+            for (Point ep : movingTile.getAltPoints()) {
+              altTiles.put(ep, movingTile);
             }
-
-            //Set the new center position
-            movingTile.setCenter(snapPoint);
-            //Check again, needed for tiles which are longer then 1 square, like a block
-            if (!checkTileOccupation(movingTile)) {
-              Logger.trace("Moved Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint + "...");
-              tiles.put(snapPoint, movingTile);
-              for (Point ep : movingTile.getAltPoints()) {
-                altTiles.put(ep, movingTile);
-              }
-            } else {
-              //Do not move Tile, put back where it was
-              movingTile.setCenter(oldCenter);
-              tiles.put(oldCenter, movingTile);
-              for (Point ep : movingTile.getAltPoints()) {
-                altTiles.put(ep, movingTile);
-              }
-            }
-
-            if ("false".equals(System.getProperty("batch.tile.persist", "true"))) {
-              saveTile(movingTile);
+          } else {
+            //Do not move Tile, put back where it was
+            movingTile.setCenter(oldCenter);
+            tiles.put(oldCenter, movingTile);
+            for (Point ep : movingTile.getAltPoints()) {
+              altTiles.put(ep, movingTile);
             }
           }
+
+          saveTile(movingTile);
         }
       }
+      //}
     }
   }
 
