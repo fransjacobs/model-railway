@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout;
 
+import jcs.ui.layout.tiles.TileCache;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;

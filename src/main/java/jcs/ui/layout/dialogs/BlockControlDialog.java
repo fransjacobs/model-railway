@@ -24,7 +24,7 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.TileCache;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.events.TileEvent;
 import jcs.ui.layout.tiles.Block;
 import org.tinylog.Logger;

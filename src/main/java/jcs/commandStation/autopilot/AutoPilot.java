@@ -37,7 +37,7 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.TileCache;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.events.TileEvent;
 import org.tinylog.Logger;
 

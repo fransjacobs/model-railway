@@ -27,7 +27,7 @@ import jcs.entities.BlockBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutCanvas;
-import jcs.ui.layout.TileCache;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.Block;
 import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Tile;

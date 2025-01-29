@@ -73,6 +73,8 @@ import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileFactory;
+import jcs.ui.layout.tiles.TileCache;
+import static jcs.ui.layout.tiles.TileCache.findTile;
 import org.tinylog.Logger;
 
 /**
@@ -244,12 +246,12 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }
 
   private void loadTiles() {
-    TileCache.loadTiles();
-    removeAll();
+    List<Tile> tiles = TileCache.loadTiles();
 
+    removeAll();
     selectedTile = null;
 
-    for (Tile tile : TileCache.tiles.values()) {
+    for (Tile tile : tiles) {
       add(tile);
       tile.setDrawCenterPoint(!readonly);
     }
@@ -324,7 +326,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
         }
       }
       default -> {
-        Logger.trace((selectedTile != null ? "Selected tile: " + selectedTile.getId() + ", " + selectedTile.xyToString() : "No tile selected"));
+        Logger.trace((selectedTile != null ? "Selected tile: " + selectedTile.getId() + ", " + selectedTile.xyToString() : "No tile @ (" + snapPoint.x + "," + snapPoint.y + ")"));
         if (MouseEvent.BUTTON3 == evt.getButton()) {
           showOperationsPopupMenu(selectedTile, snapPoint);
         }
@@ -334,20 +336,18 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   private Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
     Logger.trace("Adding: " + tileType + " @ " + p + " O: " + orientation + " D: " + direction);
-    Point chkp = TileCache.checkAvailable(p, orientation);
+    Tile tile = TileFactory.createTile(tileType, orientation, direction, p);
 
-    Tile tile = TileFactory.createTile(tileType, orientation, direction, chkp);
-    tile.setSelected(selected);
-    tile.setDrawCenterPoint(showCenter);
-
-    //Can the tile be placed, keeping in mind the extra points
-    boolean canBeAdded = !TileCache.checkTileOccupation(tile);
-
-    if (canBeAdded) {
+    if (TileCache.canMoveTo(tile, p)) {
+      tile.setSelected(selected);
+      tile.setDrawCenterPoint(showCenter);
       add(tile);
       TileCache.addAndSaveTile(tile);
       return tile;
     } else {
+      Tile occ = TileCache.findTile(p);
+      Logger.trace("Can't add tile " + tile.getId() + " on " + tile.xyToString() + " Is occupied by " + occ.getId());
+      TileFactory.rollback(tile);
       return null;
     }
   }
@@ -372,15 +372,11 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
       setComponentZOrder(selectedTile, 0);
       int curX = snapPoint.x - Tile.GRID;
       int curY = snapPoint.y - Tile.GRID;
-      
-      //check overlap in the cache 
-      //This wil only chek the snappint, whic incas of a moving Block or Cross in not enough!
-      //TODO ! Needed are the alt point of the moved block or Cross.
-      //How to do this?
-      if (TileCache.containsPoint(snapPoint)) {
-        selectedTile.setSelectedColor(Tile.DEFAULT_WARN_COLOR);
-      } else {
+
+      if (TileCache.canMoveTo(selectedTile, snapPoint)) {
         selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
+      } else {
+        selectedTile.setSelectedColor(Tile.DEFAULT_WARN_COLOR);
       }
 
       selectedTile.setBounds(curX, curY, selectedTile.getWidth(), selectedTile.getHeight());
@@ -390,79 +386,17 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   private void mouseReleasedAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
 
-    boolean snapPointOccupied = TileCache.containsPoint(snapPoint);
-    if (!Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selectedTile != null) {
-      
-      boolean destinationOccupied = TileCache.containsPoints(selectedTile.getAllPoints());
+    if (!Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selectedTile != null && !selectedTile.getCenter().equals(snapPoint)) {
 
-      
-      Logger.trace("Selected tile: " + selectedTile.getId() + ", " + selectedTile.xyToString()+" Dest Occ "+destinationOccupied);
-
-      if (destinationOccupied || snapPointOccupied) {
-        Logger.debug("Can't move tile " + selectedTile.getId() + " from " + selectedTile.xyToString() + " to (" + snapPoint.x + "," + snapPoint.y + ")!");
-
-        //selectedTile.setBounds(selectedTile.getTileX(), selectedTile.getTileY(), selectedTile.getWidth(), selectedTile.getHeight());
-        selectedTile.setBounds(selectedTile.getTileBounds());
-        selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
-
+      if (TileCache.canMoveTo(selectedTile, snapPoint)) {
+        TileCache.moveTo(selectedTile, snapPoint);
       } else {
-        TileCache.moveTile(snapPoint, selectedTile);
-      }
+        Tile occ = TileCache.findTile(snapPoint);
+        Logger.trace("Can't Move tile " + selectedTile.getId() + " from " + selectedTile.xyToString() + " to (" + snapPoint.x + "," + snapPoint.y + ") Is occupied by " + occ.getId());
 
-//      Point tp = selectedTile.getCenter();
-//      if (!tp.equals(snapPoint)) {
-//
-//        Logger.tag("Moving Tile from " + tp + " to " + snapPoint + " Tile to move: " + selectedTile);
-//        //Check if new position is free
-//        boolean canMove = true;
-//        if (TileCache.containsPoint(snapPoint)) {
-//          Tile tile = TileCache.findTile(snapPoint);
-//          if (selectedTile.getId().equals(tile.getId())) {
-//            //same tile so we can move
-//            canMove = true;
-//          } else {
-//            Logger.debug("Position " + snapPoint + " is occupied with tile: " + tile + ", can't move tile " + selectedTile.getId());
-//            canMove = false;
-//          }
-//        }
-//
-//        if (canMove) {
-//          //Remove the original tile center from the tiles
-//          Tile movingTile = TileCache.tiles.remove(tp);
-//          if (movingTile != null) {
-//            //Also remove from the alt points
-//            Point oldCenter = movingTile.getCenter();
-//            Set<Point> oldAltPoints = movingTile.getAltPoints();
-//            //Logger.trace("Removing " + oldAltPoints.size() + " alt tile points");
-//            for (Point ep : oldAltPoints) {
-//              TileCache.altTiles.remove(ep);
-//              TileCache.tiles.remove(ep);
-//            }
-//
-//            //Set the new center position
-//            movingTile.setCenter(snapPoint);
-//            //Check again, needed for tiles which are longer then 1 square, like a block
-//            if (!TileCache.checkTileOccupation(movingTile)) {
-//              Logger.trace("Moved Tile " + movingTile.getId() + " from " + tp + " to " + snapPoint + "...");
-//              TileCache.tiles.put(snapPoint, movingTile);
-//              for (Point ep : movingTile.getAltPoints()) {
-//                TileCache.altTiles.put(ep, movingTile);
-//              }
-//            } else {
-//              //Do not move Tile, put back where it was
-//              movingTile.setCenter(oldCenter);
-//              TileCache.tiles.put(oldCenter, movingTile);
-//              for (Point ep : movingTile.getAltPoints()) {
-//                TileCache.altTiles.put(ep, movingTile);
-//              }
-//            }
-//
-//            TileCache.saveTile(movingTile);
-//          }
-//          //TODO is this needed?
-      //         repaint();
-      //       }
-      //     }
+        selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
+        selectedTile.setBounds(selectedTile.getTileBounds());
+      }
     }
   }
 
