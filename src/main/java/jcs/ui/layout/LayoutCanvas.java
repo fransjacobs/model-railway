@@ -30,7 +30,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.JFrame;
@@ -50,6 +49,7 @@ import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
+import static jcs.entities.TileBean.Orientation.SOUTH;
 import jcs.entities.TileBean.TileType;
 import static jcs.entities.TileBean.TileType.BLOCK;
 import static jcs.entities.TileBean.TileType.CROSS;
@@ -74,7 +74,6 @@ import jcs.ui.layout.tiles.Switch;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileFactory;
 import jcs.ui.layout.tiles.TileCache;
-import static jcs.ui.layout.tiles.TileCache.findTile;
 import org.tinylog.Logger;
 
 /**
@@ -108,9 +107,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   private Tile selectedTile;
 
   private RoutesDialog routesDialog;
-  //private final Map<String, RouteElementBean> selectedRouteElements;
 
-  //private Point mousePressedPoint;
   public LayoutCanvas() {
     this(false);
   }
@@ -271,7 +268,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   private void mousePressedAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     //Clear any previous selection
-    Tile previousSelected = this.selectedTile;
+    Tile previousSelected = selectedTile;
     selectedTile = TileCache.findTile(snapPoint);
     if (selectedTile != null) {
       selectedTile.setSelected(true);
@@ -363,15 +360,10 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   private void mouseDragAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-
     if (selectedTile != null) {
       int z = getComponentZOrder(selectedTile);
-      Logger.trace("Moving Tile: " + selectedTile.getId() + " Z: " + z + " @ " + selectedTile.xyToString());
-
-      //Put on Top
       setComponentZOrder(selectedTile, 0);
-      int curX = snapPoint.x - Tile.GRID;
-      int curY = snapPoint.y - Tile.GRID;
+      //Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
 
       if (TileCache.canMoveTo(selectedTile, snapPoint)) {
         selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
@@ -379,20 +371,66 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
         selectedTile.setSelectedColor(Tile.DEFAULT_WARN_COLOR);
       }
 
+      int curX, curY;
+      switch (selectedTile.getTileType()) {
+        case BLOCK -> {
+          if (selectedTile.isHorizontal()) {
+            curX = snapPoint.x - Tile.GRID - Tile.GRID * 2;
+            curY = snapPoint.y - Tile.GRID;
+          } else {
+            curX = snapPoint.x - Tile.GRID;
+            curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
+          }
+        }
+        case CROSS -> {
+          switch (selectedTile.getOrientation()) {
+            case SOUTH -> {
+              curX = snapPoint.x - Tile.GRID;
+              curY = snapPoint.y - Tile.GRID;
+            }
+            case WEST -> {
+              curX = snapPoint.x - Tile.GRID - Tile.GRID * 2;
+              curY = snapPoint.y - Tile.GRID;
+            }
+            case NORTH -> {
+              curX = snapPoint.x - Tile.GRID;
+              curY = snapPoint.y - Tile.GRID - Tile.GRID * 2;
+            }
+            default -> {
+              //East
+              curX = snapPoint.x - Tile.GRID;
+              curY = snapPoint.y - Tile.GRID;
+            }
+          }
+        }
+        default -> {
+          curX = snapPoint.x - Tile.GRID;
+          curY = snapPoint.y - Tile.GRID;
+        }
+      }
       selectedTile.setBounds(curX, curY, selectedTile.getWidth(), selectedTile.getHeight());
+      //this.repaint(selectedTile.getTileBounds());
     }
   }
 
   private void mouseReleasedAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
+    //if (selectedTile != null) {
+    //  Logger.trace(selectedTile.getId() + " sp: (" + snapPoint.x + "," + snapPoint.y + ")");
+    //} else {
+    //  Logger.trace("No Tile @ (" + snapPoint.x + "," + snapPoint.y + ")");
+    //}
 
-    if (!Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selectedTile != null && !selectedTile.getCenter().equals(snapPoint)) {
-
+    if (!Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selectedTile != null) {
       if (TileCache.canMoveTo(selectedTile, snapPoint)) {
         TileCache.moveTo(selectedTile, snapPoint);
       } else {
-        Tile occ = TileCache.findTile(snapPoint);
-        Logger.trace("Can't Move tile " + selectedTile.getId() + " from " + selectedTile.xyToString() + " to (" + snapPoint.x + "," + snapPoint.y + ") Is occupied by " + occ.getId());
+        //Tile occ = TileCache.findTile(snapPoint);
+        //String occtile = "";
+        //if (occ != null) {
+        //  occtile = " Is occupied by " + occ.getId();
+        //}
+        //Logger.trace("Can't Move tile " + selectedTile.getId() + " from " + selectedTile.xyToString() + " to (" + snapPoint.x + "," + snapPoint.y + ")" + occtile);
 
         selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
         selectedTile.setBounds(selectedTile.getTileBounds());
