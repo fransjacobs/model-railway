@@ -261,19 +261,19 @@ public class BlockTileTester extends javax.swing.JFrame {
 
   private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
     Logger.trace(blockNorth.id + "...");
-    blockNorth.setDrawRoute(this.northTileBtn.isSelected());
+    blockNorth.setShowRoute(this.northTileBtn.isSelected());
   }//GEN-LAST:event_northTileBtnActionPerformed
 
   private void eastTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eastTileBtnActionPerformed
-    blockEast.setDrawRoute(this.eastTileBtn.isSelected());
+    blockEast.setShowRoute(this.eastTileBtn.isSelected());
   }//GEN-LAST:event_eastTileBtnActionPerformed
 
   private void westTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_westTileBtnActionPerformed
-    blockWest.setDrawRoute(this.westTileBtn.isSelected());
+    blockWest.setShowRoute(this.westTileBtn.isSelected());
   }//GEN-LAST:event_westTileBtnActionPerformed
 
   private void southTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_southTileBtnActionPerformed
-    blockSouth.setDrawRoute(this.southTileBtn.isSelected());
+    blockSouth.setShowRoute(this.southTileBtn.isSelected());
   }//GEN-LAST:event_southTileBtnActionPerformed
 
   private void selectSouthTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSouthTileBtnActionPerformed

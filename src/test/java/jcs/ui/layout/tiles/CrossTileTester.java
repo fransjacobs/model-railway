@@ -218,23 +218,23 @@ public class CrossTileTester extends javax.swing.JFrame {
 
   private void northTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_northTileBtnActionPerformed
     Logger.trace(crossNorthR.id + "...");
-    this.crossNorthR.setDrawRoute(this.northTileBtn.isSelected());
-    this.crossNorthL.setDrawRoute(this.northTileBtn.isSelected());
+    this.crossNorthR.setShowRoute(this.northTileBtn.isSelected());
+    this.crossNorthL.setShowRoute(this.northTileBtn.isSelected());
   }//GEN-LAST:event_northTileBtnActionPerformed
 
   private void eastTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eastTileBtnActionPerformed
-    this.crossEastR.setDrawRoute(this.eastTileBtn.isSelected());
-    this.crossEastL.setDrawRoute(this.eastTileBtn.isSelected());
+    this.crossEastR.setShowRoute(this.eastTileBtn.isSelected());
+    this.crossEastL.setShowRoute(this.eastTileBtn.isSelected());
   }//GEN-LAST:event_eastTileBtnActionPerformed
 
   private void westTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_westTileBtnActionPerformed
-    this.crossWestR.setDrawRoute(this.westTileBtn.isSelected());
-    this.crossWestL.setDrawRoute(this.westTileBtn.isSelected());
+    this.crossWestR.setShowRoute(this.westTileBtn.isSelected());
+    this.crossWestL.setShowRoute(this.westTileBtn.isSelected());
   }//GEN-LAST:event_westTileBtnActionPerformed
 
   private void southTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_southTileBtnActionPerformed
-    this.crossSouthR.setDrawRoute(this.southTileBtn.isSelected());
-    this.crossSouthL.setDrawRoute(this.southTileBtn.isSelected());
+    this.crossSouthR.setShowRoute(this.southTileBtn.isSelected());
+    this.crossSouthL.setShowRoute(this.southTileBtn.isSelected());
   }//GEN-LAST:event_southTileBtnActionPerformed
 
   private void selectSouthTileBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSouthTileBtnActionPerformed

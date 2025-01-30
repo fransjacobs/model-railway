@@ -327,14 +327,14 @@ public class Dispatcher {
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
       TileEvent tileEvent = new TileEvent(tileId, false);
-      TileCache.fireTileEventListener(tileEvent);
+      //TileCache.fireTileEventListener(tileEvent);
     }
   }
 
   void showBlockState(BlockBean blockBean) {
     Logger.trace("Show block " + blockBean);
     TileEvent tileEvent = new TileEvent(blockBean);
-    TileCache.fireTileEventListener(tileEvent);
+    //TileCache.fireTileEventListener(tileEvent);
   }
 
   void showRoute(RouteBean routeBean, Color routeColor) {
@@ -351,7 +351,7 @@ public class Dispatcher {
       } else {
         tileEvent = new TileEvent(tileId, true, incomingSide, routeColor);
       }
-      TileCache.fireTileEventListener(tileEvent);
+      //TileCache.fireTileEventListener(tileEvent);
     }
   }
 

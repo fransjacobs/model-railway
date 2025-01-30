@@ -322,7 +322,7 @@ public final class AutoPilot {
       }
       PersistenceFactory.getService().persist(block);
       TileEvent tileEvent = new TileEvent(block);
-      TileCache.fireTileEventListener(tileEvent);
+      //TileCache.fireTileEventListener(tileEvent);
     }
 
     JCS.getJcsCommandStation().switchPower(true);
@@ -403,7 +403,7 @@ public final class AutoPilot {
           JCS.getJcsCommandStation().switchPower(false);
 
           TileEvent tileEvent = new TileEvent(block);
-          TileCache.fireTileEventListener(tileEvent);
+          //TileCache.fireTileEventListener(tileEvent);
         } else {
           if (block.getLocomotiveId() != null) {
             //keep state as is

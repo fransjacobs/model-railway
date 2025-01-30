@@ -87,8 +87,8 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
 
   public static final Color DEFAULT_BACKGROUND_COLOR = Color.white;
   public static final Color DEFAULT_TRACK_COLOR = Color.lightGray;
-  public static final Color DEFAULT_ROUTE_TRACK_COLOR = Color.blue;
-  public static final Color DEFAULT_SELECTED_COLOR = Color.orange;
+  public static final Color DEFAULT_ROUTE_TRACK_COLOR = Color.darkGray;
+  public static final Color DEFAULT_SELECTED_COLOR = Color.yellow;
   public static final Color DEFAULT_WARN_COLOR = Color.red;
 
   public static final String MODEL_CHANGED_PROPERTY = "model";
@@ -590,11 +590,11 @@ public abstract class Tile extends JComponent { //implements TileEventListener {
     this.backgroundColor = backgroundColor;
   }
 
-  public boolean isDrawRoute() {
+  public boolean isShowRoute() {
     return model.isShowRoute();
   }
 
-  public void setDrawRoute(boolean drawRoute) {
+  public void setShowRoute(boolean drawRoute) {
     this.model.setShowRoute(drawRoute);
   }
 

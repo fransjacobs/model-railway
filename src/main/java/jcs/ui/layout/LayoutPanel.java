@@ -73,16 +73,9 @@ public class LayoutPanel extends JPanel {
     if (readonly) {
       this.canvas.setDrawGrid(!readonly);
 
-      this.saveBtn.setEnabled(!readonly);
-      this.saveBtn.setVisible(!readonly);
-      this.toolBar.remove(this.saveBtn);
-
       this.loadBtn.setEnabled(!readonly);
       this.loadBtn.setVisible(!readonly);
       this.toolBar.remove(this.loadBtn);
-
-      this.repaintBtn.setEnabled(readonly);
-      this.repaintBtn.setVisible(readonly);
 
       this.routeBtn.setEnabled(readonly);
       this.routeBtn.setVisible(readonly);
@@ -136,17 +129,11 @@ public class LayoutPanel extends JPanel {
       this.crossingBtn.setEnabled(!readonly);
       this.crossingBtn.setVisible(!readonly);
 
-      this.moveBtn.setEnabled(!readonly);
-      this.moveBtn.setVisible(!readonly);
-
       this.flipVerticalBtn.setEnabled(!readonly);
       this.flipVerticalBtn.setVisible(!readonly);
 
       this.flipHorizontalBtn.setEnabled(!readonly);
       this.flipHorizontalBtn.setVisible(!readonly);
-
-      this.rotateBtn.setEnabled(!readonly);
-      this.rotateBtn.setVisible(!readonly);
 
       //Todo Remove the Autopilot related things from this panel
       //this.autoPilotBtn.setEnabled(readonly && JCS.getJcsCommandStation().isPowerOn());
@@ -157,15 +144,6 @@ public class LayoutPanel extends JPanel {
 //      this.startAllLocomotivesBtn.setEnabled(readonly && this.autoPilotBtn.isSelected());
 //      this.startAllLocomotivesBtn.setVisible(readonly);
     } else {
-      if ("true".equals(System.getProperty("batch.tile.persist", "true"))) {
-        this.saveBtn.setEnabled(true);
-        this.saveBtn.setVisible(true);
-      } else {
-        this.saveBtn.setEnabled(false);
-        this.saveBtn.setVisible(false);
-        this.toolBar.remove(this.saveBtn);
-      }
-
 //      this.toolBar.remove(this.autoPilotBtn);
 //      this.autoPilotBtn.setEnabled(readonly);
 //      this.autoPilotBtn.setVisible(readonly);
@@ -194,7 +172,6 @@ public class LayoutPanel extends JPanel {
 //  void saveLayout() {
 //    this.canvas.saveLayout();
 //  }
-
   public void loadLayout() {
     this.canvas.loadLayoutInBackground();
   }
@@ -223,9 +200,7 @@ public class LayoutPanel extends JPanel {
     tileBtnGroup = new ButtonGroup();
     topPanel = new JPanel();
     toolBar = new JToolBar();
-    saveBtn = new JButton();
     loadBtn = new JButton();
-    repaintBtn = new JButton();
     routeBtn = new JButton();
     autoPilotBtn = new JToggleButton();
     startAllLocomotivesBtn = new JToggleButton();
@@ -250,10 +225,8 @@ public class LayoutPanel extends JPanel {
     endTrackBtn = new JToggleButton();
     crossingBtn = new JToggleButton();
     filler4 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    moveBtn = new JButton();
     flipVerticalBtn = new JButton();
     flipHorizontalBtn = new JButton();
-    rotateBtn = new JButton();
     canvasScrollPane = new JScrollPane();
     canvas = new LayoutCanvas(this.readonly);
 
@@ -370,21 +343,6 @@ public class LayoutPanel extends JPanel {
     toolBar.setName(""); // NOI18N
     toolBar.setPreferredSize(new Dimension(1100, 42));
 
-    saveBtn.setIcon(new ImageIcon(getClass().getResource("/media/save-24.png"))); // NOI18N
-    saveBtn.setToolTipText("Save");
-    saveBtn.setFocusable(false);
-    saveBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    saveBtn.setMaximumSize(new Dimension(40, 40));
-    saveBtn.setMinimumSize(new Dimension(40, 40));
-    saveBtn.setPreferredSize(new Dimension(40, 40));
-    saveBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    saveBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        saveBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(saveBtn);
-
     loadBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
     loadBtn.setToolTipText("Load");
     loadBtn.setFocusable(false);
@@ -399,21 +357,6 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(loadBtn);
-
-    repaintBtn.setIcon(new ImageIcon(getClass().getResource("/media/CS2-3-Sync.png"))); // NOI18N
-    repaintBtn.setToolTipText("Repaint");
-    repaintBtn.setFocusable(false);
-    repaintBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    repaintBtn.setMaximumSize(new Dimension(40, 40));
-    repaintBtn.setMinimumSize(new Dimension(38, 38));
-    repaintBtn.setPreferredSize(new Dimension(38, 38));
-    repaintBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    repaintBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        repaintBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(repaintBtn);
 
     routeBtn.setIcon(new ImageIcon(getClass().getResource("/media/river-black.png"))); // NOI18N
     routeBtn.setToolTipText("Route");
@@ -529,7 +472,7 @@ public class LayoutPanel extends JPanel {
 
     gridBtn.setIcon(new ImageIcon(getClass().getResource("/media/grid-2-24.png"))); // NOI18N
     gridBtn.setSelected(true);
-    gridBtn.setToolTipText("Grid");
+    gridBtn.setToolTipText("Show Grid");
     gridBtn.setHorizontalTextPosition(SwingConstants.CENTER);
     gridBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/grid-dot-24.png"))); // NOI18N
     gridBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -742,21 +685,6 @@ public class LayoutPanel extends JPanel {
     toolBar.add(crossingBtn);
     toolBar.add(filler4);
 
-    moveBtn.setIcon(new ImageIcon(getClass().getResource("/media/drag-24.png"))); // NOI18N
-    moveBtn.setToolTipText("Move");
-    moveBtn.setFocusable(false);
-    moveBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    moveBtn.setMaximumSize(new Dimension(40, 40));
-    moveBtn.setMinimumSize(new Dimension(38, 38));
-    moveBtn.setPreferredSize(new Dimension(38, 38));
-    moveBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    moveBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        moveBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(moveBtn);
-
     flipVerticalBtn.setIcon(new ImageIcon(getClass().getResource("/media/flip-vertical-24.png"))); // NOI18N
     flipVerticalBtn.setToolTipText("Flip Vertical");
     flipVerticalBtn.setFocusable(false);
@@ -786,21 +714,6 @@ public class LayoutPanel extends JPanel {
       }
     });
     toolBar.add(flipHorizontalBtn);
-
-    rotateBtn.setIcon(new ImageIcon(getClass().getResource("/media/rotate2-24.png"))); // NOI18N
-    rotateBtn.setToolTipText("Rotate");
-    rotateBtn.setFocusable(false);
-    rotateBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    rotateBtn.setMaximumSize(new Dimension(40, 40));
-    rotateBtn.setMinimumSize(new Dimension(38, 38));
-    rotateBtn.setPreferredSize(new Dimension(38, 38));
-    rotateBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    rotateBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        rotateBtnActionPerformed(evt);
-      }
-    });
-    toolBar.add(rotateBtn);
 
     topPanel.add(toolBar);
 
@@ -881,10 +794,6 @@ public class LayoutPanel extends JPanel {
 //        editSelectedTileProperties();
     }//GEN-LAST:event_propertiesMIActionPerformed
 
-    private void saveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
-      //this.canvas.saveLayout();
-    }//GEN-LAST:event_saveBtnActionPerformed
-
     private void loadBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loadBtnActionPerformed
       this.loadLayout();
     }//GEN-LAST:event_loadBtnActionPerformed
@@ -902,10 +811,6 @@ public class LayoutPanel extends JPanel {
       //this.canvas.removeTiles();
     }//GEN-LAST:event_deleteBtnActionPerformed
 
-    private void repaintBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_repaintBtnActionPerformed
-      this.canvas.repaint();
-    }//GEN-LAST:event_repaintBtnActionPerformed
-
     private void straightBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_straightBtnActionPerformed
       setTileType(TileBean.TileType.STRAIGHT);
     }//GEN-LAST:event_straightBtnActionPerformed
@@ -918,10 +823,6 @@ public class LayoutPanel extends JPanel {
       setTileType(TileBean.TileType.BLOCK);
     }//GEN-LAST:event_blockBtnActionPerformed
 
-    private void rotateBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateBtnActionPerformed
-      this.canvas.rotateSelectedTile();
-    }//GEN-LAST:event_rotateBtnActionPerformed
-
     private void flipHorizontalBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipHorizontalBtnActionPerformed
       this.canvas.flipSelectedTileHorizontal();
     }//GEN-LAST:event_flipHorizontalBtnActionPerformed
@@ -929,10 +830,6 @@ public class LayoutPanel extends JPanel {
     private void flipVerticalBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipVerticalBtnActionPerformed
       this.canvas.flipSelectedTileVertical();
     }//GEN-LAST:event_flipVerticalBtnActionPerformed
-
-    private void moveBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_moveBtnActionPerformed
-      setMode(LayoutCanvas.Mode.MOVE);
-    }//GEN-LAST:event_moveBtnActionPerformed
 
     private void rightSwitchBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rightSwitchBtnActionPerformed
       this.setTileType(TileBean.TileType.SWITCH);
@@ -953,8 +850,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_sensorBtnActionPerformed
 
     private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
-      this.canvas.setDrawGrid(this.gridBtn.isSelected());
-      this.canvas.repaint();
+      this.canvas.setDrawGrid(this.gridBtn.isSelected());      
     }//GEN-LAST:event_gridBtnActionPerformed
 
     private void formComponentResized(ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
@@ -1117,18 +1013,14 @@ public class LayoutPanel extends JPanel {
   private JMenuItem leftMI;
   private JToggleButton leftSwitchBtn;
   private JButton loadBtn;
-  private JButton moveBtn;
   private JMenuItem moveMI;
   private JPopupMenu operationsPM;
   private JMenuItem propertiesMI;
-  private JButton repaintBtn;
   private JButton resetAutopilotBtn;
   private JMenuItem rightMI;
   private JToggleButton rightSwitchBtn;
-  private JButton rotateBtn;
   private JMenuItem rotateMI;
   private JButton routeBtn;
-  private JButton saveBtn;
   private JButton selectBtn;
   private JToggleButton sensorBtn;
   private JToggleButton signalBtn;

@@ -42,6 +42,7 @@ import static javax.swing.JOptionPane.showMessageDialog;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import jcs.JCS;
 import jcs.commandStation.esu.ecos.net.EcosConnectionFactory;
 import org.tinylog.Logger;
 
@@ -69,25 +70,25 @@ public class VNCPanel extends javax.swing.JPanel {
   }
 
   private void initVnc() {
-    addDrawingSurface();
-    //clipboardMonitor.start();
-    initialiseVernacularClient();
-    
-    
-    String host;
-      InetAddress ia = EcosConnectionFactory.discoverEcos();
-      //InetAddress ia = CSConnectionFactory.discoverCs();
+    if (JCS.getJcsCommandStation() != null) {
+      if (!JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
+        addDrawingSurface();
+        //clipboardMonitor.start();
+        initialiseVernacularClient();
+        String host = JCS.getJcsCommandStation().getCommandStationInfo().getHostname();
 
-      if (ia != null) {
-        host = ia.getHostAddress();
-      } else {
-        Logger.warn("Use a default host ip.....");
-        host = "192.168.1.110";
+        //InetAddress ia = EcosConnectionFactory.discoverEcos();
+        //InetAddress ia = CSConnectionFactory.discoverCs();
+        //if (ia != null) {
+        //  host = ia.getHostAddress();
+        //} else {
+        //  Logger.warn("Use a default host ip.....");
+        //  host = "192.168.1.110";
+        //}
+        int port = DEFAULT_VNC_PORT;
+        this.connect(host, port);
       }
-
-      int port = DEFAULT_VNC_PORT;
-      this.connect(host, port);
-
+    }
   }
 
   private void addDrawingSurface() {
@@ -415,7 +416,6 @@ public class VNCPanel extends javax.swing.JPanel {
 //
 //      int port = DEFAULT_VNC_PORT;
 //      vncPanel.connect(host, port);
-
       testFrame.pack();
       testFrame.setLocationRelativeTo(null);
       testFrame.setVisible(true);

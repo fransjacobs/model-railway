@@ -91,10 +91,14 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     CONTROL
   }
 
+  static final int LINE_GRID = 0;
+  static final int DOT_GRID = 1;
+
+  private int gridType = LINE_GRID;
+
   private boolean readonly;
   private Mode mode;
   private boolean drawGrid = true;
-  private boolean lineGrid = true;
 
   private Orientation orientation;
   private Direction direction;
@@ -133,24 +137,23 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, this.readonly);
-    lineGrid = "true".equals(System.getProperty("draw.linegrid", "true"));
   }
 
   @Override
   public void paint(Graphics g) {
-    long started = System.currentTimeMillis();
+    //long started = System.currentTimeMillis();
     super.paint(g);
 
     if (drawGrid) {
-      if (lineGrid) {
+      if (this.gridType == LINE_GRID) {
         paintLineGrid(g);
       } else {
         paintDotGrid(g);
       }
     }
 
-    long now = System.currentTimeMillis();
-    Logger.trace("Duration: " + (now - started) + " ms.");
+    //long now = System.currentTimeMillis();
+    //Logger.trace("Duration: " + (now - started) + " ms.");
   }
 
   @Override
@@ -214,8 +217,18 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }
 
   void setDrawGrid(boolean flag) {
-    this.drawGrid = flag;
-    this.repaint();
+    if (flag) {
+      switch (gridType) {
+        case LINE_GRID ->
+          gridType = DOT_GRID;
+        case DOT_GRID ->
+          gridType = LINE_GRID;
+        default ->
+          gridType = LINE_GRID;
+      }
+    }
+    drawGrid = flag;
+    repaint();
   }
 
   void setTileType(TileBean.TileType tileType) {
@@ -250,10 +263,11 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
     for (Tile tile : tiles) {
       add(tile);
-      tile.setDrawCenterPoint(!readonly);
+      boolean showCenter = "true".equalsIgnoreCase(System.getProperty("tile.show.center", "false"));
+      if (showCenter) {
+        tile.setDrawCenterPoint(showCenter);
+      }
     }
-
-    repaint();
   }
 
   private void mouseMoveAction(MouseEvent evt) {

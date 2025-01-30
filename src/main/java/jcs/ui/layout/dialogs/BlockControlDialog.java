@@ -24,7 +24,6 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.events.TileEvent;
 import jcs.ui.layout.tiles.Block;
 import org.tinylog.Logger;
@@ -422,7 +421,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
         }
         TileEvent tileEvent = new TileEvent(bb);
         //TileFactory.fireTileEventListener(tileEvent);
-        TileCache.fireTileEventListener(tileEvent);
+        //TileCache.fireTileEventListener(tileEvent);
         
       }
       

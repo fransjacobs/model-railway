@@ -20,23 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import jcs.entities.AccessoryBean.AccessoryValue;
-import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.TileBean;
-import jcs.entities.TileBean.Orientation;
-import static jcs.entities.TileBean.Orientation.EAST;
-import static jcs.entities.TileBean.Orientation.SOUTH;
-import static jcs.entities.TileBean.Orientation.WEST;
-import jcs.entities.TileBean.TileType;
-import static jcs.entities.TileBean.TileType.BLOCK;
-import static jcs.entities.TileBean.TileType.CROSS;
-import static jcs.entities.TileBean.TileType.SENSOR;
-import static jcs.entities.TileBean.TileType.SIGNAL;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.events.TileEvent;
-import jcs.ui.layout.events.TileEventListener;
 import org.tinylog.Logger;
 
 /**
@@ -46,58 +32,54 @@ import org.tinylog.Logger;
  */
 public class TileCache {
 
-  //private static final Map<String, TileEventListener> tileEventListeners = new HashMap<>();
-  private static boolean showValues;
-
+  //private static boolean showValues;
   static final Map<Point, Tile> tiles = new HashMap<>();
   static final Map<Point, Tile> tileAltPoints = new HashMap<>();
   static final Map<String, Point> points = new HashMap<>();
-  //static final Map<Point, Tile> altTiles = new HashMap<>();
 
   private TileCache() {
   }
 
-  @Deprecated
-  public static void setShowValues(boolean showValues) {
-    TileCache.showValues = showValues;
-
-    for (Tile tile : tiles.values()) {
-      TileType tileType = tile.getTileType();
-      switch (tileType) {
-        case SWITCH -> {
-          if (showValues && ((Switch) tile).getTileBean().getAccessoryBean() != null) {
-            tile.setAccessoryValue(tile.getTileBean().getAccessoryBean().getAccessoryValue());
-          } else {
-            tile.setAccessoryValue(AccessoryValue.OFF);
-          }
-        }
-        case CROSS -> {
-          if (showValues && ((Cross) tile).getTileBean().getAccessoryBean() != null) {
-            tile.setAccessoryValue(tile.getTileBean().getAccessoryBean().getAccessoryValue());
-          } else {
-            tile.setAccessoryValue(AccessoryValue.OFF);
-          }
-        }
-        case SIGNAL -> {
-          if (showValues && ((Signal) tile).getTileBean().getAccessoryBean() != null) {
-            tile.setSignalValue(tile.getTileBean().getAccessoryBean().getSignalValue());
-          } else {
-            tile.setSignalValue(SignalValue.OFF);
-          }
-        }
-        case SENSOR -> {
-          if (showValues && ((Sensor) tile).getTileBean().getSensorBean() != null) {
-            tile.setActive(tile.getTileBean().getSensorBean().isActive());
-          } else {
-            tile.setActive(false);
-          }
-        }
-        case BLOCK -> {
-        }
-      }
-    }
-  }
-
+//  @Deprecated
+//  public static void setShowValues(boolean showValues) {
+//    TileCache.showValues = showValues;
+//
+//    for (Tile tile : tiles.values()) {
+//      TileType tileType = tile.getTileType();
+//      switch (tileType) {
+//        case SWITCH -> {
+//          if (showValues && ((Switch) tile).getTileBean().getAccessoryBean() != null) {
+//            tile.setAccessoryValue(tile.getTileBean().getAccessoryBean().getAccessoryValue());
+//          } else {
+//            tile.setAccessoryValue(AccessoryValue.OFF);
+//          }
+//        }
+//        case CROSS -> {
+//          if (showValues && ((Cross) tile).getTileBean().getAccessoryBean() != null) {
+//            tile.setAccessoryValue(tile.getTileBean().getAccessoryBean().getAccessoryValue());
+//          } else {
+//            tile.setAccessoryValue(AccessoryValue.OFF);
+//          }
+//        }
+//        case SIGNAL -> {
+//          if (showValues && ((Signal) tile).getTileBean().getAccessoryBean() != null) {
+//            tile.setSignalValue(tile.getTileBean().getAccessoryBean().getSignalValue());
+//          } else {
+//            tile.setSignalValue(SignalValue.OFF);
+//          }
+//        }
+//        case SENSOR -> {
+//          if (showValues && ((Sensor) tile).getTileBean().getSensorBean() != null) {
+//            tile.setActive(tile.getTileBean().getSensorBean().isActive());
+//          } else {
+//            tile.setActive(false);
+//          }
+//        }
+//        case BLOCK -> {
+//        }
+//      }
+//    }
+//  }
   public static List<Tile> loadTiles() {
     tileAltPoints.clear();
     points.clear();
@@ -106,7 +88,7 @@ public class TileCache {
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
     for (TileBean tb : tileBeans) {
-      Tile tile = TileFactory.createTile(tb, showValues);
+      Tile tile = TileFactory.createTile(tb, false);
       tiles.put(tile.getCenter(), tile);
       points.put(tile.getId(), tile.getCenter());
       //Alternative point(s) to be able to find all points
@@ -243,71 +225,67 @@ public class TileCache {
     }
   }
 
-  @Deprecated
-  public static boolean checkTileOccupation(Tile tile) {
-    Set<Point> tilePoints = tile.getAllPoints();
-    for (Point p : tilePoints) {
-      if (tiles.containsKey(p) || tileAltPoints.containsKey(p)) {
-        //The is a match, check if it is an other tile
-        Tile mt = findTile(p);
-        if (tile.getId().equals(mt.getId())) {
-          //same tile continue
-        } else {
-          //Other tile so really occupied
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  @Deprecated
-  public static boolean containsPoint(Set<Point> points) {
-    for (Point p : points) {
-      return tiles.containsKey(p) || tileAltPoints.containsKey(p);
-    }
-    return false;
-  }
-
-  public static boolean containsPoint(Point point) {
-    return tiles.containsKey(point) || tileAltPoints.containsKey(point);
-  }
-
-  @Deprecated
-  public static Point checkAvailable(Point newPoint, Orientation orientation) {
-    if (tiles.containsKey(newPoint)) {
-      Tile et = tiles.get(newPoint);
-      Logger.trace("@ " + newPoint + " is allready occcupied by: " + et + "...");
-      //Search for the nearest avalaible free point 
-      //first get the Center point of the tile which is occuping this slot
-      // show warning!
-      Point ecp = et.getCenter();
-
-      int w = et.getWidth();
-      int h = et.getHeight();
-
-      Point np;
-      np = switch (orientation) {
-        case EAST ->
-          new Point(ecp.x + w, ecp.y);
-        case WEST ->
-          new Point(newPoint.x - w, ecp.y);
-        case SOUTH ->
-          new Point(ecp.x, newPoint.y + h);
-        default ->
-          new Point(ecp.x, newPoint.y - h);
-      };
-
-      Logger.trace("Alternative CP: " + np);
-      // recursive check
-      return checkAvailable(np, orientation);
-    } else {
-      Logger.trace("@ " + newPoint + " is not yet used...");
-
-      return newPoint;
-    }
-  }
-
+//  @Deprecated
+//  public static boolean checkTileOccupation(Tile tile) {
+//    Set<Point> tilePoints = tile.getAllPoints();
+//    for (Point p : tilePoints) {
+//      if (tiles.containsKey(p) || tileAltPoints.containsKey(p)) {
+//        //The is a match, check if it is an other tile
+//        Tile mt = findTile(p);
+//        if (tile.getId().equals(mt.getId())) {
+//          //same tile continue
+//        } else {
+//          //Other tile so really occupied
+//          return true;
+//        }
+//      }
+//    }
+//    return false;
+//  }
+//  @Deprecated
+//  public static boolean containsPoint(Set<Point> points) {
+//    for (Point p : points) {
+//      return tiles.containsKey(p) || tileAltPoints.containsKey(p);
+//    }
+//    return false;
+//  }
+//  public static boolean containsPoint(Point point) {
+//    return tiles.containsKey(point) || tileAltPoints.containsKey(point);
+//  }
+//  @Deprecated
+//  public static Point checkAvailable(Point newPoint, Orientation orientation) {
+//    if (tiles.containsKey(newPoint)) {
+//      Tile et = tiles.get(newPoint);
+//      Logger.trace("@ " + newPoint + " is allready occcupied by: " + et + "...");
+//      //Search for the nearest avalaible free point 
+//      //first get the Center point of the tile which is occuping this slot
+//      // show warning!
+//      Point ecp = et.getCenter();
+//
+//      int w = et.getWidth();
+//      int h = et.getHeight();
+//
+//      Point np;
+//      np = switch (orientation) {
+//        case EAST ->
+//          new Point(ecp.x + w, ecp.y);
+//        case WEST ->
+//          new Point(newPoint.x - w, ecp.y);
+//        case SOUTH ->
+//          new Point(ecp.x, newPoint.y + h);
+//        default ->
+//          new Point(ecp.x, newPoint.y - h);
+//      };
+//
+//      Logger.trace("Alternative CP: " + np);
+//      // recursive check
+//      return checkAvailable(np, orientation);
+//    } else {
+//      Logger.trace("@ " + newPoint + " is not yet used...");
+//
+//      return newPoint;
+//    }
+//  }
   public static Tile rotateTile(Tile tile) {
     if (!tiles.containsKey(tile.getCenter())) {
       Logger.warn("Tile " + tile.getId() + " NOT in cache!");
@@ -363,41 +341,36 @@ public class TileCache {
     return tile;
   }
 
-  @Deprecated
-  public static void addTileEventListener(TileEventListener listener) {
-    String key = listener.getId();
-    //tileEventListeners.put(key, listener);
-  }
-
-  @Deprecated
-  public static void removeTileEventListener(Tile tile) {
-    if (tile instanceof TileEventListener tileEventListener) {
-      removeTileEventListener(tileEventListener);
-    }
-  }
-
-  static void removeTileEventListener(TileEventListener listener) {
-    String key = listener.getId();
-    //tileEventListeners.remove(key, listener);
-  }
-
-  @Deprecated
-  public static void fireTileEventListener(TileEvent tileEvent) {
-//    String key = tileEvent.getTileId();
-//    TileEventListener listener = tileEventListeners.get(key);
-//    if (listener != null) {
-//      listener.onTileChange(tileEvent);
-//      Logger.trace("Fire listener on tile " + key);
-//    } else {
-//      //Logger.trace("Tile " + key + " not available");
+//  @Deprecated
+//  public static void addTileEventListener(TileEventListener listener) {
+//    String key = listener.getId();
+//    //tileEventListeners.put(key, listener);
+//  }
+//  @Deprecated
+//  public static void removeTileEventListener(Tile tile) {
+//    if (tile instanceof TileEventListener tileEventListener) {
+//      removeTileEventListener(tileEventListener);
 //    }
-  }
-
-  @Deprecated
-  public static void fireAllTileEventListeners(TileEvent tileEvent) {
-//    for (TileEventListener listener : tileEventListeners.values()) {
-//      listener.onTileChange(tileEvent);
-//    }
-  }
-
+//  }
+//  static void removeTileEventListener(TileEventListener listener) {
+//    String key = listener.getId();
+//    //tileEventListeners.remove(key, listener);
+//  }
+//  @Deprecated
+//  public static void fireTileEventListener(TileEvent tileEvent) {
+////    String key = tileEvent.getTileId();
+////    TileEventListener listener = tileEventListeners.get(key);
+////    if (listener != null) {
+////      listener.onTileChange(tileEvent);
+////      Logger.trace("Fire listener on tile " + key);
+////    } else {
+////      //Logger.trace("Tile " + key + " not available");
+////    }
+//  }
+//  @Deprecated
+//  public static void fireAllTileEventListeners(TileEvent tileEvent) {
+////    for (TileEventListener listener : tileEventListeners.values()) {
+////      listener.onTileChange(tileEvent);
+////    }
+//  }
 }

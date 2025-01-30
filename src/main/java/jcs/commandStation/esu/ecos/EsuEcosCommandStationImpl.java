@@ -56,6 +56,7 @@ import jcs.commandStation.VirtualConnection;
 import static jcs.entities.AccessoryBean.AccessoryValue.GREEN;
 import static jcs.entities.AccessoryBean.AccessoryValue.RED;
 import jcs.entities.LocomotiveBean;
+import jcs.util.NetworkUtil;
 import org.tinylog.Logger;
 
 public class EsuEcosCommandStationImpl extends AbstractController implements DecoderController, AccessoryController, FeedbackController {
@@ -98,8 +99,6 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     connect();
   }
 
-  
-  
   @Override
   public boolean connect() {
     if (!connected) {
@@ -122,10 +121,17 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
         if (commandStationBean.getIpAddress() != null) {
           EcosConnectionFactory.writeLastUsedIpAddressProperty(commandStationBean.getIpAddress());
         } else {
-          //try to discover the ECoS
-          InetAddress ecosAddr = EcosConnectionFactory.discoverEcos();
-          String ip = ecosAddr.getHostAddress();
+
+          String ip;
+          if (!virtual) {
+            //try to discover the ECoS
+            InetAddress ecosAddr = EcosConnectionFactory.discoverEcos();
+            ip = ecosAddr.getHostAddress();
+          } else {
+            ip = NetworkUtil.getIPv4HostAddress().getHostAddress();
+          }
           commandStationBean.setIpAddress(ip);
+
           EcosConnectionFactory.writeLastUsedIpAddressProperty(commandStationBean.getIpAddress());
           canConnect = ip != null;
           if (!canConnect) {
@@ -231,10 +237,9 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
       reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
-      
+
       //TODO: Start of day...
       //feedbackManager.update(reply);
-
       connection.sendMessage(EcosMessageFactory.subscribeFeedbackModule(moduleId));
       //Logger.trace("r: "+reply.getResponse());
     }
