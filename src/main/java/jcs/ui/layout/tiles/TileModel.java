@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 fransjacobs.
+ * Copyright 2025 Frans Jacobs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,10 @@ public interface TileModel extends Serializable {
   public TileBean.Orientation getTileOrienation();
 
   void setTileOrienation(TileBean.Orientation tileOrienation);
+
+  public TileBean.Orientation getIncomingSide();
+
+  void setIncomingSide(TileBean.Orientation incomingSide);
 
   boolean isShowRoute();
 

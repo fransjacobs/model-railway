@@ -18,7 +18,6 @@ package jcs.ui.layout.tiles;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -28,16 +27,11 @@ import jcs.entities.TileBean.Orientation;
 
 /**
  *
- * @author fransjacobs
  */
-@SuppressWarnings("serial") // Same-version serialization only
 public class DefaultTileModel implements TileModel {
 
   protected transient ChangeEvent changeEvent = null;
 
-  /**
-   * Stores the listeners on this model.
-   */
   protected EventListenerList listenerList = new EventListenerList();
 
   protected boolean selected = false;
@@ -45,6 +39,8 @@ public class DefaultTileModel implements TileModel {
   protected boolean scaleImage = true;
   protected boolean showCenter = false;
   protected Orientation tileOrienation;
+  protected Orientation incomingSide;
+
   protected boolean showRoute = false;
   protected boolean showBlockState = false;
   protected boolean showLocomotiveImage = false;
@@ -93,7 +89,7 @@ public class DefaultTileModel implements TileModel {
     } else {
       this.selectedColor = Tile.DEFAULT_SELECTED_COLOR;
     }
-    
+
     if (!this.selectedColor.equals(prevColor)) {
       fireStateChanged();
     }
@@ -130,6 +126,16 @@ public class DefaultTileModel implements TileModel {
   public void setTileOrienation(Orientation tileOrienation) {
     this.tileOrienation = tileOrienation;
     fireStateChanged();
+  }
+  
+  @Override
+  public Orientation getIncomingSide() {
+    return incomingSide;
+  }
+
+  @Override
+  public void setIncomingSide(Orientation incomingSide) {
+    this.incomingSide = incomingSide;
   }
 
   @Override
@@ -310,30 +316,21 @@ public class DefaultTileModel implements TileModel {
   /**
    * Returns an array of all the change listeners registered on this <code>DefaultButtonModel</code>.
    *
-   * @return all of this model's <code>ChangeListener</code>s or an empty array if no change listeners are currently registered
-   *
-   * @see #addChangeListener
-   * @see #removeChangeListener
-   *
-   * @since 1.4
+   * @return
    */
   public ChangeListener[] getChangeListeners() {
     return listenerList.getListeners(ChangeListener.class);
   }
 
   /**
-   * Notifies all listeners that have registered interest for notification on this event type. The event instance is created lazily.
-   *
-   * @see EventListenerList
+   * Notifies all listeners that have registered interest for notification on this event type.br> The event instance is created lazily.
    */
   protected void fireStateChanged() {
-    // Guaranteed to return a non-null array
     Object[] listeners = listenerList.getListenerList();
     // Process the listeners last to first, notifying
     // those that are interested in this event
     for (int i = listeners.length - 2; i >= 0; i -= 2) {
       if (listeners[i] == ChangeListener.class) {
-        // Lazily create the event:
         if (changeEvent == null) {
           changeEvent = new ChangeEvent(this);
         }
@@ -342,34 +339,9 @@ public class DefaultTileModel implements TileModel {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
-//  @Override
-//  public void addItemListener(ItemListener l) {
-//    listenerList.add(ItemListener.class, l);
+//  public ItemListener[] getItemListeners() {
+//    return listenerList.getListeners(ItemListener.class);
 //  }
-  /**
-   * {@inheritDoc}
-   */
-//  @Override
-//  public void removeItemListener(ItemListener l) {
-//    listenerList.remove(ItemListener.class, l);
-//  }
-  /**
-   * Returns an array of all the item listeners registered on this <code>DefaultButtonModel</code>.
-   *
-   * @return all of this model's <code>ItemListener</code>s or an empty array if no item listeners are currently registered
-   *
-   * @see #addItemListener
-   * @see #removeItemListener
-   *
-   * @since 1.4
-   */
-  public ItemListener[] getItemListeners() {
-    return listenerList.getListeners(ItemListener.class);
-  }
-
   @Override
   public void addActionListener(ActionListener l) {
     listenerList.add(ActionListener.class, l);
@@ -389,16 +361,14 @@ public class DefaultTileModel implements TileModel {
    * Notifies all listeners that have registered interest for notification on this event type.
    *
    * @param e the <code>ActionEvent</code> to deliver to listeners
-   * @see EventListenerList
    */
   protected void fireActionPerformed(ActionEvent e) {
-    // Guaranteed to return a non-null array
     Object[] listeners = listenerList.getListenerList();
     // Process the listeners last to first, notifying
     // those that are interested in this event
     for (int i = listeners.length - 2; i >= 0; i -= 2) {
       if (listeners[i] == ActionListener.class) {
-        // Lazily create the event:
+
         // if (changeEvent == null)
         // changeEvent = new ChangeEvent(this);
         ((ActionListener) listeners[i + 1]).actionPerformed(e);
@@ -406,11 +376,4 @@ public class DefaultTileModel implements TileModel {
     }
   }
 
-  /**
-   * Overridden to return <code>null</code>.
-   */
-//  @Override
-//  public Object[] getSelectedObjects() {
-//    return null;
-//  }
 }
