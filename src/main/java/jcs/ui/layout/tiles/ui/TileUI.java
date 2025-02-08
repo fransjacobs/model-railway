@@ -37,8 +37,7 @@ import org.imgscalr.Scalr;
 import org.tinylog.Logger;
 
 /**
- *
- * @author fransjacobs
+ * The drawing functionality of a Tile.
  */
 public abstract class TileUI extends ComponentUI {
 
@@ -150,8 +149,6 @@ public abstract class TileUI extends ComponentUI {
     Tile tile = (Tile) c;
     TileModel model = ((Tile) c).getModel();
     TileBean.Orientation tileOrientation = model.getTileOrienation();
-
-    //BufferedImage bf = new BufferedImage(tile.getRenderWidth(), tile.getRenderHeight(), BufferedImage.TYPE_INT_RGB);
     BufferedImage bf = createImage();
     Graphics2D g2di = bf.createGraphics();
 

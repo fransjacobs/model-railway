@@ -28,6 +28,9 @@ import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.ui.CurvedUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a Curved track on the layout
+ */
 public class Curved extends Tile {
 
   public Curved(TileBean tileBean) {

@@ -28,6 +28,9 @@ import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.ui.EndUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a End track on the layout
+ */
 public class End extends Tile {
 
   public End(TileBean tileBean) {

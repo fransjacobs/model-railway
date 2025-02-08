@@ -16,7 +16,6 @@
 package jcs.ui.layout.tiles.ui;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
@@ -33,9 +32,6 @@ public class CurvedUI extends TileUI {
 
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
-    Tile tile = (Tile) c;
-    //Color trackColor = tile.getTrackColor();
-    
     int[] xPoints = new int[]{400, 400, 170, 230};
     int[] yPoints = new int[]{230, 170, 400, 400};
 
@@ -47,9 +43,6 @@ public class CurvedUI extends TileUI {
 
   @Override
   public void renderTileRoute(Graphics2D g2, JComponent c) {
-    Tile tile = (Tile) c;
-    //Color trackRouteColor = tile.getTrackRouteColor();
-    
     int[] xPoints = new int[]{400, 400, 190, 210};
     int[] yPoints = new int[]{210, 190, 400, 400};
 

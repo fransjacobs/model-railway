@@ -25,6 +25,9 @@ import jcs.entities.TileBean;
 import jcs.entities.TileBean.Orientation;
 import jcs.entities.TileBean.TileType;
 
+/**
+ * Representation of a Straight track on the layout
+ */
 public class Straight extends Tile {
 
   public Straight(TileBean tileBean) {

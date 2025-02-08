@@ -101,8 +101,6 @@ public class SwitchUI extends TileUI {
   public void renderTile(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;
     AccessoryValue accessoryValue = tile.getAccessoryValue();
-    //Color trackColor = tile.getTrackColor();
-
     if (accessoryValue == null) {
       accessoryValue = AccessoryBean.AccessoryValue.OFF;
     }
@@ -127,7 +125,6 @@ public class SwitchUI extends TileUI {
   public void renderTileRoute(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;
     AccessoryValue routeValue = tile.getRouteValue();
-    //Color trackRouteColor = tile.getTrackRouteColor();
 
     if (routeValue == null) {
       routeValue = AccessoryBean.AccessoryValue.OFF;

@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
+import jcs.entities.TileBean.Orientation;
 import jcs.ui.layout.tiles.Tile;
 
 public class CrossingUI extends StraightUI {
@@ -32,9 +33,6 @@ public class CrossingUI extends StraightUI {
   }
 
   protected void renderVerticalAndDividers(Graphics2D g2, JComponent c) {
-    Tile tile = (Tile) c;
-    //Color trackColor = tile.getTrackColor();
-
     int xxn = 175;
     int yyn = 0;
     int xxs = 175;
@@ -65,16 +63,12 @@ public class CrossingUI extends StraightUI {
   }
 
   protected void renderRouteVertical(Graphics2D g2, JComponent c) {
-    Tile tile = (Tile) c;
-    //Color trackRouteColor = tile.getTrackRouteColor();
-
-    int xxn, yyn, xxs, yys, w, h;
-    xxn = 190;
-    yyn = 0;
-    xxs = 190;
-    yys = 325;
-    w = 20;
-    h = 75;
+    int xxn = 190;
+    int yyn = 0;
+    int xxs = 190;
+    int yys = 325;
+    int w = 20;
+    int h = 75;
 
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackRouteColor);
@@ -89,6 +83,21 @@ public class CrossingUI extends StraightUI {
   public void renderTile(Graphics2D g2, JComponent c) {
     renderStraight(g2, c);
     renderVerticalAndDividers(g2, c);
+  }
+
+  @Override
+  public void renderTileRoute(Graphics2D g2, JComponent c) {
+    Tile tile = (Tile) c;
+    Orientation incomingSide = tile.getIncomingSide();
+    if (tile.isHorizontal() && (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide)) {
+      renderRouteVertical(g2, c);
+    } else if (tile.isHorizontal() && (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide)) {
+      renderRouteStraight(g2, c);
+    } else if (tile.isVertical() && (Orientation.WEST == incomingSide || Orientation.EAST == incomingSide)) {
+      renderRouteVertical(g2, c);
+    } else {
+      renderRouteStraight(g2, c);
+    }
   }
 
 }

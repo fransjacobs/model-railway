@@ -36,40 +36,11 @@ public class CrossUI extends TileUI {
 
   public CrossUI() {
     super();
-    //Default is east
-//    this.renderWidth = RENDER_GRID * 4;
-//    this.renderHeight = RENDER_GRID * 2;
   }
 
   public static ComponentUI createUI(JComponent c) {
     return new CrossUI();
   }
-
-//  public void changeRenderSize(Tile tile) {
-//    //Reset offsets
-//    //this.offsetY = 0;
-//    //this.renderOffsetY = 0;
-//    //this.offsetX = 0;
-//    //this.renderOffsetX = 0;
-//
-//    if (tile.isHorizontal()) {
-//      this.renderWidth = RENDER_GRID * 4;
-//      this.renderHeight = RENDER_GRID * 2;
-//
-//      //this.offsetY = 0;
-//      //this.renderOffsetY = 0;
-//    } else {
-//      this.renderWidth = RENDER_GRID * 2;
-//      this.renderHeight = RENDER_GRID * 4;
-//
-//      //this.offsetX = 0;
-//      //this.renderOffsetX = 0;
-//    }
-//
-//    //Due to the asymetical shape (center is on the left)
-//    //the offset has to be changed with the rotation
-////    }
-//  }
 
   protected void renderStraight(Graphics2D g2, Color color) {
     int xx = 0;
@@ -237,8 +208,6 @@ public class CrossUI extends TileUI {
       routeValue = AccessoryBean.AccessoryValue.OFF;
     }
 
-    //Color trackColor = tile.getTrackColor();
-    //Color trackRouteColor = tile.getTrackRouteColor();
     if (tile.isHorizontal()) {
       if (AccessoryBean.AccessoryValue.GREEN == routeValue && (TileBean.Orientation.NORTH == incomingSide || TileBean.Orientation.SOUTH == incomingSide)) {
         renderRouteDiagonal(g2, trackRouteColor, c);

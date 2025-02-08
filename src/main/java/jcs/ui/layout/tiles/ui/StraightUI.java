@@ -16,11 +16,9 @@
 package jcs.ui.layout.tiles.ui;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
-import jcs.ui.layout.tiles.Tile;
 
 public class StraightUI extends TileUI {
 
@@ -32,9 +30,6 @@ public class StraightUI extends TileUI {
   }
 
   protected void renderStraight(Graphics2D g2, JComponent c) {
-    Tile tile = (Tile) c;
-    //Color trackColor = tile.getTrackColor();
-
     int xx = 0;
     int yy = 170;
     int w = RENDER_WIDTH;
@@ -47,15 +42,12 @@ public class StraightUI extends TileUI {
   }
 
   protected void renderRouteStraight(Graphics2D g2, JComponent c) {
-    Tile tile = (Tile) c;
-
     int xx, yy, w, h;
     xx = 0;
     yy = 190;
     w = RENDER_WIDTH;
     h = 20;
 
-    //Color trackRouteColor = tile.getTrackRouteColor();
     g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
     g2.setPaint(trackRouteColor);
 

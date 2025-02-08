@@ -32,9 +32,6 @@ public class EndUI extends TileUI {
   }
 
   protected void renderEnd(Graphics2D g2, JComponent c) {
-    Tile tile = (Tile) c;
-    //Color trackColor = tile.getTrackColor();
-
     int xx = 0;
     int yy = 175;
     int w = RENDER_GRID;

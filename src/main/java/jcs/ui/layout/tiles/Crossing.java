@@ -25,6 +25,9 @@ import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.ui.CrossingUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a (passive) Crossing the layout
+ */
 public class Crossing extends Straight {
 
   public Crossing(TileBean tileBean) {

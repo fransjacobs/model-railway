@@ -34,6 +34,9 @@ import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.ui.SwitchUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a Switch or Turnout on the layout
+ */
 public class Switch extends Tile implements AccessoryEventListener {
 
   public Switch(Orientation orientation, Direction direction, Point center) {
@@ -180,96 +183,6 @@ public class Switch extends Tile implements AccessoryEventListener {
     return edgeConnections;
   }
 
-//  protected void renderStraight(Graphics2D g2, Color color) {
-//    int xx, yy, w, h;
-//    xx = 0;
-//    yy = 170;
-//    w = RENDER_WIDTH;
-//    h = 60;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//
-//    g2.fillRect(xx, yy, w, h);
-//  }
-//  protected void renderDiagonal(Graphics2D g2, Color color) {
-//    int[] xPoints, yPoints;
-//    if (Direction.RIGHT.equals(getDirection())) {
-//      xPoints = new int[]{400, 400, 170, 230};
-//      yPoints = new int[]{170, 230, 0, 0};
-//    } else {
-//      xPoints = new int[]{400, 400, 170, 230};
-//      yPoints = new int[]{230, 170, 400, 400};
-//    }
-//
-//    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-//  }
-//  protected void renderRouteStraight(Graphics2D g2, Color color) {
-//    int xx, yy, w, h;
-//    xx = 0;
-//    yy = 190;
-//    w = RENDER_WIDTH;
-//    h = 20;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//
-//    g2.fillRect(xx, yy, w, h);
-//  }
-//  protected void renderRouteDiagonal(Graphics2D g2, Color color) {
-//    int[] xPoints, yPoints;
-//    if (Direction.RIGHT.equals(getDirection())) {
-//      xPoints = new int[]{400, 400, 190, 210};
-//      yPoints = new int[]{190, 210, 0, 0};
-//    } else {
-//      xPoints = new int[]{400, 400, 190, 210};
-//      yPoints = new int[]{210, 190, 400, 400};
-//    }
-//
-//    g2.setStroke(new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//
-//    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-//  }
-//  @Override
-//  public void renderTile(Graphics2D g2) {
-//    if (accessoryValue == null) {
-//      this.accessoryValue = AccessoryValue.OFF;
-//    }
-//
-//    switch (accessoryValue) {
-//      case RED -> {
-//        renderStraight(g2, trackColor);
-//        renderDiagonal(g2, Color.red);
-//      }
-//      case GREEN -> {
-//        renderDiagonal(g2, trackColor);
-//        renderStraight(g2, Color.green);
-//      }
-//      default -> {
-//        renderStraight(g2, trackColor);
-//        renderDiagonal(g2, trackColor);
-//      }
-//    }
-//  }
-//  @Override
-//  public void renderTileRoute(Graphics2D g2) {
-//    if (routeValue == null) {
-//      routeValue = AccessoryValue.OFF;
-//    }
-//    switch (routeValue) {
-//      case RED -> {
-//        renderRouteDiagonal(g2, trackRouteColor);
-//      }
-//      case GREEN -> {
-//        renderRouteStraight(g2, trackRouteColor);
-//      }
-//      default -> {
-//      }
-//    }
-//  }
   @Override
   public void onAccessoryChange(AccessoryEvent event) {
     if (getAccessoryBean() != null && event.isEventFor(accessoryBean)) {

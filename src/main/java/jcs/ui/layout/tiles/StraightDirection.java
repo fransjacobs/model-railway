@@ -24,6 +24,9 @@ import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.ui.StraightDirectionUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a Straight track where trans can only run in one direction on the layout
+ */
 public class StraightDirection extends Straight {
 
   public StraightDirection(TileBean tileBean) {
@@ -74,19 +77,4 @@ public class StraightDirection extends Straight {
     }
     return arrowDirection && isAdjacent(other);
   }
-
-//  private void renderDirectionArrow(Graphics2D g2) {
-//    //   |\
-//    // ==|+===
-//    //   |/
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(Color.green.darker());
-//
-//    g2.fillPolygon(new int[]{150, 150, 270}, new int[]{130, 270, 200}, 3);
-//  }
-//  @Override
-//  public void renderTile(Graphics2D g2d) {
-//    renderStraight(g2d);
-//    renderDirectionArrow(g2d);
-//  }
 }

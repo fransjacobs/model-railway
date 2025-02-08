@@ -40,6 +40,9 @@ import static jcs.ui.layout.tiles.Tile.tileWidth;
 import jcs.ui.layout.tiles.ui.CrossUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a Cross switch on the layout
+ */
 public class Cross extends Switch {
 
   public static final int CROSS_WIDTH = DEFAULT_WIDTH * 2;
@@ -254,223 +257,6 @@ public class Cross extends Switch {
     return edgeConnections;
   }
 
-//  @Override
-//  protected void renderStraight(Graphics2D g2, Color color) {
-//    int xx, yy, w, h;
-//    xx = 0;
-//    yy = 170;
-//    w = RENDER_WIDTH;
-//    h = 60;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillRect(xx, yy, w, h);
-//  }
-//  @Override
-//  protected void renderRouteStraight(Graphics2D g2, Color color) {
-//    int xx, yy, w, h;
-//    xx = 0;
-//    yy = 190;
-//    w = RENDER_WIDTH;
-//    h = 20;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillRect(xx, yy, w, h);
-//  }
-//  protected void renderStraight2(Graphics2D g2, Color color) {
-//    int xx, yy, w, h;
-//    xx = RENDER_WIDTH;
-//    yy = 170;
-//    w = RENDER_WIDTH;
-//    h = 60;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillRect(xx, yy, w, h);
-//  }
-//  protected void renderRouteStraight2(Graphics2D g2, Color color) {
-//    int xx, yy, w, h;
-//    xx = RENDER_WIDTH;
-//    yy = 190;
-//    w = RENDER_WIDTH;
-//    h = 20;
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.JOIN_MITER, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillRect(xx, yy, w, h);
-//  }
-//  @Override
-//  protected void renderDiagonal(Graphics2D g2, Color color) {
-//    int[] xPoints, yPoints;
-//    if (Direction.RIGHT.equals(getDirection())) {
-//      xPoints = new int[]{400, 400, 167, 230};
-//      yPoints = new int[]{170, 230, 0, 0};
-//    } else {
-//      xPoints = new int[]{400, 400, 170, 230};
-//      yPoints = new int[]{230, 170, 400, 400};
-//    }
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-//  }
-//  @Override
-//  protected void renderRouteDiagonal(Graphics2D g2, Color color) {
-//    int[] xPoints, yPoints;
-//    if (Direction.RIGHT.equals(getDirection())) {
-//      xPoints = new int[]{420, 400, 190, 210};
-//      yPoints = new int[]{210, 210, 0, 0};
-//    } else {
-//      xPoints = new int[]{400, 400, 190, 210};
-//      yPoints = new int[]{210, 190, 400, 400};
-//    }
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-//  }
-//  protected void renderDiagonal2(Graphics2D g2, Color color) {
-//    int[] xPoints, yPoints;
-//    if (Direction.RIGHT.equals(getDirection())) {
-//      xPoints = new int[]{400, 400, 570, 630};
-//      yPoints = new int[]{170, 230, 400, 400};
-//    } else {
-//      xPoints = new int[]{400, 400, 570, 630};
-//      yPoints = new int[]{230, 170, 0, 0};
-//    }
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-//  }
-//  protected void renderRouteDiagonal2(Graphics2D g2, Color color) {
-//    int[] xPoints, yPoints;
-//    if (Direction.RIGHT.equals(getDirection())) {
-//      xPoints = new int[]{400, 380, 590, 610};
-//      yPoints = new int[]{190, 190, 400, 400};
-//    } else {
-//      xPoints = new int[]{400, 380, 590, 610};
-//      yPoints = new int[]{210, 210, 0, 0};
-//    }
-//
-//    g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-//    g2.setPaint(color);
-//    g2.setPaint(Color.cyan);
-//    g2.fillPolygon(xPoints, yPoints, xPoints.length);
-//  }
-//  @Override
-//  public void renderTile(Graphics2D g2) {
-//    if (accessoryValue == null) {
-//      this.accessoryValue = AccessoryValue.OFF;
-//    }
-//
-//    switch (accessoryValue) {
-//      case RED -> {
-//        renderStraight2(g2, Cross.LIGHT_RED);
-//        renderDiagonal(g2, Cross.LIGHT_RED);
-//        renderStraight(g2, Cross.DARK_RED);
-//        renderDiagonal2(g2, Cross.DARK_RED);
-//      }
-//      case GREEN -> {
-//        renderDiagonal(g2, Cross.VERY_LIGHT_GREEN);
-//        renderDiagonal2(g2, Cross.VERY_LIGHT_GREEN);
-//        renderStraight(g2, Cross.DARK_GREEN);
-//        renderStraight2(g2, Cross.DARK_GREEN);
-//      }
-//      default -> {
-//        renderStraight(g2, trackColor);
-//        renderStraight2(g2, trackColor);
-//        renderDiagonal(g2, trackColor);
-//        renderDiagonal2(g2, trackColor);
-//      }
-//    }
-//  }
-//  @Override
-//  public void renderTileRoute(Graphics2D g2) {
-//    if (routeValue == null) {
-//      routeValue = AccessoryValue.OFF;
-//    }
-//    if (model.getIncomingSide() == null) {
-//      model.setIncomingSide(model.getTileOrienation());
-//    }
-//
-//    Orientation incomingSide = model.getIncomingSide();
-//
-//    if (isHorizontal()) {
-//      if (AccessoryValue.GREEN == routeValue && (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide)) {
-//        renderRouteDiagonal(g2, trackRouteColor);
-//        renderRouteDiagonal2(g2, trackRouteColor);
-//      } else if (AccessoryValue.GREEN == routeValue && (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide)) {
-//        renderRouteStraight(g2, trackRouteColor);
-//        renderRouteStraight2(g2, trackRouteColor);
-//      } else if (AccessoryValue.RED == routeValue && Orientation.EAST == getOrientation()) {
-//        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor);
-//        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteDiagonal2(g2, trackRouteColor);
-//          renderRouteStraight(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight(g2, trackColor);
-//          renderRouteDiagonal2(g2, trackColor);
-//        }
-//      } else if (AccessoryValue.RED == routeValue && Orientation.WEST == getOrientation()) {
-//        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor);
-//        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteDiagonal(g2, trackRouteColor);
-//          renderRouteStraight2(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackColor);
-//          renderRouteDiagonal(g2, trackColor);
-//        }
-//      }
-//    } else {
-//      if (AccessoryValue.GREEN == routeValue && (Orientation.NORTH == incomingSide || Orientation.SOUTH == incomingSide)) {
-//        renderRouteStraight(g2, trackRouteColor);
-//        renderRouteStraight2(g2, trackRouteColor);
-//      } else if (AccessoryValue.GREEN == routeValue && (Orientation.EAST == incomingSide || Orientation.WEST == incomingSide)) {
-//        renderRouteDiagonal(g2, trackRouteColor);
-//        renderRouteDiagonal2(g2, trackRouteColor);
-//      } else if (AccessoryValue.RED == routeValue && Orientation.SOUTH == getOrientation()) {
-//        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor);
-//        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteDiagonal2(g2, trackRouteColor);
-//          renderRouteStraight(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackColor);
-//          renderRouteDiagonal(g2, trackColor);
-//        }
-//      } else if (AccessoryValue.RED == routeValue && Orientation.NORTH == getOrientation()) {
-//        if (Direction.RIGHT == getDirection() && (Orientation.EAST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight(g2, trackRouteColor);
-//          renderRouteDiagonal2(g2, trackRouteColor);
-//        } else if (Direction.RIGHT == getDirection() && (Orientation.WEST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteDiagonal(g2, trackRouteColor);
-//          renderRouteStraight2(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.EAST == incomingSide || Orientation.NORTH == incomingSide)) {
-//          renderRouteStraight2(g2, trackRouteColor);
-//          renderRouteDiagonal(g2, trackRouteColor);
-//        } else if (Direction.LEFT == getDirection() && (Orientation.WEST == incomingSide || Orientation.SOUTH == incomingSide)) {
-//          renderRouteStraight(g2, trackColor);
-//          renderRouteDiagonal2(g2, trackColor);
-//        }
-//      }
-//    }
-//  }
   @Override
   public AccessoryValue accessoryValueForRoute(Orientation from, Orientation to) {
     if (from != null && to != null && this.getDirection() != null) {
@@ -540,45 +326,6 @@ public class Cross extends Switch {
     }
   }
 
-//  @Override
-//  protected void drawCenterPoint(Graphics2D g2d, Color color, double size) {
-//    //A Cross has 1 alternate point
-//    //1st square holds the centerpoint
-//    //2nd square 
-//    double dX1, dX2, dY1, dY2;
-//    Orientation tileOrientation = model.getTileOrienation();
-//    switch (tileOrientation) {
-//      case SOUTH -> {
-//        dX1 = renderWidth / 2 - size / 2;
-//        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
-//        dX2 = renderWidth / 2 + renderWidth - size / 4;
-//        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
-//      }
-//      case WEST -> {
-//        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
-//        dY1 = renderHeight / 2 - size / 2;
-//        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
-//        dY2 = renderHeight / 2 - size / 4;
-//      }
-//      case NORTH -> {
-//        dX1 = renderWidth / 2 - size / 2;
-//        dY1 = renderHeight / 2 - renderHeight / 4 - size / 2;
-//        dX2 = renderWidth / 2 + renderWidth - size / 4;
-//        dY2 = renderHeight / 2 - renderHeight / 4 - size / 4;
-//      }
-//      default -> {
-//        //East
-//        dX1 = renderWidth / 2 - renderWidth / 4 - size / 2;
-//        dY1 = renderHeight / 2 - size / 2;
-//        dX2 = renderWidth / 2 + renderWidth / 4 - size / 4;
-//        dY2 = renderHeight / 2 - size / 4;
-//      }
-//    }
-//
-//    g2d.setColor(color);
-//    g2d.fill(new Ellipse2D.Double(dX1, dY1, size, size));
-//    g2d.fill(new Ellipse2D.Double(dX2, dY2, size / 2, size / 2));
-//  }
   @Override
   public Rectangle getTileBounds() {
     Orientation tileOrientation = model.getTileOrienation();
@@ -627,54 +374,13 @@ public class Cross extends Switch {
   }
 
   private void changeRenderSizeAndOffsets() {
-
-//    if (getUI() instanceof CrossUI cui) {
-//
-//      cui.changeRenderSize(this);
-//    } else {
-//      Logger.warn("UI is a "+getUI().getClass().getSimpleName());
-//    }
-    //Reset offsets
-//    this.offsetY = 0;
     this.renderOffsetY = 0;
-//    this.offsetX = 0;
     this.renderOffsetX = 0;
     if (isHorizontal()) {
-      //this.renderWidth = RENDER_GRID * 4;
-      //this.renderHeight = RENDER_GRID * 2;
-
-//      this.offsetY = 0;
       this.renderOffsetY = 0;
     } else {
-      //this.renderWidth = RENDER_GRID * 2;
-      //this.renderHeight = RENDER_GRID * 4;
-
-      ///     this.offsetX = 0;
       this.renderOffsetX = 0;
     }
-
-    //Due to the asymetical shape (center is on the left)
-    //the offset has to be changed with the rotation
-//    Orientation tileOrientation = model.getTileOrienation();
-//    switch (tileOrientation) {
-//      case SOUTH -> {
-//        this.offsetY = +GRID;
-//        this.renderOffsetY = RENDER_GRID;
-//      }
-//      case WEST -> {
-//        this.offsetX = -GRID;
-//        this.renderOffsetX = -RENDER_GRID;
-//      }
-//      case NORTH -> {
-//        this.offsetY = -GRID;
-//        this.renderOffsetY = -RENDER_GRID;
-//      }
-//      default -> {
-//        //East so default 
-//        this.offsetX = +GRID;
-//        this.renderOffsetX = +RENDER_GRID;
-//      }
-//    }
   }
 
   @Override

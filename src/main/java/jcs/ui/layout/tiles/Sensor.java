@@ -26,6 +26,9 @@ import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.tiles.ui.SensorUI;
 import jcs.ui.layout.tiles.ui.TileUI;
 
+/**
+ * Representation of a Sensor in a track on the layout
+ */
 public class Sensor extends Straight implements SensorEventListener {
 
   public Sensor(TileBean tileBean) {
