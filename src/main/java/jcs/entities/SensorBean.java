@@ -147,7 +147,7 @@ public class SensorBean implements Serializable {
       status = 0;
     }
     previousStatus = status;
-    Date lastChanged = this.lastUpdated;
+    Date lastChanged = lastUpdated;
     if (lastChanged == null) {
       lastChanged = new Date();
     }
@@ -177,8 +177,14 @@ public class SensorBean implements Serializable {
     return lastUpdated;
   }
 
-  public void setLastUpdated(Date lastUpdated) {
-    this.lastUpdated = lastUpdated;
+  public void setLastUpdated(Date updatedOn) {
+    Date prevUpdated = lastUpdated;
+    lastUpdated = updatedOn;
+
+    if (lastUpdated != null && prevUpdated != null) {
+      Long m = (updatedOn.getTime() - prevUpdated.getTime()) / 10;
+      this.millis = m.intValue();
+    }
   }
 
   @Transient
@@ -191,20 +197,26 @@ public class SensorBean implements Serializable {
   }
 
   public void setActive(boolean active) {
-    this.status = active ? 1 : 0;
+    previousStatus = status;
+    status = active ? 1 : 0;
   }
 
   public void setPreviousActive(boolean active) {
-    this.previousStatus = active ? 1 : 0;
+    previousStatus = active ? 1 : 0;
   }
 
   @Transient
   public boolean isPreviousActive() {
-    if (this.previousStatus != null) {
-      return this.previousStatus > 0;
+    if (previousStatus != null) {
+      return previousStatus > 0;
     } else {
       return false;
     }
+  }
+
+  @Transient
+  public boolean hasChanged() {
+    return !status.equals(previousStatus);
   }
 
   @Override

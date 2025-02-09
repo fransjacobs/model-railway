@@ -15,12 +15,11 @@
  */
 package jcs.commandStation.events;
 
-import java.io.Serializable;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.AccessoryBean.SignalValue;
 
-public class AccessoryEvent implements Serializable {
+public class AccessoryEvent implements JCSActionEvent {
 
   private final AccessoryBean accessoryBean;
 
@@ -51,6 +50,7 @@ public class AccessoryEvent implements Serializable {
     return this.accessoryBean.getAccessoryValue();
   }
 
+  @Override
   public String getId() {
     return this.accessoryBean.getId();
   }

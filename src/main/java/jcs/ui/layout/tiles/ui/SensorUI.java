@@ -16,23 +16,43 @@
 package jcs.ui.layout.tiles.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.MultipleGradientPaint;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
+import java.util.Date;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
+import jcs.commandStation.events.SensorEvent;
+import jcs.entities.SensorBean;
 import jcs.ui.layout.tiles.Tile;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.TileModel;
+import org.tinylog.Logger;
 
-public class SensorUI extends StraightUI {
+public class SensorUI extends StraightUI implements MouseListener {
 
   public SensorUI() {
   }
 
   public static ComponentUI createUI(JComponent c) {
     return new SensorUI();
+  }
+
+  @Override
+  public void installUI(JComponent c) {
+    Tile tile = (Tile) c;
+    tile.addMouseListener(this);
+  }
+
+  @Override
+  public void uninstallUI(JComponent c) {
+    Tile tile = (Tile) c;
+    tile.removeMouseListener(this);
   }
 
   private void renderSensor(Graphics2D g2, JComponent c) {
@@ -59,11 +79,54 @@ public class SensorUI extends StraightUI {
     g2.fill(new Ellipse2D.Double(xx, yy, 0.5f * radius, 0.5f * radius));
   }
 
-
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
     renderStraight(g2, c);
     renderSensor(g2, c);
+  }
+
+  @Override
+  public void mousePressed(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    //Only JCS is in CONTROL mode (readonly) activate sensor action events. 
+
+    if (isControlMode((Component) e.getSource()) && e.getButton() == MouseEvent.BUTTON1) {
+      Tile tile = (Tile) e.getSource();
+      tile.setActive(!tile.isActive());
+      if (tile.getSensorBean() != null) {
+        SensorBean sb = tile.getSensorBean();
+        sb.setLastUpdated(new Date());
+        SensorEvent sae = new SensorEvent(sb);
+        TileCache.enqueTileAction(sae);
+        //Logger.trace("Changing Tile "+tile.getId()+" Sensor "+sb.getId()+" to "+sb.isActive()+"...");
+      }
+    } else {
+      redispatchToParent(e);
+    }
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseExited(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    redispatchToParent(e);
   }
 
 }

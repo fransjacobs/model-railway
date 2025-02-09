@@ -16,18 +16,22 @@
 package jcs.ui.layout.tiles.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentUI;
 import jcs.entities.TileBean;
 import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
+import jcs.ui.layout.LayoutCanvas;
 import jcs.ui.layout.tiles.Tile;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_BACKGROUND_COLOR;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
@@ -266,4 +270,19 @@ public abstract class TileUI extends ComponentUI {
       Logger.trace(tile.getId() + " Duration: " + (now - started) + " ms. Cp: " + tile.xyToString() + " O: " + model.getTileOrienation());
     }
   }
+
+  protected void redispatchToParent(MouseEvent e) {
+    Component source = (Component) e.getSource();
+    MouseEvent parentEvent = SwingUtilities.convertMouseEvent(source, e, source.getParent());
+    source.getParent().dispatchEvent(parentEvent);
+  }
+
+  protected boolean isControlMode(Component c) {
+    if (c.getParent() != null && c.getParent() instanceof LayoutCanvas) {
+      return ((LayoutCanvas) c.getParent()).isReadonly();
+    } else {
+      return false;
+    }
+  }
+
 }

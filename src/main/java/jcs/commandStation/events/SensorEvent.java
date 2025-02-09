@@ -18,21 +18,27 @@ package jcs.commandStation.events;
 import jcs.entities.SensorBean;
 
 /**
- *
- * @author Frans Jacobs
+ * Value change happened on a Sensor.
  */
-public class SensorEvent {
+public class SensorEvent implements JCSActionEvent {
 
   private final SensorBean sensorBean;
+  private final boolean newValue;
 
   public SensorEvent(SensorBean sensorBean) {
+    this(sensorBean, sensorBean.isActive());
+  }
+
+  public SensorEvent(SensorBean sensorBean, boolean newValue) {
     this.sensorBean = sensorBean;
+    this.newValue = newValue;
   }
 
   public SensorBean getSensorBean() {
     return sensorBean;
   }
 
+  @Override
   public String getId() {
     if (sensorBean.getId() != null) {
       return sensorBean.getId();
@@ -51,21 +57,21 @@ public class SensorEvent {
   }
 
   public Integer getDeviceId() {
-    return this.sensorBean.getDeviceId();
+    return sensorBean.getDeviceId();
   }
 
   public Integer getContactId() {
-    return this.sensorBean.getContactId();
+    return sensorBean.getContactId();
   }
 
   public boolean isChanged() {
-    boolean active = sensorBean.isActive();
+    //boolean active = sensorBean.isActive();
     boolean prevActive = sensorBean.isPreviousActive();
-    return active != prevActive;
+    return newValue != prevActive;
   }
 
   public boolean isActive() {
-    return sensorBean.isActive();
+    return newValue; //sensorBean.isActive();
   }
 
   @Override

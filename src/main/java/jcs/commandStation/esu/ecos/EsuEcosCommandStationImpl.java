@@ -236,7 +236,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
 
     for (int i = 0; i < feedbackManager.getSize(); i++) {
       int moduleId = i + FeedbackManager.S88_OFFSET;
-      reply = connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
+      //reply = 
+      connection.sendMessage(EcosMessageFactory.getFeedbackModuleInfo(moduleId));
 
       //TODO: Start of day...
       //feedbackManager.update(reply);
@@ -575,8 +576,12 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   @Override
   public void fireSensorEventListeners(SensorEvent sensorEvent) {
     Logger.trace("SensorEvent: " + sensorEvent);
-    for (SensorEventListener listener : sensorEventListeners) {
-      listener.onSensorChange(sensorEvent);
+    if (sensorEventListeners != null && !sensorEventListeners.isEmpty()) {
+      for (SensorEventListener listener : sensorEventListeners) {
+        //if (listener != null) {
+          listener.onSensorChange(sensorEvent);
+        //}
+      }
     }
   }
 
@@ -703,7 +708,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
-//////////////////////////////////////////////////////////////////////////////////////  
+  //////////////////////////////////////////////////////////////////////////////////////
+  /// @param a 
   // For testing only
   public static void main(String[] a) {
 

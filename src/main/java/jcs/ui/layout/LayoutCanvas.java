@@ -38,14 +38,11 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import jcs.JCS;
-import jcs.commandStation.FeedbackController;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.commandStation.events.SensorEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
-import jcs.entities.SensorBean;
 import jcs.entities.TileBean;
 import jcs.entities.TileBean.Direction;
 import jcs.entities.TileBean.Orientation;
@@ -61,6 +58,7 @@ import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.persistence.PersistenceFactory;
+import static jcs.ui.layout.LayoutCanvas.Mode.CONTROL;
 import jcs.ui.layout.dialogs.BlockControlDialog;
 import jcs.ui.layout.dialogs.BlockDialog;
 import jcs.ui.layout.dialogs.SensorDialog;
@@ -137,6 +135,10 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   private void postInit() {
     routesDialog = new RoutesDialog(getParentFrame(), false, this, this.readonly);
+  }
+
+  public boolean isReadonly() {
+    return readonly;
   }
 
   @Override
@@ -256,7 +258,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }
 
   private void loadTiles() {
-    List<Tile> tiles = TileCache.loadTiles();
+    List<Tile> tiles = TileCache.loadTiles(readonly);
 
     removeAll();
     selectedTile = null;
@@ -284,7 +286,8 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     //Clear any previous selection
     Tile previousSelected = selectedTile;
     selectedTile = TileCache.findTile(snapPoint);
-    if (selectedTile != null) {
+    //Only show selected tile in edit mode
+    if (selectedTile != null && CONTROL != mode) {
       selectedTile.setSelected(true);
     }
 
@@ -460,7 +463,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
       case CURVED -> {
       }
       case SENSOR -> {
-        this.executor.execute(() -> toggleSensor((Sensor) tile));
+        //this.executor.execute(() -> toggleSensor((Sensor) tile));
       }
       case BLOCK -> {
         Logger.trace("Show BlockDialog for " + tile.getId());
@@ -505,24 +508,22 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     }
   }
 
-  private void toggleSensor(Sensor sensor) {
-    SensorBean sb = sensor.getSensorBean();
-    if (sb != null) {
-      sb.toggle();
-      sensor.setActive((sb.getStatus() == 1));
-      Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
-      SensorEvent sensorEvent = new SensorEvent(sb);
-      fireFeedbackEvent(sensorEvent);
-    }
-  }
-
-  private void fireFeedbackEvent(SensorEvent sensorEvent) {
-    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-    for (FeedbackController fbc : acl) {
-      fbc.fireSensorEventListeners(sensorEvent);
-    }
-  }
-
+//  private void toggleSensor(Sensor sensor) {
+//    SensorBean sb = sensor.getSensorBean();
+//    if (sb != null) {
+//      sb.toggle();
+//      sensor.setActive((sb.getStatus() == 1));
+//      Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
+//      SensorEvent sensorEvent = new SensorEvent(sb);
+//      fireFeedbackEvent(sensorEvent);
+//    }
+//  }
+//  private void fireFeedbackEvent(SensorEvent sensorEvent) {
+//    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
+//    for (FeedbackController fbc : acl) {
+//      fbc.fireSensorEventListeners(sensorEvent);
+//    }
+//  }
   private void editSelectedTileProperties() {
     //the first tile should be the selected one
     boolean showProperties = false;
@@ -940,7 +941,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      //addTile(this.mouseLocation);
       this.mouseLocation = null;
     }
   }//GEN-LAST:event_horizontalMIActionPerformed
@@ -949,7 +949,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      //addTile(this.mouseLocation);
       this.mouseLocation = null;
     }
   }//GEN-LAST:event_verticalMIActionPerformed
@@ -958,7 +957,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      //addTile(this.mouseLocation);
       this.mouseLocation = null;
     }
   }//GEN-LAST:event_rightMIActionPerformed
@@ -967,7 +965,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     Logger.trace(this.orientation + ", " + evt.getModifiers() + ", " + evt.paramString());
 
     if (this.mouseLocation != null && evt.getModifiers() == ActionEvent.MOUSE_EVENT_MASK) {
-      //addTile(this.mouseLocation);
       this.mouseLocation = null;
     }
   }//GEN-LAST:event_leftMIActionPerformed
@@ -1129,6 +1126,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     if (this.selectedTile != null) {
       Block block = (Block) selectedTile;
       BlockBean.BlockState currentState = block.getBlockState();
+
       if (BlockBean.BlockState.GHOST == currentState) {
         if (block.getBlockBean().getLocomotiveId() != null) {
           block.setBlockState(BlockBean.BlockState.OCCUPIED);

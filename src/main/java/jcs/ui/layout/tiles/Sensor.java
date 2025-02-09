@@ -65,7 +65,6 @@ public class Sensor extends Straight implements SensorEventListener {
     SensorBean sensor = event.getSensorBean();
     if (sensor.equalsDeviceIdAndContactId(getSensorBean())) {
       setActive(sensor.isActive());
-      repaint();
     }
   }
 

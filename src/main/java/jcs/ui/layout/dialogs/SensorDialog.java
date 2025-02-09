@@ -69,7 +69,7 @@ public class SensorDialog extends javax.swing.JDialog {
         usedSensorIds.add(tb.getSensorId());
       }
     }
-    //Filter the unused turnouts
+    //Filter the unused sensors
     List<SensorBean> filtered = new ArrayList<>();
     for (SensorBean sb : sensors) {
       if (!usedSensorIds.contains(sb.getId())) {

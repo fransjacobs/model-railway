@@ -671,11 +671,13 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     @Override
     public void onSensorChange(SensorEvent event) {
       SensorBean sb = event.getSensorBean();
+      boolean newValue = event.isActive();
       SensorBean dbsb = PersistenceFactory.getService().getSensor(sb.getDeviceId(), sb.getContactId());
 
       if (dbsb != null) {
         sb.setId(dbsb.getId());
         sb.setName(dbsb.getName());
+        sb.setActive(newValue);
         PersistenceFactory.getService().persist(sb);
       }
 
