@@ -32,7 +32,6 @@ import jcs.entities.SensorBean;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.TileModel;
-import org.tinylog.Logger;
 
 public class SensorUI extends StraightUI implements MouseListener {
 
@@ -120,12 +119,21 @@ public class SensorUI extends StraightUI implements MouseListener {
   @Override
   public void mouseEntered(MouseEvent e) {
     //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    Tile tile = (Tile) e.getSource();
+    String toolTipText = tile.getId();
+    if (tile.getSensorBean() != null) {
+      toolTipText = toolTipText + "; Id: " + tile.getSensorBean().getId();
+    }
+    tile.setToolTipText(toolTipText);
+
     redispatchToParent(e);
   }
 
   @Override
   public void mouseExited(MouseEvent e) {
     //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    Tile tile = (Tile) e.getSource();
+    tile.setToolTipText(null);
     redispatchToParent(e);
   }
 

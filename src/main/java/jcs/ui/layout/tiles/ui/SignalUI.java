@@ -32,6 +32,7 @@ import static jcs.entities.AccessoryBean.SignalValue.Hp0Sh1;
 import static jcs.entities.AccessoryBean.SignalValue.Hp1;
 import static jcs.entities.AccessoryBean.SignalValue.Hp2;
 import jcs.ui.layout.tiles.Tile;
+import jcs.ui.layout.tiles.TileModel;
 
 public class SignalUI extends StraightUI {
 
@@ -50,7 +51,8 @@ public class SignalUI extends StraightUI {
    */
   protected void renderSignal2(Graphics2D g2d, JComponent c) {
     Tile tile = (Tile) c;
-    SignalValue signalValue = tile.getSignalValue();
+    TileModel model = tile.getModel();
+    SignalValue signalValue = model.getSignalValue();
 
     int rx = RENDER_GRID;
     int ry = RENDER_GRID + 60;
@@ -93,7 +95,8 @@ public class SignalUI extends StraightUI {
 
   protected void renderSignal3(Graphics2D g2d, JComponent c) {
     Tile tile = (Tile) c;
-    SignalValue signalValue = tile.getSignalValue();
+    TileModel model = tile.getModel();
+    SignalValue signalValue = model.getSignalValue();
 
     int rx = RENDER_GRID;
     int ry = RENDER_GRID + 60;
@@ -154,7 +157,8 @@ public class SignalUI extends StraightUI {
    */
   protected void renderSignal4(Graphics2D g2d, JComponent c) {
     Tile tile = (Tile) c;
-    SignalValue signalValue = tile.getSignalValue();
+    TileModel model = tile.getModel();
+    SignalValue signalValue = model.getSignalValue();
 
     int rx = RENDER_GRID - 50;
     int ry = RENDER_GRID + 50;
@@ -236,7 +240,8 @@ public class SignalUI extends StraightUI {
    */
   protected void renderSignal2m(Graphics2D g2d, JComponent c) {
     Tile tile = (Tile) c;
-    SignalValue signalValue = tile.getSignalValue();
+    TileModel model = tile.getModel();
+    SignalValue signalValue = model.getSignalValue();
 
     int[] xps = new int[]{RENDER_GRID + 80, +RENDER_GRID + 150, +RENDER_GRID + 170, RENDER_GRID + 170, +RENDER_GRID + 150, RENDER_GRID + 80};
 

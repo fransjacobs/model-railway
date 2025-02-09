@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import javax.swing.event.ChangeListener;
+import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean;
@@ -76,6 +77,14 @@ public interface TileModel extends Serializable {
   boolean isSensorActive();
 
   public void setSensorActive(boolean active);
+
+  AccessoryBean.AccessoryValue getAccessoryValue();
+
+  public void setAccessoryValue(AccessoryBean.AccessoryValue accessoryValue);
+
+  AccessoryBean.SignalValue getSignalValue();
+
+  public void setSignalValue(AccessoryBean.SignalValue signalValue);
 
   BlockBean.BlockState getBlockState();
 

@@ -472,29 +472,31 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
         BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
         bcd.setVisible(true);
       }
-      case SIGNAL ->
-        this.executor.execute(() -> toggleSignal((Signal) tile));
-      case SWITCH ->
-        this.executor.execute(() -> toggleSwitch((Switch) tile));
+      case SIGNAL -> {
+        //this.executor.execute(() -> toggleSignal((Signal) tile));
+      }
+      case SWITCH -> {
+        //this.executor.execute(() -> toggleSwitch((Switch) tile));
+      }
       case CROSS -> {
-        this.executor.execute(() -> toggleSwitch((Switch) tile));
+        //this.executor.execute(() -> toggleSwitch((Switch) tile));
       }
       default -> {
       }
     }
   }
 
-  private void toggleSwitch(Switch turnout) {
-    if (turnout.getAccessoryBean() != null) {
-      AccessoryBean ab = turnout.getAccessoryBean();
-      ab.toggle();
-      turnout.setAccessoryValue(ab.getAccessoryValue());
-
-      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
-    } else {
-      Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
-    }
-  }
+//  private void toggleSwitch(Switch turnout) {
+//    if (turnout.getAccessoryBean() != null) {
+//      AccessoryBean ab = turnout.getAccessoryBean();
+//      ab.toggle();
+//      turnout.setAccessoryValue(ab.getAccessoryValue());
+//
+//      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
+//    } else {
+//      Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
+//    }
+//  }
 
   private void toggleSignal(Signal signal) {
     if (signal.getAccessoryBean() != null) {

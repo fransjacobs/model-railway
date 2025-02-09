@@ -579,7 +579,7 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     if (sensorEventListeners != null && !sensorEventListeners.isEmpty()) {
       for (SensorEventListener listener : sensorEventListeners) {
         //if (listener != null) {
-          listener.onSensorChange(sensorEvent);
+        listener.onSensorChange(sensorEvent);
         //}
       }
     }
@@ -617,8 +617,10 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
   }
 
   void fireAccessoryEventListeners(final AccessoryEvent accessoryEvent) {
-    for (AccessoryEventListener listener : this.accessoryEventListeners) {
-      listener.onAccessoryChange(accessoryEvent);
+    if (accessoryEventListeners != null && !accessoryEventListeners.isEmpty()) {
+      for (AccessoryEventListener listener : accessoryEventListeners) {
+        listener.onAccessoryChange(accessoryEvent);
+      }
     }
   }
 

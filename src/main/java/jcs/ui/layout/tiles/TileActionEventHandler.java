@@ -22,6 +22,7 @@ import jcs.commandStation.FeedbackController;
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.events.JCSActionEvent;
 import jcs.commandStation.events.SensorEvent;
+import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
 /**
@@ -65,8 +66,8 @@ class TileActionEventHandler extends Thread {
           if (event instanceof SensorEvent sensorEvent) {
             fireSensorEvent(sensorEvent);
           }
-          if (event instanceof AccessoryEvent) {
-
+          if (event instanceof AccessoryEvent accessoryEvent) {
+            switchChanged(accessoryEvent);
           }
 
         } else {
@@ -91,6 +92,11 @@ class TileActionEventHandler extends Thread {
     for (FeedbackController fbc : acl) {
       fbc.fireSensorEventListeners(sensorEvent);
     }
+  }
+
+  private void switchChanged(AccessoryEvent accessoryEvent) {
+    AccessoryBean ab = accessoryEvent.getAccessoryBean();
+    JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
   }
 
 }

@@ -21,6 +21,8 @@ import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import jcs.entities.AccessoryBean.AccessoryValue;
+import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
@@ -47,6 +49,9 @@ public class DefaultTileModel implements TileModel {
   protected boolean showAccessoryValue = false;
   protected boolean showSignalValue = false;
   protected boolean sensorActive = false;
+  protected AccessoryValue accessoryValue;
+  protected SignalValue signalValue;
+
   protected boolean showOutline = false;
 
   protected BlockState blockState;
@@ -127,7 +132,7 @@ public class DefaultTileModel implements TileModel {
     this.tileOrienation = tileOrienation;
     fireStateChanged();
   }
-  
+
   @Override
   public Orientation getIncomingSide() {
     return incomingSide;
@@ -201,6 +206,28 @@ public class DefaultTileModel implements TileModel {
   @Override
   public void setSensorActive(boolean sensorActive) {
     this.sensorActive = sensorActive;
+    fireStateChanged();
+  }
+
+  @Override
+  public AccessoryValue getAccessoryValue() {
+    return accessoryValue;
+  }
+
+  @Override
+  public void setAccessoryValue(AccessoryValue accessoryValue) {
+    this.accessoryValue = accessoryValue;
+    fireStateChanged();
+  }
+
+  @Override
+  public SignalValue getSignalValue() {
+    return signalValue;
+  }
+
+  @Override
+  public void setSignalValue(SignalValue signalValue) {
+    this.signalValue = signalValue;
     fireStateChanged();
   }
 

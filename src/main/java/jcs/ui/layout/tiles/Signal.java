@@ -48,7 +48,7 @@ public class Signal extends Straight implements AccessoryEventListener {
     super(orientation, center);
     this.tileType = TileType.SIGNAL;
     this.signalType = signalType;
-    this.signalValue = SignalValue.OFF;
+    model.setSignalValue(SignalValue.OFF);
   }
 
   @Override

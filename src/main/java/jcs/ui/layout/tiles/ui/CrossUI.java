@@ -162,8 +162,8 @@ public class CrossUI extends TileUI {
   @Override
   public void renderTile(Graphics2D g2, JComponent c) {
     Tile tile = (Tile) c;
-    AccessoryBean.AccessoryValue accessoryValue = tile.getAccessoryValue();
-    //Color trackColor = tile.getTrackColor();
+    TileModel model = tile.getModel();
+    AccessoryBean.AccessoryValue accessoryValue = model.getAccessoryValue();
 
     if (accessoryValue == null) {
       accessoryValue = AccessoryBean.AccessoryValue.OFF;
