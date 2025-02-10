@@ -20,6 +20,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
@@ -32,6 +33,7 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.ui.layout.LayoutCanvas;
+import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.tiles.Tile;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_BACKGROUND_COLOR;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;
@@ -263,7 +265,7 @@ public abstract class TileUI extends ComponentUI {
     g.drawImage(tileImage, 0, 0, null);
     g.translate(-insets.left, -insets.top);
 
-    if (Logger.isTraceEnabled()) {
+    if (Logger.isTraceEnabled() && 1 == 2) {
       Tile tile = (Tile) c;
       TileModel model = tile.getModel();
       long now = System.currentTimeMillis();
@@ -273,8 +275,10 @@ public abstract class TileUI extends ComponentUI {
 
   protected void redispatchToParent(MouseEvent e) {
     Component source = (Component) e.getSource();
-    MouseEvent parentEvent = SwingUtilities.convertMouseEvent(source, e, source.getParent());
-    source.getParent().dispatchEvent(parentEvent);
+    Point cp = SwingUtilities.convertPoint(source, e.getPoint(), source.getParent());
+    MouseEvent me = new MouseEvent(source, e.getID(), e.getWhen(), e.getModifiersEx(), cp.x, cp.y, e.getClickCount(), e.isPopupTrigger(), e.getButton());
+    //Logger.trace("ME @ (" + me.getXOnScreen() + "," + me.getYOnScreen() + ") PE @ (" + cp.x + "," + cp.y + ")");
+    source.getParent().dispatchEvent(me);
   }
 
   protected boolean isControlMode(Component c) {

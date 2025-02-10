@@ -629,6 +629,8 @@ public class H2PersistenceService implements PersistenceService {
 
   @Override
   public synchronized void remove(TileBean tileBean) {
+    removeRouteByTileId(tileBean.getId());
+
     if (tileBean.getBlockBean() != null) {
       BlockBean bb = tileBean.getBlockBean();
       this.remove(bb);
@@ -772,6 +774,29 @@ public class H2PersistenceService implements PersistenceService {
       route.setRouteElements(rblr);
     }
     return route;
+  }
+
+  private void removeRouteElementsByRouteId(String routeId) {
+    database.sql("delete from route_elements where route_id =?", routeId).execute();
+  }
+
+  private void removeRouteByTileId(String tileId) {
+
+    List<String> routIds = new ArrayList<>();
+    List<RouteBean> fromRoutes = database.where("from_tile_id = ?", tileId).results(RouteBean.class);
+    for (RouteBean rb : fromRoutes) {
+      removeRouteElementsByRouteId(rb.getId());
+      routIds.add(rb.getId());
+    }
+    List<RouteBean> toRoutes = database.where("to_tile_id = ?", tileId).results(RouteBean.class);
+    for (RouteBean rb : toRoutes) {
+      removeRouteElementsByRouteId(rb.getId());
+      routIds.add(rb.getId());
+    }
+
+    for (String rid : routIds) {
+      database.sql("delete from routes where id =?", rid).execute();
+    }
   }
 
   @Override

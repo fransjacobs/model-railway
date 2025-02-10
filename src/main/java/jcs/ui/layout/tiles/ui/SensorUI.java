@@ -23,6 +23,7 @@ import java.awt.Point;
 import java.awt.RadialGradientPaint;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.util.Date;
 import javax.swing.JComponent;
@@ -32,8 +33,9 @@ import jcs.entities.SensorBean;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.TileModel;
+import org.tinylog.Logger;
 
-public class SensorUI extends StraightUI implements MouseListener {
+public class SensorUI extends StraightUI implements MouseListener, MouseMotionListener {
 
   public SensorUI() {
   }
@@ -46,12 +48,14 @@ public class SensorUI extends StraightUI implements MouseListener {
   public void installUI(JComponent c) {
     Tile tile = (Tile) c;
     tile.addMouseListener(this);
+    tile.addMouseMotionListener(this);
   }
 
   @Override
   public void uninstallUI(JComponent c) {
     Tile tile = (Tile) c;
     tile.removeMouseListener(this);
+    tile.removeMouseMotionListener(this);
   }
 
   private void renderSensor(Graphics2D g2, JComponent c) {
@@ -86,21 +90,8 @@ public class SensorUI extends StraightUI implements MouseListener {
 
   @Override
   public void mousePressed(MouseEvent e) {
-    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
-    redispatchToParent(e);
-  }
-
-  @Override
-  public void mouseReleased(MouseEvent e) {
-    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
-    redispatchToParent(e);
-  }
-
-  @Override
-  public void mouseClicked(MouseEvent e) {
-    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen() + ")");
     //Only JCS is in CONTROL mode (readonly) activate sensor action events. 
-
     if (isControlMode((Component) e.getSource()) && e.getButton() == MouseEvent.BUTTON1) {
       Tile tile = (Tile) e.getSource();
       tile.setActive(!tile.isActive());
@@ -114,6 +105,18 @@ public class SensorUI extends StraightUI implements MouseListener {
     } else {
       redispatchToParent(e);
     }
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen() + ")");
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
+    redispatchToParent(e);
   }
 
   @Override
@@ -134,6 +137,18 @@ public class SensorUI extends StraightUI implements MouseListener {
     //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
     Tile tile = (Tile) e.getSource();
     tile.setToolTipText(null);
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseDragged(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseMoved(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
     redispatchToParent(e);
   }
 

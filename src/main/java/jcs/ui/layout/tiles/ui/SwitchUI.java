@@ -21,6 +21,7 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import jcs.commandStation.events.AccessoryEvent;
@@ -34,7 +35,7 @@ import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.TileModel;
 import org.tinylog.Logger;
 
-public class SwitchUI extends TileUI implements MouseListener {
+public class SwitchUI extends TileUI implements MouseListener, MouseMotionListener {
 
   public SwitchUI() {
   }
@@ -47,12 +48,14 @@ public class SwitchUI extends TileUI implements MouseListener {
   public void installUI(JComponent c) {
     Tile tile = (Tile) c;
     tile.addMouseListener(this);
+    tile.addMouseMotionListener(this);
   }
 
   @Override
   public void uninstallUI(JComponent c) {
     Tile tile = (Tile) c;
     tile.removeMouseListener(this);
+    tile.removeMouseMotionListener(this);
   }
 
   protected void renderStraight(Graphics2D g2, Color color, JComponent c) {
@@ -164,19 +167,6 @@ public class SwitchUI extends TileUI implements MouseListener {
 
   @Override
   public void mousePressed(MouseEvent e) {
-    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
-    redispatchToParent(e);
-  }
-
-  @Override
-  public void mouseReleased(MouseEvent e) {
-    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
-    redispatchToParent(e);
-  }
-
-  @Override
-  public void mouseClicked(MouseEvent e) {
-    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
     //Only JCS is in CONTROL mode (readonly) activate accessory action events. 
     if (isControlMode((Component) e.getSource()) && e.getButton() == MouseEvent.BUTTON1) {
       Tile tile = (Tile) e.getSource();
@@ -197,15 +187,23 @@ public class SwitchUI extends TileUI implements MouseListener {
   }
 
   @Override
+  public void mouseReleased(MouseEvent e) {
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    redispatchToParent(e);
+  }
+
+  @Override
   public void mouseEntered(MouseEvent e) {
-    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
     Tile tile = (Tile) e.getSource();
     String toolTipText = tile.getId();
     if (tile.getAccessoryBean() != null) {
       toolTipText = toolTipText + "; Id: " + tile.getAccessoryBean().getId();
     }
     tile.setToolTipText(toolTipText);
-
     redispatchToParent(e);
   }
 
@@ -214,6 +212,18 @@ public class SwitchUI extends TileUI implements MouseListener {
     //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + ",");
     Tile tile = (Tile) e.getSource();
     tile.setToolTipText(null);
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseDragged(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseMoved(MouseEvent e) {
+    //Logger.trace("Mouse button " + e.getButton() + " @ (" + e.getXOnScreen() + "," + e.getYOnScreen());
     redispatchToParent(e);
   }
 

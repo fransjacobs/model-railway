@@ -42,7 +42,7 @@ public class LayoutPanelTester {
     java.awt.EventQueue.invokeLater(() -> {
       JFrame f = new JFrame("LayoutPanel Tester");
       LayoutPanel layoutPanel = new LayoutPanel();
-      f.add(layoutPanel);
+      f.getContentPane().add(layoutPanel);
 
       URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
       if (iconUrl != null) {

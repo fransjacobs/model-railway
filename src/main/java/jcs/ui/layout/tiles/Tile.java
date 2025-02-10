@@ -508,13 +508,6 @@ public abstract class Tile extends JComponent { // implements ChangeListener
     }
   }
 
-//  public AccessoryValue getAccessoryValue() {
-//    if (this.accessoryValue == null) {
-//      return AccessoryValue.OFF;
-//    } else {
-//      return accessoryValue;
-//    }
-//  }
   public void setAccessoryValue(AccessoryValue value) {
     model.setAccessoryValue(value);
     if (accessoryBean != null) {
@@ -535,9 +528,6 @@ public abstract class Tile extends JComponent { // implements ChangeListener
     repaint();
   }
 
-//  public AccessoryBean.SignalValue getSignalValue() {
-//    return signalValue;
-//  }
   public void setSignalValue(AccessoryBean.SignalValue signalValue) {
     model.setSignalValue(signalValue);
     if (this.accessoryBean != null) {

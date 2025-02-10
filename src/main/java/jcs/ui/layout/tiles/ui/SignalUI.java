@@ -17,10 +17,15 @@ package jcs.ui.layout.tiles.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
+import jcs.commandStation.events.AccessoryEvent;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.SignalType;
 import static jcs.entities.AccessoryBean.SignalType.HP012;
@@ -32,15 +37,31 @@ import static jcs.entities.AccessoryBean.SignalValue.Hp0Sh1;
 import static jcs.entities.AccessoryBean.SignalValue.Hp1;
 import static jcs.entities.AccessoryBean.SignalValue.Hp2;
 import jcs.ui.layout.tiles.Tile;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.TileModel;
+import org.tinylog.Logger;
 
-public class SignalUI extends StraightUI {
+public class SignalUI extends StraightUI implements MouseListener, MouseMotionListener {
 
   public SignalUI() {
   }
 
   public static ComponentUI createUI(JComponent c) {
     return new SignalUI();
+  }
+
+  @Override
+  public void installUI(JComponent c) {
+    Tile tile = (Tile) c;
+    tile.addMouseListener(this);
+    tile.addMouseMotionListener(this);
+  }
+
+  @Override
+  public void uninstallUI(JComponent c) {
+    Tile tile = (Tile) c;
+    tile.removeMouseListener(this);
+    tile.removeMouseMotionListener(this);
   }
 
   /**
@@ -325,6 +346,65 @@ public class SignalUI extends StraightUI {
     }
 
     g2d.dispose();
+  }
+
+  @Override
+  public void mousePressed(MouseEvent e) {
+    //Only JCS is in CONTROL mode (readonly) activate accessory action events. 
+    if (isControlMode((Component) e.getSource()) && e.getButton() == MouseEvent.BUTTON1) {
+      Tile tile = (Tile) e.getSource();
+      tile.setActive(!tile.isActive());
+
+      if (tile.getAccessoryBean() != null) {
+        AccessoryBean ab = tile.getAccessoryBean();
+        ab.toggle();
+        tile.setSignalValue(ab.getSignalValue());
+
+        AccessoryEvent aae = new AccessoryEvent(ab);
+        TileCache.enqueTileAction(aae);
+        Logger.trace("Changing Tile " + tile.getId() + " Accessory " + ab.getId() + " to " + ab.getSignalValue().getSignalValue() + "...");
+      }
+    } else {
+      redispatchToParent(e);
+    }
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent e) {
+    Tile tile = (Tile) e.getSource();
+    String toolTipText = tile.getId();
+    if (tile.getAccessoryBean() != null) {
+      toolTipText = toolTipText + "; Id: " + tile.getAccessoryBean().getId();
+    }
+    tile.setToolTipText(toolTipText);
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseExited(MouseEvent e) {
+    Tile tile = (Tile) e.getSource();
+    tile.setToolTipText(null);
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseDragged(MouseEvent e) {
+    redispatchToParent(e);
+  }
+
+  @Override
+  public void mouseMoved(MouseEvent e) {
+    redispatchToParent(e);
   }
 
 }

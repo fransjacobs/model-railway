@@ -282,6 +282,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }
 
   private void mousePressedAction(MouseEvent evt) {
+    Logger.trace("@ (" + evt.getX() + "," + evt.getY() + ")");
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     //Clear any previous selection
     Tile previousSelected = selectedTile;
@@ -376,11 +377,12 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }
 
   private void mouseDragAction(MouseEvent evt) {
+    //Logger.trace("@ (" + evt.getX() + "," + evt.getY() + ")");
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
     if (selectedTile != null) {
       int z = getComponentZOrder(selectedTile);
       setComponentZOrder(selectedTile, 0);
-      //Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
+      Logger.trace("Moving: " + selectedTile.getId() + " @ " + selectedTile.xyToString() + " P: " + snapPoint.x + "," + snapPoint.y + ")");
 
       if (TileCache.canMoveTo(selectedTile, snapPoint)) {
         selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
@@ -426,7 +428,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
         }
       }
       selectedTile.setBounds(curX, curY, selectedTile.getWidth(), selectedTile.getHeight());
-      //this.repaint(selectedTile.getTileBounds());
     }
   }
 
@@ -486,18 +487,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     }
   }
 
-//  private void toggleSwitch(Switch turnout) {
-//    if (turnout.getAccessoryBean() != null) {
-//      AccessoryBean ab = turnout.getAccessoryBean();
-//      ab.toggle();
-//      turnout.setAccessoryValue(ab.getAccessoryValue());
-//
-//      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
-//    } else {
-//      Logger.trace("No AccessoryBean configured for Turnout: " + turnout.getId());
-//    }
-//  }
-
   private void toggleSignal(Signal signal) {
     if (signal.getAccessoryBean() != null) {
       AccessoryBean ab = signal.getAccessoryBean();
@@ -510,22 +499,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     }
   }
 
-//  private void toggleSensor(Sensor sensor) {
-//    SensorBean sb = sensor.getSensorBean();
-//    if (sb != null) {
-//      sb.toggle();
-//      sensor.setActive((sb.getStatus() == 1));
-//      Logger.trace("id: " + sb.getId() + " state " + sb.getStatus());
-//      SensorEvent sensorEvent = new SensorEvent(sb);
-//      fireFeedbackEvent(sensorEvent);
-//    }
-//  }
-//  private void fireFeedbackEvent(SensorEvent sensorEvent) {
-//    List<FeedbackController> acl = JCS.getJcsCommandStation().getFeedbackControllers();
-//    for (FeedbackController fbc : acl) {
-//      fbc.fireSensorEventListeners(sensorEvent);
-//    }
-//  }
   private void editSelectedTileProperties() {
     //the first tile should be the selected one
     boolean showProperties = false;
@@ -1118,7 +1091,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
       if (currentState != block.getBlockState()) { //getRouteBlockState()) {
         this.executor.execute(() -> {
           PersistenceFactory.getService().persist(block.getBlockBean());
-
         });
       }
     }
