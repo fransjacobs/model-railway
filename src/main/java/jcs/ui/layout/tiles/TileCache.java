@@ -16,30 +16,27 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Point;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
-import jcs.JCS;
-import jcs.commandStation.FeedbackController;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 import jcs.commandStation.events.JCSActionEvent;
-import jcs.commandStation.events.SensorEvent;
 
 /**
- * Factory object to create Tiles and cache tiles
+ * Factory object to create Tiles and cache pointMap
  *
  * @author frans
  */
 public class TileCache {
 
-  static final Map<Point, Tile> tiles = new HashMap<>();
-  static final Map<Point, Tile> tileAltPoints = new HashMap<>();
-  static final Map<String, Point> points = new HashMap<>();
+  static final Map<String, Tile> idMap = new ConcurrentHashMap<>();
+  static final Map<Point, Tile> pointMap = new ConcurrentHashMap<>();
+  static final Map<Point, Tile> altPointMap = new ConcurrentHashMap<>();
 
   private static final ConcurrentLinkedQueue<JCSActionEvent> eventsQueue = new ConcurrentLinkedQueue();
 
@@ -57,125 +54,120 @@ public class TileCache {
   }
 
   public static List<Tile> loadTiles(boolean showvalues) {
-    tileAltPoints.clear();
-    points.clear();
-    tiles.clear();
+    altPointMap.clear();
+    pointMap.clear();
+    idMap.clear();
 
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
     for (TileBean tb : tileBeans) {
       Tile tile = TileFactory.createTile(tb, showvalues);
-      tiles.put(tile.getCenter(), tile);
-      points.put(tile.getId(), tile.getCenter());
-      //Alternative point(s) to be able to find all points
+      idMap.put(tile.id, tile);
+      pointMap.put(tile.getCenter(), tile);
+      //Alternative point(s) to be able to find all pointIds
       if (!tile.getAltPoints().isEmpty()) {
         Set<Point> alt = tile.getAltPoints();
         for (Point ap : alt) {
-          tileAltPoints.put(ap, tile);
+          altPointMap.put(ap, tile);
         }
       }
-      //Extra actions for some tile of tiles
-
     }
 
-    Logger.trace("Loaded " + tiles.size() + " Tiles...");
-    return tiles.values().stream().collect(Collectors.toList());
+    Logger.trace("Loaded " + idMap.size() + " Tiles...");
+    return idMap.values().stream().collect(Collectors.toList());
   }
 
   public static List<Tile> getTiles() {
-    return tiles.values().stream().collect(Collectors.toList());
+    return idMap.values().stream().collect(Collectors.toList());
   }
 
   public static Tile addAndSaveTile(Tile tile) {
-    tiles.put(tile.getCenter(), tile);
-    points.put(tile.getId(), tile.getCenter());
+    if (tile == null) {
+      throw new IllegalArgumentException("Tile cannot be null");
+    }
 
-    //Alternative point(s) to be able to find all points
+    pointMap.put(tile.getCenter(), tile);
+    idMap.put(tile.getId(), tile);
+
+    //Alternative point(s) to be able to find all pointIds
     if (!tile.getAltPoints().isEmpty()) {
       Set<Point> alt = tile.getAltPoints();
       for (Point ap : alt) {
-        tileAltPoints.put(ap, tile);
+        altPointMap.put(ap, tile);
       }
     }
 
-    saveTile(tile);
-    //Logger.trace("Added " + tile + " There are now " + tiles.size() + " tiles...");
+    persistTile(tile);
+    //Logger.trace("Added " + tile + " There are now " + pointMap.size() + " pointMap...");
     return tile;
   }
 
-  public static void saveTile(final Tile tile) {
-    if (tile != null) {
-      TileBean tb = tile.getTileBean();
-      PersistenceFactory.getService().persist(tb);
-    } else {
-      Logger.warn("Tile is null?");
+  public static void persistTile(final Tile tile) {
+    if (tile == null) {
+      throw new IllegalArgumentException("Tile cannot be null");
     }
+    TileBean tb = tile.getTileBean();
+    PersistenceFactory.getService().persist(tb);
   }
 
-  public static void saveTiles() {
-    for (Tile tile : tiles.values()) {
-      saveTile(tile);
+  public static void persistAllTiles() {
+    for (Tile tile : idMap.values()) {
+      persistTile(tile);
     }
   }
 
   public static void deleteTile(final Tile tile) {
-    if (tile != null) {
-      if (tiles.containsKey(tile.getCenter())) {
-        Set<Point> rps = tile.getAltPoints();
-        //Also remove alt points
-        for (Point ap : rps) {
-          tileAltPoints.remove(ap);
-        }
-        points.remove(tile.getId());
-        tiles.remove(tile.getCenter());
-
-        TileBean tb = tile.getTileBean();
-        PersistenceFactory.getService().remove(tb);
-        Logger.trace("Deleted " + tile.getId());
-      } else {
-        Logger.warn("Tile " + tile.getId() + " not found in cache");
+    if (tile == null) {
+      throw new IllegalArgumentException("Tile cannot be null");
+    }
+    if (idMap.containsKey(tile.id)) {
+      Set<Point> rps = tile.getAltPoints();
+      //Also remove alt pointIds
+      for (Point ap : rps) {
+        altPointMap.remove(ap);
       }
+      pointMap.remove(tile.getCenter());
+      idMap.remove(tile.id);
+      TileBean tb = tile.getTileBean();
+      PersistenceFactory.getService().remove(tb);
+      Logger.trace("Deleted " + tile.getId());
     } else {
-      Logger.warn("Tile is null?");
+      Logger.warn("Tile " + tile.getId() + " not found in cache");
     }
   }
 
   public static Tile findTile(Point cp) {
-    Tile result = tiles.get(cp);
+    Tile result = pointMap.get(cp);
     if (result == null) {
-      result = tileAltPoints.get(cp);
+      result = altPointMap.get(cp);
     }
     return result;
   }
 
   public static Tile findTile(String id) {
-    Point p = points.get(id);
-    if (p != null) {
-      return findTile(p);
-    } else {
-      return null;
-    }
+    Tile tile = idMap.get(id);
+    return tile;
   }
 
   public static boolean canMoveTo(Tile tile, Point p) {
     //check if a tile exist with point p
     //Check if the cache contains a Cp of a tile on p
     //Logger.trace("Checking " + tile.id + " New Point (" + p.x + "," + p.y + ")");
-    if (tiles.containsKey(p) && !tile.getCenter().equals(p) && !tile.getAltPoints().contains(p)) {
+    if (pointMap.containsKey(p) && !tile.getCenter().equals(p) && !tile.getAltPoints().contains(p)) {
       return false;
     }
     //Check if the cache contains a Cp on any of the Alt point is case of a Block or Cross
-    if (tileAltPoints.containsKey(p) && !tile.getAltPoints().contains(p)) {
+    if (altPointMap.containsKey(p) && !tile.getAltPoints().contains(p)) {
       return false;
     }
 
-    //Check with the tile on the new Cp with the new alt points if that is also free...
+    //Check with the tile on the new Cp with the new alt pointIds if that is also free...
     Set<Point> altPoints = tile.getAltPoints(p);
     for (Point ap : altPoints) {
-      if (tiles.containsKey(ap) && !tile.getCenter().equals(ap) && !tile.getAltPoints().contains(ap)) {
+      if (pointMap.containsKey(ap) && !tile.getCenter().equals(ap) && !tile.getAltPoints().contains(ap)) {
         return false;
       }
-      if (tileAltPoints.containsKey(ap) && !tile.getAltPoints().contains(ap)) {
+      if (altPointMap.containsKey(ap) && !tile.getAltPoints().contains(ap)) {
         return false;
       }
     }
@@ -184,19 +176,23 @@ public class TileCache {
   }
 
   public static void moveTo(Tile tile, Point p) {
+    if (tile == null || p == null) {
+      throw new IllegalArgumentException("Tile or new Center Point cannot be null");
+    }
+
     if (canMoveTo(tile, p)) {
       //Logger.trace("Moving " + tile.getId() + " from " + tile.xyToString() + " to (" + p.x + "," + p.y + ")");
       Set<Point> rps = tile.getAltPoints();
-      //remove alt points
+      //remove alt pointIds
       for (Point ap : rps) {
-        tileAltPoints.remove(ap);
+        altPointMap.remove(ap);
       }
-      points.remove(tile.getId());
-      tiles.remove(tile.getCenter());
+      //pointIds.remove(tile.getId());
+      idMap.remove(tile.id);
+      pointMap.remove(tile.getCenter());
 
       tile.setCenter(p);
-      Tile t = addAndSaveTile(tile);
-      //Logger.trace("Moved " + t.id + " to " + t.xyToString());
+      addAndSaveTile(tile);
     } else {
       Tile occ = findTile(p);
       Logger.trace("Can't Move tile " + tile.id + " from " + tile.xyToString() + " to (" + p.x + "," + p.y + ") Is occupied by " + occ.id);
@@ -204,24 +200,25 @@ public class TileCache {
   }
 
   public static Tile rotateTile(Tile tile) {
-    if (!tiles.containsKey(tile.getCenter())) {
+    if (!pointMap.containsKey(tile.getCenter())) {
       Logger.warn("Tile " + tile.getId() + " NOT in cache!");
     }
 
-    //Remove the alternative or extra points...
+    //Remove the alternative or extra pointIds...
     for (Point ep : tile.getAltPoints()) {
-      tileAltPoints.remove(ep);
+      altPointMap.remove(ep);
     }
 
     tile.rotate();
 
     //update
-    tiles.put(tile.getCenter(), tile);
+    pointMap.put(tile.getCenter(), tile);
     for (Point ep : tile.getAltPoints()) {
-      tileAltPoints.put(ep, tile);
+      altPointMap.put(ep, tile);
     }
+    idMap.put(tile.id, tile);
 
-    saveTile(tile);
+    persistTile(tile);
     return tile;
   }
 
@@ -234,13 +231,13 @@ public class TileCache {
   }
 
   private static Tile flipTile(Tile tile, boolean horizontal) {
-    if (!tiles.containsKey(tile.getCenter())) {
+    if (!pointMap.containsKey(tile.getCenter())) {
       Logger.warn("Tile " + tile.getId() + " NOT in cache!");
     }
 
-    //Remove the alternative or extra points...
+    //Remove the alternative or extra pointIds...
     for (Point ep : tile.getAltPoints()) {
-      tileAltPoints.remove(ep);
+      altPointMap.remove(ep);
     }
 
     if (horizontal) {
@@ -249,12 +246,13 @@ public class TileCache {
       tile.flipVertical();
     }
     //update
-    tiles.put(tile.getCenter(), tile);
+    pointMap.put(tile.getCenter(), tile);
     for (Point ep : tile.getAltPoints()) {
-      tileAltPoints.put(ep, tile);
+      altPointMap.put(ep, tile);
     }
+    idMap.put(tile.id, tile);
 
-    saveTile(tile);
+    persistTile(tile);
     return tile;
   }
 
@@ -262,6 +260,23 @@ public class TileCache {
     eventsQueue.offer(jcsEvent);
     synchronized (TileCache.actionEventQueueHandler) {
       actionEventQueueHandler.notifyAll();
+    }
+  }
+
+  public static void repaintTile(Tile tile) {
+    repaintTile(tile.id);
+  }
+
+  public static void repaintTile(String tileId) {
+    if (tileId == null) {
+      throw new IllegalArgumentException("TileId cannot be null");
+    }
+
+    if (idMap.containsKey(tileId)) {
+      Tile tile = idMap.get(tileId);
+      tile.repaint();
+    } else {
+      Logger.warn("Can't find a Tile with Id: " + tileId + " in the cache");
     }
   }
 

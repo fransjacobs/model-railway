@@ -103,7 +103,7 @@ class PrepareRouteState extends DispatcherState {
       Direction newDirection = LocomotiveBean.toggle(oldDirection);
       Logger.trace("Reversing Locomotive, from " + oldDirection + " to " + newDirection + "...");
 
-      this.swapLocomotiveDirection = true;
+      swapLocomotiveDirection = true;
       //Do NOT persist the direction yet, just test....
       //locomotive.setDispatcherDirection(newDirection);
       departureBlock.setLogicalDirection(newDirection.getDirection());

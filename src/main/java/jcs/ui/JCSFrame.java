@@ -162,13 +162,14 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   public void showExtraToolbar(JToolBar toolbar) {
     this.jcsToolBar.add(toolbar);
     jcsToolBar.doLayout();
-    this.repaint();
+    this.toolbarPanel.repaint();
   }
 
   public void hideExtraToolbar(JToolBar toolbar) {
     this.jcsToolBar.remove(toolbar);
     jcsToolBar.doLayout();
-    this.repaint();
+    this.toolbarPanel.repaint();
+    //this.repaint();
   }
 
   public void showOverviewPanel() {
@@ -336,18 +337,16 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
 
     toolbarPanel.setName("toolbarPanel"); // NOI18N
+    toolbarPanel.setPreferredSize(new Dimension(1350, 52));
     FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
     flowLayout8.setAlignOnBaseline(true);
     toolbarPanel.setLayout(flowLayout8);
 
-    jcsToolBar.setBorderPainted(false);
-    jcsToolBar.setDoubleBuffered(true);
-    jcsToolBar.setMargin(new Insets(1, 1, 1, 1));
     jcsToolBar.setMaximumSize(new Dimension(1050, 42));
     jcsToolBar.setMinimumSize(new Dimension(1000, 42));
     jcsToolBar.setName("ToolBar"); // NOI18N
     jcsToolBar.setOpaque(false);
-    jcsToolBar.setPreferredSize(new Dimension(1300, 42));
+    jcsToolBar.setPreferredSize(new Dimension(1380, 42));
 
     connectButton.setIcon(new ImageIcon(getClass().getResource("/media/monitor-off-24.png"))); // NOI18N
     connectButton.setToolTipText("Connect/Disconnect with Central Station");

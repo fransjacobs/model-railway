@@ -34,6 +34,7 @@ import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.events.TileEvent;
+import jcs.ui.layout.tiles.Tile;
 import org.tinylog.Logger;
 
 /**
@@ -189,7 +190,7 @@ public class Dispatcher {
       return PersistenceFactory.getService().getBlockByTileId(departureBlockId);
     } else {
       BlockBean departureBlock = PersistenceFactory.getService().getBlockByLocomotiveId(locomotiveBean.getId());
-      this.departureBlockId = departureBlock.getTileId();
+      departureBlockId = departureBlock.getTileId();
       return departureBlock;
     }
   }
@@ -289,7 +290,6 @@ public class Dispatcher {
           this.exitSensorId = null;
         }
       }
-
     }
     //Logger.trace("Event for a ignored listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
   }
@@ -326,32 +326,52 @@ public class Dispatcher {
     List<RouteElementBean> routeElements = route.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
-      TileEvent tileEvent = new TileEvent(tileId, false);
-      //TileCache.fireTileEventListener(tileEvent);
+      Tile tile = TileCache.findTile(tileId);
+
+      if (tile.isBlock()) {
+        if (tile.getLocomotive() != null) {
+          tile.setBlockState(BlockBean.BlockState.OCCUPIED);
+        } else {
+          tile.setBlockState(BlockBean.BlockState.FREE);
+        }
+      }
+      if (tile.isJunction()) {
+        tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
+      }
+      tile.setShowRoute(false);
     }
   }
 
   void showBlockState(BlockBean blockBean) {
     Logger.trace("Show block " + blockBean);
-    TileEvent tileEvent = new TileEvent(blockBean);
-    //TileCache.fireTileEventListener(tileEvent);
+    Tile tile = TileCache.findTile(blockBean.getTileId());
+    tile.setBlockBean(blockBean);   
   }
 
   void showRoute(RouteBean routeBean, Color routeColor) {
     Logger.trace("Show route " + routeBean.toLogString());
     List<RouteElementBean> routeElements = routeBean.getRouteElements();
+
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
       TileBean.Orientation incomingSide = re.getIncomingOrientation();
 
-      TileEvent tileEvent;
+      Tile tile = TileCache.findTile(tileId);
+      tile.setIncomingSide(incomingSide);
+      tile.setTrackRouteColor(Tile.DEFAULT_ROUTE_TRACK_COLOR);
+
       if (re.isTurnout()) {
         AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
-        tileEvent = new TileEvent(tileId, true, incomingSide, routeState, routeColor);
-      } else {
-        tileEvent = new TileEvent(tileId, true, incomingSide, routeColor);
+        tile.setRouteValue(routeState);
+      } else if (re.isBlock()) {
+        if (re.getTileId().equals(routeBean.getFromTileId())) {
+          //departure block
+          tile.setBlockState(BlockBean.BlockState.OUTBOUND);
+        } else {
+          tile.setBlockState(BlockBean.BlockState.INBOUND);
+        }
       }
-      //TileCache.fireTileEventListener(tileEvent);
+      tile.setShowRoute(true);
     }
   }
 

@@ -37,9 +37,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import jcs.JCS;
 import jcs.commandStation.autopilot.AutoPilot;
-import jcs.entities.AccessoryBean;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
@@ -121,7 +119,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     setDoubleBuffered(true);
 
     this.readonly = readonly;
-//    this.selectedRouteElements = new HashMap<>();
     this.executor = Executors.newSingleThreadExecutor();
     //this.executor = Executors.newCachedThreadPool();
 
@@ -433,23 +430,10 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   private void mouseReleasedAction(MouseEvent evt) {
     Point snapPoint = LayoutUtil.snapToGrid(evt.getPoint());
-    //if (selectedTile != null) {
-    //  Logger.trace(selectedTile.getId() + " sp: (" + snapPoint.x + "," + snapPoint.y + ")");
-    //} else {
-    //  Logger.trace("No Tile @ (" + snapPoint.x + "," + snapPoint.y + ")");
-    //}
-
     if (!Mode.CONTROL.equals(mode) && MouseEvent.BUTTON1 == evt.getButton() && selectedTile != null) {
       if (TileCache.canMoveTo(selectedTile, snapPoint)) {
         TileCache.moveTo(selectedTile, snapPoint);
       } else {
-        //Tile occ = TileCache.findTile(snapPoint);
-        //String occtile = "";
-        //if (occ != null) {
-        //  occtile = " Is occupied by " + occ.getId();
-        //}
-        //Logger.trace("Can't Move tile " + selectedTile.getId() + " from " + selectedTile.xyToString() + " to (" + snapPoint.x + "," + snapPoint.y + ")" + occtile);
-
         selectedTile.setSelectedColor(Tile.DEFAULT_SELECTED_COLOR);
         selectedTile.setBounds(selectedTile.getTileBounds());
       }
@@ -472,6 +456,9 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
         Block block = (Block) tile;
         BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
         bcd.setVisible(true);
+
+        Logger.trace("Block properties closed");
+        this.repaint(block.getTileBounds());
       }
       case SIGNAL -> {
         //this.executor.execute(() -> toggleSignal((Signal) tile));
@@ -484,18 +471,6 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
       }
       default -> {
       }
-    }
-  }
-
-  private void toggleSignal(Signal signal) {
-    if (signal.getAccessoryBean() != null) {
-      AccessoryBean ab = signal.getAccessoryBean();
-      ab.toggle();
-      Logger.trace("A: " + ab.getAddress() + " S: " + ab.getStates() + " P: " + ab.getState());
-
-      JCS.getJcsCommandStation().switchAccessory(ab, ab.getAccessoryValue());
-    } else {
-      Logger.trace("No AccessoryBean configured for Signal: " + signal.getId());
     }
   }
 
@@ -678,19 +653,19 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   private void routeLayoutWithAStar() {
     //Make sure the layout is saved
-    TileCache.saveTiles();
+    TileCache.persistAllTiles();
 
     AStar astar = new AStar();
     astar.buildGraph(TileCache.getTiles());
     astar.routeAll();
     astar.persistRoutes();
-    if (this.routesDialog.isVisible()) {
-      this.routesDialog.loadRoutes();
+    if (routesDialog.isVisible()) {
+      routesDialog.loadRoutes();
     }
   }
 
   void showRoutesDialog() {
-    this.routesDialog.setVisible(true);
+    routesDialog.setVisible(true);
   }
 
   /**
@@ -983,20 +958,16 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   private void startLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startLocomotiveMIActionPerformed
     if (this.selectedTile != null) {
       Block block = (Block) selectedTile;
-      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
-
-      this.executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
-      repaint();
+      LocomotiveBean locomotive = block.getLocomotive();
+      executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
     }
   }//GEN-LAST:event_startLocomotiveMIActionPerformed
 
   private void stopLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopLocomotiveMIActionPerformed
-    if (this.selectedTile != null) {
+    if (selectedTile != null) {
       Block block = (Block) selectedTile;
-      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
-
-      this.executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, false));
-      repaint();
+      LocomotiveBean locomotive = block.getLocomotive();
+      executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, false));
     }
   }//GEN-LAST:event_stopLocomotiveMIActionPerformed
 
@@ -1013,19 +984,16 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }//GEN-LAST:event_resetDispatcherMIActionPerformed
 
   private void removeLocMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeLocMIActionPerformed
-    if (this.selectedTile != null) {
+    if (selectedTile != null) {
       Block block = (Block) selectedTile;
-      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+      LocomotiveBean locomotive = block.getLocomotive();
       locomotive.setDispatcherDirection(null);
 
-      block.getBlockBean().setLocomotive(null);
-      block.setBlockState(BlockState.FREE);
-      block.getBlockBean().setArrivalSuffix(null);
+      block.setLocomotive(null);
 
-      this.executor.execute(() -> {
+      executor.execute(() -> {
         PersistenceFactory.getService().persist(block.getBlockBean());
         PersistenceFactory.getService().persist(locomotive);
-        repaint();
       });
     }
   }//GEN-LAST:event_removeLocMIActionPerformed
@@ -1036,8 +1004,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
       Block block = (Block) selectedTile;
       BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
       bcd.setVisible(true);
-
-      this.repaint(block.getX(), block.getY(), block.getWidth(), block.getHeight());
+      repaint(block.getTileBounds());
     }
   }//GEN-LAST:event_blockPropertiesMIActionPerformed
 
@@ -1045,13 +1012,13 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     if (this.selectedTile != null) {
       Block block = (Block) selectedTile;
 
-      String suffix = block.getBlockBean().getArrivalSuffix();
+      String suffix = block.getArrivalSuffix();
       if ("+".equals(suffix)) {
-        block.getBlockBean().setArrivalSuffix("-");
+        block.setArrivalSuffix("-");
       } else {
-        block.getBlockBean().setArrivalSuffix("+");
+        block.setArrivalSuffix("+");
       }
-      block.getBlockBean().setReverseArrival(!block.getBlockBean().isReverseArrival());
+      block.setReverseArrival(!block.isReverseArrival());
       this.executor.execute(() -> {
         PersistenceFactory.getService().persist(block.getBlockBean());
       });
@@ -1059,18 +1026,19 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }//GEN-LAST:event_reverseArrivalSideMIActionPerformed
 
   private void toggleLocomotiveDirectionMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_toggleLocomotiveDirectionMIActionPerformed
-    if (this.selectedTile != null) {
+    if (selectedTile != null) {
       Block block = (Block) selectedTile;
-      LocomotiveBean locomotive = block.getBlockBean().getLocomotive();
+      LocomotiveBean locomotive = block.getLocomotive();
+
       LocomotiveBean.Direction curDir;
-      if (block.getBlockBean().getLogicalDirection() != null) {
-        curDir = LocomotiveBean.Direction.get(block.getBlockBean().getLogicalDirection());
+      if (block.getLogicalDirection() != null) {
+        curDir = block.getLogicalDirection();
       } else {
         curDir = locomotive.getDirection();
       }
       LocomotiveBean.Direction newDir = LocomotiveBean.toggle(curDir);
-      block.getBlockBean().setLogicalDirection(newDir.getDirection());
-      Logger.trace(block.getId() + " Logical changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
+      block.setLogicalDirection(newDir);
+      Logger.trace(block.getId() + " LogicalDir changed from " + curDir + " to " + newDir + " for " + locomotive.getName());
 
       this.executor.execute(() -> {
         PersistenceFactory.getService().persist(block.getTileBean());
@@ -1088,7 +1056,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
         block.setBlockState(BlockState.FREE);
       }
 
-      if (currentState != block.getBlockState()) { //getRouteBlockState()) {
+      if (currentState != block.getBlockState()) {
         this.executor.execute(() -> {
           PersistenceFactory.getService().persist(block.getBlockBean());
         });
@@ -1102,7 +1070,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
       BlockBean.BlockState currentState = block.getBlockState();
 
       if (BlockBean.BlockState.GHOST == currentState) {
-        if (block.getBlockBean().getLocomotiveId() != null) {
+        if (block.getLocomotive() != null) {
           block.setBlockState(BlockBean.BlockState.OCCUPIED);
         } else {
           block.setBlockState(BlockBean.BlockState.FREE);

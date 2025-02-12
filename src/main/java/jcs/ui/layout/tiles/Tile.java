@@ -40,7 +40,6 @@ import javax.swing.event.ChangeListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.AccessoryBean.SignalType;
-import jcs.entities.AccessoryBean.SignalValue;
 import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
@@ -52,6 +51,7 @@ import jcs.entities.TileBean.TileType;
 import jcs.ui.layout.LayoutUtil;
 import static jcs.ui.layout.tiles.Block.BLOCK_HEIGHT;
 import static jcs.ui.layout.tiles.Block.BLOCK_WIDTH;
+import org.tinylog.Logger;
 
 /**
  * Basic graphic element to display a track, turnout, etc on the screen.<br>
@@ -431,12 +431,12 @@ public abstract class Tile extends JComponent { // implements ChangeListener
   }
 
   public void setBlockState(BlockState blockState) {
+    model.setBlockState(blockState);
     if (blockBean != null) {
       blockBean.setBlockState(blockState);
-      LocomotiveBean locomotive = model.getLocomotive();
-      model.setOverlayImage(locomotive != null && locomotive.getLocIcon() != null && (blockState == BlockState.OCCUPIED || blockState == BlockState.INBOUND || blockState == BlockState.OUTBOUND));
+    } else {
+      Logger.warn("Blockbean for " + id + " is NOT set!");
     }
-    model.setBlockState(blockState);
   }
 
   public String getDepartureSuffix() {
@@ -444,10 +444,12 @@ public abstract class Tile extends JComponent { // implements ChangeListener
   }
 
   public void setDepartureSuffix(String suffix) {
+    model.setDepartureSuffix(suffix);
     if (blockBean != null) {
       blockBean.setDepartureSuffix(suffix);
+    } else {
+      Logger.warn("Blockbean for " + id + " is NOT set!");
     }
-    model.setDepartureSuffix(suffix);
   }
 
   public boolean isReverseArrival() {
@@ -455,10 +457,12 @@ public abstract class Tile extends JComponent { // implements ChangeListener
   }
 
   public void setReverseArrival(boolean reverseArrival) {
+    model.setReverseArrival(reverseArrival);
     if (blockBean != null) {
       blockBean.setReverseArrival(reverseArrival);
+    } else {
+      Logger.warn("Blockbean for " + id + " is NOT set!");
     }
-    model.setReverseArrival(reverseArrival);
   }
 
   public LocomotiveBean.Direction getLogicalDirection() {
@@ -466,10 +470,12 @@ public abstract class Tile extends JComponent { // implements ChangeListener
   }
 
   public void setLogicalDirection(LocomotiveBean.Direction logicalDirection) {
+    model.setLogicalDirection(logicalDirection);
     if (blockBean != null) {
       blockBean.setLogicalDirection(logicalDirection.getDirection());
+    } else {
+      Logger.warn("Blockbean for " + id + " is NOT set!");
     }
-    model.setLogicalDirection(logicalDirection);
   }
 
   public LocomotiveBean getLocomotive() {
@@ -477,12 +483,25 @@ public abstract class Tile extends JComponent { // implements ChangeListener
   }
 
   public void setLocomotive(LocomotiveBean locomotive) {
+    model.setLocomotive(locomotive);
     if (blockBean != null) {
       blockBean.setLocomotive(locomotive);
-      model.setOverlayImage(locomotive != null && locomotive.getLocIcon() != null && (model.getBlockState() == BlockState.OCCUPIED || model.getBlockState() == BlockState.INBOUND || model.getBlockState() == BlockState.OUTBOUND));
+    } else {
+      Logger.warn("Blockbean for " + id + " is NOT set!");
     }
+  }
 
-    model.setLocomotive(locomotive);
+  public String getArrivalSuffix() {
+    return model.getArrivalSuffix();
+  }
+
+  public void setArrivalSuffix(String arrivalSuffix) {
+    model.setArrivalSuffix(arrivalSuffix);
+    if (blockBean != null) {
+      blockBean.setArrivalSuffix(arrivalSuffix);
+    } else {
+      Logger.warn("Blockbean for " + id + " is NOT set!");
+    }
   }
 
   public AccessoryBean getAccessoryBean() {
@@ -556,6 +575,7 @@ public abstract class Tile extends JComponent { // implements ChangeListener
 
   public void setBlockBean(BlockBean blockBean) {
     this.blockBean = blockBean;
+    this.model.setBlockBean(blockBean);
   }
 
   public int getRenderOffsetX() {

@@ -24,18 +24,17 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.entities.BlockBean;
 import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
-import jcs.ui.layout.events.TileEvent;
 import jcs.ui.layout.tiles.Block;
+import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
 
 /**
  *
- * @author fransjacobs
  */
 public class BlockControlDialog extends javax.swing.JDialog {
-  
+
   private final Block block;
-  
+
   private ComboBoxModel<LocomotiveBean> locomotiveComboBoxModel;
 
   /**
@@ -48,25 +47,26 @@ public class BlockControlDialog extends javax.swing.JDialog {
     super(parent, true);
     this.block = block;
     initComponents();
-    
+
     postInit();
   }
-  
+
   private void postInit() {
     setLocationRelativeTo(null);
-    String text = this.headingLbl.getText() + " " + this.block.getId();
-    this.headingLbl.setText(text);
-    
-    if (this.block != null) {
+    if (block != null) {
+      String text = headingLbl.getText() + " " + block.getId();
+      headingLbl.setText(text);
+
       List<LocomotiveBean> locos = new LinkedList<>();
       LocomotiveBean emptyBean = new LocomotiveBean();
       locos.add(emptyBean);
       locos.addAll(PersistenceFactory.getService().getLocomotives(true));
+
       //Only Loc's which should be shown
       locomotiveComboBoxModel = new DefaultComboBoxModel(locos.toArray());
-      this.locomotiveCB.setModel(locomotiveComboBoxModel);
-      
-      BlockBean bb = this.block.getBlockBean();
+      locomotiveCB.setModel(locomotiveComboBoxModel);
+
+      BlockBean bb = block.getBlockBean();
       if (bb == null) {
         bb = PersistenceFactory.getService().getBlockByTileId(block.getId());
         if (bb == null) {
@@ -79,55 +79,55 @@ public class BlockControlDialog extends javax.swing.JDialog {
           bb.setMaxWaitTime(0);
           bb.setMinWaitTime(10);
         }
-        this.block.setBlockBean(bb);
+        block.setBlockBean(bb);
       }
-      
-      this.blockIdTF.setText(block.getId());
-      this.blockNameTF.setText(bb.getDescription());
-      
+
+      blockIdTF.setText(block.getId());
+      blockNameTF.setText(bb.getDescription());
+
       if (bb.getLocomotiveId() != null && bb.getLocomotive() == null) {
         bb.setLocomotive(PersistenceFactory.getService().getLocomotive(bb.getLocomotiveId()));
-        this.startLocButton.setEnabled(true);
+        startLocButton.setEnabled(true);
       }
-      
+
       if (bb.getMinWaitTime() != null) {
-        this.minWaitSpinner.setValue(bb.getMinWaitTime());
+        minWaitSpinner.setValue(bb.getMinWaitTime());
       }
-      
+
       if (bb.getMaxWaitTime() != null) {
-        this.maxWaitSpinner.setValue(bb.getMaxWaitTime());
+        maxWaitSpinner.setValue(bb.getMaxWaitTime());
       }
-      
-      this.alwaysStopCB.setSelected(bb.isAlwaysStop());
-      this.randomWaitCB.setSelected(bb.isRandomWait());
-      
+
+      alwaysStopCB.setSelected(bb.isAlwaysStop());
+      randomWaitCB.setSelected(bb.isRandomWait());
+
       if (bb.getLocomotive() != null) {
-        this.locomotiveCB.setSelectedItem(bb.getLocomotive());
+        locomotiveCB.setSelectedItem(bb.getLocomotive());
         if (bb.getBlockState() == null) {
           bb.setBlockState(BlockBean.BlockState.OCCUPIED);
         }
-        
+
         if (bb.getLocomotive().getLocIcon() != null) {
-          this.locomotiveIconLbl.setIcon(new ImageIcon(bb.getLocomotive().getLocIcon()));
-          this.locomotiveIconLbl.setText(null);
+          locomotiveIconLbl.setIcon(new ImageIcon(bb.getLocomotive().getLocIcon()));
+          locomotiveIconLbl.setText(null);
         } else {
-          this.locomotiveIconLbl.setText(bb.getLocomotive().getName());
+          locomotiveIconLbl.setText(bb.getLocomotive().getName());
         }
-        
+
         if (LocomotiveBean.Direction.BACKWARDS == bb.getLocomotive().getDirection()) {
-          this.backwardsRB.setSelected(true);
+          backwardsRB.setSelected(true);
         } else {
-          this.forwardsRB.setSelected(true);
+          forwardsRB.setSelected(true);
         }
-        
-        this.startLocButton.setEnabled(AutoPilot.isAutoModeActive());
-        this.startLocButton.setSelected(AutoPilot.isRunning(bb.getLocomotive()));
+
+        startLocButton.setEnabled(AutoPilot.isAutoModeActive());
+        startLocButton.setSelected(AutoPilot.isRunning(bb.getLocomotive()));
       } else {
-        this.locomotiveCB.setSelectedItem(emptyBean);
-        this.startLocButton.setEnabled(false);
-        
-        if (bb.getBlockState() == null) {
-          bb.setBlockState(BlockBean.BlockState.FREE);
+        locomotiveCB.setSelectedItem(emptyBean);
+        startLocButton.setEnabled(false);
+
+        if (block.getBlockState() == null) {
+          block.setBlockState(BlockBean.BlockState.FREE);
         }
       }
     }
@@ -412,50 +412,64 @@ public class BlockControlDialog extends javax.swing.JDialog {
   }// </editor-fold>//GEN-END:initComponents
 
     private void saveExitBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveExitBtnActionPerformed
-      if (this.block != null && this.block.getBlockBean() != null) {
-        BlockBean bb = this.block.getBlockBean();
+      if (block != null && block.getBlockBean() != null) {
+        BlockBean bb = block.getBlockBean();
+        bb.setLocomotive(block.getLocomotive());
+        if (bb.getLocomotive() == null) {
+          bb.setBlockState(BlockBean.BlockState.FREE);
+        } else {
+          bb.setBlockState(block.getBlockState());
+        }
+        if (block.getLogicalDirection() != null) {
+          bb.setLogicalDirection(block.getLogicalDirection().getDirection());
+        } else {
+          bb.setLogicalDirection(null);
+        }
+        bb.setReverseArrival(block.isReverseArrival());
+        bb.setArrivalSuffix(block.getArrivalSuffix());
+
         PersistenceFactory.getService().persist(bb);
+
         if (bb.getLocomotive() != null && bb.getLocomotive().getName() != null) {
           LocomotiveBean loc = bb.getLocomotive();
           PersistenceFactory.getService().persist(loc);
         }
-        TileEvent tileEvent = new TileEvent(bb);
-        //TileFactory.fireTileEventListener(tileEvent);
-        //TileCache.fireTileEventListener(tileEvent);
-        
+
+        TileCache.findTile(bb.getTileId()).setBlockBean(bb);
       }
-      
-      this.setVisible(false);
-      this.dispose();
+
+      setVisible(false);
+      dispose();
       Logger.trace(evt.getActionCommand() + "Block " + block.getId() + " Locomotive: " + this.block.getBlockBean().getLocomotive());
     }//GEN-LAST:event_saveExitBtnActionPerformed
 
   private void locomotiveCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locomotiveCBActionPerformed
-    Logger.trace(evt.getActionCommand() + " -> " + this.locomotiveComboBoxModel.getSelectedItem());
-    
-    LocomotiveBean selected = (LocomotiveBean) this.locomotiveComboBoxModel.getSelectedItem();
-    
-    block.getBlockBean().setLocomotive(selected);
-    if (block.getBlockBean().getLocomotiveId() != null) {
-      block.getBlockBean().setBlockState(BlockBean.BlockState.OCCUPIED);
-    } else {
-      block.getBlockBean().setBlockState(BlockBean.BlockState.FREE);
-    }
-    
+    Logger.trace(evt.getActionCommand() + " -> " + locomotiveComboBoxModel.getSelectedItem());
+
+    LocomotiveBean selected = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
+
+    block.setLocomotive(selected);
+    //block.getBlockBean().setLocomotive(selected);
+    //if (block.getBlockBean().getLocomotiveId() != null) {
+    //  block.getBlockBean().setBlockState(BlockBean.BlockState.OCCUPIED);
+    //} else {
+    //  block.getBlockBean().setBlockState(BlockBean.BlockState.FREE);
+    //}
+
     if (selected.getLocIcon() != null) {
       locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));
       locomotiveIconLbl.setText(null);
     } else {
       locomotiveIconLbl.setText(selected.getName());
     }
-    
+
     if (LocomotiveBean.Direction.BACKWARDS == selected.getDirection()) {
-      this.backwardsRB.setSelected(true);
+      backwardsRB.setSelected(true);
     } else {
-      this.forwardsRB.setSelected(true);
+      forwardsRB.setSelected(true);
     }
-    
-    if (block.getBlockBean().getLocomotiveId() != null) {
+
+    if (block.getLocomotive() != null) {
       startLocButton.setEnabled(true);
     } else {
       startLocButton.setEnabled(false);
@@ -463,44 +477,44 @@ public class BlockControlDialog extends javax.swing.JDialog {
   }//GEN-LAST:event_locomotiveCBActionPerformed
 
   private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed
-    LocomotiveBean loc = this.block.getBlockBean().getLocomotive();
+    LocomotiveBean loc = block.getLocomotive();
     if (loc != null) {
-      AutoPilot.startStopLocomotive(loc, this.startLocButton.isSelected());
+      AutoPilot.startStopLocomotive(loc, startLocButton.isSelected());
     }
   }//GEN-LAST:event_startLocButtonActionPerformed
 
   private void reverseArrivalBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reverseArrivalBtnActionPerformed
-    String suffix = block.getBlockBean().getArrivalSuffix();
+    String suffix = block.getArrivalSuffix();
     if ("+".equals(suffix)) {
-      block.getBlockBean().setArrivalSuffix("-");
+      block.setArrivalSuffix("-");
     } else {
-      block.getBlockBean().setArrivalSuffix("+");
+      block.setArrivalSuffix("+");
     }
-    block.getBlockBean().setReverseArrival(!block.getBlockBean().isReverseArrival());
+    block.setReverseArrival(!block.isReverseArrival());
   }//GEN-LAST:event_reverseArrivalBtnActionPerformed
 
   private void backwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backwardsRBActionPerformed
-    block.getBlockBean().setLogicalDirection(LocomotiveBean.Direction.BACKWARDS.getDirection());
+    block.setLogicalDirection(LocomotiveBean.Direction.BACKWARDS);
   }//GEN-LAST:event_backwardsRBActionPerformed
 
   private void forwardsRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_forwardsRBActionPerformed
-    block.getBlockBean().setLogicalDirection(LocomotiveBean.Direction.FORWARDS.getDirection());
+    block.setLogicalDirection(LocomotiveBean.Direction.FORWARDS);
   }//GEN-LAST:event_forwardsRBActionPerformed
 
   private void alwaysStopCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alwaysStopCBActionPerformed
-    this.block.getBlockBean().setAlwaysStop(this.alwaysStopCB.isSelected());
+    block.getBlockBean().setAlwaysStop(alwaysStopCB.isSelected());
   }//GEN-LAST:event_alwaysStopCBActionPerformed
 
   private void randomWaitCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_randomWaitCBActionPerformed
-    this.block.getBlockBean().setRandomWait(this.randomWaitCB.isSelected());
+    block.getBlockBean().setRandomWait(randomWaitCB.isSelected());
   }//GEN-LAST:event_randomWaitCBActionPerformed
 
   private void minWaitSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_minWaitSpinnerStateChanged
-    this.block.getBlockBean().setMinWaitTime((Integer) this.minWaitSpinner.getValue());
+    block.getBlockBean().setMinWaitTime((Integer) minWaitSpinner.getValue());
   }//GEN-LAST:event_minWaitSpinnerStateChanged
 
   private void maxWaitSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_maxWaitSpinnerStateChanged
-    this.block.getBlockBean().setMaxWaitTime((Integer) this.maxWaitSpinner.getValue());
+    block.getBlockBean().setMaxWaitTime((Integer) maxWaitSpinner.getValue());
   }//GEN-LAST:event_maxWaitSpinnerStateChanged
 
   // Variables declaration - do not modify//GEN-BEGIN:variables

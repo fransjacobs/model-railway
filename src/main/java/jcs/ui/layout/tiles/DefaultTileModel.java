@@ -23,6 +23,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import jcs.entities.AccessoryBean.AccessoryValue;
 import jcs.entities.AccessoryBean.SignalValue;
+import jcs.entities.BlockBean;
 import jcs.entities.BlockBean.BlockState;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.TileBean.Orientation;
@@ -54,12 +55,12 @@ public class DefaultTileModel implements TileModel {
 
   protected boolean showOutline = false;
 
-  protected BlockState blockState;
   protected boolean reverseArrival;
   protected String arrivalSuffix;
   protected boolean overlayImage = false;
-  protected LocomotiveBean.Direction logicalDirection;
+  protected BlockState blockState;
   protected LocomotiveBean locomotive;
+  protected LocomotiveBean.Direction logicalDirection;
 
   public DefaultTileModel() {
     this(Orientation.EAST);
@@ -68,6 +69,7 @@ public class DefaultTileModel implements TileModel {
   public DefaultTileModel(Orientation orientation) {
     this.tileOrienation = orientation;
     this.selectedColor = Tile.DEFAULT_SELECTED_COLOR;
+    this.blockState = BlockState.FREE;
   }
 
   @Override
@@ -159,6 +161,16 @@ public class DefaultTileModel implements TileModel {
     return showBlockState;
   }
 
+  //Set all block properties is one go
+  @Override
+  public void setBlockBean(BlockBean blockBean) {
+    locomotive = blockBean.getLocomotive();
+    logicalDirection = LocomotiveBean.Direction.get(blockBean.getLogicalDirection());
+    arrivalSuffix = blockBean.getArrivalSuffix();
+    reverseArrival = blockBean.isReverseArrival();
+    setBlockState(blockBean.getBlockState());
+  }
+
   @Override
   public void setShowBlockState(boolean showBlockState) {
     this.showBlockState = showBlockState;
@@ -242,6 +254,14 @@ public class DefaultTileModel implements TileModel {
   @Override
   public void setBlockState(BlockState blockState) {
     this.blockState = blockState;
+    overlayImage = locomotive != null
+            && locomotive.getLocIcon() != null
+            && (BlockState.OCCUPIED == blockState || BlockState.INBOUND == blockState || BlockState.OUTBOUND == blockState);
+
+    if (BlockState.FREE == blockState || BlockState.OCCUPIED == blockState) {
+      arrivalSuffix = null;
+    }
+
     fireStateChanged();
   }
 
@@ -314,6 +334,17 @@ public class DefaultTileModel implements TileModel {
   @Override
   public void setLocomotive(LocomotiveBean locomotive) {
     this.locomotive = locomotive;
+    if (locomotive != null) {
+      blockState = BlockState.OCCUPIED;
+    } else {
+      blockState = BlockState.FREE;
+      arrivalSuffix = null;
+    }
+
+    this.overlayImage = locomotive != null
+            && locomotive.getLocIcon() != null
+            && (BlockState.OCCUPIED == blockState || BlockState.INBOUND == blockState || BlockState.OUTBOUND == blockState);
+
     fireStateChanged();
   }
 

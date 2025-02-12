@@ -60,6 +60,8 @@ public interface TileModel extends Serializable {
 
   boolean isShowBlockState();
 
+  void setBlockBean(BlockBean blockBean);
+
   public void setShowBlockState(boolean showBlockState);
 
   boolean isShowLocomotiveImage();

@@ -336,12 +336,10 @@ public class LayoutPanel extends JPanel {
     flowLayout1.setAlignOnBaseline(true);
     topPanel.setLayout(flowLayout1);
 
-    toolBar.setDoubleBuffered(true);
-    toolBar.setMargin(new Insets(1, 1, 1, 1));
     toolBar.setMaximumSize(new Dimension(1200, 42));
     toolBar.setMinimumSize(new Dimension(1150, 42));
     toolBar.setName(""); // NOI18N
-    toolBar.setPreferredSize(new Dimension(1100, 42));
+    toolBar.setPreferredSize(new Dimension(1000, 42));
 
     loadBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
     loadBtn.setToolTipText("Load");

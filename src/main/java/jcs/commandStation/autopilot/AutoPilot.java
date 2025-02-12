@@ -37,13 +37,15 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.RouteBean;
 import jcs.entities.SensorBean;
 import jcs.persistence.PersistenceFactory;
+import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
-import jcs.ui.layout.events.TileEvent;
 import org.tinylog.Logger;
 
 /**
- *
- * @author frans
+ * The AutoPilot is the "automatic driving engine".<br>
+ * Every Locomotive on the track will start it own Thread.<br>
+ * The Dispatcher is run in this Thread.<br>
+ * The AutoPilot has it own Monitor Thread: AutoPilotThread.
  *
  */
 public final class AutoPilot {
@@ -52,9 +54,7 @@ public final class AutoPilot {
 
   private static CommandStationBean commandStationBean;
 
-  //private final Map<String, SensorEventHandler> sensorHandlers = Collections.synchronizedMap(new HashMap<>());
   private static final Map<String, SensorEventHandler> sensorHandlers = new HashMap<>();
-  //private final Map<String, Dispatcher> dispatchers = Collections.synchronizedMap(new HashMap<>());
   private static final Map<String, Dispatcher> dispatchers = new HashMap<>();
 
   //Need a list to be able to unregister
@@ -289,6 +289,7 @@ public final class AutoPilot {
     int freeBlockCounter = 0;
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     for (BlockBean block : blocks) {
+      Tile tile = TileCache.findTile(block.getTileId());
       if (block.getLocomotiveId() != null) {
         if (null == block.getBlockState()) {
           if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
@@ -298,35 +299,33 @@ public final class AutoPilot {
           switch (block.getBlockState()) {
             case LOCKED, INBOUND -> {
               //destinations block, reset!
-              block.setLocomotive(null);
-              block.setBlockState(BlockBean.BlockState.FREE);
-              block.setArrivalSuffix(null);
+              tile.setLocomotive(null);
+              //block.setLocomotive(null);
+              tile.setBlockState(BlockBean.BlockState.FREE);
+              tile.setArrivalSuffix(null);
               freeBlockCounter++;
             }
             case OUTBOUND -> {
-              block.setBlockState(BlockBean.BlockState.OCCUPIED);
-              block.setArrivalSuffix(null);
+              tile.setBlockState(BlockBean.BlockState.OCCUPIED);
+              tile.setArrivalSuffix(null);
               occupiedBlockCounter++;
             }
             default -> {
               if (BlockBean.BlockState.OCCUPIED == block.getBlockState()) {
-                block.setArrivalSuffix(null);
+                tile.setArrivalSuffix(null);
                 occupiedBlockCounter++;
               }
             }
           }
         }
       } else {
-        block.setBlockState(BlockBean.BlockState.FREE);
+        tile.setBlockState(BlockBean.BlockState.FREE);
         freeBlockCounter++;
       }
-      PersistenceFactory.getService().persist(block);
-      TileEvent tileEvent = new TileEvent(block);
-      //TileCache.fireTileEventListener(tileEvent);
+      PersistenceFactory.getService().persist(tile.getBlockBean());
     }
 
     JCS.getJcsCommandStation().switchPower(true);
-
     Logger.debug("Occupied blocks: " + occupiedBlockCounter + " Free blocks " + freeBlockCounter + " of total " + blocks.size() + " blocks");
   }
 
@@ -368,12 +367,12 @@ public final class AutoPilot {
       }
     }
 
-    //if (Logger.isDebugEnabled()) {
-    //  Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
-    for (LocomotiveBean loc : activeLocomotives) {
-      Logger.trace(loc);
+    if (Logger.isTraceEnabled()) {
+      //  Logger.trace("There are " + activeLocomotives.size() + " Locomotives on the track: ");
+      for (LocomotiveBean loc : activeLocomotives) {
+        Logger.trace(loc);
+      }
     }
-    //}
     return new ArrayList<>(activeLocomotives);
   }
 
@@ -392,29 +391,28 @@ public final class AutoPilot {
     List<BlockBean> blocks = PersistenceFactory.getService().getBlocks();
     String sensorId = event.getId();
     for (BlockBean block : blocks) {
+      Tile tile = TileCache.findTile(block.getTileId());
+
       if ((block.getMinSensorId().equals(sensorId) || block.getPlusSensorId().equals(sensorId)) && block.getLocomotiveId() == null) {
         if (event.getSensorBean().isActive()) {
           block.setBlockState(BlockBean.BlockState.GHOST);
+          tile.setBlockState(BlockBean.BlockState.GHOST);
           //Also persist
           PersistenceFactory.getService().persist(block);
-
           Logger.warn("Ghost Detected! @ Sensor " + sensorId + " in block " + block.getId());
           //Switch power OFF!
           JCS.getJcsCommandStation().switchPower(false);
-
-          TileEvent tileEvent = new TileEvent(block);
-          //TileCache.fireTileEventListener(tileEvent);
         } else {
           if (block.getLocomotiveId() != null) {
             //keep state as is
           } else {
             block.setBlockState(BlockBean.BlockState.FREE);
+            tile.setBlockState(BlockBean.BlockState.FREE);
           }
         }
         break;
       }
     }
-
   }
 
   static void handleSensorEvent(SensorEvent event) {

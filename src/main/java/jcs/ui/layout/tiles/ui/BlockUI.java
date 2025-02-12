@@ -59,9 +59,6 @@ public class BlockUI extends TileUI {
     return new BlockUI();
   }
 
-//  Color getBlockStateColor() {
-//    return getBlockStateColor(this.model.getBlockState());
-//  }
   protected Color getBlockStateColor(BlockBean.BlockState blockState) {
     return switch (blockState) {
       case GHOST ->
