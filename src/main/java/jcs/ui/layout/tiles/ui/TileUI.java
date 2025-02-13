@@ -33,7 +33,6 @@ import static jcs.entities.TileBean.Orientation.NORTH;
 import static jcs.entities.TileBean.Orientation.SOUTH;
 import static jcs.entities.TileBean.Orientation.WEST;
 import jcs.ui.layout.LayoutCanvas;
-import jcs.ui.layout.LayoutUtil;
 import jcs.ui.layout.tiles.Tile;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_BACKGROUND_COLOR;
 import static jcs.ui.layout.tiles.Tile.DEFAULT_TRACK_COLOR;

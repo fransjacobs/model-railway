@@ -33,7 +33,6 @@ import jcs.entities.SensorBean;
 import jcs.ui.layout.tiles.Tile;
 import jcs.ui.layout.tiles.TileCache;
 import jcs.ui.layout.tiles.TileModel;
-import org.tinylog.Logger;
 
 public class SensorUI extends StraightUI implements MouseListener, MouseMotionListener {
 

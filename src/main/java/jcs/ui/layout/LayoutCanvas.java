@@ -68,7 +68,6 @@ import jcs.ui.layout.tiles.Sensor;
 import jcs.ui.layout.tiles.Signal;
 import jcs.ui.layout.tiles.Switch;
 import jcs.ui.layout.tiles.Tile;
-import jcs.ui.layout.tiles.TileFactory;
 import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
 
@@ -348,7 +347,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
 
   private Tile addTile(Point p, TileType tileType, Orientation orientation, Direction direction, boolean selected, boolean showCenter) {
     Logger.trace("Adding: " + tileType + " @ " + p + " O: " + orientation + " D: " + direction);
-    Tile tile = TileFactory.createTile(tileType, orientation, direction, p);
+    Tile tile = TileCache.createTile(tileType, orientation, direction, p);
 
     if (TileCache.canMoveTo(tile, p)) {
       tile.setSelected(selected);
@@ -359,7 +358,7 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
     } else {
       Tile occ = TileCache.findTile(p);
       Logger.trace("Can't add tile " + tile.getId() + " on " + tile.xyToString() + " Is occupied by " + occ.getId());
-      TileFactory.rollback(tile);
+      TileCache.rollback(tile);
       return null;
     }
   }

@@ -43,14 +43,14 @@ import org.tinylog.Logger;
  *
  */
 public class Dispatcher {
-
+  
   private final LocomotiveBean locomotiveBean;
-
+  
   private RouteBean routeBean;
-
+  
   private String departureBlockId;
   private String destinationBlockId;
-
+  
   private String waitingForSensorId;
   //Enter Sensor of the destination
   private String enterSensorId;
@@ -61,13 +61,13 @@ public class Dispatcher {
   private String occupationSensorId;
   //The exit of the departure
   private String exitSensorId;
-
+  
   private final List<StateEventListener> stateEventListeners;
-
+  
   private final ThreadGroup parent;
-
+  
   private StateMachineThread stateMachineThread;
-
+  
   public Dispatcher(ThreadGroup parent, LocomotiveBean locomotiveBean) {
     this.parent = parent;
     this.locomotiveBean = locomotiveBean;
@@ -76,27 +76,27 @@ public class Dispatcher {
     this.stateEventListeners = new LinkedList<>();
     this.stateMachineThread = new StateMachineThread(parent, this);
   }
-
+  
   StateMachineThread getStateMachineThread() {
     return stateMachineThread;
   }
-
+  
   public Long getId() {
     return this.locomotiveBean.getId();
   }
-
+  
   public String getName() {
     return this.locomotiveBean.getName();
   }
-
+  
   public LocomotiveBean getLocomotiveBean() {
     return locomotiveBean;
   }
-
+  
   RouteBean getRouteBean() {
     return routeBean;
   }
-
+  
   void setRouteBean(RouteBean routeBean) {
     this.routeBean = routeBean;
     if (routeBean == null) {
@@ -107,11 +107,11 @@ public class Dispatcher {
       this.destinationBlockId = routeBean.getToTileId();
     }
   }
-
+  
   public boolean isLocomotiveAutomodeOn() {
     return this.stateMachineThread.isEnableAutomode();
   }
-
+  
   public boolean startLocomotiveAutomode() {
     //Only when the Autopilot is ON!
     if (AutoPilot.isAutoModeActive()) {
@@ -121,30 +121,30 @@ public class Dispatcher {
     }
     return this.stateMachineThread.isEnableAutomode();
   }
-
+  
   public void stopLocomotiveAutomode() {
     stateMachineThread.setEnableAutomode(false);
   }
-
+  
   void startRunning() {
     if (this.stateMachineThread != null && this.stateMachineThread.isThreadRunning()) {
       return;
     }
-
+    
     if (this.stateMachineThread == null || !this.stateMachineThread.isAlive()) {
       stateMachineThread = new StateMachineThread(this.parent, this);
     }
-
+    
     this.stateMachineThread.setEnableAutomode(true);
     if (!this.stateMachineThread.isThreadRunning()) {
       this.stateMachineThread.start();
     }
   }
-
+  
   public void stopRunning() {
     if (stateMachineThread != null && stateMachineThread.isThreadRunning()) {
       stateMachineThread.stopRunningThread();
-
+      
       try {
         Logger.trace(this.getName() + " Thread Joining...");
         stateMachineThread.join();
@@ -154,7 +154,7 @@ public class Dispatcher {
       Logger.trace(this.getName() + " Thread Joined!");
     }
   }
-
+  
   void resetDispatcher() {
     this.routeBean = null;
     this.departureBlockId = null;
@@ -166,13 +166,13 @@ public class Dispatcher {
     this.stateEventListeners.clear();
     this.locomotiveBean.setDispatcherDirection(Direction.SWITCH);
   }
-
+  
   public void reset() {
     Logger.trace("Resetting dispatcher " + getName() + " StateMachine...");
     this.stateMachineThread.reset();
     resetDispatcher();
   }
-
+  
   public boolean isRunning() {
     if (stateMachineThread != null) {
       return stateMachineThread.isThreadRunning();
@@ -194,7 +194,7 @@ public class Dispatcher {
       return departureBlock;
     }
   }
-
+  
   BlockBean getDestinationBlock() {
     if (destinationBlockId != null) {
       return PersistenceFactory.getService().getBlockByTileId(destinationBlockId);
@@ -205,7 +205,7 @@ public class Dispatcher {
       return null;
     }
   }
-
+  
   public String getStateName() {
     if (stateMachineThread != null) {
       return stateMachineThread.getDispatcherStateName();
@@ -213,47 +213,47 @@ public class Dispatcher {
       return "#Idle";
     }
   }
-
+  
   void setWaitForSensorid(String sensorId) {
     this.waitingForSensorId = sensorId;
   }
-
+  
   public String getWaitingForSensorId() {
     return waitingForSensorId;
   }
-
+  
   public String getEnterSensorId() {
     return enterSensorId;
   }
-
+  
   void setEnterSensorId(String enterSensorId) {
     this.enterSensorId = enterSensorId;
   }
-
+  
   public String getInSensorId() {
     return inSensorId;
   }
-
+  
   void setInSensorId(String inSensorId) {
     this.inSensorId = inSensorId;
   }
-
+  
   public String getOccupationSensorId() {
     return occupationSensorId;
   }
-
+  
   void setOccupationSensorId(String occupationSensorId) {
     this.occupationSensorId = occupationSensorId;
   }
-
+  
   public String getExitSensorId() {
     return exitSensorId;
   }
-
+  
   void setExitSensorId(String exitSensorId) {
     this.exitSensorId = exitSensorId;
   }
-
+  
   void clearDepartureIgnoreEventHandlers() {
     if (departureBlockId != null) {
       BlockBean departureBlock = getDepartureBlock();
@@ -263,7 +263,7 @@ public class Dispatcher {
       AutoPilot.removeHandler(plusSensorId);
     }
   }
-
+  
   public void onIgnoreEvent(SensorEvent event) {
     //Only in Simulator mode
     if (JCS.getJcsCommandStation().getCommandStationBean().isVirtual()) {
@@ -272,19 +272,19 @@ public class Dispatcher {
           this.waitingForSensorId = null;
         }
       }
-
+      
       if (this.enterSensorId != null && this.enterSensorId.equals(event.getId())) {
         if (!event.isActive()) {
           this.enterSensorId = null;
         }
       }
-
+      
       if (this.inSensorId != null && this.inSensorId.equals(event.getId())) {
         if (!event.isActive()) {
           this.inSensorId = null;
         }
       }
-
+      
       if (this.exitSensorId != null && this.exitSensorId.equals(event.getId())) {
         if (!event.isActive()) {
           this.exitSensorId = null;
@@ -293,100 +293,107 @@ public class Dispatcher {
     }
     //Logger.trace("Event for a ignored listener: " + event.getId() + " Changed: " + event.isChanged() + ", active: " + event.getSensorBean().isActive());
   }
-
+  
   synchronized void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
     JCS.getJcsCommandStation().switchAccessory(accessory, value);
   }
-
+  
   synchronized void changeLocomotiveVelocity(LocomotiveBean locomotive, int velocity) {
     JCS.getJcsCommandStation().changeLocomotiveSpeed(velocity, locomotive);
     locomotiveBean.setVelocity(velocity);
   }
-
+  
   synchronized void changeLocomotiveDirection(LocomotiveBean locomotive, Direction newDirection) {
     JCS.getJcsCommandStation().changeLocomotiveDirection(newDirection, locomotive);
     locomotiveBean.setDirection(newDirection);
   }
-
+  
   void fireStateListeners(String s) {
     for (StateEventListener sel : stateEventListeners) {
       sel.onStateChange(this);
     }
   }
-
+  
   public void addStateEventListener(StateEventListener listener) {
     stateEventListeners.add(listener);
   }
-
+  
   public void removeStateEventListener(StateEventListener listener) {
     stateEventListeners.remove(listener);
   }
-
+  
   public static void resetRoute(RouteBean route) {
     List<RouteElementBean> routeElements = route.getRouteElements();
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
       Tile tile = TileCache.findTile(tileId);
-
-      if (tile.isBlock()) {
-        if (tile.getLocomotive() != null) {
-          tile.setBlockState(BlockBean.BlockState.OCCUPIED);
-        } else {
-          tile.setBlockState(BlockBean.BlockState.FREE);
+      if (tile != null) {
+        if (tile.isBlock()) {
+          if (tile.getLocomotive() != null) {
+            tile.setBlockState(BlockBean.BlockState.OCCUPIED);
+          } else {
+            tile.setBlockState(BlockBean.BlockState.FREE);
+          }
         }
+        if (tile.isJunction()) {
+          tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
+        }
+        tile.setShowRoute(false);
+      } else {
+        Logger.warn(("Tile with id " + tileId + " NOT in TileCache!"));
       }
-      if (tile.isJunction()) {
-        tile.setRouteValue(AccessoryBean.AccessoryValue.OFF);
-      }
-      tile.setShowRoute(false);
     }
   }
-
+  
   void showBlockState(BlockBean blockBean) {
     Logger.trace("Show block " + blockBean);
     Tile tile = TileCache.findTile(blockBean.getTileId());
-    tile.setBlockBean(blockBean);   
+    tile.setBlockBean(blockBean);
   }
-
+  
   void showRoute(RouteBean routeBean, Color routeColor) {
     Logger.trace("Show route " + routeBean.toLogString());
     List<RouteElementBean> routeElements = routeBean.getRouteElements();
-
+    
     for (RouteElementBean re : routeElements) {
       String tileId = re.getTileId();
-      TileBean.Orientation incomingSide = re.getIncomingOrientation();
-
       Tile tile = TileCache.findTile(tileId);
-      tile.setIncomingSide(incomingSide);
-      tile.setTrackRouteColor(Tile.DEFAULT_ROUTE_TRACK_COLOR);
-
-      if (re.isTurnout()) {
-        AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
-        tile.setRouteValue(routeState);
-      } else if (re.isBlock()) {
-        if (re.getTileId().equals(routeBean.getFromTileId())) {
-          //departure block
-          tile.setBlockState(BlockBean.BlockState.OUTBOUND);
-        } else {
-          tile.setBlockState(BlockBean.BlockState.INBOUND);
+      if (tile != null) {
+        TileBean.Orientation incomingSide = re.getIncomingOrientation();
+        
+        tile.setIncomingSide(incomingSide);
+        tile.setTrackRouteColor(Tile.DEFAULT_ROUTE_TRACK_COLOR);
+        
+        if (re.isTurnout()) {
+          AccessoryBean.AccessoryValue routeState = re.getAccessoryValue();
+          tile.setRouteValue(routeState);
+        } else if (re.isBlock()) {
+          if (re.getTileId().equals(routeBean.getFromTileId())) {
+            //departure block
+            tile.setBlockState(BlockBean.BlockState.OUTBOUND);
+          } else {
+            tile.setBlockState(BlockBean.BlockState.INBOUND);
+          }
         }
+        tile.setShowRoute(true);
+      } else {
+        Logger.warn("Tile with id " + tileId + " NOT in TileCache!");
       }
-      tile.setShowRoute(true);
     }
   }
-
+  
   int getRandomNumber(int min, int max) {
     Random random = new Random();
     return random.ints(min, max).findFirst().getAsInt();
   }
-
+  
   @Override
   public int hashCode() {
     int hash = 7;
     hash = 37 * hash + Objects.hashCode(locomotiveBean.getId());
     return hash;
   }
-
+  
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

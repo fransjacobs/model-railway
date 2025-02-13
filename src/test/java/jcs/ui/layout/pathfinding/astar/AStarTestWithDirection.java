@@ -18,10 +18,8 @@ package jcs.ui.layout.pathfinding.astar;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.RouteBean;
-import jcs.persistence.PersistenceFactory;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.Tile;
-import jcs.ui.layout.tiles.TileFactory;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -55,7 +53,7 @@ public class AStarTestWithDirection {
   @Test
   public void testBuildGraph() {
     System.out.println("buildGraph");
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     assertEquals(37, tiles.size());
     AStar instance = new AStar();
     instance.buildGraph(tiles);
@@ -69,7 +67,7 @@ public class AStarTestWithDirection {
   @Test
   public void testGetAllBlockToBlockNodes() {
     System.out.println("getAllBlockToBlockNodes");
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     AStar instance = new AStar();
     instance.buildGraph(tiles);
     List<List<Node>> result = instance.getAllBlockToBlockNodes();
@@ -87,7 +85,7 @@ public class AStarTestWithDirection {
     String toNodeId = "bk-3";
     String toSuffix = "-";
     AStar instance = new AStar();
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
 
     String expPath = "[bk-2+]->[bk-3-]: bk-2+[bk-2] -> se-3 -> sd-3 -> ct-1 -> sw-2[RED] -> st-5 -> ct-4 -> st-11 -> st-12 -> st-13 -> st-14 -> ct-6 -> st-20 -> st-19 -> st-18 -> se-6 -> bk-3-[bk-3]";
@@ -108,7 +106,7 @@ public class AStarTestWithDirection {
     String toNodeId = "bk-3";
     String toSuffix = "-";
     AStar instance = new AStar();
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
 
     String expPath = "[bk-2+]->[bk-3-]: bk-2+[bk-2] -> se-3 -> sd-3 -> ct-1 -> sw-2[RED] -> st-5 -> ct-4 -> st-11 -> st-12 -> st-13 -> st-14 -> ct-6 -> st-20 -> st-19 -> st-18 -> se-6 -> bk-3-[bk-3]";
@@ -129,7 +127,7 @@ public class AStarTestWithDirection {
     String toNodeId = "bk-3";
     String toSuffix = "+";
     AStar instance = new AStar();
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
     String expPath = "";
     List<Node> path = instance.findPath(fromNodeId, fromSuffix, toNodeId, toSuffix);
@@ -143,7 +141,7 @@ public class AStarTestWithDirection {
   @Test
   public void testRouteAll() {
     System.out.println("routeAll");
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
 
     List<String> expRouteDesc = new ArrayList<>();
 
@@ -177,7 +175,7 @@ public class AStarTestWithDirection {
   //@Test
   public void testGetRoute() {
     System.out.println("getRoute");
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     AStar instance = new AStar();
     instance.buildGraph(tiles);
     List<RouteBean> routeBeans = instance.routeAll();

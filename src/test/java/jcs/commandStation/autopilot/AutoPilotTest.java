@@ -31,7 +31,7 @@ import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.Tile;
-import jcs.ui.layout.tiles.TileFactory;
+import jcs.ui.layout.tiles.TileCache;
 import jcs.util.RunUtil;
 import static org.junit.Assert.assertEquals;
 import org.junit.jupiter.api.AfterAll;
@@ -71,7 +71,7 @@ public class AutoPilotTest {
     //When running in a batch the default command station could be different..
     CommandStationBean virt = ps.getCommandStation("virtual");
     ps.changeDefaultCommandStation(virt);
-    
+
     if (RunUtil.isWindows()) {
       Logger.info("Skipping tests on Windows!");
       skipTest = true;
@@ -358,7 +358,8 @@ public class AutoPilotTest {
     }
     System.out.println("getOnTrackLocomotives");
     //Check is the test script has run well
-    List<Tile> tiles = TileFactory.toTiles(ps.getTileBeans(), false, false);
+    //List<Tile> tiles = TileFactory.toTiles(ps.getTileBeans(), false, false);
+    List<Tile> tiles = TileCache.loadTiles(false);
     assertEquals(29, tiles.size());
     List<BlockBean> blocks = ps.getBlocks();
     assertEquals(4, blocks.size());

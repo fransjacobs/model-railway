@@ -448,13 +448,11 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     LocomotiveBean selected = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
 
-    block.setLocomotive(selected);
-    //block.getBlockBean().setLocomotive(selected);
-    //if (block.getBlockBean().getLocomotiveId() != null) {
-    //  block.getBlockBean().setBlockState(BlockBean.BlockState.OCCUPIED);
-    //} else {
-    //  block.getBlockBean().setBlockState(BlockBean.BlockState.FREE);
-    //}
+    if (selected.getId() != null) {
+      block.setLocomotive(selected);
+    } else {
+      block.setLocomotive(null);
+    }
 
     if (selected.getLocIcon() != null) {
       locomotiveIconLbl.setIcon(new ImageIcon(selected.getLocIcon()));

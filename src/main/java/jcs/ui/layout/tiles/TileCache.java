@@ -16,16 +16,31 @@
 package jcs.ui.layout.tiles;
 
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
+import jcs.JCS;
+import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
 import jcs.commandStation.events.JCSActionEvent;
+import jcs.commandStation.events.SensorEventListener;
+import jcs.entities.AccessoryBean;
+import jcs.entities.SensorBean;
+import static jcs.entities.TileBean.TileType.BLOCK;
+import static jcs.entities.TileBean.TileType.CROSS;
+import static jcs.entities.TileBean.TileType.CROSSING;
+import static jcs.entities.TileBean.TileType.CURVED;
+import static jcs.entities.TileBean.TileType.END;
+import static jcs.entities.TileBean.TileType.SENSOR;
+import static jcs.entities.TileBean.TileType.SIGNAL;
+import static jcs.entities.TileBean.TileType.STRAIGHT;
+import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
+import static jcs.entities.TileBean.TileType.SWITCH;
 
 /**
  * Factory object to create Tiles and cache pointMap
@@ -34,12 +49,23 @@ import jcs.commandStation.events.JCSActionEvent;
  */
 public class TileCache {
 
-  static final Map<String, Tile> idMap = new ConcurrentHashMap<>();
-  static final Map<Point, Tile> pointMap = new ConcurrentHashMap<>();
-  static final Map<Point, Tile> altPointMap = new ConcurrentHashMap<>();
+  // Keep the records of the used id sequence number
+  private static int straightIdSeq;
+  private static int crossingIdSeq;
+  private static int curvedIdSeq;
+  private static int switchIdSeq;
+  private static int crossIdSeq;
+  private static int signalIdSeq;
+  private static int sensorIdSeq;
+  private static int blockIdSeq;
+  private static int straightDirectionIdSeq;
+  private static int endIdSeq;
+
+  static final Map<String, Tile> idMap = new HashMap<>();
+  static final Map<Point, Tile> pointMap = new HashMap<>();
+  static final Map<Point, Tile> altPointMap = new HashMap<>();
 
   private static final ConcurrentLinkedQueue<JCSActionEvent> eventsQueue = new ConcurrentLinkedQueue();
-
   private static final TileActionEventHandler actionEventQueueHandler = new TileActionEventHandler(eventsQueue);
 
   static {
@@ -47,6 +73,243 @@ public class TileCache {
   }
 
   private TileCache() {
+  }
+
+  private static int nextIdSeq(String id) {
+    String idnr = id.substring(3);
+    int idSeq = Integer.parseInt(idnr);
+    return idSeq;
+  }
+
+  private static String nextTileId(TileBean.TileType tileType) {
+    switch (tileType) {
+      case STRAIGHT -> {
+        straightIdSeq++;
+        return "st-" + straightIdSeq;
+      }
+      case CROSSING -> {
+        crossingIdSeq++;
+        return "cr-" + crossingIdSeq;
+      }
+      case CURVED -> {
+        curvedIdSeq++;
+        return "ct-" + curvedIdSeq;
+      }
+      case SWITCH -> {
+        switchIdSeq++;
+        return "sw-" + switchIdSeq;
+      }
+      case CROSS -> {
+        crossIdSeq++;
+        return "cs-" + crossIdSeq;
+      }
+      case SIGNAL -> {
+        signalIdSeq++;
+        return "si-" + signalIdSeq;
+      }
+      case SENSOR -> {
+        sensorIdSeq++;
+        return "se-" + sensorIdSeq;
+      }
+      case BLOCK -> {
+        blockIdSeq++;
+        return "bk-" + blockIdSeq;
+      }
+      case STRAIGHT_DIR -> {
+        straightDirectionIdSeq++;
+        return "sd-" + straightDirectionIdSeq;
+      }
+      case END -> {
+        endIdSeq++;
+        return "et-" + endIdSeq;
+      }
+      default -> {
+        Logger.warn("Unknown Tile Type " + tileType);
+        return null;
+      }
+    }
+  }
+
+  private static int maxIdSeq(int currentId, int newId) {
+    if (currentId < newId) {
+      return newId;
+    } else {
+      return currentId;
+    }
+  }
+
+  public static Tile createTile(TileBean tileBean, boolean showValues) {
+    if (tileBean == null) {
+      return null;
+    }
+
+    TileBean.TileType tileType = tileBean.getTileType();
+    Tile tile = null;
+    switch (tileType) {
+      case STRAIGHT -> {
+        tile = new Straight(tileBean);
+        straightIdSeq = maxIdSeq(straightIdSeq, nextIdSeq(tileBean.getId()));
+      }
+      case CROSSING -> {
+        tile = new Crossing(tileBean);
+        crossingIdSeq = maxIdSeq(crossingIdSeq, nextIdSeq(tileBean.getId()));
+      }
+      case CURVED -> {
+        tile = new Curved(tileBean);
+        curvedIdSeq = maxIdSeq(curvedIdSeq, nextIdSeq(tileBean.getId()));
+      }
+      case SWITCH -> {
+        tile = new Switch(tileBean);
+        tile.setAccessoryBean(tileBean.getAccessoryBean());
+
+        switchIdSeq = maxIdSeq(switchIdSeq, nextIdSeq(tileBean.getId()));
+        if (showValues && tileBean.getAccessoryBean() != null) {
+          tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
+        }
+        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+      }
+      case CROSS -> {
+        tile = new Cross(tileBean);
+        tile.setAccessoryBean(tileBean.getAccessoryBean());
+
+        crossIdSeq = maxIdSeq(crossIdSeq, nextIdSeq(tileBean.getId()));
+        if (showValues && tileBean.getAccessoryBean() != null) {
+          tile.setAccessoryValue((tileBean.getAccessoryBean()).getAccessoryValue());
+        }
+        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+      }
+      case SIGNAL -> {
+        tile = new Signal(tileBean);
+        tile.setAccessoryBean(tileBean.getAccessoryBean());
+
+        signalIdSeq = maxIdSeq(signalIdSeq, nextIdSeq(tileBean.getId()));
+        if (showValues && tileBean.getAccessoryBean() != null) {
+          ((Signal) tile).setSignalValue(((AccessoryBean) tileBean.getAccessoryBean()).getSignalValue());
+        }
+        JCS.getJcsCommandStation().addAccessoryEventListener((AccessoryEventListener) tile);
+      }
+      case SENSOR -> {
+        tile = new Sensor(tileBean);
+        tile.setSensorBean(tileBean.getSensorBean());
+        sensorIdSeq = maxIdSeq(sensorIdSeq, nextIdSeq(tileBean.getId()));
+
+        if (showValues && tileBean.getSensorBean() != null) {
+          ((Sensor) tile).setActive(((SensorBean) tileBean.getSensorBean()).isActive());
+        }
+        JCS.getJcsCommandStation().addSensorEventListener((SensorEventListener) tile);
+      }
+      case BLOCK -> {
+        tile = new Block(tileBean);
+        tile.setBlockBean(tileBean.getBlockBean());
+        blockIdSeq = maxIdSeq(blockIdSeq, nextIdSeq(tileBean.getId()));
+      }
+      case STRAIGHT_DIR -> {
+        tile = new StraightDirection(tileBean);
+        straightDirectionIdSeq = maxIdSeq(straightDirectionIdSeq, nextIdSeq(tileBean.getId()));
+      }
+      case END -> {
+        tile = new End(tileBean);
+        endIdSeq = maxIdSeq(endIdSeq, nextIdSeq(tileBean.getId()));
+      }
+      default ->
+        Logger.warn("Unknown Tile Type " + tileType);
+    }
+
+    return (Tile) tile;
+  }
+
+  /**
+   * @param tileType type of type to create
+   * @param orientation whether the orientation of the Tile is EAST, WEST, NORTH or SOUTH
+   * @param x the tile center X
+   * @param y the tile center Y
+   * @return a Tile object
+   */
+  public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, int x, int y) {
+    return createTile(tileType, orientation, TileBean.Direction.CENTER, x, y);
+  }
+
+  /**
+   * @param tileType type of type to create
+   * @param orientation whether the orientation of the Tile is EAST, WEST, NORTH or SOUTH
+   * @param direction direction plays a role with Turnout tiles whether it goes to the Left or Right
+   * @param x the tile center X
+   * @param y the tile center Y
+   * @return a Tile object
+   */
+  public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, int x, int y) {
+    return createTile(tileType, orientation, direction, new Point(x, y));
+  }
+
+  public static Tile createTile(TileBean.TileType tileType, TileBean.Orientation orientation, TileBean.Direction direction, Point center) {
+    Tile tile = null;
+    switch (tileType) {
+      case STRAIGHT -> {
+        tile = new Straight(orientation, center);
+      }
+      case CROSSING -> {
+        tile = new Crossing(orientation, center);
+      }
+      case CURVED ->
+        tile = new Curved(orientation, center);
+      case SWITCH ->
+        tile = new Switch(orientation, direction, center);
+      case CROSS ->
+        tile = new Cross(orientation, direction, center);
+      case SIGNAL ->
+        tile = new Signal(orientation, center);
+      case SENSOR ->
+        tile = new Sensor(orientation, center);
+      case BLOCK ->
+        tile = new Block(orientation, center);
+      case STRAIGHT_DIR ->
+        tile = new StraightDirection(orientation, center);
+      case END ->
+        tile = new End(orientation, center);
+      default ->
+        Logger.warn("Unknown Tile Type " + tileType);
+    }
+
+    if (tile != null) {
+      tile.setId(nextTileId(tileType));
+    }
+
+    return (Tile) tile;
+  }
+
+  public static void rollback(Tile tile) {
+    switch (tile.tileType) {
+      case STRAIGHT -> {
+        straightIdSeq--;
+      }
+      case CROSSING -> {
+        crossingIdSeq--;
+      }
+      case CURVED -> {
+        curvedIdSeq--;
+      }
+      case SWITCH -> {
+        switchIdSeq--;
+      }
+      case CROSS -> {
+        crossIdSeq--;
+      }
+      case SIGNAL -> {
+        signalIdSeq--;
+      }
+      case SENSOR -> {
+        sensorIdSeq--;
+      }
+      case BLOCK -> {
+        blockIdSeq--;
+      }
+      case STRAIGHT_DIR -> {
+        straightDirectionIdSeq--;
+      }
+      case END -> {
+        endIdSeq--;
+      }
+    }
   }
 
   public static List<Tile> loadTiles() {
@@ -61,7 +324,7 @@ public class TileCache {
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
     for (TileBean tb : tileBeans) {
-      Tile tile = TileFactory.createTile(tb, showvalues);
+      Tile tile = createTile(tb, showvalues);
       idMap.put(tile.id, tile);
       pointMap.put(tile.getCenter(), tile);
       //Alternative point(s) to be able to find all pointIds
@@ -147,6 +410,10 @@ public class TileCache {
   public static Tile findTile(String id) {
     Tile tile = idMap.get(id);
     return tile;
+  }
+
+  public static boolean contains(Point p) {
+    return pointMap.containsKey(p);
   }
 
   public static boolean canMoveTo(Tile tile, Point p) {

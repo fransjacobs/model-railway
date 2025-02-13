@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
-import jcs.ui.layout.tiles.Tile;
 
 public class EndUI extends TileUI {
 

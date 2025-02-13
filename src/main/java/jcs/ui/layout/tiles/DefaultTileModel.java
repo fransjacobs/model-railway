@@ -164,11 +164,13 @@ public class DefaultTileModel implements TileModel {
   //Set all block properties is one go
   @Override
   public void setBlockBean(BlockBean blockBean) {
-    locomotive = blockBean.getLocomotive();
-    logicalDirection = LocomotiveBean.Direction.get(blockBean.getLogicalDirection());
-    arrivalSuffix = blockBean.getArrivalSuffix();
-    reverseArrival = blockBean.isReverseArrival();
-    setBlockState(blockBean.getBlockState());
+    if (blockBean != null) {
+      locomotive = blockBean.getLocomotive();
+      logicalDirection = LocomotiveBean.Direction.get(blockBean.getLogicalDirection());
+      arrivalSuffix = blockBean.getArrivalSuffix();
+      reverseArrival = blockBean.isReverseArrival();
+      setBlockState(blockBean.getBlockState());
+    }
   }
 
   @Override

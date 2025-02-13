@@ -19,7 +19,6 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
-import jcs.ui.layout.tiles.Tile;
 
 public class CurvedUI extends TileUI {
 

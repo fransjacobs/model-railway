@@ -29,7 +29,7 @@ import jcs.entities.RouteBean;
 import jcs.entities.RouteElementBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.tiles.Tile;
-import jcs.ui.layout.tiles.TileFactory;
+import jcs.ui.layout.tiles.TileCache;
 import org.tinylog.Logger;
 
 /**
@@ -39,13 +39,13 @@ import org.tinylog.Logger;
  */
 public class AStar {
 
-  private final TileCache tileCache;
+  //private final TileCache tileCache;
 
   private final Graph graph;
   private final Map<String, RouteBean> routes;
 
   public AStar() {
-    this.tileCache = new TileCache();
+    //this.tileCache = new TileCache();
     this.routes = new HashMap<>();
     this.graph = new Graph();
   }
@@ -53,8 +53,8 @@ public class AStar {
   public List<List<Node>> getAllBlockToBlockNodes() {
     List<List<Node>> fromToList = new ArrayList<>();
 
-    List<Node> fromNodes = this.graph.getBlockNodes();
-    List<Node> toNodes = this.graph.getBlockNodes();
+    List<Node> fromNodes = graph.getBlockNodes();
+    List<Node> toNodes = graph.getBlockNodes();
 
     for (Node from : fromNodes) {
       boolean fromBlock = from.isBlock();
@@ -186,7 +186,7 @@ public class AStar {
   }
 
   public List<RouteBean> routeAll() {
-    this.routes.clear();
+    routes.clear();
     List<List<Node>> blockToBlockList = getAllBlockToBlockNodes();
     Logger.trace("Try to route " + blockToBlockList.size() * 2 * 2 + " Possible block to block routes");
     Logger.trace("=============================================================================");
@@ -216,7 +216,7 @@ public class AStar {
                 Logger.debug("No Path from " + fid + " to " + tid);
               } else {
                 RouteBean routeBean = createRouteBeanFromNodePath(path);
-                this.routes.put(routeBean.getId(), routeBean);
+                routes.put(routeBean.getId(), routeBean);
               }
 
               //}
@@ -231,7 +231,7 @@ public class AStar {
   }
 
   public void buildGraph(List<Tile> tiles) {
-    this.tileCache.reload(tiles);
+    //this.tileCache.reload(tiles);
     this.graph.clear();
 
     //Every Tile becomes a node
@@ -248,8 +248,10 @@ public class AStar {
       Logger.trace("Node: " + node.getId() + " has " + neighborPoints.size() + " neighbors " + (node.isBlock() ? "[Block]" : "") + (node.isJunction() ? "[Junction]" : ""));
 
       for (Point p : neighborPoints) {
-        if (tileCache.contains(p)) {
-          Node neighbor = graph.getNode(tileCache.getTileId(p));
+        //if (tileCache.contains(p)) {
+        if (TileCache.contains(p)) {
+          //Node neighbor = graph.getNode(tileCache.getTileId(p));
+          Node neighbor = graph.getNode(TileCache.findTile(p).getId());
 
           if (node.getTile().isAdjacent(neighbor.getTile())) {
             double distance;
@@ -267,7 +269,7 @@ public class AStar {
               }
             }
             //Logger.trace("Neighbor: " + neighbor.getId() + " Distance: " + distance);
-            this.graph.link(node, neighbor, distance);
+            graph.link(node, neighbor, distance);
           }
         }
       }
@@ -275,11 +277,11 @@ public class AStar {
   }
 
   public List<Node> getNodes() {
-    return this.graph.getNodes();
+    return graph.getNodes();
   }
 
   public static void main(String[] a) {
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = TileCache.loadTiles();
 
     AStar gb = new AStar();
     gb.buildGraph(tiles);

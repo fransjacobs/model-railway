@@ -18,10 +18,8 @@ package jcs.ui.layout.pathfinding.astar;
 import java.util.ArrayList;
 import java.util.List;
 import jcs.entities.RouteBean;
-import jcs.persistence.PersistenceFactory;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.ui.layout.tiles.Tile;
-import jcs.ui.layout.tiles.TileFactory;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -54,7 +52,7 @@ public class AStarSwitchLeftSouth {
   @Test
   public void testBuildGraph() {
     System.out.println("buildGraph");
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     assertEquals(21, tiles.size());
     AStar instance = new AStar();
     instance.buildGraph(tiles);
@@ -68,7 +66,8 @@ public class AStarSwitchLeftSouth {
   @Test
   public void testGetAllBlockToBlockNodes() {
     System.out.println("getAllBlockToBlockNodes");
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
+
     AStar instance = new AStar();
     instance.buildGraph(tiles);
     List<List<Node>> result = instance.getAllBlockToBlockNodes();
@@ -86,7 +85,7 @@ public class AStarSwitchLeftSouth {
     String toNodeId = "bk-2";
     String toSuffix = "-";
     AStar instance = new AStar();
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
 
     String expPath = "";
@@ -107,7 +106,7 @@ public class AStarSwitchLeftSouth {
     String toNodeId = "bk-3";
     String toSuffix = "+";
     AStar instance = new AStar();
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
     String expPath = "[bk-4-]->[bk-3+]: bk-4-[bk-4] -> st-29 -> st-30 -> sw-1[GREEN] -> st-25 -> st-26 -> bk-3+[bk-3]";
 
@@ -124,7 +123,8 @@ public class AStarSwitchLeftSouth {
     String toNodeId = "bk-4";
     String toSuffix = "-";
     AStar instance = new AStar();
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
+
     instance.buildGraph(tiles);
     String expPath = "";
 
@@ -141,7 +141,7 @@ public class AStarSwitchLeftSouth {
     String toNodeId = "bk-3";
     String toSuffix = "+";
     AStar instance = new AStar();
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
     instance.buildGraph(tiles);
     String expPath = "";
 
@@ -156,7 +156,7 @@ public class AStarSwitchLeftSouth {
   @Test
   public void testRouteAll() {
     System.out.println("routeAll");
-    List<Tile> tiles = TileFactory.toTiles(PersistenceFactory.getService().getTileBeans(), false, false);
+    List<Tile> tiles = jcs.ui.layout.tiles.TileCache.loadTiles(false);
 
     List<String> expRouteDesc = new ArrayList<>();
 
