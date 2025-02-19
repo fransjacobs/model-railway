@@ -15,6 +15,7 @@
  */
 package jcs.ui.layout.tiles;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
 import jcs.commandStation.events.JCSActionEvent;
+import static jcs.ui.layout.tiles.Tile.GRID;
 
 /**
  * Factory object to create Tiles and cache pointMap
@@ -67,6 +69,9 @@ public class TileCache {
 
   private static final ConcurrentLinkedQueue<JCSActionEvent> eventsQueue = new ConcurrentLinkedQueue();
   private static final TileActionEventHandler actionEventQueueHandler = new TileActionEventHandler(eventsQueue);
+
+  private static int maxX;
+  private static int maxY;
 
   static {
     actionEventQueueHandler.start();
@@ -320,11 +325,14 @@ public class TileCache {
     altPointMap.clear();
     pointMap.clear();
     idMap.clear();
+    maxX = 0;
+    maxY = 0;
 
     List<TileBean> tileBeans = PersistenceFactory.getService().getTileBeans();
 
     for (TileBean tb : tileBeans) {
       Tile tile = createTile(tb, showvalues);
+      calculateMaxCoordinates(tile.tileX, tile.tileY);
       idMap.put(tile.id, tile);
       pointMap.put(tile.getCenter(), tile);
       //Alternative point(s) to be able to find all pointIds
@@ -336,12 +344,27 @@ public class TileCache {
       }
     }
 
-    Logger.trace("Loaded " + idMap.size() + " Tiles...");
+    Logger.trace("Loaded " + idMap.size() + " Tiles. Max: (" + maxX + "," + maxY + ")");
     return idMap.values().stream().collect(Collectors.toList());
   }
 
   public static List<Tile> getTiles() {
     return idMap.values().stream().collect(Collectors.toList());
+  }
+
+  static void calculateMaxCoordinates(int tileX, int tileY) {
+    if (maxX < tileX) {
+      maxX = tileX;
+    }
+    if (maxY < tileY) {
+      maxY = tileY;
+    }
+  }
+
+  public static Dimension getMinCanvasSize() {
+    int w = maxX + GRID;
+    int h = maxY + GRID;
+    return new Dimension(w, h);
   }
 
   public static Tile addAndSaveTile(Tile tile) {

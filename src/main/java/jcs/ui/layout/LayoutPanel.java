@@ -312,9 +312,9 @@ public class LayoutPanel extends JPanel {
     });
     operationsPM.add(deleteMI);
 
-    setMinimumSize(new Dimension(1400, 900));
+    setMinimumSize(new Dimension(1002, 772));
     setOpaque(false);
-    setPreferredSize(new Dimension(1400, 900));
+    setPreferredSize(new Dimension(1002, 772));
     addComponentListener(new ComponentAdapter() {
       public void componentHidden(ComponentEvent evt) {
         formComponentHidden(evt);
@@ -329,8 +329,8 @@ public class LayoutPanel extends JPanel {
     setLayout(new BorderLayout());
 
     topPanel.setMaximumSize(new Dimension(32767, 50));
-    topPanel.setMinimumSize(new Dimension(1400, 50));
-    topPanel.setPreferredSize(new Dimension(1400, 50));
+    topPanel.setMinimumSize(new Dimension(1000, 50));
+    topPanel.setPreferredSize(new Dimension(1000, 50));
     FlowLayout flowLayout1 = new FlowLayout(FlowLayout.LEFT);
     flowLayout1.setAlignOnBaseline(true);
     topPanel.setLayout(flowLayout1);
@@ -338,7 +338,7 @@ public class LayoutPanel extends JPanel {
     toolBar.setMaximumSize(new Dimension(1200, 42));
     toolBar.setMinimumSize(new Dimension(1150, 42));
     toolBar.setName(""); // NOI18N
-    toolBar.setPreferredSize(new Dimension(1000, 42));
+    toolBar.setPreferredSize(new Dimension(980, 42));
 
     loadBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
     loadBtn.setToolTipText("Load");
@@ -716,17 +716,17 @@ public class LayoutPanel extends JPanel {
 
     add(topPanel, BorderLayout.NORTH);
 
-    canvasScrollPane.setDoubleBuffered(true);
-    canvasScrollPane.setMinimumSize(new Dimension(1024, 850));
-    canvasScrollPane.setPreferredSize(new Dimension(1024, 850));
+    canvasScrollPane.setMinimumSize(new Dimension(1000, 740));
+    canvasScrollPane.setPreferredSize(new Dimension(980, 700));
     canvasScrollPane.setViewportView(canvas);
 
-    canvas.setMinimumSize(new Dimension(800, 700));
+    canvas.setMinimumSize(new Dimension(1000, 720));
     canvas.setName(""); // NOI18N
-    canvas.setPreferredSize(new Dimension(800, 700));
+    canvas.setPreferredSize(new Dimension(1000, 720));
     canvasScrollPane.setViewportView(canvas);
 
     add(canvasScrollPane, BorderLayout.CENTER);
+    canvasScrollPane.getAccessibleContext().setAccessibleDescription("");
   }// </editor-fold>//GEN-END:initComponents
 
   private void horizontalMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_horizontalMIActionPerformed

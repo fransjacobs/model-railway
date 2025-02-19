@@ -583,26 +583,29 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     getContentPane().add(toolbarPanel, BorderLayout.NORTH);
 
+    statusPanel.setMinimumSize(new Dimension(1227, 45));
     statusPanel.setName("statusPanel"); // NOI18N
+    statusPanel.setPreferredSize(new Dimension(1227, 48));
     getContentPane().add(statusPanel, BorderLayout.SOUTH);
 
-    mainPanel.setMinimumSize(new Dimension(1050, 900));
+    mainPanel.setMinimumSize(new Dimension(1232, 770));
     mainPanel.setName("mainPanel"); // NOI18N
-    mainPanel.setPreferredSize(new Dimension(1315, 850));
+    mainPanel.setPreferredSize(new Dimension(1232, 770));
     mainPanel.setLayout(new BorderLayout());
 
-    locoDisplaySP.setDividerLocation(300);
+    locoDisplaySP.setDividerLocation(302);
     locoDisplaySP.setMinimumSize(new Dimension(1050, 900));
     locoDisplaySP.setName("locoDisplaySP"); // NOI18N
     locoDisplaySP.setPreferredSize(new Dimension(1050, 850));
 
-    centerPanel.setMinimumSize(new Dimension(1000, 900));
+    centerPanel.setMinimumSize(new Dimension(1002, 772));
     centerPanel.setName("centerPanel"); // NOI18N
-    centerPanel.setPreferredSize(new Dimension(1010, 900));
+    centerPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.setLayout(new CardLayout());
 
-    keyboardSensorMessagePanel.setMinimumSize(new Dimension(885, 840));
+    keyboardSensorMessagePanel.setMinimumSize(new Dimension(1002, 772));
     keyboardSensorMessagePanel.setName("keyboardSensorMessagePanel"); // NOI18N
+    keyboardSensorMessagePanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(keyboardSensorMessagePanel, "diagnosticPanel");
 
     layoutPanel.setMinimumSize(new Dimension(885, 160));
@@ -610,7 +613,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     centerPanel.add(layoutPanel, "designPanel");
     layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
 
+    overviewPanel.setMinimumSize(new Dimension(1002, 772));
     overviewPanel.setName("overviewPanel"); // NOI18N
+    overviewPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
@@ -624,14 +629,16 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     centerPanel.add(settingsPanel, "settingsPanel");
 
+    vncPanel.setMinimumSize(new Dimension(1002, 772));
     vncPanel.setName("vncPanel"); // NOI18N
+    vncPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(vncPanel, "vncPanel");
 
     locoDisplaySP.setRightComponent(centerPanel);
 
-    leftPanel.setMinimumSize(new Dimension(220, 850));
+    leftPanel.setMinimumSize(new Dimension(225, 772));
     leftPanel.setName("leftPanel"); // NOI18N
-    leftPanel.setPreferredSize(new Dimension(225, 845));
+    leftPanel.setPreferredSize(new Dimension(225, 772));
     leftPanel.setLayout(new BorderLayout(1, 1));
 
     bottomLeftPanel.setBorder(BorderFactory.createTitledBorder("Controller Properties"));
