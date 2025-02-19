@@ -199,7 +199,7 @@ public class AutoPilotTest {
 
     Logger.debug("Autopilot automode started in " + (now - start) + " ms.");
 
-    assertFalse(AutoPilot.areDispatchersRunning());
+    assertFalse(AutoPilot.isADispatcherRunning());
 
     //Lets create a dispatcher. A Loc must be on the track
     LocomotiveBean dhg = ps.getLocomotive(NS_DHG_6505);
@@ -262,7 +262,7 @@ public class AutoPilotTest {
 
     Logger.debug("Autopilot automode started in " + (now - start) + " ms.");
 
-    assertFalse(AutoPilot.areDispatchersRunning());
+    assertFalse(AutoPilot.isADispatcherRunning());
 
     //Lets create a dispatcher. A Loc must be on the track
     LocomotiveBean dhg = ps.getLocomotive(NS_DHG_6505);
@@ -480,7 +480,7 @@ public class AutoPilotTest {
     List<Dispatcher> dispList = AutoPilot.getLocomotiveDispatchers();
     assertEquals(1, dispList.size());
 
-    assertFalse(AutoPilot.areDispatchersRunning());
+    assertFalse(AutoPilot.isADispatcherRunning());
 
     AutoPilot.stopAutoMode();
     //let the autopilot finish...
@@ -542,7 +542,7 @@ public class AutoPilotTest {
   public void testStopAllLocomotives() {
     System.out.println("stopAllLocomotives");
     AutoPilot instance = null;
-    AutoPilot.stopAllLocomotives();
+    //AutoPilot.stopAllLocomotives();
     fail("The test case is a prototype.");
   }
 

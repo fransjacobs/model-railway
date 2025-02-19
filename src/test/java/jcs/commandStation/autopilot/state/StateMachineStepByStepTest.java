@@ -77,14 +77,14 @@ public class StateMachineStepByStepTest {
       ps.persist(route);
     }
     JCS.getJcsCommandStation().switchPower(true);
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
     Logger.info("=========================== setUp done..............");
   }
 
   @AfterEach
   public void tearDown() {
     Logger.info("=========================== Teardown..............");
-    AutoPilot.stopAutoMode();
+    AutoPilot.runAutoPilot(false);
     long now = System.currentTimeMillis();
     long start = now;
     long timeout = now + 10000;
@@ -201,7 +201,7 @@ public class StateMachineStepByStepTest {
     BlockBean block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
 
-    StateMachineThread stateMachine = dispatcher.getStateMachineThread();
+    StateMachine stateMachine = dispatcher.getStateMachine();
 
     //Start from bk-1
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
@@ -211,7 +211,7 @@ public class StateMachineStepByStepTest {
 
     //Thread should NOT run!
     assertFalse(stateMachine.isThreadRunning());
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
 
     //Execute IdleState
@@ -222,7 +222,7 @@ public class StateMachineStepByStepTest {
     //Departure
     //Automode should be enabled
     stateMachine.setEnableAutomode(true);
-    assertTrue(stateMachine.isEnableAutomode());
+    assertTrue(stateMachine.isAutomodeEnabled());
 
     //Execute IdleState again
     stateMachine.handleState();
@@ -385,7 +385,7 @@ public class StateMachineStepByStepTest {
     block4.setMinWaitTime(3);
     ps.persist(block4);
 
-    StateMachineThread stateMachine = dispatcher.getStateMachineThread();
+    StateMachine stateMachine = dispatcher.getStateMachine();
 
     //Start from bk-1
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
@@ -395,7 +395,7 @@ public class StateMachineStepByStepTest {
 
     //Thread should NOT run!
     assertFalse(stateMachine.isThreadRunning());
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
 
     //Execute IdleState
@@ -406,7 +406,7 @@ public class StateMachineStepByStepTest {
     //Departure
     //Automode should be enabled
     stateMachine.setEnableAutomode(true);
-    assertTrue(stateMachine.isEnableAutomode());
+    assertTrue(stateMachine.isAutomodeEnabled());
 
     //Execute IdleState again
     stateMachine.handleState();
@@ -695,7 +695,7 @@ public class StateMachineStepByStepTest {
 
     //Automode OFF!
     stateMachine.setEnableAutomode(false);
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
 
     //Execute the WaitState
     stateMachine.handleState();
@@ -722,7 +722,7 @@ public class StateMachineStepByStepTest {
     BlockBean block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.FREE, block4.getBlockState());
 
-    StateMachineThread stateMachine = dispatcher.getStateMachineThread();
+    StateMachine stateMachine = dispatcher.getStateMachine();
 
     //Start from bk-1
     assertEquals(NS_DHG_6505, block1.getLocomotiveId());
@@ -732,7 +732,7 @@ public class StateMachineStepByStepTest {
 
     //Thread should NOT run!
     assertFalse(stateMachine.isThreadRunning());
-    assertFalse(stateMachine.isEnableAutomode());
+    assertFalse(stateMachine.isAutomodeEnabled());
     assertEquals("IdleState", stateMachine.getDispatcherStateName());
 
     //Execute IdleState
@@ -743,7 +743,7 @@ public class StateMachineStepByStepTest {
     //Departure
     //Automode should be enabled
     stateMachine.setEnableAutomode(true);
-    assertTrue(stateMachine.isEnableAutomode());
+    assertTrue(stateMachine.isAutomodeEnabled());
 
     //Execute IdleState again
     stateMachine.handleState();
@@ -839,7 +839,7 @@ public class StateMachineStepByStepTest {
     BlockBean block4 = ps.getBlockByTileId("bk-4");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block4.getBlockState());
 
-    StateMachineThread instance = dispatcher.getStateMachineThread();
+    StateMachine instance = dispatcher.getStateMachine();
 
     //Start from bk-2
     assertEquals(NS_1631, block2.getLocomotiveId());
@@ -849,7 +849,7 @@ public class StateMachineStepByStepTest {
     assertNull(dispatcher.getRouteBean());
 
     assertFalse(instance.isThreadRunning());
-    assertFalse(instance.isEnableAutomode());
+    assertFalse(instance.isAutomodeEnabled());
     assertEquals("IdleState", instance.getDispatcherStateName());
 
     //Execute IdleState
@@ -872,7 +872,7 @@ public class StateMachineStepByStepTest {
 
     //Automode ON!
     instance.setEnableAutomode(true);
-    assertTrue(instance.isEnableAutomode());
+    assertTrue(instance.isAutomodeEnabled());
     assertFalse(instance.isThreadRunning());
 
     block1 = ps.getBlockByTileId("bk-1");
@@ -965,7 +965,7 @@ public class StateMachineStepByStepTest {
     assertNull(dispatcher.getRouteBean());
     assertNull(dispatcher.getDestinationBlock());
 
-    assertFalse(instance.isEnableAutomode());
+    assertFalse(instance.isAutomodeEnabled());
 
     block1 = ps.getBlockByTileId("bk-1");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block1.getBlockState());

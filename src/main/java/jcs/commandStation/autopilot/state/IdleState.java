@@ -60,8 +60,10 @@ class IdleState extends DispatcherState {
             Logger.trace("Interrupted: " + ex.getMessage());
           }
         } else {
-          //Automode is switched off for this Dispatcher so the Idle state must end...
+          //Locomotive is stopped...
           Logger.trace(dispatcher.getName() + " Automode: " + AutoPilot.isAutoModeActive() + " Dispacher " + dispatcher.isLocomotiveAutomodeOn());
+          
+          //stop this thread...
           try {
             synchronized (this) {
               wait(10000);

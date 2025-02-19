@@ -955,18 +955,18 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }//GEN-LAST:event_formMouseDragged
 
   private void startLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startLocomotiveMIActionPerformed
-    if (this.selectedTile != null) {
-      Block block = (Block) selectedTile;
-      LocomotiveBean locomotive = block.getLocomotive();
-      executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
+    if (selectedTile != null && selectedTile.isBlock() && selectedTile.getLocomotive() != null) {
+      LocomotiveBean locomotive = selectedTile.getLocomotive();
+      //executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, true));
+      AutoPilot.startLocomotive(locomotive);
     }
   }//GEN-LAST:event_startLocomotiveMIActionPerformed
 
   private void stopLocomotiveMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_stopLocomotiveMIActionPerformed
-    if (selectedTile != null) {
-      Block block = (Block) selectedTile;
-      LocomotiveBean locomotive = block.getLocomotive();
-      executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, false));
+    if (selectedTile != null && selectedTile.isBlock() && selectedTile.getLocomotive() != null) {
+      LocomotiveBean locomotive = selectedTile.getLocomotive();
+      //executor.execute(() -> AutoPilot.startStopLocomotive(locomotive, false));
+      AutoPilot.stopLocomotive(locomotive);
     }
   }//GEN-LAST:event_stopLocomotiveMIActionPerformed
 
@@ -983,27 +983,28 @@ public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
   }//GEN-LAST:event_resetDispatcherMIActionPerformed
 
   private void removeLocMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeLocMIActionPerformed
-    if (selectedTile != null) {
-      Block block = (Block) selectedTile;
-      LocomotiveBean locomotive = block.getLocomotive();
+    if (selectedTile != null && selectedTile.isBlock()) {
+      LocomotiveBean locomotive = selectedTile.getLocomotive();      
       locomotive.setDispatcherDirection(null);
-
-      block.setLocomotive(null);
-
+      
+      selectedTile.setLocomotive(null);
+      
       executor.execute(() -> {
-        PersistenceFactory.getService().persist(block.getBlockBean());
+        PersistenceFactory.getService().persist(selectedTile.getBlockBean());
         PersistenceFactory.getService().persist(locomotive);
+        
+        AutoPilot.removeLocomotive(locomotive);
       });
     }
   }//GEN-LAST:event_removeLocMIActionPerformed
 
   private void blockPropertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_blockPropertiesMIActionPerformed
-    if (this.selectedTile != null) {
+    if (selectedTile != null && selectedTile.isBlock()) {
       //show the Block control dialog so tha a locomotive can be assigned to the block
-      Block block = (Block) selectedTile;
-      BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), block);
+      BlockControlDialog bcd = new BlockControlDialog(getParentFrame(), (Block) selectedTile);
       bcd.setVisible(true);
-      repaint(block.getTileBounds());
+      
+      repaint(selectedTile.getTileBounds());
     }
   }//GEN-LAST:event_blockPropertiesMIActionPerformed
 

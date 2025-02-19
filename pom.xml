@@ -172,6 +172,11 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.13</version>
         </dependency>
+        <!--dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>two-slices</artifactId>
+            <version>0.9.4</version>
+        </dependency-->
         <dependency>
             <groupId>org.netbeans.external</groupId>
             <artifactId>AbsoluteLayout</artifactId>

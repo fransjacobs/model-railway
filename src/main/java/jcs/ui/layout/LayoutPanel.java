@@ -18,7 +18,6 @@ package jcs.ui.layout;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -848,7 +847,7 @@ public class LayoutPanel extends JPanel {
     }//GEN-LAST:event_sensorBtnActionPerformed
 
     private void gridBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gridBtnActionPerformed
-      this.canvas.setDrawGrid(this.gridBtn.isSelected());      
+      this.canvas.setDrawGrid(this.gridBtn.isSelected());
     }//GEN-LAST:event_gridBtnActionPerformed
 
     private void formComponentResized(ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
@@ -897,27 +896,24 @@ public class LayoutPanel extends JPanel {
   }//GEN-LAST:event_endTrackBtnActionPerformed
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + (this.autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
+    Logger.trace(evt.getActionCommand() + (autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
 
-    if (this.autoPilotBtn.isSelected()) {
-      this.startAllLocomotivesBtn.setEnabled(true);
+    if (autoPilotBtn.isSelected()) {
+      startAllLocomotivesBtn.setEnabled(true);
     } else {
-      if (this.startAllLocomotivesBtn.isSelected()) {
-        startAllLocomotivesBtn.doClick();
-      }
-      this.startAllLocomotivesBtn.setEnabled(false);
+      ///if (startAllLocomotivesBtn.isSelected()) {
+      //  startAllLocomotivesBtn.doClick();
+      //}
+      startAllLocomotivesBtn.setEnabled(false);
     }
 
-    AutoPilot.runAutoPilot(this.autoPilotBtn.isSelected());
-
+    AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
   private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
     Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
     if (this.startAllLocomotivesBtn.isSelected()) {
       AutoPilot.startAllLocomotives();
-    } else {
-      AutoPilot.stopAllLocomotives();
     }
   }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
 
@@ -926,7 +922,7 @@ public class LayoutPanel extends JPanel {
   }//GEN-LAST:event_crossingBtnActionPerformed
 
   private void resetAutopilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutopilotBtnActionPerformed
-    AutoPilot.resetStates();
+    AutoPilot.reset();
   }//GEN-LAST:event_resetAutopilotBtnActionPerformed
 
   private void setTileType(TileBean.TileType tileType) {

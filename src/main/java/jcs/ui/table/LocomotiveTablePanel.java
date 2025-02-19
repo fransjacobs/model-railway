@@ -52,9 +52,9 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
 
     initComponents();
 
-    this.locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
+    locomotiveTable.setDefaultRenderer(Image.class, new LocIconRenderer());
 
-    this.locomotiveTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
+    locomotiveTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
     });
 
@@ -80,8 +80,12 @@ public class LocomotiveTablePanel extends JPanel implements RefreshEventListener
   @Override
   public void onChange(RefreshEvent event) {
     if ("locomotives".equals(event.getSource())) {
-      locomotiveBeanTableModel.refresh();
+      refresh();
     }
+  }
+
+  public void refresh() {
+    locomotiveBeanTableModel.refresh();
   }
 
   private class LocIconRenderer extends DefaultTableCellRenderer {

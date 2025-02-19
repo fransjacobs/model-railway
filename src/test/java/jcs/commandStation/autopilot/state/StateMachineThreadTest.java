@@ -36,7 +36,6 @@ import jcs.util.RunUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.tinylog.Logger;
@@ -109,7 +108,7 @@ public class StateMachineThreadTest {
 
     Logger.trace("Power on in " + (now - start) + "ms.");
 
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
 
     Logger.info("=========================== setUp done..............");
   }
@@ -117,7 +116,7 @@ public class StateMachineThreadTest {
   @AfterEach
   public void tearDown() {
     Logger.info("=========================== Teardown..............");
-    AutoPilot.stopAutoMode();
+    AutoPilot.runAutoPilot(false);
     long now = System.currentTimeMillis();
     long start = now;
     long timeout = now + 10000;
@@ -270,7 +269,7 @@ public class StateMachineThreadTest {
     assertTrue(AutoPilot.isOnTrack(dhg));
 
     assertTrue(AutoPilot.isAutoModeActive());
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
 
     long now = System.currentTimeMillis();
     long timeout = now + 10000;
@@ -578,7 +577,7 @@ public class StateMachineThreadTest {
     long now = System.currentTimeMillis();
     long timeout = now + 10000;
     //Start Automode
-    AutoPilot.startAutoMode();
+    AutoPilot.runAutoPilot(true);
 
     boolean autoPilotRunning = AutoPilot.isAutoModeActive();
     while (!autoPilotRunning && timeout > now) {
@@ -846,7 +845,7 @@ public class StateMachineThreadTest {
     BlockBean block3 = PersistenceFactory.getService().getBlockByTileId("bk-3");
     assertEquals(BlockBean.BlockState.OUT_OF_ORDER, block3.getBlockState());
 
-    StateMachineThread instance = dispatcher.getStateMachineThread();
+    StateMachine instance = dispatcher.getStateMachine();
 
     assertFalse(instance.isThreadRunning());
     assertFalse(instance.isAlive());
@@ -865,7 +864,7 @@ public class StateMachineThreadTest {
     Logger.debug("Dispatcher Thread Started");
     assertTrue(instance.isThreadRunning());
     assertTrue(instance.isAlive());
-    assertFalse(instance.isEnableAutomode());
+    assertFalse(instance.isAutomodeEnabled());
 
     instance.stopRunningThread();
     Logger.debug("Dispatcher Thread Stopped");
@@ -906,7 +905,7 @@ public class StateMachineThreadTest {
 
   @AfterAll
   public static void assertOutput() {
-    AutoPilot.stopAutoMode();
+    AutoPilot.runAutoPilot(false);
 
     long now = System.currentTimeMillis();
     long start = now;

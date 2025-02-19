@@ -16,14 +16,11 @@
 package jcs.commandStation.autopilot;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import jcs.JCS;
-import jcs.commandStation.AccessoryController;
 import jcs.commandStation.FeedbackController;
-import jcs.commandStation.GenericController;
 import jcs.commandStation.autopilot.state.Dispatcher;
 import jcs.commandStation.events.SensorEvent;
 import jcs.entities.LocomotiveBean;

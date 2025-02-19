@@ -433,6 +433,8 @@ public class BlockControlDialog extends javax.swing.JDialog {
         if (bb.getLocomotive() != null && bb.getLocomotive().getName() != null) {
           LocomotiveBean loc = bb.getLocomotive();
           PersistenceFactory.getService().persist(loc);
+
+          AutoPilot.addLocomotive(loc);
         }
 
         TileCache.findTile(bb.getTileId()).setBlockBean(bb);
@@ -448,6 +450,7 @@ public class BlockControlDialog extends javax.swing.JDialog {
 
     LocomotiveBean selected = (LocomotiveBean) locomotiveComboBoxModel.getSelectedItem();
 
+    LocomotiveBean previous = block.getLocomotive();
     if (selected.getId() != null) {
       block.setLocomotive(selected);
     } else {
@@ -472,12 +475,21 @@ public class BlockControlDialog extends javax.swing.JDialog {
     } else {
       startLocButton.setEnabled(false);
     }
+
+    if (previous != null && previous.getId() != null && !previous.getId().equals(selected.getId())) {
+      AutoPilot.removeLocomotive(previous);
+    }
+
   }//GEN-LAST:event_locomotiveCBActionPerformed
 
   private void startLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startLocButtonActionPerformed
     LocomotiveBean loc = block.getLocomotive();
     if (loc != null) {
-      AutoPilot.startStopLocomotive(loc, startLocButton.isSelected());
+      if (startLocButton.isSelected()) {
+        AutoPilot.startLocomotive(loc);
+      } else {
+        AutoPilot.stopLocomotive(loc);
+      }
     }
   }//GEN-LAST:event_startLocButtonActionPerformed
 

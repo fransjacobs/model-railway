@@ -25,8 +25,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.RowSorterEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
@@ -47,14 +45,12 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
    * Creates new form LocomotiveTablePanel
    */
   public DispatcherTablePanel() {
-
     initComponents();
 
     this.dispatcherTable.setDefaultRenderer(Image.class, new LocIconRenderer());
     this.dispatcherTable.getRowSorter().addRowSorterListener((RowSorterEvent e) -> {
       //Logger.trace(e.getType() + "," + e.getSource().getSortKeys());// Sorting changed
     });
-
     initModel();
   }
 
@@ -67,7 +63,7 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   public void statusChanged(boolean running) {
     List<Dispatcher> dispatchers = AutoPilot.getLocomotiveDispatchers();
     Logger.trace("Found " + dispatchers.size() + " Dispatchers. Automode: " + (running ? "on" : "off"));
-    this.locomotiveDispatcherTableModel.refresh();
+    locomotiveDispatcherTableModel.refresh();
   }
 
   private class LocIconRenderer extends DefaultTableCellRenderer {
@@ -75,15 +71,16 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-      Image img = (Image) value;
-      int size = 40;
-      float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
-      img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
-      BufferedImage bi = ImageUtil.toBuffered(img);
-      setIcon(new ImageIcon(bi));
-      setHorizontalAlignment(JLabel.CENTER);
-      setText("");
+      if (value != null) {
+        Image img = (Image) value;
+        int size = 40;
+        float aspect = (float) img.getHeight(null) / (float) img.getWidth(null);
+        img = img.getScaledInstance(size, (int) (size * aspect), Image.SCALE_SMOOTH);
+        BufferedImage bi = ImageUtil.toBuffered(img);
+        setIcon(new ImageIcon(bi));
+        setHorizontalAlignment(JLabel.CENTER);
+        setText("");
+      }
       return this;
     }
   }
@@ -135,10 +132,10 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   public void setVisible(boolean aFlag) {
     super.setVisible(aFlag);
     if (aFlag) {
-      AutoPilot.addAutoPilotStatusListener(this);
+      //AutoPilot.addAutoPilotStatusListener(this);
       statusChanged(AutoPilot.isAutoModeActive());
     } else {
-      AutoPilot.removeAutoPilotStatusListener(this);
+      //AutoPilot.removeAutoPilotStatusListener(this);
     }
   }
 
@@ -165,47 +162,4 @@ public class DispatcherTablePanel extends javax.swing.JPanel implements AutoPilo
   private jcs.ui.table.model.LocomotiveDispatcherTableModel locomotiveDispatcherTableModel;
   // End of variables declaration//GEN-END:variables
 
-  public static void main(String args[]) {
-
-    long now = System.currentTimeMillis();
-    long maxtime = now + 5000L;
-    AutoPilot.startAutoMode();
-    int dispcnt = AutoPilot.getLocomotiveDispatchers().size();
-    while (dispcnt == 0 && now < maxtime) {
-      now = System.currentTimeMillis();
-      dispcnt = AutoPilot.getLocomotiveDispatchers().size();
-    }
-
-    try {
-      String plaf = System.getProperty("jcs.plaf", "com.formdev.flatlaf.FlatLightLaf");
-      if (plaf != null) {
-        UIManager.setLookAndFeel(plaf);
-      } else {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      }
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-      Logger.error(ex);
-    }
-
-    java.awt.EventQueue.invokeLater(() -> {
-
-      DispatcherTablePanel testPanel = new DispatcherTablePanel();
-      JFrame testFrame = new JFrame("LocomotiveTablePanel Tester");
-
-      testFrame.add(testPanel);
-
-      testFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-        @Override
-        public void windowClosing(java.awt.event.WindowEvent e) {
-          System.exit(0);
-        }
-      });
-      testFrame.pack();
-      testFrame.setLocationRelativeTo(null);
-
-      //testPanel.loadLocomotives();
-      //testPanel.locomotiveDispatcherTableModel.refresh();
-      testFrame.setVisible(true);
-    });
-  }
 }

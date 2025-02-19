@@ -244,7 +244,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }
 
   private void showSensorMonitor() {
-    if (this.feedbackMonitor == null) {
+    if (feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
       feedbackMonitor = new FeedbackMonitor();
       FrameMonitor.registerFrame(feedbackMonitor, FeedbackMonitor.class.getName());
@@ -277,10 +277,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     showFeedbackMonitorBtn = new JButton();
     filler8 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     autoPilotBtn = new JToggleButton();
-    startAllLocomotivesBtn = new JToggleButton();
-    resetAutoPilotBtn = new JButton();
+    startAllLocsBtn = new JButton();
     filler9 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
-    showSettingsBtn = new JButton();
+    resetAutoPilotBtn = new JButton();
+    filler10 = new Box.Filler(new Dimension(20, 0), new Dimension(20, 0), new Dimension(20, 32767));
     statusPanel = new StatusPanel();
     mainPanel = new JPanel();
     locoDisplaySP = new JSplitPane();
@@ -436,7 +436,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     jcsToolBar.add(filler4);
 
     showEditDesignBtn.setIcon(new ImageIcon(getClass().getResource("/media/paintbrush-24.png"))); // NOI18N
-    showEditDesignBtn.setToolTipText("Design Layout");
+    showEditDesignBtn.setToolTipText("Edit Layout");
     showEditDesignBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     showEditDesignBtn.setFocusable(false);
     showEditDesignBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -473,7 +473,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     jcsToolBar.add(showVNCBtn);
 
     showKeyboardBtn.setIcon(new ImageIcon(getClass().getResource("/media/controller-24.png"))); // NOI18N
-    showKeyboardBtn.setToolTipText("Diagnostics");
+    showKeyboardBtn.setToolTipText("Show Accessory Keyboard");
     showKeyboardBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     showKeyboardBtn.setDoubleBuffered(true);
     showKeyboardBtn.setFocusable(false);
@@ -516,7 +516,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     jcsToolBar.add(filler8);
 
     autoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/pilot.png"))); // NOI18N
-    autoPilotBtn.setToolTipText("Connect/Disconnect with Central Station");
+    autoPilotBtn.setToolTipText("En- or Disable automatic driving");
     autoPilotBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     autoPilotBtn.setDoubleBuffered(true);
     autoPilotBtn.setFocusable(false);
@@ -535,29 +535,31 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
     jcsToolBar.add(autoPilotBtn);
 
-    startAllLocomotivesBtn.setIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-black.png"))); // NOI18N
-    startAllLocomotivesBtn.setToolTipText("Connect/Disconnect with Central Station");
-    startAllLocomotivesBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
-    startAllLocomotivesBtn.setDoubleBuffered(true);
-    startAllLocomotivesBtn.setEnabled(false);
-    startAllLocomotivesBtn.setFocusable(false);
-    startAllLocomotivesBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    startAllLocomotivesBtn.setMargin(new Insets(0, 0, 0, 0));
-    startAllLocomotivesBtn.setMaximumSize(new Dimension(40, 40));
-    startAllLocomotivesBtn.setMinimumSize(new Dimension(40, 40));
-    startAllLocomotivesBtn.setName("startAllLocomotivesBtn"); // NOI18N
-    startAllLocomotivesBtn.setPreferredSize(new Dimension(40, 40));
-    startAllLocomotivesBtn.setSelectedIcon(new ImageIcon(getClass().getResource("/media/cruise-control-on-green.png"))); // NOI18N
-    startAllLocomotivesBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    startAllLocomotivesBtn.addActionListener(new ActionListener() {
+    startAllLocsBtn.setIcon(new ImageIcon(getClass().getResource("/media/arrowhead-right-gn.png"))); // NOI18N
+    startAllLocsBtn.setToolTipText("Start all Locomotives");
+    startAllLocsBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
+    startAllLocsBtn.setDisabledIcon(new ImageIcon(getClass().getResource("/media/pause-gr.png"))); // NOI18N
+    startAllLocsBtn.setEnabled(false);
+    startAllLocsBtn.setFocusable(false);
+    startAllLocsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
+    startAllLocsBtn.setMargin(new Insets(0, 0, 0, 0));
+    startAllLocsBtn.setMaximumSize(new Dimension(40, 40));
+    startAllLocsBtn.setMinimumSize(new Dimension(40, 40));
+    startAllLocsBtn.setName("startAllLocsBtn"); // NOI18N
+    startAllLocsBtn.setPreferredSize(new Dimension(40, 40));
+    startAllLocsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
+    startAllLocsBtn.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
-        startAllLocomotivesBtnActionPerformed(evt);
+        startAllLocsBtnActionPerformed(evt);
       }
     });
-    jcsToolBar.add(startAllLocomotivesBtn);
+    jcsToolBar.add(startAllLocsBtn);
 
-    resetAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/director-red.png"))); // NOI18N
-    resetAutoPilotBtn.setToolTipText("Design Layout");
+    filler9.setName("filler9"); // NOI18N
+    jcsToolBar.add(filler9);
+
+    resetAutoPilotBtn.setIcon(new ImageIcon(getClass().getResource("/media/reset-happy.png"))); // NOI18N
+    resetAutoPilotBtn.setToolTipText("Stop and Reset AutoPilot");
     resetAutoPilotBtn.setBorder(BorderFactory.createLineBorder(new Color(204, 204, 204)));
     resetAutoPilotBtn.setFocusable(false);
     resetAutoPilotBtn.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -574,23 +576,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
     jcsToolBar.add(resetAutoPilotBtn);
 
-    filler9.setName("filler9"); // NOI18N
-    jcsToolBar.add(filler9);
-
-    showSettingsBtn.setIcon(new ImageIcon(getClass().getResource("/media/load-24.png"))); // NOI18N
-    showSettingsBtn.setFocusable(false);
-    showSettingsBtn.setHorizontalTextPosition(SwingConstants.CENTER);
-    showSettingsBtn.setMaximumSize(new Dimension(40, 40));
-    showSettingsBtn.setMinimumSize(new Dimension(40, 40));
-    showSettingsBtn.setName("showSettingsBtn"); // NOI18N
-    showSettingsBtn.setPreferredSize(new Dimension(40, 40));
-    showSettingsBtn.setVerticalTextPosition(SwingConstants.BOTTOM);
-    showSettingsBtn.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        showSettingsBtnActionPerformed(evt);
-      }
-    });
-    jcsToolBar.add(showSettingsBtn);
+    filler10.setName("filler10"); // NOI18N
+    jcsToolBar.add(filler10);
 
     toolbarPanel.add(jcsToolBar);
 
@@ -873,13 +860,13 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }//GEN-LAST:event_showKeyboardBtnActionPerformed
 
     private void quitMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_quitMIActionPerformed
-      this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+      dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
     }//GEN-LAST:event_quitMIActionPerformed
 
     private void formWindowClosing(WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
       boolean closed = this.handleQuitRequest();
       if (closed) {
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(false);
         dispose();
 
@@ -903,7 +890,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     private void showOverviewBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showOverviewBtnActionPerformed
       showOverviewPanel();
-      this.overviewPanel.loadLayout();
+      overviewPanel.loadLayout();
     }//GEN-LAST:event_showOverviewBtnActionPerformed
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
@@ -994,10 +981,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     csd.setVisible(true);
   }//GEN-LAST:event_commandStationsMIActionPerformed
 
-  private void showSettingsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showSettingsBtnActionPerformed
-    showSettings();
-  }//GEN-LAST:event_showSettingsBtnActionPerformed
-
   private void aboutMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_aboutMIActionPerformed
     Logger.trace(evt.getActionCommand());
     AboutDialog dialog = new AboutDialog(this, true);
@@ -1012,31 +995,22 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }//GEN-LAST:event_showVNCBtnActionPerformed
 
   private void autoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_autoPilotBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + (this.autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
+    //Logger.trace(evt.getActionCommand() + (autoPilotBtn.isSelected() ? " Enable" : " Disable") + " Auto mode");
 
-    if (this.autoPilotBtn.isSelected()) {
-      this.startAllLocomotivesBtn.setEnabled(true);
+    if (autoPilotBtn.isSelected()) {
+      startAllLocsBtn.setEnabled(true);
+      dispatcherStatusPanel.showDispatcherTab();
+      // startAllLocsBtn.setIcon(new ImageIcon(getClass().getResource("/media/arrowhead-right-gn.png")));
     } else {
-      if (this.startAllLocomotivesBtn.isSelected()) {
-        startAllLocomotivesBtn.doClick();
-      }
-      this.startAllLocomotivesBtn.setEnabled(false);
+      startAllLocsBtn.setEnabled(false);
+      dispatcherStatusPanel.showLocomotiveTab();
     }
 
-    AutoPilot.runAutoPilot(this.autoPilotBtn.isSelected());
+    AutoPilot.runAutoPilot(autoPilotBtn.isSelected());
   }//GEN-LAST:event_autoPilotBtnActionPerformed
 
-  private void startAllLocomotivesBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocomotivesBtnActionPerformed
-    Logger.trace(evt.getActionCommand() + " Start All Locomotives " + this.startAllLocomotivesBtn.isSelected());
-    if (this.startAllLocomotivesBtn.isSelected()) {
-      AutoPilot.startAllLocomotives();
-    } else {
-      AutoPilot.stopAllLocomotives();
-    }
-  }//GEN-LAST:event_startAllLocomotivesBtnActionPerformed
-
   private void resetAutoPilotBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_resetAutoPilotBtnActionPerformed
-    AutoPilot.resetStates();
+    AutoPilot.reset();
   }//GEN-LAST:event_resetAutoPilotBtnActionPerformed
 
   private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
@@ -1045,6 +1019,13 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       JCS.getJcsCommandStation().setVirtual(this.virtualCB.isSelected());
     }
   }//GEN-LAST:event_virtualCBActionPerformed
+
+  private void startAllLocsBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startAllLocsBtnActionPerformed
+    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to start All Locomotives?", "Start ALL Locomotives", JOptionPane.YES_NO_OPTION);
+    if (result == JOptionPane.YES_OPTION) {
+      AutoPilot.startAllLocomotives();
+    }
+  }//GEN-LAST:event_startAllLocsBtnActionPerformed
 
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
@@ -1128,6 +1109,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JMenuItem editLayout;
   private JMenu fileMenu;
   private Box.Filler filler1;
+  private Box.Filler filler10;
   private Box.Filler filler2;
   private Box.Filler filler3;
   private Box.Filler filler4;
@@ -1162,9 +1144,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JMenuItem showLocosMI;
   private JButton showOverviewBtn;
   private JMenuItem showSensorMonitor;
-  private JButton showSettingsBtn;
   private JButton showVNCBtn;
-  private JToggleButton startAllLocomotivesBtn;
+  private JButton startAllLocsBtn;
   private StatusPanel statusPanel;
   private JPanel toolbarPanel;
   private JMenu toolsMenu;

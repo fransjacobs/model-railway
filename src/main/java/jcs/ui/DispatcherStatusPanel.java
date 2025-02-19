@@ -30,7 +30,19 @@ public class DispatcherStatusPanel extends JPanel implements RefreshEventListene
   public DispatcherStatusPanel() {
     initComponents();
   }
-  
+
+  public void showDispatcherTab() {
+    this.tabsPane.setSelectedIndex(1);
+  }
+
+  public void showLocomotiveTab() {
+    this.tabsPane.setSelectedIndex(0);
+  }
+
+  public void refresh() {
+    this.locomotiveTablePanel.refresh();
+  }
+
   @Override
   public void onChange(RefreshEvent event) {
     this.locomotiveTablePanel.onChange(event);

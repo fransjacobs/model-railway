@@ -27,7 +27,6 @@ import jcs.commandStation.events.AccessoryEventListener;
 import jcs.entities.TileBean;
 import jcs.persistence.PersistenceFactory;
 import org.tinylog.Logger;
-import jcs.commandStation.events.JCSActionEvent;
 import jcs.commandStation.events.SensorEventListener;
 import jcs.entities.AccessoryBean;
 import jcs.entities.SensorBean;
@@ -41,6 +40,7 @@ import static jcs.entities.TileBean.TileType.SIGNAL;
 import static jcs.entities.TileBean.TileType.STRAIGHT;
 import static jcs.entities.TileBean.TileType.STRAIGHT_DIR;
 import static jcs.entities.TileBean.TileType.SWITCH;
+import jcs.commandStation.events.JCSActionEvent;
 
 /**
  * Factory object to create Tiles and cache pointMap
