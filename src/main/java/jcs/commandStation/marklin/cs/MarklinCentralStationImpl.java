@@ -51,7 +51,7 @@ import jcs.commandStation.marklin.cs.events.LocomotiveListener;
 import jcs.commandStation.marklin.cs.events.SystemListener;
 import jcs.commandStation.marklin.cs.net.CSConnection;
 import jcs.commandStation.marklin.cs.net.CSConnectionFactory;
-import jcs.commandStation.marklin.cs.net.HTTPConnection;
+import jcs.commandStation.marklin.cs.net.CSHTTPConnection;
 import jcs.commandStation.marklin.cs2.AccessoryBeanParser;
 import jcs.commandStation.marklin.cs2.ChannelDataParser;
 import jcs.commandStation.marklin.cs2.LocomotiveBeanParser;
@@ -228,7 +228,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   //Based on the info in this file it is quicker to know whether the CS is a version 2 or 3.
   //In case of a 3 the data can ve retreived via JSON else use CAN
   private InfoBean getCSInfo() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String geraet = httpCon.getInfoFile();
     InfoBean ib = InfoBeanParser.parseFile(geraet);
 
@@ -238,6 +238,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       ib = InfoBeanParser.parseJson(json);
       httpCon.setCs3(true);
     }
+
+    if (ib.getIpAddress() == null) {
+      ib.setIpAddress(connection.getControllerAddress().getHostAddress());
+    }
+
     return ib;
   }
 
@@ -249,7 +254,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
    * This data can also be obtained using the CAN Member PING command, but The JSON gives a little more detail.
    */
   private void getAppDevicesCs3() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
 
     String devJson = httpCon.getDevicesJSON();
     List<DeviceBean> devs = DeviceJSONParser.parse(devJson);
@@ -325,9 +330,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   /**
-   * System Stop and GO When on = true then the GO command is issued: The track format processor activates the operation and supplies electrical energy. Any speed levels/functions that may still exist
-   * or have been saved will be sent again. when false the Stop command is issued: Track format processor stops operation on main and programming track. Electrical energy is no longer supplied. All
-   * speed levels/function values and settings are retained.
+   * System Stop and GO When on = true then the GO command is issued:<br>
+   * The track format processor activates the operation and supplies electrical energy.<br>
+   * Any speed levels/functions that may still exist or have been saved will be sent again.<br>
+   * When false the Stop command is issued: Track format processor stops operation on main and programming track.<br>
+   * Electrical energy is no longer supplied. All speed levels/function values and settings are retained.
    *
    * @param on true Track power On else Off
    * @return true the Track power is On else Off
@@ -651,14 +658,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   List<LocomotiveBean> getLocomotivesViaHttp() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String csLocos = httpCon.getLocomotivesFile();
     LocomotiveBeanParser lp = new LocomotiveBeanParser();
     return lp.parseLocomotivesFile(csLocos);
   }
 
   List<LocomotiveBean> getLocomotivesViaJSON() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     String json = httpCon.getLocomotivesJSON();
     LocomotiveBeanJSONParser lp = new LocomotiveBeanJSONParser();
     return lp.parseLocomotives(json);
@@ -686,7 +693,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   List<AccessoryBean> getAccessoriesViaHttp() {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     if (isCS3() && System.getProperty("accessory.list.via", "JSON").equalsIgnoreCase("JSON")) {
       String json = httpCon.getAccessoriesJSON();
       return AccessoryBeanParser.parseAccessoryJSON(json, commandStationBean.getId(), commandStationBean.getShortName());
@@ -716,14 +723,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
   @Override
   public Image getLocomotiveImage(String icon) {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     Image locIcon = httpCon.getLocomotiveImage(icon);
     return locIcon;
   }
 
   @Override
   public Image getLocomotiveFunctionImage(String icon) {
-    HTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
+    CSHTTPConnection httpCon = CSConnectionFactory.getHTTPConnection();
     if (this.isCS3()) {
       if (!FunctionSvgToPngConverter.isSvgCacheLoaded()) {
         Logger.trace("Loading SVG Cache");
@@ -979,7 +986,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-//////////// For Testing only.....//////  
+  //////////// For Testing only.....//////  
   public static void main(String[] a) {
     RunUtil.loadExternalProperties();
 

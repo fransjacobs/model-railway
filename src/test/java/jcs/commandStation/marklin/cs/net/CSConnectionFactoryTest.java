@@ -97,8 +97,8 @@ public class CSConnectionFactoryTest {
     public void testGetHTTPConnectionImpl() {
         System.out.println("getHTTPConnectionImpl");
         CSConnectionFactory instance = null;
-        HTTPConnection expResult = null;
-        HTTPConnection result = instance.getHTTPConnectionImpl();
+        CSHTTPConnection expResult = null;
+        CSHTTPConnection result = instance.getHTTPConnectionImpl();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -110,8 +110,8 @@ public class CSConnectionFactoryTest {
     //@Test
     public void testGetHTTPConnection() {
         System.out.println("getHTTPConnection");
-        HTTPConnection expResult = null;
-        HTTPConnection result = CSConnectionFactory.getHTTPConnection();
+        CSHTTPConnection expResult = null;
+        CSHTTPConnection result = CSConnectionFactory.getHTTPConnection();
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

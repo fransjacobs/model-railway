@@ -271,13 +271,16 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     InfoBean ib = new InfoBean(this.commandStationBean);
     if (this.ecosManager != null) {
 
-      ib.setArticleNumber(this.ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
-      ib.setDescription(this.ecosManager.getName());
-      ib.setArticleNumber(this.ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
-      ib.setSerialNumber(this.ecosManager.getSerialNumber());
-      ib.setHardwareVersion(this.ecosManager.getHardwareVersion());
-      ib.setSoftwareVersion(this.ecosManager.getApplicationVersion());
-      ib.setHostname(this.getIp());
+      ib.setArticleNumber(ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
+      ib.setDescription(ecosManager.getName());
+      ib.setArticleNumber(ecosManager.getName().replace(this.ecosManager.getCommandStationType() + "-", ""));
+      ib.setSerialNumber(ecosManager.getSerialNumber());
+      ib.setHardwareVersion(ecosManager.getHardwareVersion());
+      ib.setSoftwareVersion(ecosManager.getApplicationVersion());
+      ib.setHostname(getIp());
+      if (ib.getIpAddress() == null) {
+        ib.setIpAddress(getIp());
+      }
     } else {
       ib.setDescription("Not Connected");
       ib.setHostname("Not Connected");

@@ -36,7 +36,10 @@ import net.straylightlabs.hola.sd.Service;
 import org.tinylog.Logger;
 
 /**
- * Try to connect with a Marklin CS 2/3. A "ping" is send to the broadcast address like the mobile app does. The CS 2/3 response reveals the IP address.
+ * Try to connect with a Marklin CS 2/3.<br>
+ * The Latest software version of the CS-3 support mDNS, so mDNS is first used to discover the CS. <br>
+ * When mDNS does not work the "old" manner the mobile app uses is used.<br>
+ * A "magic" ping is send to the broadcast address the CS 2/3 response reveals the IP address.
  *
  * @author Frans Jacobs
  */
@@ -47,7 +50,7 @@ public class CSConnectionFactory {
   private static CSConnectionFactory instance;
 
   private CSConnection controllerConnection;
-  private HTTPConnection httpConnection;
+  private CSHTTPConnection httpConnection;
   private InetAddress controllerHost;
 
   private static final String BROADCAST_ADDRESS = "255.255.255.255";
@@ -72,7 +75,7 @@ public class CSConnectionFactory {
       if (lastUsedIp != null) {
         try {
           if (Ping.IsReachable(lastUsedIp)) {
-            this.controllerHost = InetAddress.getByName(lastUsedIp);
+            controllerHost = InetAddress.getByName(lastUsedIp);
             Logger.trace("Using last used IP Address: " + lastUsedIp);
           } else {
             Logger.trace("Last used IP Address: " + lastUsedIp + " is not reachable");
@@ -83,10 +86,15 @@ public class CSConnectionFactory {
         }
       }
 
-      if (this.controllerHost == null) {
+      if (controllerHost == null) {
         Logger.trace("Try to discover a Marklin CS...");
         JCS.logProgress("Discovering a Marklin Central Station...");
-        sendMobileAppPing();
+        //First try with mdns
+        controllerHost = discoverCs();
+        if (controllerHost == null) {
+          //try the "old" way by sending a "ping"
+          controllerHost = sendMobileAppPing();
+        }
       }
 
       if (controllerHost != null) {
@@ -96,7 +104,7 @@ public class CSConnectionFactory {
         }
         Logger.trace("CS ip: " + controllerHost.getHostName());
 
-        controllerConnection = new TCPConnection(controllerHost);
+        controllerConnection = new CSTCPConnection(controllerHost);
       } else {
         Logger.warn("Can't find a Marklin Controller host!");
         JCS.logProgress("Can't find a Marklin Central Station on the Network");
@@ -122,21 +130,29 @@ public class CSConnectionFactory {
     instance.controllerHost = null;
   }
 
-  HTTPConnection getHTTPConnectionImpl() {
+  CSHTTPConnection getHTTPConnectionImpl() {
     if (controllerConnection == null) {
       getConnectionImpl();
     }
     if (httpConnection == null) {
-      httpConnection = new HTTPConnection(controllerHost);
+      httpConnection = new CSHTTPConnection(controllerHost);
     }
     return httpConnection;
   }
 
-  public static HTTPConnection getHTTPConnection() {
+  public static CSHTTPConnection getHTTPConnection() {
     return getInstance().getHTTPConnectionImpl();
   }
 
-  void sendMobileAppPing() {
+  /**
+   * Try to Automatically discover the Marklin CS 2/3 IP Address on the local network.<br>
+   * A "magic" CAN message is send as broadcast on the network on the CS RX port.<br>
+   * This method was used by the "old" mobile app to find the Central station.
+   *
+   * @return the IP Address of the Marklin Central Station or null if not discovered.
+   */
+  public static InetAddress sendMobileAppPing() {
+    InetAddress csIp = null;
     try {
       InetAddress localAddress;
       if (RunUtil.isLinux()) {
@@ -168,9 +184,7 @@ public class CSConnectionFactory {
         Logger.trace("Received: " + response + " from: " + replyHost.getHostAddress());
 
         if (response.getCommand() == CanMessage.PING_REQ) {
-          if (this.controllerHost == null) {
-            this.controllerHost = replyHost;
-          }
+          csIp = replyHost;
           JCS.logProgress("Found a Central Station in the network with IP: " + replyHost.getHostAddress());
         } else {
           Logger.debug("Received wrong command: " + response.getCommand() + " != " + CanMessage.PING_REQ + "...");
@@ -181,11 +195,12 @@ public class CSConnectionFactory {
     } catch (IOException ex) {
       Logger.error(ex);
     }
+    return csIp;
   }
 
   String getControllerIpImpl() {
-    if (this.controllerHost != null) {
-      return this.controllerHost.getHostAddress();
+    if (controllerHost != null) {
+      return controllerHost.getHostAddress();
     } else {
       return "Unknown";
     }
@@ -196,10 +211,10 @@ public class CSConnectionFactory {
   }
 
   /**
-   * Try to Automatically discover the ESU ECoS IP Address on the local network.<br>
-   * mDNS is used to discover the ECoS
+   * Try to Automatically discover the Marklin Central Station IP Address on the local network.<br>
+   * mDNS is now supported by the CS-3, not sure whether the CS-2 also supports it.
    *
-   * @return the IP Address of the ECoS of null if not discovered.
+   * @return the IP Address of the Marklin Central Station of null if not discovered.
    */
   public static InetAddress discoverCs() {
     InetAddress csIp = null;

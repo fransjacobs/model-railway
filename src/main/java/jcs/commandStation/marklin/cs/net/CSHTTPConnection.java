@@ -36,7 +36,7 @@ import org.tinylog.Logger;
  *
  * @author Frans Jacobs
  */
-public class HTTPConnection {
+public class CSHTTPConnection {
   
   private final InetAddress csAddress;
   private boolean cs3;
@@ -67,7 +67,7 @@ public class HTTPConnection {
   //  http://cs3host/app/api/mags
   //  http://cs3host/app/api/info
   //
-  HTTPConnection(InetAddress csAddress) {
+  CSHTTPConnection(InetAddress csAddress) {
     this.csAddress = csAddress;
     //Assume a CS2
     this.cs3 = false;
@@ -321,7 +321,7 @@ public class HTTPConnection {
     } else {
       inetAddr = InetAddress.getByName("192.168.178.86");
     }
-    HTTPConnection hc = new HTTPConnection(inetAddr);
+    CSHTTPConnection hc = new CSHTTPConnection(inetAddr);
     hc.setCs3(cs3);
     
     String serial;

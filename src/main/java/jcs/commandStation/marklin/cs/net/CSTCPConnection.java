@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
 import jcs.commandStation.marklin.cs.events.CanPingListener;
@@ -34,7 +36,7 @@ import jcs.commandStation.marklin.cs.events.SystemListener;
  *
  * @author Frans Jacobs
  */
-class TCPConnection implements CSConnection {
+class CSTCPConnection implements CSConnection {
 
   private final InetAddress centralStationAddress;
 
@@ -48,9 +50,14 @@ class TCPConnection implements CSConnection {
 
   private boolean debug = false;
 
-  TCPConnection(InetAddress csAddress) {
+  private final TransferQueue<CanMessage> transferQueue;
+  private final TransferQueue<CanMessage> eventQueue;
+
+  CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
+    transferQueue = new LinkedTransferQueue<>();
+    eventQueue = new LinkedTransferQueue<>();
     checkConnection();
   }
 
@@ -127,61 +134,61 @@ class TCPConnection implements CSConnection {
   public synchronized CanMessage sendCanMessage(CanMessage message) {
     ResponseCallback callback = null;
 
-    if (message != null) {
-      if (message.expectsResponse() || message.expectsLongResponse()) {
-        //Message is expecting response so lets register for response
-        callback = new ResponseCallback(message);
-        this.messageReceiver.registerResponseCallback(callback);
-      }
+    //if (message != null) {
+    if (message.expectsResponse() || message.expectsLongResponse()) {
+      //Message is expecting response so lets register for response
+      callback = new ResponseCallback(message);
+      this.messageReceiver.registerResponseCallback(callback);
+    }
 
-      try {
-        byte[] bytes = message.getMessage();
-        //Send the message
-        dos.write(bytes);
-        dos.flush();
-      } catch (IOException ex) {
-        Logger.error(ex);
-      }
+    try {
+      byte[] bytes = message.getMessage();
+      //Send the message
+      dos.write(bytes);
+      dos.flush();
+    } catch (IOException ex) {
+      Logger.error(ex);
+    }
 
-      if (CanMessage.PING_RESP != message.getCommand()) {
-        //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
-        if (debug) {
-          Logger.trace("TX: " + message);
-        }
-      }
-
-      long now = System.currentTimeMillis();
-      long start = now;
-      long timeout;
-
-      if (message.expectsLongResponse()) {
-        timeout = now + LONG_TIMEOUT;
-      } else if (message.expectsResponse()) {
-        timeout = now + SHORT_TIMEOUT;
-      } else {
-        timeout = now;
-      }
-
-      if (callback != null) {
-        //Wait for the response
-        boolean responseComplete = callback.isResponseComplete();
-        while (!responseComplete && now < timeout) {
-          responseComplete = callback.isResponseComplete();
-          now = System.currentTimeMillis();
-        }
-
-        if (debug) {
-          if (responseComplete) {
-            Logger.trace("Got Response in " + (now - start) + " ms");
-          } else {
-            Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
-          }
-        }
-
-        //Remove the callback
-        this.messageReceiver.unRegisterResponseCallback();
+    if (CanMessage.PING_RESP != message.getCommand()) {
+      //Do not log the ping response as this message is send every 5 seconds or so as a response to the CS ping request.
+      if (debug) {
+        Logger.trace("TX: " + message);
       }
     }
+
+    long now = System.currentTimeMillis();
+    long start = now;
+    long timeout;
+
+    if (message.expectsLongResponse()) {
+      timeout = now + LONG_TIMEOUT;
+    } else if (message.expectsResponse()) {
+      timeout = now + SHORT_TIMEOUT;
+    } else {
+      timeout = now;
+    }
+
+    if (callback != null) {
+      //Wait for the response
+      boolean responseComplete = callback.isResponseComplete();
+      while (!responseComplete && now < timeout) {
+        responseComplete = callback.isResponseComplete();
+        now = System.currentTimeMillis();
+      }
+
+      if (debug) {
+        if (responseComplete) {
+          Logger.trace("Got Response in " + (now - start) + " ms");
+        } else {
+          Logger.trace("No Response for " + message + " in " + (now - start) + " ms");
+        }
+      }
+
+      //Remove the callback
+      this.messageReceiver.unRegisterResponseCallback();
+    }
+    //}
     return message;
   }
 
@@ -373,7 +380,7 @@ class TCPConnection implements CSConnection {
 //      uid = 1129552448;
 //    }
 //
-//    TCPConnection c = new TCPConnection(inetAddr);
+//    CSTCPConnection c = new CSTCPConnection(inetAddr);
 //
 //    while (!c.messageReceiver.isRunning()) {
 //
@@ -395,5 +402,4 @@ class TCPConnection implements CSConnection {
 //    }
 //
 //  }
-
 }

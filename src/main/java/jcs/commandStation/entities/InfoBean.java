@@ -15,7 +15,6 @@
  */
 package jcs.commandStation.entities;
 
-
 import jakarta.persistence.Transient;
 import jcs.entities.CommandStationBean;
 
@@ -30,38 +29,10 @@ public class InfoBean extends CommandStationBean {
   private String productName;
   private String articleNumber;
   private String hostname;
+  private String ipAddress;
   private String gfpUid;
   private String guiUid;
 
-//private String id;
-//  private String description;
-//  private String shortName;
-//  private String className;
-//  private String connectVia;
-//  private String serialPort;
-//  private String ipAddress;
-//  private Integer networkPort;
-//  private boolean ipAutoConfiguration;
-//  private boolean decoderControlSupport;
-//  private boolean accessoryControlSupport;
-//  private boolean feedbackSupport;
-//  private boolean locomotiveSynchronizationSupport;
-//  private boolean accessorySynchronizationSupport;
-//  private boolean locomotiveImageSynchronizationSupport;
-//  private boolean locomotiveFunctionSynchronizationSupport;
-//  private String protocols;
-//  private boolean defaultCs;
-//  private boolean enabled;
-//  private String lastUsedSerial;
-//  private String supConnTypesStr;
-//  private boolean virtual;
-//
-//  private String feedbackModuleIdentifier;
-//  private Integer feedbackChannelCount;
-//  private Integer feedbackBus0ModuleCount;
-//  private Integer feedbackBus1ModuleCount;
-//  private Integer feedbackBus2ModuleCount;
-//  private Integer feedbackBus3ModuleCount;  
   public InfoBean() {
 
   }
