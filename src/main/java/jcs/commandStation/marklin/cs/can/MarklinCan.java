@@ -107,7 +107,7 @@ interface MarklinCan {
 
   //Sensor messages
   public final static int S88_EVENT = 0x22;
-  public final static int S88_EVENT_RESP = 0x23;
+  //public final static int S88_EVENT_RESP = 0x23;
 
   public final static int SX1_EVENT = 0x24;
 

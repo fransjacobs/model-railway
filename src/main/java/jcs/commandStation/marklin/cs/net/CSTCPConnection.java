@@ -22,15 +22,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
+import jcs.commandStation.events.DisconnectionEvent;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.tinylog.Logger;
-import jcs.commandStation.marklin.cs.events.CanPingListener;
-import jcs.commandStation.marklin.cs.events.AccessoryListener;
-import jcs.commandStation.marklin.cs.events.FeedbackListener;
-import jcs.commandStation.marklin.cs.events.LocomotiveListener;
-import jcs.commandStation.marklin.cs.events.SystemListener;
 
 /**
  *
@@ -44,20 +43,20 @@ class CSTCPConnection implements CSConnection {
   private DataOutputStream dos;
 
   private ClientMessageReceiver messageReceiver;
+  private final List<DisconnectionEventListener> disconnectionEventListeners;
 
   private static final long SHORT_TIMEOUT = 1000L;
   private static final long LONG_TIMEOUT = 5000L;
 
   private boolean debug = false;
 
-  private final TransferQueue<CanMessage> transferQueue;
   private final TransferQueue<CanMessage> eventQueue;
 
   CSTCPConnection(InetAddress csAddress) {
     centralStationAddress = csAddress;
     debug = System.getProperty("message.debug", "false").equalsIgnoreCase("true");
-    transferQueue = new LinkedTransferQueue<>();
     eventQueue = new LinkedTransferQueue<>();
+    disconnectionEventListeners = new ArrayList<>();
     checkConnection();
   }
 
@@ -80,8 +79,18 @@ class CSTCPConnection implements CSConnection {
     }
   }
 
+  @Override
+  public TransferQueue<CanMessage> getEventQueue() {
+    return this.eventQueue;
+  }
+
+  @Override
+  public void addDisconnectionEventListener(DisconnectionEventListener listener) {
+    this.disconnectionEventListeners.add(listener);
+  }
+
   private void disconnect() {
-    this.messageReceiver.quit();
+    messageReceiver.quit();
     if (dos != null) {
       try {
         dos.close();
@@ -90,6 +99,8 @@ class CSTCPConnection implements CSConnection {
         Logger.trace(ex);
       }
     }
+    
+    disconnectionEventListeners.clear();
     if (clientSocket != null) {
       try {
         clientSocket.close();
@@ -101,7 +112,6 @@ class CSTCPConnection implements CSConnection {
   }
 
   private class ResponseCallback {
-
     private final CanMessage tx;
     private boolean done = false;
 
@@ -132,13 +142,17 @@ class CSTCPConnection implements CSConnection {
 
   @Override
   public synchronized CanMessage sendCanMessage(CanMessage message) {
+    if (message == null) {
+      Logger.warn("Message is NULL?");
+      return null;
+    }
+
     ResponseCallback callback = null;
 
-    //if (message != null) {
     if (message.expectsResponse() || message.expectsLongResponse()) {
       //Message is expecting response so lets register for response
       callback = new ResponseCallback(message);
-      this.messageReceiver.registerResponseCallback(callback);
+      messageReceiver.registerResponseCallback(callback);
     }
 
     try {
@@ -186,45 +200,10 @@ class CSTCPConnection implements CSConnection {
       }
 
       //Remove the callback
-      this.messageReceiver.unRegisterResponseCallback();
+      messageReceiver.unRegisterResponseCallback();
     }
-    //}
+
     return message;
-  }
-
-  @Override
-  public void setCanPingListener(CanPingListener pingListener) {
-    if (messageReceiver != null) {
-      this.messageReceiver.registerCanPingListener(pingListener);
-    }
-  }
-
-  @Override
-  public void setFeedbackListener(FeedbackListener feedbackListener) {
-    if (messageReceiver != null) {
-      this.messageReceiver.registerFeedbackListener(feedbackListener);
-    }
-  }
-
-  @Override
-  public void setSystemListener(SystemListener systemEventListener) {
-    if (messageReceiver != null) {
-      this.messageReceiver.registerSystemListener(systemEventListener);
-    }
-  }
-
-  @Override
-  public void setAccessoryListener(AccessoryListener accessoryEventListener) {
-    if (messageReceiver != null) {
-      this.messageReceiver.registerAccessoryListener(accessoryEventListener);
-    }
-  }
-
-  @Override
-  public void setLocomotiveListener(LocomotiveListener locomotiveListener) {
-    if (messageReceiver != null) {
-      this.messageReceiver.registerLocomotiveListener(locomotiveListener);
-    }
   }
 
   @Override
@@ -239,19 +218,13 @@ class CSTCPConnection implements CSConnection {
 
   @Override
   public boolean isConnected() {
-    return this.messageReceiver != null && this.messageReceiver.isRunning();
+    return messageReceiver != null && messageReceiver.isRunning();
   }
 
   private class ClientMessageReceiver extends Thread {
 
     private boolean quit = true;
     private DataInputStream din;
-
-    private CanPingListener pingListener;
-    private FeedbackListener feedbackListener;
-    private SystemListener systemListener;
-    private AccessoryListener accessoryListener;
-    private LocomotiveListener locomotiveListener;
 
     private ResponseCallback callBack;
 
@@ -269,42 +242,22 @@ class CSTCPConnection implements CSConnection {
     }
 
     void unRegisterResponseCallback() {
-      this.callBack = null;
-    }
-
-    void registerCanPingListener(CanPingListener pingListener) {
-      this.pingListener = pingListener;
-    }
-
-    void registerFeedbackListener(FeedbackListener feedbackListener) {
-      this.feedbackListener = feedbackListener;
-    }
-
-    void registerSystemListener(SystemListener systemListener) {
-      this.systemListener = systemListener;
-    }
-
-    void registerAccessoryListener(AccessoryListener accessoryListener) {
-      this.accessoryListener = accessoryListener;
-    }
-
-    void registerLocomotiveListener(LocomotiveListener locomotiveListener) {
-      this.locomotiveListener = locomotiveListener;
+      callBack = null;
     }
 
     synchronized void quit() {
-      this.quit = true;
+      quit = true;
     }
 
     synchronized boolean isRunning() {
-      return !this.quit;
+      return !quit;
     }
 
     @Override
     public void run() {
-      Thread.currentThread().setName("CAN-RX");
+      Thread.currentThread().setName("CS-CAN-RX");
 
-      this.quit = false;
+      quit = false;
       Logger.trace("Started listening on port " + clientSocket.getLocalPort() + "...");
 
       while (isRunning()) {
@@ -325,32 +278,23 @@ class CSTCPConnection implements CSConnection {
           //Logger.trace("RX: "+rx +"; "+ din.available());
           if (this.callBack != null && this.callBack.isSubscribedfor(cmd)) {
             this.callBack.addResponse(rx, din.available());
-          } else if (rx.isPingResponse() && pingListener != null) {
-            this.pingListener.onCanPingResponseMessage(rx);
-          } else if (rx.isPingRequest() && pingListener != null) {
-            this.pingListener.onCanPingRequestMessage(rx);
-          } else if (rx.isStatusConfigRequest() && pingListener != null) {
-            this.pingListener.onCanStatusConfigRequestMessage(rx);
-          } else if (rx.isSensorResponse() && feedbackListener != null) {
-            this.feedbackListener.onFeedbackMessage(rx);
-          } else if (rx.isSystemMessage() && systemListener != null) {
-            this.systemListener.onSystemMessage(rx);
-          } else if (rx.isAccessoryMessage() && accessoryListener != null) {
-            this.accessoryListener.onAccessoryMessage(rx);
-          } else if (rx.isLocomotiveMessage() && locomotiveListener != null) {
-            this.locomotiveListener.onLocomotiveMessage(rx);
           } else {
-            if (CanMessage.BOOTLOADER_CAN != 0x36) {
-              //Do not log the bootloader message. it is not used in JCS. No idea what this message is for. 
-              if (debug) {
-                Logger.trace("#RX: " + rx);
-              }
+            eventQueue.offer(rx);
+            //Logger.trace("Enqueued: " + rx + " QueueSize: " + eventQueue.size());
+          }
+
+        } catch (SocketException se) {
+          if (!quit) {
+            String msg = "Host " + centralStationAddress.getHostName();
+            DisconnectionEvent de = new DisconnectionEvent(msg);
+            for (DisconnectionEventListener listener : disconnectionEventListeners) {
+              listener.onDisconnect(de);
             }
           }
-        } catch (SocketException se) {
+
           quit();
-        } catch (IOException ioe) {
-          Logger.error(ioe);
+        } catch (IOException ex) {
+          Logger.error(ex);
         }
       }
 
@@ -362,44 +306,4 @@ class CSTCPConnection implements CSConnection {
       }
     }
   }
-
-//  public static void main(String[] a) throws UnknownHostException {
-//    boolean cs3 = true;
-//
-//    InetAddress inetAddr;
-//    if (cs3) {
-//      inetAddr = InetAddress.getByName("192.168.178.180");
-//    } else {
-//      inetAddr = InetAddress.getByName("192.168.178.86");
-//    }
-//
-//    int uid;
-//    if (cs3) {
-//      uid = 1668498828;
-//    } else {
-//      uid = 1129552448;
-//    }
-//
-//    CSTCPConnection c = new CSTCPConnection(inetAddr);
-//
-//    while (!c.messageReceiver.isRunning()) {
-//
-//    }
-//
-//    //CanMessage m = c.sendCanMessage(CanMessageFactory.getMembersPing());
-//    CanMessage m = c.sendCanMessage(CanMessageFactory.querySystem(uid));
-//
-//    Logger.trace("TX: " + m);
-//    for (CanMessage r : m.getResponses()) {
-//      Logger.trace("RSP: " + r);
-//    }
-//
-//    CanMessage m2 = c.sendCanMessage(CanMessageFactory.querySystem(uid));
-//
-//    Logger.trace("TX: " + m2);
-//    for (CanMessage r : m2.getResponses()) {
-//      Logger.trace("RSP: " + r);
-//    }
-//
-//  }
 }

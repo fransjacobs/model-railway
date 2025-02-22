@@ -274,43 +274,43 @@ public class CanMessage implements MarklinCan, Serializable {
     }
   }
 
-  public boolean isPingResponse() {
-    return this.command == PING_RESP;
-  }
+//  public boolean isPingResponse() {
+//    return this.command == PING_RESP;
+//  }
 
-  public boolean isPingRequest() {
-    return this.command == PING_REQ;
-  }
+//  public boolean isPingRequest() {
+//    return this.command == PING_REQ;
+//  }
 
-  public boolean isStatusConfigRequest() {
-    return this.command == STATUS_CONFIG;
-  }
+//  public boolean isStatusConfigRequest() {
+//    return this.command == STATUS_CONFIG;
+//  }
 
-  public boolean isSensorResponse() {
-    return this.command == S88_EVENT_RESP;
-  }
+//  public boolean isSensorResponse() {
+//    return this.command == S88_EVENT_RESP;
+//  }
 
-  public boolean isStatusDataConfigMessage() {
-    return this.command == STATUS_CONFIG | this.command == STATUS_CONFIG + 1;
-  }
+//  public boolean isStatusDataConfigMessage() {
+//    return this.command == STATUS_CONFIG | this.command == STATUS_CONFIG + 1;
+//  }
 
-  public boolean isSensorMessage() {
-    return this.command == S88_EVENT || this.command == SX1_EVENT;
-  }
+//  public boolean isSensorMessage() {
+//    return this.command == S88_EVENT || this.command == SX1_EVENT;
+//  }
 
-  public boolean isAccessoryMessage() {
-    return this.command == ACCESSORY_SWITCHING || this.command == ACCESSORY_SWITCHING_RESP;
-  }
+//  public boolean isAccessoryMessage() {
+//    return this.command == ACCESSORY_SWITCHING || this.command == ACCESSORY_SWITCHING_RESP;
+//  }
 
-  public boolean isLocomotiveMessage() {
-    return this.command == LOC_VELOCITY || this.command == LOC_VELOCITY_RESP
-            || this.command == LOC_DIRECTION || this.command == LOC_DIRECTION_RESP
-            || this.command == LOC_FUNCTION || this.command == LOC_FUNCTION_RESP;
-  }
+//  public boolean isLocomotiveMessage() {
+//    return this.command == LOC_VELOCITY || this.command == LOC_VELOCITY_RESP
+//            || this.command == LOC_DIRECTION || this.command == LOC_DIRECTION_RESP
+//            || this.command == LOC_FUNCTION || this.command == LOC_FUNCTION_RESP;
+//  }
 
-  public boolean isSystemMessage() {
-    return this.command == SYSTEM_COMMAND || this.command == SYSTEM_COMMAND_RESP;
-  }
+//  public boolean isSystemMessage() {
+//    return this.command == SYSTEM_COMMAND || this.command == SYSTEM_COMMAND_RESP;
+//  }
 
   public boolean hasValidResponse() {
     if (this.responses == null || this.responses.isEmpty()) {

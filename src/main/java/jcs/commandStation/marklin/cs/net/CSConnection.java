@@ -16,17 +16,10 @@
 package jcs.commandStation.marklin.cs.net;
 
 import java.net.InetAddress;
+import java.util.concurrent.TransferQueue;
+import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.marklin.cs.can.CanMessage;
-import jcs.commandStation.marklin.cs.events.CanPingListener;
-import jcs.commandStation.marklin.cs.events.AccessoryListener;
-import jcs.commandStation.marklin.cs.events.FeedbackListener;
-import jcs.commandStation.marklin.cs.events.LocomotiveListener;
-import jcs.commandStation.marklin.cs.events.SystemListener;
 
-/**
- *
- * @author Frans Jacobs
- */
 public interface CSConnection extends AutoCloseable {
 
   static final int MAX_ERRORS = 15;
@@ -37,18 +30,13 @@ public interface CSConnection extends AutoCloseable {
 
   CanMessage sendCanMessage(CanMessage message);
 
-  void setCanPingListener(CanPingListener canPingListener);
-
-  void setFeedbackListener(FeedbackListener feedbackListener);
-
-  void setSystemListener(SystemListener systemListener);
-
-  void setAccessoryListener(AccessoryListener accessoryListener);
-
-  void setLocomotiveListener(LocomotiveListener locomotiveListener);
-
   InetAddress getControllerAddress();
 
   boolean isConnected();
+
+  TransferQueue<CanMessage> getEventQueue();
+  
+  void addDisconnectionEventListener(DisconnectionEventListener listener);
+
 
 }

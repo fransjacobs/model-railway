@@ -44,7 +44,11 @@ public class ChannelDataParser implements Serializable {
   private int getNumberOfPackets(CanMessage message) {
     int packets = -1;
     List<CanMessage> responses = message.getResponses();
+    Logger.trace("Response count: "+responses.size());
 
+    if(responses.isEmpty()) {
+      return 0;
+    }
     int lastIdx = responses.size();
     if (lastIdx > 0) {
       lastIdx = lastIdx - 1;
@@ -67,6 +71,10 @@ public class ChannelDataParser implements Serializable {
     if (message.getCommand() == CanMessage.STATUS_CONFIG) {
       List<CanMessage> responses = message.getResponses();
       int packets = getNumberOfPackets(message);
+      if(packets == 0) {
+        Logger.trace("No packets avaliable");
+        return null;
+      }
 
       //Create one array with data
       byte[] data = new byte[8 * packets];

@@ -259,8 +259,7 @@ class EcosTCPConnection implements EcosConnection {
               EcosMessage emsg = new EcosMessage(sb.toString());
               Logger.trace("Complete: " + emsg.isResponseComplete() + "\n" + emsg.getMessage() + "\n" + emsg.getResponse());
 
-              eventQueue.put(emsg);
-
+              eventQueue.offer(emsg);
             }
 
           }
