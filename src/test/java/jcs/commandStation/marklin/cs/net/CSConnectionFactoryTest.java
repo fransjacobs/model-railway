@@ -60,7 +60,7 @@ public class CSConnectionFactoryTest {
         System.out.println("getConnectionImpl");
         CSConnectionFactory instance = null;
         CSConnection expResult = null;
-        CSConnection result = instance.getConnectionImpl();
+        CSConnection result = instance.getConnectionImpl(true);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -73,7 +73,7 @@ public class CSConnectionFactoryTest {
     public void testGetConnection() {
         System.out.println("getConnection");
         CSConnection expResult = null;
-        CSConnection result = CSConnectionFactory.getConnection();
+        CSConnection result = CSConnectionFactory.getConnection(true);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -98,7 +98,7 @@ public class CSConnectionFactoryTest {
         System.out.println("getHTTPConnectionImpl");
         CSConnectionFactory instance = null;
         CSHTTPConnection expResult = null;
-        CSHTTPConnection result = instance.getHTTPConnectionImpl();
+        CSHTTPConnection result = instance.getHTTPConnectionImpl(true);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -111,7 +111,7 @@ public class CSConnectionFactoryTest {
     public void testGetHTTPConnection() {
         System.out.println("getHTTPConnection");
         CSHTTPConnection expResult = null;
-        CSHTTPConnection result = CSConnectionFactory.getHTTPConnection();
+        CSHTTPConnection result = CSConnectionFactory.getHTTPConnection(true);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

@@ -15,69 +15,28 @@
  */
 package jcs.commandStation.marklin.cs.can.parser;
 
-import java.io.Serializable;
 import java.util.List;
 import jcs.commandStation.marklin.cs.can.CanMessage;
-import jcs.util.ByteUtil;
-import org.tinylog.Logger;
 
 /**
- *
- * @author Frans Jacobs
+ * SystemStatus parser
  */
-public class SystemStatus implements Serializable {
+public class SystemStatus  {
 
-  private boolean power;
-  private byte[] gfpUid;
-
-  public SystemStatus(CanMessage message) {
-    parseMessage(message);
-  }
-
-  //There might be more than 1 responses.
-  //when there are more use the one which contains a valid gfp uid
-  private void parseMessage(CanMessage message) {
-    if (message != null) {
-      CanMessage resp = null;
-      List<CanMessage> respList = message.getResponses();
-      if (respList.isEmpty()) {
-        Logger.warn("No response for: " + message);
-        gfpUid = message.getDeviceUidFromMessage();
-        int status = message.getData()[4];
-        power = status == 1;
-      } else {
-        for (CanMessage cm : respList) {
-          if (cm.isResponseMessage() && cm.isDeviceUidValid()) {
-            resp = cm;
-          }
-        }
-        if (resp == null) {
-          resp = message;
-        }
-
-        if (CanMessage.SYSTEM_COMMAND_RESP == resp.getCommand() && resp.isDeviceUidValid()) {
-          byte[] data = resp.getData();
-          gfpUid = resp.getDeviceUidFromMessage();
-          int status = data[4];
-          power = status == 1;
+  public static boolean parseSystemPowerMessage(CanMessage message) {
+    if (message == null) {
+      return false;
+    }
+    List<CanMessage> respList = message.getResponses();
+    if (respList.isEmpty()) {
+      return message.getData()[4] == 1;
+    } else {
+      for (CanMessage cm : respList) {
+        if (CanMessage.SYSTEM_COMMAND_RESP == cm.getCommand() && cm.getDlc() == CanMessage.DLC_5) {
+          return message.getData()[4] == 1;
         }
       }
-    } else {
-      power = false;
-      gfpUid = new byte[]{0, 0, 0, 0};
     }
-  }
-
-  @Override
-  public String toString() {
-    return "SystemStatus{" + " power: " + (power ? "On" : "Off") + " GFP UID: " + ByteUtil.toHexString(gfpUid) + " }";
-  }
-
-  public boolean isPower() {
-    return power;
-  }
-
-  public byte[] getGfpUid() {
-    return gfpUid;
+    return false;
   }
 }

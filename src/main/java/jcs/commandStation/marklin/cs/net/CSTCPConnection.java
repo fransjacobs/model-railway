@@ -99,7 +99,7 @@ class CSTCPConnection implements CSConnection {
         Logger.trace(ex);
       }
     }
-    
+
     disconnectionEventListeners.clear();
     if (clientSocket != null) {
       try {
@@ -112,6 +112,7 @@ class CSTCPConnection implements CSConnection {
   }
 
   private class ResponseCallback {
+
     private final CanMessage tx;
     private boolean done = false;
 
@@ -201,6 +202,19 @@ class CSTCPConnection implements CSConnection {
 
       //Remove the callback
       messageReceiver.unRegisterResponseCallback();
+    }
+
+    //Capture messages for now to be able to develop the virtual mode
+    Logger.trace("#TX: " + message + " is response " + message.isResponseMessage());
+    if (!message.isResponseMessage()) {
+      if (message.getResponses().size() > 1) {
+        List<CanMessage> responses = message.getResponses();
+        for (int i = 0; i < responses.size(); i++) {
+          Logger.trace("#RX " + i + ": " + message.getResponse(i));
+        }
+      } else {
+        Logger.trace("#RX: " + message.getResponse());
+      }
     }
 
     return message;

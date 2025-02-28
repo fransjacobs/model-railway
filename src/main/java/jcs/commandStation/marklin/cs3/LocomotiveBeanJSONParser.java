@@ -15,10 +15,6 @@
  */
 package jcs.commandStation.marklin.cs3;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 import jcs.entities.FunctionBean;
@@ -144,17 +140,17 @@ public class LocomotiveBeanJSONParser {
     return this.locomotives;
   }
 
-  public static void main(String[] a) throws Exception {
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "locomotives.json");
-
-    String loksFile = Files.readString(path);
-
-    LocomotiveBeanJSONParser lp = new LocomotiveBeanJSONParser();
-    List<LocomotiveBean> locs = lp.parseLocomotives(loksFile);
-
-    for (LocomotiveBean loc : locs) {
-      Logger.trace(loc);
-    }
-  }
+//  public static void main(String[] a) throws Exception {
+//    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "locomotives.json");
+//
+//    String loksFile = Files.readString(path);
+//
+//    LocomotiveBeanJSONParser lp = new LocomotiveBeanJSONParser();
+//    List<LocomotiveBean> locs = lp.parseLocomotives(loksFile);
+//
+//    for (LocomotiveBean loc : locs) {
+//      Logger.trace(loc);
+//    }
+//  }
 
 }

@@ -31,28 +31,40 @@ public class AccessoryEvent implements JCSActionEvent {
     return accessoryBean;
   }
 
-  public boolean isKnownAccessory() {
-    return this.accessoryBean != null && (this.accessoryBean.getAddress() != null || this.accessoryBean.getId() != null);
+  public boolean isValid() {
+    return accessoryBean != null && (accessoryBean.getAddress() != null || accessoryBean.getId() != null);
   }
 
   public boolean isEventFor(AccessoryBean accessory) {
-    boolean addressEquals = this.accessoryBean.getAddress().equals(accessory.getAddress());
-    boolean idEquals = this.accessoryBean.getId().equals(accessory.getId());
+    boolean addressEquals = accessoryBean.getAddress().equals(accessory.getAddress());
+    boolean idEquals = accessoryBean.getId().equals(accessory.getId());
 
     return addressEquals || idEquals;
   }
 
   public SignalValue getSignalValue() {
-    return this.accessoryBean.getSignalValue();
+    return accessoryBean.getSignalValue();
   }
 
   public AccessoryValue getValue() {
-    return this.accessoryBean.getAccessoryValue();
+    return accessoryBean.getAccessoryValue();
+  }
+
+  public boolean isGreen() {
+    return AccessoryValue.GREEN == accessoryBean.getAccessoryValue();
+  }
+
+  public boolean isRed() {
+    return AccessoryValue.RED == accessoryBean.getAccessoryValue();
+  }
+
+  public Integer getAddress() {
+    return accessoryBean.getAddress();
   }
 
   @Override
   public String getId() {
-    return this.accessoryBean.getId();
+    return accessoryBean.getId();
   }
 
 }

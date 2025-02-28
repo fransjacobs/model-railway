@@ -15,16 +15,10 @@
  */
 package jcs.commandStation.marklin.cs3;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import jcs.entities.ChannelBean;
 import jcs.commandStation.entities.DeviceBean;
 import org.json.JSONObject;
-import org.tinylog.Logger;
 
 /**
  *
@@ -48,30 +42,32 @@ public class DeviceJSONParser {
     return devices;
   }
 
-  public static void main(String[] a) throws Exception {
-    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "devices.json");
-
-    String devicesFile = Files.readString(path);
-
-    List<DeviceBean> devices = DeviceJSONParser.parse(devicesFile);
-
+//  public static void main(String[] a) throws Exception {
+//    Path path = Paths.get(System.getProperty("user.home") + File.separator + "jcs" + File.separator + "devices.json");
+//
+//    CSHTTPConnectionVirt virtC = new CSHTTPConnectionVirt(null);
+//    
+//    //String devicesFile = Files.readString(path);
+//
+//    String devicesFile = virtC.getDevicesJSON();
+//    
+//    Logger.trace(devicesFile);
+//
+//    List<DeviceBean> devices = DeviceJSONParser.parse(devicesFile);
+//
 //    for (DeviceBean dev : devices) {
-//      Logger.trace(dev);
+//      if (dev.isFeedbackDevice()) {
+//        Logger.trace(dev);
+//
+//        List<ChannelBean> cbl = dev.getChannels();
+//        for (ChannelBean cb : cbl) {
+//          if (cb.isS88Bus()) {
+//            Logger.debug(cb);
+//          }
+//        }
+//
+//      }
 //    }
-
-    for (DeviceBean dev : devices) {
-      if (dev.isFeedbackDevice()) {
-        Logger.trace(dev);
-
-        List<ChannelBean> cbl = dev.getChannels();
-        for (ChannelBean cb : cbl) {
-          if (cb.isS88Bus()) {
-            Logger.debug(cb);
-          }
-        }
-
-      }
-    }
-
-  }
+//
+//  }
 }

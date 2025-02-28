@@ -902,6 +902,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
       boolean on = ((JToggleButton) evt.getSource()).isSelected();
+      Logger.trace("Switch Power "+(on?"On":"Off"));
       if (JCS.getJcsCommandStation() != null) {
         JCS.getJcsCommandStation().switchPower(on);
       }

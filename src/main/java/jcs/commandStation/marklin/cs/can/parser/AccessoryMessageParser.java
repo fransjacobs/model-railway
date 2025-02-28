@@ -13,40 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs2;
+package jcs.commandStation.marklin.cs.can.parser;
 
 import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
-public class AccessoryEventParser {
+public class AccessoryMessageParser {
+  
+  private AccessoryMessageParser() {
+    
+  }
 
-  public static AccessoryEvent parseMessage(CanMessage message) {
-    CanMessage resp;
+  public static AccessoryEvent parse(CanMessage message) {
+    CanMessage msg;
     if (!message.isResponseMessage()) {
-      resp = message.getResponse();
+      msg = message.getResponse();
     } else {
-      resp = message;
+      msg = message;
     }
 
-    if (resp.isResponseMessage() && CanMessage.ACCESSORY_SWITCHING_RESP == resp.getCommand()) {
-      byte[] data = resp.getData();
+    int cmd = msg.getCommand();
+    int dlc = msg.getDlc();
+    byte[] data = msg.getData();
+
+    if (CanMessage.ACCESSORY_SWITCHING_RESP == cmd || CanMessage.ACCESSORY_SWITCHING == cmd) {
       int address = data[3];
       int position = data[4];
       //CS is zero based
       address = address + 1;
-      String id = address + "";
-
+      String id = Integer.toString(address);
       AccessoryBean accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null, CanMessage.MARKLIN_COMMANDSTATION_ID);
-      if (resp.getDlc() == CanMessage.DLC_8) {
+
+      //TODO DCC support
+      if (CanMessage.DLC_8 == dlc) {
         int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
         accessoryBean.setSwitchTime(switchTime);
       }
-
       return new AccessoryEvent(accessoryBean);
     } else {
-      Logger.warn("Can't parse message, not an Accessory Response! " + resp);
+      Logger.warn("Can't parse message, not an Accessory Message! " + message);
       return null;
     }
   }
