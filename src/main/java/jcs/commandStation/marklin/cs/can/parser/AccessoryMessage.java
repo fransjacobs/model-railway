@@ -20,9 +20,9 @@ import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
-public class AccessoryMessageParser {
+public class AccessoryMessage {
   
-  private AccessoryMessageParser() {
+  private AccessoryMessage() {
     
   }
 

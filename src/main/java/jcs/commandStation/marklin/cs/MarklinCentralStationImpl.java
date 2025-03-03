@@ -15,6 +15,7 @@
  */
 package jcs.commandStation.marklin.cs;
 
+import jcs.commandStation.marklin.cs.can.parser.FeedbackEventMessage;
 import java.awt.Image;
 import java.util.Date;
 import java.util.HashMap;
@@ -59,14 +60,13 @@ import jcs.entities.ChannelBean;
 import jcs.entities.CommandStationBean;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
-import jcs.commandStation.marklin.cs.can.parser.AccessoryMessageParser;
+import jcs.commandStation.marklin.cs.can.parser.AccessoryMessage;
 import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.marklin.cs2.InfoBeanParser;
 import jcs.commandStation.marklin.cs2.LocomotiveDirectionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveSpeedEventParser;
 import jcs.commandStation.marklin.cs2.PowerEventParser;
-import jcs.commandStation.marklin.cs2.SensorMessageParser;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
@@ -614,7 +614,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       st = st / 10;
       CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, true, st, this.csUid));
       //Notify listeners
-      AccessoryEvent ae = AccessoryMessageParser.parse(message);
+      AccessoryEvent ae = AccessoryMessage.parse(message);
 
       notifyAccessoryEventListeners(ae);
     } else {
@@ -834,14 +834,14 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               //Lets do this the when we know all of the CS...
               if (mainDevice != null) {
                 if (CanMessage.DLC_0 == dlc) {
-                  Logger.trace("Answering Ping RQ: " + eventMessage);
+                  //Logger.trace("Answering Ping RQ: " + eventMessage);
                   sendJCSUIDMessage();
                 }
               }
             }
             case CanMessage.PING_RESP -> {
               if (CanMessage.DLC_8 == dlc) {
-                Logger.trace("Ping Response RX: " + eventMessage);
+                //Logger.trace("Ping Response RX: " + eventMessage);
 
                 updateDevice(eventMessage);
               }
@@ -857,7 +857,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             }
             case CanMessage.S88_EVENT_RESPONSE -> {
               if (CanMessage.DLC_8 == dlc) {
-                SensorBean sb = SensorMessageParser.parseMessage(eventMessage, new Date());
+                Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
+                
+                SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
                 SensorEvent sme = new SensorEvent(sb);
                 if (sme.getSensorBean() != null) {
                   fireSensorEventListeners(sme);
@@ -866,7 +868,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             }
             case CanMessage.SX1_EVENT -> {
               if (CanMessage.DLC_8 == dlc) {
-                SensorBean sb = SensorMessageParser.parseMessage(eventMessage, new Date());
+                SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
                 SensorEvent sme = new SensorEvent(sb);
                 if (sme.getSensorBean() != null) {
                   fireSensorEventListeners(sme);
@@ -875,6 +877,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             }
             case CanMessage.SYSTEM_COMMAND -> {
               Logger.trace("SystemConfigCommand RX: " + eventMessage);
+              
+//;/p              
+              
+              
             }
             case CanMessage.SYSTEM_COMMAND_RESP -> {
               switch (subcmd) {
@@ -904,7 +910,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               Logger.trace("AccessorySwitching RX: " + eventMessage);
             }
             case CanMessage.ACCESSORY_SWITCHING_RESP -> {
-              AccessoryEvent ae = AccessoryMessageParser.parse(eventMessage);
+              AccessoryEvent ae = AccessoryMessage.parse(eventMessage);
               if (ae.isValid()) {
                 notifyAccessoryEventListeners(ae);
               }

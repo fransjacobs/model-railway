@@ -21,6 +21,7 @@ import jcs.persistence.PersistenceFactory;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.tinylog.Logger;
 
@@ -58,9 +59,10 @@ public class MarklinCSTest {
         csb.setProtocols("DCC,MFX,MM");
         csb.setDefault(true);
         csb.setEnabled(true);
+        csb.setVirtual(true);
 
         instance = new MarklinCentralStationImpl(csb, false);
-        pause(500);
+        pause(200);
         csAvailable = instance.connect();
 
         if (csAvailable) {
@@ -77,7 +79,7 @@ public class MarklinCSTest {
   @Before
   public void setUp() {
     if (csAvailable) {
-      pause(500);
+      pause(200);
     } else {
       Logger.warn("Skipping tests CS not available");
     }
@@ -91,7 +93,7 @@ public class MarklinCSTest {
   /**
    * Test of connect method, of class MarklinCentralStationImpl.
    */
-  //@Test
+  @Test
   public void testConnect() {
     if (csAvailable) {
       System.out.println("connect");

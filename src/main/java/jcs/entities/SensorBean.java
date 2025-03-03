@@ -292,9 +292,16 @@ public class SensorBean implements Serializable {
   }
 
   public String toLogString() {
+    String ids;
+    if (id == null) {
+      ids = "(" + generateId() + ")";
+    } else {
+      ids = id;
+    }
+
     return "SensorBean{"
             + "id="
-            + id
+            + ids
             + ", name="
             + name
             + ", deviceId="

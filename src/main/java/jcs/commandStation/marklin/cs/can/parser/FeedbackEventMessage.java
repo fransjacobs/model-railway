@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs2;
+package jcs.commandStation.marklin.cs.can.parser;
 
 import java.util.Date;
+import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.SensorBean;
 import jcs.util.ByteUtil;
@@ -23,11 +24,11 @@ import org.tinylog.Logger;
 
 /**
  *
- * @author Frans Jacobs
+ * Parse Sensor messages
  */
-public class SensorMessageParser {
+public class FeedbackEventMessage {
 
-  public static SensorBean parseMessage(CanMessage message, Date eventDate) {
+  public static SensorBean parse(CanMessage message, Date eventDate) {
     CanMessage resp;
     if (!message.isResponseMessage()) {
       resp = message.getResponse();
@@ -52,4 +53,5 @@ public class SensorMessageParser {
       return null;
     }
   }
+   
 }

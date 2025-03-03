@@ -16,6 +16,7 @@
 package jcs.commandStation.entities;
 
 import jakarta.persistence.Transient;
+import java.util.Objects;
 import jcs.entities.CommandStationBean;
 
 /**
@@ -29,7 +30,6 @@ public class InfoBean extends CommandStationBean {
   private String productName;
   private String articleNumber;
   private String hostname;
-  private String ipAddress;
   private String gfpUid;
   private String guiUid;
 
@@ -143,6 +143,56 @@ public class InfoBean extends CommandStationBean {
   @Override
   public String toString() {
     return "InfoBean{" + "softwareVersion=" + softwareVersion + ", hardwareVersion=" + hardwareVersion + ", serialNumber=" + serialNumber + ", productName=" + productName + ", articleNumber=" + articleNumber + ", hostname=" + hostname + ", gfpUid=" + gfpUid + ", guiUid=" + guiUid + "}";
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 3;
+    hash = 97 * hash + Objects.hashCode(this.softwareVersion);
+    hash = 97 * hash + Objects.hashCode(this.hardwareVersion);
+    hash = 97 * hash + Objects.hashCode(this.serialNumber);
+    hash = 97 * hash + Objects.hashCode(this.productName);
+    hash = 97 * hash + Objects.hashCode(this.articleNumber);
+    hash = 97 * hash + Objects.hashCode(this.hostname);
+    hash = 97 * hash + Objects.hashCode(this.gfpUid);
+    hash = 97 * hash + Objects.hashCode(this.guiUid);
+    return hash;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final InfoBean other = (InfoBean) obj;
+    if (!Objects.equals(this.softwareVersion, other.softwareVersion)) {
+      return false;
+    }
+    if (!Objects.equals(this.hardwareVersion, other.hardwareVersion)) {
+      return false;
+    }
+    if (!Objects.equals(this.serialNumber, other.serialNumber)) {
+      return false;
+    }
+    if (!Objects.equals(this.productName, other.productName)) {
+      return false;
+    }
+    if (!Objects.equals(this.articleNumber, other.articleNumber)) {
+      return false;
+    }
+    if (!Objects.equals(this.hostname, other.hostname)) {
+      return false;
+    }
+    if (!Objects.equals(this.gfpUid, other.gfpUid)) {
+      return false;
+    }
+    return Objects.equals(this.guiUid, other.guiUid);
   }
 
 }

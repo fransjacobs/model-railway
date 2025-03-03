@@ -17,7 +17,6 @@ package jcs.commandStation.esu.ecos;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import jcs.commandStation.entities.DeviceBean;
 import jcs.commandStation.entities.InfoBean;
 import jcs.entities.AccessoryBean;
@@ -28,7 +27,6 @@ import jcs.entities.LocomotiveBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.util.PersistenceTestHelper;
 import jcs.util.NetworkUtil;
-import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

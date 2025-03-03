@@ -402,6 +402,32 @@ public class CanMessageFactory implements MarklinCan {
     return cm;
   }
 
+  /**
+   * Create a CanMessage for an (virtual) event. Used for the Virtual drive simulator
+   *
+   * @param sensorbean
+   * @return
+   */
+  public static CanMessage sensorEventMessage(int nodeId, int contactId, int value, int previousValue, int millis, int uid) {
+    byte[] data = new byte[CanMessage.DATA_SIZE];
+
+    byte[] nId = CanMessage.to2Bytes(nodeId);
+    byte[] cId = CanMessage.to2Bytes(contactId);
+    byte val = (byte) value;
+    byte prev = (byte) previousValue;
+    byte[] time = CanMessage.to2Bytes(millis / 10);
+    byte[] hash = CanMessage.generateHash(uid);
+
+    System.arraycopy(nId, 0, data, 0, nId.length);
+    System.arraycopy(cId, 0, data, 2, cId.length);
+    data[4] = prev;
+    data[5] = val;
+    System.arraycopy(time, 0, data, 6, time.length);
+
+    CanMessage sensorMessage = new CanMessage(PRIO_1, S88_EVENT_RESPONSE, hash, DLC_8, data);
+    return sensorMessage;
+  }
+
   //Mainly for testing....
   public static void main(String[] a) {
     System.out.println("getMobAppPingReq:   " + getMobileAppPingRequest());
@@ -420,10 +446,9 @@ public class CanMessageFactory implements MarklinCan {
 
     System.out.println("switchAccessory 1g: " + switchAccessory(1, AccessoryValue.RED, true, 1668498828));
 
-    System.out.println("switchAccessory 2g: " + switchAccessory(2, AccessoryValue.GREEN, true,50, 1668498828));
-    System.out.println("switchAccessory 2r: " + switchAccessory(2, AccessoryValue.RED, true,50, 1668498828));
+    System.out.println("switchAccessory 2g: " + switchAccessory(2, AccessoryValue.GREEN, true, 50, 1668498828));
+    System.out.println("switchAccessory 2r: " + switchAccessory(2, AccessoryValue.RED, true, 50, 1668498828));
 
-    
     System.out.println("requestConfigData:  " + requestConfigData(1668498828, "loks"));
 
     System.out.println("");
