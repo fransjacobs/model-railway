@@ -327,9 +327,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     setTitle("Java Central Station");
     setBounds(new Rectangle(0, 0, 1400, 900));
-    setMinimumSize(new Dimension(1250, 900));
+    setMinimumSize(new Dimension(1350, 850));
     setName("JCSFrame"); // NOI18N
-    setSize(new Dimension(1250, 950));
+    setSize(new Dimension(1350, 870));
     addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent evt) {
         formWindowClosing(evt);
@@ -613,9 +613,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     centerPanel.add(layoutPanel, "designPanel");
     layoutPanel.getAccessibleContext().setAccessibleName("designPanel");
 
-    overviewPanel.setMinimumSize(new Dimension(1002, 772));
     overviewPanel.setName("overviewPanel"); // NOI18N
-    overviewPanel.setPreferredSize(new Dimension(1002, 772));
     centerPanel.add(overviewPanel, "overviewPanel");
     overviewPanel.getAccessibleContext().setAccessibleName("overviewPanel");
 
@@ -1022,9 +1020,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }//GEN-LAST:event_resetAutoPilotBtnActionPerformed
 
   private void virtualCBActionPerformed(ActionEvent evt) {//GEN-FIRST:event_virtualCBActionPerformed
-    Logger.trace(evt.getActionCommand() + " Switch Virtual Mode " + (this.virtualCB.isSelected() ? "On" : "Off"));
+    Logger.trace(evt.getActionCommand() + " Switch Virtual Mode " + (virtualCB.isSelected() ? "On" : "Off"));
     if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().setVirtual(this.virtualCB.isSelected());
+      JCS.getJcsCommandStation().setVirtual(virtualCB.isSelected());
     }
   }//GEN-LAST:event_virtualCBActionPerformed
 

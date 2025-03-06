@@ -33,7 +33,8 @@ public class SystemStatus  {
     } else {
       for (CanMessage cm : respList) {
         if (CanMessage.SYSTEM_COMMAND_RESP == cm.getCommand() && cm.getDlc() == CanMessage.DLC_5) {
-          return message.getData()[4] == 1;
+          int powerVal = cm.getData()[4];
+          return powerVal == 1;
         }
       }
     }

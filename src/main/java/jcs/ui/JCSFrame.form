@@ -139,11 +139,14 @@
       <Rectangle value="[0, 0, 1400, 900]"/>
     </Property>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1250, 900]"/>
+      <Dimension value="[1350, 850]"/>
+    </Property>
+    <Property name="mixingCutoutShape" type="java.awt.Shape" editor="org.netbeans.modules.form.ComponentChooserEditor">
+      <ComponentRef name="default"/>
     </Property>
     <Property name="name" type="java.lang.String" value="JCSFrame" noResource="true"/>
     <Property name="size" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[1250, 950]"/>
+      <Dimension value="[1350, 870]"/>
     </Property>
   </Properties>
   <SyntheticProperties>

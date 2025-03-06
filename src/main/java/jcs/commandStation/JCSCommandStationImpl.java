@@ -116,7 +116,6 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public final boolean connect() {
-    //TODO revice the connect, to nices code and preventing duplicat instantiations...
     boolean decoderControllerConnected = false;
     boolean allreadyConnected = false;
 
@@ -213,7 +212,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
     Logger.trace("Connected Controllers:  Decoder: " + (decoderControllerConnected ? "Yes" : "No") + " Accessory: " + accessoryCntrConnected + " Feedback: " + feedbackCntrConnected);
 
-    if (decoderControllerConnected && !allreadyConnected) {
+    if (decoderControllerConnected && !allreadyConnected && decoderController != null) {
       decoderController.addDisconnectionEventListener(new DisconnectionListener(this));
 
       decoderController.addLocomotiveFunctionEventListener(new LocomotiveFunctionChangeEventListener(this));
@@ -222,7 +221,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
       supportedProtocols.addAll(decoderController.getCommandStationBean().getSupportedProtocols());
 
-      if (this.decoderController.isSupportTrackMeasurements()) {
+      if (decoderController.isSupportTrackMeasurements()) {
         //Start the measurements background task
         long measureInterval = Long.parseLong(System.getProperty("track.measurements.interval", "5"));
         measureInterval = measureInterval * 1000;
@@ -309,7 +308,10 @@ public class JCSCommandStationImpl implements JCSCommandStation {
   @Override
   public void setVirtual(boolean flag) {
     Logger.info("Switch Virtual Mode " + (flag ? "On" : "Off"));
-    this.decoderController.setVirtual(flag);
+    commandStation.setVirtual(flag);
+    PersistenceFactory.getService().persist(commandStation);
+
+    decoderController.setVirtual(flag);
   }
 
   @Override
@@ -576,17 +578,17 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void addDisconnectionEventListener(DisconnectionEventListener listener) {
-    if (this.decoderController != null) {
-      this.decoderController.addDisconnectionEventListener(listener);
+    if (decoderController != null) {
+      decoderController.addDisconnectionEventListener(listener);
     }
-    for (AccessoryController ac : this.accessoryControllers.values()) {
-      if (ac != this.decoderController) {
+    for (AccessoryController ac : accessoryControllers.values()) {
+      if (ac != decoderController) {
         ac.addDisconnectionEventListener(listener);
       }
     }
 
-    for (FeedbackController fc : this.feedbackControllers.values()) {
-      if (fc != this.decoderController) {
+    for (FeedbackController fc : feedbackControllers.values()) {
+      if (fc != decoderController) {
         fc.addDisconnectionEventListener(listener);
       }
     }
@@ -594,26 +596,26 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void addPowerEventListener(PowerEventListener listener) {
-    if (this.decoderController != null) {
-      this.decoderController.addPowerEventListener(listener);
+    if (decoderController != null) {
+      decoderController.addPowerEventListener(listener);
     }
   }
 
   @Override
   public void removePowerEventListener(PowerEventListener listener) {
-    if (this.decoderController != null) {
-      this.decoderController.removePowerEventListener(listener);
+    if (decoderController != null) {
+      decoderController.removePowerEventListener(listener);
     }
   }
 
   @Override
   public void addMeasurementEventListener(MeasurementEventListener listener) {
-    this.measurementEventListeners.add(listener);
+    measurementEventListeners.add(listener);
   }
 
   @Override
   public void removeMeasurementListener(MeasurementEventListener listener) {
-    this.measurementEventListeners.remove(listener);
+    measurementEventListeners.remove(listener);
   }
 
   @Override
@@ -646,7 +648,8 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       if (this.Controller != null && this.Controller.decoderController != null) {
         Map<Integer, ChannelBean> measurements = this.Controller.decoderController.getTrackMeasurements();
         for (ChannelBean ch : measurements.values()) {
-          if (ch.isChanged()) {
+          
+          if (ch != null && ch.isChanged()) {
             MeasurementEvent me = new MeasurementEvent(ch);
             if (debuglog) {
               Logger.trace("Changed Channel " + ch.getNumber() + ", " + ch.getName() + ": " + ch.getHumanValue() + " " + ch.getUnit());

@@ -70,9 +70,11 @@ public class VNCPanel extends javax.swing.JPanel {
         addDrawingSurface();
         //clipboardMonitor.start();
         initialiseVernacularClient();
-        String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
-        int port = DEFAULT_VNC_PORT;
-        connect(ip, port);
+        if (JCS.getJcsCommandStation().isConnected()) {
+          String ip = JCS.getJcsCommandStation().getCommandStationInfo().getIpAddress();
+          int port = DEFAULT_VNC_PORT;
+          connect(ip, port);
+        }
       }
     }
   }

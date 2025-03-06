@@ -26,6 +26,7 @@ import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.commandStation.events.SensorEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
+import jcs.commandStation.marklin.cs.can.CanMessageFactory;
 import jcs.commandStation.marklin.cs.can.parser.SystemStatus;
 import org.tinylog.Logger;
 
@@ -33,6 +34,8 @@ import org.tinylog.Logger;
  * Virtual Marklin CS Connection
  */
 class CSVirtualConnection implements CSConnection, VirtualConnection {
+
+  final static int LINK_S88_UID = 1396202561;
 
   private boolean connected;
 
@@ -55,7 +58,26 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
 
   @Override
   public void sendEvent(SensorEvent sensorEvent) {
-    //Virtual
+    int deviceId = sensorEvent.getDeviceId();
+    int contactId = sensorEvent.getContactId();
+    int value = sensorEvent.isActive() ? 1 : 0;
+    int prevVal;
+    if (sensorEvent.isChanged() && sensorEvent.isActive()) {
+      prevVal = 1;
+    } else {
+      prevVal = 0;
+    }
+
+    Logger.trace("Device: " + deviceId + " contact: " + contactId + " -> " + value);
+
+    CanMessage eventMessage = CanMessageFactory.sensorEventMessage(deviceId, contactId, value, prevVal, 100, LINK_S88_UID);
+
+    try {
+      eventQueue.put(eventMessage);
+    } catch (InterruptedException ex) {
+      Logger.error(ex);
+    }
+
   }
 
   private void initMessageSender() {
@@ -171,8 +193,6 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xd1 0x01 0x00 0x00 0xb4
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xe0 0x00 0x01 0xdc 0xf0
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x07 0xe0 0x01 0x00 0x00 0x50
-
-
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x03 0xee 0x00 0x01 0x40 0xf6
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x03 0xee 0x01 0x00 0x00 0x0a
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x03 0xf0 0x00 0x01 0x42 0x5d
@@ -181,10 +201,6 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x03 0xf0 0x01 0x00 0x00 0x0a
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x03 0xf0 0x00 0x01 0x00 0x46
 //0x00 0x23 0x7b 0x79 0x08 0x00 0x41 0x03 0xf0 0x01 0x00 0x00 0x0a
-
-
-
-
       }
       case CanMessage.SYSTEM_COMMAND_RESP -> {
       }
@@ -226,7 +242,7 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
 
   @Override
   public boolean isConnected() {
-    return this.connected; 
+    return this.connected;
   }
 
   private class PeriodicCSMessageSender extends Thread {
@@ -276,4 +292,3 @@ class CSVirtualConnection implements CSConnection, VirtualConnection {
     }
   }
 }
-

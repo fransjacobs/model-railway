@@ -99,7 +99,7 @@ public class FeedbackPanel extends JPanel {
     int port = 1;
     p1 = new FeedbackPort(this.lbl1, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
 
-    Logger.trace("Port " + (port - 1) + ", device: " + deviceId + " module: " + moduleNumber + " offset: " + contactIdOffset + " Contact Addres: " + p1.contactId);
+    //Logger.trace("Port " + (port - 1) + ", device: " + deviceId + " module: " + moduleNumber + " offset: " + contactIdOffset + " Contact Addres: " + p1.contactId);
     p2 = new FeedbackPort(this.lbl2, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p3 = new FeedbackPort(this.lbl3, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));
     p4 = new FeedbackPort(this.lbl4, deviceId, calculateContactId(moduleNumber, contactIdOffset, port++));

@@ -68,6 +68,8 @@ import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveSpeedEventParser;
 import jcs.commandStation.marklin.cs2.PowerEventParser;
 import jcs.commandStation.VirtualConnection;
+import jcs.commandStation.autopilot.AutoPilot;
+import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
 import jcs.entities.LocomotiveBean;
@@ -93,6 +95,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   private EventMessageHandler eventMessageHandler;
 
   Map<Integer, ChannelBean> analogChannels;
+
+  private DriveSimulator simulator;
 
   public MarklinCentralStationImpl(CommandStationBean commandStationBean) {
     this(commandStationBean, false);
@@ -153,7 +157,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       }
 
       CSConnection csConnection = CSConnectionFactory.getConnection(virtual);
-      csConnection.addDisconnectionEventListener(this);
+      if (csConnection != null) {
+        csConnection.addDisconnectionEventListener(this);
+      }
 
       connection = csConnection;
 
@@ -163,7 +169,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
         long timeout = now + 1000L;
 
         while (!connected && now < timeout) {
-          connected = csConnection.isConnected();
+          connected = connection.isConnected();
           now = System.currentTimeMillis();
         }
         if (!connected && now > timeout) {
@@ -204,8 +210,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
           power = isPower();
           JCS.logProgress("Power is " + (power ? "On" : "Off"));
+
         }
-        Logger.trace("Connected: " + connected + " Default Accessory SwitchTime: " + this.defaultSwitchTime);
+        Logger.trace("Connected: " + connected + " Default Accessory SwitchTime: " + defaultSwitchTime);
       } else {
         Logger.warn("Can't connect with Central Station!");
         JCS.logProgress("Can't connect with Central Station!");
@@ -214,6 +221,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 
     if (isCS3()) {
       getMembers();
+    }
+    if (isVirtual()) {
+      simulator = new DriveSimulator();
+      Logger.info("Marklin Central Station Virtual Mode Enabled!");
     }
 
     return connected;
@@ -584,6 +595,16 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(locUid, speed, this.csUid));
       LocomotiveSpeedEvent vme = LocomotiveSpeedEventParser.parseMessage(message);
       notifyLocomotiveSpeedEventListeners(vme);
+
+      if (isVirtual()) {
+        //When a locomotive has a speed change (>0) check if Auto mode is on.
+        //When in Auto mode try to simulate the first sensor the locomotive is suppose to hit.
+        if (AutoPilot.isAutoModeActive() && speed > 0) {
+          //simulateDriving(locUid, speed, direction);
+          this.simulator.simulateDriving(locUid, speed, direction);
+        }
+      }
+
     }
   }
 
@@ -858,7 +879,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             case CanMessage.S88_EVENT_RESPONSE -> {
               if (CanMessage.DLC_8 == dlc) {
                 Logger.trace("FeedbackSensorEvent RX: " + eventMessage);
-                
+
                 SensorBean sb = FeedbackEventMessage.parse(eventMessage, new Date());
                 SensorEvent sme = new SensorEvent(sb);
                 if (sme.getSensorBean() != null) {
@@ -877,10 +898,8 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             }
             case CanMessage.SYSTEM_COMMAND -> {
               Logger.trace("SystemConfigCommand RX: " + eventMessage);
-              
+
 //;/p              
-              
-              
             }
             case CanMessage.SYSTEM_COMMAND_RESP -> {
               switch (subcmd) {
@@ -985,12 +1004,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       cs.power(false);
       Logger.debug("Power is " + (cs.isPower() ? "ON" : "Off"));
       cs.power(true);
-      
+
       Logger.debug("Switch Accessory 2 to Red");
-      cs.switchAccessory(2,AccessoryValue.RED,250);
-      
+      cs.switchAccessory(2, AccessoryValue.RED, 250);
+
       Logger.debug("Switch Accessory 2 to Green");
-      cs.switchAccessory(2,AccessoryValue.GREEN,250);
+      cs.switchAccessory(2, AccessoryValue.GREEN, 250);
 
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
@@ -1019,7 +1038,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
 //          Logger.trace("Channel " + ch.getNumber() + ": " + ch.getHumanValue() + " " + ch.getUnit());
 //        }
 //      }
-
 //      Logger.debug("Channel 1: " + cs.channelData1.getChannel().getHumanValue() + " " + cs.channelData1.getChannel().getUnit());
 //      Logger.debug("Channel 2: " + cs.channelData2.getChannel().getHumanValue() + " " + cs.channelData2.getChannel().getUnit());
 //      Logger.debug("Channel 3: " + cs.channelData3.getChannel().getHumanValue() + " " + cs.channelData3.getChannel().getUnit());

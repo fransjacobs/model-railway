@@ -262,8 +262,7 @@ public class JCS extends Thread {
     persistentStore = getPersistenceService();
     jcsCommandStation = getJcsCommandStation();
 
-    if (persistentStore
-            != null) {
+    if (persistentStore != null) {
       if ("true".equalsIgnoreCase(System.getProperty("commandStation.autoconnect", "true"))) {
         if (jcsCommandStation != null) {
           boolean connected = jcsCommandStation.connect();
