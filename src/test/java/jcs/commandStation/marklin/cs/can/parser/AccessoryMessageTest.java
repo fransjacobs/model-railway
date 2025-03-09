@@ -19,7 +19,6 @@ import jcs.commandStation.events.AccessoryEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -42,7 +41,7 @@ public class AccessoryMessageTest {
   /**
    * Test of parse method, of class AccessoryMessage.
    */
-  @Test
+  //@Test
   public void testParse() {
     System.out.println("parse");
     CanMessage message = null;

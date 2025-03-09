@@ -27,6 +27,9 @@ public class AccessoryMessage {
   }
 
   public static AccessoryEvent parse(CanMessage message) {
+    if(message == null) {
+      return null;
+    }
     CanMessage msg;
     if (!message.isResponseMessage()) {
       msg = message.getResponse();
