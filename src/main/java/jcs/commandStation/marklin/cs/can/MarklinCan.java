@@ -180,4 +180,6 @@ interface MarklinCan {
   //Magic hash which will result is getting device ids 
   public static final byte[] MAGIC_HASH = new byte[]{0x07, 0x69};
 
+  public static final int DCC_ACCESSORY_OFFSET = 14336;
+
 }

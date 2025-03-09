@@ -498,8 +498,13 @@ public class JCSCommandStationImpl implements JCSCommandStation {
 
   @Override
   public void switchAccessory(AccessoryBean accessory, AccessoryValue value) {
+    String id = accessory.getId();
     Integer address = accessory.getAddress();
     Integer switchTime = accessory.getSwitchTime();
+    AccessoryBean.Protocol protocol = accessory.getProtocol();
+    if (protocol == null) {
+      protocol = AccessoryBean.Protocol.DCC;
+    }
     AccessoryValue val = value;
     Integer states = accessory.getStates();
     Integer state = accessory.getState();
@@ -514,15 +519,13 @@ public class JCSCommandStationImpl implements JCSCommandStation {
     if (states > 2) {
       if (accessory.getState() > 1) {
         address = address + 1;
-        //val = AccessoryValue.cs3Get(state - 2);
         val = AccessoryValue.get(state - 2);
       }
     }
 
     Logger.trace("Change accessory with address: " + address + ", " + accessory.getName() + " to " + val.getValue());
-
     for (AccessoryController ac : accessoryControllers.values()) {
-      ac.switchAccessory(address, val, switchTime);
+      ac.switchAccessory(address, protocol.getValue(), val, switchTime);
     }
   }
 
@@ -648,7 +651,7 @@ public class JCSCommandStationImpl implements JCSCommandStation {
       if (this.Controller != null && this.Controller.decoderController != null) {
         Map<Integer, ChannelBean> measurements = this.Controller.decoderController.getTrackMeasurements();
         for (ChannelBean ch : measurements.values()) {
-          
+
           if (ch != null && ch.isChanged()) {
             MeasurementEvent me = new MeasurementEvent(ch);
             if (debuglog) {

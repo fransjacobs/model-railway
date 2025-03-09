@@ -22,11 +22,13 @@ import jcs.entities.AccessoryBean.AccessoryValue;
 
 public interface AccessoryController extends GenericController {
 
-  void switchAccessory(Integer address, AccessoryValue value);
+  //void switchAccessory(Integer address, AccessoryValue value);
 
-  void switchAccessory(Integer address, AccessoryValue value, Integer switchTime);
+  //void switchAccessory(Integer address, AccessoryValue value, Integer switchTime);
 
-  void switchAccessory(String id, AccessoryBean.AccessoryValue value);
+  //void switchAccessory(String id, AccessoryBean.AccessoryValue value);
+
+  void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime);
 
   void addAccessoryEventListener(AccessoryEventListener listener);
 

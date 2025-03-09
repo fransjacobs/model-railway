@@ -481,17 +481,23 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+//  @Override
+//  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value) {
+//    switchAccessory(address, value, defaultSwitchTime);
+//  }
+//  @Override
+//  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
+//    AccessoryBean ab = accessoryManager.getAccessory(address);
+//    if (ab != null) {
+//      switchAccessory(ab.getId(), value);
+//    } else {
+//      Logger.warn("Accessory with address " + address + " does not exist for the Ecos");
+//    }
+//  }
   @Override
-  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value) {
-    switchAccessory(address, value, this.defaultSwitchTime);
-  }
-
-  @Override
-  public void switchAccessory(Integer address, AccessoryBean.AccessoryValue value, Integer switchTime) {
-    //for now try to find the object id based on the address.
-    //The protocol is not known so "accidents" can happen...
+  public void switchAccessory(Integer address, String protocol, AccessoryBean.AccessoryValue value, Integer switchTime) {
     Logger.trace("Using Address " + address + " to find the AccessoryId...");
-    String id = this.accessoryManager.findId(address);
+    String id = accessoryManager.findId(address);
     if (id != null) {
       switchAccessory(id, value);
     } else {
@@ -499,8 +505,8 @@ public class EsuEcosCommandStationImpl extends AbstractController implements Dec
     }
   }
 
-  @Override
-  public void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
+  //@Override
+  void switchAccessory(String id, AccessoryBean.AccessoryValue value) {
     //if (this.power && this.connected) {
     Logger.trace("Changing Accessory " + id + " to " + value);
     int state;

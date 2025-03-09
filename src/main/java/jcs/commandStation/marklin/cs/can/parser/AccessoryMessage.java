@@ -21,9 +21,9 @@ import jcs.entities.AccessoryBean;
 import org.tinylog.Logger;
 
 public class AccessoryMessage {
-  
+
   private AccessoryMessage() {
-    
+
   }
 
   public static AccessoryEvent parse(CanMessage message) {
@@ -39,16 +39,32 @@ public class AccessoryMessage {
     byte[] data = msg.getData();
 
     if (CanMessage.ACCESSORY_SWITCHING_RESP == cmd || CanMessage.ACCESSORY_SWITCHING == cmd) {
-      int address = data[3];
-      int position = data[4];
+      byte[] addressData = new byte[]{data[2], data[3]};
+      int address = CanMessage.toInt(addressData);
+      String protocol;
       //CS is zero based
-      address = address + 1;
+      if (address >= CanMessage.DCC_ACCESSORY_OFFSET) {
+        protocol = "dcc";
+        address = address - CanMessage.DCC_ACCESSORY_OFFSET + 1;
+      } else {
+        protocol = "mm";
+        address = address + 1;
+      }
+
+      //int address = data[3];
+      int position = data[4];
+
       String id = Integer.toString(address);
-      AccessoryBean accessoryBean = new AccessoryBean(id, address, null, null, position, null, null, null, CanMessage.MARKLIN_COMMANDSTATION_ID);
+      AccessoryBean accessoryBean = new AccessoryBean(id, address, null, null, position, null, protocol, null, CanMessage.MARKLIN_COMMANDSTATION_ID);
 
       //TODO DCC support
+      ///RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x01 0x00 0x00 0x00
+      //RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x00 0x01 0x00 0x00
+      
+      
       if (CanMessage.DLC_8 == dlc) {
         int switchTime = CanMessage.toInt(new byte[]{data[6], data[7]});
+        switchTime = switchTime * 10;
         accessoryBean.setSwitchTime(switchTime);
       }
       return new AccessoryEvent(accessoryBean);

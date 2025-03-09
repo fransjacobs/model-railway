@@ -358,9 +358,9 @@ public class CanMessage implements MarklinCan {
             return this.responses.size() >= 2;
           }
           default -> {
-            if (this.expectsResponse()) {
-              CanMessage r0 = this.responses.get(0);
-              return this.command == r0.getCommand() - 1;
+            if (expectsResponse() && !responses.isEmpty()) {
+              CanMessage r0 = responses.get(0);
+              return command == r0.getCommand() - 1;
             } else {
               return true;
             }

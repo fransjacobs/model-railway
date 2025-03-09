@@ -323,12 +323,14 @@ public class EsuEcosCommandStationImplTest {
   //@Test
   public void testSwitchAccessory_Integer_AccessoryBeanAccessoryValue() {
     System.out.println("switchAccessory");
+    int switchTime = 200;
+    String protocol = "mm";
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
 
     Integer address = null;
     AccessoryBean.AccessoryValue value = null;
-    instance.switchAccessory(address, value);
+    instance.switchAccessory(address, protocol, value, switchTime);
     // TODO review the generated test code and remove the default call to fail.
     fail("The test case is a prototype.");
   }
@@ -339,13 +341,14 @@ public class EsuEcosCommandStationImplTest {
   //@Test
   public void testSwitchAccessory_3args() {
     System.out.println("switchAccessory");
+    int switchTime = 200;
+    String protocol = "dcc";
     EsuEcosCommandStationImpl instance = new EsuEcosCommandStationImpl(commandStationBean);
     instance.connect();
 
     Integer address = null;
     AccessoryBean.AccessoryValue value = null;
-    Integer switchTime = null;
-    instance.switchAccessory(address, value, switchTime);
+    instance.switchAccessory(address, protocol, value, switchTime);
     // TODO review the generated test code and remove the default call to fail.
     fail("The test case is a prototype.");
   }

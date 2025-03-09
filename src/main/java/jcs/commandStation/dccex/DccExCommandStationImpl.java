@@ -336,13 +336,18 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   //Direct approach no feed back...
   //maybe register the accessories and then via id?
-  @Override
-  public void switchAccessory(Integer address, AccessoryValue value) {
-    switchAccessory(address, value, null);
-  }
+//  @Override
+//  public void switchAccessory(Integer address, AccessoryValue value) {
+//    switchAccessory(address, value, null);
+//  }
+
+//  @Override
+//  public void switchAccessory(Integer address, AccessoryValue value, Integer switchTime) {
+//    switchAccessory(address, "dcc", value, switchTime);
+//  }
 
   @Override
-  public void switchAccessory(Integer address, AccessoryValue value, Integer switchTime) {
+  public void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime) {
     if (this.power && this.connected) {
       String activate = AccessoryValue.GREEN == value ? "0" : "1";
       String message = DccExMessageFactory.activateAccessory(address, activate);
@@ -365,10 +370,10 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
     }
   }
 
-  @Override
-  public void switchAccessory(String id, AccessoryValue value) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
+//  @Override
+//  public void switchAccessory(String id, AccessoryValue value) {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//  }
 
   @Override
   public List<LocomotiveBean> getLocomotives() {
@@ -683,7 +688,7 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 
   }
 
-//////////////////////////////////////////////////////////////////////////////////////  
+  //////////////////////////////////////////////////////////////////////////////////////  
   // For testing only
   public static void main(String[] a) {
 
@@ -732,7 +737,10 @@ public class DccExCommandStationImpl extends AbstractController implements Decod
 //      ((DccExCommandStationImpl) cs).pause(500L);
 //      cs.power(true);
 //      Logger.trace("Power is: " + (cs.isPower() ? "On" : "Off"));
-      /////
+    
+  
+
+/////
       //((DccExCommandStationImpl) cs).pause(500L);
 //      cs.changeFunctionValue(8, 0, true);
 //      

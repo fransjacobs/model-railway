@@ -72,6 +72,7 @@ import jcs.commandStation.autopilot.AutoPilot;
 import jcs.commandStation.autopilot.DriveSimulator;
 import jcs.commandStation.events.DisconnectionEvent;
 import jcs.commandStation.events.DisconnectionEventListener;
+import jcs.commandStation.marklin.cs.can.parser.LocomotiveEmergencyStopMessage;
 import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.entities.SensorBean;
@@ -563,26 +564,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     return canMessage;
   }
 
-//  private int getLocoAddres(int address, DecoderType decoderType) {
-//    int locoAddress;
-//    locoAddress = switch (decoderType) {
-//      case MFX ->
-//        0x4000 + address;
-//      case MFXP ->
-//        0x4000 + address;
-//      case DCC ->
-//        0xC000 + address;
-//      case SX1 ->
-//        0x0800 + address;
-//      default ->
-//        address;
-//    };
-//
-//    return locoAddress;
-//  }
   @Override
   public void changeDirection(int locUid, Direction direction) {
     if (power && connected) {
+      Logger.trace("Change direction to " + direction + " CS val " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
       LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parseMessage(message);
       notifyLocomotiveDirectionEventListeners(dme);
@@ -617,12 +602,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   }
 
   @Override
-  public void switchAccessory(Integer address, AccessoryValue value) {
-    switchAccessory(address, value, defaultSwitchTime);
-  }
-
-  @Override
-  public void switchAccessory(Integer address, AccessoryValue value, Integer switchTime) {
+  public void switchAccessory(Integer address, String protocol, AccessoryValue value, Integer switchTime) {
     if (power && connected) {
       //make sure a time is set!
       int st;
@@ -631,23 +611,39 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       } else {
         st = switchTime / 10;
       }
-      //CS Switchtime is in 10 ms increments
+
+      int adr; // zero based!
+      if ("dcc".equals(protocol)) {
+        adr = address - 1;
+        adr = adr + CanMessage.DCC_ACCESSORY_OFFSET;
+      } else {
+        adr = address - 1;
+      }
+      //CS 2/3 Switchtime is in 10 ms increments!
       st = st / 10;
-      CanMessage message = sendMessage(CanMessageFactory.switchAccessory(address, value, true, st, this.csUid));
+      CanMessage message = sendMessage(CanMessageFactory.switchAccessory(adr, value, true, st, this.csUid));
       //Notify listeners
       AccessoryEvent ae = AccessoryMessage.parse(message);
-
       notifyAccessoryEventListeners(ae);
     } else {
       Logger.trace("Trackpower is OFF! Can't switch Accessory: " + address + " to: " + value + "!");
     }
   }
 
-  @Override
-  public void switchAccessory(String id, AccessoryValue value) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
+//  @Override
+//  public void switchAccessory(String id, AccessoryValue value) {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//
+//DCC Accessories
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x00 0x01 0x00 0x00
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x00 0x00 0x00 0x00
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x01 0x01 0x00 0x00
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x01 0x00 0x00 0x00
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x00 0x01 0x00 0x00
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x00 0x00 0x00 0x00
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x01 0x01 0x00 0x00
+//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x01 0x00 0x00 0x00        
+//  }
   private void sendJCSUIDMessage() {
     sendMessage(CanMessageFactory.getMemberPingResponse(CanMessage.JCS_UID, 1, CanMessage.JCS_DEVICE_ID));
   }
@@ -898,8 +894,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
             }
             case CanMessage.SYSTEM_COMMAND -> {
               Logger.trace("SystemConfigCommand RX: " + eventMessage);
-
-//;/p              
             }
             case CanMessage.SYSTEM_COMMAND_RESP -> {
               switch (subcmd) {
@@ -916,8 +910,9 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
                   notifyPowerEventListeners(gpe);
                 }
                 case CanMessage.LOC_STOP_SUB_CMD -> {
-                  PowerEvent gpe = PowerEventParser.parseMessage(eventMessage);
-                  notifyPowerEventListeners(gpe);
+                  //stop specific loc
+                  LocomotiveSpeedEvent lse = LocomotiveEmergencyStopMessage.parse(eventMessage);
+                  notifyLocomotiveSpeedEventListeners(lse);
                 }
                 case CanMessage.OVERLOAD_SUB_CMD -> {
                   PowerEvent gpe = PowerEventParser.parseMessage(eventMessage);
@@ -941,9 +936,11 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               notifyLocomotiveSpeedEventListeners(LocomotiveSpeedEventParser.parseMessage(eventMessage));
             }
             case CanMessage.LOC_DIRECTION -> {
+              Logger.trace("DirectionChange# " + eventMessage);
 
             }
             case CanMessage.LOC_DIRECTION_RESP -> {
+              Logger.trace("DirectionChange " + eventMessage);
               notifyLocomotiveDirectionEventListeners(LocomotiveDirectionEventParser.parseMessage(eventMessage));
             }
             case CanMessage.LOC_FUNCTION -> {
@@ -1006,10 +1003,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
       cs.power(true);
 
       Logger.debug("Switch Accessory 2 to Red");
-      cs.switchAccessory(2, AccessoryValue.RED, 250);
+      //cs.switchAccessory(2, AccessoryValue.RED, 250);
 
       Logger.debug("Switch Accessory 2 to Green");
-      cs.switchAccessory(2, AccessoryValue.GREEN, 250);
+      //cs.switchAccessory(2, AccessoryValue.GREEN, 250);
 
       //cs.getLocomotivesViaCAN();
       //cs.getAccessoriesViaCan();
