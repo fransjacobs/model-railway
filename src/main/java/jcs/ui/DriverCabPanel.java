@@ -339,7 +339,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
   }
 
   private void changeDirection(LocomotiveBean.Direction direction) {
-    //executor.execute(() -> changeDirection(direction, this.locomotiveBean));
     changeDirection(direction, this.locomotiveBean);
   }
 
@@ -453,10 +452,6 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
 
       this.speedSlider.setValue(sliderValue);
 
-      for (ChangeListener changeListener : changeListeners) {
-        this.speedSlider.addChangeListener(changeListener);
-      }
-
       max = this.speedGauge.getMaxValue();
       double gaugeValue = Math.round(max / 1000 * velocity);
       //this.speedGauge.setValue(gaugeValue);
@@ -464,6 +459,11 @@ public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDire
 
       this.speedGauge.setUserLedOn(this.power);
       this.speedGauge.setLedBlinking(!this.power);
+
+      for (ChangeListener changeListener : changeListeners) {
+        this.speedSlider.addChangeListener(changeListener);
+      }
+
     }
   }
 

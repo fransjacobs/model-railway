@@ -65,7 +65,7 @@ import jcs.entities.FeedbackModuleBean;
 import jcs.commandStation.marklin.cs2.InfoBeanParser;
 import jcs.commandStation.marklin.cs2.LocomotiveDirectionEventParser;
 import jcs.commandStation.marklin.cs2.LocomotiveFunctionEventParser;
-import jcs.commandStation.marklin.cs2.LocomotiveSpeedEventParser;
+import jcs.commandStation.marklin.cs.can.parser.LocomotiveVelocityMessage;
 import jcs.commandStation.marklin.cs2.PowerEventParser;
 import jcs.commandStation.VirtualConnection;
 import jcs.commandStation.autopilot.AutoPilot;
@@ -569,6 +569,10 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     if (power && connected) {
       Logger.trace("Change direction to " + direction + " CS val " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
+
+      //DirectionChange# 0x00 0x0a 0x37 0x7e 0x05 0x00 0x00 0x40 0x0c 0x01 0x00 0x00 0x00
+      //BR 216 059-6 Speed changed from 218 to 0
+      //DirectionChange 0x00 0x0b 0x03 0x26 0x05 0x00 0x00 0x40 0x0c 0x01 0x00 0x00 0x00
       LocomotiveDirectionEvent dme = LocomotiveDirectionEventParser.parseMessage(message);
       notifyLocomotiveDirectionEventListeners(dme);
     }
@@ -577,8 +581,12 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
   @Override
   public void changeVelocity(int locUid, int speed, Direction direction) {
     if (power && connected) {
-      CanMessage message = sendMessage(CanMessageFactory.setLocSpeed(locUid, speed, this.csUid));
-      LocomotiveSpeedEvent vme = LocomotiveSpeedEventParser.parseMessage(message);
+      //VelocityChange 0x00 0x09 0x03 0x26 0x06 0x00 0x00 0x40 0x0c 0x00 0x30 0x00 0x00
+      //16396
+      CanMessage message = CanMessageFactory.setLocSpeed(locUid, speed, this.csUid);
+      Logger.trace("Ch Velocity: "+message);
+      message = sendMessage(message);
+      LocomotiveSpeedEvent vme = LocomotiveVelocityMessage.parse(message);
       notifyLocomotiveSpeedEventListeners(vme);
 
       if (isVirtual()) {
@@ -630,20 +638,6 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     }
   }
 
-//  @Override
-//  public void switchAccessory(String id, AccessoryValue value) {
-//    throw new UnsupportedOperationException("Not supported yet.");
-//
-//DCC Accessories
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x00 0x01 0x00 0x00
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x00 0x00 0x00 0x00
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x01 0x01 0x00 0x00
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x00 0x01 0x00 0x00 0x00
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x00 0x01 0x00 0x00
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x00 0x00 0x00 0x00
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x01 0x01 0x00 0x00
-//RX: 0x00 0x16 0x37 0x7e 0x06 0x00 0x00 0x38 0x01 0x01 0x00 0x00 0x00        
-//  }
   private void sendJCSUIDMessage() {
     sendMessage(CanMessageFactory.getMemberPingResponse(CanMessage.JCS_UID, 1, CanMessage.JCS_DEVICE_ID));
   }
@@ -930,10 +924,13 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
               }
             }
             case CanMessage.LOC_VELOCITY -> {
+              Logger.trace("VelocityChange# " + eventMessage);
 
             }
             case CanMessage.LOC_VELOCITY_RESP -> {
-              notifyLocomotiveSpeedEventListeners(LocomotiveSpeedEventParser.parseMessage(eventMessage));
+              Logger.trace("VelocityChange " + eventMessage);
+              
+              notifyLocomotiveSpeedEventListeners(LocomotiveVelocityMessage.parse(eventMessage));
             }
             case CanMessage.LOC_DIRECTION -> {
               Logger.trace("DirectionChange# " + eventMessage);

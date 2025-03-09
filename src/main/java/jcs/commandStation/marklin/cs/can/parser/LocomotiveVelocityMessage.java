@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jcs.commandStation.marklin.cs2;
+package jcs.commandStation.marklin.cs.can.parser;
 
 import jcs.commandStation.events.*;
 import jcs.commandStation.marklin.cs.can.CanMessage;
@@ -23,9 +23,9 @@ import org.tinylog.Logger;
 /**
  *
  */
-public class LocomotiveSpeedEventParser {
-  
-  public static LocomotiveSpeedEvent parseMessage(CanMessage message) {
+public class LocomotiveVelocityMessage {
+
+  public static LocomotiveSpeedEvent parse(CanMessage message) {
     LocomotiveBean locomotiveBean = new LocomotiveBean();
     locomotiveBean.setCommandStationId(CanMessage.MARKLIN_COMMANDSTATION_ID);
 
@@ -36,14 +36,7 @@ public class LocomotiveSpeedEventParser {
       resp = message;
     }
 
-    if (resp.isResponseMessage() && CanMessage.SYSTEM_COMMAND == resp.getCommand() && CanMessage.LOC_STOP_SUB_CMD == resp.getSubCommand() && CanMessage.DLC_5 == resp.getDlc()) {
-      //Loco halt command could be issued due to a direction change.
-      byte[] data = resp.getData();
-      long id = CanMessage.toInt(new byte[]{data[0], data[1], data[2], data[3]});
-
-      locomotiveBean.setId(id);
-      locomotiveBean.setVelocity(0);
-    } else if (resp.isResponseMessage() && CanMessage.LOC_VELOCITY_RESP == resp.getCommand()) {
+    if (resp.isResponseMessage() && CanMessage.LOC_VELOCITY_RESP == resp.getCommand()) {
       byte[] data = resp.getData();
       long id = CanMessage.toInt(new byte[]{data[0], data[1], data[2], data[3]});
 
@@ -53,7 +46,7 @@ public class LocomotiveSpeedEventParser {
       locomotiveBean.setVelocity(velocity);
 
     } else {
-      Logger.warn("Can't parse message, not a Locomotive Velocity or a Locomotive Emergency Stop Message! " + resp);
+      Logger.warn("Can't parse message, not a Locomotive Velocity Message! " + resp);
       return null;
     }
     return new LocomotiveSpeedEvent(locomotiveBean);

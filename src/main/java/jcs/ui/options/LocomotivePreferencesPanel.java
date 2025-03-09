@@ -940,6 +940,8 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
 
   class LocomotiveBeanListModel extends AbstractListModel<LocomotiveBean> {
 
+    private static final long serialVersionUID = -2632478289320377224L;
+
     private final List<LocomotiveBean> model;
 
     public LocomotiveBeanListModel() {
