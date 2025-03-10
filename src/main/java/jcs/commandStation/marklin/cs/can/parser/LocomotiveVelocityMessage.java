@@ -15,7 +15,7 @@
  */
 package jcs.commandStation.marklin.cs.can.parser;
 
-import jcs.commandStation.events.*;
+import jcs.commandStation.events.LocomotiveSpeedEvent;
 import jcs.commandStation.marklin.cs.can.CanMessage;
 import jcs.entities.LocomotiveBean;
 import org.tinylog.Logger;

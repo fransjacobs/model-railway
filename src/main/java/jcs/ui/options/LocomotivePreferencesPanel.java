@@ -90,6 +90,8 @@ import org.tinylog.Logger;
  */
 public class LocomotivePreferencesPanel extends JPanel implements PropertyChangeListener {
 
+  private static final long serialVersionUID = -2076222213624366106L;
+
   private final LocomotiveBeanListModel locoListModel;
   private CommandStationBean commandStationBean;
   private LocomotiveBean selectedLocomotive;

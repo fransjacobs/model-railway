@@ -569,7 +569,7 @@ public class MarklinCentralStationImpl extends AbstractController implements Dec
     if (power && connected) {
       Logger.trace("Change direction to " + direction + " CS val " + direction.getMarklinValue());
       CanMessage message = sendMessage(CanMessageFactory.setDirection(locUid, direction.getMarklinValue(), this.csUid));
-
+      //query velocity of give a not halt
       //DirectionChange# 0x00 0x0a 0x37 0x7e 0x05 0x00 0x00 0x40 0x0c 0x01 0x00 0x00 0x00
       //BR 216 059-6 Speed changed from 218 to 0
       //DirectionChange 0x00 0x0b 0x03 0x26 0x05 0x00 0x00 0x40 0x0c 0x01 0x00 0x00 0x00

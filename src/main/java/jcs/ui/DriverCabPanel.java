@@ -36,6 +36,8 @@ import org.tinylog.Logger;
  */
 public class DriverCabPanel extends javax.swing.JPanel implements LocomotiveDirectionEventListener, LocomotiveSpeedEventListener, PowerEventListener {
 
+  private static final long serialVersionUID = 8833627645563021982L;
+
   private LocomotiveBean locomotiveBean;
 
   private final ExecutorService executor;

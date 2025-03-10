@@ -49,6 +49,10 @@ public class FrameMonitor {
   }
 
   public static void registerFrame(JFrame frame, String frameUniqueId, int defaultX, int defaultY, int defaultW, int defaultH) {
+    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+      return;
+    }
+
     Preferences prefs = Preferences.userRoot().node(FrameMonitor.class.getSimpleName() + "-" + frameUniqueId);
 
     frame.setLocation(getFrameLocation(prefs, defaultX, defaultY));
@@ -70,13 +74,17 @@ public class FrameMonitor {
   }
 
   private static void updatePref(JFrame frame, Preferences prefs) {
+    if (System.getProperty("disable.ui.pref.storage", "false").equalsIgnoreCase("true")) {
+      return;
+    }
+
     Point location = frame.getLocation();
     prefs.putInt("x", location.x);
     prefs.putInt("y", location.y);
     Dimension size = frame.getSize();
     prefs.putInt("w", size.width);
     prefs.putInt("h", size.height);
-    Logger.trace("Updated prefs for " + frame.getClass().getSimpleName()+" Pos: ("+location.x+","+location.y+") Size W: "+size.width+" H: "+size.height);
+    Logger.trace("Updated prefs for " + frame.getClass().getSimpleName() + " Pos: (" + location.x + "," + location.y + ") Size W: " + size.width + " H: " + size.height);
   }
 
   private static Dimension getFrameSize(Preferences pref, int defaultW, int defaultH) {

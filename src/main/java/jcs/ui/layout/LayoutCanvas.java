@@ -75,7 +75,9 @@ import org.tinylog.Logger;
  * This canvas / Panel is used to draw the layout
  *
  */
-public class LayoutCanvas extends JPanel { //implements PropertyChangeListener {
+public class LayoutCanvas extends JPanel { 
+
+  private static final long serialVersionUID = 9075914241802892566L;
 
   public enum Mode {
     SELECT,

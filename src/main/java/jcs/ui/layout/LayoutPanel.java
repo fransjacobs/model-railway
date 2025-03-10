@@ -932,8 +932,8 @@ public class LayoutPanel extends JPanel {
   private void setDirection(Direction direction) {
     this.canvas.setDirection(direction);
   }
-
-  private void setMode(LayoutCanvas.Mode mode) {
+  
+  public void setMode(LayoutCanvas.Mode mode) {
     switch (mode) {
       case SELECT -> {
         selectBtn.setIcon(new ImageIcon(getClass().getResource("/media/cursor-24-y.png")));

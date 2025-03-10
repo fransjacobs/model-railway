@@ -81,6 +81,8 @@ import org.tinylog.Logger;
  */
 public class JCSFrame extends JFrame implements UICallback, DisconnectionEventListener {
 
+  private static final long serialVersionUID = -5800900684173242844L;
+
   private final Map<KeyStroke, Action> actionMap;
   private FeedbackMonitor feedbackMonitor;
 
@@ -99,8 +101,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       if (SystemInfo.isMacFullWindowContentSupported) {
         this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
         this.getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
-        this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
         //this.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
+
+        this.getRootPane().putClientProperty("apple.awt.brushMetalLook", true);
+
       }
 
       initJCS();
@@ -108,6 +112,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       if (SystemInfo.isMacFullWindowContentSupported) {
         //avoid overlap of the red/orange/green buttons and the window title
         this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
+        //this.jcsToolBar.setb
       }
 
       initKeyStrokes();
@@ -135,18 +140,29 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }
 
   private void initKeyStrokes() {
+    KeyStroke keySpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0);
     KeyStroke key0 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
 
-    actionMap.put(key0, new AbstractAction("stopAction") {
+    actionMap.put(keySpace, new AbstractAction("stopAction") {
+      private static final long serialVersionUID = -6536021676834946105L;
+
       @Override
       public void actionPerformed(ActionEvent e) {
-        stop();
+        powerButton.doClick(100);
+//        if(powerButton.isSelected()) {
+//        stop();
+//        } else {
+//          
+//        }
       }
     });
 
     KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
     kfm.addKeyEventDispatcher((KeyEvent e) -> {
       KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
+
+      Logger.trace("KeyCode: " + e.getKeyCode() + " ExtendedKeyCode: " + e.getExtendedKeyCode() + " Ctrl: " + e.isControlDown() + " Shift: " + e.isShiftDown());
+
       if (actionMap.containsKey(keyStroke)) {
         final Action a = actionMap.get(keyStroke);
         final ActionEvent ae = new ActionEvent(e.getSource(), e.getID(), null);
@@ -338,9 +354,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     toolbarPanel.setName("toolbarPanel"); // NOI18N
     toolbarPanel.setPreferredSize(new Dimension(1350, 52));
-    FlowLayout flowLayout8 = new FlowLayout(FlowLayout.LEFT);
-    flowLayout8.setAlignOnBaseline(true);
-    toolbarPanel.setLayout(flowLayout8);
+    FlowLayout flowLayout2 = new FlowLayout(FlowLayout.LEFT);
+    flowLayout2.setAlignOnBaseline(true);
+    toolbarPanel.setLayout(flowLayout2);
 
     jcsToolBar.setMaximumSize(new Dimension(1050, 42));
     jcsToolBar.setMinimumSize(new Dimension(1000, 42));
@@ -854,6 +870,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     setJMenuBar(jcsMenuBar);
 
     pack();
+    setLocationRelativeTo(null);
   }// </editor-fold>//GEN-END:initComponents
 
     private void showLocosMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showLocosMIActionPerformed
@@ -900,7 +917,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
       boolean on = ((JToggleButton) evt.getSource()).isSelected();
-      Logger.trace("Switch Power "+(on?"On":"Off"));
+      Logger.trace("Switch Power " + (on ? "On" : "Off"));
       if (JCS.getJcsCommandStation() != null) {
         JCS.getJcsCommandStation().switchPower(on);
       }

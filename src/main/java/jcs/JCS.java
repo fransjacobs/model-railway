@@ -159,10 +159,11 @@ public class JCS extends Thread {
     Logger.info("JCS " + VersionInfo.getVersion() + " session finished");
   }
 
+  @Deprecated
   public static void addRefreshListener(RefreshEventListener refreshListener) {
     instance.refreshEventListeners.add(refreshListener);
   }
-
+  @Deprecated
   public static void removeRefreshListener(RefreshEventListener refreshListener) {
     instance.refreshEventListeners.remove(refreshListener);
   }
