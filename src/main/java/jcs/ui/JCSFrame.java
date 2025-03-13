@@ -93,10 +93,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     actionMap = new HashMap<>();
     initComponents();
 
+    //TODO: see https://www.formdev.com/flatlaf/macos/
     if (RunUtil.isMacOSX()) {
-      this.quitMI.setVisible(false);
-      this.optionsMI.setVisible(false);
-      this.toolsMenu.setVisible(false);
+      quitMI.setVisible(false);
+      optionsMI.setVisible(false);
+      toolsMenu.setVisible(false);
 
       if (SystemInfo.isMacFullWindowContentSupported) {
         this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
@@ -114,9 +115,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
         //this.jcsToolBar.setb
       }
-
-      initKeyStrokes();
     }
+    initKeyStrokes();
   }
 
   private void initJCS() {
@@ -139,32 +139,141 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }
   }
 
+  private class PowerAction extends AbstractAction {
+
+    private static final long serialVersionUID = 4263882874269440066L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      powerButton.doClick(50);
+    }
+  }
+
+  private class QuitAction extends AbstractAction {
+
+    private static final long serialVersionUID = 106411709893099942L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      QuitApp();
+    }
+  }
+
+  private class ShowMonitorAction extends AbstractAction {
+
+    private static final long serialVersionUID = -3352181383049583600L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showSensorMonitor();
+    }
+  }
+
+  private class HomeAction extends AbstractAction {
+
+    private static final long serialVersionUID = 6369350924548859534L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showOverviewPanel();
+    }
+  }
+
+  private class SelectModeKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -5543240676519086334L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Logger.info("Select");
+    }
+  }
+
+  private class AddModeKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -429465825958791906L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Logger.info("Add");
+    }
+  }
+
+  private class DeleteModeKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = 569113006687591145L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Logger.info("Delete");
+    }
+  }
+
+  private class RotateKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -292237743142583719L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Logger.info("Rotate");
+    }
+  }
+
+  private class FlipHorizontalKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = 7657976620206362097L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Logger.info("Flip Horizontal");
+    }
+  }
+
+  private class FlipVerticalKeyAction extends AbstractAction {
+
+    private static final long serialVersionUID = -4269202419142803636L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      Logger.info("Flip Vertical");
+    }
+  }
+
   private void initKeyStrokes() {
     KeyStroke keySpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0);
-    KeyStroke key0 = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
+    KeyStroke keyQuit = KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK);
+    KeyStroke keySensorMonitor = KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK);
+    KeyStroke keyHome = KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
 
-    actionMap.put(keySpace, new AbstractAction("stopAction") {
-      private static final long serialVersionUID = -6536021676834946105L;
+    //Edit screen
+    KeyStroke keyModeSelect = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK);
+    KeyStroke keyModeAdd = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.ALT_DOWN_MASK);
+    KeyStroke keyModeDelete = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_DOWN_MASK);
 
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        powerButton.doClick(100);
-//        if(powerButton.isSelected()) {
-//        stop();
-//        } else {
-//          
-//        }
-      }
-    });
+    KeyStroke keyRotate = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.ALT_DOWN_MASK);
+    KeyStroke keyFlipHorizontal = KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.ALT_DOWN_MASK);
+    KeyStroke keyFlipVertical = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.ALT_DOWN_MASK);
+
+    actionMap.put(keySpace, new PowerAction());
+    actionMap.put(keyQuit, new QuitAction());
+    actionMap.put(keySensorMonitor, new ShowMonitorAction());
+    actionMap.put(keyHome, new HomeAction());
+
+    actionMap.put(keyModeSelect, new SelectModeKeyAction());
+    actionMap.put(keyModeAdd, new AddModeKeyAction());
+    actionMap.put(keyModeDelete, new DeleteModeKeyAction());
+
+    actionMap.put(keyRotate, new RotateKeyAction());
+    actionMap.put(keyFlipHorizontal, new FlipHorizontalKeyAction());
+    actionMap.put(keyFlipVertical, new FlipVerticalKeyAction());
 
     KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
     kfm.addKeyEventDispatcher((KeyEvent e) -> {
       KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
 
-      Logger.trace("KeyCode: " + e.getKeyCode() + " ExtendedKeyCode: " + e.getExtendedKeyCode() + " Ctrl: " + e.isControlDown() + " Shift: " + e.isShiftDown());
-
       if (actionMap.containsKey(keyStroke)) {
         final Action a = actionMap.get(keyStroke);
+
         final ActionEvent ae = new ActionEvent(e.getSource(), e.getID(), null);
         SwingUtilities.invokeLater(() -> {
           a.actionPerformed(ae);
@@ -176,22 +285,21 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }
 
   public void showExtraToolbar(JToolBar toolbar) {
-    this.jcsToolBar.add(toolbar);
+    jcsToolBar.add(toolbar);
     jcsToolBar.doLayout();
-    this.toolbarPanel.repaint();
+    toolbarPanel.repaint();
   }
 
   public void hideExtraToolbar(JToolBar toolbar) {
-    this.jcsToolBar.remove(toolbar);
+    jcsToolBar.remove(toolbar);
     jcsToolBar.doLayout();
-    this.toolbarPanel.repaint();
-    //this.repaint();
+    toolbarPanel.repaint();
   }
 
   public void showOverviewPanel() {
-    CardLayout card = (CardLayout) this.centerPanel.getLayout();
-    card.show(this.centerPanel, "overviewPanel");
-    this.overviewPanel.loadLayout();
+    CardLayout card = (CardLayout) centerPanel.getLayout();
+    card.show(centerPanel, "overviewPanel");
+    overviewPanel.loadLayout();
   }
 
   public void showLocomotives() {
@@ -228,13 +336,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     if (!AutoPilot.isAutoModeActive()) {
       CardLayout card = (CardLayout) this.centerPanel.getLayout();
       card.show(this.centerPanel, "designPanel");
-      this.layoutPanel.loadLayout();
-    }
-  }
-
-  public void stop() {
-    if (JCS.getJcsCommandStation() != null) {
-      JCS.getJcsCommandStation().switchPower(false);
+      layoutPanel.loadLayout();
     }
   }
 
@@ -255,7 +357,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         this.powerButton.setSelected(connected);
       }
       boolean virt = JCS.getJcsCommandStation().isVirtual();
-      this.virtualCB.setSelected(virt);
+      virtualCB.setSelected(virt);
     }
   }
 
@@ -265,7 +367,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       feedbackMonitor = new FeedbackMonitor();
       FrameMonitor.registerFrame(feedbackMonitor, FeedbackMonitor.class.getName());
     }
-    this.feedbackMonitor.showMonitor();
+    feedbackMonitor.showMonitor();
   }
 
   /**
@@ -886,20 +988,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }//GEN-LAST:event_quitMIActionPerformed
 
     private void formWindowClosing(WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-      boolean closed = this.handleQuitRequest();
-      if (closed) {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setVisible(false);
-        dispose();
-
-        //Disconnect Command stations
-        JCS.getJcsCommandStation().switchPower(false);
-        JCS.getJcsCommandStation().disconnect();
-
-        //Force close ports
-        SerialPortUtil.closeAllPorts();
-        Logger.debug("Shutting down");
-      }
+      QuitApp();
     }//GEN-LAST:event_formWindowClosing
 
     private void optionsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_optionsMIActionPerformed
@@ -912,7 +1001,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     private void showOverviewBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showOverviewBtnActionPerformed
       showOverviewPanel();
-      overviewPanel.loadLayout();
     }//GEN-LAST:event_showOverviewBtnActionPerformed
 
     private void powerButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
@@ -926,6 +1014,26 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     private void showFeedbackMonitorBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showFeedbackMonitorBtnActionPerformed
       showSensorMonitor();
     }//GEN-LAST:event_showFeedbackMonitorBtnActionPerformed
+
+  private boolean QuitApp() {
+    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
+    if (result == JOptionPane.YES_OPTION) {
+      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      setVisible(false);
+      dispose();
+
+      //Disconnect Command stations
+      JCS.getJcsCommandStation().switchPower(false);
+      JCS.getJcsCommandStation().disconnect();
+
+      //Force close ports
+      SerialPortUtil.closeAllPorts();
+      Logger.debug("Shutting down");
+      //Force!
+      System.exit(0);
+    }
+    return false;
+  }
 
   public void connect(boolean connect) {
     boolean connected = false;
@@ -977,7 +1085,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     private void showHomeActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showHomeActionPerformed
       showOverviewPanel();
-      this.overviewPanel.loadLayout();
     }//GEN-LAST:event_showHomeActionPerformed
 
     private void editLayoutActionPerformed(ActionEvent evt) {//GEN-FIRST:event_editLayoutActionPerformed
@@ -995,7 +1102,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     private void connectMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_connectMIActionPerformed
       boolean connect = "Connect".equals(((JMenuItem) evt.getSource()).getText());
       connect(connect);
-      this.connectButton.setSelected(connect);
+      connectButton.setSelected(connect);
     }//GEN-LAST:event_connectMIActionPerformed
 
   private void commandStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationsMIActionPerformed
@@ -1078,8 +1185,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
   @Override
   public boolean handleQuitRequest() {
-    int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to exit JCS?", "Exit JCS", JOptionPane.YES_NO_OPTION);
-    return result == JOptionPane.YES_OPTION;
+    return QuitApp();
   }
 
   @Override
@@ -1107,9 +1213,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   }
 
   public void powerChanged(PowerEvent event) {
-    this.powerButton.setSelected(event.isPower());
+    powerButton.setSelected(event.isPower());
   }
-
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private JMenuItem aboutMI;
