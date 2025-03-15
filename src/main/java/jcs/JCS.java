@@ -15,12 +15,25 @@
  */
 package jcs;
 
+import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
+import java.awt.Taskbar;
+import java.awt.desktop.AboutEvent;
+import java.awt.desktop.AboutHandler;
+import java.awt.desktop.OpenFilesEvent;
+import java.awt.desktop.OpenFilesHandler;
+import java.awt.desktop.PreferencesEvent;
+import java.awt.desktop.PreferencesHandler;
+import java.awt.desktop.QuitEvent;
+import java.awt.desktop.QuitHandler;
+import java.awt.desktop.QuitResponse;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -29,7 +42,6 @@ import jcs.commandStation.JCSCommandStation;
 import jcs.commandStation.JCSCommandStationImpl;
 import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.events.PowerEventListener;
-import jcs.commandStation.events.RefreshEvent;
 import jcs.commandStation.events.RefreshEventListener;
 import jcs.persistence.PersistenceFactory;
 import jcs.persistence.PersistenceService;
@@ -37,8 +49,8 @@ import jcs.persistence.util.H2DatabaseUtil;
 import jcs.ui.JCSFrame;
 import jcs.ui.splash.JCSSplash;
 import jcs.ui.util.FrameMonitor;
-import jcs.ui.util.MacOsAdapter;
 import jcs.ui.util.ProcessFactory;
+import jcs.ui.util.UICallback;
 import jcs.util.RunUtil;
 import jcs.util.VersionInfo;
 import org.tinylog.Logger;
@@ -55,9 +67,10 @@ public class JCS extends Thread {
   private static PersistenceService persistentStore;
   private static JCSCommandStation jcsCommandStation;
 
-  private static MacOsAdapter osAdapter;
   private static JCSFrame jcsFrame;
   private static String version;
+
+  private static UICallback uiCallback;
 
   private final List<RefreshEventListener> refreshEventListeners;
 
@@ -99,16 +112,34 @@ public class JCS extends Thread {
     JCS.logProgress("Check OS...");
 
     if (RunUtil.isMacOSX()) {
-      MacOsAdapter.setMacOsProperties();
-      osAdapter = new MacOsAdapter();
+
+      try {
+        Desktop desktop = Desktop.getDesktop();
+        desktop.setAboutHandler(new JCSAboutHandler());
+        desktop.setQuitHandler(new JCSQuitHandler());
+        desktop.setPreferencesHandler(new JCSPreferencesHandler());
+        
+
+        Taskbar taskbar = Taskbar.getTaskbar();
+        try {
+          //BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-64.png"));
+          BufferedImage img = ImageIO.read(JCS.class.getResource("/media/jcs-train-2-512.png"));
+          taskbar.setIconImage(img);
+        } catch (final UnsupportedOperationException e) {
+          Logger.warn("The os does not support: 'taskbar.setIconImage'");
+        } catch (final SecurityException e) {
+          Logger.warn("There was a security exception for: 'taskbar.setIconImage'");
+        }
+
+      } catch (SecurityException | IllegalArgumentException | IOException ex) {
+        Logger.warn("Failed to register with MacOS: " + ex);
+      }
+
     }
 
     java.awt.EventQueue.invokeLater(() -> {
       jcsFrame = new JCSFrame();
-
-      if (RunUtil.isMacOSX()) {
-        osAdapter.setUiCallback(jcsFrame);
-      }
+      JCS.uiCallback = jcsFrame;
 
       //URL iconUrl = JCS.class.getResource("/media/jcs-train-64.png");
       URL iconUrl = JCS.class.getResource("/media/jcs-train-2-512.png");
@@ -159,20 +190,21 @@ public class JCS extends Thread {
     Logger.info("JCS " + VersionInfo.getVersion() + " session finished");
   }
 
-  @Deprecated
-  public static void addRefreshListener(RefreshEventListener refreshListener) {
-    instance.refreshEventListeners.add(refreshListener);
-  }
-  @Deprecated
-  public static void removeRefreshListener(RefreshEventListener refreshListener) {
-    instance.refreshEventListeners.remove(refreshListener);
-  }
+//  @Deprecated
+//  public static void addRefreshListener(RefreshEventListener refreshListener) {
+//    instance.refreshEventListeners.add(refreshListener);
+//  }
 
-  public static void settingsChanged(RefreshEvent refreshEvent) {
-    for (RefreshEventListener rel : instance.refreshEventListeners) {
-      rel.onChange(refreshEvent);
-    }
-  }
+//  @Deprecated
+//  public static void removeRefreshListener(RefreshEventListener refreshListener) {
+//    instance.refreshEventListeners.remove(refreshListener);
+//  }
+
+//  public static void settingsChanged(RefreshEvent refreshEvent) {
+//    for (RefreshEventListener rel : instance.refreshEventListeners) {
+//      rel.onChange(refreshEvent);
+//    }
+//  }
 
   public static JCS getInstance() {
     if (instance == null) {
@@ -212,7 +244,6 @@ public class JCS extends Thread {
 
     //Load properties
     RunUtil.loadProperties();
-
     RunUtil.loadExternalProperties();
 
     try {
@@ -232,9 +263,20 @@ public class JCS extends Thread {
       System.exit(0);
     }
 
+    if (RunUtil.isMacOSX()) {
+      System.setProperty("apple.awt.application.name", "JCS");
+      System.setProperty("apple.laf.useScreenMenuBar", "true");
+      System.setProperty("apple.awt.application.appearance", "system");
+
+    }
+
     splashScreen = new JCSSplash();
 
-    splashScreen.showSplash();
+    if ("true".equalsIgnoreCase(System.getProperty("disable.splash", "false"))) {
+      Logger.info("Splasscreen is disabled");
+    } else {
+      splashScreen.showSplash();
+    }
 
     splashScreen.setProgressMax(25);
 
@@ -307,6 +349,39 @@ public class JCS extends Thread {
       if (JCS.jcsFrame != null) {
         JCS.jcsFrame.powerChanged(event);
       }
+    }
+  }
+
+  private class JCSQuitHandler implements QuitHandler {
+
+    @Override
+    public void handleQuitRequestWith(QuitEvent e, QuitResponse response) {
+      uiCallback.handleQuitRequest();
+    }
+  }
+
+  private class JCSAboutHandler implements AboutHandler {
+
+    @Override
+    public void handleAbout(AboutEvent e) {
+      uiCallback.handleAbout();
+    }
+  }
+
+  private class JCSPreferencesHandler implements PreferencesHandler {
+
+    @Override
+    public void handlePreferences(PreferencesEvent e) {
+      uiCallback.handlePreferences();
+    }
+  }
+
+  private class JCSOpenFilesHandler implements OpenFilesHandler {
+
+    @Override
+    public void openFiles(OpenFilesEvent e) {
+      //STUB
+      uiCallback.openFiles(null);
     }
   }
 

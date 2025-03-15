@@ -39,7 +39,6 @@ import jcs.entities.LocomotiveBean;
 import jcs.entities.LocomotiveBean.Direction;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.util.ImageUtil;
-import jcs.ui.util.MacOsAdapter;
 import jcs.util.RunUtil;
 import org.tinylog.Logger;
 
@@ -48,6 +47,8 @@ import org.tinylog.Logger;
  * @author frans
  */
 public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDirectionEventListener {
+
+  private static final long serialVersionUID = 6139691226868043462L;
 
   private List<LocomotiveBean> filteredLocos;
   List<String> locoNames;
@@ -320,7 +321,10 @@ public class DriverCabFrame extends javax.swing.JFrame implements LocomotiveDire
       DriverCabFrame driverFrame = new DriverCabFrame();
 
       if (RunUtil.isMacOSX()) {
-        MacOsAdapter.setMacOsProperties();
+        System.setProperty("apple.awt.application.name", "JCS");
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.awt.application.appearance", "system");
+
         Taskbar taskbar = Taskbar.getTaskbar();
         try {
           BufferedImage img = ImageIO.read(DriverCabFrame.class.getResource(frameImageUrl));

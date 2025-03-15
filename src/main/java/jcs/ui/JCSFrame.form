@@ -33,6 +33,55 @@
             </MenuItem>
           </SubComponents>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="editMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Edit"/>
+            <Property name="name" type="java.lang.String" value="editMenu" noResource="true"/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="rotateTileMI">
+              <Properties>
+                <Property name="mnemonic" type="int" value="82"/>
+                <Property name="text" type="java.lang.String" value="Rotate Tile"/>
+                <Property name="toolTipText" type="java.lang.String" value="Rotate the selected Tile"/>
+                <Property name="name" type="java.lang.String" value="rotateTileMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rotateTileMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="flipTileHorizontallyMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Flip Horizontally"/>
+                <Property name="toolTipText" type="java.lang.String" value="Flip selected Tile Horizontally"/>
+                <Property name="name" type="java.lang.String" value="flipTileHorizontallyMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="flipTileHorizontallyMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="flipTileVerticallyMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Flip Tile Vertically"/>
+                <Property name="toolTipText" type="java.lang.String" value="Flip the selected Tile Vertically"/>
+                <Property name="name" type="java.lang.String" value="flipTileVerticallyMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="flipTileVerticallyMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="deleteTileMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Delete Tile"/>
+                <Property name="toolTipText" type="java.lang.String" value="Delete the selected Tile"/>
+                <Property name="name" type="java.lang.String" value="deleteTileMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteTileMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <Menu class="javax.swing.JMenu" name="viewMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="View"/>
@@ -41,42 +90,29 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="showHome">
               <Properties>
+                <Property name="mnemonic" type="int" value="72"/>
                 <Property name="text" type="java.lang.String" value="Home"/>
+                <Property name="toolTipText" type="java.lang.String" value="Home screen"/>
                 <Property name="name" type="java.lang.String" value="showHome" noResource="true"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showHomeActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="showLocosMI">
-              <Properties>
-                <Property name="label" type="java.lang.String" value="Locomotives"/>
-                <Property name="name" type="java.lang.String" value="showLocosMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showLocosMIActionPerformed"/>
-              </Events>
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="editLayout">
               <Properties>
+                <Property name="mnemonic" type="int" value="69"/>
                 <Property name="text" type="java.lang.String" value="Edit Layout"/>
+                <Property name="toolTipText" type="java.lang.String" value="Edit the track layout"/>
                 <Property name="name" type="java.lang.String" value="editLayout" noResource="true"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editLayoutActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="showKeyboard">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Keyboard"/>
-                <Property name="name" type="java.lang.String" value="showKeyboard" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showKeyboardActionPerformed"/>
-              </Events>
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="showSensorMonitor">
               <Properties>
+                <Property name="mnemonic" type="int" value="77"/>
                 <Property name="text" type="java.lang.String" value="Sensor Monitor"/>
                 <Property name="name" type="java.lang.String" value="showSensorMonitor" noResource="true"/>
               </Properties>
@@ -84,14 +120,65 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showSensorMonitorActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="showKeyboard">
+              <Properties>
+                <Property name="mnemonic" type="int" value="75"/>
+                <Property name="text" type="java.lang.String" value="Keyboard"/>
+                <Property name="toolTipText" type="java.lang.String" value="Accessory keyboard"/>
+                <Property name="name" type="java.lang.String" value="showKeyboard" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showKeyboardActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="toolsMenu">
+        <Menu class="javax.swing.JMenu" name="settingsMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Tools"/>
-            <Property name="name" type="java.lang.String" value="toolsMenu" noResource="true"/>
+            <Property name="text" type="java.lang.String" value="Settings"/>
+            <Property name="name" type="java.lang.String" value="settingsMenu" noResource="true"/>
           </Properties>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="showLocosMI">
+              <Properties>
+                <Property name="toolTipText" type="java.lang.String" value="Locomotive settings"/>
+                <Property name="label" type="java.lang.String" value="Locomotives"/>
+                <Property name="name" type="java.lang.String" value="showLocosMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showLocosMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="showAccessoryMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Accessories"/>
+                <Property name="toolTipText" type="java.lang.String" value="Accessory Settings"/>
+                <Property name="name" type="java.lang.String" value="showAccessoryMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showAccessoryMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="showCommandStationsMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Command Stations"/>
+                <Property name="toolTipText" type="java.lang.String" value="Commans Station Settings"/>
+                <Property name="name" type="java.lang.String" value="showCommandStationsMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showCommandStationsMIActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="showPropertiesMI">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Properties"/>
+                <Property name="toolTipText" type="java.lang.String" value="Property Settings"/>
+                <Property name="name" type="java.lang.String" value="showPropertiesMI" noResource="true"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showPropertiesMIActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="optionsMI">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Options"/>
@@ -99,15 +186,6 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="optionsMIActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="commandStationsMI">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Command Stations"/>
-                <Property name="name" type="java.lang.String" value="commandStationsMI" noResource="true"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="commandStationsMIActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

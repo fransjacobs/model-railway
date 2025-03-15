@@ -15,14 +15,16 @@
 JCS is a hobby project of me where I try to automate my Model Railway. Over the past years I have worked on and off on several aspects and modules of the software which are needed to drive automatically.
 A short summary of the topics which are needed and used to be able to drive trains automatically:
 
-- Connectivity to the Command Station hardware. (DCC-EX,HSI-S88, Marklin CS2/3)
+- Connectivity to the Command Station hardware. (DCC-EX,HSI-S88, Marklin CS2/3 ESU Ecos)
 - Edit and display graphically a layout
 - With the layout be able to route all the possible drive ways
 - Show the routes and driveways in the layout screen
 - Graphically feedback events on track to the layout screen
+- Automatically run locomotives on the layout
 - Input dialogs to setup Accessories, Locomotives, Command stations, etc
 - Locomotive Drive Cap so tha you can manually run you locomotive
 - Virtual Command Station, to ease testing and simulate automatic driving 
+- Build in VNC viewer
 - Monitor Sensor events
 
 I created a [short video](https://youtu.be/xP6eUdScMY0) demonstrating automatic running of locomotives. Also a [video of pysical locomotives running on the Test Layout](https://www.youtube.com/watch?v=CyLmGk6gfHA)
@@ -78,7 +80,7 @@ To debug or easly setup your feedback sensors
 
 ## Releases
 
-- [First Release V 0.0.1](https://github.com/fransjacobs/model-railway/releases/tag/V0.0.1)
+- [Latest Release V 0.0.2](https://github.com/fransjacobs/model-railway/releases/tag/V0.0.2)
 
 ## Supported Hardware
 
@@ -94,10 +96,9 @@ To debug or easly setup your feedback sensors
 Currently the following feature are in development:
 
 - Documentation
-- Internationalization enable multiple languages
-- Add support for ESU ECOS
-- Show Signal aspects in automatic driving
 - Enhance GUI
+- Show Signal aspects in automatic driving
+- Internationalization enable multiple languages
 - Add more Unit tests
 - ...
 
@@ -125,7 +126,7 @@ Currently the following feature are in development:
 </tr>
 </table>
 
-## Copyright 2019 - 2024 Frans Jacobs
+## Copyright 2019 - 2025 Frans Jacobs
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
 to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,

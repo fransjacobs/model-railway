@@ -64,7 +64,6 @@ import jcs.commandStation.events.PowerEvent;
 import jcs.commandStation.entities.InfoBean;
 import jcs.persistence.PersistenceFactory;
 import jcs.ui.layout.LayoutPanel;
-import jcs.ui.monitor.FeedbackMonitor;
 import jcs.ui.options.CommandStationDialog;
 import jcs.ui.options.CommandStationPanel;
 import jcs.ui.options.OptionDialog;
@@ -84,7 +83,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private static final long serialVersionUID = -5800900684173242844L;
 
   private final Map<KeyStroke, Action> actionMap;
-  private FeedbackMonitor feedbackMonitor;
+  private FeedbackSensorDialog feedbackMonitor;
 
   /**
    * Creates new form JCSFrame
@@ -95,26 +94,30 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     //TODO: see https://www.formdev.com/flatlaf/macos/
     if (RunUtil.isMacOSX()) {
-      quitMI.setVisible(false);
-      optionsMI.setVisible(false);
-      toolsMenu.setVisible(false);
+      //quitMI.setVisible(false);
+      //optionsMI.setVisible(false);
+      //settingsMenu.setVisible(false);
 
       if (SystemInfo.isMacFullWindowContentSupported) {
-        this.getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
-        this.getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
+        getRootPane().putClientProperty("apple.awt.transparentTitleBar", true);
+        getRootPane().putClientProperty("apple.awt.fullWindowContent", true);
         //this.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
 
-        this.getRootPane().putClientProperty("apple.awt.brushMetalLook", true);
+        getRootPane().putClientProperty("apple.awt.windowTitleVisible", false);
+        getRootPane().putClientProperty("apple.awt.brushMetalLook", true);
+
+        //avoid overlap of the red/orange/green buttons and the window title
+        jcsToolBar.add(Box.createHorizontalStrut(70), 0);
 
       }
 
       initJCS();
 
-      if (SystemInfo.isMacFullWindowContentSupported) {
-        //avoid overlap of the red/orange/green buttons and the window title
-        this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
-        //this.jcsToolBar.setb
-      }
+//      if (SystemInfo.isMacFullWindowContentSupported) {
+//        //avoid overlap of the red/orange/green buttons and the window title
+//        this.jcsToolBar.add(Box.createHorizontalStrut(70), 0);
+//        //this.jcsToolBar.setb
+//      }
     }
     initKeyStrokes();
   }
@@ -123,10 +126,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     if (PersistenceFactory.getService() != null) {
       this.setTitle(this.getTitleString());
 
-      if (RunUtil.isMacOSX()) {
-        this.setTitle("");
-      }
-
+//      if (RunUtil.isMacOSX()) {
+//        this.setTitle("");
+//      }
       if (JCS.getJcsCommandStation().isConnected()) {
         setControllerProperties();
       }
@@ -134,8 +136,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       //Show the default panel
       showOverviewPanel();
 
-      JCS.addRefreshListener(dispatcherStatusPanel);
-
+      //JCS.addRefreshListener(dispatcherStatusPanel);
     }
   }
 
@@ -176,6 +177,16 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     @Override
     public void actionPerformed(ActionEvent e) {
       showOverviewPanel();
+    }
+  }
+
+  private class EditAction extends AbstractAction {
+
+    private static final long serialVersionUID = -4725560671766567186L;
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+      showEditLayoutPanel();
     }
   }
 
@@ -242,8 +253,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private void initKeyStrokes() {
     KeyStroke keySpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0);
     KeyStroke keyQuit = KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK);
-    KeyStroke keySensorMonitor = KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.CTRL_DOWN_MASK);
+
+    KeyStroke keySensorMonitor = KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_DOWN_MASK);
     KeyStroke keyHome = KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
+    KeyStroke keyEdit = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK);
 
     //Edit screen
     KeyStroke keyModeSelect = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK);
@@ -257,6 +270,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     actionMap.put(keySpace, new PowerAction());
     actionMap.put(keyQuit, new QuitAction());
     actionMap.put(keySensorMonitor, new ShowMonitorAction());
+    actionMap.put(keyHome, new HomeAction());
+    actionMap.put(keyEdit, new EditAction());
+
     actionMap.put(keyHome, new HomeAction());
 
     actionMap.put(keyModeSelect, new SelectModeKeyAction());
@@ -332,7 +348,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     card.show(this.centerPanel, "vncPanel");
   }
 
-  public void showDesignLayoutPanel() {
+  public void showEditLayoutPanel() {
     if (!AutoPilot.isAutoModeActive()) {
       CardLayout card = (CardLayout) this.centerPanel.getLayout();
       card.show(this.centerPanel, "designPanel");
@@ -364,8 +380,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private void showSensorMonitor() {
     if (feedbackMonitor == null) {
       Logger.trace("Creating a Monitor UI");
-      feedbackMonitor = new FeedbackMonitor();
-      FrameMonitor.registerFrame(feedbackMonitor, FeedbackMonitor.class.getName());
+      feedbackMonitor = new FeedbackSensorDialog(this, false);
+      FrameMonitor.registerFrame(feedbackMonitor, FeedbackSensorDialog.class.getName());
     }
     feedbackMonitor.showMonitor();
   }
@@ -430,15 +446,22 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     fileMenu = new JMenu();
     quitMI = new JMenuItem();
     connectMI = new JMenuItem();
+    editMenu = new JMenu();
+    rotateTileMI = new JMenuItem();
+    flipTileHorizontallyMI = new JMenuItem();
+    flipTileVerticallyMI = new JMenuItem();
+    deleteTileMI = new JMenuItem();
     viewMenu = new JMenu();
     showHome = new JMenuItem();
-    showLocosMI = new JMenuItem();
     editLayout = new JMenuItem();
-    showKeyboard = new JMenuItem();
     showSensorMonitor = new JMenuItem();
-    toolsMenu = new JMenu();
+    showKeyboard = new JMenuItem();
+    settingsMenu = new JMenu();
+    showLocosMI = new JMenuItem();
+    showAccessoryMI = new JMenuItem();
+    showCommandStationsMI = new JMenuItem();
+    showPropertiesMI = new JMenuItem();
     optionsMI = new JMenuItem();
-    commandStationsMI = new JMenuItem();
     helpMenu = new JMenu();
     aboutMI = new JMenuItem();
 
@@ -882,10 +905,58 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
 
     jcsMenuBar.add(fileMenu);
 
+    editMenu.setText("Edit");
+    editMenu.setName("editMenu"); // NOI18N
+
+    rotateTileMI.setMnemonic('R');
+    rotateTileMI.setText("Rotate Tile");
+    rotateTileMI.setToolTipText("Rotate the selected Tile");
+    rotateTileMI.setName("rotateTileMI"); // NOI18N
+    rotateTileMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        rotateTileMIActionPerformed(evt);
+      }
+    });
+    editMenu.add(rotateTileMI);
+
+    flipTileHorizontallyMI.setText("Flip Horizontally");
+    flipTileHorizontallyMI.setToolTipText("Flip selected Tile Horizontally");
+    flipTileHorizontallyMI.setName("flipTileHorizontallyMI"); // NOI18N
+    flipTileHorizontallyMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        flipTileHorizontallyMIActionPerformed(evt);
+      }
+    });
+    editMenu.add(flipTileHorizontallyMI);
+
+    flipTileVerticallyMI.setText("Flip Tile Vertically");
+    flipTileVerticallyMI.setToolTipText("Flip the selected Tile Vertically");
+    flipTileVerticallyMI.setName("flipTileVerticallyMI"); // NOI18N
+    flipTileVerticallyMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        flipTileVerticallyMIActionPerformed(evt);
+      }
+    });
+    editMenu.add(flipTileVerticallyMI);
+
+    deleteTileMI.setText("Delete Tile");
+    deleteTileMI.setToolTipText("Delete the selected Tile");
+    deleteTileMI.setName("deleteTileMI"); // NOI18N
+    deleteTileMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        deleteTileMIActionPerformed(evt);
+      }
+    });
+    editMenu.add(deleteTileMI);
+
+    jcsMenuBar.add(editMenu);
+
     viewMenu.setText("View");
     viewMenu.setName("viewMenu"); // NOI18N
 
+    showHome.setMnemonic('H');
     showHome.setText("Home");
+    showHome.setToolTipText("Home screen");
     showHome.setName("showHome"); // NOI18N
     showHome.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -894,16 +965,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
     viewMenu.add(showHome);
 
-    showLocosMI.setLabel("Locomotives");
-    showLocosMI.setName("showLocosMI"); // NOI18N
-    showLocosMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        showLocosMIActionPerformed(evt);
-      }
-    });
-    viewMenu.add(showLocosMI);
-
+    editLayout.setMnemonic('E');
     editLayout.setText("Edit Layout");
+    editLayout.setToolTipText("Edit the track layout");
     editLayout.setName("editLayout"); // NOI18N
     editLayout.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
@@ -912,15 +976,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
     viewMenu.add(editLayout);
 
-    showKeyboard.setText("Keyboard");
-    showKeyboard.setName("showKeyboard"); // NOI18N
-    showKeyboard.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        showKeyboardActionPerformed(evt);
-      }
-    });
-    viewMenu.add(showKeyboard);
-
+    showSensorMonitor.setMnemonic('M');
     showSensorMonitor.setText("Sensor Monitor");
     showSensorMonitor.setName("showSensorMonitor"); // NOI18N
     showSensorMonitor.addActionListener(new ActionListener() {
@@ -930,10 +986,61 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     });
     viewMenu.add(showSensorMonitor);
 
+    showKeyboard.setMnemonic('K');
+    showKeyboard.setText("Keyboard");
+    showKeyboard.setToolTipText("Accessory keyboard");
+    showKeyboard.setName("showKeyboard"); // NOI18N
+    showKeyboard.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showKeyboardActionPerformed(evt);
+      }
+    });
+    viewMenu.add(showKeyboard);
+
     jcsMenuBar.add(viewMenu);
 
-    toolsMenu.setText("Tools");
-    toolsMenu.setName("toolsMenu"); // NOI18N
+    settingsMenu.setText("Settings");
+    settingsMenu.setName("settingsMenu"); // NOI18N
+
+    showLocosMI.setToolTipText("Locomotive settings");
+    showLocosMI.setLabel("Locomotives");
+    showLocosMI.setName("showLocosMI"); // NOI18N
+    showLocosMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showLocosMIActionPerformed(evt);
+      }
+    });
+    settingsMenu.add(showLocosMI);
+
+    showAccessoryMI.setText("Accessories");
+    showAccessoryMI.setToolTipText("Accessory Settings");
+    showAccessoryMI.setName("showAccessoryMI"); // NOI18N
+    showAccessoryMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showAccessoryMIActionPerformed(evt);
+      }
+    });
+    settingsMenu.add(showAccessoryMI);
+
+    showCommandStationsMI.setText("Command Stations");
+    showCommandStationsMI.setToolTipText("Commans Station Settings");
+    showCommandStationsMI.setName("showCommandStationsMI"); // NOI18N
+    showCommandStationsMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showCommandStationsMIActionPerformed(evt);
+      }
+    });
+    settingsMenu.add(showCommandStationsMI);
+
+    showPropertiesMI.setText("Properties");
+    showPropertiesMI.setToolTipText("Property Settings");
+    showPropertiesMI.setName("showPropertiesMI"); // NOI18N
+    showPropertiesMI.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent evt) {
+        showPropertiesMIActionPerformed(evt);
+      }
+    });
+    settingsMenu.add(showPropertiesMI);
 
     optionsMI.setText("Options");
     optionsMI.setName("optionsMI"); // NOI18N
@@ -942,18 +1049,9 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
         optionsMIActionPerformed(evt);
       }
     });
-    toolsMenu.add(optionsMI);
+    settingsMenu.add(optionsMI);
 
-    commandStationsMI.setText("Command Stations");
-    commandStationsMI.setName("commandStationsMI"); // NOI18N
-    commandStationsMI.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent evt) {
-        commandStationsMIActionPerformed(evt);
-      }
-    });
-    toolsMenu.add(commandStationsMI);
-
-    jcsMenuBar.add(toolsMenu);
+    jcsMenuBar.add(settingsMenu);
 
     helpMenu.setText("Help");
     helpMenu.setName("helpMenu"); // NOI18N
@@ -996,7 +1094,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }//GEN-LAST:event_optionsMIActionPerformed
 
     private void showEditDesignBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showEditDesignBtnActionPerformed
-      showDesignLayoutPanel();
+      showEditLayoutPanel();
     }//GEN-LAST:event_showEditDesignBtnActionPerformed
 
     private void showOverviewBtnActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showOverviewBtnActionPerformed
@@ -1088,7 +1186,7 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
     }//GEN-LAST:event_showHomeActionPerformed
 
     private void editLayoutActionPerformed(ActionEvent evt) {//GEN-FIRST:event_editLayoutActionPerformed
-      showDesignLayoutPanel();
+      showEditLayoutPanel();
     }//GEN-LAST:event_editLayoutActionPerformed
 
     private void showKeyboardActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showKeyboardActionPerformed
@@ -1105,11 +1203,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       connectButton.setSelected(connect);
     }//GEN-LAST:event_connectMIActionPerformed
 
-  private void commandStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_commandStationsMIActionPerformed
+  private void showCommandStationsMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showCommandStationsMIActionPerformed
     CommandStationDialog csd = new CommandStationDialog(this, true);
     csd.setLocationRelativeTo(null);
     csd.setVisible(true);
-  }//GEN-LAST:event_commandStationsMIActionPerformed
+  }//GEN-LAST:event_showCommandStationsMIActionPerformed
 
   private void aboutMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_aboutMIActionPerformed
     Logger.trace(evt.getActionCommand());
@@ -1156,6 +1254,31 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
       AutoPilot.startAllLocomotives();
     }
   }//GEN-LAST:event_startAllLocsBtnActionPerformed
+
+  private void showAccessoryMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showAccessoryMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_showAccessoryMIActionPerformed
+
+  private void showPropertiesMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_showPropertiesMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_showPropertiesMIActionPerformed
+
+  private void rotateTileMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_rotateTileMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_rotateTileMIActionPerformed
+
+  private void flipTileHorizontallyMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipTileHorizontallyMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_flipTileHorizontallyMIActionPerformed
+
+  private void flipTileVerticallyMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_flipTileVerticallyMIActionPerformed
+
+    // TODO add your handling code here:
+  }//GEN-LAST:event_flipTileVerticallyMIActionPerformed
+
+  private void deleteTileMIActionPerformed(ActionEvent evt) {//GEN-FIRST:event_deleteTileMIActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_deleteTileMIActionPerformed
 
   private String getTitleString() {
     String jcsVersion = VersionInfo.getVersion();
@@ -1222,7 +1345,6 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JPanel bottomLeftPanel;
   private JPanel centerPanel;
   private CommandStationPanel commandStationPanel;
-  private JMenuItem commandStationsMI;
   private JToggleButton connectButton;
   private JMenuItem connectMI;
   private JLabel controllerCatalogLbl;
@@ -1233,8 +1355,10 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JLabel controllerLbl;
   private JLabel controllerSerialLbl;
   private JLabel controllerSerialNumberLbl;
+  private JMenuItem deleteTileMI;
   private DispatcherStatusPanel dispatcherStatusPanel;
   private JMenuItem editLayout;
+  private JMenu editMenu;
   private JMenu fileMenu;
   private Box.Filler filler1;
   private Box.Filler filler10;
@@ -1246,6 +1370,8 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private Box.Filler filler7;
   private Box.Filler filler8;
   private Box.Filler filler9;
+  private JMenuItem flipTileHorizontallyMI;
+  private JMenuItem flipTileVerticallyMI;
   private JMenu helpMenu;
   private JPanel jPanel1;
   private JPanel jPanel2;
@@ -1263,7 +1389,11 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JToggleButton powerButton;
   private JMenuItem quitMI;
   private JButton resetAutoPilotBtn;
+  private JMenuItem rotateTileMI;
+  private JMenu settingsMenu;
   private JPanel settingsPanel;
+  private JMenuItem showAccessoryMI;
+  private JMenuItem showCommandStationsMI;
   private JButton showEditDesignBtn;
   private JButton showFeedbackMonitorBtn;
   private JMenuItem showHome;
@@ -1271,12 +1401,12 @@ public class JCSFrame extends JFrame implements UICallback, DisconnectionEventLi
   private JButton showKeyboardBtn;
   private JMenuItem showLocosMI;
   private JButton showOverviewBtn;
+  private JMenuItem showPropertiesMI;
   private JMenuItem showSensorMonitor;
   private JButton showVNCBtn;
   private JButton startAllLocsBtn;
   private StatusPanel statusPanel;
   private JPanel toolbarPanel;
-  private JMenu toolsMenu;
   private JMenu viewMenu;
   private JCheckBox virtualCB;
   private VNCPanel vncPanel;
