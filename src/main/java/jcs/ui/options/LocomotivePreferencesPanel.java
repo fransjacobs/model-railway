@@ -729,7 +729,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
       initModels();
       locomotiveList.setSelectedValue(selectedLocomotive, true);
 
-      JCS.settingsChanged(new RefreshEvent("locomotives"));
+      //JCS.settingsChanged(new RefreshEvent("locomotives"));
 
     }
   }//GEN-LAST:event_saveBtnActionPerformed
@@ -1152,7 +1152,7 @@ public class LocomotivePreferencesPanel extends JPanel implements PropertyChange
         setProgress((int) progress);
       }
 
-      JCS.settingsChanged(new RefreshEvent("locomotives"));
+      //JCS.settingsChanged(new RefreshEvent("locomotives"));
 
       firePropertyChange("done", "", "Locomotives Synchronized");
 
